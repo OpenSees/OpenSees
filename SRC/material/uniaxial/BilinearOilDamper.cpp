@@ -345,7 +345,7 @@ double BilinearOilDamper::getStress(void)
 double BilinearOilDamper::getTangent(void)
 {
   // Why is this return 0.0? -- MHS
-  return 0.0;
+  return K;
 }
 
 double BilinearOilDamper::getInitialTangent(void)
@@ -356,8 +356,15 @@ double BilinearOilDamper::getInitialTangent(void)
 
 double BilinearOilDamper::getDampTangent(void)
 {
-  //return 0.0;
-  return C; // Needs to return something, something is better than nothing -- MHS
+  if ((fabs(Tstress) < Fr) || (p == 0)) {
+
+		return C;
+
+	 } else {
+
+		return p*C;
+ 
+	}
 }
 
 

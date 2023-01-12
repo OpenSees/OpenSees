@@ -65,6 +65,7 @@ class GSA_Recorder: public Recorder
     int record(int commitTag, double timeStamp);
     int playback(int commitTag);
     int restart(void);    
+    int flush(void);    
     
   protected:
     

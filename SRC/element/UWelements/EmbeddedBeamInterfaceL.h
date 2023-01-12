@@ -47,10 +47,22 @@ class EmbeddedBeamInterfaceL : public Element
 {
 public:
     EmbeddedBeamInterfaceL(int tag);
-    EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTag, std::vector <int> solidTag, int crdTransfTag,
-        std::vector <double>  beamRho, std::vector <double>  beamTheta, std::vector <double>  solidXi,
-        std::vector <double>  solidEta, std::vector <double>  solidZeta, double radius, std::vector <double> area,
-        std::vector <double> length, bool writeConnectivity = false, const char * connectivityFN = "");
+    EmbeddedBeamInterfaceL(int tag,
+			   std::vector <int> beamTag,
+			   std::vector <int> solidTag,
+			   int crdTransfTag,
+			   std::vector <double>  beamRho,
+			   std::vector <double>  beamTheta,
+			   std::vector <double>  solidXi,
+			   std::vector <double>  solidEta,
+			   std::vector <double>  solidZeta,
+			   double radius, std::vector <double> area,
+			   std::vector <double> length,
+			   Domain *theDomainPtr,			   
+			   bool writeConnectivity = false,
+			   const char * connectivityFN = "");
+
+
     EmbeddedBeamInterfaceL();
     ~EmbeddedBeamInterfaceL();
 

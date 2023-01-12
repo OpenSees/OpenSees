@@ -85,6 +85,7 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	}
 
 	int tag, ndI, ndJ, secTagI, secTagJ, transfTag;
+  int dampingTag = 0;
 	double lenI, lenJ, E, A, I;
 	double massDens = 0.0;
 	int numIters = 10;
@@ -169,6 +170,14 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 		    }
 		}
 		
+		if (strcmp(argv[i],"-damp") == 0 && ++i < argc) {
+		    if (Tcl_GetInt(interp, argv[i], &dampingTag) != TCL_OK) {
+			opserr << "WARNING invalid dampingTag\n";
+			opserr << "BeamWithHinges: " << tag << endln;
+			return TCL_ERROR;
+		    }
+		}
+		
 		if (strcmp(argv[i],"-constHinge") == 0 && ++i < argc) {
 		    if (Tcl_GetInt(interp, argv[i], &shearTag) != TCL_OK) {
 			opserr << "WARNING invalid constHinge tag\n";
@@ -223,6 +232,19 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	    opserr << "\nBeamWithHinges: " << tag << endln;
 	    return TCL_ERROR;
 	}	
+	
+  Damping *theDamping2d = 0;
+  if (dampingTag)
+  {
+    theDamping2d = OPS_getDamping(dampingTag);
+    if (theDamping2d == 0)
+    {
+      opserr << "WARNING damping not found\n";
+      opserr << "damping: " << dampingTag;
+      opserr << "\nBeamWithHinges: " << tag << endln;
+      return TCL_ERROR;
+    }
+  }
 	
 	Element *theElement = 0;
 	int numSections = 0;
@@ -297,7 +319,7 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 
 	theElement = new ForceBeamColumn2d(tag, ndI, ndJ, numSections,
 					   sections, *theBeamIntegr,
-					   *theTransf,massDens,numIters,tol);
+					   *theTransf,massDens,numIters,tol,theDamping2d);
 
 	delete theBeamIntegr;
 

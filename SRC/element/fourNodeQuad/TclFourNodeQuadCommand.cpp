@@ -134,7 +134,20 @@ TclModelBuilder_addFourNodeQuad(ClientData clientData, Tcl_Interp *interp,
      return TCL_ERROR;
   }
 
-  if ((argc-argStart) > 11) {
+  int dampingTag = 0;
+  Damping *theDamping = 0;
+
+  if ((argc-argStart) == 10) {
+    if (strcmp(argv[8+argStart],"-damp") == 0 && Tcl_GetInt(interp, argv[9+argStart], &dampingTag) == TCL_OK) {
+	    theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+        opserr << "WARNING damping not found\n";
+        opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+        return TCL_ERROR;
+      }
+	  }
+  }
+  else if ((argc-argStart) == 12) {
     if (Tcl_GetDouble(interp, argv[8+argStart], &p) != TCL_OK) {
       opserr << "WARNING invalid pressure\n";
       opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
@@ -156,6 +169,46 @@ TclModelBuilder_addFourNodeQuad(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
   }
+  else if ((argc-argStart) == 14) {
+    int argPress = 8;
+    if (strcmp(argv[8+argStart],"-damp") == 0 && Tcl_GetInt(interp, argv[9+argStart], &dampingTag) == TCL_OK) {
+	    theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+        opserr << "WARNING damping not found\n";
+        opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+        return TCL_ERROR;
+      }
+      argPress = 10;
+	  }
+	  else if (strcmp(argv[12+argStart],"-damp") == 0 && Tcl_GetInt(interp, argv[13+argStart], &dampingTag) == TCL_OK) {
+	    theDamping = OPS_getDamping(dampingTag);
+      if(theDamping == 0) {
+        opserr << "WARNING damping not found\n";
+        opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+        return TCL_ERROR;
+      }
+	  }
+    if (Tcl_GetDouble(interp, argv[argPress+argStart], &p) != TCL_OK) {
+      opserr << "WARNING invalid pressure\n";
+      opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+      return TCL_ERROR;
+    }
+    if (Tcl_GetDouble(interp, argv[1+argPress+argStart], &rho) != TCL_OK) {
+      opserr << "WARNING invalid b1\n";
+      opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+      return TCL_ERROR;
+    }
+    if (Tcl_GetDouble(interp, argv[2+argPress+argStart], &b1) != TCL_OK) {
+      opserr << "WARNING invalid b1\n";
+      opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+      return TCL_ERROR;
+    }
+    if (Tcl_GetDouble(interp, argv[3+argPress+argStart], &b2) != TCL_OK) {
+      opserr << "WARNING invalid b2\n";
+      opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;
+      return TCL_ERROR;
+    }
+  }
   
   NDMaterial *theMaterial = OPS_getNDMaterial(matID);
       
@@ -169,7 +222,7 @@ TclModelBuilder_addFourNodeQuad(ClientData clientData, Tcl_Interp *interp,
   // now create the FourNodeQuad and add it to the Domain
   FourNodeQuad *theFourNodeQuad = 
       new FourNodeQuad(FourNodeQuadId,iNode,jNode,kNode,lNode,
-		       *theMaterial, type, thickness, p, rho, b1, b2);
+		       *theMaterial, type, thickness, p, rho, b1, b2, theDamping);
   if (theFourNodeQuad == 0) {
       opserr << "WARNING ran out of memory creating element\n";
       opserr << "FourNodeQuad element: " << FourNodeQuadId << endln;

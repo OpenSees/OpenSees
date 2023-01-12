@@ -105,12 +105,13 @@ VuggyLimestone::~VuggyLimestone() {}
  * @return double
  */
 double VuggyLimestone::getTangent(double strain) {
+  strain = fabs(strain);
   if (strain <= 0.0004 * diameter) {
     return 2000.0 * shearStrength;
   } else if (strain <= 0.0024 * diameter) {
     return 100.0 * shearStrength;
   }
-  return shearStrength;
+  return 0.0;
 }
 
 /**
@@ -120,13 +121,17 @@ double VuggyLimestone::getTangent(double strain) {
  * @return double
  */
 double VuggyLimestone::getStress(double strain) {
+  int signStrain = (strain > 0.0) ? 1 : -1;
+  strain = signStrain * strain;
+  double stress = 0.0;
+
   if (strain <= 0.0004 * diameter) {
-    return 2000.0 * shearStrength * strain;
+    stress = 2000.0 * shearStrength * strain;
   } else if (strain <= 0.0024 * diameter) {
-    return 0.8 * diameter * shearStrength +
-           100.0 * shearStrength * (strain - 0.0004 * diameter);
+    stress = 0.8 * diameter * shearStrength +
+             100.0 * shearStrength * (strain - 0.0004 * diameter);
   }
-  return 0.0;
+  return signStrain * stress;
 }
 
 double VuggyLimestone::getEnergy(double strain) { return 0.0; }

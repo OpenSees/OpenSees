@@ -451,8 +451,8 @@ void  FourNodeTetrahedron::Print(OPS_Stream &s, int flag)
         s << "\t\t\t{";
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"FourNodeTetrahedron\", ";
-        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
-        for (int i = 1; i < 2; i++)
+        s << "\"nodes\": [";
+        for (int i = 0; i < 3; i++)
             s << connectedExternalNodes(i) << ", ";
         s << connectedExternalNodes(3) << "], ";
         s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
@@ -1314,7 +1314,7 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
         resid( jj + p ) += residJ(p)  ;
         if (applyLoad == 0)
         {
-          // resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
+          resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
         }
         else
         {
@@ -1901,7 +1901,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     else if (parameterID == 1414)
     {
       int new_do_update = info.theDouble;
-      if (do_update == 0 & new_do_update == 1)
+      if (do_update == 0 && new_do_update == 1)
       {
         do_update = 1;
         Domain * mydomain = this->getDomain();
