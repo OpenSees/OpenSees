@@ -215,14 +215,15 @@ ASDPlasticMaterial( )
     // This function then computes the incremental strain (subtracting from the committed one)
     // and sets the increment.
     // Returns a success flag from the call to setTrialStrainIncr
-    int setTrialStrain( const VoigtVector &v )
+
+    int setTrialStrain(const Vector &v)
     {
         using namespace ASDPlasticMaterialGlobals;
         static VoigtVector result;
         result *= 0;
 
-        TrialStrain = v;
-        result = v - CommitStrain;
+        TrialStrain.fromStrain(v);
+        result = TrialStrain - CommitStrain;
 
         return setTrialStrainIncr( result );
     }
@@ -338,7 +339,13 @@ ASDPlasticMaterial( )
 
         return Stiffness;
     }
-
+    const Vector &getStress(void)
+    {
+    	static Vector result(6);
+    	TrialStress.toStress(result);
+    	return result;
+    }
+    // virtual const Vector &getStrain(void);
     const VoigtVector &getStressTensor( void )
     {
         return TrialStress;
@@ -2606,7 +2613,7 @@ private:
     //     return ret;
     // }
 
-private:
+protected:
 
     double rho;
 

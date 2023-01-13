@@ -70,15 +70,15 @@ public:
 	                                          alpha(H_alpha),
 	                                          k(H_k, k0_in)
 	{
-		// cout << "First VMLH ctor" << endl;
-		// cout << "tag_in  = " << tag_in << endl;
-		// cout << "k0_in  = " << k0_in << endl;
-		// cout << "H_alpha  = " << H_alpha << endl;
-		// cout << "H_k  = " << H_k << endl;
-		// cout << "E  = " << E << endl;
-		// cout << "nu  = " << nu << endl;
-		// cout << "rho_  = " << rho_ << endl;
-		// cout << "yf  = " << yf(getStressTensor()) << endl;
+		cout << "First VMLH ctor" << endl;
+		cout << "tag_in  = " << tag_in << endl;
+		cout << "k0_in  = " << k0_in << endl;
+		cout << "H_alpha  = " << H_alpha << endl;
+		cout << "H_k  = " << H_k << endl;
+		cout << "E  = " << E << endl;
+		cout << "nu  = " << nu << endl;
+		cout << "rho_  = " << rho_ << endl;
+		cout << "yf  = " << yf(getStressTensor()) << endl;
 
 	}
 
