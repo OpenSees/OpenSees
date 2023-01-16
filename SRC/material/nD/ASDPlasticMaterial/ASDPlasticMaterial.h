@@ -339,13 +339,21 @@ ASDPlasticMaterial( )
 
         return Stiffness;
     }
+
     const Vector &getStress(void)
     {
     	static Vector result(6);
     	TrialStress.toStress(result);
     	return result;
     }
-    // virtual const Vector &getStrain(void);
+
+    const Vector &getStrain(void)
+    {
+    	static Vector result(6);
+    	TrialStrain.toStrain(result);
+    	return result;
+    }
+
     const VoigtVector &getStressTensor( void )
     {
         return TrialStress;
