@@ -880,6 +880,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/ReeseSandBackbone.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
+	$(FE)/material/uniaxial/backbone/CappedBackbone.o \
+	$(FE)/material/uniaxial/backbone/LinearCappedBackbone.o \
 	$(FE)/material/uniaxial/stiffness/StiffnessDegradation.o \
 	$(FE)/material/uniaxial/stiffness/ConstantStiffnessDegradation.o \
 	$(FE)/material/uniaxial/stiffness/DuctilityStiffnessDegradation.o \
