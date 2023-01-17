@@ -32,7 +32,7 @@
  */
 class ReeseStiffClayAboveWS : public HystereticBackbone {
  public:
-  ReeseStiffClayAboveWS(int tag, double pu, double y50);
+  ReeseStiffClayAboveWS(int tag, double pu, double y50, double hl);
   ReeseStiffClayAboveWS();
   ~ReeseStiffClayAboveWS();
 
