@@ -154,21 +154,22 @@ double ReeseStiffClayBelowWS::getTangent(double strain) {
   double y1 = 0.25 * Pc * Pc / (y50 * Esi * Esi);
   double y2 = As * y50;
 
-  if (strain <= y1)
+  if (strain <= y1) {
     return Esi;
 
-  else if (strain <= y2 && strain > y1)
+  } else if (strain <= y2) {
     return 0.25 * Pc / y50 * pow(strain / y50, -0.5);
 
-  else if (strain <= 6 * y2 && strain > y2)
+  } else if (strain <= 6 * y2) {
     return 0.25 * Pc / y50 * pow(strain / y50, -0.5) -
            0.06875 * Pc / y2 * pow((strain - y2) / y2, 0.25);
 
-  else if (strain <= 18 * y2 && strain > 6 * y2)
+  } else if (strain <= 18 * y2) {
     return -0.0625 * Pc / y50;
 
-  else
+  } else {
     return 0.001 * Esi;
+  }
 }
 
 /**
@@ -186,22 +187,23 @@ double ReeseStiffClayBelowWS::getStress(double strain) {
 
   double stress = 0.0;
 
-  if (strain <= y1)
+  if (strain <= y1) {
     stress = Esi * strain;
 
-  else if (strain <= y2 && strain > y1)
+  } else if (strain <= y2) {
     stress = 0.5 * Pc * pow(strain / y50, 0.5);
 
-  else if (strain <= 6 * y2 && strain > y2)
+  } else if (strain <= 6 * y2) {
     stress = 0.5 * Pc * pow(strain / y50, 0.5) -
              0.055 * Pc * pow((strain - y2) / y2, 1.25);
 
-  else if (strain <= 18 * y2 && strain > 6 * y2)
+  } else if (strain <= 18 * y2) {
     stress = 0.5 * Pc * pow(6 * As, 0.5) - 0.411 * Pc -
              0.0625 / y50 * Pc * (strain - 6 * y2);
 
-  else if (strain > 18 * y2)
+  } else {
     stress = Pc * (1.225 * sqrt(As) - 0.75 * As - 0.411);
+  }
 
   return signStrain * stress;
 }

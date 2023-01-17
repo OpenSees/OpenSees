@@ -62,7 +62,7 @@ class BackgroundMesh {
     void addLargeSize(int numbasic, const VDouble& range_low,
                       const VDouble& range_up);
     bool isDispOn() const { return dispon; }
-    void setAlphaS(int sid, double alpha) { alphaS[sid] = alpha; }
+    void setAlphaS(double alpha) { alphaS = alpha; }
     void setDispOn(bool on);
     void setRecordRange(double range) { recordRange = range; }
     void setNumAve(int num) { numave = num; }
@@ -168,7 +168,7 @@ class BackgroundMesh {
     VDouble contactData;
     VInt contactEles;
     bool dispon;
-    std::map<int, double> alphaS;  // alphaS for sids
+    double alphaS;  // alphaS for all structure
 
     static const int contact_tag = -13746;
 };
