@@ -255,6 +255,8 @@ public:
 		const Vector3& getNormal(std::size_t i) const;
 		// closest normal
 		std::size_t getClosestNormal(const Vector3& N) const;
+		// get at most 3 normals with maximum values
+		std::vector<int> getMax3Normals(double smooth_angle) const;
 		// serialization
 		int serializationDataSize() const;
 		void serialize(Vector& data, int& pos);

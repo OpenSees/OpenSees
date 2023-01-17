@@ -1240,6 +1240,67 @@ std::size_t ASDConcrete3DMaterial::CrackPlanes::getClosestNormal(const Vector3& 
 	return loc;
 }
 
+std::vector<int> ASDConcrete3DMaterial::CrackPlanes::getMax3Normals(double smooth_angle) const
+{
+	std::vector<int> out;
+	if (m_normals) {
+		const auto& normals = *m_normals;
+		double tol = smooth_angle;
+		// find 1
+		std::size_t p1 = 0;
+		double v1 = 0.0;
+		for (std::size_t i = 0; i < normals.size(); ++i) {
+			double vtrial = m_equivalent_strain[i];
+			if (vtrial > v1) {
+				v1 = vtrial;
+				p1 = i;
+			}
+		}
+		if (v1 > 0.0) {
+			out.push_back(p1);
+			const Vector3& N1 = normals[p1];
+
+			// find 2
+			std::size_t p2 = 0;
+			double v2 = 0.0;
+			for (std::size_t i = 0; i < normals.size(); ++i) {
+				double vtrial = m_equivalent_strain[i];
+				const Vector3& Ntrial = normals[i];
+				double A1 = std::acos(std::abs(Ntrial.dot(N1)));
+				if (A1 < tol) continue;
+				if (vtrial > v2) {
+					v2 = vtrial;
+					p2 = i;
+				}
+			}
+			if (v2 > 0.0) {
+				out.push_back(p2);
+				const Vector3& N2 = normals[p2];
+
+				// find 3
+				std::size_t p3 = 0;
+				double v3 = 0.0;
+				for (std::size_t i = 0; i < normals.size(); ++i) {
+					double vtrial = m_equivalent_strain[i];
+					const Vector3& Ntrial = normals[i];
+					double A1 = std::acos(std::abs(Ntrial.dot(N1)));
+					if (A1 < tol) continue;
+					double A2 = std::acos(std::abs(Ntrial.dot(N2)));
+					if (A2 < tol) continue;
+					if (vtrial > v3) {
+						v3 = vtrial;
+						p3 = i;
+					}
+				}
+				if (v3 > 0.0) {
+					out.push_back(v3);
+				}
+			}
+		}
+	}
+	return out;
+}
+
 int ASDConcrete3DMaterial::CrackPlanes::serializationDataSize() const
 {
 	return 6 + static_cast<int>(m_equivalent_strain.size());
@@ -1865,7 +1926,7 @@ Response* ASDConcrete3DMaterial::setResponse(const char** argv, int argc, OPS_St
 	static std::vector<std::string> lb_eqpl_strain = { "PLE+", "PLE-" };
 	static std::vector<std::string> lb_tot_strain = { "TE+", "TE-" };
 	static std::vector<std::string> lb_cw = { "cw" };
-	static std::vector<std::string> lb_crackpattern = { "Cx", "Cy", "Cz" };
+	static std::vector<std::string> lb_crackpattern = { "C1x", "C1y", "C1z",   "C2x", "C2y", "C2z",   "C3x", "C3y", "C3z" };
 	static std::vector<std::string> lb_implex_error = { "Error" };
 	static std::vector<std::string> lb_time = { "dTime", "dTimeCommit", "dTimeInitial" };
 	static Vector Cinfo(2);
@@ -2311,28 +2372,60 @@ const Vector& ASDConcrete3DMaterial::getAvgCrackWidth() const
 
 const Vector& ASDConcrete3DMaterial::getCrackPattern() const
 {
-	static Vector d(3);
+	static Vector d(9);
 	d.Zero();
 	if (ht.hasStrainSoftening()) {
 		double e0 = ht.strainAtOnsetOfCrack();
-		double crstrain = std::max(xt_max - e0, 0.0);
-		d(0) = iso_crack_normal(0) * crstrain;
-		d(1) = iso_crack_normal(1) * crstrain;
-		d(2) = iso_crack_normal(2) * crstrain;
+		if (svt.count() > 1) {
+			std::vector<int> normals = svt.getMax3Normals(smoothing_angle);
+			int pos = 0;
+			for (int nid : normals) {
+				double crstrain = std::max(svt.getEquivalentStrainAtNormal(static_cast<std::size_t>(nid)) - e0, 0.0);
+				double crdisp = crstrain * lch;
+				const Vector3& N = svt.getNormal(static_cast<std::size_t>(nid));
+				d(pos + 0) = N.x * crdisp;
+				d(pos + 1) = N.y * crdisp;
+				d(pos + 2) = N.z * crdisp;
+				pos += 3;
+			}
+		}
+		else {
+			double crstrain = std::max(xt_max - e0, 0.0);
+			double crdisp = crstrain * lch;
+			d(0) = iso_crack_normal(0) * crdisp;
+			d(1) = iso_crack_normal(1) * crdisp;
+			d(2) = iso_crack_normal(2) * crdisp;
+		}
 	}
 	return d;
 }
 
 const Vector& ASDConcrete3DMaterial::getCrushPattern() const
 {
-	static Vector d(3);
+	static Vector d(9);
 	d.Zero();
 	if (hc.hasStrainSoftening()) {
 		double e0 = hc.strainAtOnsetOfCrack();
-		double crstrain = std::max(xc_max - e0, 0.0);
-		d(0) = iso_crush_normal(0) * crstrain;
-		d(1) = iso_crush_normal(1) * crstrain;
-		d(2) = iso_crush_normal(2) * crstrain;
+		if (svc.count() > 1) {
+			std::vector<int> normals = svc.getMax3Normals(smoothing_angle);
+			int pos = 0;
+			for (int nid : normals) {
+				double crstrain = std::max(svc.getEquivalentStrainAtNormal(static_cast<std::size_t>(nid)) - e0, 0.0);
+				double crdisp = crstrain * lch;
+				const Vector3& N = svc.getNormal(static_cast<std::size_t>(nid));
+				d(pos + 0) = N.x * crdisp;
+				d(pos + 1) = N.y * crdisp;
+				d(pos + 2) = N.z * crdisp;
+				pos += 3;
+			}
+		}
+		else {
+			double crstrain = std::max(xc_max - e0, 0.0);
+			double crdisp = crstrain * lch;
+			d(0) = iso_crush_normal(0) * crdisp;
+			d(1) = iso_crush_normal(1) * crdisp;
+			d(2) = iso_crush_normal(2) * crdisp;
+		}
 	}
 	return d;
 }
