@@ -68,6 +68,8 @@ void *OPS_FourNodeTetrahedron(const ID &info);
 
 void *OPS_ShellMITC4(const ID &info);
 
+void *OPS_FourNodeQuad(const ID& info);
+
 void *OPS_ShellNLDKGQ(const ID &info);
 
 void *OPS_ShellDKGQ(const ID &info);
@@ -378,6 +380,13 @@ Mesh::setEleArgs() {
             return -1;
         }
         numelenodes = 4;
+    } else if (strcmp(type, "quad") == 0 || strcmp(type, "stdQuad") == 0) {
+        eleType = ELE_TAG_FourNodeQuad;
+        if (OPS_FourNodeQuad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
 
     } else if (strcmp(type, "ShellNLDKGQ") == 0) {
         eleType = ELE_TAG_ShellNLDKGQ;
@@ -507,6 +516,9 @@ Mesh::newElements(const ID &elends) {
             break;
         case ELE_TAG_ShellMITC4:
             OPS_Func = OPS_ShellMITC4;
+            break;
+        case ELE_TAG_FourNodeQuad:
+            OPS_Func = OPS_FourNodeQuad;
             break;
         case ELE_TAG_ShellNLDKGQ:
 	  OPS_Func = OPS_ShellNLDKGQ;
