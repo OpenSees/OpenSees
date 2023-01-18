@@ -677,7 +677,7 @@ DataFileStreamAdd::sendSelf(int commitTag, Channel &theChannel)
   static ID idData(3);
   int fileNameLength = 0;
   if (fileName != 0)
-    fileNameLength = strlen(fileName);
+    fileNameLength = int(strlen(fileName));
 
   idData(0) = fileNameLength;
 
@@ -890,5 +890,12 @@ DataFileStreamAdd::setOrder(const ID &orderData)
     }
   }
 
+  return 0;
+}
+
+int DataFileStreamAdd::flush() {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
   return 0;
 }

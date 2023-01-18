@@ -56,13 +56,14 @@ class DamageRecorder: public Recorder
 {
   public:
     DamageRecorder( int elemid, ID &secIDs, int dofid, DamageModel *dmgPtr, Domain &theDomainPtr,
-		    bool echotimeflag, double deltat , OPS_Stream &theOutputStream);
+		    bool echotimeflag, double deltat, double relDeltaTTol, OPS_Stream &theOutputStream);
 
     ~DamageRecorder();
     int record(int commitTag, double timeStamp);
     int playback(int commitTag);
 
     int restart(void);    
+    int flush();
     
   protected:
     
@@ -79,6 +80,7 @@ class DamageRecorder: public Recorder
     bool echoTimeFlag;             // flag indicating if pseudo time also printed
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     OPS_Stream *theOutput;

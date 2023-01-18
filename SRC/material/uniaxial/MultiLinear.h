@@ -37,44 +37,50 @@
 class MultiLinear : public UniaxialMaterial
 {
   public:
-  MultiLinear(int tag, const Vector &s, const Vector &e);    
-  MultiLinear();    
-  virtual ~MultiLinear();
-  
-  const char *getClassType(void) const {return "MultiLinear";};
-  
-  int setTrialStrain(double strain, double strainRate = 0.0); 
-  double getStrain(void);          
-  double getStress(void);
-  double getTangent(void);
-  
-  double getInitialTangent(void) {return data(0,4);};
-  
-  int commitState(void);
-  int revertToLastCommit(void);    
-  int revertToStart(void);    
-  
-  UniaxialMaterial *getCopy(void);
-  
-  int sendSelf(int commitTag, Channel &theChannel);  
-  int recvSelf(int commitTag, Channel &theChannel, 
-	       FEM_ObjectBroker &theBroker);    
-  
-  void Print(OPS_Stream &s, int flag =0);
+    MultiLinear(int tag, const Vector &s, const Vector &e);
+    MultiLinear();
+    virtual ~MultiLinear();
+
+    const char *getClassType(void) const {return "MultiLinear";};
+
+    int setTrialStrain(double strain, double strainRate = 0.0);
+    double getStrain(void);
+    double getStress(void);
+    double getTangent(void);
+
+    double getInitialTangent(void) {return data(0,4);};
+
+    int commitState(void);
+    int revertToLastCommit(void);
+    int revertToStart(void);
+
+    UniaxialMaterial *getCopy(void);
+
+    int sendSelf(int commitTag, Channel &theChannel);
+    int recvSelf(int commitTag, Channel &theChannel,
+           FEM_ObjectBroker &theBroker);
+
+    void Print(OPS_Stream &s, int flag =0);
+
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
   
  protected:
   
  private:
-  Matrix data;
-  int numSlope;
-  int tSlope;
+  Vector e0; // Initial backbone strains
+  Vector s0; // Initial backbone stresses
+  
+    Matrix data;
+    int numSlope;
+    int tSlope;
 
-  double tStrain;     // current t strain
-  double tStress;     // current t stress
-  double tTangent;    // current t tangent
-  double cStrain;     // last ced strain
-  double cStress;     // last ced stress
-  double cTangent;    // last cted  tangent
+    double tStrain;     // current t strain
+    double tStress;     // current t stress
+    double tTangent;    // current t tangent
+    double cStrain;     // last ced strain
+    double cStress;     // last ced stress
+    double cTangent;    // last cted  tangent
 };
 
 #endif

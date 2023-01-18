@@ -80,6 +80,8 @@
 #include <FE_Datastore.h>
 #include <FEM_ObjectBroker.h>
 
+#include <DomainModalProperties.h>
+
 //
 // global variables
 //
@@ -96,8 +98,9 @@ Domain::Domain()
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
- theRegions(0), numRegions(0), commitTag(0),
+ theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0),
  paramIndex(0), paramSize(0), numParameters(0)
@@ -151,8 +154,9 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
- theRegions(0), numRegions(0), commitTag(0),
+ theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0), paramIndex(0), paramSize(0), numParameters(0)
 {
@@ -211,8 +215,9 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
  theSPs(&theSPsStorage),
  theMPs(&theMPsStorage), 
  theLoadPatterns(&theLoadPatternsStorage),
- theRegions(0), numRegions(0), commitTag(0),
+ theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
@@ -269,8 +274,9 @@ Domain::Domain(TaggedObjectStorage &theStorage)
  dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
- theRegions(0), numRegions(0), commitTag(0),
+ theRegions(0), numRegions(0), commitTag(0),initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
+ theModalProperties(0),
  theModalDampingFactors(0), inclModalMatrix(false),
  lastChannel(0),paramIndex(0), paramSize(0), numParameters(0)
 {
@@ -377,6 +383,9 @@ Domain::~Domain()
   if (theEigenvalues != 0)
     delete theEigenvalues;
 
+  if (theModalProperties != 0)
+    delete theModalProperties;
+
   if (theLoadPatternIter != 0)
       delete theLoadPatternIter;
 
@@ -433,7 +442,7 @@ Domain::addElement(Element *element)
   // check if an Element with a similar tag already exists in the Domain
   TaggedObject *other = theElements->getComponentPtr(eleTag);
   if (other != 0) {
-    opserr << "Domain::addElement - element with tag " << eleTag << "already exists in model\n"; 
+    opserr << "Domain::addElement - element with tag " << eleTag << " already exists in model\n"; 
     return false;
   }
 
@@ -471,7 +480,7 @@ Domain::addNode(Node * node)
 
   TaggedObject *other = theNodes->getComponentPtr(nodTag);
   if (other != 0) {
-    opserr << "Domain::addNode - node with tag " << nodTag << "already exists in model\n"; 
+    opserr << "Domain::addNode - node with tag " << nodTag << " already exists in model\n"; 
     return false;
   }
   
@@ -479,27 +488,48 @@ Domain::addNode(Node * node)
   if (result == true) {
       node->setDomain(this);
       this->domainChange();
-      
-      // see if the physical bounds are changed
-      // note this assumes 0,0,0,0,0,0 as startup min,max values
-      const Vector &crds = node->getCrds();
-      int dim = crds.Size();
-      if (dim >= 1) {
-	  double x = crds(0);
-	  if (x < theBounds(0)) theBounds(0) = x;
-	  if (x > theBounds(3)) theBounds(3) = x;
-      } 
-      if (dim >= 2) {
-	  double y = crds(1);
-	  if (y < theBounds(1)) theBounds(1) = y;
-	  if (y > theBounds(4)) theBounds(4) = y;	  
-      } 
-      if (dim == 3) {
-	  double z = crds(2);
-	  if (z < theBounds(2)) theBounds(2) = z;
-	  if (z > theBounds(5)) theBounds(5) = z;	  
+
+      if (!resetBounds) {
+          // see if the physical bounds are changed
+          // note this assumes 0,0,0,0,0,0 as startup min,max values
+          const Vector& crds = node->getCrds();
+          int dim = crds.Size();
+          if (initBounds) {
+              if (dim >= 1) {
+                  double x = crds(0);
+                  theBounds(0) = x;
+                  theBounds(3) = x;
+              }
+              if (dim >= 2) {
+                  double y = crds(1);
+                  theBounds(1) = y;
+                  theBounds(4) = y;
+              }
+              if (dim == 3) {
+                  double z = crds(2);
+                  theBounds(2) = z;
+                  theBounds(5) = z;
+              }
+              initBounds = false;
+          }
+          else {
+              if (dim >= 1) {
+                  double x = crds(0);
+                  if (x < theBounds(0)) theBounds(0) = x;
+                  if (x > theBounds(3)) theBounds(3) = x;
+              }
+              if (dim >= 2) {
+                  double y = crds(1);
+                  if (y < theBounds(1)) theBounds(1) = y;
+                  if (y > theBounds(4)) theBounds(4) = y;
+              }
+              if (dim == 3) {
+                  double z = crds(2);
+                  if (z < theBounds(2)) theBounds(2) = z;
+                  if (z > theBounds(5)) theBounds(5) = z;
+              }
+          }
       }
-      
   } else
     opserr << "Domain::addNode - node with tag " << nodTag << "could not be added to container\n";
 
@@ -558,7 +588,7 @@ Domain::addSP_Constraint(SP_Constraint *spConstraint)
   TaggedObject *other = theSPs->getComponentPtr(tag);
   if (other != 0) {
     opserr << "Domain::addSP_Constraint - cannot add as constraint with tag " << 
-      tag << "already exists in model\n";             
+      tag << " already exists in model\n";             
     spConstraint->Print(opserr);
 
     return false;
@@ -600,7 +630,7 @@ Domain::addPressure_Constraint(Pressure_Constraint *pConstraint)
     TaggedObject *other = thePCs->getComponentPtr(tag);
     if (other != 0) {
         opserr << "Domain::addPressure_Constraint - cannot add as constraint with tag";
-        opserr << tag << "already exists in model\n";             
+        opserr << tag << " already exists in model\n";             
         return false;
     }
   
@@ -715,7 +745,7 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
   TaggedObject *other = theMPs->getComponentPtr(tag);
   if (other != 0) {
     opserr << "Domain::addMP_Constraint - cannot add as constraint with tag" <<
-      tag << "already exists in model";             
+      tag << " already exists in model";             
 			      
     return false;
   }
@@ -739,21 +769,28 @@ Domain::addLoadPattern(LoadPattern *load)
     TaggedObject *other = theLoadPatterns->getComponentPtr(tag);
     if (other != 0) {
       opserr << "Domain::addLoadPattern - cannot add as LoadPattern with tag" <<
-	tag << "already exists in model\n";             
+	tag << " already exists in model\n";             
 				
       return false;
     }    
 
-    // now we add the load pattern to the container for load pattrens
+    int numSPs = 0;
+    SP_Constraint *theSP_Constraint;
+    SP_ConstraintIter &theSP_Constraints = load->getSPs();
+    while ((theSP_Constraint = theSP_Constraints()) != 0)
+      numSPs++;
+    
+    // now we add the load pattern to the container for load patterns
     bool result = theLoadPatterns->addComponent(load);
     if (result == true) {
 	load->setDomain(this);
-	this->domainChange();
+	if (numSPs > 0)
+	  this->domainChange();
     }
     else 
       opserr << "Domain::addLoadPattern - cannot add LoadPattern with tag" <<
 	tag << "to the container\n";                   	
-			      
+
     return result;
 }    
 
@@ -762,16 +799,18 @@ Domain::addParameter(Parameter *theParam)
 {
   int paramTag = theParam->getTag();
 
-  if (paramTag == 0) {
-    // don't add it .. just invoke setDomain on the parameter
-    theParam->setDomain(this);
-    return true;
-  }
+  // Commenting out bc setDomain is done below for all parameters -- MHS
+  // We need to be able to have tag=0 for parameters just like nodes, elements, etc.
+  //if (paramTag == 0) {
+  //  // don't add it .. just invoke setDomain on the parameter
+  //  theParam->setDomain(this);
+  //  return true;
+  //}
 
   // check if a Parameter with a similar tag already exists in the Domain
   TaggedObject *other = theParameters->getComponentPtr(paramTag);
   if (other != 0) {
-    opserr << "Domain::addParameter - parameter with tag " << paramTag << "already exists in model\n"; 
+    opserr << "Domain::addParameter - parameter with tag " << paramTag << " already exists in model\n"; 
     return false;
   }
 
@@ -869,30 +908,30 @@ Domain::addNodalLoad(NodalLoad *load, int pattern)
     int nodTag = load->getNodeTag();
     Node *res = this->getNode(nodTag);
     if (res == 0) {
-      opserr << "Domain::addNodalLoad() HI - no node with tag " << nodTag << 
-	"exits in  the model, not adding the nodal load"  << *load << endln;
+      opserr << "Domain::addNodalLoad() - no node with tag " << nodTag << 
+	" exists in the model, not adding the nodal load "  << *load << endln;
 	return false;
     }
 
     // now add it to the pattern
     TaggedObject *thePattern = theLoadPatterns->getComponentPtr(pattern);
     if (thePattern == 0) {
-      opserr << "Domain::addNodalLoad() - no pattern with tag" << 
-	pattern << "in  the model, not adding the nodal load"  << *load << endln;
+      opserr << "Domain::addNodalLoad() - no pattern with tag " << 
+	pattern << " in the model, not adding the nodal load "  << *load << endln;
       
 	return false;
     }
     LoadPattern *theLoadPattern = (LoadPattern *)thePattern;
     bool result = theLoadPattern->addNodalLoad(load);
     if (result == false) {
-      opserr << "Domain::addNodalLoad() - pattern with tag" << 
-	pattern << "could not add the load" << *load << endln;
+      opserr << "Domain::addNodalLoad() - pattern with tag " << 
+	pattern << " could not add the load " << *load << endln;
 				
       return false;
     }
 
     load->setDomain(this);    // done in LoadPattern::addNodalLoad()
-    this->domainChange();
+    //this->domainChange(); // a nodal load does not change the domain
 
     return result;
 }    
@@ -978,12 +1017,13 @@ Domain::clearAll(void) {
   this->setModalDampingFactors(0);
 
   // set the bounds around the origin
+  initBounds = true;
   theBounds(0) = 0;
   theBounds(1) = 0;
   theBounds(2) = 0;
   theBounds(3) = 0;
-  theBounds(4) = 0;    
-  theBounds(5) = 0;        
+  theBounds(4) = 0;
+  theBounds(5) = 0;
   
   currentGeoTag = 0;
   lastGeoSendTag = -1;
@@ -1048,11 +1088,16 @@ Domain::removeNode(int tag)
 
   // mark the domain has having changed 
   this->domainChange();
+
+  // adjust node bounds 
+  resetBounds = true;
   
   // perform a downward cast to a Node (safe as only Node added to
   // this container and return the result of the cast
   Node *result = (Node *)mc;
   // result->setDomain(0);
+  
+
   return result;
 }
 
@@ -1536,6 +1581,12 @@ Domain::getCurrentTime(void) const
     return currentTime;
 }
 
+double
+Domain::getDT(void) const
+{
+    return dT;
+}
+
 int
 Domain::getCommitTag(void) const
 {
@@ -1587,6 +1638,63 @@ Domain::getNumParameters(void) const
 const Vector &
 Domain::getPhysicalBounds(void)
 {
+    // reset bounds if nodes were deleted
+    if (resetBounds) {
+        initBounds = true;
+        theBounds(0) = 0;
+        theBounds(1) = 0;
+        theBounds(2) = 0;
+        theBounds(3) = 0;
+        theBounds(4) = 0;
+        theBounds(5) = 0;
+        if (theNodes->getNumComponents() != 0) {
+            initBounds = false;
+            Node* nodePtr;
+            NodeIter& theNodeIter = this->getNodes();
+            // initialize with first node
+            nodePtr = theNodeIter();
+            const Vector& crds = nodePtr->getCrds();
+            int dim = crds.Size();
+            double x, y, z;
+            if (dim >= 1) {
+                x = crds(0);
+                theBounds(0) = x;
+                theBounds(3) = x;
+            }
+            if (dim >= 2) {
+                y = crds(1);
+                theBounds(1) = y;
+                theBounds(4) = y;
+            }
+            if (dim == 3) {
+                z = crds(2);
+                theBounds(2) = z;
+                theBounds(5) = z;
+            }
+            // adjust for other nodes
+            while ((nodePtr = theNodeIter()) != 0) {
+                const Vector& crds = nodePtr->getCrds();
+                dim = crds.Size();
+                if (dim >= 1) {
+                    x = crds(0);
+                    if (x < theBounds(0)) theBounds(0) = x;
+                    if (x > theBounds(3)) theBounds(3) = x;
+                }
+                if (dim >= 2) {
+                    y = crds(1);
+                    if (y < theBounds(1)) theBounds(1) = y;
+                    if (y > theBounds(4)) theBounds(4) = y;
+                }
+                if (dim == 3) {
+                    z = crds(2);
+                    if (z < theBounds(2)) theBounds(2) = z;
+                    if (z > theBounds(5)) theBounds(5) = z;
+                }
+            }
+        }
+        resetBounds = false;
+    }
+    
     return theBounds;
 }
 
@@ -2114,6 +2222,36 @@ Domain::getTimeEigenvaluesSet(void)
   return theEigenvalueSetTime;
 }
 
+void Domain::setModalProperties(const DomainModalProperties& dmp)
+{
+    if (theModalProperties) {
+        *theModalProperties = dmp;
+    }
+    else {
+        theModalProperties = new DomainModalProperties(dmp);
+    }
+}
+
+void Domain::unsetModalProperties(void)
+{
+    if (theModalProperties) {
+        delete theModalProperties;
+        theModalProperties = nullptr;
+    }
+}
+
+int Domain::getModalProperties(DomainModalProperties &dmp) const
+{
+    if (theModalProperties == 0) {
+      opserr << "Domain::getModalProperties - DomainModalProperties were never set" << endln;
+      return -1;
+    }
+    else {
+      dmp = *theModalProperties;
+      return 0;
+    }
+}
+
 int
 Domain::setModalDampingFactors(Vector *theValues, bool inclMatrix)
 {
@@ -2246,12 +2384,11 @@ Domain::Print(OPS_Stream &s, int flag)
 
 	return;
   }
-      
   
   s << "Current Domain Information\n";
-  s << "\tCurrent Time: " << currentTime;
-  s << "\ntCommitted Time: " << committedTime << endln;    
-  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";  
+  s << "\tCurrent Time: " << currentTime << endln;
+  s << "\tCommitted Time: " << committedTime << endln;
+  s << "NODE DATA: NumNodes: " << theNodes->getNumComponents() << "\n";
   theNodes->Print(s, flag);
   
   s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
@@ -2351,6 +2488,15 @@ Domain::removeRecorders(void)
   
     theRecorders = 0;
     numRecorders = 0;
+    return 0;
+}
+
+int Domain::flushRecorders() {
+    for (int i = 0; i < numRecorders; i++) {
+      if (theRecorders[i] != 0) {
+      theRecorders[i]->flush();
+      }
+    }
     return 0;
 }
 
@@ -2930,9 +3076,9 @@ Domain::sendSelf(int cTag, Channel &theChannel)
 	loc+=2;
       }    
 
-      if (theChannel.sendID(dbLPs, currentGeoTag, paramData) < 0) {
-	opserr << "Domain::send - channel failed to send the LoadPattern ID\n";
-	return -6;
+      if (theChannel.sendID(dbParam, currentGeoTag, paramData) < 0) {
+	opserr << "Domain::send - channel failed to send the Parameter ID\n";
+	return -7;
       }    
   }
     // now so that we don't do this next time if nothing in the domain has changed
@@ -3305,7 +3451,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
       ID lpData(2*numLPs);
       
       if (theChannel.recvID(dbLPs, geoTag, lpData) < 0) {
-	opserr << "Domain::recv - channel failed to recv the MP_Constraints ID\n";
+	opserr << "Domain::recv - channel failed to recv the LoadPatterns ID\n";
 	return -2;
       }
 
@@ -3316,7 +3462,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 
 	LoadPattern *theLP = theBroker.getNewLoadPattern(classTag);
 	if (theLP == 0) {
-	  opserr << "Domain::recv - cannot create MP_Constraint with classTag  " << classTag << endln;
+	  opserr << "Domain::recv - cannot create LoadPattern with classTag  " << classTag << endln;
 	  return -2;
 	}			
 	theLP->setDbTag(dbTag);
@@ -3343,7 +3489,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
       ID paramData(2*numParameters);
       
       if (theChannel.recvID(dbParameters, geoTag, paramData) < 0) {
-	opserr << "Domain::recv - channel failed to recv the MP_Constraints ID\n";
+	opserr << "Domain::recv - channel failed to recv the Parameters ID\n";
 	return -2;
       }
 
@@ -3354,7 +3500,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 
 	Parameter *theParameter = theBroker.getParameter(classTag);
 	if (theParameter == 0) {
-	  opserr << "Domain::recv - cannot create MP_Constraint with classTag  " << classTag << endln;
+	  opserr << "Domain::recv - cannot create Parameter with classTag  " << classTag << endln;
 	  return -2;
 	}			
 	theParameter->setDbTag(dbTag);
@@ -3365,7 +3511,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	}			
 
 	if (this->addParameter(theParameter) == false) {
-	  opserr << "Domain::recv - could not add LoadPattern with tag " << theParameter->getTag() <<  " into the Domain\n";
+	  opserr << "Domain::recv - could not add Parameter with tag " << theParameter->getTag() <<  " into the Domain\n";
 	  return -3;
 	}			
 
@@ -3539,7 +3685,7 @@ int Domain::activateElements(const ID& elementList)
     for (int i = 0; i < elementList.Size(); ++i)
     {
         int eleTag = elementList(i);
-        Element* theElement = this->getElement(eleTag);
+        theElement = this->getElement(eleTag);
         if (theElement != 0)
         {
             theElement->activate();
@@ -3557,7 +3703,7 @@ int Domain::deactivateElements(const ID& elementList)
     for (int i = 0; i < elementList.Size(); ++i)
     {
         int eleTag = elementList(i);
-        Element* theElement = this->getElement(eleTag);
+        theElement = this->getElement(eleTag);
         if (theElement != 0)
         {
             theElement->deactivate();

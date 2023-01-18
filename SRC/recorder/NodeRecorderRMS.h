@@ -44,12 +44,14 @@ class NodeRecorderRMS: public Recorder
 			 Domain &theDomain,
 			 OPS_Stream &theOutputHandler,
 			 double deltaT = 0.0,
+			 double relDeltaTTol = 0.00001,
 			 TimeSeries **theTimeSeries =0); 
     
     ~NodeRecorderRMS();
 
     int record(int commitTag, double timeStamp);
     int restart(void);    
+    int flush(void);    
 
     int setDomain(Domain &theDomain);
     int sendSelf(int commitTag, Channel &theChannel);  
@@ -77,6 +79,7 @@ class NodeRecorderRMS: public Recorder
     int dataFlag; // flag indicating what it is to be stored in recorder
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 
     bool initializationDone;

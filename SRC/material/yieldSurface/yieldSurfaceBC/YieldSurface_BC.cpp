@@ -203,7 +203,7 @@ void YieldSurface_BC::setTransformation(int xDof, int xFact)
     if(T || S)
     {
         opserr << "WARNING - YieldSurface_BC::setTransformation(int xDof)\n";
-        opserr << "Transforation already set\n";
+        opserr << "Transformation already set\n";
         return;
     }
     T = new ID(1);
@@ -219,7 +219,7 @@ void YieldSurface_BC::setTransformation(int xDof, int yDof, int xFact, int yFact
     if(T || S)
     {
         opserr << "WARNING - YieldSurface_BC::setTransformation(int xDof, int yDof)\n";
-        opserr << "Transforation already set\n";
+        opserr << "Transformation already set\n";
         return;
     }
 
@@ -240,7 +240,7 @@ void YieldSurface_BC::setTransformation(int xDof, int yDof, int zDof,
     if(T || S)
     {
         opserr << "WARNING - YieldSurface_BC::setTransformation(int xDof, int yDof, int zDof)\n";
-        opserr << "Transforation already set\n";
+        opserr << "Transformation already set\n";
         return;
     }
 

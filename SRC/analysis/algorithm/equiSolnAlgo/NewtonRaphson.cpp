@@ -149,7 +149,7 @@ NewtonRaphson::solveCurrentStep(void)
     // set itself as the ConvergenceTest objects EquiSolnAlgo
     theTest->setEquiSolnAlgo(*this);
     if (theTest->start() < 0) {
-      opserr << "NewtnRaphson::solveCurrentStep() -";
+      opserr << "NewtonRaphson::solveCurrentStep() -";
       opserr << "the ConvergenceTest object failed in start()\n";
       return -3;
     }
@@ -208,11 +208,11 @@ NewtonRaphson::solveCurrentStep(void)
     } while (result == -1);
 
     if (result == -2) {
-      opserr << "NewtnRaphson::solveCurrentStep() -";
+      opserr << "NewtonRaphson::solveCurrentStep() -";
       opserr << "the ConvergenceTest object failed in test()\n";
       return -3;
     }
-// note - if postive result we are returning what the convergence test returned
+// note - if positive result we are returning what the convergence test returned
     // which should be the number of iterations
     
         return result;

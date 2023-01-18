@@ -103,7 +103,7 @@ ulcommit(7), ul(7),  ulpr(7),
 nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 {
     // check vector that defines local xz plane
-    if (&vecInLocXZPlane == 0 || vecInLocXZPlane.Size() != 3 )
+    if (vecInLocXZPlane.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Vector that defines local xz plane is invalid\n";
         opserr << "Size must be 3\n. Using (0,0,1)";      
@@ -113,7 +113,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         vAxis = vecInLocXZPlane;
     
     // check rigid joint offset for node I
-    if (&rigJntOffsetI == 0 || rigJntOffsetI.Size() != 3 )
+    if (rigJntOffsetI.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Invalid rigid joint offset vector for node I\n";
         opserr << "Size must be 3\n";      
@@ -123,7 +123,7 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
         nodeIOffset = rigJntOffsetI;
     
     // check rigid joint offset for node J
-    if (&rigJntOffsetJ == 0 || rigJntOffsetJ.Size() != 3 )
+    if (rigJntOffsetJ.Size() != 3 )
     {
         opserr << "CorotCrdTransf3d::CorotCrdTransf3d:  Invalid rigid joint offset vector for node J\n";
         opserr << "Size must be 3\n";      
@@ -691,7 +691,7 @@ CorotCrdTransf3d::compTransfMatrixBasicGlobal(void)
             T(5,i+9) =  Se(i);
         }
         
-        // setup tranformation matrix
+        // setup transformation matrix
         static Vector Lr(12);
         
         // T(:,1) += Lr3*rI2 - Lr2*rI3;
@@ -1491,8 +1491,9 @@ CorotCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     
     if (L == 0.0) 
     {
-        opserr << "\nCorotCrdTransf3d::computeElemtLengthAndOrien: 0 length\n";
-        return -2;  
+      opserr << "\nCorotCrdTransf3d::getLocalAxes transfTag = " << this->getTag();
+      opserr << "\nelement has zero length" << endln;
+      return -2;  
     }
     
     // calculate the element local x axis components (direction cossines)
@@ -1512,9 +1513,9 @@ CorotCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     
     if (ynorm == 0)
     {
-        opserr << "\nCorotCrdTransf3d::getElementLengthAndOrientation";
-        opserr << "\nvector v that defines plane xz is parallel to x axis\n";
-        return -3;
+      opserr << "\nCorotCrdTransf3d::getLocalAxes transfTag = " << this->getTag();
+      opserr << "\nvector v that defines plane xz is parallel to x axis" << endln;
+      return -3;
     }
     
     yAxis /= ynorm;
@@ -1536,6 +1537,18 @@ CorotCrdTransf3d::getLocalAxes(Vector &XAxis, Vector &YAxis, Vector &ZAxis)
     return 0;
 }
 
+int
+CorotCrdTransf3d::getRigidOffsets(Vector &offsets)
+{
+  offsets(0) = nodeIOffset(0);
+  offsets(1) = nodeIOffset(1);
+  offsets(2) = nodeIOffset(2);
+  offsets(3) = nodeJOffset(0);
+  offsets(4) = nodeJOffset(1);
+  offsets(5) = nodeJOffset(2);
+
+  return 0;
+}
 
 double 
 CorotCrdTransf3d::getInitialLength(void)
@@ -2155,6 +2168,17 @@ CorotCrdTransf3d::getPointGlobalDisplFromBasic(double xi, const Vector &uxb)
 {
     static Vector uxg(3);
     opserr << " CorotCrdTransf3d::getPointGlobalDisplFromBasic: not implemented yet" ;
+    
+    
+    return uxg;  
+}
+
+
+const Vector &
+CorotCrdTransf3d::getPointLocalDisplFromBasic(double xi, const Vector &uxb)
+{
+    static Vector uxg(3);
+    opserr << " CorotCrdTransf3d::getPointLocalDisplFromBasic: not implemented yet" ;
     
     
     return uxg;  

@@ -67,26 +67,7 @@ class Vector
     int addVector(double factThis, const Vector &other, double factOther);
     int addMatrixVector(double factThis, const Matrix &m, const Vector &v, double factOther); 
     int addMatrixTransposeVector(double factThis, const Matrix &m, const Vector &v, double factOther);
-#if _DLL
-	inline double* GetData() { return this->theData; }
-	void Print() {
-		opserr << "[";
-		for (int i = 0; i < this->sz; i++)
-		{
-			opserr << this->operator()(i) << ", ";
-		}
-		opserr << "]" << endln;
-	}
 
-	void Print() const {
-		opserr << "[";
-		for (int i = 0; i < this->sz; i++)
-		{
-			opserr << this->operator()(i) << ", ";
-		}
-		opserr << "]" << endln;
-	}
-#endif
     // overloaded operators
     inline double operator()(int x) const;
     inline double &operator()(int x);
@@ -175,7 +156,7 @@ Vector::operator()(int x) const
   }
 #endif
 
-      return theData[x];
+  return theData[x];
 }
 
 
@@ -183,7 +164,7 @@ inline double &
 Vector::operator()(int x)
 {
 #ifdef _G3DEBUG
-    // check if it is inside range [0,sz-1]
+  // check if it is inside range [0,sz-1]
   if (x < 0 || x >= sz) {
       opserr << "Vector::(loc) - loc " << x << " outside range [0, " << sz-1 << endln;
       return VECTOR_NOT_VALID_ENTRY;

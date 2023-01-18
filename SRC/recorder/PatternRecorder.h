@@ -49,12 +49,14 @@ class PatternRecorder: public Recorder
 		 Domain &theDomain,
 		 const char *fileName,
 		 double deltaT = 0.0,
+		 double relDeltaTTol = 0.00001,
 		 int startFlag = 0); 
 
     ~PatternRecorder();
     int record(int commitTag, double timeStamp);
     int playback(int commitTag);
     int restart(void);    
+    int flush(void);    
     
   protected:
     
@@ -68,6 +70,7 @@ class PatternRecorder: public Recorder
     ofstream theFile;     
 
     double deltaT;
+    double relDeltaTTol;
     double nextTimeStampToRecord;
 };
 

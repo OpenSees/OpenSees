@@ -79,22 +79,7 @@ class Matrix
     int addMatrixTransposeProduct(double factThis, const Matrix &A, const Matrix &B, double factOther); // A'B
     int addMatrixTripleProduct(double factThis, const Matrix &A, const Matrix &B, double factOther); // A'BA
     int addMatrixTripleProduct(double factThis, const Matrix &A, const Matrix &B, const Matrix &C, double otherFact); //A'BC
-#if _DLL
-	inline double* GetData() { return this->data; }
-	void Print() {
-		opserr << "[ ";
-		for (int i = 0; i < this->numRows; i++)
-		{
-			for (int j = 0; j < this->numCols - 1; j++)
-			{
-				opserr << this->operator()(i, j) << ", ";
-			}
-			opserr << this->operator()(i, this->numCols - 1) << " ";
-			opserr << ";" << endln;
-		}
-		opserr << "] " << endln;
-	}
-#endif
+
     // overloaded operators 
     inline double &operator()(int row, int col);
     inline double operator()(int row, int col) const;
@@ -117,7 +102,7 @@ class Matrix
 
     // matrix operations which generate a new Matrix. They are not the
     // most efficient to use, as constructors must be called twice. They
-    // however are usefull for matlab like expressions involving Matrices.
+    // however are useful for matlab like expressions involving Matrices.
 
     // matrix-scalar operations
     Matrix operator+(double fact) const;

@@ -42,12 +42,12 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 
-void* OPS_Backbone()
+void* OPS_BackboneMaterial()
 {
-    int argc = OPS_GetNumRemainingInputArgs() + 2;
-    if (argc < 4) {
+    int argc = OPS_GetNumRemainingInputArgs();
+    if (argc < 2) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: uniaxialMaterial Backbone tag? bbTag?\n";
+	opserr << "Want: uniaxialMaterial Backbone tag? bbTag? <multiplier?>\n";
 	return 0;
     }
       
@@ -59,7 +59,17 @@ void* OPS_Backbone()
 	opserr << "Backbone material: " << idata[0] << "\n";
 	return 0;
     }
-		
+
+    double multiplier = 1.0;
+    if (argc > 2) {
+      numdata = 1;
+      if (OPS_GetDoubleInput(&numdata, &multiplier) < 0) {
+	opserr << "WARNING invalid multiplier\n";
+	opserr << "Backbone material: " << idata[0] << "\n";
+	return 0;      
+      }
+    }
+    
     HystereticBackbone *backbone = OPS_getHystereticBackbone(idata[1]);
 		
     if (backbone == 0) {
@@ -69,11 +79,11 @@ void* OPS_Backbone()
 	return 0;
     }
       
-    return new BackboneMaterial(idata[0], *backbone);
+    return new BackboneMaterial(idata[0], *backbone, multiplier);
 }
 
-BackboneMaterial::BackboneMaterial(int tag, HystereticBackbone &backbone)
-  :UniaxialMaterial(tag,MAT_TAG_Backbone), theBackbone(0), strain(0.0)
+BackboneMaterial::BackboneMaterial(int tag, HystereticBackbone &backbone, double mult)
+  :UniaxialMaterial(tag,MAT_TAG_Backbone), theBackbone(0), strain(0.0), multiplier(mult)
 {
   theBackbone = backbone.getCopy();
 
@@ -84,7 +94,7 @@ BackboneMaterial::BackboneMaterial(int tag, HystereticBackbone &backbone)
 }
 
 BackboneMaterial::BackboneMaterial()
-  :UniaxialMaterial(0,MAT_TAG_Backbone), theBackbone(0), strain(0.0)
+  :UniaxialMaterial(0,MAT_TAG_Backbone), theBackbone(0), strain(0.0), multiplier(1.0)
 {
 
 }
@@ -106,14 +116,14 @@ BackboneMaterial::setTrialStrain(double eps, double epsdot)
 double 
 BackboneMaterial::getStress(void)
 {
-  return theBackbone->getStress(strain);
+  return multiplier*theBackbone->getStress(strain);
 }
 
 
 double 
 BackboneMaterial::getTangent(void)
 {
-  return theBackbone->getTangent(strain);
+  return multiplier*theBackbone->getTangent(strain);
 }
 
 double 
@@ -125,7 +135,7 @@ BackboneMaterial::getDampTangent(void)
 double 
 BackboneMaterial::getInitialTangent(void)
 {
-  return theBackbone->getTangent(0.0);
+  return multiplier*theBackbone->getTangent(0.0);
 }
 
 double 
@@ -162,7 +172,7 @@ UniaxialMaterial *
 BackboneMaterial::getCopy(void)
 {
   BackboneMaterial *theCopy = 
-    new BackboneMaterial(this->getTag(), *theBackbone);
+    new BackboneMaterial(this->getTag(), *theBackbone, multiplier);
   
   theCopy->strain = strain;
 
@@ -173,98 +183,95 @@ BackboneMaterial::getCopy(void)
 int 
 BackboneMaterial::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int dbTag = this->getDbTag();
 
-  /*
-  int res = 0;
+  static ID data(3);
+  data(0) = this->getTag();
+  data(1) = theBackbone->getClassTag();
+  int bbDbTag = theBackbone->getDbTag();
+  if (bbDbTag == 0) {
+    bbDbTag = theChannel.getDbTag();
+    if (bbDbTag != 0)
+      theBackbone->setDbTag(bbDbTag);
+  }
+  data(2) = bbDbTag;
+  if (theChannel.sendID(dbTag, cTag, data) < 0) {
+    opserr << "BackboneMaterial::sendSelf -- could not send ID" << endln;
+    return -1;
+  }
 
-  static ID classTags(3);
-
-  int clTag = theBackbone->getClassTag();
-  int dbTag = theBackbone->getDbTag();
-	
-  classTags(0) = clTag;
-
-  if (dbTag == 0) {
-    dbTag = theChannel.getDbTag();
-    if (dbTag != 0)
-      theBackbone->setDbTag(dbTag);
+  static Vector ddata(2);
+  ddata(0) = strain;
+  ddata(1) = multiplier;
+  if (theChannel.sendVector(dbTag, cTag, ddata) < 0) {
+    opserr << "BackboneMaterial::sendSelf -- could not send Vector" << endln;
+    return -2;
   }
   
-  classTags(1) = dbTag;
-  classTags(2) = this->getTag();
-  
-  res = theChannel.sendID(dbTag, cTag, classTags);
-  if (res < 0) {
-    opserr << "BackboneMaterial::sendSelf -- could not send ID\n";
-    return res;
+  if (theBackbone->sendSelf(cTag, theChannel) < 0) {
+    opserr << "BackboneMaterial::sendSelf -- could not send HystereticBackbone" << endln;
+    return -3;
   }
   
-  res = theBackbone->sendSelf(cTag, theChannel);
-  if (res < 0) {
-    opserr << "BackboneMaterial::sendSelf -- could not send UniaxialMaterial\n";
-    return res;
-  }
-  
-  return res;
-  */
+  return 0;
 }
 
 int 
 BackboneMaterial::recvSelf(int cTag, Channel &theChannel, 
 			       FEM_ObjectBroker &theBroker)
 {
-  return -1;
-
-  /*
-  int res = 0;
-  
-  static ID classTags(3);
-
   int dbTag = this->getDbTag();
 
-  res = theChannel.recvID(dbTag, cTag, classTags);
-  if (res < 0) {
-    opserr << "BackboneMaterial::recvSelf -- could not receive ID\n";
-    return res;
+  static ID data(3);
+  if (theChannel.recvID(dbTag, cTag, data) < 0) {
+    opserr << "BackboneMaterial::recvSelf -- could not receive ID" << endln;
+    return -1;
   }
+  this->setTag(data(0));
 
-  this->setTag(int(classTags(2)));
 
+  int bbClassTag = data(1);
   // Check if the material is null; if so, get a new one
   if (theBackbone == 0) {
-    theBackbone = theBroker.getNewUniaxialMaterial(classTags(0));
+    theBackbone = theBroker.getNewHystereticBackbone(bbClassTag);
     if (theBackbone == 0) {
-      opserr << " BackboneMaterial::recvSelf -- could not get a UniaxialMaterial\n";
+      opserr << " BackboneMaterial::recvSelf -- could not get a HystereticBackbone" << endln;
       return -1;
     }
   }
   // Check that the material is of the right type; if not, delete
   // the current one and get a new one of the right type
-  if (theBackbone->getClassTag() != classTags(0)) {
+  if (theBackbone->getClassTag() != bbClassTag) {
     delete theBackbone;
-    theBackbone = theBroker.getNewUniaxialMaterial(classTags(0));
+    theBackbone = theBroker.getNewHystereticBackbone(bbClassTag);
     if (theBackbone == 0) {
-      opserr << "BackboneMaterial::recvSelf -- could not get a UniaxialMaterial\n";
-      exit(-1);
+      opserr << "BackboneMaterial::recvSelf -- could not get a HystereticBackbone" << endln;
+      return -1;
     }
   }
+
+  static Vector ddata(2);
+  if (theChannel.recvVector(dbTag, cTag, ddata) < 0) {
+    opserr << "BackboneMaterial::recvSelf -- could not receive Vector" << endln;
+    return -2;
+  }
+  strain = ddata(0);
+  multiplier = ddata(1);
   
   // Now, receive the material
-  theBackbone->setDbTag(classTags(1));
-  res += theBackbone->recvSelf(cTag, theChannel, theBroker);
-  if (res < 0) {
-    opserr << "BackboneMaterial::recvSelf -- could not receive UniaxialMaterial\n";
-    return res;
+  theBackbone->setDbTag(data(2));
+  if (theBackbone->recvSelf(cTag, theChannel, theBroker) < 0) {
+    opserr << "BackboneMaterial::recvSelf -- could not receive HystereticBackbone" << endln;;
+    return -3;
   }
   
-  return res;
-  */
+  return 0;
 }
 
 void 
 BackboneMaterial::Print(OPS_Stream &s, int flag)
 {
   s << "BackboneMaterial tag: " << this->getTag() << endln;
+  s << " multiplier = " << multiplier << endln;
   theBackbone->Print(s, flag);
 }

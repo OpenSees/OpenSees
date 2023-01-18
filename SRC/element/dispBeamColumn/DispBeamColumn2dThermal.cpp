@@ -836,7 +836,7 @@ DispBeamColumn2dThermal::addLoad(ElementalLoad *theLoad, double loadFactor)
 	 for(int i =0; i<9;i++){
 		 if(data0(2*i+1)-data1(2*i+1)>1e-8||data0(2*i+1)-data1(2*i+1)<-1e-8){
 			 opserr<<"Warning:The NodalThermalAction in dispBeamColumn2dThermalNUT "<<this->getTag()
-			      << "incompatiable loc input for datapoint "<< i << endln;
+			      << "incompatible loc input for datapoint "<< i << endln;
 			 }
 		 else{
 			 Loc(i)=data0(2*i+1);
@@ -1284,49 +1284,50 @@ DispBeamColumn2dThermal::sendSelf(int commitTag, Channel &theChannel)
   int i, j;
   int loc = 0;
   
-  static ID idData(7);  // one bigger than needed so no clash later
-  idData(0) = this->getTag();
-  idData(1) = connectedExternalNodes(0);
-  idData(2) = connectedExternalNodes(1);
-  idData(3) = numSections;
-  idData(4) = crdTransf->getClassTag();
+  static Vector data(14);
+  data(0) = this->getTag();
+  data(1) = connectedExternalNodes(0);
+  data(2) = connectedExternalNodes(1);
+  data(3) = numSections;
+  data(4) = crdTransf->getClassTag();
   int crdTransfDbTag  = crdTransf->getDbTag();
   if (crdTransfDbTag  == 0) {
     crdTransfDbTag = theChannel.getDbTag();
     if (crdTransfDbTag  != 0) 
       crdTransf->setDbTag(crdTransfDbTag);
   }
-  idData(5) = crdTransfDbTag;
-
-  if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
-    idData(6) = 1;
-  else
-    idData(6) = 0;
-
-  if (theChannel.sendID(dbTag, commitTag, idData) < 0) {
-    opserr << "DispBeamColumn2dThermal::sendSelf() - failed to send ID data\n";
+  data(5) = crdTransfDbTag;
+  data(6) = beamInt->getClassTag();
+  int beamIntDbTag  = beamInt->getDbTag();
+  if (beamIntDbTag  == 0) {
+    beamIntDbTag = theChannel.getDbTag();
+    if (beamIntDbTag  != 0) 
+      beamInt->setDbTag(beamIntDbTag);
+  }
+  data(7) = beamIntDbTag;
+  data(8) = rho;
+  //data(9) = cMass;
+  data(10) = alphaM;
+  data(11) = betaK;
+  data(12) = betaK0;
+  data(13) = betaKc;
+  
+  if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
+    opserr << "DispBeamColumn2d::sendSelf() - failed to send data Vector\n";
      return -1;
-  }    
-
-  if (idData(6) == 1) {
-    // send damping coefficients
-    static Vector dData(4);
-    dData(0) = alphaM;
-    dData(1) = betaK;
-    dData(2) = betaK0;
-    dData(3) = betaKc;
-    if (theChannel.sendVector(dbTag, commitTag, dData) < 0) {
-      opserr << "DispBeamColumn2dThermal::sendSelf() - failed to send double data\n";
-      return -1;
-    }    
   }
 
   // send the coordinate transformation
-  
   if (crdTransf->sendSelf(commitTag, theChannel) < 0) {
      opserr << "DispBeamColumn2dThermal::sendSelf() - failed to send crdTranf\n";
      return -1;
   }      
+
+  // send the beam integration
+  if (beamInt->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "DispBeamColumn2d::sendSelf() - failed to send beamInt\n";
+    return -1;
+  }
   
   //
   // send an ID for the sections containing each sections dbTag and classTag
@@ -1378,33 +1379,30 @@ DispBeamColumn2dThermal::recvSelf(int commitTag, Channel &theChannel,
   int dbTag = this->getDbTag();
   int i;
   
-  static ID idData(7); // one bigger than needed so no clash with section ID
+  static Vector data(14);
 
-  if (theChannel.recvID(dbTag, commitTag, idData) < 0)  {
+  if (theChannel.recvVector(dbTag, commitTag, data) < 0)  {
     opserr << "DispBeamColumn2dThermal::recvSelf() - failed to recv ID data\n";
     return -1;
   }    
 
-  this->setTag(idData(0));
-  connectedExternalNodes(0) = idData(1);
-  connectedExternalNodes(1) = idData(2);
+  this->setTag((int)data(0));
+  connectedExternalNodes(0) = (int)data(1);
+  connectedExternalNodes(1) = (int)data(2);
+  int nSect = (int)data(3);
+  int crdTransfClassTag = (int)data(4);
+  int crdTransfDbTag = (int)data(5);
+
+  int beamIntClassTag = (int)data(6);
+  int beamIntDbTag = (int)data(7);
   
-  int crdTransfClassTag = idData(4);
-  int crdTransfDbTag = idData(5);
-
-
-  if (idData(6) == 1) {
-    // recv damping coefficients
-    static Vector dData(4);
-    if (theChannel.recvVector(dbTag, commitTag, dData) < 0) {
-      opserr << "DispBeamColumn2dThermal::sendSelf() - failed to recv double data\n";
-      return -1;
-    }    
-    alphaM = dData(0);
-    betaK = dData(1);
-    betaK0 = dData(2);
-    betaKc = dData(3);
-  }
+  rho = data(8);
+  //cMass = (int)data(9);
+  
+  alphaM = data(10);
+  betaK = data(11);
+  betaK0 = data(12);
+  betaKc = data(13);  
 
   // create a new crdTransf object if one needed
   if (crdTransf == 0 || crdTransf->getClassTag() != crdTransfClassTag) {
@@ -1427,12 +1425,35 @@ DispBeamColumn2dThermal::recvSelf(int commitTag, Channel &theChannel,
     opserr << "DispBeamColumn2dThermal::sendSelf() - failed to recv crdTranf\n";
     return -3;
   }      
+
+  // create a new beamInt object if one needed
+  if (beamInt == 0 || beamInt->getClassTag() != beamIntClassTag) {
+      if (beamInt != 0)
+	  delete beamInt;
+
+      beamInt = theBroker.getNewBeamIntegration(beamIntClassTag);
+
+      if (beamInt == 0) {
+	opserr << "DispBeamColumn2d::recvSelf() - failed to obtain the beam integration object with classTag" <<
+	  beamIntClassTag << endln;
+	exit(-1);
+      }
+  }
+
+  beamInt->setDbTag(beamIntDbTag);
+
+  // invoke recvSelf on the beamInt object
+  if (beamInt->recvSelf(commitTag, theChannel, theBroker) < 0)  
+  {
+     opserr << "DispBeamColumn2d::sendSelf() - failed to recv beam integration\n";
+     return -3;
+  }
   
   //
   // recv an ID for the sections containing each sections dbTag and classTag
   //
 
-  ID idSections(2*idData(3));
+  ID idSections(2*nSect);
   int loc = 0;
 
   if (theChannel.recvID(dbTag, commitTag, idSections) < 0)  {
@@ -1444,7 +1465,7 @@ DispBeamColumn2dThermal::recvSelf(int commitTag, Channel &theChannel,
   // now receive the sections
   //
   
-  if (numSections != idData(3)) {
+  if (numSections != nSect) {
 
     //
     // we do not have correct number of sections, must delete the old and create
@@ -1459,15 +1480,15 @@ DispBeamColumn2dThermal::recvSelf(int commitTag, Channel &theChannel,
     }
 
     // create a new array to hold pointers
-    theSections = new SectionForceDeformation *[idData(3)];
+    theSections = new SectionForceDeformation *[nSect];
     if (theSections == 0) {
 opserr << "DispBeamColumn2dThermal::recvSelf() - out of memory creating sections array of size " <<
-  idData(3) << endln;
+  nSect << endln;
       return -1;
     }    
 
     // create a section and recvSelf on it
-    numSections = idData(3);
+    numSections = nSect;
     loc = 0;
     
     for (i=0; i<numSections; i++) {
@@ -1569,33 +1590,13 @@ DispBeamColumn2dThermal::Print(OPS_Stream &s, int flag)
 int
 DispBeamColumn2dThermal::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **displayModes, int numModes)
 {
-	static Vector v1(3);
-	static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-	if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-		theNodes[0]->getDisplayCrds(v1, fact);
-		theNodes[1]->getDisplayCrds(v2, fact);
-
-	}
-	else {
-
-		theNodes[0]->getDisplayCrds(v1, 0.);
-		theNodes[1]->getDisplayCrds(v2, 0.);
-
-		// add eigenvector values
-		int mode = displayMode  *  -1;
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 2; i++) {
-				v1(i) += eigen1(i, mode - 1)*fact;
-				v2(i) += eigen2(i, mode - 1)*fact;
-			}
-		}
-	}
-
-	return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*

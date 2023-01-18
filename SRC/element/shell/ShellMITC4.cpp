@@ -23,7 +23,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/element/shell/ShellMITC4.cpp,v $
 
 // Original implementation: Ed "C++" Love
-// Reimplementation: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec
+// Reimplementation: Leopoldo Tesser, Diego A. Talledo, Vï¿½ronique Le Corvec
 //
 // Bathe MITC 4 four node shell element with membrane and drill
 // Ref: Dvorkin,Bathe, A continuum mechanics based four node shell
@@ -61,7 +61,7 @@ void *
 OPS_ShellMITC4(void)
 {
   if (numShellMITC4 == 0) {
-//    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec\n";
+//    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Vï¿½ronique Le Corvec\n";
     numShellMITC4++;
   }
 
@@ -82,10 +82,24 @@ OPS_ShellMITC4(void)
   }
   bool updateBasis = false;
 
-  if (numArgs == 7) {
-    const char* type = OPS_GetString();    
+  int dampingTag = 0;
+  Damping *theDamping = 0;
+
+  while(OPS_GetNumRemainingInputArgs() > 0) {
+    const char* type = OPS_GetString();
     if(strcmp(type,"-updateBasis") == 0) 
       updateBasis = true;
+    else if(strcmp(type,"-damp") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+	      numData = 1;
+        if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+		    theDamping = OPS_getDamping(dampingTag);
+        if(theDamping == 0) {
+	        opserr<<"damping not found\n";
+	        return 0;
+        }
+	    }
+    } 
   }
 
   SectionForceDeformation *theSection = OPS_getSectionForceDeformation(iData[5]);
@@ -96,7 +110,7 @@ OPS_ShellMITC4(void)
   }
   
   theElement = new ShellMITC4(iData[0], iData[1], iData[2], iData[3],
-			      iData[4], *theSection, updateBasis);
+			      iData[4], *theSection, updateBasis, theDamping);
 
   return theElement;
 }
@@ -152,7 +166,7 @@ OPS_ShellMITC4(const ID& info)
     // load data
     if (info(0) == 2) {
 	if (numShellMITC4 == 0) {
-//    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec\n";
+//    opserr << "Using ShellMITC4 - Developed by: Leopoldo Tesser, Diego A. Talledo, Vï¿½ronique Le Corvec\n";
 	    numShellMITC4++;
 	}
 
@@ -214,6 +228,9 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(false)
   for (int i = 0 ;  i < 4; i++ ) 
     materialPointers[i] = 0;
 
+  for (int i = 0 ;  i < 4; i++ ) 
+    theDamping[i] = 0;
+
   sg[0] = -one_over_root3;
   sg[1] = one_over_root3;
   sg[2] = one_over_root3;
@@ -245,7 +262,8 @@ ShellMITC4::ShellMITC4(  int tag,
 			 int node3,
                          int node4,
 			 SectionForceDeformation &theMaterial,
-			 bool UpdateBasis) :
+			 bool UpdateBasis,
+       Damping *damping) :
 Element( tag, ELE_TAG_ShellMITC4 ),
 connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
 {
@@ -265,6 +283,22 @@ connectedExternalNodes(4), load(0), Ki(0), doUpdateBasis(UpdateBasis)
       } //end if
       
   } //end for i 
+
+  if (damping)
+  {
+    for (i = 0; i < 4; i++)
+    {
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "ShellMITC4::ShellMITC4 -- failed to get copy of damping\n";
+      }
+    }
+  }
+  else
+  {
+    for (i = 0; i < 4; i++) theDamping[i] = 0;
+  }
 
   sg[0] = -one_over_root3;
   sg[1] = one_over_root3;
@@ -303,6 +337,15 @@ ShellMITC4::~ShellMITC4( )
 
   } //end for i
 
+  for (i = 0; i < 4; i++)
+  {
+    if (theDamping[i])
+    {
+      delete theDamping[i];
+      theDamping[i] = 0;
+    }
+  }
+
   if (load != 0)
     delete load;
 
@@ -331,12 +374,14 @@ void  ShellMITC4::setDomain( Domain *theDomain )
        opserr << "ShellMITC4::setDomain - node " << connectedExternalNodes(i);
        opserr << " NEEDS 6 dof - GARBAGE RESULTS or SEGMENTATION FAULT WILL FOLLOW\n";
      }       
-     init_disp[i][0] = nodeDisp(0);
-     init_disp[i][1] = nodeDisp(1);
-     init_disp[i][2] = nodeDisp(2);
-     init_disp[i][3] = nodeDisp(3);
-     init_disp[i][4] = nodeDisp(4);
-     init_disp[i][5] = nodeDisp(5);
+     if (!m_initialzed) {
+         init_disp[i][0] = nodeDisp(0);
+         init_disp[i][1] = nodeDisp(1);
+         init_disp[i][2] = nodeDisp(2);
+         init_disp[i][3] = nodeDisp(3);
+         init_disp[i][4] = nodeDisp(4);
+         init_disp[i][5] = nodeDisp(5);
+     }
   }
 
   //compute drilling stiffness penalty parameter
@@ -359,9 +404,43 @@ void  ShellMITC4::setDomain( Domain *theDomain )
   //basis vectors and local coordinates
   computeBasis( ) ;
 
+  for (i = 0; i < 4; i++)
+  {
+    if (theDamping[i] && theDamping[i]->setDomain(theDomain, 8)) {
+      opserr << "ShellMITC4::setDomain -- Error initializing damping\n";
+      exit(-1);
+    }
+  }
+
   this->DomainComponent::setDomain(theDomain);
+
+  // set as initialized
+  m_initialzed = true;
 }
 
+int
+ShellMITC4::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    for (int i = 0; i < 4; i++)
+    {
+      if (theDamping[i]) delete theDamping[i];
+
+      theDamping[i] =(*damping).getCopy();
+    
+      if (!theDamping[i]) {
+        opserr << "ShellMITC4::setDamping -- failed to get copy of damping\n";
+        return -1;
+      }
+      if (theDamping[i]->setDomain(theDomain, 8)) {
+        opserr << "ShellMITC4::setDamping -- Error initializing damping\n";
+        return -2;
+      }
+    }
+  }
+  return 0;
+}
 
 //get the number of external nodes
 int  ShellMITC4::getNumExternalNodes( ) const
@@ -403,6 +482,9 @@ int  ShellMITC4::commitState( )
   for (int i = 0; i < 4; i++ ) 
     success += materialPointers[i]->commitState( ) ;
 
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->commitState();
+
   return success ;
 }
  
@@ -417,6 +499,9 @@ int  ShellMITC4::revertToLastCommit( )
   for ( i = 0; i < 4; i++ ) 
     success += materialPointers[i]->revertToLastCommit( ) ;
   
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToLastCommit();
+  
   return success ;
 }
     
@@ -429,6 +514,9 @@ int  ShellMITC4::revertToStart( )
 
   for ( i = 0; i < 4; i++ ) 
     success += materialPointers[i]->revertToStart( ) ;
+  
+  for (int i = 0; i < 4; i++ )
+    if (theDamping[i]) success += theDamping[i]->revertToStart();
   
   return success ;
 }
@@ -549,7 +637,7 @@ ShellMITC4::setResponse(const char **argv, int argc, OPS_Stream &output)
       
       output.tag("ResponseType","p11");
       output.tag("ResponseType","p22");
-      output.tag("ResponseType","p1212");
+      output.tag("ResponseType","p12");
       output.tag("ResponseType","m11");
       output.tag("ResponseType","m22");
       output.tag("ResponseType","m12");
@@ -589,6 +677,34 @@ ShellMITC4::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     
     theResponse =  new ElementResponse(this, 3, Vector(32));
+  }
+
+  else if (theDamping[0] && strcmp(argv[0],"dampingStresses") ==0) {
+
+    for (int i=0; i<4; i++) {
+      output.tag("GaussPoint");
+      output.attr("number",i+1);
+      output.attr("eta",sg[i]);
+      output.attr("neta",tg[i]);
+      
+      output.tag("SectionForceDeformation");
+      output.attr("classType", theDamping[i]->getClassTag());
+      output.attr("tag", theDamping[i]->getTag());
+      
+      output.tag("ResponseType","p11");
+      output.tag("ResponseType","p22");
+      output.tag("ResponseType","p12");
+      output.tag("ResponseType","m11");
+      output.tag("ResponseType","m22");
+      output.tag("ResponseType","m12");
+      output.tag("ResponseType","q1");
+      output.tag("ResponseType","q2");
+      
+      output.endTag(); // GaussPoint
+      output.endTag(); // NdMaterialOutput
+    }
+    
+    theResponse =  new ElementResponse(this, 4, Vector(32));
   }
 
   output.endTag();
@@ -640,6 +756,23 @@ ShellMITC4::getResponse(int responseID, Information &eleInfo)
       cnt += 8;
     }
     return eleInfo.setVector(strains);
+    break;
+  case 4: // damping stresses
+    for (int i = 0; i < 4; i++) {
+
+      // Get material stress response
+      const Vector &sigma = theDamping[i]->getDampingForce();
+      stresses(cnt) = sigma(0);
+      stresses(cnt+1) = sigma(1);
+      stresses(cnt+2) = sigma(2);
+      stresses(cnt+3) = sigma(3);
+      stresses(cnt+4) = sigma(4);
+      stresses(cnt+5) = sigma(5);
+      stresses(cnt+6) = sigma(6);
+      stresses(cnt+7) = sigma(7);
+      cnt += 8;
+    }
+    return eleInfo.setVector(stresses);
     break;
   default:
     return -1;
@@ -855,6 +988,7 @@ const Matrix&  ShellMITC4::getInitialStiff( )
   
 
     dd = materialPointers[i]->getInitialTangent( ) ;
+    if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
     dd *= dvol[i] ;
 
     //residual and tangent calculations node loops
@@ -972,7 +1106,7 @@ ShellMITC4::addLoad(ElementalLoad *theLoad, double loadFactor)
   const Vector &data = theLoad->getData(type, loadFactor);
 
   if (type == LOAD_TAG_SelfWeight) {
-      // added compatability with selfWeight class implemented for all continuum elements, C.McGann, U.W.
+      // added compatibility with selfWeight class implemented for all continuum elements, C.McGann, U.W.
       applyLoad = 1;
       appliedB[0] += loadFactor*data(0);
       appliedB[1] += loadFactor*data(1);
@@ -1235,6 +1369,8 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
   static Vector stress(nstress) ;  //stress resultants
 
+  static Vector dampingStress(nstress); // damping stress resultants
+
   static Matrix dd(nstress,nstress) ;  //material tangent
 
   static Matrix J0(2,2) ;  //Jacobian at center
@@ -1441,6 +1577,13 @@ ShellMITC4::formResidAndTangent( int tang_flag )
     //compute the stress
     stress = materialPointers[i]->getStressResultant( ) ;
 
+    if (theDamping[i])
+    {
+      theDamping[i]->update(stress);
+      dampingStress = theDamping[i]->getDampingForce();
+      dampingStress *= dvol[i];
+    }
+
     //drilling "stress" 
     tauDrill = Ktt * epsDrill ;
 
@@ -1450,6 +1593,7 @@ ShellMITC4::formResidAndTangent( int tang_flag )
 
     if ( tang_flag == 1 ) {
       dd = materialPointers[i]->getSectionTangent( ) ;
+      if(theDamping[i]) dd *= theDamping[i]->getStiffnessMultiplier();
       dd *= dvol[i] ;
     } //end if tang_flag
 
@@ -1479,6 +1623,7 @@ ShellMITC4::formResidAndTangent( int tang_flag )
       }//end for p
 
       residJ.addMatrixVector(0.0, BJtran,stress,1.0 ) ;
+      if (theDamping[i]) residJ.addMatrixVector(1.0, BJtran,dampingStress,1.0 ) ;
 
       //drilling B matrix
       drillPointer = computeBdrill( j, shp ) ;
@@ -2101,7 +2246,7 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(14);
+  static ID idData(17);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -2126,6 +2271,21 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
     idData(13) = 0;
   else
     idData(13) = 1;
+  idData(14) = static_cast<int>(m_initialzed);
+
+  idData(15) = 0;
+  idData(16) = 0;
+  if (theDamping[0]) {
+    idData(15) = theDamping[0]->getClassTag();
+    int dbTag = theDamping[0]->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+        for (i = 0 ;  i < 4; i++)
+	        theDamping[i]->setDbTag(dbTag);
+	  }
+    idData(16) = dbTag;
+  }
 
   res += theChannel.sendID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -2165,6 +2325,17 @@ int  ShellMITC4::sendSelf (int commitTag, Channel &theChannel)
     }
   }
   
+  // Ask the Damping to send itself
+  if (theDamping[0]) {
+    for (int i = 0 ;  i < 4; i++) {
+      res += theDamping[i]->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+        opserr << "ShellMITC4::sendSelf -- could not send Damping\n";
+        return res;
+      }
+    }
+  }
+
   return res;
 }
     
@@ -2176,7 +2347,7 @@ int  ShellMITC4::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(14);
+  static ID idData(17);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -2193,6 +2364,7 @@ int  ShellMITC4::recvSelf (int commitTag,
     doUpdateBasis = true;
   else
     doUpdateBasis = false;
+  m_initialzed = static_cast<bool>(idData(14));
 
   static Vector vectData(5 + 6*4);
   res += theChannel.recvVector(dataTag, commitTag, vectData);
@@ -2265,6 +2437,49 @@ int  ShellMITC4::recvSelf (int commitTag,
     }
   }
   
+  int dmpTag = (int)idData(15);
+  if (dmpTag) {
+    for (i = 0 ;  i < 4; i++) {
+      // Check if the Damping is null; if so, get a new one
+      if (theDamping[i] == 0) {
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
+        if (theDamping[i] == 0) {
+          opserr << "ShellMITC4::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+  
+      // Check that the Damping is of the right type; if not, delete
+      // the current one and get a new one of the right type
+      if (theDamping[i]->getClassTag() != dmpTag) {
+        delete theDamping[i];
+        theDamping[i] = theBroker.getNewDamping(dmpTag);
+        if (theDamping[i] == 0) {
+          opserr << "ShellMITC4::recvSelf -- could not get a Damping\n";
+          exit(-1);
+        }
+      }
+  
+      // Now, receive the Damping
+      theDamping[i]->setDbTag((int)idData(16));
+      res += theDamping[i]->recvSelf(commitTag, theChannel, theBroker);
+      if (res < 0) {
+        opserr << "ShellMITC4::recvSelf -- could not receive Damping\n";
+        return res;
+      }
+    }
+  }
+  else {
+    for (i = 0; i < 4; i++)
+    {
+      if (theDamping[i])
+      {
+        delete theDamping[i];
+        theDamping[i] = 0;
+      }
+    }
+  }
+    
   return res;
 }
 //**************************************************************************
@@ -2272,76 +2487,40 @@ int  ShellMITC4::recvSelf (int commitTag,
 int
 ShellMITC4::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numMode)
 {
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    // store this information in 4 3d vectors v1 through v4
-    const Vector &end1Crd = nodePointers[0]->getCrds();
-    const Vector &end2Crd = nodePointers[1]->getCrds();	
-    const Vector &end3Crd = nodePointers[2]->getCrds();	
-    const Vector &end4Crd = nodePointers[3]->getCrds();	
+    // get the end point display coords
+    static Vector v1(3);
+    static Vector v2(3);
+    static Vector v3(3);
+    static Vector v4(3);
+    nodePointers[0]->getDisplayCrds(v1, fact, displayMode);
+    nodePointers[1]->getDisplayCrds(v2, fact, displayMode);
+    nodePointers[2]->getDisplayCrds(v3, fact, displayMode);
+    nodePointers[3]->getDisplayCrds(v4, fact, displayMode);
 
-    static Matrix coords(4,3);
+    // place values in coords matrix
+    static Matrix coords(4, 3);
+    for (int i = 0; i < 3; i++) {
+        coords(0, i) = v1(i);
+        coords(1, i) = v2(i);
+        coords(2, i) = v3(i);
+        coords(3, i) = v4(i);
+    }
+
+    // Display mode is positive:
+    // display mode = 0 -> plot no contour
+    // display mode = 1-8 -> plot 1-8 stress resultant
     static Vector values(4);
-    static Vector P(24) ;
+    if (displayMode < 8 && displayMode > 0) {
+        for (int i = 0; i < 4; i++) {
+            const Vector& stress = materialPointers[i]->getStressResultant();
+            values(i) = stress(displayMode - 1);
+        }
+    }
+    else {
+        for (int i = 0; i < 4; i++)
+            values(i) = 0.0;
+    }
 
-    for (int j=0; j<4; j++)
-		values(j) = 0.0;
-
-    if (displayMode >= 0) {
-		// Display mode is positive:
-		// display mode = 0 -> plot no contour
-		// display mode = 1-8 -> plot 1-8 stress resultant
-
-		// Get nodal displacements
-		const Vector &end1Disp = nodePointers[0]->getDisp();
-		const Vector &end2Disp = nodePointers[1]->getDisp();
-		const Vector &end3Disp = nodePointers[2]->getDisp();
-		const Vector &end4Disp = nodePointers[3]->getDisp();
-		
-		// Get stress resultants
-        if (displayMode <= 8 && displayMode > 0) {
-			for (int i=0; i<4; i++) {
-				const Vector &stress = materialPointers[i]->getStressResultant();
-				values(i) = stress(displayMode-1);
-			}
-		}
-
-		// Get nodal absolute position = OriginalPosition + (Displacement*factor)
-		for (int i = 0; i < 3; i++) {
-			coords(0,i) = end1Crd(i) + end1Disp(i)*fact;
-			coords(1,i) = end2Crd(i) + end2Disp(i)*fact;
-			coords(2,i) = end3Crd(i) + end3Disp(i)*fact;
-			coords(3,i) = end4Crd(i) + end4Disp(i)*fact;
-		}
-	} else {
-		// Display mode is negative.
-		// Plot eigenvectors
-		int mode = displayMode * -1;
-		const Matrix &eigen1 = nodePointers[0]->getEigenvectors();
-		const Matrix &eigen2 = nodePointers[1]->getEigenvectors();
-		const Matrix &eigen3 = nodePointers[2]->getEigenvectors();
-		const Matrix &eigen4 = nodePointers[3]->getEigenvectors();
-		if (eigen1.noCols() >= mode) {
-			for (int i = 0; i < 3; i++) {
-				coords(0,i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-				coords(1,i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-				coords(2,i) = end3Crd(i) + eigen3(i,mode-1)*fact;
-				coords(3,i) = end4Crd(i) + eigen4(i,mode-1)*fact;
-			}    
-		} else {
-			for (int i = 0; i < 3; i++) {
-				coords(0,i) = end1Crd(i);
-				coords(1,i) = end2Crd(i);
-				coords(2,i) = end3Crd(i);
-				coords(3,i) = end4Crd(i);
-			}
-		}
-	}
-
-    int error = 0;
-	
-	// Draw a poligon with coordinates coords and values (colors) corresponding to values vector
-    error += theViewer.drawPolygon (coords, values);
-
-    return error;
+    // draw the polygon
+    return theViewer.drawPolygon(coords, values, this->getTag());
 }

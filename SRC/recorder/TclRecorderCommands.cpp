@@ -28,7 +28,7 @@
  // Revision: AA
  //
  // Description: This file contains the function that is invoked
- // by the interpreter when the comand 'record' is invoked by the 
+ // by the interpreter when the command 'record' is invoked by the 
  // user.
  //
  // What: "@(#) commands.C, revA"
@@ -36,11 +36,14 @@
 
  #include <tcl.h>
 
+
  #include <stdio.h>
  #include <stdlib.h>
  #include <string.h>
  #include <Domain.h>
  #include <EquiSolnAlgo.h>
+
+
 
  // recorders
  #include <NodeRecorder.h>
@@ -52,13 +55,18 @@
  #include <EnvelopeElementRecorder.h>
  #include <NormElementRecorder.h>
  #include <NormEnvelopeElementRecorder.h>
+
  #include <PVDRecorder.h>
- #include <MPCORecorder.h>
+
  #include <GmshRecorder.h>
  #include <VTK_Recorder.h>
+
 extern void* OPS_PVDRecorder();
+
 extern void* OPS_GmshRecorder();
+#ifdef _HDF5
 extern void* OPS_MPCORecorder();
+#endif // _HDF5
 extern void* OPS_VTK_Recorder();
 extern void* OPS_ElementRecorderRMS();
 extern void* OPS_NodeRecorderRMS();
@@ -88,6 +96,7 @@ extern void* OPS_NodeRecorderRMS();
 
  #include <packages.h>
  #include <elementAPI.h>
+extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 
  extern TimeSeries *TclSeriesCommand(ClientData clientData, Tcl_Interp *interp, TCL_Char *arg);
@@ -156,6 +165,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        int numEle = 0;
        int endEleIDs = 2;
        double dT = 0.0;
+       double rTolDt = 0.00001;
        bool echoTime = false;
        int loc = endEleIDs;
        int flags = 0;
@@ -246,7 +256,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 } 
 
 	 else if (strcmp(argv[loc],"-region") == 0) {
-	   // allow user to specif elements via a region
+	   // allow user to specify elements via a region
 
 	   if (argc < loc+2) {
 	     opserr << "WARNING recorder Element .. -region tag?  .. - no region specified\n";
@@ -311,7 +321,13 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   if (Tcl_GetDouble(interp, argv[loc], &dT) != TCL_OK)	
 	     return TCL_ERROR;	
 	   loc++;
-	 } 
+	 }
+	 else if (strcmp(argv[loc],"-rTolDt") == 0) {
+            loc++;
+            if (Tcl_GetDouble(interp, argv[loc], &rTolDt) != TCL_OK)
+	     return TCL_ERROR;
+	   loc++;
+     }
 
 
 	 else if (strcmp(argv[loc],"-precision") == 0) {
@@ -463,6 +479,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 					      theDomain, 
 					      *theOutputStream,
 					      dT,
+					      rTolDt,
 					      specificIndices);
 
        } else if (strcmp(argv[1],"EnvelopeElement") == 0) {
@@ -472,7 +489,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 						      argc-eleData, 
 						      theDomain, 
 						      *theOutputStream,
-						      dT, 
+						      dT,
+						      rTolDt,
 						      echoTime,
 						      specificIndices);
 
@@ -484,7 +502,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 						  echoTime,
 						  theDomain, 
 						  *theOutputStream,
-						  dT, 
+						  dT,
+						  rTolDt,
 						  specificIndices);
 
        } else {
@@ -494,7 +513,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 							  argc-eleData, 
 							  theDomain, 
 							  *theOutputStream,
-							  dT, 
+							  dT,
+							  rTolDt,
 							  echoTime,
 							  specificIndices);
        }       
@@ -506,7 +526,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
      }
 
 
-     //////////////////////Begining of ElementDamage recorder//////////////////////
+     //////////////////////Beginning of ElementDamage recorder/////////////////////
      ///////////////////////////////By Arash Altoontash////////////////////////////
 
      else if ( (strcmp(argv[1],"Damage") == 0) || (strcmp(argv[1],"ElementDamage") == 0) ||
@@ -520,6 +540,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        }    
 
        double dT = 0.0;
+       double rTolDt = 0.00001;
        bool echoTime = false;
        int loc = 2;
        int eleID;
@@ -541,7 +562,14 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 if (Tcl_GetDouble(interp, argv[loc], &dT) != TCL_OK)	
 	   return TCL_ERROR;	
 	 loc++;
-       } 
+       }
+       else if ( strcmp(argv[loc],"-rTolDt" ) == 0 ) {
+	 // allow user to specify time step tolerance for recording
+	 loc++;
+	 if (Tcl_GetDouble(interp, argv[loc], &rTolDt) != TCL_OK)
+	   return TCL_ERROR;
+	 loc++;
+       }
 
 
        if (strcmp(argv[loc],"-file") == 0) {
@@ -615,7 +643,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        OPS_Stream *theOutput = new DataFileStream(fileName);
 
        // now construct the recorder
-       (*theRecorder) = new DamageRecorder( eleID , secIDs, dofID , dmgPTR , theDomain,echoTime,dT ,*theOutput);
+       (*theRecorder) = new DamageRecorder( eleID , secIDs, dofID , dmgPTR , theDomain,echoTime,dT, rTolDt, *theOutput);
 
      }
      //////////////////////End of ElementDamage recorder////////////////////////////
@@ -634,6 +662,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        int maxNumCriteria = 2;	// current maximum number of either-or criteria for an element
        double dT = 0.0;
+       double rTolDt = 0.00001;
        bool echoTime = false;
        int endEleIDs = 2;
        int numEle = endEleIDs-2;
@@ -810,7 +839,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 } 
 
 	 else if (strcmp(argv[loc],"-region") == 0) {
-	   // allow user to specif elements via a region
+	   // allow user to specify elements via a region
 
 	   if (argc < loc+2) {
 	     opserr << "WARNING recorder Element .. -region tag?  .. - no region specified\n";
@@ -849,7 +878,14 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   if (Tcl_GetDouble(interp, argv[loc], &dT) != TCL_OK)	
 	     return TCL_ERROR;	
 	   loc++;
-	 } 
+	 }
+	 else if (strcmp(argv[loc],"-rTolDt") == 0) {
+	   // allow user to specify time step tolerance for recording
+	   loc++;
+	   if (Tcl_GetDouble(interp, argv[loc], &rTolDt) != TCL_OK)
+	     return TCL_ERROR;
+	   loc++;
+	 }
 
 	 else if (strcmp(argv[loc],"-file") == 0) {
 	   fileName = argv[loc+1];
@@ -1024,7 +1060,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 					    theDomain,
 					    *theOutputStream,
 					    echoTime, 
-					    dT ,
+					    dT,
+					    rTolDt,
 					    fileName, 
 					    eleMass, 
 					    gAcc, 
@@ -1046,7 +1083,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        if (argc < 7) {
 	 opserr << "WARNING recorder Node ";
-	 opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> reponse";
+	 opserr << "-node <list nodes> -dof <doflist> -file <fileName> -dT <dT> response";
 	     return TCL_ERROR;
        }    
 
@@ -1065,6 +1102,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        bool echoTimeFlag = false;
        int flags = 0;
        double dT = 0.0;
+       double rTolDt = 0.00001;
        int numNodes = 0;
        bool doScientific = false;
 
@@ -1186,6 +1224,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	     return TCL_ERROR;		  
 	   pos++;
 	 }
+	 else if (strcmp(argv[pos],"-rTolDt") == 0) {
+	   pos ++;
+	   if (Tcl_GetDouble(interp, argv[pos], &rTolDt) != TCL_OK)
+	     return TCL_ERROR;
+	   pos++;
+	 }
 
 	 else if (strcmp(argv[pos],"-timeSeries") == 0) {
 	   
@@ -1228,7 +1272,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   
 	   // read in the node tags or 'all' can be used
 	   if (strcmp(argv[pos],"all") == 0) {
-	     opserr << "recoder Node - error -all option has been removed, use -nodeRange instaed\n";
+	     opserr << "recoder Node - error -all option has been removed, use -nodeRange instead\n";
 	     return TCL_ERROR;		  
 	   } else {
 	     theNodes = new ID(0,16);
@@ -1279,7 +1323,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 }
 
 	 else if (strcmp(argv[pos],"-region") == 0) {
-	   // allow user to specif elements via a region
+	   // allow user to specify elements via a region
 
 	   if (argc < pos+2) {
 	     opserr << "WARNING recorder Node .. -region tag?  .. - no region specified\n";
@@ -1387,7 +1431,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 					   responseID, 
 					   theDomain, 
 					   *theOutputStream, 
-					   dT, 
+					   dT,
+					   rTolDt,
 					   echoTimeFlag,
 					   theTimeSeries);
 
@@ -1398,7 +1443,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 						   responseID, 
 						   theDomain,
 						   *theOutputStream,
-						   dT, 
+						   dT,
+						   rTolDt,
 						   echoTimeFlag,
 						   theTimeSeries);
        }
@@ -1442,6 +1488,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        int perpDirn = 2;
        int pos = 2;
        double dT = 0.0;
+       double rTolDt = 0.00001;
        int precision = 6;
        bool doScientific = false;
        bool closeOnWrite = false;
@@ -1579,7 +1626,13 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	     return TCL_ERROR;	
 	   pos++;
 
-	 } else 
+	 }
+    else if (strcmp(argv[pos],"-rTolDt") == 0) {
+            pos++;
+	   if (Tcl_GetDouble(interp, argv[pos], &rTolDt) != TCL_OK)
+	     return TCL_ERROR;
+	   pos++;
+        } else
 	   pos++;
        }
 
@@ -1606,7 +1659,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        // Subtract one from dof and perpDirn for C indexing
        if (strcmp(argv[1],"Drift") == 0) 
 	 (*theRecorder) = new DriftRecorder(iNodes, jNodes, dof-1, perpDirn-1,
-					    theDomain, *theOutputStream, echoTimeFlag, dT);
+					    theDomain, *theOutputStream, echoTimeFlag, dT, rTolDt);
        else
 	 (*theRecorder) = new EnvelopeDriftRecorder(iNodes, jNodes, dof-1, perpDirn-1,
 						    theDomain, *theOutputStream, echoTimeFlag);
@@ -1620,6 +1673,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
      int pos = 7;
      int wipeFlag = 0;
      double dT = 0.0;
+     double rTolDt = 0.00001;
      int saveToFile = 0;
 
 	 if (argc < 7) {
@@ -1648,6 +1702,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	       return TCL_ERROR;
          pos+=2;
        }
+       // allow user to specify time step size for recording
+       else if (strcmp(argv[pos],"-rTolDt") == 0) {
+	     if (Tcl_GetDouble(interp, argv[pos+1], &rTolDt) != TCL_OK)
+	       return TCL_ERROR;
+         pos+=2;
+       }
        // save images to file
        else if (strcmp(argv[pos],"-file") == 0) {
          fileName = argv[pos+1];
@@ -1656,9 +1716,9 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        }
      }
      if (!saveToFile)
-	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, theDomain, wipeFlag, interp, dT);
+	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, theDomain, wipeFlag, interp, dT, rTolDt);
      else
-	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, fileName, theDomain, interp, dT);
+	   (*theRecorder) = new TclFeViewer(argv[2], xLoc, yLoc, width, height, fileName, theDomain, interp, dT, rTolDt);
 
      }
 
@@ -1666,7 +1726,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        int xLoc, yLoc, width, height;
        if (argc < 9) {
-	 opserr << "WARNING recorder display fileName? windowTitle? xLoc yLoc pixelsX pixelsY -columns colX1 colY1 -columns colX2 ...";
+	 opserr << "WARNING recorder plot fileName? windowTitle? xLoc yLoc xPixels yPixels -columns colX1 colY1 -columns colX2 ...";
 	 return TCL_ERROR;
        }    
 
@@ -1682,6 +1742,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        int loc = 8;
 
        double dT = 0.0;
+       double rTolDt = 0.00001;
        loc = 8;
        ID cols(0,16);
        int numCols = 0;
@@ -1709,6 +1770,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	     return TCL_ERROR;	
 	   loc += 2;	    
 	 }
+	 else if (strcmp(argv[loc],"-rTolDt") == 0) {
+
+	   if (Tcl_GetDouble(interp, argv[loc+1], &rTolDt) != TCL_OK)
+	     return TCL_ERROR;
+	   loc += 2;
+	 }
 	 else
 	   loc++;
        }
@@ -1716,7 +1783,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
  #ifdef _NOGRAPHICS
        return TCL_OK;
  #else
-       FilePlotter *thePlotter = new FilePlotter(argv[2], argv[3], xLoc, yLoc, width, height, dT);
+       FilePlotter *thePlotter = new FilePlotter(argv[2], argv[3], xLoc, yLoc, width, height, dT, rTolDt);
        (*theRecorder) = thePlotter;    
        thePlotter->setCol(cols);
  #endif
@@ -1741,6 +1808,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 int loc = 9;
 
 	 double dT = 0.0;
+	 double rTolDt = 0.00001;
 	 loc = 0;
 	 ID cols(0,16);
 	 int numCols = 0;
@@ -1768,6 +1836,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	       return TCL_ERROR;	
 	     loc += 2;	    
 	   }
+	   else if (strcmp(argv[loc],"-rTolDt") == 0) {
+
+	     if (Tcl_GetDouble(interp, argv[loc+1], &rTolDt) != TCL_OK)
+	       return TCL_ERROR;
+	     loc += 2;
+	   }
 	   else
 	     loc++;
 	 }
@@ -1775,7 +1849,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
  #ifdef _NOGRAPHICS
 	 return TCL_OK;
  #else
-	 FilePlotter *thePlotter = new FilePlotter(argv[2], argv[3], argv[4], xLoc, yLoc, width, height, dT);
+	 FilePlotter *thePlotter = new FilePlotter(argv[2], argv[3], argv[4], xLoc, yLoc, width, height, dT, rTolDt);
 	 (*theRecorder) = thePlotter;    
 	 thePlotter->setCol(cols);
  #endif
@@ -1830,12 +1904,13 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 								    argv[2], xLoc, yLoc, width, height, 
 								    displayRecord, fileName);
 	 (*theRecorder) = thePlotter;
- #endif
+ #endif // _NOGRAPHICS
      } 
      else if (strcmp(argv[1],"pvd") == 0 || strcmp(argv[1],"PVD") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_PVDRecorder();
      }
+
      else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
@@ -1848,17 +1923,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_NodeRecorderRMS();
      }
-     else if (strcmp(argv[1],"vtk") == 0 || strcmp(argv[1],"VTK") == 0) {
-       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-       (*theRecorder) = (Recorder*) OPS_VTK_Recorder();
-     }
+#ifdef _HDF5
      else if (strcmp(argv[1], "mpco") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*)OPS_MPCORecorder();
-       if (theRecorder == 0) {
-	 return TCL_ERROR;
-       }
      }
+#endif // _HDF5
      else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*) OPS_GmshRecorder();
@@ -2022,7 +2092,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	return TCL_ERROR;
     } 
 
-    // operation successfull
+    // operation successful
     return TCL_OK;
 }
 

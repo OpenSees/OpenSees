@@ -723,7 +723,7 @@ TFP_Bearing2d::update()
     Ap = force;
   } else {
     double Kmin = K*DBL_EPSILON;
-    (*theMatrix)(1,1) = Kmin; // uisng Kmin to keep system stable
+    (*theMatrix)(1,1) = Kmin; // using Kmin to keep system stable
     (*theMatrix)(1,1+numD) = -Kmin;
     (*theMatrix)(1+numD,1) = -Kmin;
     (*theMatrix)(1+numD,1+numD) = Kmin;

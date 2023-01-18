@@ -50,12 +50,18 @@ void* OPS_ElasticSection2d()
     // get tag
     int tag;
     int numData = 1;
-    if(OPS_GetIntInput(&numData,&tag) < 0) return 0;
+    if(OPS_GetIntInput(&numData,&tag) < 0) {
+      opserr << "ERROR reading tag: ElasticSection" << endln;
+      return 0;
+    }
 
     // get data
     numData = 3;
     double data[3];
-    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
+    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+      opserr << "ERROR reading inputs: ElasticSection" << endln;
+      return 0;
+    }
 
     return new ElasticSection2d(tag,data[0],data[1],data[2]);
 }

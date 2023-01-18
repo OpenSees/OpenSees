@@ -33,7 +33,7 @@
 // as solid with pressure constraints using Lagrangian formulation. 
 //
 // The Pressure_Constraint class is part of the implementation of PFEM.
-// Nodel pressures are stores in the class. In each iteration,
+// Nodal pressures are stores in the class. In each iteration,
 // the pressure values are updated. Pressure values can be obtained from
 // the Pressure_Constraint class.
 //

@@ -47,8 +47,8 @@ class FiberSection3dThermal : public SectionForceDeformation
 {
   public:
     FiberSection3dThermal();
-    FiberSection3dThermal(int tag, int numFibers, Fiber **fibers);
-    FiberSection3dThermal(int tag, int numFibers);
+    FiberSection3dThermal(int tag, int numFibers, Fiber **fibers, bool compCentroid=true);
+    FiberSection3dThermal(int tag, int numFibers, bool compCentroid=true);
     ~FiberSection3dThermal();
 
     const char *getClassType(void) const {return "FiberSection3dThermal";};
@@ -105,7 +105,8 @@ class FiberSection3dThermal : public SectionForceDeformation
     double QzBar, QyBar, ABar;
     double yBar;       // Section centroid
     double zBar;
-
+    bool computeCentroid;
+    
     static ID code;
 
     Vector e;          // trial section deformations
@@ -113,18 +114,16 @@ class FiberSection3dThermal : public SectionForceDeformation
     Vector *s;         // section resisting forces  (axial force, bending moment)
     Matrix *ks;        // section stiffness
 
+    double   sTData[3];               //JZ data for s vector
+    Vector *sT;  // JZ  section resisting forces, caused by the temperature
+    //double  *TemperatureTangent; // JZ  the E of E*A*alpha*DeltaT
+    double *Fiber_T;  //An array storing the TempT of the fibers.
+    double *Fiber_TMax; //An array storing the TempTMax of the fibers.
+    
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;
     Matrix *SHVs;
     // AddingSensitivity:END ///////////////////////////////////////////
-
-
-    double   sTData[3];               //JZ data for s vector
-	Vector *sT;  // JZ  section resisting forces, caused by the temperature
-	//double  *TemperatureTangent; // JZ  the E of E*A*alpha*DeltaT
-    double *Fiber_T;  //An array storing the TempT of the fibers.
-	double *Fiber_TMax; //An array storing the TempTMax of the fibers.
-
 };
 
 #endif

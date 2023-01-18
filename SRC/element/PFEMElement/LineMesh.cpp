@@ -158,7 +158,7 @@ LineMesh::mesh() {
 
     // mesh the lines
     if (gen.mesh(meshsize) < 0) {
-        opserr << "WARNIGN: failed to mesh line\n";
+        opserr << "WARNING: failed to mesh line\n";
         return -1;
     }
 
@@ -180,7 +180,7 @@ LineMesh::mesh() {
         gen.getPoint(i, crds);
         Node *node = newNode(nodecounter++, crds);
         if (node == 0) {
-            opserr << "WARING: failed to create node\n";
+            opserr << "WARNING: failed to create node\n";
             return -1;
         }
         if (domain->addNode(node) == false) {
@@ -203,15 +203,10 @@ LineMesh::mesh() {
         gen.getLine(i, pts);
         elenodes(2 * i) = allndtags(pts(0));
         elenodes(2 * i + 1) = allndtags(pts(1));
-        if (elenodes(2 * i) > elenodes(2 * i + 1)) {
-            elenodes(2 * i) = allndtags(pts(1));
-            elenodes(2 * i + 1) = allndtags(pts(0));
-        }
-
     }
     this->setEleNodes(elenodes);
 
-    // create elemnts
+    // create elements
     if (this->newElements(elenodes) < 0) {
         opserr << "WARNING: failed to create elements\n";
         return -1;

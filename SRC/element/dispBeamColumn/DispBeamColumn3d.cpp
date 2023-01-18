@@ -123,15 +123,151 @@ void* OPS_DispBeamColumn3d()
     return theEle;
 }
 
+void *OPS_DispBeamColumn3d(const ID &info) {
+    // data needed
+    int iData[5];
+    double mass = 0.0;
+    int cmass = 0;
+    int numData;
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if (ndm != 3 || ndf != 6) {
+        opserr << "ndm must be 3 and ndf must be 6\n";
+        return 0;
+    }
+
+    // 1. regular elements
+    if (info.Size() == 0) {
+        numData = 3;
+        if (OPS_GetNumRemainingInputArgs() < numData) {
+            opserr << "insufficient "
+                      "arguments:eleTag,iNode,jNode\n";
+            return 0;
+        }
+        if (OPS_GetIntInput(&numData, &iData[0]) < 0) {
+            opserr << "WARNING invalid int inputs\n";
+            return 0;
+        }
+    }
+
+    // 2. regular elements or save data
+    if (info.Size() == 0 || info(0) == 1) {
+        numData = 2;
+        if (OPS_GetNumRemainingInputArgs() < numData) {
+            opserr << "insufficient "
+                      "arguments:transfTag,integrationTag\n";
+            return 0;
+        }
+        if (OPS_GetIntInput(&numData, &iData[3]) < 0) {
+            opserr << "WARNING invalid int inputs\n";
+            return 0;
+        }
+
+        numData = 1;
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            const char *type = OPS_GetString();
+            if (strcmp(type, "-cMass") == 0) {
+                cmass = 1;
+            } else if (strcmp(type, "-mass") == 0) {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+                        opserr << "WARNING: invalid mass\n";
+                        return 0;
+                    }
+                }
+            }
+        }
+    }
+
+    // 3: save data
+    static std::map<int, Vector> meshdata;
+    if (info.Size() > 0 && info(0) == 1) {
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+
+        // save the data for a mesh
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(4);
+        mdata(0) = iData[3];
+        mdata(1) = iData[4];
+        mdata(2) = mass;
+        mdata(3) = cmass;
+        return &meshdata;
+    }
+
+    // 4: load data
+    if (info.Size() > 0 && info(0) == 2) {
+        if (info.Size() < 5) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2\n";
+            return 0;
+        }
+
+        // get the data for a mesh
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 5) return 0;
+
+        iData[0] = info(2);
+        iData[1] = info(3);
+        iData[2] = info(4);
+        iData[3] = mdata(0);
+        iData[4] = mdata(1);
+        mass = mdata(2);
+        cmass = mdata(3);
+    }
+
+    // 5: create element
+    CrdTransf *theTransf = OPS_getCrdTransf(iData[3]);
+    if (theTransf == 0) {
+        opserr << "coord transfomration not found\n";
+        return 0;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule *theRule =
+        OPS_getBeamIntegrationRule(iData[4]);
+    if (theRule == 0) {
+        opserr << "beam integration not found\n";
+        return 0;
+    }
+    BeamIntegration *bi = theRule->getBeamIntegration();
+    if (bi == 0) {
+        opserr << "beam integration is null\n";
+        return 0;
+    }
+
+    // check sections
+    const ID &secTags = theRule->getSectionTags();
+    SectionForceDeformation **sections =
+        new SectionForceDeformation *[secTags.Size()];
+    for (int i = 0; i < secTags.Size(); i++) {
+        sections[i] = OPS_getSectionForceDeformation(secTags(i));
+        if (sections[i] == 0) {
+            opserr << "section " << secTags(i) << "not found\n";
+            delete[] sections;
+            return 0;
+        }
+    }
+
+    Element *theEle = new DispBeamColumn3d(
+        iData[0], iData[1], iData[2], secTags.Size(), sections, *bi,
+        *theTransf, mass, cmass);
+    delete[] sections;
+    return theEle;
+}
 
 DispBeamColumn3d::DispBeamColumn3d(int tag, int nd1, int nd2,
 				   int numSec, SectionForceDeformation **s,
 				   BeamIntegration &bi,
-				   CrdTransf &coordTransf, double r, int cm)
+				   CrdTransf &coordTransf, double r, int cm,
+				   Damping *damping)
 :Element (tag, ELE_TAG_DispBeamColumn3d),
 numSections(numSec), theSections(0), crdTransf(0), beamInt(0),
 connectedExternalNodes(2), 
-Q(12), q(6), rho(r), cMass(cm), parameterID(0)
+Q(12), q(6), rho(r), cMass(cm), parameterID(0), theDamping(0)
 {
   // Allocate arrays of pointers to SectionForceDeformations
   theSections = new SectionForceDeformation *[numSections];
@@ -167,6 +303,16 @@ Q(12), q(6), rho(r), cMass(cm), parameterID(0)
     exit(-1);
   }
   
+  if (damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "DispBeamColumn3d::DispBeamColumn3d - failed to copy damping\n";
+      exit(-1);
+    }
+  }
+  
   // Set connected external node IDs
   connectedExternalNodes(0) = nd1;
   connectedExternalNodes(1) = nd2;
@@ -192,7 +338,8 @@ DispBeamColumn3d::DispBeamColumn3d()
 :Element (0, ELE_TAG_DispBeamColumn3d),
 numSections(0), theSections(0), crdTransf(0), beamInt(0),
 connectedExternalNodes(2), 
-Q(12), q(6), rho(0.0), cMass(0), parameterID(0)
+Q(12), q(6), rho(0.0), cMass(0), parameterID(0),
+theDamping(0)
 {
   q0[0] = 0.0;
   q0[1] = 0.0;
@@ -226,6 +373,8 @@ DispBeamColumn3d::~DispBeamColumn3d()
 
   if (beamInt != 0)
     delete beamInt;
+
+	if (theDamping) delete theDamping;
 }
 
 int
@@ -290,6 +439,12 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
 		// Add some error check
 	}
 
+  // initialize the damping
+  if (theDamping && theDamping->setDomain(theDomain, 6)) {
+    opserr << "DispBeamColumn3d::setDomain(): Error initializing damping";  
+    exit(0);
+  }
+
 	double L = crdTransf->getInitialLength();
 
 	if (L == 0.0) {
@@ -299,6 +454,28 @@ DispBeamColumn3d::setDomain(Domain *theDomain)
     this->DomainComponent::setDomain(theDomain);
 
 	this->update();
+}
+
+int
+DispBeamColumn3d::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    if (theDamping) delete theDamping;
+
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "DispBeamColumn3d::setDamping -- failed to get copy of damping\n";
+      return -1;
+    }
+    if (theDamping->setDomain(theDomain, 6)) {
+      opserr << "DispBeamColumn3d::setDamping -- Error initializing damping\n";
+      return -2;
+    }
+  }
+  
+  return 0;
 }
 
 int
@@ -317,6 +494,8 @@ DispBeamColumn3d::commitState()
 
     retVal += crdTransf->commitState();
 
+    if (theDamping) retVal += theDamping->commitState();
+
     return retVal;
 }
 
@@ -331,6 +510,8 @@ DispBeamColumn3d::revertToLastCommit()
 
     retVal += crdTransf->revertToLastCommit();
 
+    if (theDamping) retVal += theDamping->revertToLastCommit();
+
     return retVal;
 }
 
@@ -344,6 +525,8 @@ DispBeamColumn3d::revertToStart()
 		retVal += theSections[i]->revertToStart();
 
     retVal += crdTransf->revertToStart();
+
+    if (theDamping) retVal += theDamping->revertToStart();
 
     return retVal;
 }
@@ -540,11 +723,9 @@ DispBeamColumn3d::getTangentStiff()
   return K;
 }
 
-const Matrix&
-DispBeamColumn3d::getInitialBasicStiff()
+void
+DispBeamColumn3d::getBasicStiff(Matrix &kb, int initial)
 {
-  static Matrix kb(6,6);
-  
   // Zero for integral
   kb.Zero();
   
@@ -570,7 +751,7 @@ DispBeamColumn3d::getInitialBasicStiff()
     double xi6 = 6.0*xi[i];
     
     // Get the section tangent stiffness and stress resultant
-    const Matrix &ks = theSections[i]->getInitialTangent();
+    const Matrix &ks = (initial) ? theSections[i]->getInitialTangent() : theSections[i]->getSectionTangent();
     
     // Perform numerical integration
     //kb.addMatrixTripleProduct(1.0, *B, ks, wts(i)/L);
@@ -636,13 +817,15 @@ DispBeamColumn3d::getInitialBasicStiff()
     
   }
   
-  return kb;
+  if(theDamping) kb *= theDamping->getStiffnessMultiplier();
 }
 
 const Matrix&
 DispBeamColumn3d::getInitialStiff()
 {
-  const Matrix &kb = this->getInitialBasicStiff();
+  static Matrix kb(6,6);
+
+  this->getBasicStiff(kb, 1);
 
   // Transform to global stiffness
   K = crdTransf->getInitialGlobalStiffMatrix(kb);
@@ -898,6 +1081,8 @@ DispBeamColumn3d::getResistingForce()
   q(3) += q0[3];
   q(4) += q0[4];
 
+  if (theDamping) theDamping->update(q);
+
   // Transform forces
   Vector p0Vec(p0, 5);
   P = crdTransf->getGlobalResistingForce(q, p0Vec);
@@ -909,10 +1094,20 @@ DispBeamColumn3d::getResistingForce()
   return P;
 }
 
+const Vector &
+DispBeamColumn3d::getDampingForce(void)
+{
+  crdTransf->update();
+
+  return crdTransf->getGlobalResistingForce(theDamping->getDampingForce(), Vector(5));
+}
+
 const Vector&
 DispBeamColumn3d::getResistingForceIncInertia()
 {
   P = this->getResistingForce();
+  
+  if (theDamping) P += this->getDampingForce();
   
   if (rho != 0.0) {
     const Vector &accel1 = theNodes[0]->getTrialAccel();
@@ -962,7 +1157,7 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   int i, j;
   int loc = 0;
   
-  static Vector data(14);
+  static Vector data(16);
   data(0) = this->getTag();
   data(1) = connectedExternalNodes(0);
   data(2) = connectedExternalNodes(1);
@@ -990,6 +1185,19 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
   data(12) = betaK0;
   data(13) = betaKc;
   
+  data(14) = 0;
+  data(15) = 0;
+  if (theDamping) {
+    data(14) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theDamping->setDbTag(dbTag);
+	  }
+    data(15) = dbTag;
+  }
+
   if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
     opserr << "DispBeamColumn3d::sendSelf() - failed to send data Vector\n";
      return -1;
@@ -1043,6 +1251,12 @@ DispBeamColumn3d::sendSelf(int commitTag, Channel &theChannel)
     }
   }
 
+  // Ask the Damping to send itself
+  if (theDamping && theDamping->sendSelf(commitTag, theChannel) < 0) {
+      opserr << "DispBeamColumn3d::sendSelf -- could not send Damping\n";
+      return -1;
+  }
+
   return 0;
 }
 
@@ -1056,7 +1270,7 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
   int dbTag = this->getDbTag();
   int i;
   
-  static Vector data(14);
+  static Vector data(16);
 
   if (theChannel.recvVector(dbTag, commitTag, data) < 0)  {
     opserr << "DispBeamColumn3d::recvSelf() - failed to recv data Vector\n";
@@ -1222,6 +1436,43 @@ DispBeamColumn3d::recvSelf(int commitTag, Channel &theChannel,
     }
   }
 
+
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)data(14);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "DispBeamColumn3d::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "DispBeamColumn3d::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)data(15));
+    if (theDamping->recvSelf(commitTag, theChannel, theBroker) < 0) {
+      opserr << "DispBeamColumn3d::recvSelf -- could not receive Damping\n";
+      exit(-1);
+    }
+  }
+  else {
+    if (theDamping) {
+      delete theDamping;
+      theDamping = 0;
+    }
+  }
+    
   return 0;
 }
 
@@ -1282,31 +1533,13 @@ DispBeamColumn3d::Print(OPS_Stream &s, int flag)
 int
 DispBeamColumn3d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char **modes, int numModes)
 {
-  static Vector v1(3);
-  static Vector v2(3);
+    static Vector v1(3);
+    static Vector v2(3);
 
-  if (displayMode >= 0) {
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-      theNodes[0]->getDisplayCrds(v1, fact);
-      theNodes[1]->getDisplayCrds(v2, fact);
-
-  } else {
-
-    theNodes[0]->getDisplayCrds(v1, 0.);
-    theNodes[1]->getDisplayCrds(v2, 0.);
-
-    // add eigenvector values
-    int mode = displayMode * -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 3; i++) {
-	v1(i) += eigen1(i,mode-1)*fact;
-	v2(i) += eigen2(i,mode-1)*fact;    
-      }    
-    }
-  }
-  return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag());
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*
@@ -1362,6 +1595,67 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.tag("ResponseType","Mz_2");
 
       theResponse = new ElementResponse(this, 2, P);
+    }
+    else if (strcmp(argv[0],"basicForce") == 0 || strcmp(argv[0],"basicForces") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
+
+      theResponse = new ElementResponse(this, 9, Vector(6));
+    }
+    else if (strcmp(argv[0],"basicStiffness") == 0) {
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","M1");
+      output.tag("ResponseType","M2");
+
+      theResponse = new ElementResponse(this, 19, Matrix(6,6));
+    // global damping force - 
+    } else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
+
+      output.tag("ResponseType","Px_1");
+      output.tag("ResponseType","Py_1");
+      output.tag("ResponseType","Pz_1");
+      output.tag("ResponseType","Mx_1");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","Px_2");
+      output.tag("ResponseType","Py_2");
+      output.tag("ResponseType","Pz_2");
+      output.tag("ResponseType","Mx_2");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","Mz_2");
+
+
+      theResponse = new ElementResponse(this, 21, P);
+
+    // local damping force -
+    } else if (theDamping && (strcmp(argv[0],"localDampingForce") == 0 || strcmp(argv[0],"localDampingForces") == 0)) {
+
+      output.tag("ResponseType","N_1");
+      output.tag("ResponseType","Vy_1");
+      output.tag("ResponseType","Vz_1");
+      output.tag("ResponseType","T_1");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","N_2");
+      output.tag("ResponseType","Vy_2");
+      output.tag("ResponseType","Vz_2");
+      output.tag("ResponseType","T_2");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","Mz_2");
+
+      theResponse = new ElementResponse(this, 22, P);
+
+    } else if (theDamping && (strcmp(argv[0],"basicDampingForce") == 0 || strcmp(argv[0],"basicDampingForces") == 0)) {
+
+      output.tag("ResponseType","N");
+      output.tag("ResponseType","Mz_1");
+      output.tag("ResponseType","Mz_2");
+      output.tag("ResponseType","My_1");
+      output.tag("ResponseType","My_2");
+      output.tag("ResponseType","T");
+    
+      theResponse = new ElementResponse(this, 23, Vector(6));
 
     // chord rotation -
     }  else if (strcmp(argv[0],"chordRotation") == 0 || strcmp(argv[0],"chordDeformation") == 0 
@@ -1400,17 +1694,11 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     else if (strcmp(argv[0],"integrationWeights") == 0)
       theResponse = new ElementResponse(this, 11, Vector(numSections));
 
-    else if (strcmp(argv[0],"xaxis") == 0 || strcmp(argv[0],"xlocal") == 0)
-      theResponse = new ElementResponse(this, 201, Vector(3));
+    else if (strcmp(argv[0],"sectionTags") == 0)
+      theResponse = new ElementResponse(this, 110, ID(numSections));
 
-    else if (strcmp(argv[0],"yaxis") == 0 || strcmp(argv[0],"ylocal") == 0)
-      theResponse = new ElementResponse(this, 202, Vector(3));
-
-    else if (strcmp(argv[0],"zaxis") == 0 || strcmp(argv[0],"zlocal") == 0)
-      theResponse = new ElementResponse(this, 203, Vector(3));
-    
   // section response -
-  else if (strstr(argv[0],"sectionX") != 0) {
+  else if (strcmp(argv[0],"sectionX") == 0) {
       if (argc > 2) {
 	float sectionLoc = atof(argv[1]);
 	
@@ -1437,7 +1725,7 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       }
     }
     
-    else if (strcmp(argv[0],"section") ==0) { 
+    else if (strcmp(argv[0],"section") == 0) { 
       if (argc > 1) {
 	
 	int sectionNum = atoi(argv[1]);
@@ -1485,12 +1773,14 @@ DispBeamColumn3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 	}
       }
     }
-	// by SAJalali
-	else if (strcmp(argv[0], "energy") == 0)
-  {
-  return new ElementResponse(this, 13, 0.0);
-  }
-
+    // by SAJalali
+    else if (strcmp(argv[0], "energy") == 0) {
+      theResponse = new ElementResponse(this, 13, 0.0);
+    }
+    
+    if (theResponse == 0)
+      theResponse = crdTransf->setResponse(argv, argc, output);
+    
   output.endTag();
   return theResponse;
 }
@@ -1540,6 +1830,54 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(P);
   }
 
+  else if (responseID == 21)
+    return eleInfo.setVector(this->getDampingForce());
+
+  else if (responseID == 22) {
+    Vector Sd(6);
+    Sd = theDamping->getDampingForce();
+    // Axial
+    N = Sd(0);
+    P(6) =  N;
+    P(0) = -N;
+    
+    // Torsion
+    T = Sd(5);
+    P(9) =  T;
+    P(3) = -T;
+    
+    // Moments about z and shears along y
+    M1 = Sd(1);
+    M2 = Sd(2);
+    P(5)  = M1;
+    P(11) = M2;
+    V = (M1+M2)*oneOverL;
+    P(1) =  V;
+    P(7) = -V;
+    
+    // Moments about y and shears along z
+    M1 = Sd(3);
+    M2 = Sd(4);
+    P(4)  = M1;
+    P(10) = M2;
+    V = (M1+M2)*oneOverL;
+    P(2) = -V;
+    P(8) =  V;
+    return eleInfo.setVector(P);
+  }
+
+  else if (responseID == 23)
+    return eleInfo.setVector(theDamping->getDampingForce());
+
+  else if (responseID == 9) {
+    return eleInfo.setVector(q);
+  }
+
+  else if (responseID == 19) {
+    static Matrix kb(6,6);
+    this->getBasicStiff(kb);
+    return eleInfo.setMatrix(kb);
+  }  
   // Chord rotation
   else if (responseID == 3)
     return eleInfo.setVector(crdTransf->getBasicTrialDisp());
@@ -1548,7 +1886,8 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
   else if (responseID == 4) {
     static Vector vp(6);
     static Vector ve(6);
-    const Matrix &kb = this->getInitialBasicStiff();
+    static Matrix kb(6,6);
+    this->getBasicStiff(kb,1);
     kb.Solve(q, ve);
     vp = crdTransf->getBasicTrialDisp();
     vp -= ve;
@@ -1575,19 +1914,11 @@ DispBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return eleInfo.setVector(weights);
   }
 
-  else if (responseID >= 201 && responseID <= 203) {
-    static Vector xlocal(3);
-    static Vector ylocal(3);
-    static Vector zlocal(3);
-
-    crdTransf->getLocalAxes(xlocal,ylocal,zlocal);
-    
-    if (responseID == 201)
-      return eleInfo.setVector(xlocal);
-    if (responseID == 202)
-      return eleInfo.setVector(ylocal);
-    if (responseID == 203)
-      return eleInfo.setVector(zlocal);    
+  else if (responseID == 110) {
+    ID tags(numSections);
+    for (int i = 0; i < numSections; i++)
+      tags(i) = theSections[i]->getTag();
+    return eleInfo.setID(tags);
   }
   
   //by SAJalali
@@ -1709,7 +2040,7 @@ DispBeamColumn3d::activateParameter(int passedParameterID)
 }
 
 const Matrix &
-DispBeamColumn3d::getKiSensitivity(int gradNumber)
+DispBeamColumn3d::getInitialStiffSensitivity(int gradNumber)
 {
 	K.Zero();
 	return K;

@@ -36,6 +36,8 @@
 #include <ElementResponse.h>
 #include <FrictionModel.h>
 #include <UniaxialMaterial.h>
+#include <Information.h>
+#include <Parameter.h>
 
 #include <float.h>
 #include <math.h>
@@ -892,51 +894,22 @@ int SingleFPSimple2d::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numMode)
 {
     int errCode = 0;
-    
-    // first determine the end points of the element based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();
-    Vector xp = end2Crd - end1Crd;
-    
+
+    const Vector& end2Crd = theNodes[1]->getCrds();
+
     static Vector v1(3);
     static Vector v2(3);
     static Vector v3(3);
-    
-    if (displayMode >= 0)  {
-        const Vector &end1Disp = theNodes[0]->getDisp();
-        const Vector &end2Disp = theNodes[1]->getDisp();
-        
-        for (int i=0; i<2; i++)  {
-            v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v3(i) = end2Crd(i) + end2Disp(i)*fact;
-        }
-        v2(0) = end1Crd(0) + (end2Disp(0) + xp(1)*end2Disp(2))*fact;
-        v2(1) = end1Crd(1) + (end2Disp(1) - xp(0)*end2Disp(2))*fact;
-    } else  {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-        const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-        
-        if (eigen1.noCols() >= mode)  {
-            for (int i=0; i<2; i++)  {
-                v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v3(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-            }
-            v2(0) = end1Crd(0) + (eigen2(0,mode-1) + xp(1)*eigen2(2,mode-1))*fact;
-            v2(1) = end1Crd(1) + (eigen2(1,mode-1) - xp(0)*eigen2(2,mode-1))*fact;
-        } else  {
-            for (int i=0; i<2; i++)  {
-                v1(i) = end1Crd(i);
-                v2(i) = end1Crd(i);
-                v3(i) = end2Crd(i);
-            }
-        }
-    }
-    
-    errCode += theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
-    errCode += theViewer.drawLine (v2, v3, 1.0, 1.0, this->getTag(), 0);
-    
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    for (int i = 0; i < 2; i++)
+        v3(i) = v1(i) + v2(i) - end2Crd(i);
+
+    errCode += theViewer.drawLine(v1, v3, 1.0, 1.0, this->getTag(), 0);
+    errCode += theViewer.drawLine(v3, v2, 1.0, 1.0, this->getTag(), 0);
+
     return errCode;
 }
 
@@ -1190,4 +1163,30 @@ double SingleFPSimple2d::sgn(double x)
         return -1.0;
     else
         return 0.0;
+}
+
+int
+SingleFPSimple2d::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 1)
+    return -1;
+
+  if (strcmp(argv[0],"R") == 0 || strcmp(argv[0],"Reff") == 0) {
+    param.setValue(Reff);
+    return param.addObject(1,this);
+  }
+  else
+    return theFrnMdl->setParameter(argv, argc, param);
+}
+
+int
+SingleFPSimple2d::updateParameter(int parameterID, Information &info)
+{
+  switch (parameterID) {
+  case 1:
+    Reff = info.theDouble;
+    return 0;
+  default:
+    return -1;
+  }
 }

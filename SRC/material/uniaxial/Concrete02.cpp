@@ -66,19 +66,22 @@ OPS_Concrete02()
 
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 7) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+  if (numData != 4 && numData != 7) {
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << " fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02 " << iData[0] << " fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
 
   // Parsing was successful, allocate the material
-  theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+  if (numData == 7)
+    theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+  else
+    theMaterial = new Concrete02(iData[0], dData[0], dData[1], dData[2], dData[3]);
   
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Concrete02 Material\n";
@@ -96,12 +99,44 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   ecminP = 0.0;
   deptP = 0.0;
 
+  if (fc > 0) fc = -fc;
+  if (epsc0 > 0) epsc0 = -epsc0;
+  if (fcu > 0) fcu = -fcu;
+  if (epscu > 0) epscu = -epscu;
+
   eP = 2.0*fc/epsc0;
   epsP = 0.0;
   sigP = 0.0;
   eps = 0.0;
   sig = 0.0;
   e = 2.0*fc/epsc0;
+}
+
+Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
+		       double _epscu):
+  UniaxialMaterial(tag, MAT_TAG_Concrete02),
+  fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu)
+{
+  ecminP = 0.0;
+  deptP = 0.0;
+
+  if (fc > 0) fc = -fc;
+  if (epsc0 > 0) epsc0 = -epsc0;
+  if (fcu > 0) fcu = -fcu;
+  if (epscu > 0) epscu = -epscu;
+	  
+  eP = 2.0*fc/epsc0;
+  epsP = 0.0;
+  sigP = 0.0;
+  eps = 0.0;
+  sig = 0.0;
+  e = 2.0*fc/epsc0;
+
+  rat = 0.1;
+  ft = 0.1*fc;
+  if (ft < 0.0)
+    ft = -ft;
+  Ets = 0.1*fc/epsc0;
 }
 
 Concrete02::Concrete02(void):
@@ -134,7 +169,7 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
 {
   double  ec0 = fc * 2. / epsc0;
 
-  // retrieve concrete hitory variables
+  // retrieve concrete history variables
 
   ecmin = ecminP;
   dept = deptP;

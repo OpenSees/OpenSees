@@ -220,7 +220,7 @@ int FullGenEigenSOE::addM(const Matrix &m, const ID &id, double fact)
             } 
         }  // for i
     }
-
+    
     return 0;
 }
 

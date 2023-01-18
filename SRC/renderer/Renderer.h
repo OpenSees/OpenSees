@@ -67,14 +67,10 @@ class Renderer
     virtual int drawPoint(const Vector &, float V1, int tag = 0, int mode = 0, int width = 1) =0;
     virtual int drawPoint(const Vector &, const Vector &rgb1, int tag = 0, int mode = 0, int width = 1) =0;
 
-    virtual int drawLine(const Vector &, const Vector &, float V1, float V2, int tag = 0, int mode = 0,
-			 int width = 1, int style = 1) =0;
-			 
-    
+    virtual int drawLine(const Vector &, const Vector &, 
+        float V1, float V2, int tag = 0, int mode = 0) =0;
     virtual int drawLine(const Vector &end1, const Vector &end2, 
-			 const Vector &rgb1, const Vector &rgb2,
-			 int tag = 0, int mode = 0,
-			 int width = 1, int style = 1) =0;
+			 const Vector &rgb1, const Vector &rgb2,int tag = 0, int mode = 0) =0;
     
     virtual int drawCube(const Matrix &points, const Vector &values, int tag = 0, int mode = 0);
 
@@ -106,6 +102,7 @@ class Renderer
 
     virtual int setProjectionMode(const char *mode) =0; //parallel or perspective
     virtual int setFillMode(const char *mode) =0;    // wire or fill
+    virtual int setLineWidth(int width) =0;    // line width
     
     virtual int setPRP(float u, float v, float n) =0; // eye location if 
 	                       // perspective, dirn to +ViewPlane if parallel

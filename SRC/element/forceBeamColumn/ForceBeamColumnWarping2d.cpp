@@ -102,8 +102,8 @@ void* OPS_ForceBeamColumnWarping2d()
 
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
-    if(ndm != 2 || ndf != 3) {
-	opserr<<"ndm must be 2 and ndf must be 3\n";
+    if(ndm != 2 || ndf != 4) {
+	opserr<<"ndm must be 2 and ndf must be 4\n";
 	return 0;
     }
 
@@ -2515,42 +2515,15 @@ ForceBeamColumnWarping2d::setSectionPointers(int numSec, SectionForceDeformation
 }
 
 int
-ForceBeamColumnWarping2d::displaySelf(Renderer &theViewer, int displayMode, float fact)
+ForceBeamColumnWarping2d::displaySelf(Renderer &theViewer, int displayMode, float fact, const char** modes, int numMode)
 {
-  // first determine the end points of the beam based on
-  // the display factor (a measure of the distorted image)
-  const Vector &end1Crd = theNodes[0]->getCrds();
-  const Vector &end2Crd = theNodes[1]->getCrds();	
+    static Vector v1(3);
+    static Vector v2(3);
 
-  static Vector v1(NEBD);
-  static Vector v2(NEBD);
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
 
-  if (displayMode >= 0) {
-    const Vector &end1Disp = theNodes[0]->getDisp();
-    const Vector &end2Disp = theNodes[1]->getDisp();
-    
-    for (int i = 0; i < 2; i++) {
-      v1(i) = end1Crd(i) + end1Disp(i)*fact;
-      v2(i) = end2Crd(i) + end2Disp(i)*fact;    
-    }
-  } else {
-    int mode = displayMode  *  -1;
-    const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-    const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-    if (eigen1.noCols() >= mode) {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-	v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;    
-      }    
-    } else {
-      for (int i = 0; i < 2; i++) {
-	v1(i) = end1Crd(i);
-	v2(i) = end2Crd(i);
-      }    
-    }
-  }
-  
-  return theViewer.drawLine (v1, v2, 1.0, 1.0);
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag());
 }
 
 Response*

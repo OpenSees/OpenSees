@@ -51,15 +51,21 @@ void* OPS_NewtonCotesBeamIntegration(int&,ID&);
 void* OPS_RadauBeamIntegration(int&,ID&);
 void* OPS_TrapezoidalBeamIntegration(int&,ID&);
 void* OPS_CompositeSimpsonBeamIntegration(int&,ID&);
+void* OPS_SimpsonBeamIntegration(int&,ID&);
 void* OPS_UserDefinedBeamIntegration(int&,ID&);
 void* OPS_FixedLocationBeamIntegration(int&,ID&);
 void* OPS_LowOrderBeamIntegration(int&,ID&);
 void* OPS_MidDistanceBeamIntegration(int&,ID&);
+void* OPS_ChebyshevBeamIntegration(int&,ID&);
+void* OPS_RegularizedHingeBeamIntegration(int&,ID&);
 void* OPS_UserHingeBeamIntegration(int&,ID&);
 void* OPS_HingeMidpointBeamIntegration(int&,ID&);
 void* OPS_HingeRadauBeamIntegration(int&,ID&);
 void* OPS_HingeRadauTwoBeamIntegration(int&,ID&);
 void* OPS_HingeEndpointBeamIntegration(int&,ID&);
+void* OPS_ConcentratedPlasticityBeamIntegration(int&, ID&);
+void* OPS_ConcentratedCurvatureBeamIntegration(int&, ID&);
+
 
 namespace {
     struct char_cmp { 
@@ -77,19 +83,24 @@ namespace {
     int setUpFunctions(void) {
 	functionMap.insert(std::make_pair("Lobatto", &OPS_LobattoBeamIntegration));
 	functionMap.insert(std::make_pair("Legendre", &OPS_LegendreBeamIntegration));
+	functionMap.insert(std::make_pair("Chebyshev", &OPS_ChebyshevBeamIntegration));	
 	functionMap.insert(std::make_pair("NewtonCotes", &OPS_NewtonCotesBeamIntegration));
 	functionMap.insert(std::make_pair("Radau", &OPS_RadauBeamIntegration));
 	functionMap.insert(std::make_pair("Trapezoidal", &OPS_TrapezoidalBeamIntegration));
 	functionMap.insert(std::make_pair("CompositeSimpson", &OPS_CompositeSimpsonBeamIntegration));
+	functionMap.insert(std::make_pair("Simpson", &OPS_SimpsonBeamIntegration));
 	functionMap.insert(std::make_pair("UserDefined", &OPS_UserDefinedBeamIntegration));
 	functionMap.insert(std::make_pair("FixedLocation", &OPS_FixedLocationBeamIntegration));
 	functionMap.insert(std::make_pair("LowOrder", &OPS_LowOrderBeamIntegration));
 	functionMap.insert(std::make_pair("MidDistance", &OPS_MidDistanceBeamIntegration));
-	functionMap.insert(std::make_pair("UserHinge", &OPS_UserHingeBeamIntegration));
+	functionMap.insert(std::make_pair("RegularizedHinge", &OPS_RegularizedHingeBeamIntegration));
+	functionMap.insert(std::make_pair("UserHinge", &OPS_UserHingeBeamIntegration));	
 	functionMap.insert(std::make_pair("HingeMidpoint", &OPS_HingeMidpointBeamIntegration));
 	functionMap.insert(std::make_pair("HingeRadau", &OPS_HingeRadauBeamIntegration));
 	functionMap.insert(std::make_pair("HingeRadauTwo", &OPS_HingeRadauTwoBeamIntegration));
 	functionMap.insert(std::make_pair("HingeEndpoint", &OPS_HingeEndpointBeamIntegration));
+	functionMap.insert(std::make_pair("ConcentratedPlasticity", &OPS_ConcentratedPlasticityBeamIntegration));
+	functionMap.insert(std::make_pair("ConcentratedCurvature", &OPS_ConcentratedCurvatureBeamIntegration));
 	return 0;
     }
     

@@ -52,7 +52,7 @@ void* OPS_CTestEnergyIncr()
     double tol = 1e-6;
     int numData = 1;
     if(OPS_GetDoubleInput(&numData,&tol) < 0) {
-	opserr << "WARNING NormUnbalance failed to read tol\n";
+	opserr << "WARNING EnergyIncr failed to read tol\n";
 	return 0;
     }
 
@@ -61,7 +61,7 @@ void* OPS_CTestEnergyIncr()
     if(numData > 3) numData = 3;
     int data[3] = {0,0,2};
     if(OPS_GetIntInput(&numData,&data[0]) < 0) {
-	opserr << "WARNING NormUnbalance failed to read int values\n";
+	opserr << "WARNING EnergyIncr failed to read int values\n";
 	return 0;
     }
 
@@ -70,7 +70,7 @@ void* OPS_CTestEnergyIncr()
     if(OPS_GetNumRemainingInputArgs() > 0) {
 	numData = 1;
 	if(OPS_GetDoubleInput(&numData,&maxTol) < 0) {
-	    opserr << "WARNING NormUnbalance failed to read maxTol\n";
+	    opserr << "WARNING EnergyIncr failed to read maxTol\n";
 	    return 0;
 	}
     }
@@ -157,12 +157,12 @@ int CTestEnergyIncr::test(void)
     // print the data if required
     if (printFlag == 1) {
         opserr << "CTestEnergyIncr::test() - iteration: " << currentIter;
-        opserr << " current EnergyIncr: " << product << " (max: " << tol << ")\n";
+        opserr << " current EnergyIncr: " << product << " (max: " << tol << " norm x: " << x.pNorm(nType) << " norm b: " << b.pNorm(nType) << ")\n";
     }
     if (printFlag == 4) {
         opserr << "CTestEnergyIncr::test() - iteration: " << currentIter;
         opserr << " current EnergyIncr: " << product << " (max: " << tol << ")\n";
-        opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm deltaR: " << b.pNorm(nType) << endln;
+        opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm R: " << b.pNorm(nType) << endln;
         opserr << "\tdeltaX: " << x << "\tdeltaR: " << b;
     }
     
@@ -179,17 +179,17 @@ int CTestEnergyIncr::test(void)
                 opserr << endln;
             else if (printFlag == 2 || printFlag == 6) {
                 opserr << "CTestEnergyIncr::test() - iteration: " << currentIter;
-                opserr << " last EnergyIncr: " << product << " (max: " << tol << ")\n";
+                opserr << " last EnergyIncr: " << product << " (max: " << tol << " norm x: " << x.pNorm(nType) << " norm b: " << b.pNorm(nType) << ")\n";
             }
         }
         
-        // return the number of times test has been called - SUCCESSFULL
+        // return the number of times test has been called - SUCCESSFUL
         return currentIter;
     }
     
     // algo failed to converged after specified number of iterations - but RETURN OK
     else if ((printFlag == 5 || printFlag == 6) && currentIter >= maxNumIter) {
-        opserr << "WARNING: CTestEnergyIncr::test() - failed to converge but goin on -";
+        opserr << "WARNING: CTestEnergyIncr::test() - failed to converge but going on -";
         opserr << " current EnergyIncr: " << product << " (max: " << tol << ")\n";
         opserr << "\tNorm deltaX: " << x.pNorm(nType) << ", Norm deltaR: " << b.pNorm(nType) << endln;
         return currentIter;

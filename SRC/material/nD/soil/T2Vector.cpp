@@ -135,7 +135,7 @@ T2Vector::T2Vector(const Vector & deviat_init, double volume_init)
     exit(-1);
   }
 
-  //make sure the deviator has truely volume=0 
+  //make sure the deviator has truly volume=0 
   double devolum = (deviat_init[0]+deviat_init[1]+deviat_init[2])/3.;
 
   for(int i=0; i<3; i++){
@@ -183,7 +183,7 @@ T2Vector::setData(const Vector & deviat, double volume)
     exit(-1);
   }
 
-  //make sure the deviator has truely volume=0 
+  //make sure the deviator has truly volume=0 
   double devolum = (deviat[0]+deviat[1]+deviat[2])/3.;
 
   for(int i=0; i<3; i++){

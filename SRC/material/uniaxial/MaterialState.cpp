@@ -54,15 +54,14 @@ MaterialState::getVariable(int variableID, double &info)
   return -1;
 }
 
-int
-MaterialState::setParameter(const char **argv, int argc,
-			    Information &eleInformation)
+Response*
+MaterialState::setResponse(const char **argv, int argc, OPS_Stream &s)
 {
-  return -1;
+  return 0;
 }
 
-int
-MaterialState::updateParameter(int responseID, Information &eleInformation)
+int 
+MaterialState::getResponse(int responseID, Information &info)
 {
   return -1;
 }

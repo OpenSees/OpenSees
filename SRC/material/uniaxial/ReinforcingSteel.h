@@ -45,7 +45,7 @@
 // eq 12, 16, 20, 24 etc... failure to add branches 4 at a time will cause problems.
 // A higher number will result in better tracking of the loop memory effects at the cost of additional memory usage
 // each pair of rules requires 11 additional double variables.
-const int LastRule_RS=20;  // must be divisable by 4!!!!!!!!!!!
+const int LastRule_RS=20;  // must be divisible by 4!!!!!!!!!!!
 
 class ReinforcingSteel : public UniaxialMaterial
 {

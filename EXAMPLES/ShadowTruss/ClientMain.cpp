@@ -148,7 +148,7 @@ int main(int argc, char **argv)
     
     TimeSeries *theSeries = new LinearSeries();
     
-    // construct a load pattren using constructor:
+    // construct a load pattern using constructor:
     //		LoadPattern(tag)
     // and then set it's TimeSeries and add it to the domain
 

@@ -18,17 +18,20 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
 // Created: 03/13
-// Revision: A
+// Revision: B
 //
 // Purpose: This file contains the class definition for ElasticTimoshenkoBeam3d.
 // ElasticTimoshenkoBeam3d is a 3d beam element. As such it can only
 // connect to a node with 6-dof. 
+//
+// Revision Log:
+//  - Revision B
+//      Date:   12/24/2020
+//      By:     Pearl Ranchal (ranchal@berkeley.edu)
+//      Notes:  In setUp(), get element length from theCoordTransf instead of computing from nodal coordinates.
+// 
 
 #include <ElasticTimoshenkoBeam3d.h>
 
@@ -42,6 +45,7 @@
 #include <Parameter.h>
 #include <ElementResponse.h>
 #include <ElementalLoad.h>
+#include <SectionForceDeformation.h>
 #include <elementAPI.h>
 
 #include <math.h>
@@ -70,11 +74,12 @@ void *OPS_ElasticTimoshenkoBeam3d()
     }
     
     int numData;
-    int iData[5];     // tag, iNode, jNode, transTag, cMass
+    int iData[6];     // tag, iNode, jNode, transTag, cMass, geomNL
     double dData[9];  // E, G, A, Jx, Iy, Iz, Avy, Avz, mass
     
     iData[4] = 0;     // cMass
     dData[8] = 0.0;   // mass per unit length
+    iData[5] = 0;     // Geometric linear
     
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
@@ -118,23 +123,26 @@ void *OPS_ElasticTimoshenkoBeam3d()
         if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0))  {
             iData[4] = 1;  // consistent mass matrix
         }
+        if ((strcmp(argvLoc, "-geomNonlinear") == 0) || (strcmp(argvLoc, "geomNonlinear") == 0))  {
+            iData[5] = 1;  // geometric nonlinearity within the element
+        }		
         numRemainingArgs = OPS_GetNumRemainingInputArgs();      
     }
     
     theElement = new ElasticTimoshenkoBeam3d(iData[0], iData[1], iData[2],
-        dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
-        dData[7], *theTrans, dData[8], iData[4]);
+					     dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
+					     dData[7], *theTrans, dData[8], iData[4], iData[5]);
     
     return theElement;
 }
 
 
 ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2, 
-    double e, double g, double a, double jx, double iy, double iz, double avy,
-    double avz, CrdTransf &coordTransf, double r, int cm)
+						 double e, double g, double a, double jx, double iy, double iz, double avy,
+						 double avz, CrdTransf &coordTransf, double r, int cm, int gnl)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam3d),
     connectedExternalNodes(2), theCoordTransf(0), E(e), G(g), A(a), Jx(jx),
-    Iy(iy), Iz(iz), Avy(avy), Avz(avz), rho(r), cMass(cm), nlGeo(0), phiY(0.0),
+    Iy(iy), Iz(iz), Avy(avy), Avz(avz), rho(r), cMass(cm), nlGeo(gnl), phiY(0.0),
     phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12), kl(12,12), klgeo(12,12),
     Tgl(12,12), Ki(12,12), M(12,12), theLoad(12)
 {
@@ -159,7 +167,10 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
             << "failed to get copy of coordinate transformation.\n";
         exit(-1);
     }
-    
+
+    // Now reading geometric nonlinear flag from user input
+    //
+    /*    
     // get coordinate transformation type and save flag
     if (strncmp(theCoordTransf->getClassType(),"Linear",6) == 0)  {
         nlGeo = 0;
@@ -172,7 +183,74 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
             << "Unsupported Corotational transformation assigned.\n"
             << "Using PDelta transformation instead.\n";
     }
+    */
     
+    // zero fixed end forces vector
+    ql0.Zero();
+}
+
+ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2, 
+						 SectionForceDeformation &section,
+						 CrdTransf &coordTransf, double r, int cm, int gnl)
+    : Element(tag, ELE_TAG_ElasticTimoshenkoBeam3d),
+    connectedExternalNodes(2), theCoordTransf(0), 
+    rho(r), cMass(cm), nlGeo(gnl), phiY(0.0),
+    phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12), kl(12,12), klgeo(12,12),
+    Tgl(12,12), Ki(12,12), M(12,12), theLoad(12)
+{
+  E = 1.0;
+  G = 1.0;
+
+  const Matrix &sectTangent = section.getInitialTangent();
+  const ID &sectCode = section.getType();
+  for (int i=0; i<sectCode.Size(); i++) {
+    int code = sectCode(i);
+    switch(code) {
+    case SECTION_RESPONSE_P:
+      A = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MZ:
+      Iz = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_MY:
+      Iy = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_VY:
+      Avy = sectTangent(i,i);
+      break;
+    case SECTION_RESPONSE_VZ:
+      Avz = sectTangent(i,i);
+      break;      
+    case SECTION_RESPONSE_T:
+      Jx = sectTangent(i,i);
+      break;
+    default:
+      break;
+    }
+  }
+  
+    // ensure the connectedExternalNode ID is of correct size & set values
+    if (connectedExternalNodes.Size() != 2)  {
+        opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - element: "
+            << this->getTag() << " - failed to create an ID of size 2.\n";
+        exit(-1);
+    }
+    
+    connectedExternalNodes(0) = Nd1;
+    connectedExternalNodes(1) = Nd2;
+    
+    // set node pointers to NULL
+    for (int i=0; i<2; i++)
+        theNodes[i] = 0;
+    
+    // get a copy of the coordinate transformation
+    theCoordTransf = coordTransf.getCopy3d();
+    if (!theCoordTransf)  {
+        opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - "
+            << "failed to get copy of coordinate transformation.\n";
+        exit(-1);
+    }
+
     // zero fixed end forces vector
     ql0.Zero();
 }
@@ -648,40 +726,13 @@ int ElasticTimoshenkoBeam3d::recvSelf(int commitTag, Channel &rChannel,
 int ElasticTimoshenkoBeam3d::displaySelf(Renderer &theViewer,
     int displayMode, float fact, const char **modes, int numMode)
 {
-    // first determine the end points of the quad based on
-    // the display factor (a measure of the distorted image)
-    const Vector &end1Crd = theNodes[0]->getCrds();
-    const Vector &end2Crd = theNodes[1]->getCrds();	
-    
     static Vector v1(3);
     static Vector v2(3);
-    
-    if (displayMode >= 0) {
-        const Vector &end1Disp = theNodes[0]->getDisp();
-        const Vector &end2Disp = theNodes[1]->getDisp();
-        
-        for (int i = 0; i < 3; i++) {
-            v1(i) = end1Crd(i) + end1Disp(i)*fact;
-            v2(i) = end2Crd(i) + end2Disp(i)*fact;
-        }
-    } else {
-        int mode = displayMode * -1;
-        const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-        const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-        if (eigen1.noCols() >= mode) {
-            for (int i = 0; i < 3; i++) {
-                v1(i) = end1Crd(i) + eigen1(i,mode-1)*fact;
-                v2(i) = end2Crd(i) + eigen2(i,mode-1)*fact;
-            }    
-        } else {
-            for (int i = 0; i < 3; i++) {
-                v1(i) = end1Crd(i);
-                v2(i) = end2Crd(i);
-            }    
-        }
-    }
-    
-    return theViewer.drawLine (v1, v2, 1.0, 1.0, this->getTag(), 0);
+
+    theNodes[0]->getDisplayCrds(v1, fact, displayMode);
+    theNodes[1]->getDisplayCrds(v2, fact, displayMode);
+
+    return theViewer.drawLine(v1, v2, 1.0, 1.0, this->getTag(), 0);
 }
 
 
@@ -771,7 +822,10 @@ Response* ElasticTimoshenkoBeam3d::setResponse(const char **argv, int argc,
     }
     
     output.endTag(); // ElementOutput
-    
+
+    if (theResponse == 0)
+      theResponse = theCoordTransf->setResponse(argv, argc, output);
+  
     return theResponse;
 }
 
@@ -783,6 +837,7 @@ int ElasticTimoshenkoBeam3d::getResponse (int responseID, Information &eleInfo)
         return eleInfo.setVector(this->getResistingForce());
     
     case 2: // local forces
+	    this->getResistingForce();
         theVector.Zero();
         // determine resisting forces in local system
         theVector = ql;
@@ -802,36 +857,52 @@ int ElasticTimoshenkoBeam3d::setParameter(const char **argv,
         return -1;
     
     // E of the beam
-    if (strcmp(argv[0],"E") == 0)
-        return param.addObject(1, this);
+    if (strcmp(argv[0],"E") == 0) {
+      param.setValue(E);
+      return param.addObject(1, this);
+    }
     
     // G of the beam
-    if (strcmp(argv[0],"G") == 0)
-        return param.addObject(2, this);
+    if (strcmp(argv[0],"G") == 0) {
+      param.setValue(G);
+      return param.addObject(2, this);
+    }
     
     // A of the beam
-    if (strcmp(argv[0],"A") == 0)
-        return param.addObject(3, this);
+    if (strcmp(argv[0],"A") == 0) {
+      param.setValue(A);
+      return param.addObject(3, this);
+    }
     
     // J of the beam
-    if (strcmp(argv[0],"J") == 0)
-        return param.addObject(4, this);
+    if (strcmp(argv[0],"J") == 0) {
+      param.setValue(Jx);
+      return param.addObject(4, this);
+    }
     
     // Iy of the beam
-    if (strcmp(argv[0],"Iy") == 0)
-        return param.addObject(5, this);
+    if (strcmp(argv[0],"Iy") == 0) {
+      param.setValue(Iy);
+      return param.addObject(5, this);
+    }
     
     // Iz of the beam
-    if (strcmp(argv[0],"Iz") == 0)
-        return param.addObject(6, this);
+    if (strcmp(argv[0],"Iz") == 0) {
+      param.setValue(Iz);
+      return param.addObject(6, this);
+    }
     
     // Avy of the beam
-    if (strcmp(argv[0],"Avy") == 0)
-        return param.addObject(7, this);
+    if (strcmp(argv[0],"Avy") == 0) {
+      param.setValue(Avy);
+      return param.addObject(7, this);
+    }
     
     // Avz of the beam
-    if (strcmp(argv[0],"Avz") == 0)
-        return param.addObject(8, this);
+    if (strcmp(argv[0],"Avz") == 0) {
+      param.setValue(Avz);
+      return param.addObject(8, this);
+    }
     
     return -1;
 }
@@ -845,70 +916,44 @@ int ElasticTimoshenkoBeam3d::updateParameter (int parameterID,
         return -1;
     case 1:
         E = info.theDouble;
-        return 0;
+	break;
     case 2:
         G = info.theDouble;
-        return 0;
+	break;
     case 3:
         A = info.theDouble;
-        return 0;
+	break;
     case 4:
         Jx = info.theDouble;
-        return 0;
+	break;
     case 5:
         Iy = info.theDouble;
-        return 0;
+	break;
     case 6:
         Iz = info.theDouble;
-        return 0;
+	break;
     case 7:
         Avy = info.theDouble;
-        return 0;
+	break;
     case 8:
         Avz = info.theDouble;
-        return 0;
+	break;
     default:
         return -1;
     }
+
+    // Recalculate matrices
+    this->setUp();
+
+    return 0;
 }
 
 
 void ElasticTimoshenkoBeam3d::setUp()
-{
-    // element projection
-    static Vector dx(3);
-    
-    const Vector &ndICoords = theNodes[0]->getCrds();
-    const Vector &ndJCoords = theNodes[1]->getCrds();
-    
-    dx = ndJCoords - ndICoords;
-    
-    /*if (nodeJOffset != 0) {
-        dx(0) += nodeJOffset[0];
-        dx(1) += nodeJOffset[1];
-        dx(2) += nodeJOffset[2];
-    }
-    
-    if (nodeIOffset != 0) {
-        dx(0) -= nodeIOffset[0];
-        dx(1) -= nodeIOffset[1];
-        dx(2) -= nodeIOffset[2];
-    }
-    
-    if (nodeIInitialDisp != 0) {
-        dx(0) -= nodeIInitialDisp[0];
-        dx(1) -= nodeIInitialDisp[1];
-        dx(2) -= nodeIInitialDisp[2];
-    }
-    
-    if (nodeJInitialDisp != 0) {
-        dx(0) += nodeJInitialDisp[0];
-        dx(1) += nodeJInitialDisp[1];
-        dx(2) += nodeJInitialDisp[2];
-    }*/
-    
+{  
     // determine the element length
-    L = dx.Norm();
+    L = theCoordTransf->getInitialLength();
+
     if (L == 0.0)  {
         opserr << "WARNING ElasticTimoshenkoBeam3d::setUp()  - "
             << "element: " << this->getTag() << " has zero length.\n";

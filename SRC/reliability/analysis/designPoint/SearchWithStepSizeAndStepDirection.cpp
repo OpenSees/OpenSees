@@ -142,7 +142,7 @@ SearchWithStepSizeAndStepDirection::gradientStandardNormal(double gFunctionValue
     double normOfGradient = 0;
     
     // temporary storage
-    Vector temp_grad(numberOfParameters);
+    // Vector temp_grad(numberOfParameters);
     
     
     // Gradient in original space (make sure gFunctionValue is current)
@@ -152,13 +152,13 @@ SearchWithStepSizeAndStepDirection::gradientStandardNormal(double gFunctionValue
                << " could not compute gradients of the limit-state function. " << endln;
         return -1;
     }
-    temp_grad = theGradientEvaluator->getGradient();
+    *gradientInOriginalSpace = theGradientEvaluator->getGradient();
     
     // map gradient from all parameters to just RVs
-    for (int j = 0; j < numberOfRandomVariables; j++) {
-        int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
-        (*gradientInOriginalSpace)(j) = temp_grad(param_indx);
-    }
+    // for (int j = 0; j < numberOfRandomVariables; j++) {
+    //     int param_indx = theReliabilityDomain->getParameterIndexFromRandomVariableIndex(j);
+    //     (*gradientInOriginalSpace)(j) = temp_grad(param_indx);
+    // }
     
     // Get Jacobian x-space to u-space
     result = theProbabilityTransformation->getJacobian_x_to_u(*Jxu);

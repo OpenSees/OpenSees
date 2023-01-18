@@ -118,6 +118,7 @@ public:
     // RWB; PyLiq1 & TzLiq1 need to see the excess pore pressure and initial stresses.
     friend class PyLiq1;
     friend class TzLiq1;
+    friend class QzLiq1; // Sumeet
 
 protected:
 
@@ -240,6 +241,8 @@ private:
      int  isCrossingNextSurface(void);
 
 	 double ContractionFactorC(void); // new calibration for sand3
+	 Vector stress0 = Vector(6); // for sand3
+	 bool stress0Initialized = false; // for sand3
 };
 
 #endif

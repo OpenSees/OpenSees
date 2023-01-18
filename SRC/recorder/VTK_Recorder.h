@@ -72,12 +72,13 @@ public:
     
 public:
   VTK_Recorder(const char *filename, const OutputData& ndata,
-	       const std::vector<EleData>& edata, int ind=2, int pre=10, double dt=0);
+	       const std::vector<EleData>& edata, int ind=2, int pre=10, double dt=0, double rTolDt=0.00001);
   VTK_Recorder();
   ~VTK_Recorder();
   
   int record(int commitTag, double timeStamp);
   int restart();
+  int flush();
   int domainChanged();    
   int setDomain(Domain &theDomain);
   int sendSelf(int commitTag, Channel &theChannel);  
@@ -105,6 +106,7 @@ public:
 
   double nextTimeStampToRecord;
   double deltaT;
+  double relDeltaTTol;
   
   char *name;
   int counter;

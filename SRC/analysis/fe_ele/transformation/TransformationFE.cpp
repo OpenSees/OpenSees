@@ -71,7 +71,7 @@ TransformationFE::TransformationFE(int tag, Element *ele)
     int numNodes = nodes.Size();
     theDOFs = new DOF_Group *[numNodes];
     if (theDOFs == 0) {
-	opserr << "FATAL TransformationFE::TransformationFE() - out of memory craeting ";
+	opserr << "FATAL TransformationFE::TransformationFE() - out of memory creating ";
 	opserr << "array of size : " << numNodes << " for storage of DOF_Group\n";
 	exit(-1);
     }

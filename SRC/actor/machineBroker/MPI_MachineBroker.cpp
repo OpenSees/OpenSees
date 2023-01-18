@@ -37,7 +37,11 @@
 MPI_MachineBroker::MPI_MachineBroker(FEM_ObjectBroker *theBroker, int argc, char **argv)
   :MachineBroker(theBroker)
 {
-  MPI_Init(&argc, &argv);
+  int flag = 0;
+  MPI_Initialized(&flag);
+  if (!flag) {
+      MPI_Init(&argc, &argv);
+  }
   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
   MPI_Comm_size(MPI_COMM_WORLD, &size);
 

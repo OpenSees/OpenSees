@@ -36,6 +36,7 @@
 #include <Element.h>
 #include <Matrix.h>
 
+class SectionForceDeformation;
 class CrdTransf;
 
 class ElasticTimoshenkoBeam2d : public Element
@@ -43,8 +44,12 @@ class ElasticTimoshenkoBeam2d : public Element
 public:
     // constructor
     ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2, double E, double G,
-        double A, double Iz, double Avy, CrdTransf &theTransf,
-        double rho = 0.0, int cMass = 0);
+			    double A, double Iz, double Avy, CrdTransf &theTransf,
+			    double rho = 0.0, int cMass = 0, int geomNonlinear = 0);
+    ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2, 
+			    SectionForceDeformation &section,
+			    CrdTransf &theTransf,
+			    double rho = 0.0, int cMass = 0, int geomNonlinear = 0);
     ElasticTimoshenkoBeam2d();
     
     // destructor

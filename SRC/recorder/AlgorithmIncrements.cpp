@@ -29,7 +29,7 @@
 //
 // Description: This file contains the class implementation for AlgorithmIncrements
 // AlgorithmIncrements is a class for building a Plane Frame model in an interpreted
-// enviroment. The constructor is used to add new commands to the interpreter,
+// environment. The constructor is used to add new commands to the interpreter,
 // these commands are also defined in this file.
 //
 // What: "@(#) AlgorithmIncrements.C, revA"
@@ -192,6 +192,15 @@ AlgorithmIncrements::playback(int cTag)
 int
 AlgorithmIncrements::restart(void)
 {
+  return 0;
+}
+
+int
+AlgorithmIncrements::flush(void)
+{
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
   return 0;
 }
 

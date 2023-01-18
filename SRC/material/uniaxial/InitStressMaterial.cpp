@@ -51,7 +51,7 @@ OPS_InitStressMaterial(void)
   double dData[1];
   int numData = 2;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid uniaxialMaterial InitStressMaterial $tag $otherTag" << endln;
+    opserr << "WARNING invalid uniaxialMaterial InitStressMaterial $tag $otherTag $sig0" << endln;
     return 0;
   }
 
@@ -253,11 +253,11 @@ InitStressMaterial::recvSelf(int cTag, Channel &theChannel,
     opserr << "InitStressMaterial::recvSelf() - failed to get the ID\n";
     return -1;
   }
-  this->setTag(int(dataID(0)));
+  this->setTag(dataID(0));
 
   // as no way to change material, don't have to check classTag of the material 
   if (theMaterial == 0) {
-    int matClassTag = int(dataID(1));
+    int matClassTag = dataID(1);
     theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "InitStressMaterial::recvSelf() - failed to create Material with classTag " 
@@ -285,9 +285,21 @@ InitStressMaterial::recvSelf(int cTag, Channel &theChannel,
 void 
 InitStressMaterial::Print(OPS_Stream &s, int flag)
 {
-  s << "InitStressMaterial tag: " << this->getTag() << endln;
-  s << "\tMaterial: " << theMaterial->getTag() << endln;
-  s << "\tinitital strain: " << epsInit << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "InitStressMaterial tag: " << this->getTag() << endln;
+        s << "\tMaterial: " << theMaterial->getTag() << endln;
+        s << "\tInitial stress: " << sigInit << endln;
+        s << "\tInitial strain: " << epsInit << endln;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"InitStressMaterial\", ";
+        s << "\"Material\": " << theMaterial->getTag() << ", ";
+        s << "\"initialStress\": " << sigInit << ", "; 
+        s << "\"initialStrain\": " << epsInit << "}";
+    }
 }
 
 int 

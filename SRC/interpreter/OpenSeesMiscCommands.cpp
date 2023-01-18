@@ -116,24 +116,68 @@ int OPS_calculateNodalReactions()
     return 0;
 }
 
-int OPS_rayleighDamping()
-{
+int OPS_rayleighDamping() {
     if (OPS_GetNumRemainingInputArgs() < 4) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - not enough arguments to command\n";
-	return -1;
+        opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - "
+                  "not enough arguments to command\n";
+        return -1;
     }
 
-    //double alphaM, betaK, betaK0, betaKc;
+    // double alphaM, betaK, betaK0, betaKc;
     double data[4];
     int numdata = 4;
     if (OPS_GetDoubleInput(&numdata, data) < 0) {
-	opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - could not read ? \n";
-	return -1;
+        opserr << "WARNING rayleigh alphaM? betaK? betaK0? betaKc? - "
+                  "could not read ? \n";
+        return -1;
     }
 
-    Domain* theDomain = OPS_GetDomain();
+    Domain *theDomain = OPS_GetDomain();
     if (theDomain == 0) return -1;
-    theDomain->setRayleighDampingFactors(data[0],data[1],data[2],data[3]);
+
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *option = OPS_GetString();
+        bool isEle = true;
+        if (strcmp(option, "-ele") == 0) {
+            isEle = true;
+        } else if (strcmp(option, "-node") == 0) {
+            isEle = false;
+        } else {
+            opserr << "WARNING: valid options are -ele or -node\n";
+            return -1;
+        }
+        numdata = OPS_GetNumRemainingInputArgs();
+        std::vector<int> tags(numdata);
+        if (OPS_GetIntInput(&numdata, &tags[0]) < 0) {
+            opserr << "WARNING: failed to get element tags\n";
+            return -1;
+        }
+
+        for (int i = 0; i < (int)tags.size(); ++i) {
+            if (isEle) {
+                Element *ele = theDomain->getElement(tags[i]);
+                if (ele == 0) {
+                    opserr << "WARNING: element " << tags[i]
+                           << " does not exist\n";
+                    return -1;
+                }
+                ele->setRayleighDampingFactors(data[0], data[1],
+                                               data[2], data[3]);
+            } else {
+                Node *node = theDomain->getNode(tags[i]);
+                if (node == 0) {
+                    opserr << "WARNING: node " << tags[i]
+                           << " does not exist\n";
+                    return -1;
+                }
+                node->setRayleighDampingFactor(data[0]);
+            }
+        }
+
+    } else {
+        theDomain->setRayleighDampingFactors(data[0], data[1],
+                                             data[2], data[3]);
+    }
 
     return 0;
 }
@@ -237,7 +281,7 @@ int OPS_removeObject()
 	}
     }
 
-    else if (strcmp(type,"loadPattern") == 0) {
+    else if (strcmp(type,"loadPattern") == 0 || strcmp(type,"pattern") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr << "WARNING want - remove loadPattern patternTag?\n";
 	    return -1;
@@ -557,7 +601,6 @@ int OPS_setNodeVel()
         vel = theNode->getVel();
         vel(dof) = value;
         theNode->setTrialVel(vel);
-	theNode->commitState();
     }
     if (commit)
         theNode->commitState();
@@ -687,7 +730,7 @@ int OPS_MeshRegion()
 	return -1;
     }
 
-    // now contine until end of command
+    // now continue until end of command
     bool only = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
@@ -1297,7 +1340,7 @@ int OPS_RigidDiaphragm()
 
 int OPS_addElementRayleigh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: setElementRayleighFactors elementTag?  alphaM? $betaK? $betaKinit? $betaKcomm? \n";
@@ -1363,12 +1406,15 @@ extern int OPS_TetMesh();
 extern int OPS_QuadMesh();
 extern int OPS_BgMesh();
 extern int OPS_ParticleGroup();
+extern int OPS_Flume();
+extern int OPS_BeamBrick();
+extern int OPS_BeamDisk();
 extern BackgroundMesh& OPS_getBgMesh();
 
 
 int OPS_mesh()
 {
-    // make sure corect number of arguments on command line
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "WARNING insufficient arguments\n";
         opserr << "Want: mesh type? ...>\n";
@@ -1390,6 +1436,12 @@ int OPS_mesh()
 	res = OPS_TetMesh();
     } else if (strcmp(type, "quad") == 0) {
 	res = OPS_QuadMesh();
+    } else if (strcmp(type, "flume") == 0) {
+	res = OPS_Flume();
+    } else if (strcmp(type, "beamBrick") == 0) {
+	res = OPS_BeamBrick();
+    } else if (strcmp(type, "beamDisk") == 0) {
+	res = OPS_BeamDisk();
     } else {
         opserr<<"WARNING: mesh type "<<type<<" is unknown\n";
         return -1;
@@ -1526,57 +1578,26 @@ int OPS_send()
         return -1;
     }
 
-    std::vector<int> idata(num);
     std::vector<double> ddata(num);
-    sdata = OPS_GetString();
-    MPI_Datatype datatype = MPI_CHAR;
-    if (strcmp(sdata,"Invalid String Input!") == 0) {
+    MPI_Datatype datatype = MPI_DOUBLE;
+    if (OPS_GetDoubleInput(&num, &ddata[0]) < 0) {
+        if (num > 1) {
+            opserr << "WARNING: data is string and size must be 1\n";
+            return -1;
+        }
+        datatype = MPI_CHAR;
         OPS_ResetCurrentInputArg(-1);
-        datatype = MPI_DOUBLE;
-        int numdata = 1;
-        if (OPS_GetDoubleInput(&numdata, &ddata[0]) < 0) {
-            OPS_ResetCurrentInputArg(-1);
-            datatype = MPI_INT;
-            if (OPS_GetIntInput(&numdata, &idata[0]) < 0) {
-                opserr << "WARNING: failed to detect data type\n";
-                return -1;
-            }
-        }
+        sdata = OPS_GetString();
     }
 
-    // get all data
-    if (num > 1 && datatype != MPI_CHAR) {
-        int numdata = num - 1;
-        if (datatype == MPI_DOUBLE) {
-            if (OPS_GetDoubleInput(&numdata, &ddata[1]) < 0) {
-                opserr << "WARNING: not all data is double\n";
-                return -1;
-            }
-        } else {
-            if (OPS_GetIntInput(&numdata, &idata[1]) < 0) {
-                opserr << "WARNING: not all data is int\n";
-                return -1;
-            }
-        }
-    }
-
-    // data length, 0-int, 1-double, 2-string
+    // data length, 1-double, 2-string
     int msgLength[2] = {0,0};
     void* buffer = 0;
-    if (datatype == MPI_INT) {
-
-        msgLength[0] = num;
-        msgLength[1] = 0;
-        buffer = (void *) &idata[0];
-
-    } else if (datatype == MPI_DOUBLE) {
-
+    if (datatype == MPI_DOUBLE) {
         msgLength[0] = num;
         msgLength[1] = 1;
         buffer = (void *) &ddata[0];
-
     } else {
-
         msgLength[0] = strlen(sdata)+1;
         msgLength[1] = 2;
         buffer = (void *) sdata;
@@ -1627,7 +1648,8 @@ int OPS_recv()
 
             sdata = OPS_GetString();
             if (strcmp(sdata, "ANY") == 0) {
-                otherPID = -2;
+                opserr << "WARNING: ANY pid is no longer available\n";
+                return -1;
             } else {
                 opserr << "WARNING: Invalid pid\n";
                 return -1;
@@ -1641,57 +1663,34 @@ int OPS_recv()
     // receive data
     MPI_Status status;
 
-	// receive length and type
-	int msgLength[2] = {0,0};
-	if (otherPID == -2) {
-        MPI_Recv((void *) (&msgLength[0]), 2, MPI_INT, MPI_ANY_SOURCE,
-                 0, MPI_COMM_WORLD, &status);
-    } else {
-        MPI_Recv((void *) (&msgLength[0]), 2, MPI_INT, otherPID,
-                 0, MPI_COMM_WORLD, &status);
-    }
+    // receive length and type
+    int msgLength[2] = {0, 0};
+    MPI_Recv((void *)(&msgLength[0]), 2, MPI_INT, otherPID, 0,
+             MPI_COMM_WORLD, &status);
 
-	// get data
+    // get data
     if (msgLength[0] > 0) {
 
         // get type
-        MPI_Datatype datatype = MPI_INT;
+        MPI_Datatype datatype = MPI_DOUBLE;
         char* gMsg = new char[msgLength[0]];
-        std::vector<int> idata(msgLength[0]);
         std::vector<double> ddata(msgLength[0]);
         void* buffer = 0;
-        if (msgLength[1] == 0) {
-
-            datatype = MPI_INT;
-            buffer = (void *) &idata[0];
-
-        } else if (msgLength[1] == 1) {
-
+        if (msgLength[1] == 1) {
             datatype = MPI_DOUBLE;
             buffer = (void *) &ddata[0];
-
         } else {
-
             datatype = MPI_CHAR;
             buffer = (void *) gMsg;
         }
 
         // receive data
-        if (otherPID == -2) {
-            MPI_Recv(buffer, msgLength[0], datatype, MPI_ANY_SOURCE,
-                     1, MPI_COMM_WORLD, &status);
-        } else {
-            MPI_Recv(buffer, msgLength[0], datatype, otherPID,
-                     1, MPI_COMM_WORLD, &status);
-        }
+        MPI_Recv(buffer, msgLength[0], datatype, otherPID, 1,
+                 MPI_COMM_WORLD, &status);
 
-	    // set oututs
-	    int res = 0;
-	    if (datatype == MPI_INT) {
-
-            res = OPS_SetIntOutput(&msgLength[0], &idata[0], false);
-
-	    } else if (datatype == MPI_DOUBLE) {
+        // set outputs
+        int res = 0;
+        if (datatype == MPI_DOUBLE) {
 
             res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0], false);
 
@@ -1735,48 +1734,22 @@ int OPS_Bcast() {
             return -1;
         }
 
-        std::vector<int> idata(num);
         std::vector<double> ddata(num);
-        const char* sdata = OPS_GetString();
-        datatype = MPI_CHAR;
-        if (strcmp(sdata,"Invalid String Input!") == 0) {
+        datatype = MPI_DOUBLE;
+        const char* sdata = 0;
+        if (OPS_GetDoubleInput(&num, &ddata[0]) < 0) {
+            if (num > 1) {
+                opserr
+                    << "WARNING: data is string and size must be 1\n";
+                return -1;
+            }
+            datatype = MPI_CHAR;
             OPS_ResetCurrentInputArg(-1);
-            datatype = MPI_DOUBLE;
-            int numdata = 1;
-            if (OPS_GetDoubleInput(&numdata, &ddata[0]) < 0) {
-                OPS_ResetCurrentInputArg(-1);
-                datatype = MPI_INT;
-                if (OPS_GetIntInput(&numdata, &idata[0]) < 0) {
-                    opserr << "WARNING: failed to detect data type\n";
-                    return -1;
-                }
-            }
+            sdata = OPS_GetString();
         }
 
-        // get all data
-        if (num > 1 && datatype != MPI_CHAR) {
-            int numdata = num - 1;
-            if (datatype == MPI_DOUBLE) {
-                if (OPS_GetDoubleInput(&numdata, &ddata[1]) < 0) {
-                    opserr << "WARNING: not all data is double\n";
-                    return -1;
-                }
-            } else {
-                if (OPS_GetIntInput(&numdata, &idata[1]) < 0) {
-                    opserr << "WARNING: not all data is int\n";
-                    return -1;
-                }
-            }
-        }
-
-        // data length, 0-int, 1-double, 2-string
-        if (datatype == MPI_INT) {
-
-            msgLength[0] = num;
-            msgLength[1] = 0;
-            buffer = (void *) &idata[0];
-
-        } else if (datatype == MPI_DOUBLE) {
+        // data length, 1-double, 2-string
+        if (datatype == MPI_DOUBLE) {
 
             msgLength[0] = num;
             msgLength[1] = 1;
@@ -1798,16 +1771,10 @@ int OPS_Bcast() {
         if (msgLength[0] > 0) {
 
             // get type
-            datatype = MPI_INT;
+            datatype = MPI_DOUBLE;
             char* gMsg = new char[msgLength[0]];
-            std::vector<int> idata(msgLength[0]);
             std::vector<double> ddata(msgLength[0]);
-            if (msgLength[1] == 0) {
-
-                datatype = MPI_INT;
-                buffer = (void *) &idata[0];
-
-            } else if (msgLength[1] == 1) {
+            if (msgLength[1] == 1) {
 
                 datatype = MPI_DOUBLE;
                 buffer = (void *) &ddata[0];
@@ -1819,13 +1786,9 @@ int OPS_Bcast() {
             }
             MPI_Bcast(buffer, msgLength[0], datatype, 0, MPI_COMM_WORLD);
 
-            // set oututs
+            // set outputs
             int res = 0;
-            if (datatype == MPI_INT) {
-
-                res = OPS_SetIntOutput(&msgLength[0], &idata[0], false);
-
-            } else if (datatype == MPI_DOUBLE) {
+            if (datatype == MPI_DOUBLE) {
 
                 res = OPS_SetDoubleOutput(&msgLength[0], &ddata[0], false);
 
@@ -1978,7 +1941,7 @@ int OPS_sdfResponse()
 	}
 	if (fabs(a) > amax) {
 	    amax = fabs(a);
-	    tamax = iter*dt;
+	    tamax = i*dt;
 	}
     }
   
@@ -2150,6 +2113,12 @@ int OPS_partition() {
     while ((ele = eles()) != 0) {
         const auto &elenodes = ele->getExternalNodes();
         for (int i = 0; i < elenodes.Size(); ++i) {
+            if (nind.find(elenodes(i)) == nind.end()) {
+                opserr << "Process " << pid << ": element " << ele->getTag()
+                << " has a node " << elenodes(i) 
+                << " that does not exist in domain \n";
+                return -1;
+            }
             eind.push_back(nind[elenodes(i)]);
         }
         eptr.push_back((idx_t)eind.size());
@@ -2208,13 +2177,10 @@ int OPS_partition() {
         idx_t objval;
 
         // call metis
-        auto res =
-            METIS_PartMeshNodal(&ne, &nn,
-                                &eptr[0], &eind[0], 
-                                NULL, NULL, &nparts, 
-                                NULL, options,
-                                &objval, 
-                                &epart[0], &npart[0]);
+        auto res = METIS_PartMeshNodal(
+            &ne, &nn, &eptr[0], &eind[0], NULL, NULL, &nparts,
+            NULL, options, &objval, &epart[0], &npart[0]);
+
 
         // check errors 
         if (res == METIS_ERROR_INPUT) {
@@ -2315,7 +2281,7 @@ int OPS_partition() {
         }
     }
 
-    // go throug load patterns
+    // go through load patterns
     auto& lps = domain->getLoadPatterns();
     LoadPattern* lp = 0;
     while ((lp = lps()) != 0) {

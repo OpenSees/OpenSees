@@ -278,7 +278,7 @@ TclModelBuilder_addFrameElement(ClientData clientData, Tcl_Interp *interp,
     
   }
   else {
-    opserr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is imcompatible with available frame elements\n";
+    opserr << "WARNING NDM = " << NDM << " and NDF = " << NDF << "is incompatible with available frame elements\n";
     return TCL_ERROR;
   }      
 

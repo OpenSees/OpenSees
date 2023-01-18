@@ -43,6 +43,9 @@
 
 #ifdef _PARALLEL_PROCESSING
 #include <PartitionedDomain.h>
+extern PartitionedDomain theDomain;
+#else
+extern Domain theDomain;
 #endif
 
 static int num_EmbeddedEPBeamInterface = 0;
@@ -90,20 +93,27 @@ EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag) : Element(tag, ELE_TAG
 
 }
 
-EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag, std::vector <int> beamTag, std::vector <int> solidTag, int crdTransfTag, int matTag,
-    std::vector <double>  beamRho, std::vector <double>  beamTheta, std::vector <double>  solidXi, std::vector <double>  solidEta,
-    std::vector <double>  solidZeta, double radius, std::vector <double> area, std::vector <double> length, 
-    bool writeConnectivity, const char * connectivityFN, double width) : Element(tag, ELE_TAG_EmbeddedEPBeamInterface),
-    m_beam_radius(radius), theMatTag(matTag), mQa(3, 3), mQb(3, 3), mQc(3, 3),
-    mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
+EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag,
+						 std::vector <int> beamTag,
+						 std::vector <int> solidTag,
+						 int crdTransfTag,
+						 int matTag,
+						 std::vector <double>  beamRho,
+						 std::vector <double>  beamTheta,
+						 std::vector <double>  solidXi,
+						 std::vector <double>  solidEta,
+						 std::vector <double>  solidZeta,
+						 double radius,
+						 std::vector <double> area,
+						 std::vector <double> length,
+						 Domain *theDomain,
+						 bool writeConnectivity,
+						 const char * connectivityFN,
+						 double width)
+: Element(tag, ELE_TAG_EmbeddedEPBeamInterface),
+  m_beam_radius(radius), theMatTag(matTag), mQa(3, 3), mQb(3, 3), mQc(3, 3),
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
 {
-    // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
-
     m_numEmbeddedPoints = solidTag.size();
     theSolidTags        = new int[m_numEmbeddedPoints];
     solidNodeTags       = new int[8 * m_numEmbeddedPoints];
@@ -127,7 +137,7 @@ EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag, std::vector <int> beam
         m_area(ii)       = area[ii];
         m_beamLength(ii) = length[ii];
 
-        theElement = theDomain.getElement(solidTag[ii]);
+        theElement = theDomain->getElement(solidTag[ii]);
         if (ii == 0)
             m_numSolidDOF = theElement->getNodePtrs()[0]->getNumberDOF();
         // opserr << "Point " << ii +1 << " : element " << solidTag[ii] << " at (" << solidXi[ii] << "," << solidEta[ii] << "," << solidZeta[ii] << ") , beam: " << beamTag << " at (" << beamRho[ii] << "," << beamTheta[ii] << ")" << endln;
@@ -137,7 +147,7 @@ EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag, std::vector <int> beam
             solidNodeTags[ii * 8 + jj] = theElement->getNodePtrs()[jj]->getTag();
         }
         uniqueBeamTags.insert(beamTag[ii]);
-        theElement = theDomain.getElement(beamTag[ii]);
+        theElement = theDomain->getElement(beamTag[ii]);
         // opserr << "Point " << ii +1 << " : element " << solidTag[ii] << " at (" << solidXi[ii] << "," << solidEta[ii] << "," << solidZeta[ii] << ") , beam: " << beamTag << " at (" << beamRho[ii] << "," << beamTheta[ii] << ")" << endln;
         for (int jj = 0; jj < 2; jj++)
         {
@@ -164,7 +174,7 @@ EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag, std::vector <int> beam
         m_solidNodeMap[*it] = count;
         externalNodes(count) = *it;
 
-        theNodes[count] = theDomain.getNode(*it);
+        theNodes[count] = theDomain->getNode(*it);
 
         Vector tempDisp = theNodes[count]->getDisp();
         m_solidInitDisp(count * 3 + 0) = tempDisp(0);
@@ -180,7 +190,7 @@ EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag, std::vector <int> beam
         m_beamNodeMap[*it] = count - curCount;
         externalNodes(count) = *it;
 
-        theNodes[count] = theDomain.getNode(*it);
+        theNodes[count] = theDomain->getNode(*it);
 
         Vector tempDisp = theNodes[count]->getDisp();
         m_beamInitDisp((count - curCount) * 6 + 0) = tempDisp(0);

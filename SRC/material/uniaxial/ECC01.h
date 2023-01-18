@@ -89,7 +89,7 @@ class ECC01 : public UniaxialMaterial
   
   /*** CONVERGED History Variables ***/
   double CminStrain;   // Smallest (most negative) previous concrete strain (compression)
-  double CmaxStrain;   // Largest previous conrete strain (tension)
+  double CmaxStrain;   // Largest previous concrete strain (tension)
   double Cstmp;			// temporary stress value, used to compute stresses and strains in re/unloading
   double Cetmp;			// temporary strain value, used to compute stresses and strains in re/unloading
   int Cindex;			// Index that tells you where you are on the stress-strain curve

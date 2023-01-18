@@ -19,7 +19,7 @@
 ** ****************************************************************** */
                                                                         
 // $Revision: 1.3 $
-// $Date: 2003-05-02 18:34:56 $
+// $Date: 2003/05/02 18:34:56 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/cell/QuadCell.cpp,v $
                                                                         
                                                                         
@@ -58,6 +58,11 @@ QuadCell::getVertCoords (void) const
    return vertCoord;
 }
 
+double QuadCell::getdValue (void) const
+{
+	double dVa=vertCoord(0,0);
+	return dVa;
+}
 void QuadCell::setVertCoords (const Matrix &vertexCoords)
 {
    vertCoord = vertexCoords;
