@@ -166,7 +166,7 @@ void *OPS_EnhancedQuad(const ID &info) {
 
         // get data
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 7) {
+        if (mdata.Size() < 3) {
             return 0;
         }
 
