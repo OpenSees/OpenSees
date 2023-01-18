@@ -415,6 +415,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    }
     if ((strcmp(argv[1],"Hertzdamp") == 0)) {
       void *theMat = OPS_Hertzdamp();
       if (theMat != 0) 
