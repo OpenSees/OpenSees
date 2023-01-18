@@ -70,6 +70,10 @@ void *OPS_ShellMITC4(const ID &info);
 
 void *OPS_FourNodeQuad(const ID& info);
 
+void *OPS_ConstantPressureVolumeQuad(const ID& info);
+
+void *OPS_EnhancedQuad(const ID& info);
+
 void *OPS_ShellNLDKGQ(const ID &info);
 
 void *OPS_ShellDKGQ(const ID &info);
@@ -388,6 +392,22 @@ Mesh::setEleArgs() {
         }
         numelenodes = 4;
 
+    } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
+        eleType = ELE_TAG_ConstantPressureVolumeQuad;
+        if (OPS_ConstantPressureVolumeQuad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
+    } else if (strcmp(type, "enhancedQuad") == 0) {
+        eleType = ELE_TAG_EnhancedQuad;
+        if (OPS_EnhancedQuad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
     } else if (strcmp(type, "ShellNLDKGQ") == 0) {
         eleType = ELE_TAG_ShellNLDKGQ;
         if (OPS_ShellNLDKGQ(info) == 0) {
@@ -519,6 +539,12 @@ Mesh::newElements(const ID &elends) {
             break;
         case ELE_TAG_FourNodeQuad:
             OPS_Func = OPS_FourNodeQuad;
+            break;
+        case ELE_TAG_ConstantPressureVolumeQuad:
+            OPS_Func = OPS_ConstantPressureVolumeQuad;
+            break;
+        case ELE_TAG_EnhancedQuad:
+            OPS_Func = OPS_EnhancedQuad;
             break;
         case ELE_TAG_ShellNLDKGQ:
 	  OPS_Func = OPS_ShellNLDKGQ;

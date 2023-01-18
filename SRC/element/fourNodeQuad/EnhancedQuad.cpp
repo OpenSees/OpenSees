@@ -89,6 +89,10 @@ void* OPS_EnhancedQuad()
                             *mat,type,thk);
 }
 
+void* OPS_EnhancedQuad(const ID& info) {
+
+}
+
 
 //static data
 double  EnhancedQuad::xl[2][4] ;
