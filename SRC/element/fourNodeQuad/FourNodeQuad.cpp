@@ -158,10 +158,10 @@ void *OPS_FourNodeQuad(const ID &info) {
 
         // get type
         const char *type = OPS_GetString();
-        if (strcmp(type, "PlaneStrain") == 0 &&
+        if (strcmp(type, "PlaneStrain") == 0 ||
             strcmp(type, "PlaneStrain2D") == 0) {
             mdata(1) = 1;
-        } else if (strcmp(type, "PlaneStress") == 0 &&
+        } else if (strcmp(type, "PlaneStress") == 0 ||
                    strcmp(type, "PlaneStress2D") == 0) {
             mdata(1) = 2;
         }
