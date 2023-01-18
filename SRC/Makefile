@@ -848,6 +848,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
         $(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
+	$(FE)/material/uniaxial/Hertzdamp.o \
+	$(FE)/material/uniaxial/JankowskiImpact.o \
+	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \

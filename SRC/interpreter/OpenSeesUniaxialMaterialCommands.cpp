@@ -257,6 +257,10 @@ void* OPS_TDConcreteMC10NL(void);
 
 void* OPS_CoulombDamperMaterial();
 
+void *OPS_Hertzdamp(void);
+void *OPS_JankowskiImpact(void);
+void *OPS_ViscoelasticGap(void);
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -580,7 +584,15 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
   uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
-
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Hertzdamp", &OPS_Hertzdamp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("HertzDamp", &OPS_Hertzdamp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("JankowskiImpact", &OPS_JankowskiImpact));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ViscoelasticGap", &OPS_ViscoelasticGap));
+  
   return 0;
 }
 

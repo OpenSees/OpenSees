@@ -84,6 +84,9 @@ OBJS       = UniaxialMaterial.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
 	ImpactMaterial.o \
+	Hertzdamp.o \
+	JankowskiImpact.o \
+	ViscoelasticGap.o \
 	KinematicHardening.o \
 	NewUniaxialMaterial.o \
 	TclNewUnixialMaterial.o \

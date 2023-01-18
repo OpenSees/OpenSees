@@ -110,6 +110,9 @@ extern void *OPS_Dodd_Restrepo(void);
 extern void *OPS_DoddRestr(void);
 extern void *OPS_ElasticMultiLinear(void);
 extern void *OPS_ImpactMaterial(void);
+extern void *OPS_Hertzdamp(void);
+extern void *OPS_JankowskiImpact(void);
+extern void *OPS_ViscoelasticGap(void);
 extern void *OPS_SteelBRB(void);
 extern void *OPS_MultiLinear(void);
 extern void *OPS_HookGap(void);
@@ -407,6 +410,30 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
     if ((strcmp(argv[1],"ImpactMaterial") == 0) || (strcmp(argv[1],"Impact") == 0)) {
       void *theMat = OPS_ImpactMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    }
+    if ((strcmp(argv[1],"Hertzdamp") == 0)) {
+      void *theMat = OPS_Hertzdamp();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } 
+    if ((strcmp(argv[1],"JankowskiImpact") == 0)) {
+      void *theMat = OPS_JankowskiImpact();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+
+    } 
+    if ((strcmp(argv[1],"ViscoelasticGap") == 0)) {
+      void *theMat = OPS_ViscoelasticGap();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
