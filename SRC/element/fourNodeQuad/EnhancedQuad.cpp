@@ -89,6 +89,111 @@ void* OPS_EnhancedQuad()
                             *mat,type,thk);
 }
 
+void *OPS_EnhancedQuad(const ID &info) {
+    if (info.Size() == 0) {
+        opserr << "WARNING: info is empty -- FourNodeQuad\n";
+        return 0;
+    }
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+
+    // mesh data
+    static std::map<int, Vector> meshdata;
+
+    // save data
+    if (info(0) == 1) {
+        // check input
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+        if (OPS_GetNumRemainingInputArgs() < 3) {
+            opserr << "WARNING: insuficient arguments -- thk? type? "
+                      "matTag?\n";
+            return 0;
+        }
+        if (ndm != 2 || ndf != 2) {
+            opserr
+                << "WARNING -- model dimensions and/or nodal DOF not "
+                   "compatible with quad element\n";
+            return 0;
+        }
+
+        // save data
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(3);
+        mdata.Zero();
+
+        // thk
+        double thk = 1.0;
+        int num = 1;
+        if (OPS_GetDoubleInput(&num, &thk) < 0) {
+            opserr << "WARNING: invalid double inputs\n";
+            return 0;
+        }
+        mdata(0) = thk;
+
+        const char *type = OPS_GetString();
+        if (strcmp(type, "PlaneStrain") == 0 ||
+            strcmp(type, "PlaneStrain2D") == 0) {
+            mdata(1) = 1;
+        } else if (strcmp(type, "PlaneStress") == 0 ||
+                   strcmp(type, "PlaneStress2D") == 0) {
+            mdata(1) = 2;
+        }
+
+        int matTag;
+        num = 1;
+        if (OPS_GetIntInput(&num, &matTag) < 0) {
+            opserr << "WARNING: invalid matTag\n";
+            return 0;
+        }
+        mdata(2) = matTag;
+
+        return &meshdata;
+    }
+
+    // load data
+    if (info(0) == 2) {
+        if (info.Size() < 7) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2, nd3, nd4\n";
+            return 0;
+        }
+
+        int eleTag = info(2);
+
+        // get data
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 3) {
+            return 0;
+        }
+
+        double thk = mdata(0);
+        const char *type = "PlaneStrain";
+        if (mdata(1) == 1) {
+            type = "PlaneStrain";
+        } else {
+            type = "PlaneStress";
+        }
+        int matTag = (int)mdata(2);
+
+        NDMaterial *mat = OPS_getNDMaterial(matTag);
+        if (mat == 0) {
+            opserr << "WARNING material not found\n";
+            opserr << "Material: " << matTag;
+            opserr << "\nEnhancedQuad element: " << eleTag << endln;
+            return 0;
+        }
+
+        return new EnhancedQuad(eleTag, info(3), info(4), info(5),
+                                info(6), *mat, type, thk);
+    }
+
+    return 0;
+
+}
 
 //static data
 double  EnhancedQuad::xl[2][4] ;
