@@ -94,6 +94,101 @@ void* OPS_ConstantPressureVolumeQuad()
                                           *mat,thk);
 }
 
+void *OPS_ConstantPressureVolumeQuad(const ID &info) {
+    if (info.Size() == 0) {
+        opserr << "WARNING: info is empty -- FourNodeQuad\n";
+        return 0;
+    }
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+
+    // mesh data
+    static std::map<int, Vector> meshdata;
+
+    // save data
+    if (info(0) == 1) {
+        // check input
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+
+        if (OPS_GetNumRemainingInputArgs() < 2) {
+            opserr << "WARNING insufficient arguments\n";
+            opserr << "Want: element ConstantPressureVolumeQuad thk? "
+                      "matTag?\n";
+            return 0;
+        }
+
+        if (ndm != 2 || ndf != 2) {
+            opserr
+                << "WARNING -- model dimensions and/or nodal DOF not "
+                   "compatible with quad element\n";
+            return 0;
+        }
+
+        // save data
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(2);
+        mdata.Zero();
+
+        // get thk
+        double thk = 1.0;
+        int num = 1;
+        if (OPS_GetDoubleInput(&num, &thk) < 0) {
+            opserr << "WARNING: invalid thk\n";
+            return 0;
+        }
+
+        int matTag;
+        num = 1;
+        if (OPS_GetIntInput(&num, &matTag) < 0) {
+            opserr << "WARNING: invalid matTag\n";
+            return 0;
+        }
+
+        mdata(0) = thk;
+        mdata(1) = matTag;
+
+        return &meshdata;
+    }
+
+    // load data
+    if (info(0) == 2) {
+        if (info.Size() < 7) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2, nd3, nd4\n";
+            return 0;
+        }
+
+        int eleTag = info(2);
+
+        // get data
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 2) {
+            return 0;
+        }
+
+        double thk = mdata(0);
+        int matTag = (int)mdata(1);
+
+        NDMaterial *mat = OPS_getNDMaterial(matTag);
+        if (mat == 0) {
+            opserr << "WARNING material not found\n";
+            opserr << "Material: " << matTag;
+            opserr << "\nConstantPressureVolumeQuad element: "
+                   << eleTag << endln;
+            return 0;
+        }
+
+        return new ConstantPressureVolumeQuad(
+            eleTag, info(3), info(4), info(5), info(6), *mat, thk);
+    }
+
+    return 0;
+}
+
 //static data
 double ConstantPressureVolumeQuad :: matrixData[64];
 Matrix ConstantPressureVolumeQuad :: stiff(matrixData,8,8)   ;
