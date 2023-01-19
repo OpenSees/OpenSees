@@ -152,6 +152,9 @@
 #define MAT_TAG_Concrete07                      37
 #define MAT_TAG_HyperbolicGapMaterial           38
 #define MAT_TAG_ImpactMaterial                  39
+#define MAT_TAG_Hertzdamp                  420
+#define MAT_TAG_JankowskiImpact            421
+#define MAT_TAG_ViscoelasticGap            422
 #define MAT_TAG_ShearPanelMaterial		40
 #define MAT_TAG_SAWSMaterial			41
 #define MAT_TAG_ConcreteL01			42
