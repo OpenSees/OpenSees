@@ -44,17 +44,29 @@ void *OPS_AllASDPlasticMaterials(void)
 	if (numArgs < 1) {
 		opserr << 
 			"nDMaterial ASDPlasticMaterial Error: Few arguments (< 3).\n"
-			"nDMaterial ASDPlasticMaterial $tag $E $v "
-			"-Te $Te -Ts $Ts <-Td $Td> -Ce $Ce -Cs $Cs <-Cd $Cd> "
+			"nDMaterial ASDPlasticMaterial $tag "
+			"-yf $YF_type <YF params> "
+			"-pf $PF_type <PF params> "
+			"-el $EL_type <EL params> "
+			"-ev $EV_NUM $EV_type <EV params> "
+			" .... repeat for all required EV's"
 			"<-rho $rho> "
-			"<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
-			"<-crackPlanes $nct $ncc $smoothingAngle>"
-			"<-eta $eta> <-tangent> <-autoRegularization>\n";
+			"<-integrator $INTEGRATOR_TYPE> "
+			// "<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
+			"\n";
+		return nullptr;
+	}
+
+	int numData;
+
+	int tag = 0;
+	numData = 1;
+	if (OPS_GetInt(&numData, &tag) != 0)  {
+		opserr << "nDMaterial ASDConcrete3D Error: invalid 'tag'.\n";
 		return nullptr;
 	}
 
 	
-	int tag_in = 1;
 	double k0_in = 1;
 	double H_alpha = 1;
 	double H_k = 1;
@@ -62,7 +74,91 @@ void *OPS_AllASDPlasticMaterials(void)
 	double nu = 0.0;
 	double rho_ = 1000;
 
-	NDMaterial* instance = new VonMisesLinearHardening(tag_in, k0_in, H_alpha, H_k, E, nu, rho_);
+
+	// optional parameters
+	// while (OPS_GetNumRemainingInputArgs() > 0) 
+	// {
+	// 	const char* value = OPS_GetString();
+	// 	if (strcmp(value, "-rho") == 0) {
+	// 		if (!lam_optional_double("rho", rho))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-implex") == 0) {
+	// 		implex = true;
+	// 	}
+	// 	else if (strcmp(value, "-implexControl") == 0) {
+	// 		implex_control = true;
+	// 		if (OPS_GetNumRemainingInputArgs() < 2) {
+	// 			opserr << "nDMaterial ASDConcrete3D Error: '-implexControl' given without the next 2 arguments $implexErrorTolerance $implexTimeReductionLimit.\n";
+	// 			return nullptr;
+	// 		}
+	// 		if (!lam_optional_double("implexErrorTolerance", implex_error_tolerance))
+	// 			return nullptr;
+	// 		if (!lam_optional_double("implexTimeReductionLimit", implex_time_redution_limit))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-implexAlpha") == 0) {
+	// 		if (!lam_optional_double("alpha", implex_alpha))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-eta") == 0) {
+	// 		if (!lam_optional_double("eta", eta))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-tangent") == 0) {
+	// 		tangent = true;
+	// 	}
+	// 	else if (strcmp(value, "-autoRegularization") == 0) {
+	// 		auto_regularization = true;
+	// 	}
+	// 	else if (strcmp(value, "-Te") == 0) {
+	// 		if (!lam_optional_list("Te", Te))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-Ts") == 0) {
+	// 		if (!lam_optional_list("Ts", Ts))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-Td") == 0) {
+	// 		if (!lam_optional_list("Td", Td))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-Ce") == 0) {
+	// 		if (!lam_optional_list("Ce", Ce))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-Cs") == 0) {
+	// 		if (!lam_optional_list("Cs", Cs))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-Cd") == 0) {
+	// 		if (!lam_optional_list("Cd", Cd))
+	// 			return nullptr;
+	// 	}
+	// 	else if (strcmp(value, "-crackPlanes") == 0) {
+	// 		if (OPS_GetNumRemainingInputArgs() < 3) {
+	// 			opserr << "nDMaterial ASDConcrete3D Error: '-crackPlanes' given without the next 3 arguments $nct $ncc and $smoothingAngle.\n";
+	// 			return nullptr;
+	// 		}
+	// 		if (!lam_optional_int("nct", nct))
+	// 			return nullptr;
+	// 		if (!lam_optional_int("ncc", ncc))
+	// 			return nullptr;
+	// 		if (!lam_optional_double("$smoothingAngle", smoothing_angle))
+	// 			return nullptr;
+	// 	}
+	// }
+
+	// NDMaterial* instance = new VonMisesLinearHardening(tag, k0_in, H_alpha, H_k, E, nu, rho_);
+	
+	// double p0_in = 0.;                       const YieldFunctionType& yf_in,
+ //                       const ElasticityType& et_in,
+ //                       const PlasticFlowType& pf_in,
+ //                       const MaterialInternalVariablesType& internal_variables_in
+
+	
+	
+	NDMaterial* instance = new VonMisesLinearHardening(tag, rho_in, p0_in, yf_in, et_in, pf_in, internal_variables_in);
 
 	return instance;
 
