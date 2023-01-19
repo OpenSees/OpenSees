@@ -60,27 +60,47 @@ class VonMisesLinearHardening : public VMLHBase
 {
 public:
 
-    //First constructor, creates a material at its "ground state" from its parameters.
-    VonMisesLinearHardening(int tag_in, double k0_in, double H_alpha, double H_k, double E, double nu, double rho_) :
-        VMLHBase::ASDPlasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
-                                     VMLH_YFType(alpha, k),       // Point YF to internal variables
-                                     LinearIsotropic3D_EL(E, nu), // Create Elasticity
-                                     VMLH_PFType(alpha, k),       // Point PF to the internal variables
-                                     VMLHVarsType(alpha, k)),     // Declare the list of internal variables
-        alpha(H_alpha),
-        k(H_k, k0_in)
-    {
-        cout << "First VMLH ctor" << endl;
-        cout << "tag_in  = " << tag_in << endl;
-        cout << "k0_in  = " << k0_in << endl;
-        cout << "H_alpha  = " << H_alpha << endl;
-        cout << "H_k  = " << H_k << endl;
-        cout << "E  = " << E << endl;
-        cout << "nu  = " << nu << endl;
-        cout << "rho_  = " << rho_ << endl;
-        cout << "yf  = " << yf(getStressTensor()) << endl;
+    // VonMisesLinearHardening(int tag_in, double k0_in, double H_alpha, double H_k, double E, double nu, double rho_) :
+    //     VMLHBase::ASDPlasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
+    //                                  VMLH_YFType(alpha, k),       // Point YF to internal variables
+    //                                  LinearIsotropic3D_EL(E, nu), // Create Elasticity
+    //                                  VMLH_PFType(alpha, k),       // Point PF to the internal variables
+    //                                  VMLHVarsType(alpha, k)),     // Declare the list of internal variables
+    //     alpha(H_alpha),
+    //     k(H_k, k0_in)
+    // {
+    //     cout << "First VMLH ctor" << endl;
+    //     cout << "tag_in  = " << tag_in << endl;
+    //     cout << "k0_in  = " << k0_in << endl;
+    //     cout << "H_alpha  = " << H_alpha << endl;
+    //     cout << "H_k  = " << H_k << endl;
+    //     cout << "E  = " << E << endl;
+    //     cout << "nu  = " << nu << endl;
+    //     cout << "rho_  = " << rho_ << endl;
+    //     cout << "yf  = " << yf(getStressTensor()) << endl;
 
-    }
+    // }
+    
+    // VonMisesLinearHardening(int tag_in, double k0_in, double H_alpha, double H_k, double E, double nu, double rho_) :
+    //     VMLHBase::ASDPlasticMaterial(tag_in, rho_, 0.0, //Initial confinement can be 0 for this model
+    //                                  VMLH_YFType(alpha, k),       // Point YF to internal variables
+    //                                  LinearIsotropic3D_EL(E, nu), // Create Elasticity
+    //                                  VMLH_PFType(alpha, k),       // Point PF to the internal variables
+    //                                  VMLHVarsType(alpha, k)),     // Declare the list of internal variables
+    //     alpha(H_alpha),
+    //     k(H_k, k0_in)
+    // {
+    //     cout << "First VMLH ctor" << endl;
+    //     cout << "tag_in  = " << tag_in << endl;
+    //     cout << "k0_in  = " << k0_in << endl;
+    //     cout << "H_alpha  = " << H_alpha << endl;
+    //     cout << "H_k  = " << H_k << endl;
+    //     cout << "E  = " << E << endl;
+    //     cout << "nu  = " << nu << endl;
+    //     cout << "rho_  = " << rho_ << endl;
+    //     cout << "yf  = " << yf(getStressTensor()) << endl;
+
+    // }
 
     // Second constructor is not called by the user, instead it is called when creating a copy of the
     // material. This must provide an initialization for the state variables and link the components
