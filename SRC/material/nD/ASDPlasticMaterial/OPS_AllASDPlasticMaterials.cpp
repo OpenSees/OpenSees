@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // Original implementation: José Abell (UANDES), Massimo Petracca (ASDEA)
 //
 // ASDPlasticMaterial
@@ -42,18 +42,18 @@ void *OPS_AllASDPlasticMaterials(void)
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
 	if (numArgs < 1) {
-		opserr << 
-			"nDMaterial ASDPlasticMaterial Error: Few arguments (< 3).\n"
-			"nDMaterial ASDPlasticMaterial $tag "
-			"-yf $YF_type <YF params> "
-			"-pf $PF_type <PF params> "
-			"-el $EL_type <EL params> "
-			"-ev $EV_NUM $EV_type <EV params> "
-			" .... repeat for all required EV's"
-			"<-rho $rho> "
-			"<-integrator $INTEGRATOR_TYPE> "
-			// "<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
-			"\n";
+		opserr <<
+		       "nDMaterial ASDPlasticMaterial Error: Few arguments (< 3).\n"
+		       "nDMaterial ASDPlasticMaterial $tag "
+		       "-yf $YF_type <YF params> "
+		       "-pf $PF_type <PF params> "
+		       "-el $EL_type <EL params> "
+		       "-ev $EV_NUM $EV_type <EV params> "
+		       " .... repeat for all required EV's"
+		       "<-rho $rho> "
+		       "<-integrator $INTEGRATOR_TYPE> "
+		       // "<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
+		       "\n";
 		return nullptr;
 	}
 
@@ -66,17 +66,42 @@ void *OPS_AllASDPlasticMaterials(void)
 		return nullptr;
 	}
 
-	
+
 	double k0_in = 1;
 	double H_alpha = 1;
 	double H_k = 1;
 	double E = 1;
 	double nu = 0.0;
-	double rho_ = 1000;
+	double rho_ = 0.;
 
+
+	if (OPS_GetDouble(&numData, &k0_in) != 0) {
+		opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'k0_in'.\n";
+		return nullptr;
+	}
+	if (OPS_GetDouble(&numData, &H_alpha) != 0) {
+		opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'H_alpha'.\n";
+		return nullptr;
+	}
+	if (OPS_GetDouble(&numData, &H_k) != 0) {
+		opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'H_k'.\n";
+		return nullptr;
+	}
+	if (OPS_GetDouble(&numData, &E) != 0) {
+		opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'E'.\n";
+		return nullptr;
+	}
+	if (OPS_GetDouble(&numData, &nu) != 0) {
+		opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'nu'.\n";
+		return nullptr;
+	}
+	if (OPS_GetDouble(&numData, &rho_) != 0) {
+		opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'rho_'.\n";
+		return nullptr;
+	}
 
 	// optional parameters
-	// while (OPS_GetNumRemainingInputArgs() > 0) 
+	// while (OPS_GetNumRemainingInputArgs() > 0)
 	// {
 	// 	const char* value = OPS_GetString();
 	// 	if (strcmp(value, "-rho") == 0) {
@@ -149,16 +174,16 @@ void *OPS_AllASDPlasticMaterials(void)
 	// 	}
 	// }
 
-	// NDMaterial* instance = new VonMisesLinearHardening(tag, k0_in, H_alpha, H_k, E, nu, rho_);
-	
-	// double p0_in = 0.;                       const YieldFunctionType& yf_in,
- //                       const ElasticityType& et_in,
- //                       const PlasticFlowType& pf_in,
- //                       const MaterialInternalVariablesType& internal_variables_in
+	NDMaterial* instance = new VonMisesLinearHardening(tag, k0_in, H_alpha, H_k, E, nu, rho_);
 
-	
-	
-	NDMaterial* instance = new VonMisesLinearHardening(tag, rho_in, p0_in, yf_in, et_in, pf_in, internal_variables_in);
+	// double p0_in = 0.;                       const YieldFunctionType& yf_in,
+//                       const ElasticityType& et_in,
+//                       const PlasticFlowType& pf_in,
+//                       const MaterialInternalVariablesType& internal_variables_in
+
+
+
+	// NDMaterial* instance = new VonMisesLinearHardening(tag, rho_in, p0_in, yf_in, et_in, pf_in, internal_variables_in);
 
 	return instance;
 
@@ -184,7 +209,7 @@ void *OPS_AllASDPlasticMaterials(void)
 // 	int nct = 0;
 // 	int ncc = 0;
 // 	double smoothing_angle = 45.0;
-	
+
 // 	// get tag
 // 	if (OPS_GetInt(&numData, &tag) != 0)  {
 // 		opserr << "nDMaterial ASDConcrete3D Error: invalid 'tag'.\n";
@@ -385,8 +410,8 @@ void *OPS_AllASDPlasticMaterials(void)
 
 // 	// create the material
 // 	NDMaterial* instance = new ASDConcrete3DMaterial(
-// 		tag, 
-// 		E, v, rho, eta, 
+// 		tag,
+// 		E, v, rho, eta,
 // 		implex, implex_control, implex_error_tolerance, implex_time_redution_limit, implex_alpha,
 // 		tangent, auto_regularization,
 // 		HT, HC,

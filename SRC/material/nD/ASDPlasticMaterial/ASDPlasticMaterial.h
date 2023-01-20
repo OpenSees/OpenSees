@@ -244,7 +244,7 @@ public:
         static VoigtVector result;
         result *= 0;
 
-        opserr << "v = " << v << endln;
+        // opserr << "v = " << v << endln;
 
         // TrialStrain.fromStrain(v);
         TrialStrain(0) = v(0);
@@ -253,10 +253,10 @@ public:
         TrialStrain(3) = v(3) / 2;
         TrialStrain(4) = v(4) / 2;
         TrialStrain(5) = v(5) / 2;
-        cout << "TrialStrain = " << TrialStrain << endl;
+        // cout << "TrialStrain = " << TrialStrain << endl;
 
         result = TrialStrain - CommitStrain;
-        cout << "result = " << result << endl;
+        // cout << "result = " << result << endl;
 
         return setTrialStrainIncr( result );
     }
@@ -277,7 +277,7 @@ public:
         // In displacement_control, we have to do double update.
         // ==========================================
 
-        cout << "strain_increment = " << strain_increment << endl;
+        // cout << "strain_increment = " << strain_increment << endl;
 
         double max_component = 0.0;
         for (int i = 0; i < 6; ++i)
@@ -767,6 +767,8 @@ private:
         Stiffness = Eelastic;
 
         dsigma = Eelastic * depsilon;
+
+        // printTensor4("E = ", Eelastic);
 
         TrialStress = sigma + dsigma;
         TrialStrain = CommitStrain + depsilon;

@@ -48,7 +48,7 @@ public:
 
 		const double mu2 = mu * mu;
 
-		Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = mu2;
+		Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = 2*mu + lambda;
 		Ee(0, 1) = Ee(1, 0) = Ee(0, 2) = Ee(2, 0) = Ee(1, 2) = Ee(2, 1) = lambda;
 		Ee(3, 3) = mu;
 		Ee(4, 4) = mu;
