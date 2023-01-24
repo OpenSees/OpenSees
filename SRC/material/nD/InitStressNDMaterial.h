@@ -38,7 +38,8 @@
 class InitStressNDMaterial : public NDMaterial
 {
   public:
-    InitStressNDMaterial(int tag, NDMaterial &material, const Vector &sigInit, int ndim = 3); 
+    InitStressNDMaterial(int tag, NDMaterial &material, const Vector &sigInit, int ndim = 3);
+    InitStressNDMaterial(int tag, NDMaterial &material, double sig0);   
     InitStressNDMaterial();
     ~InitStressNDMaterial();
     

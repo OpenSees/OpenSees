@@ -38,9 +38,8 @@
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_InitStressNDMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
@@ -53,56 +52,38 @@ OPS_InitStressNDMaterial(void)
   }
 
   int    iData[2];
-  double dData[1];
-  int    dim[1];
+  double sig;
+  int    dim;
   int numData = 2;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid nDMaterial InitStressNDMaterial $tag $otherTag $nDim" << endln;
+    opserr << "WARNING invalid nDMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;
   }
 
   theOtherMaterial = OPS_getNDMaterial(iData[1]);
   if (theOtherMaterial == 0) {
-    opserr << "Could not find material with tag: " << iData[1] << "nDMaterial InitStress $tag $otherTag $nDim $sig0" << endln;
+    opserr << "Could not find material with tag: " << iData[1] << "nDMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;	
   }
 
   numData = 1;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid Args want: nDMaterial InitStress $tag $otherTag $nDim $sig0" << endln;
+  if (OPS_GetDoubleInput(&numData, &sig) != 0) {
+    opserr << "Invalid Args want: nDMaterial InitStress $tag $otherTag $sig0" << endln;
     return 0;	
   }
 
-  if (numArgs == 4) {
-    if (OPS_GetIntInput(&numData, dim) != 0) {
+  if (numArgs > 3) {
+    if (OPS_GetIntInput(&numData, &dim) != 0) {
         return 0;
     }
-  } else {
-    dim[0] = 3;
-  }
-
-  Vector sig0(3*dim[0]-3);
-  if (dim[0] == 3) {
-    sig0(0) = dData[0];
-    sig0(1) = dData[0];
-    sig0(2) = dData[0];
-  } else if (dim[0] == 2) {
-    sig0(0) = dData[0];
-    sig0(1) = dData[0];
-  } else {
-    opserr << "nDMaterial InitStress - Invalid number of dimensions: want 2 or 3" << endln;
-    return 0;
+    opserr << "nDMaterial InitStress -- not using input value dim = " << dim << endln;
   }
 
   // Parsing was successful, allocate the material
-  if (numArgs == 4) {
-    theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig0, dim[0]);
-  } else {
-    theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig0);
-  }
+  theMaterial = new InitStressNDMaterial(iData[0], *theOtherMaterial, sig);
 
   if (theMaterial == 0) {
-    opserr << "WARNING could not create uniaxialMaterial of type InitStressNDMaterial\n";
+    opserr << "WARNING could not create NDMaterial of type InitStress\n";
     return 0;
   }
 
@@ -112,17 +93,15 @@ OPS_InitStressNDMaterial(void)
 
 InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const Vector &sigini, int ndim)
   :NDMaterial(tag,ND_TAG_InitStressNDMaterial), theMaterial(0),
-   epsInit(3*ndim-3), sigInit(sigini)
+   epsInit(3*ndim-3), sigInit(sigini), numDim(ndim)
 {
-
-  numDim = ndim;
   // get copy of the main material
   if (numDim == 2) {
     theMaterial = material.getCopy("PlaneStrain");
   } else if (numDim == 3) {
     theMaterial = material.getCopy("ThreeDimensional");
   } else {
-    opserr << "nDMaterial InitStress - Invalid number of dimensions: want 2 or 3" << endln;
+    opserr << "nDMaterial InitStress - Invalid number of dimensions " << numDim << " -- want 2 or 3" << endln;
   }
 
   if (theMaterial == 0) {
@@ -163,9 +142,74 @@ InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, const 
   theMaterial->commitState();
 }
 
+InitStressNDMaterial::InitStressNDMaterial(int tag, NDMaterial &material, double sig0)
+  :NDMaterial(tag,ND_TAG_InitStressNDMaterial), theMaterial(0),
+   epsInit(material.getOrder()), sigInit(material.getOrder()), numDim(0)
+{
+
+  theMaterial = material.getCopy();
+  if (theMaterial == 0) {
+    opserr <<  "InitStressNDMaterial::InitStressNDMaterial -- failed to get copy of material\n";
+    exit(-1);
+  }
+
+  sigInit.Zero();
+  if (strcmp(theMaterial->getType(),"ThreeDimensional") == 0) {
+    sigInit(0) = sig0;
+    sigInit(1) = sig0;
+    sigInit(2) = sig0;
+  }
+  if (strcmp(theMaterial->getType(),"PlateFiber") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStress") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStress2D") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStrain") == 0 ||
+      strcmp(theMaterial->getType(),"PlaneStrain2D") == 0) {    
+    sigInit(0) = sig0;
+    sigInit(1) = sig0;
+  }
+  if (strcmp(theMaterial->getType(),"BeamFiber") == 0 ||
+      strcmp(theMaterial->getType(),"TimoshenkoFiber") == 0 ||
+      strcmp(theMaterial->getType(),"BeamFiber2d") == 0 ||
+      strcmp(theMaterial->getType(),"TimoshenkoFiber2d") == 0) {
+    sigInit(0) = sig0;
+  }    
+
+  // determine the initial strain
+  int mDim = theMaterial->getOrder();
+  double tol=1e-12;
+  Vector dSig(sigInit);
+  Vector dStrain(mDim);
+  Vector tStrain(mDim);
+  Vector tStress(mDim);
+  Matrix K(mDim,mDim);
+  int count = 0;
+
+  do {
+    count++;
+    K = theMaterial->getTangent();
+    K.Solve(dSig,dStrain);
+    tStrain += dStrain;
+    theMaterial->setTrialStrain(tStrain);
+    tStress = theMaterial->getStress();
+    dSig = sigInit-tStress;
+    dStrain = tStress-sigInit;
+  } while (dStrain.Norm() > tol && (count <= 100));
+
+  epsInit = tStrain;
+
+  if (dStrain.Norm() < tol) 
+    theMaterial->setTrialStrain(epsInit);
+  else {
+    opserr << "WARNING: InitStressNDMaterial - could not find initStrain to within tol for material: " << tag;
+    opserr << " wanted sigInit: " << sigInit << " using tStress: " << theMaterial->getStress() << endln;
+  }
+
+  theMaterial->commitState();
+}
+
 InitStressNDMaterial::InitStressNDMaterial()
   :NDMaterial(0,ND_TAG_InitStressNDMaterial), theMaterial(0),
-   epsInit(6), sigInit(6)
+   epsInit(6), sigInit(6), numDim(0)
 {
 
 }
@@ -258,7 +302,7 @@ NDMaterial *
 InitStressNDMaterial::getCopy(void)
 {
   InitStressNDMaterial *theCopy = 
-    new InitStressNDMaterial(this->getTag(), *theMaterial, sigInit, numDim);
+    new InitStressNDMaterial(this->getTag(), *theMaterial, sigInit(0));
         
   return theCopy;
 }
@@ -287,9 +331,14 @@ InitStressNDMaterial::getType(void) const
 int 
 InitStressNDMaterial::sendSelf(int cTag, Channel &theChannel)
 {
+  if (theMaterial == 0) {
+    opserr << "InitStressNDMaterial::sendSelf() - theMaterial is null, nothing to send" << endln;
+    return -1;
+  }
+    
   int dbTag = this->getDbTag();
 
-  static ID dataID(3);
+  static ID dataID(5);
   dataID(0) = this->getTag();
   dataID(1) = theMaterial->getClassTag();
   int matDbTag = theMaterial->getDbTag();
@@ -302,9 +351,15 @@ InitStressNDMaterial::sendSelf(int cTag, Channel &theChannel)
     opserr << "InitStressNDMaterial::sendSelf() - failed to send the ID\n";
     return -1;
   }
-
-  static Vector dataVec(1);
-  //dataVec(0) = epsInit;
+  dataID(3) = numDim;
+  int order = theMaterial->getOrder();
+  dataID(4) = order;
+  
+  Vector dataVec(2*order);
+  for (int i = 0; i < order; i++) {
+    dataVec(i) = sigInit(i);
+    dataVec(i+order) = epsInit(i);
+  }
 
   if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
     opserr << "InitStressNDMaterial::sendSelf() - failed to send the Vector\n";
@@ -325,32 +380,39 @@ InitStressNDMaterial::recvSelf(int cTag, Channel &theChannel,
 {
   int dbTag = this->getDbTag();
 
-  static ID dataID(3);
+  static ID dataID(5);
   if (theChannel.recvID(dbTag, cTag, dataID) < 0) {
     opserr << "InitStressNDMaterial::recvSelf() - failed to get the ID\n";
     return -1;
   }
-  this->setTag(int(dataID(0)));
+  this->setTag(dataID(0));
 
   // as no way to change material, don't have to check classTag of the material 
   if (theMaterial == 0) {
-    int matClassTag = int(dataID(1));
+    int matClassTag = dataID(1);
     theMaterial = theBroker.getNewNDMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "InitStressNDMaterial::recvSelf() - failed to create Material with classTag " 
-	   << dataID(0) << endln;
+	   << matClassTag << endln;
       return -2;
     }
   }
   theMaterial->setDbTag(dataID(2));
-
-  static Vector dataVec(1);
+  numDim = dataID(3);
+  int order = dataID(4);
+  
+  Vector dataVec(2*order);
   if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
     opserr << "InitStressNDMaterial::recvSelf() - failed to get the Vector\n";
     return -3;
   }
 
-  //epsInit = dataVec(0);
+  sigInit.resize(order);
+  epsInit.resize(order);  
+  for (int i = 0; i < order; i++) {
+    sigInit(i) = dataVec(i);
+    epsInit(i) = dataVec(i+order);
+  }
   
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "InitStressNDMaterial::recvSelf() - failed to get the Material\n";
