@@ -37,7 +37,7 @@
  */
 void *OPS_LiquefiedSand() {
   // check inputs
-  if (OPS_GetNumRemainingInputArgs() < 4) {
+  if (OPS_GetNumRemainingInputArgs() < 5) {
     opserr << "WARNING: need hystereticBackbone LiquefiedSand "
            << "tag X D kN m\n";
   }
