@@ -208,11 +208,11 @@ void* OPS_ConcreteZBH_original();
 void* OPS_ConcreteZBH_fitted();
 void* OPS_ConcreteZBH_smoothed();
 
-void* OPS_ArctangentBackbone();
-void* OPS_BilinearBackbone();
-void* OPS_ManderBackbone();
-void* OPS_MultilinearBackbone();
-void* OPS_TrilinearBackbone();
+void *OPS_ArctangentBackbone(void);
+void *OPS_ManderBackbone(void);
+void *OPS_TrilinearBackbone(void);
+void *OPS_BilinearBackbone(void);
+void *OPS_MultilinearBackbone(void);
 void* OPS_MaterialBackbone();
 void* OPS_ReeseStiffClayBelowWS();
 void* OPS_ReeseStiffClayAboveWS();
@@ -220,6 +220,11 @@ void* OPS_VuggyLimestone();
 void* OPS_CementedSoil();
 void* OPS_WeakRock();
 void* OPS_LiquefiedSand();
+void* OPS_RaynorBackbone();
+void* OPS_ReeseSandBackbone();
+void* OPS_ReeseSoftClayBackbone();
+void* OPS_CappedBackbone();
+void* OPS_LinearCappedBackbone();
 
 void* OPS_ConstantStiffnessDegradation();
 void* OPS_DuctilityStiffnessDegradation();
@@ -252,6 +257,10 @@ void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
 
 void* OPS_CoulombDamperMaterial();
+
+void *OPS_Hertzdamp(void);
+void *OPS_JankowskiImpact(void);
+void *OPS_ViscoelasticGap(void);
 
 namespace {
 
@@ -578,7 +587,15 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
   uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
-
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Hertzdamp", &OPS_Hertzdamp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("HertzDamp", &OPS_Hertzdamp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("JankowskiImpact", &OPS_JankowskiImpact));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ViscoelasticGap", &OPS_ViscoelasticGap));
+  
   return 0;
 }
 
@@ -609,7 +626,17 @@ static int setUpHystereticBackbones(void) {
       std::make_pair("WeakRock", &OPS_WeakRock));
   hystereticBackbonesMap.insert(
       std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
-
+  hystereticBackbonesMap.insert(
+      std::make_pair("Raynor", &OPS_RaynorBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("ReeseSand", &OPS_ReeseSandBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("ReeseSoftClay", &OPS_ReeseSoftClayBackbone));  
+  hystereticBackbonesMap.insert(
+      std::make_pair("Capped", &OPS_CappedBackbone));
+  hystereticBackbonesMap.insert(
+      std::make_pair("LinearCapped", &OPS_LinearCappedBackbone));
+  
   return 0;
 }
 

@@ -17,62 +17,82 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.1 $
-// $Date: 2008-11-04 22:20:59 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/BackboneMaterial.h,v $
-                                                      
-// Written: MHS
-// Created: Aug 2000
+//                                                                     
+// Revision: 1.0
+// Date: 05/2019
+// Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ViscoelasticGap.h
 //
-// Description: This file contains the class definition for 
-// BackboneMaterial.  BackboneMaterial uses a HystereticBackbone
-// object to represent a path-independent uniaxial material.  Since
-// it is path-independent, no state information is stored by
-// BackboneMaterial.
+// Written: Patrick J. Hughes, University of California - San Diego
+// Created: 05/2019
+//
+// Description: This file contains the class definition for the
+// ViscoelasticGap uniaxialMaterial.
+//
+// References:
+// Goldsmith, W. (1960). "Impact: The Theory and Physical Behavior of Colliding Solids." 
+//   E. Arnold: London.
+//
+// Variables:
+// K: linear stiffness
+// C: linear damping coefficient
+// gap: initial gap (must be a negative value)
 
-#ifndef BackboneMaterial_h
-#define BackboneMaterial_h
+
+#ifndef ViscoelasticGap_h
+#define ViscoelasticGap_h
 
 #include <UniaxialMaterial.h>
 
-class HystereticBackbone;
-
-class BackboneMaterial : public UniaxialMaterial
+class ViscoelasticGap : public UniaxialMaterial
 {
-  public:
-  BackboneMaterial(int tag, HystereticBackbone &backbone, double multiplier = 1.0); 
-    BackboneMaterial();
-    ~BackboneMaterial();
+  public: 
+    ViscoelasticGap(int tag, double K, double C, double gap);   
+    ViscoelasticGap(); 
+    ~ViscoelasticGap();
 
-    const char *getClassType(void) const {return "BackboneMaterial";}; 
+    const char *getClassType(void) const {return "ViscoelasticGap";};
 
-    int setTrialStrain(double strain, double strainRate = 0.0); 
-    double getStrain(void);          
+    int setTrialStrain(double strain, double strainRate); 
+	
+    double getStrain(void); 
     double getStrainRate(void);
     double getStress(void);
     double getTangent(void);
-    double getDampTangent(void);
     double getInitialTangent(void);
 
     int commitState(void);
     int revertToLastCommit(void);    
-    int revertToStart(void);        
-
+    int revertToStart(void);       
+        
     UniaxialMaterial *getCopy(void);
     
     int sendSelf(int commitTag, Channel &theChannel);  
-    int recvSelf(int commitTag, Channel &theChannel, 
+    int recvSelf(int commitTag, Channel &theChannel,
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
     
+  protected:
+    
   private:
-    HystereticBackbone *theBackbone;
-    double strain;
-  double multiplier;
+    // input variables
+    double K; // linear stiffness
+    double C; // linear damping coefficient
+    double gap; // initial gap distance (must be a negative value)
+    
+    // state variables
+	double commitStrain;
+	double commitStrainRate;
+	double commitStress;
+	double commitTangent;
+	double trialStrain;
+	double trialStrainRate;
+	double trialStress;
+	double trialTangent;
+
+	// other variables
+	int printFlag; // print flag for impact event
+	
 };
 
-
 #endif
-
