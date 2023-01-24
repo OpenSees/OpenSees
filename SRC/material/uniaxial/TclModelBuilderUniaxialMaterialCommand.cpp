@@ -62,6 +62,7 @@ extern void *OPS_PathIndependentMaterial(void);
 extern void *OPS_BackboneMaterial(void);
 extern void *OPS_FatigueMaterial(void);
 extern void *OPS_HardeningMaterial(void);
+extern void *OPS_FlagShapeMaterial(void);
 extern void *OPS_UniaxialJ2Plasticity(void);
 extern void *OPS_SmoothPSConcrete(void);
 extern void* OPS_HystereticMaterial(void);
@@ -981,6 +982,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
     }
+    if (strcmp(argv[1], "FlagShape") == 0) {
+
+      void* theMat = OPS_FlagShapeMaterial();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial*)theMat;
+      else
+        return TCL_ERROR;
+    }
+    
     if (strcmp(argv[1],"BoucWen") == 0) {
 
       void *theMat = OPS_BoucWenMaterial();

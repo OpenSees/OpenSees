@@ -1472,6 +1472,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteZBH_smoothed.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FlagShapeMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Hertzdamp.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
