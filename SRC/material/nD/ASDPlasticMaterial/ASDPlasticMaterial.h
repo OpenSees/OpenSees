@@ -240,25 +240,8 @@ public:
 
     int setTrialStrain(const Vector &v)
     {
-        using namespace ASDPlasticMaterialGlobals;
-        static VoigtVector result;
-        result *= 0;
-
-        // opserr << "v = " << v << endln;
-
-        // TrialStrain.fromStrain(v);
-        TrialStrain(0) = v(0);
-        TrialStrain(1) = v(1);
-        TrialStrain(2) = v(2);
-        TrialStrain(3) = v(3) / 2;
-        TrialStrain(4) = v(4) / 2;
-        TrialStrain(5) = v(5) / 2;
-        // cout << "TrialStrain = " << TrialStrain << endl;
-
-        result = TrialStrain - CommitStrain;
-        // cout << "result = " << result << endl;
-
-        return setTrialStrainIncr( result );
+        TrialStrain = VoigtVector::fromStrain(v);
+        return setTrialStrainIncr( TrialStrain - CommitStrain );
     }
 
     // Directly sets the trial strain increment and does an explicit or implicit step.
