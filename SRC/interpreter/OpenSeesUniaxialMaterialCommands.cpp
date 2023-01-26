@@ -128,6 +128,7 @@ void* OPS_BarSlipMaterial();
 void* OPS_Bond_SP01();
 void* OPS_FatigueMaterial();
 void* OPS_HardeningMaterial();
+void* OPS_FlagShapeMaterial();
 void* OPS_ImpactMaterial();
 void* OPS_HyperbolicGapMaterial();
 void* OPS_LimiStateMaterial();
@@ -257,6 +258,10 @@ void* OPS_TDConcreteMC10NL(void);
 
 void* OPS_CoulombDamperMaterial();
 
+void *OPS_Hertzdamp(void);
+void *OPS_JankowskiImpact(void);
+void *OPS_ViscoelasticGap(void);
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -382,6 +387,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("Fatigue", &OPS_FatigueMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("Hardening", &OPS_HardeningMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("FlagShape", &OPS_FlagShapeMaterial));  
   uniaxialMaterialsMap.insert(
       std::make_pair("Impact", &OPS_ImpactMaterial));
   uniaxialMaterialsMap.insert(
@@ -580,7 +587,15 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
   uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
-
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Hertzdamp", &OPS_Hertzdamp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("HertzDamp", &OPS_Hertzdamp));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("JankowskiImpact", &OPS_JankowskiImpact));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ViscoelasticGap", &OPS_ViscoelasticGap));
+  
   return 0;
 }
 

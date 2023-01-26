@@ -319,6 +319,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticMultiLinear.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ElasticPPMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FlagShapeMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRCC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp" />
@@ -327,6 +328,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\GNGMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Hertzdamp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HookGap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HyperbolicGapMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticAsym.cpp" />
@@ -340,6 +342,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ImpactMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\InitStrainMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\InitStressMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\JankowskiImpact.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\KikuchiAikenHDR.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\KikuchiAikenLRB.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Masonry.cpp" />
@@ -427,6 +430,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TclModelBuilderUnloadingRuleCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscoelasticGap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\WrapperUniaxialMaterial.cpp" />
