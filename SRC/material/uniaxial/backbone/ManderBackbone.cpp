@@ -74,9 +74,12 @@ ManderBackbone::ManderBackbone(int tag, double f, double e, double E):
   HystereticBackbone(tag,BACKBONE_TAG_Mander),
   fpc(f), epsc(e), Ec(E)
 {
-  fpc = fabs(fpc);
-  epsc = fabs(epsc);
-  Ec = fabs(Ec);
+  if (fpc < 0.0)
+    fpc = -fpc;
+  if (epsc < 0.0)
+    epsc = -epsc;
+  if (Ec < 0.0)
+    Ec = -Ec;
 
   /*
   if (Ec <= fpc/epsc) {
