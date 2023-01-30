@@ -262,6 +262,11 @@ void *OPS_Hertzdamp(void);
 void *OPS_JankowskiImpact(void);
 void *OPS_ViscoelasticGap(void);
 
+void *OPS_Masonry(void);
+void *OPS_Trilinwp(void);
+void *OPS_Trilinwp2(void);
+void *OPS_Masonryt(void);
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -595,6 +600,10 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("JankowskiImpact", &OPS_JankowskiImpact));
   uniaxialMaterialsMap.insert(
       std::make_pair("ViscoelasticGap", &OPS_ViscoelasticGap));
+  uniaxialMaterialsMap.insert(std::make_pair("Masonry", &OPS_Masonry));
+  uniaxialMaterialsMap.insert(std::make_pair("Masonryt", &OPS_Masonryt));
+  uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
+  uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   
   return 0;
 }
