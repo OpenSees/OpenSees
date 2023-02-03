@@ -334,7 +334,8 @@ namespace {
 	if(ndm == 2)
 	    return OPS_MVLEM();
 	if(ndm == 3)
-	    return OPS_MVLEM_3D();	
+	    return OPS_MVLEM_3D();
+	return 0;	
     }
 
     static void* OPS_SFI_MVLEM2d3d()
@@ -344,6 +345,7 @@ namespace {
 	    return OPS_SFI_MVLEM();
 	if(ndm == 3)
 	    return OPS_SFI_MVLEM_3D();	
+	return 0;
     }    
 
     static void* OPS_DispBeamColumn()
