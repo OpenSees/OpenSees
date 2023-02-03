@@ -910,17 +910,6 @@ ForceBeamColumnCBDI3d::update()
     f.Zero();
     vr.Zero();
     
-    double v0[5];
-    v0[0] = 0.0; v0[1] = 0.0; v0[2] = 0.0;
-    v0[3] = 0.0; v0[4] = 0.0;
-    
-    // Add effects of element loads
-    vr(0) += v0[0];
-    vr(1) += v0[1];
-    vr(2) += v0[2];
-    vr(3) += v0[3];
-    vr(4) += v0[4];
-    
     bool isGamma  = false;
     bool isGammaz = false;    
     
