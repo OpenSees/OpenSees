@@ -43,6 +43,7 @@ class BeamIntegration : public MovableObject
   virtual void getSectionLocations(int nIP, double L, double *xi) = 0;
   virtual void getSectionWeights(int nIP, double L, double *wt) = 0;
 
+  /*
   virtual void addElasticDeformations(ElementalLoad *theLoad,
 				      double loadFactor,
 				      double L, double *v0) {return;}
@@ -53,16 +54,19 @@ class BeamIntegration : public MovableObject
 				  double q3, bool yAxis = false) {return 0.0;}
   virtual double getTangentDriftJ(double L, double LI, double q2,
 				  double q3, bool yAxis = false) {return 0.0;}
-
+  */
+  
   virtual BeamIntegration *getCopy(void) = 0;
 
   virtual void getLocationsDeriv(int nIP, double L, double dLdh,
 				 double *dptsdh);
   virtual void getWeightsDeriv(int nIP, double L, double dLdh,
 			       double *dwtsdh);
+  /*
   // Return 0 if there is no elastic interior, -1 otherwise
   virtual int addElasticFlexDeriv(double L, Matrix &dfedh,
 				  double dLdh = 0.0) {return 0;}
+  */
 
   virtual void Print(OPS_Stream &s, int flag = 0) = 0;
 };
