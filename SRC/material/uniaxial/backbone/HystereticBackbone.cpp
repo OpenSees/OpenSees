@@ -70,6 +70,9 @@ HystereticBackbone::~HystereticBackbone()
 double
 HystereticBackbone::getEnergy (double strain)
 {
+  if (strain <= 0.0)
+    return 0.0;
+  
   const int N = 100;
 
   double incr = strain/N;
