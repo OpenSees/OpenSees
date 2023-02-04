@@ -137,12 +137,6 @@ ManderBackbone::getStress (double strain)
 }
 
 double
-ManderBackbone::getEnergy (double strain)
-{
-  return 0.0;
-}
-
-double
 ManderBackbone::getYieldStrain(void)
 {
   return epsc;
