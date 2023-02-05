@@ -196,8 +196,6 @@ double LiquefiedSand::getStress(double strain) {
   return signStrain * stress;
 }
 
-double LiquefiedSand::getEnergy(double strain) { return 0.0; }
-
 double LiquefiedSand::getYieldStrain(void) { return 0.0; }
 
 HystereticBackbone *LiquefiedSand::getCopy(void) {
