@@ -17,15 +17,11 @@
 set DISPLAY OFF
 
 #some variables
-
 set p 5000.0
 set E 30000.0
 set Fy 60.0
 set b 0.1
-set aTop 100.0
-set aBottom 100.0
-set aDiagonal 100.0
-set aVertical 100.0
+set A 100.0
 
 set numAnalysisSteps 15
 
@@ -49,33 +45,33 @@ node 10 400.0 100.0
 
 
 # define bottom chord elements
-element truss 1  1 2 $aBottom 3
-element truss 2  2 3 $aBottom 3
-element truss 3  3 4 $aBottom 3
-element truss 4  4 5 $aBottom 3
+element truss 1  1 2 $A 3
+element truss 2  2 3 $A 3
+element truss 3  3 4 $A 3
+element truss 4  4 5 $A 3
 
 # define top chord elements
-element truss 5  6 7  $aTop 3
-element truss 6  7 8  $aTop 3
-element truss 7  8 9  $aTop 3
-element truss 8  9 10 $aTop 3
+element truss 5  6 7  $A 3
+element truss 6  7 8  $A 3
+element truss 7  8 9  $A 3
+element truss 8  9 10 $A 3
 
 # define diagonal elements
-element truss 9   1 7  $aDiagonal 3
-element truss 10  2 8  $aDiagonal 3
-element truss 11  3 9  $aDiagonal 3
-element truss 12  4 10 $aDiagonal 3
-element truss 13  2 6  $aDiagonal 3
-element truss 14  3 7  $aDiagonal 3
-element truss 15  4 8  $aDiagonal 3
-element truss 16  5 9  $aDiagonal 3
+element truss 9   1 7  $A 3
+element truss 10  2 8  $A 3
+element truss 11  3 9  $A 3
+element truss 12  4 10 $A 3
+element truss 13  2 6  $A 3
+element truss 14  3 7  $A 3
+element truss 15  4 8  $A 3
+element truss 16  5 9  $A 3
 
 #define the vertical elements
-element truss 17 1  6 $aVertical 3
-element truss 18 2  7 $aVertical 3
-element truss 19 3  8 $aVertical 3
-element truss 20 4  9 $aVertical 3
-element truss 21 5 10 $aVertical 3
+element truss 17 1  6 $A 3
+element truss 18 2  7 $A 3
+element truss 19 3  8 $A 3
+element truss 20 4  9 $A 3
+element truss 21 5 10 $A 3
 
 # fix the left node, right node on rollar
 fix 1 1 1 
@@ -90,7 +86,8 @@ pattern Plain 1 Linear {
 
 #create the recorder
 recorder Node -load -node 3 -dof 2 -file Node.out disp
-recorder Element -load -eleRange 1 16 -file Element.out axialForce
+recorder Element -load -eleRange 1 16 -file ElementForce.out axialForce
+recorder Element -load -eleRange 1 16 -file ElementStress.out material stress
 
 if {$DISPLAY == "ON"} {
     recorder plot Node.out Node2Disp 50 350 200 200 -columns 2 1
@@ -120,6 +117,7 @@ if {$DISPLAY == "ON"} {
 analyze $numAnalysisSteps
 
 puts "Vertical Deflection is [expr -[nodeDisp 3 2]]"
+
 
 
 
