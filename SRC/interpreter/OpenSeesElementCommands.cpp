@@ -238,6 +238,9 @@ void* OPS_RockingBC();
 void* OPS_InertiaTrussElement();
 void *OPS_ASDAbsorbingBoundary2D(void);
 void *OPS_ASDAbsorbingBoundary3D(void);
+void* OPS_MasonPan12(void);
+void* OPS_MasonPan3D(void);
+void* OPS_BeamGT(void);
 
 namespace {
 
@@ -680,6 +683,9 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
+	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
+	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
