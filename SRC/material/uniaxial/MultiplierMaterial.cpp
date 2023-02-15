@@ -46,9 +46,8 @@
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_MultiplierMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
