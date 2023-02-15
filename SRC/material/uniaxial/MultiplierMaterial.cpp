@@ -57,7 +57,7 @@ OPS_MultiplierMaterial(void)
   int    iData[2];
 
   int argc = OPS_GetNumRemainingInputArgs();
-  if (argc < 2) {
+  if (argc < 3) {
     opserr << "WARNING insufficient args, uniaxialMaterial Multiplier $tag $otherTag $multiplier" << endln;
     return 0;
   }
