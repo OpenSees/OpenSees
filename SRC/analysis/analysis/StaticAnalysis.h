@@ -61,9 +61,9 @@ class StaticAnalysis: public Analysis
 
     ~StaticAnalysis();
 
-    void clearAll(void);	    
-    
-    int analyze(int numSteps);
+    void clearAll(void);
+
+    int analyze(int numSteps, bool flush = true);
     int eigen(int numMode, bool generlzed = true, bool findSmallest = true);
     int initialize(void);
     int domainChanged(void);

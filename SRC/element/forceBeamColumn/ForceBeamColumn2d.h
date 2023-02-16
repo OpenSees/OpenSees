@@ -219,8 +219,6 @@ class ForceBeamColumn2d: public Element
   void computeSectionForceSensitivity(Vector &dspdh, int isec, int gradNumber);
   // AddingSensitivity:END ///////////////////////////////////////////
 
-  Matrix tjcMass;
-
   Damping *theDamping;
 };
 

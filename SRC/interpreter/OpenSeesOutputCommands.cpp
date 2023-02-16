@@ -1571,6 +1571,29 @@ int OPS_setNodeCoord()
     return 0;
 }
 
+int OPS_getPatterns()
+{
+  Domain* theDomain = OPS_GetDomain();
+  if (theDomain == 0) return -1;
+    
+  LoadPattern *thePattern;
+  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+  std::vector <int> data;
+  
+  while ((thePattern = thePatterns()) != 0)
+    data.push_back(thePattern->getTag());
+
+  int size = data.size();
+  
+  if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+    opserr << "WARNING getPatterns - failed to set output\n";
+    return -1;
+  }
+  
+  return 0;
+}
+
 int OPS_getFixedNodes()
 {
     Domain* theDomain = OPS_GetDomain();
@@ -1646,7 +1669,7 @@ int OPS_getConstrainedNodes()
     int rNodeTag;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 2) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
 		opserr << "WARNING getConstrainedNodes <rNodeTag?> - could not read rNodeTag\n";
 		return -1;
@@ -1770,7 +1793,7 @@ int OPS_getRetainedNodes()
     int cNodeTag;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 2) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
 		opserr << "WARNING getRetainedNodes <cNodeTag?> - could not read cNodeTag\n";
 		return -1;

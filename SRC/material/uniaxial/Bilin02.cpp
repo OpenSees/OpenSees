@@ -985,9 +985,11 @@ Bilin02::setTrialStrain(double strain, double strainRate)
       // When we reach post capping slope goes to zero due to residual
       if(fyNeg>=KNeg*My_neg) { // If strength drops below residual
         fyNeg = KNeg*My_neg;
-        alphaNeg = 10^(-4);
+        //alphaNeg = 10^(-4);
+	alphaNeg = 1.0e-4;
         fCapRefNeg = fyNeg;
-        capSlopeNeg = -pow(10.0,-6);
+        //capSlopeNeg = -pow(10.0,-6);
+        capSlopeNeg = -1.0e-6;
         flagstopdeg = 1;
       } else { //% Keep updating the post capping slope
 
@@ -1000,7 +1002,8 @@ Bilin02::setTrialStrain(double strain, double strainRate)
         //capSlopeNeg = capSlopeNeg/(1+nFactor*(1-capSlopeNeg));  // Updated: Filipe Ribeiro and Andre Barbosa
        
                 if(capSlopeNeg >=0){
-          capSlopeNeg = -pow(10.0,-6);
+		  //capSlopeNeg = -pow(10.0,-6);
+		  capSlopeNeg = -1.0e-6;
         }
       }
      
@@ -1051,9 +1054,11 @@ Bilin02::setTrialStrain(double strain, double strainRate)
       //   %If post capping slope goes to zero due to residual:
       if(fyPos <= KPos*My_pos) {  //% If yield Strength Pos drops below residual
         fyPos = KPos*My_pos;
-        alphaPos = pow(10.0,-4);
+        //alphaPos = pow(10.0,-4);
+        alphaPos = 1.0e-4;
         fCapRefPos = fyPos;
-        capSlope = -pow(10.0,-6);
+        //capSlope = -pow(10.0,-6);
+        capSlope = -1.0e-6;
         flagstopdeg = 1;              
       }  else { //% keep updating
 
@@ -1066,7 +1071,8 @@ Bilin02::setTrialStrain(double strain, double strainRate)
         //capSlope = capSlope/(1+nFactor*(1-capSlope));   // Updated: Filipe Ribeiro and Andre Barbosa
        
                 if(capSlope >=0) {
-          capSlope = -pow(10.0,-6);
+		  //capSlope = -pow(10.0,-6);
+		  capSlope = -1.0e-6;
         }
       }
       dyPos = fyPos/Ke;

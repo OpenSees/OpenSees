@@ -21,6 +21,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(OpenSeesFramework LANGUAGES C CXX Fortran)
 
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
@@ -41,15 +42,24 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
+ # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ set(BUILD_SHARED_LIBS OFF)
+ # set(CMAKE_EXE_LINKER_FLAGS "-static")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ set(BUILD_SHARED_LIBS OFF)
+ set(CMAKE_EXE_LINKER_FLAGS "-static")
  # add_compile_options(-fPIC)
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+ set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
  MESSAGE("COMPILER: Clang")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
  MESSAGE("COMPILER: Intel")
  add_compile_options(-fPIC)
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
  MESSAGE("COMPILER: MSVC")
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+ set(BUILD_SHARED_LIBS OFF)
  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 else()
   MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
@@ -67,19 +77,29 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 # Conan (manages external dependencies for a typical build)
 # 
 
+MESSAGE("${CMAKE_BINARY_DIR}")
+
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+
+   MESSAGE("USING CONAN")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
+   set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+   set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+
 else()
+
+  MESSAGE("NOT USING CONAN")
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
   find_package(HDF5 REQUIRED)
   find_package(TCL REQUIRED)
+
 endif()
 
 # define user-selectable options for end target
@@ -571,10 +591,10 @@ if(MPI_FOUND)
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
     endif()
 
     target_link_libraries(OpenSeesSP 
@@ -630,14 +650,14 @@ if(MPI_FOUND)
     
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
-    endif()			    
+    endif()         
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
     endif()
     
     target_link_libraries(OpenSeesMP 
