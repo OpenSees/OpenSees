@@ -278,7 +278,7 @@ OPS_updateMaterialStage()
 
     Domain* theDomain = OPS_GetDomain();
 
-    // This won't work ... what if there's one parameter with tag 1 already defined in the model?
+    // This won't work ... what if there's one parameter with tag 2 already defined in the model?
     //int parTag = theDomain->getNumParameters();
     //parTag++;
 
