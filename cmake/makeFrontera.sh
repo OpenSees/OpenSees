@@ -2,6 +2,7 @@
 cd ..
 module load intel
 module load hdf5/1.12.0
+cd ..
 mkdir -p build
 cd build
 MKL_LIB=${TACC_MKL_LIB}
