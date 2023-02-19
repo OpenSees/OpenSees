@@ -44,13 +44,13 @@
 void* OPS_EnhancedQuad()
 {
     if (OPS_GetNDM() != 2 || OPS_GetNDF() != 2) {
-	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with quad element\n";
+	opserr << "WARNING -- model dimensions and/or nodal DOF not compatible with enhancedQuad element\n";
 	return 0;
     }
     
     if (OPS_GetNumRemainingInputArgs() < 8) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: element ConstantPressureVolumeQuad eleTag? iNode? jNode? kNode? lNode? thk? type? matTag?\n";
+	opserr << "Want: element enhancedQuad eleTag? iNode? jNode? kNode? lNode? thk? type? matTag?\n";
 	return 0;
     }
 
@@ -81,7 +81,7 @@ void* OPS_EnhancedQuad()
     if (mat == 0) {
 	opserr << "WARNING material not found\n";
 	opserr << "Material: " << matTag;
-	opserr << "\nConstantPressureVolumeQuad element: " << data[0] << endln;
+	opserr << "\nenhancedQuad element: " << data[0] << endln;
 	return 0;
     }
 
@@ -91,7 +91,7 @@ void* OPS_EnhancedQuad()
 
 void *OPS_EnhancedQuad(const ID &info) {
     if (info.Size() == 0) {
-        opserr << "WARNING: info is empty -- FourNodeQuad\n";
+        opserr << "WARNING: info is empty -- enhancedQuad\n";
         return 0;
     }
 
@@ -116,7 +116,7 @@ void *OPS_EnhancedQuad(const ID &info) {
         if (ndm != 2 || ndf != 2) {
             opserr
                 << "WARNING -- model dimensions and/or nodal DOF not "
-                   "compatible with quad element\n";
+                   "compatible with enhancedQuad element\n";
             return 0;
         }
 
