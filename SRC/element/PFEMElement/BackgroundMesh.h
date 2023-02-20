@@ -62,8 +62,10 @@ class BackgroundMesh {
     void addLargeSize(int numbasic, const VDouble& range_low,
                       const VDouble& range_up);
     bool isDispOn() const { return dispon; }
-    void setAlphaS(int sid, double alpha) { alphaS[sid] = alpha; }
+    void setAlphaS(double alpha) { alphaS = alpha; }
     void setDispOn(bool on);
+    void setRecordRange(double range) { recordRange = range; }
+    void setNumAve(int num) { numave = num; }
 
     // remesh all
     int remesh(bool init = false);
@@ -75,6 +77,8 @@ class BackgroundMesh {
     void nearIndex(const VDouble& crds, VInt& index) const;
     void getCrds(const VInt& index, VDouble& crds) const;
     void getCorners(const VInt& index, int num, VVInt& indices) const;
+    void getCorners(const VInt& index, int num, int dim,
+                    VVInt& indices) const;
 
     // particles
     int addParticles();
@@ -156,6 +160,7 @@ class BackgroundMesh {
     int numave, numsub;
     std::vector<Recorder*> recorders;
     VDouble locs;
+    double recordRange;
     double currentTime;
     std::ofstream theFile;
     std::map<int, VInt> structuralNodes;  // >0:structure, <0: fluid,
@@ -163,7 +168,7 @@ class BackgroundMesh {
     VDouble contactData;
     VInt contactEles;
     bool dispon;
-    std::map<int, double> alphaS;  // alphaS for sids
+    double alphaS;  // alphaS for all structure
 
     static const int contact_tag = -13746;
 };

@@ -6,6 +6,42 @@
 
 #include <math.h>
 
+#include <elementAPI.h>
+
+void *
+OPS_RaynorBackbone(void)
+{
+  HystereticBackbone *theBackbone = 0;
+
+  if (OPS_GetNumRemainingInputArgs() < 8) {
+    opserr << "Invalid number of args, want: hystereticBackbone Raynor tag? Es? fy? fsu? epssh? epssm? C1? Ey?" << endln;
+    return 0;
+  }
+
+  int matTag;
+  double dData[7];
+  
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, &matTag) != 0) {
+    opserr << "WARNING invalid tag for hystereticBackbone Raynor" << endln;
+    return 0;
+  }
+  numData = 7;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "WARNING invalid values for hystereticBackbone Raynor" << endln;
+    return 0;
+  }  
+
+  theBackbone = new RaynorBackbone(matTag, dData[0], dData[1], dData[2],
+				   dData[3], dData[4], dData[5], dData[6]);
+  if (theBackbone == 0) {
+    opserr << "WARNING could not create RaynorBackbone\n";
+    return 0;
+  }
+
+  return theBackbone;  
+}
+
 RaynorBackbone::RaynorBackbone(int tag,double es,double f1,double f2,double epsh,double epsm,double c1,double ey):
   HystereticBackbone(tag,BACKBONE_TAG_Raynor),
   Es(es), fy(f1), fsu(f2),Epsilonsh(epsh),Epsilonsm(epsm), C1(c1), Ey(ey)
@@ -75,8 +111,9 @@ RaynorBackbone::getStress (double strain)
   }
   else if (strain < -Epsilonsm)
     return -fsu;
-  else if (strain > Epsilonsm)
-    return fsu;
+
+  //else if (strain > Epsilonsm)
+  return fsu;
 }
 
 double
