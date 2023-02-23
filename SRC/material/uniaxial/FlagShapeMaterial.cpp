@@ -112,7 +112,7 @@ FlagShapeMaterial::setTrialStrain(double strain, double strainRate)
 
     //Define and compute Kinematic modulus
     double H = Eh / (1 - Eh / E);
-    double fyflag = std::fabs(CbackStress) > 0 ? beta*fy:fy;
+    double fyflag = fabs(CbackStress) > 0 ? beta*fy:fy;
 
     // Set total strain
     Tstrain = strain;
