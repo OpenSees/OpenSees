@@ -49,14 +49,6 @@
 #include <Node.h>
 #include <NDMaterial.h>
 
-
-//Number of Gauss-points
-#define NumGaussPoints 1
-#define NumNodes 4
-#define NumDOFsPerNode 3
-#define NumStressComponents 6
-#define NumDOFsTotal NumNodes*NumDOFsPerNode
-
 class FourNodeTetrahedron : public Element {
 
   public :
@@ -140,6 +132,13 @@ class FourNodeTetrahedron : public Element {
 
   private : 
 
+  //Number of Gauss-points  
+  enum {NumGaussPoints=1};
+  enum {NumNodes=4};
+  enum {NumDOFsPerNode=3};
+  enum {NumStressComponents=6};
+  enum {NumDOFsTotal=NumNodes*NumDOFsPerNode};
+  
     void shp3d( const double ss[4], double &xsj, double shp[4][4], const double xl[3][4]   );
 
     //
@@ -167,7 +166,8 @@ class FourNodeTetrahedron : public Element {
     static Vector resid ;
     static Matrix mass ;
     static Matrix damping ;
-
+  static Matrix B;
+  
     //quadrature data
     static const double root3 ;
     static const double one_over_root3 ;    
@@ -175,7 +175,7 @@ class FourNodeTetrahedron : public Element {
     static const double wg[1] ;
   
     //local nodal coordinates, three coordinates for each of four nodes
-    static double xl[3][4] ; 
+    static double xl[3][NumNodes] ; 
 
     //
     // private methods
@@ -191,14 +191,13 @@ class FourNodeTetrahedron : public Element {
     void computeBasis( ) ;
 
     //compute B matrix
-    const Matrix& computeB( int node, const double shp[4][4] ) ;
+    const Matrix& computeB( int node, const double shp[4][NumNodes] ) ;
   
     //Matrix transpose
     Matrix transpose( int dim1, int dim2, const Matrix &M ) ;
-    Vector initDisp[4];
+    Vector initDisp[NumNodes];
 
     int do_update;
-
 } ; 
 
 #endif

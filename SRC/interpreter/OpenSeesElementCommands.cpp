@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ShellMITC4.h>
 #include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
+#include <TenNodeTetrahedron.h>
 
 #include <BeamIntegration.h>
 #include <LobattoBeamIntegration.h>
@@ -228,6 +229,7 @@ void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
+void* OPS_TenNodeTetrahedron();
 void* OPS_CatenaryCableElement();
 void *OPS_ASDEmbeddedNodeElement(void);
 void* OPS_GradientInelasticBeamColumn2d();
@@ -236,6 +238,9 @@ void* OPS_RockingBC();
 void* OPS_InertiaTrussElement();
 void *OPS_ASDAbsorbingBoundary2D(void);
 void *OPS_ASDAbsorbingBoundary3D(void);
+void* OPS_MasonPan12(void);
+void* OPS_MasonPan3D(void);
+void* OPS_BeamGT(void);
 
 namespace {
 
@@ -332,7 +337,8 @@ namespace {
 	if(ndm == 2)
 	    return OPS_MVLEM();
 	if(ndm == 3)
-	    return OPS_MVLEM_3D();	
+	    return OPS_MVLEM_3D();
+	return 0;	
     }
 
     static void* OPS_SFI_MVLEM2d3d()
@@ -342,6 +348,7 @@ namespace {
 	    return OPS_SFI_MVLEM();
 	if(ndm == 3)
 	    return OPS_SFI_MVLEM_3D();	
+	return 0;
     }    
 
     static void* OPS_DispBeamColumn()
@@ -676,6 +683,9 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
+	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
+	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
@@ -734,6 +744,7 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
+	functionMap.insert(std::make_pair("TenNodeTetrahedron", &OPS_TenNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
 	functionMap.insert(std::make_pair("ASDEmbeddedNodeElement", &OPS_ASDEmbeddedNodeElement));
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));

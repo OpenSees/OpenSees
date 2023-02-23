@@ -56,7 +56,7 @@ class ElasticBeam3d : public Element
 		  int releasez = 0, int releasey = 0,
 		      Damping *theDamping = 0);
 
-    ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation *section, 
+    ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
 		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
 		  int releasez = 0, int releasey = 0,
 		  Damping *theDamping = 0);

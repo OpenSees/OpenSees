@@ -263,7 +263,7 @@ TclModelBuilder_addElasticBeam(ClientData clientData, Tcl_Interp *interp, int ar
       }
       
       // now create the beam and add it to the Domain
-      theBeam = new ElasticBeam3d (beamId, iNode, jNode, theSection, *theTrans, mass, cMass);      
+      theBeam = new ElasticBeam3d (beamId, iNode, jNode, *theSection, *theTrans, mass, cMass);      
 
     } else {
 
