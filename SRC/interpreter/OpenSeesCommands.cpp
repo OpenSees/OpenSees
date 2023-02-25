@@ -2149,7 +2149,7 @@ int OPS_printA()
 
 	    const char* filename = OPS_GetString();
 	    if (outputFile.setFile(filename) != 0) {
-		opserr << "print <filename> .. - failed to open file: " << filename << endln;
+		opserr << "printA <filename> .. - failed to open file: " << filename << endln;
 		return -1;
 	    }
 	    output = &outputFile;
@@ -2231,7 +2231,7 @@ int OPS_printB()
 	    const char* filename = OPS_GetString();
 
 	    if (outputFile.setFile(filename) != 0) {
-		opserr << "print <filename> .. - failed to open file: " << filename << endln;
+		opserr << "printB <filename> .. - failed to open file: " << filename << endln;
 		return -1;
 	    }
 	    output = &outputFile;
@@ -2252,14 +2252,14 @@ int OPS_printB()
 	    if (size > 0) {
 		double &ptr = b(0);
 		if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
-		    opserr << "WARNING: printb - failed to set output\n";
+		    opserr << "WARNING: printB - failed to set output\n";
 		    return -1;
 		}
 	    } else {
             size = 0;
             double *ptr2 = 0;
             if (OPS_SetDoubleOutput(&size, ptr2, false) < 0) {
-                opserr << "WARNING: printA - failed to set output\n";
+                opserr << "WARNING: printB - failed to set output\n";
                 return -1;
             }
 	    }
@@ -2270,7 +2270,76 @@ int OPS_printB()
         int size = 0;
         double *ptr = 0;
         if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
-            opserr << "WARNING: printA - failed to set output\n";
+            opserr << "WARNING: printB - failed to set output\n";
+            return -1;
+        }
+    }
+
+    // close the output file
+    outputFile.close();
+
+    return 0;
+}
+
+int OPS_printX()
+{
+    if (cmds == 0) return 0;
+    FileStream outputFile;
+    OPS_Stream *output = &opserr;
+
+    LinearSOE* theSOE = cmds->getSOE();
+    //StaticIntegrator* theStaticIntegrator = cmds->getStaticIntegrator();
+    //TransientIntegrator* theTransientIntegrator = cmds->getTransientIntegrator();
+
+    bool ret = false;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* flag = OPS_GetString();
+
+	if ((strcmp(flag,"file") == 0) || (strcmp(flag,"-file") == 0)) {
+	    const char* filename = OPS_GetString();
+
+	    if (outputFile.setFile(filename) != 0) {
+		opserr << "printX <filename> .. - failed to open file: " << filename << endln;
+		return -1;
+	    }
+	    output = &outputFile;
+	} else if((strcmp(flag,"ret") == 0) || (strcmp(flag,"-ret") == 0)) {
+	    ret = true;
+	}
+    }
+    if (theSOE != 0) {
+      /*
+	if (theStaticIntegrator != 0) {
+	  theStaticIntegrator->formUnbalance();
+	} else if (theTransientIntegrator != 0) {
+	  theTransientIntegrator->formUnbalance();
+	}
+      */
+	Vector &x = const_cast<Vector&>(theSOE->getX());
+	if (ret) {
+	    int size = x.Size();
+	    if (size > 0) {
+		double &ptr = x(0);
+		if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
+		    opserr << "WARNING: printX - failed to set output\n";
+		    return -1;
+		}
+	    } else {
+            size = 0;
+            double *ptr2 = 0;
+            if (OPS_SetDoubleOutput(&size, ptr2, false) < 0) {
+                opserr << "WARNING: printX - failed to set output\n";
+                return -1;
+            }
+	    }
+	} else {
+	    *output << x;
+	}
+    } else {
+        int size = 0;
+        double *ptr = 0;
+        if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
+            opserr << "WARNING: printX - failed to set output\n";
             return -1;
         }
     }
