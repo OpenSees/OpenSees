@@ -23,7 +23,7 @@ jobs:
       run: python3 -m pip install conan
 
     - name: Detect Conan Defaults
-      run: conan profile new default --detect
+      run: conan profile detect
 
     - name: Build
       run: |
