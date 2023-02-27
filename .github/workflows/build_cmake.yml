@@ -24,7 +24,6 @@ jobs:
     - name: Detect Conan Defaults
       run: |
         conan --version
-        conan profile detect
 
     - name: Build
       run: |
