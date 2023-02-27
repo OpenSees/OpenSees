@@ -19,7 +19,7 @@ jobs:
     - uses: actions/checkout@v2
 
     - name: Install conan
-      run: python3 -m pip install conan
+      run: python3 -m pip install conan==1.54.0
 
     - name: Detect Conan Defaults
       run: |
