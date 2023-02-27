@@ -1,4 +1,3 @@
-
 name: CMake Build
 
 env:
@@ -23,7 +22,9 @@ jobs:
       run: python3 -m pip install conan
 
     - name: Detect Conan Defaults
-      run: conan profile detect
+      run: |
+        conan --version
+        conan profile detect
 
     - name: Build
       run: |
