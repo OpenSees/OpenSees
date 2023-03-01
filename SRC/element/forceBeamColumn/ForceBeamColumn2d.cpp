@@ -620,7 +620,7 @@ OPS_BeamWithHinges(void)
       theEle = new ForceBeamColumn3d(iData[0], iData[1], iData[2],
 				     numSections, sections,
 				     *theBeamIntegr, *theTransf,
-				     mass, maxIter, tol);
+				     mass, maxIter, tol, numSub, subFac);
   }
   
   return theEle;
