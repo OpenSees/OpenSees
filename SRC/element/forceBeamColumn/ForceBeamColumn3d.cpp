@@ -117,6 +117,8 @@ void* OPS_ForceBeamColumn3d()
     // options
     double mass = 0.0, tol=1e-12;
     int maxIter = 10;
+    maxIter = 1;
+    
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
@@ -182,6 +184,8 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
     int iData[5];
     double mass = 0.0, tol = 1e-12;
     int maxIter = 10;
+    maxIter = 1;
+    
     int numData;
 
     int ndm = OPS_GetNDM();
@@ -974,7 +978,9 @@ void
 	if (initialFlag != 2) {
 
 	  int numIters = maxIters;
-	  if (l == 1) 
+	  if (l == 1)
+	    numIters = maxIters + 5; // allow a few more iterations for initial then current
+	  if (l == 2) 
 	    numIters = 10*maxIters; // allow 10 times more iterations for initial tangent
 
 	  for (j=0; j <numIters; j++) {
@@ -1049,7 +1055,7 @@ void
 	    
 	    dvs.addMatrixVector(0.0, fsSubdivide[i], dSs, 1.0);
 	    
-	  } else if (l == 2) {
+	  } else if (l == 1) {
 	    
 	    //  newton with initial tangent if first iteration
 	    //    vs += fs0 * dSs;     

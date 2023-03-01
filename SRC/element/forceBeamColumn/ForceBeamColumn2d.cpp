@@ -113,6 +113,7 @@ void* OPS_ForceBeamColumn2d()
     // options
     double mass = 0.0, tol=1e-12;
     int maxIter = 10;
+    maxIter = 1;
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
@@ -181,7 +182,8 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     int numData;
     double mass = 0.0, tol=1e-12;
     int maxIter = 10;
-
+    maxIter = 1;
+    
     // regular element, not in a mesh, get tags
     if (info.Size() == 0) {
 	if(OPS_GetNumRemainingInputArgs() < 5) {
@@ -333,6 +335,8 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     // options
     double mass = 0.0, tol=1e-12;
     int maxIter = 10;
+    maxIter = 1;
+    
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
@@ -426,6 +430,7 @@ OPS_BeamWithHinges(void)
   // Read optional arguments first
   double mass = 0.0;
   int maxIter = 10; double tol = 1e-12; bool defaultIter = true;
+  maxIter = 1;
   int numOptionalArgs = 0;
   int numData = 1;
   while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -1220,7 +1225,9 @@ ForceBeamColumn2d::update()
       if (initialFlag != 2) {
 
 	int numIters = maxIters;
-	if (l == 1) 
+	if (l == 1)
+	  numIters = maxIters + 5; // allow a few more iterations for initial then current
+	if (l == 2) 
 	  numIters = 10*maxIters; // allow 10 times more iterations for initial tangent
 	
 	for (j=0; j <numIters; j++) {
@@ -1284,7 +1291,7 @@ ForceBeamColumn2d::update()
 	      //    vs += fs * dSs;     
 
 	      dvs.addMatrixVector(0.0, fsSubdivide[i], dSs, 1.0);
-	    } else if (l == 2) {
+	    } else if (l == 1) {
 
 	      //  newton with initial tangent if first iteration
 	      //    vs += fs0 * dSs;     
