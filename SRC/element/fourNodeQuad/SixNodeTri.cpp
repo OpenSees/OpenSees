@@ -699,7 +699,10 @@ SixNodeTri::getResistingForceIncInertia()
 	static double rhoi[nip];
 	double sum = 0.0;
 	for (i = 0; i < nip; i++) {
-	  rhoi[i] = theMaterial[i]->getRho();
+	  if (rho == 0)
+            rhoi[i] = theMaterial[i]->getRho();
+          else
+            rhoi[i] = rho;	 
 	  sum += rhoi[i];
 	}
 
