@@ -1,5 +1,6 @@
 #! /bin/bash
-cd ..
+# place in root OpenSees colder and run to build the applications
+# note: the openseesPy that is built is MPI dependent, use the makeFronteraPy script to build non-dependent MPI
 module load intel
 module load hdf5/1.12.0
 cd ..
