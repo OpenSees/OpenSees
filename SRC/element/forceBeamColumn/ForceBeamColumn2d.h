@@ -83,7 +83,8 @@ class ForceBeamColumn2d: public Element
 		    BeamIntegration &beamIntegr,
 		    CrdTransf &coordTransf, double rho = 0.0, 
 		    int maxNumIters = 10, double tolerance = 1.0e-12,
-        Damping *theDamping = 0);
+		    int maxNumSubdivide = 4, double subdivideFactor = 10.0,
+		    Damping *theDamping = 0);
   
   ~ForceBeamColumn2d();
   
@@ -205,6 +206,7 @@ class ForceBeamColumn2d: public Element
 
   // following are added for subdivision of displacement increment
   int    maxSubdivisions;       // maximum number of subdivisons of dv for local iterations
+  double subdivideFactor;
   
   static Vector vsSubdivide[];
   static Vector SsrSubdivide[];
