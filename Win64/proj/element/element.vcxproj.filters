@@ -18,9 +18,6 @@
     <Filter Include="zeroLength">
       <UniqueIdentifier>{c2413ced-fd89-47ec-a53c-7c50d9fbeda0}</UniqueIdentifier>
     </Filter>
-    <Filter Include="beamWithHinges">
-      <UniqueIdentifier>{95c7eb42-420e-4ebb-9712-0482c73a001b}</UniqueIdentifier>
-    </Filter>
     <Filter Include="crdTransf">
       <UniqueIdentifier>{db97fed4-cb21-4af2-a581-225349957f04}</UniqueIdentifier>
     </Filter>
@@ -226,9 +223,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthSection.cpp">
       <Filter>zeroLength</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\beamWithHinges\TclBeamWithHingesBuilder.cpp">
-      <Filter>beamWithHinges</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransf2d.cpp">
       <Filter>crdTransf</Filter>
@@ -1033,7 +1027,7 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement3d.cpp">
       <Filter>componentElement</Filter>
-    </ClCompile>      
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.cpp">
       <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClCompile>
