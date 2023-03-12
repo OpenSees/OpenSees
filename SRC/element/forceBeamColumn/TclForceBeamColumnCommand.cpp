@@ -277,6 +277,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       
     int numIter = 10;
     double tol = 1.0e-12;
+    int numSub = 4;
+    double subFac = 10.0;
     double mass = 0.0;
     int cMass = 0;
     BeamIntegration *beamIntegr = 0;
@@ -295,6 +297,23 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	}
 	if (Tcl_GetDouble(interp, argv[argi+2], &tol) != TCL_OK) {
 	  opserr << "WARNING invalid tol\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+	argi += 3;
+      } else       if (strcmp(argv[argi],"-subdivide") == 0) {
+	if (argc < argi+3) {
+	  opserr << "WARNING not enough -subdivide args need -subdivide numSub? subFactor?\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+	if (Tcl_GetInt(interp, argv[argi+1], &numSub) != TCL_OK) {
+	  opserr << "WARNING invalid numSub\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	}
+	if (Tcl_GetDouble(interp, argv[argi+2], &subFac) != TCL_OK) {
+	  opserr << "WARNING invalid subFac\n";
 	  opserr << argv[1] << " element: " << eleTag << endln;
 	  return TCL_ERROR;
 	}
@@ -423,7 +442,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
 	theElement = new DispBeamColumn2dWithSensitivity(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass);
       else
-	theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, numIter, tol, theDamping);
+	theElement = new ForceBeamColumn2d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf2d, mass, numIter, tol, numSub, subFac, theDamping);
     }
     else {
       if (strcmp(argv[1],"elasticForceBeamColumn") == 0)
@@ -437,7 +456,7 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
 	theElement = new DispBeamColumn3dWithSensitivity(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else
-	theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol, theDamping);
+	theElement = new ForceBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol, numSub, subFac, theDamping);
     }
 
     delete beamIntegr;
