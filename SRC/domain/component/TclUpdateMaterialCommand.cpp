@@ -7,6 +7,7 @@
 #include <TclModelBuilder.h>
 #include <Domain.h>
 #include <MatParameter.h>
+#include <ParameterIter.h>
 
 #include <string.h>
 
@@ -38,9 +39,30 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData,
     return TCL_ERROR;		
   }
 
-  int parTag = theDomain->getNumParameters();
-  parTag++;
+  // This won't work ... what if there's one parameter with tag 2 already defined in the model?  
+  //int parTag = theDomain->getNumParameters();
+  //parTag++;
 
+  // Instead, get the maximum tag from the domain then add one
+  int iparam = 0;
+  int maxParamTag = 0;
+  Parameter *theParam = 0;
+  ParameterIter &theParams = theDomain->getParameters();
+  while ((theParam = theParams()) != 0) {
+    int paramTag = theParam->getTag();
+    
+    // Set max as first tag
+    if (iparam == 0)
+      maxParamTag = paramTag;
+    
+    // Check for maximum
+    if (paramTag > maxParamTag)
+      maxParamTag = paramTag;
+    
+    iparam++;
+  }
+  int parTag = maxParamTag + 1;
+    
   if (argc > 5) {
     if (strcmp(argv[5],"-parameter") == 0) {
       if (Tcl_GetInt(interp, argv[6], &parTag) != TCL_OK) {
