@@ -1163,9 +1163,16 @@ FiberSection2d::setParameter(const char **argv, int argc, Parameter &param)
 
   int result = -1;
 
+  if (strcmp(argv[0],"fiberIndex") == 0) {
+    if (argc < 3)
+      return 0;
+    int key = atoi(argv[1]);
+    return theMaterials[key]->setParameter(&argv[2], argc-2, param);
+  }
+  
   // Check if the parameter belongs to the material
   if (strstr(argv[0],"material") != 0) {
-    
+
     if (argc < 3)
       return 0;
 

@@ -1131,7 +1131,8 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/yieldSurface/YieldSurfaceSection2d.o \
 	$(FE)/material/section/yieldSurface/YS_Section2D01.o \
 	$(FE)/material/section/yieldSurface/YS_Section2D02.o \
-	$(FE)/material/section/yieldSurface/SoilFootingSection2d.o
+	$(FE)/material/section/yieldSurface/SoilFootingSection2d.o \
+	$(FE)/material/section/CreepSection.o
 
 
 SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o 
