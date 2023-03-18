@@ -829,18 +829,33 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
   int res = 0;
 
   // create an id to send objects tag and numFibers, 
-  //     size 5 so no conflict with matData below if just 2 fibers
-  static ID data(5);
+  static ID data(8);
   data(0) = this->getTag();
   data(1) = numFibers;
   data(2) = (theTorsion != 0) ? 1 : 0;
-  int dbTag = this->getDbTag();
   if (theTorsion != 0) {
-    theTorsion->setDbTag(dbTag);
+    int dbTag = theTorsion->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	theTorsion->setDbTag(dbTag);
+    }
     data(3) = theTorsion->getClassTag();
   }
   data(4) = computeCentroid ? 1 : 0; // Now the ID data is really 5
-  
+  data(5) = sectionIntegr != 0 ? 1 : 0;
+  if (sectionIntegr != 0) {
+    data(6) = sectionIntegr->getClassTag();
+    int sectionIntegrDbTag = sectionIntegr->getDbTag();
+    if (sectionIntegrDbTag == 0) {
+      sectionIntegrDbTag = theChannel.getDbTag();
+      if (sectionIntegrDbTag != 0)
+	sectionIntegr->setDbTag(sectionIntegrDbTag);
+    }
+    data(7) = sectionIntegrDbTag;
+  }
+
+  int dbTag = this->getDbTag();  
   res += theChannel.sendID(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "FiberSection3d::sendSelf - failed to send ID data\n";
@@ -850,6 +865,14 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
   if (theTorsion != 0)
     theTorsion->sendSelf(commitTag, theChannel);
 
+  if (sectionIntegr != 0) {
+    res = sectionIntegr->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "FiberSection3d::sendSelf - failed to send section integration" << endln;
+      return res;
+    }
+  }
+  
   if (numFibers != 0) {
     
     // create an id containingg classTag and dbTag for each material & send it
@@ -866,7 +889,7 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
       materialData(2*i+1) = matDbTag;
     }    
     
-    res += theChannel.sendID(dbTag, commitTag, materialData);
+    res = theChannel.sendID(dbTag, commitTag, materialData);
     if (res < 0) {
      opserr << "FiberSection3d::sendSelf - failed to send material data\n";
      return res;
@@ -874,15 +897,21 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
 
     // send the fiber data, i.e. area and loc
     Vector fiberData(matData, 3*numFibers);
-    res += theChannel.sendVector(dbTag, commitTag, fiberData);
+    res = theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
      opserr << "FiberSection3d::sendSelf - failed to send fiber data\n";
      return res;
     }    
 
     // now invoke send(0 on all the materials
-    for (int j=0; j<numFibers; j++)
-      theMaterials[j]->sendSelf(commitTag, theChannel);
+    for (int j=0; j<numFibers; j++) {
+      res = theMaterials[j]->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+	opserr << "FiberSection3d::sendSelf - failed to send material with tag "
+	       << theMaterials[j]->getTag() << endln;
+	return res;
+      }
+    }
   }
 
   return res;
@@ -894,16 +923,14 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(5);
+  static ID data(8);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
-
   if (res < 0) {
    opserr << "FiberSection3d::recvSelf - failed to recv ID data\n";
    return res;
   } 
-   
   this->setTag(data(0));
 
   if (data(2) == 1 && theTorsion == 0) {	
@@ -920,6 +947,34 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 	   opserr << "FiberSection3d::recvSelf - torsion failed to recvSelf \n";
        return -2;
   }
+
+  if (data(5) == 1) {
+    int sectionIntegrClassTag = data(6);
+    int sectionIntegrDbTag = data(7);
+
+    // create a new section integration object if one needed
+    if (sectionIntegr == 0 || sectionIntegr->getClassTag() != sectionIntegrClassTag) {
+      if (sectionIntegr != 0)
+	delete sectionIntegr;
+      
+      sectionIntegr = theBroker.getNewSectionIntegration(sectionIntegrClassTag);
+      
+      if (sectionIntegr == 0) {
+	opserr << "FiberSection3d::recvSelf() - failed to obtain a SectionIntegration object with classTag "
+	       << sectionIntegrClassTag << endln;
+	exit(-1);
+      }
+    }
+    
+    sectionIntegr->setDbTag(sectionIntegrDbTag);
+    
+    // invoke recvSelf on the section integration object
+    if (sectionIntegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+      opserr << "FiberSection3d::sendSelf() - failed to recv SectionIntegration\n";
+      return -3;
+    }      
+  } else
+    sectionIntegr = 0;
   
   // recv data about materials objects, classTag and dbTag
   if (data(1) != 0) {
@@ -1000,21 +1055,36 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
     QzBar = 0.0;
     QyBar = 0.0;
     Abar  = 0.0;
-    double yLoc, zLoc, Area;
 
     computeCentroid = data(4) ? true : false;
-    
-    // Recompute centroid
-    for (i = 0; computeCentroid && i < numFibers; i++) {
-      yLoc = matData[3*i];
-      zLoc = matData[3*i+1];
-      Area = matData[3*i+2];
-      Abar  += Area;
-      QzBar += yLoc*Area;
-      QyBar += zLoc*Area;
-    }
 
-    if (computeCentroid) {
+    if (sectionIntegr != 0) {
+      static double yLocs[10000];
+      static double zLocs[10000];
+      sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+      
+      static double fiberArea[10000];
+      sectionIntegr->getFiberWeights(numFibers, fiberArea);
+      
+      for (int i = 0; i < numFibers; i++) {
+	Abar  += fiberArea[i];
+	QzBar += yLocs[i]*fiberArea[i];
+	QyBar += zLocs[i]*fiberArea[i];
+      }
+    }
+    else {
+      double yLoc, zLoc, Area;
+      for (i = 0; computeCentroid && i < numFibers; i++) {
+	yLoc = matData[3*i];
+	zLoc = matData[3*i+1];
+	Area = matData[3*i+2];
+	Abar  += Area;
+	QzBar += yLoc*Area;
+	QyBar += zLoc*Area;
+      }
+    }
+    
+    if (computeCentroid && Abar != 0.0) {
       yBar = QzBar/Abar;
       zBar = QyBar/Abar;
     } else {
