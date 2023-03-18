@@ -829,30 +829,31 @@ FiberSection3d::sendSelf(int commitTag, Channel &theChannel)
   int res = 0;
 
   // create an id to send objects tag and numFibers, 
-  static ID data(8);
+  static ID data(9);
   data(0) = this->getTag();
   data(1) = numFibers;
   data(2) = (theTorsion != 0) ? 1 : 0;
   if (theTorsion != 0) {
-    int dbTag = theTorsion->getDbTag();
-    if (dbTag == 0) {
-      dbTag = theChannel.getDbTag();
-      if (dbTag != 0)
-	theTorsion->setDbTag(dbTag);
-    }
     data(3) = theTorsion->getClassTag();
+    int torsionDbTag = theTorsion->getDbTag();
+    if (torsionDbTag == 0) {
+      torsionDbTag = theChannel.getDbTag();
+      if (torsionDbTag != 0)
+	theTorsion->setDbTag(torsionDbTag);
+    }
+    data(4) = torsionDbTag;
   }
-  data(4) = computeCentroid ? 1 : 0; // Now the ID data is really 5
-  data(5) = sectionIntegr != 0 ? 1 : 0;
+  data(5) = computeCentroid ? 1 : 0; // Now the ID data is really 5
+  data(6) = sectionIntegr != 0 ? 1 : 0;
   if (sectionIntegr != 0) {
-    data(6) = sectionIntegr->getClassTag();
+    data(7) = sectionIntegr->getClassTag();
     int sectionIntegrDbTag = sectionIntegr->getDbTag();
     if (sectionIntegrDbTag == 0) {
       sectionIntegrDbTag = theChannel.getDbTag();
       if (sectionIntegrDbTag != 0)
 	sectionIntegr->setDbTag(sectionIntegrDbTag);
     }
-    data(7) = sectionIntegrDbTag;
+    data(8) = sectionIntegrDbTag;
   }
 
   int dbTag = this->getDbTag();  
@@ -923,7 +924,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(8);
+  static ID data(9);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
@@ -934,13 +935,14 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
   this->setTag(data(0));
 
   if (data(2) == 1 && theTorsion == 0) {	
-    int cTag = data(3);
-    theTorsion = theBroker.getNewUniaxialMaterial(cTag);
+    int torsionClassTag = data(3);
+    int torsionDbTag = data(4);
+    theTorsion = theBroker.getNewUniaxialMaterial(torsionClassTag);
     if (theTorsion == 0) {
       opserr << "FiberSection3d::recvSelf - failed to get torsion material \n";
       return -1;
     }
-    theTorsion->setDbTag(dbTag);
+    theTorsion->setDbTag(torsionDbTag);
   }
 
   if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
@@ -948,9 +950,9 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
        return -2;
   }
 
-  if (data(5) == 1) {
-    int sectionIntegrClassTag = data(6);
-    int sectionIntegrDbTag = data(7);
+  if (data(6) == 1) {
+    int sectionIntegrClassTag = data(7);
+    int sectionIntegrDbTag = data(8);
 
     // create a new section integration object if one needed
     if (sectionIntegr == 0 || sectionIntegr->getClassTag() != sectionIntegrClassTag) {
@@ -1056,7 +1058,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
     QyBar = 0.0;
     Abar  = 0.0;
 
-    computeCentroid = data(4) ? true : false;
+    computeCentroid = data(5) ? true : false;
 
     if (sectionIntegr != 0) {
       static double yLocs[10000];
@@ -1091,7 +1093,7 @@ FiberSection3d::recvSelf(int commitTag, Channel &theChannel,
       yBar = 0.0;
       zBar = 0.0;      
     }
-  }    
+  }   
 
   return res;
 }
