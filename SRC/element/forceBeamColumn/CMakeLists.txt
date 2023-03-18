@@ -35,6 +35,8 @@ target_sources(OPS_Element
         FixedLocationBeamIntegration.cpp
         LowOrderBeamIntegration.cpp
         MidDistanceBeamIntegration.cpp
+        ConcentratedPlasticityBeamIntegration.cpp
+        ConcentratedCurvatureBeamIntegration.cpp
         #GaussQBeamIntegration.cpp
 	ChebyshevBeamIntegration.cpp
     PUBLIC

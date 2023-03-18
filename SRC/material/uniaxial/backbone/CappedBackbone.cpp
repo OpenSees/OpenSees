@@ -36,7 +36,51 @@
 
 #include <math.h>
 
+#include <elementAPI.h>
 #include <G3Globals.h>
+
+void *
+OPS_CappedBackbone(void)
+{
+  HystereticBackbone *theBackbone = 0;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "Invalid number of args, want: hystereticBackbone Capped tag? bbTag? capTag?" << endln;
+    return 0;
+  }
+
+  int iData[3];
+  
+  int numData = 3;
+  if (OPS_GetIntInput(&numData, iData) != 0) {
+    opserr << "WARNING invalid tags for hystereticBackbone Capped" << endln;
+    return 0;
+  }
+
+  HystereticBackbone *bb = OPS_getHystereticBackbone(iData[1]);
+  if (bb == 0) {
+    opserr << "WARNING backbone does not exist" << endln;
+    opserr << "backbone: " << iData[1] << endln;
+    opserr << "hystereticBackbone Capped: " << iData[0] << endln;
+    return 0;
+  }
+
+  HystereticBackbone *cap = OPS_getHystereticBackbone(iData[2]);
+  if (cap == 0) {
+    opserr << "WARNING backbone does not exist" << endln;
+    opserr << "backbone: " << iData[2] << endln;
+    opserr << "hystereticBackbone Capped: " << iData[0] << endln;
+    return 0;
+  }
+  
+  theBackbone = new CappedBackbone(iData[0], *bb, *cap);
+  if (theBackbone == 0) {
+    opserr << "WARNING could not create CappedBackbone\n";
+    return 0;
+  }
+
+  return theBackbone;  
+}
 
 CappedBackbone::CappedBackbone (int tag, HystereticBackbone &backbone,
 				HystereticBackbone &cap):

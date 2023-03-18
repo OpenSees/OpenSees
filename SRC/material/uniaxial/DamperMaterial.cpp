@@ -53,7 +53,7 @@ OPS_DamperMaterial(void)
   }
 
   int numData = 2;
-  int *iData = new int[2];
+  int iData[2];
   
   if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid data for uniaxialMaterial Damper" << endln;
@@ -64,7 +64,6 @@ OPS_DamperMaterial(void)
   if (theMat == 0) {
     opserr << "WARNING no existing material with tag " << iData[1] 
 	   << " for uniaxialMaterial Damper" << iData[0] << endln;
-    delete [] iData;
     return 0;
   }
 
@@ -74,8 +73,6 @@ OPS_DamperMaterial(void)
     opserr << "WARNING could not create uniaxialMaterial of type Damper\n";
     return 0;
   }
-  
-  delete [] iData;
 
   return theMaterial;
 }

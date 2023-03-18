@@ -493,6 +493,9 @@ EnvelopeNodeRecorder::~EnvelopeNodeRecorder()
       delete theTimeSeries[i];
     delete [] theTimeSeries;
   }
+
+  if (timeSeriesValues != 0)
+    delete [] timeSeriesValues;  
 }
 
 int 
@@ -969,7 +972,7 @@ EnvelopeNodeRecorder::recvSelf(int commitTag, Channel &theChannel,
     } 
 
 
-  static Vector data(2);
+  static Vector data(3);
   if (theChannel.recvVector(0, commitTag, data) < 0) {
     opserr << "EnvelopeNodeRecorder::sendSelf() - failed to receive data\n";
     return -1;
@@ -1193,4 +1196,11 @@ double EnvelopeNodeRecorder::getRecordedValue(int clmnId, int rowOffset, bool re
 	if (reset)
 		first = true;
 	return res;
+}
+
+int EnvelopeNodeRecorder::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
 }

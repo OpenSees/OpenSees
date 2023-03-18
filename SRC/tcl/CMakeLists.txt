@@ -13,6 +13,7 @@
 
 target_sources(OPS_InterpTcl PRIVATE 
     "${OPS_SRC_DIR}/coordTransformation/TclGeomTransfCommand.cpp"
+    "${OPS_SRC_DIR}/damping/TclDampingCommand.cpp"
     "${OPS_SRC_DIR}/database/TclDatabaseCommands.cpp"
     #"${OPS_SRC_DIR}/database/TclMySQL.cpp"
     #"${OPS_SRC_DIR}/database/TclBerkeleyDB.cpp"

@@ -1040,7 +1040,7 @@ NodeRecorder::recvSelf(int commitTag, Channel &theChannel,
     }
 
 
-  static Vector data(2);
+  static Vector data(3);
   if (theChannel.recvVector(0, commitTag, data) < 0) {
     opserr << "NodeRecorder::sendSelf() - failed to receive data\n";
     return -1;
@@ -1315,4 +1315,11 @@ double NodeRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
 		return res;
 	res = response(clmnId);
 	return res;
+}
+
+int NodeRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
 }

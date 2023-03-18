@@ -3888,7 +3888,7 @@ namespace mpco {
 					int_type = ElementIntegrationRuleType::Quadrilateral_GaussLegendre_3;
 				}
 				/*
-				4-node tetrahedron with 1x1x1 gp
+				4-node tetrahedron with 4 gp
 				*/
 				else if (
 					// ./tetrahedron
@@ -3897,6 +3897,17 @@ namespace mpco {
 				{
 					geom_type = ElementGeometryType::Tetrahedron_4N;
 					int_type = ElementIntegrationRuleType::Tetrahedron_GaussLegendre_1;
+				}
+				/*
+				10-node tetrahedron with 1x1x1 gp
+				*/
+				else if (
+					// ./tetrahedron
+					elem_class_tag == ELE_TAG_TenNodeTetrahedron
+					)
+				{
+					geom_type = ElementGeometryType::Tetrahedron_10N;
+					int_type = ElementIntegrationRuleType::Tetrahedron_GaussLegendre_2;
 				}
 				/*
 				8-node hexahedron with 1x1x1 gp
@@ -5334,6 +5345,13 @@ int MPCORecorder::writeSections()
 							/*
 							error checks
 							*/
+							// this workouround can pass some of the following checks:
+							// Sometimes in OpenSees objects open the xml tags even if they will not provide responses...
+							// in this case it can happen that a section opens the tags before checking if it really has fibers (see SectioinAggreator for example)
+							if (trial_sec_id.size() != trial_fiberdata.size()) trial_sec_id.resize(trial_fiberdata.size());
+							if (trial_gp_id.size() != trial_fiberdata.size()) trial_gp_id.resize(trial_fiberdata.size());
+							if (trial_dummy_flag.size() != trial_fiberdata.size()) trial_dummy_flag.resize(trial_fiberdata.size());
+							// these are errors that should never happen. we exit if they happen
 							if ((trial_fiberdata.size() > 0) && (trial_fiberdata.size() != trial_sec_id.size())) {
 								// this should never happen!
 								opserr << "MPCORecorder FATAL Error: trial_fiberdata.size() != trial_sec_id.size()\n";

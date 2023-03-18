@@ -23,7 +23,7 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/element/shell/ShellMITC4.h,v $
 
 // Original implementation: Ed "C++" Love
-// Reimplementation: Leopoldo Tesser, Diego A. Talledo, Véronique Le Corvec
+// Reimplementation: Leopoldo Tesser, Diego A. Talledo, VÃ©ronique Le Corvec
 //
 // Bathe MITC 4 four node shell element with membrane and drill
 // Ref: Dvorkin,Bathe, A continuum mechanics based four node shell
@@ -43,6 +43,7 @@
 #include <Element.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
+#include <Damping.h>
 
 class ShellMITC4 : public Element {
 
@@ -58,12 +59,16 @@ class ShellMITC4 : public Element {
 	      int node3,
 	      int node4,
 	      SectionForceDeformation &theMaterial,
-	      bool updateBasis=false) ;
-  
+	      bool updateBasis=false,
+	      Damping *theDamping = 0);
+   
   //destructor 
   virtual ~ShellMITC4( ) ;
+	
+  const char *getClassType(void) const {return "ShellMITC4";}
 
   void setDomain( Domain *theDomain ) ;
+  int setDamping(Domain *theDomain, Damping *theDamping);
   
   //get the number of external nodes
   int getNumExternalNodes( ) const ;
@@ -193,6 +198,12 @@ class ShellMITC4 : public Element {
     Vector *load;
     Matrix *Ki;
     double init_disp[4][6];
+    Damping *theDamping[4];
+
+    // Massimo Petracca 2022.
+    // initialization flag: we need this to avoid re-computing
+    // initial displacements if setDomain is called after a recvSelf!
+    bool m_initialzed = false;
 } ; 
 
 

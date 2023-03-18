@@ -47,6 +47,7 @@ OBJS       = UniaxialMaterial.o \
 	RambergOsgoodSteel.o \
 	Steel01.o \
         HystereticMaterial.o \
+	HystereticSMMaterial.o \
         SteelDRC.o \
 	EPPGapMaterial.o \
         ViscousMaterial.o \
@@ -83,6 +84,9 @@ OBJS       = UniaxialMaterial.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
 	ImpactMaterial.o \
+	Hertzdamp.o \
+	JankowskiImpact.o \
+	ViscoelasticGap.o \
 	KinematicHardening.o \
 	NewUniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
@@ -96,6 +100,9 @@ OBJS       = UniaxialMaterial.o \
 	ConcretewBeta.o \
 	FRPConfinedConcrete.o \
 	FRPConfinedConcrete02.o \
+	ConcreteZBH_fitted.o \
+	ConcreteZBH_original.o \
+	ConcreteZBH_smoothed.o \
 	KikuchiAikenHDR.o \
 	KikuchiAikenLRB.o \
 	Concrete05.o \
@@ -149,6 +156,8 @@ OBJS       = UniaxialMaterial.o \
 	BoucWenInfill.o \
 	HystereticSmooth.o \
 	HystereticAsym.o \
+	CoulombDamperMaterial.o \
+	FlagShapeMaterial.o \
     TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
