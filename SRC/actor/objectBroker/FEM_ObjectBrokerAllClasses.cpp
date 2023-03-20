@@ -152,6 +152,7 @@
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
 #include "SectionAggregator.h"
+#include "ParallelSection.h"
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
@@ -1593,6 +1594,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_Aggregator:
 	     return new SectionAggregator();
+
+	case SEC_TAG_Parallel:
+	     return new ParallelSection();	     
 
 	     //case SEC_TAG_Fiber:
 	     //return new FiberSection();
