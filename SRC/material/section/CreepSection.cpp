@@ -112,24 +112,44 @@ CreepSection::updateParameter(int paramID, Information &info)
 
   // Need to make sure this is fiber section
   int numFibers = theVector.Size() / 5;
-  
-  argv[0] = "fiberIndex";
-  argv[2] = "epsInit";
+
+  const char *argvParam[3];
+  argvParam[0] = "fiberIndex";
+  argvParam[2] = "epsInit";
+
+  const char *argvResp[4];
+  argvResp[0] = "fiberIndex";
+  argvResp[2] = "material";
+  argvResp[3] = "strain";
   char buffer[80];
   for (int i = 0; i < numFibers; i++) {
     sprintf(buffer,"%d",i);
-    argv[1] = buffer;
+    argvParam[1] = buffer;
+    argvResp[1] = buffer;
     
+    // Get the initial strain parameter
     Parameter param;
-    int ok = theSection->setParameter(argv,3,param);
+    int ok = theSection->setParameter(argvParam,3,param);
     if (ok < 0)
       continue;
 
-    double eps0 = theVector(4 + i*5);
+    // Get the mechanical strain
+    //double eps0 = theVector(4 + i*5);
+    Response *theResponse = theSection->setResponse(argvResp, 4, stream);
+    if (theResponse == 0)
+      continue;
+    theResponse->getResponse();
+    Information &secinfo = theResponse->getInformation();
+    double eps0 = secinfo.theDouble;
+    opserr << ' ' << i << ' ' << eps0 << endln;
+    
+    // Update the initial strain parameter
     param.update(creepFactor*eps0);
+
+    delete theResponse;
   }
   
-  
+  delete theResponse;
   //  param.update(creepFactor);
   
   return 0;
