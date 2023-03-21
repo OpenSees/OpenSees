@@ -926,6 +926,13 @@ FiberSection2d::setResponse(const char **argv, int argc,
 			    OPS_Stream &output)
 {
   Response *theResponse = 0;
+
+  if (strcmp(argv[0],"fiberIndex") == 0) {
+    if (argc < 3)
+      return 0;
+    int key = atoi(argv[1]);
+    return theMaterials[key]->setResponse(&argv[2], argc-2, output);
+  }
   
   if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
