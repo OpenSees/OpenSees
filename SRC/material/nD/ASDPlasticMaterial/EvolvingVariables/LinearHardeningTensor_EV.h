@@ -37,7 +37,7 @@ class LinearHardeningTensor_EV : public EvolvingVariable<VoigtVector, LinearHard
 {
 public:
 
-    LinearHardeningTensor_EV( double H_) : EvolvingVariable(VoigtVector()), H(H_) {};
+    LinearHardeningTensor_EV( double H_) : EvolvingVariable(VoigtVector(0,0,0,0,0,0)), H(H_) {};
 
     LinearHardeningTensor_EV( double H_, const VoigtVector& alpha0)  : EvolvingVariable(alpha0), H(H_) {};
 

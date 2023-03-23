@@ -46,7 +46,7 @@ public:
 	{
 		Ee.setZero(); //Zero it. It may have values from another instance with different parameters;
 
-		const double mu2 = mu * mu;
+		// const double mu2 = mu * mu;
 
 		Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = 2*mu + lambda;
 		Ee(0, 1) = Ee(1, 0) = Ee(0, 2) = Ee(2, 0) = Ee(1, 2) = Ee(2, 1) = lambda;

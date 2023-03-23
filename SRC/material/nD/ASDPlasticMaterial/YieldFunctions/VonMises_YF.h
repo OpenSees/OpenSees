@@ -60,6 +60,11 @@ public:
 
         double tmp = (s - alpha).dot(s - alpha);
 
+        // printTensor("s", s);
+        // printTensor("alpha", alpha);
+        // // printTensor("k", k);
+        // cout << "k = " << k(0) << endl;
+
         return std::sqrt( tmp ) - SQRT_2_over_3 * k.value() ;  // This one assumes p positive in tension
     }
 
