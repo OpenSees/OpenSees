@@ -234,9 +234,9 @@ IncrementalElasticIsotropicThreeDimensional::getStress (void)
   double mu = 0.50*mu2;
   mu2 += lam;
 
-  double deps0 = depsilon(0)-depsilon_initial(0);
-  double deps1 = depsilon(1)-depsilon_initial(1);
-  double deps2 = depsilon(2)-depsilon_initial(2);
+  double deps0 = depsilon(0);
+  double deps1 = depsilon(1);
+  double deps2 = depsilon(2);
 
   D(0,0) = D(1,1) = D(2,2) = mu2;
   D(0,1) = D(1,0) = D(0,2) = D(2,0) = D(1,2) = D(2,1) = lam;
@@ -248,9 +248,9 @@ IncrementalElasticIsotropicThreeDimensional::getStress (void)
   sigma(0) = sigma(0) + mu2*deps0 + lam*(deps1 + deps2);
   sigma(1) = sigma(1) + mu2*deps1 + lam*(deps0 + deps2);
   sigma(2) = sigma(2) + mu2*deps2 + lam*(deps0 + deps1);
-  sigma(3) = sigma(3) + mu*(depsilon(3) - depsilon_thermal(3));
-  sigma(4) = sigma(4) + mu*(depsilon(4) - depsilon_thermal(4));
-  sigma(5) = sigma(5) + mu*(depsilon(5) - depsilon_thermal(5));
+  sigma(3) = sigma(3) + mu*depsilon(3);
+  sigma(4) = sigma(4) + mu*depsilon(4);
+  sigma(5) = sigma(5) + mu*depsilon(5);
 
   // if(printnow)
   // {
