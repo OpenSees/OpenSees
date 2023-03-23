@@ -117,7 +117,7 @@ public:
 
 	// from strain (opensees vector)
 	static VoigtVector fromStrain(const Vector& strain) {
-		return VoigtVector(strain(0), strain(1), strain(2), strain(3) / 2.0, strain(4) / 2.0, strain(5) / 2.0);
+		return VoigtVector(strain(0), strain(1), strain(2), strain(3) , strain(4) , strain(5) );
 	}
 
 	// from stress (opensees vector)
@@ -129,9 +129,9 @@ public:
 		strain(0) = v11();
 		strain(1) = v22();
 		strain(2) = v33();
-		strain(3) = v12() * 2;
-		strain(4) = v23() * 2;
-		strain(5) = v13() * 2;
+		strain(3) = v12();
+		strain(4) = v23();
+		strain(5) = v13();
 	}
 
 	void toStress(Vector& stress) {

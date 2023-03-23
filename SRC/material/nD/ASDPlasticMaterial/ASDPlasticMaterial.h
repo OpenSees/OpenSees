@@ -98,7 +98,7 @@ using namespace ASDPlasticMaterialGlobals;
 
 
 
-template < class ElasticityType, class YieldFunctionType, class PlasticFlowType, class MaterialInternalVariablesType, int thisClassTag, class T >
+template < class ElasticityType, class YieldFunctionType, class @for, class MaterialInternalVariablesType, int thisClassTag, class T >
 class ASDPlasticMaterial : public NDMaterial
 {
 
@@ -798,10 +798,12 @@ private:
             if (abs(den) < MACHINE_EPSILON)
             {
                 cout << "CEP - den = 0\n";
+                cout << "yf_val_start = " << yf_val_start << endl;
+                cout << "yf_val_end = " << yf_val_end << endl;
                 printTensor("m", m);
                 printTensor("n", n);
-                cout << "xi_star_h_star" << xi_star_h_star << endl;
-                cout << "den" << den << endl;
+                cout << "xi_star_h_star = " << xi_star_h_star << endl;
+                cout << "den = " << den << endl;
                 printTensor("depsilon_elpl", depsilon_elpl);
                 return -1;
             }
