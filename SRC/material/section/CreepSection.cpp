@@ -141,7 +141,7 @@ CreepSection::updateParameter(int paramID, Information &info)
     theResponse->getResponse();
     Information &secinfo = theResponse->getInformation();
     double eps0 = secinfo.theDouble;
-    opserr << ' ' << i << ' ' << eps0 << endln;
+    //opserr << ' ' << i << ' ' << eps0 << endln;
     
     // Update the initial strain parameter
     param.update(creepFactor*eps0);
