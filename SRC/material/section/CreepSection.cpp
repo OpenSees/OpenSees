@@ -90,67 +90,115 @@ CreepSection::setParameter(const char **argv, int argc, Parameter &param)
     return param.addObject(1, this);
   }
 
+  if (strcmp(argv[0],"shrinkageStrain") == 0) {
+    param.setValue(0.0);
+    return param.addObject(2, this);
+  }
+
   return -1;
 }
 
 int
 CreepSection::updateParameter(int paramID, Information &info)
 {
-  if (paramID != 1)
-    return 0;
-  
-  creepFactor = info.theDouble;
-
-  const char *argv[3];
-
-  argv[0] = "fiberData";
-  DummyStream stream;
-  Response *theResponse = theSection->setResponse(argv, 1, stream);
-  theResponse->getResponse();
-  Information &secinfo = theResponse->getInformation();
-  const Vector &theVector = *(secinfo.theVector);
-
-  // Need to make sure this is fiber section
-  int numFibers = theVector.Size() / 5;
-
-  const char *argvParam[3];
-  argvParam[0] = "fiberIndex";
-  argvParam[2] = "epsInit";
-
-  const char *argvResp[4];
-  argvResp[0] = "fiberIndex";
-  argvResp[2] = "material";
-  argvResp[3] = "strain";
-  char buffer[80];
-  for (int i = 0; i < numFibers; i++) {
-    sprintf(buffer,"%d",i);
-    argvParam[1] = buffer;
-    argvResp[1] = buffer;
+  if (paramID == 1) {
+    creepFactor = info.theDouble;
     
-    // Get the initial strain parameter
-    Parameter param;
-    int ok = theSection->setParameter(argvParam,3,param);
-    if (ok < 0)
-      continue;
-
-    // Get the mechanical strain
-    //double eps0 = theVector(4 + i*5);
-    Response *theResponse = theSection->setResponse(argvResp, 4, stream);
-    if (theResponse == 0)
-      continue;
+    const char *argv[3];
+    
+    argv[0] = "fiberData";
+    DummyStream stream;
+    Response *theResponse = theSection->setResponse(argv, 1, stream);
     theResponse->getResponse();
     Information &secinfo = theResponse->getInformation();
-    double eps0 = secinfo.theDouble;
-    //opserr << ' ' << i << ' ' << eps0 << endln;
+    const Vector &theVector = *(secinfo.theVector);
     
-    // Update the initial strain parameter
-    param.update(creepFactor*eps0);
-
+    // Need to make sure this is fiber section
+    int numFibers = theVector.Size() / 5;
+    
+    const char *argvParam[3];
+    argvParam[0] = "fiberIndex";
+    argvParam[2] = "epsInit";
+    
+    const char *argvResp[4];
+    argvResp[0] = "fiberIndex";
+    argvResp[2] = "material";
+    argvResp[3] = "strain";
+    char buffer[80];
+    for (int i = 0; i < numFibers; i++) {
+      sprintf(buffer,"%d",i);
+      argvParam[1] = buffer;
+      argvResp[1] = buffer;
+      
+      // Get the initial strain parameter
+      Parameter param;
+      int ok = theSection->setParameter(argvParam,3,param);
+      if (ok < 0)
+	continue;
+      
+      // Get the mechanical strain
+      //double eps0 = theVector(4 + i*5);
+      Response *theResponse = theSection->setResponse(argvResp, 4, stream);
+      if (theResponse == 0)
+	continue;
+      theResponse->getResponse();
+      Information &secinfo = theResponse->getInformation();
+      double eps0 = secinfo.theDouble;
+      //opserr << ' ' << i << ' ' << eps0 << endln;
+      
+      // Update the initial strain parameter
+      if (eps0 < 0.0)
+	param.update(creepFactor*eps0);
+      
+      delete theResponse;
+    }
+    
     delete theResponse;
+    //  param.update(creepFactor);
   }
-  
-  delete theResponse;
-  //  param.update(creepFactor);
+
+  if (paramID == 2) {
+    double shrinkage = info.theDouble;
+    
+    const char *argv[3];
+    
+    argv[0] = "fiberData";
+    DummyStream stream;
+    Response *theResponse = theSection->setResponse(argv, 1, stream);
+    theResponse->getResponse();
+    Information &secinfo = theResponse->getInformation();
+    const Vector &theVector = *(secinfo.theVector);
+    
+    // Need to make sure this is fiber section
+    int numFibers = theVector.Size() / 5;
+    
+    const char *argvParam[3];
+    argvParam[0] = "fiberIndex";
+    argvParam[2] = "epsInit";
+    
+    const char *argvResp[4];
+    argvResp[0] = "fiberIndex";
+    argvResp[2] = "material";
+    argvResp[3] = "strain";
+    char buffer[80];
+    for (int i = 0; i < numFibers; i++) {
+      sprintf(buffer,"%d",i);
+      argvParam[1] = buffer;
+      argvResp[1] = buffer;
+      
+      // Get the initial strain parameter
+      Parameter param;
+      int ok = theSection->setParameter(argvParam,3,param);
+      if (ok < 0)
+	continue;
+      
+      // Update the initial strain parameter
+      param.update(shrinkage);
+    }
+    
+    delete theResponse;
+    //  param.update(creepFactor);
+  }
   
   return 0;
 }
