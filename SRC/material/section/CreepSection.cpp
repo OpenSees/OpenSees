@@ -34,13 +34,13 @@ void *OPS_CreepSection()
 }
 
 CreepSection::CreepSection():
-  SectionForceDeformation(0, SEC_TAG_CreepSection), theSection(0), creepFactor(0.0)
+  SectionForceDeformation(0, SEC_TAG_CreepSection), theSection(0), creepFactor(0.0), shrinkage(0.0)
 {
 
 }
 
 CreepSection::CreepSection(int tag, SectionForceDeformation &section):
-  SectionForceDeformation(tag, SEC_TAG_CreepSection), theSection(0), creepFactor(0.0)
+  SectionForceDeformation(tag, SEC_TAG_CreepSection), theSection(0), creepFactor(0.0), shrinkage(0.0)
 {
   theSection = section.getCopy();
   if (theSection == 0) {
@@ -64,6 +64,7 @@ CreepSection::getCopy(void)
   CreepSection *theCopy = new CreepSection(this->getTag(), *theSection);
 
   theCopy->creepFactor = creepFactor;
+  theCopy->shrinkage = shrinkage;
   
   return theCopy;
 }
@@ -73,6 +74,7 @@ CreepSection::Print(OPS_Stream &s, int flag)
 {
   s << "CreepSection: " << this->getTag() << endln;
   s << "  creep factor: " << creepFactor << endln;
+  s << "  shrinkage: " << shrinkage << endln;  
   if (theSection != 0) {
     s << "  wrapped section: " << theSection->getTag() << endln;
     theSection->Print(s, flag);
@@ -91,7 +93,7 @@ CreepSection::setParameter(const char **argv, int argc, Parameter &param)
   }
 
   if (strcmp(argv[0],"shrinkageStrain") == 0) {
-    param.setValue(0.0);
+    param.setValue(shrinkage);
     return param.addObject(2, this);
   }
 
@@ -147,8 +149,8 @@ CreepSection::updateParameter(int paramID, Information &info)
       //opserr << ' ' << i << ' ' << eps0 << endln;
       
       // Update the initial strain parameter
-      if (eps0 < 0.0)
-	param.update(creepFactor*eps0);
+      //if (eps0 < 0.0)
+      param.update(-creepFactor*eps0 + shrinkage);
       
       delete theResponse;
     }
@@ -158,7 +160,7 @@ CreepSection::updateParameter(int paramID, Information &info)
   }
 
   if (paramID == 2) {
-    double shrinkage = info.theDouble;
+    shrinkage = info.theDouble;
     
     const char *argv[3];
     

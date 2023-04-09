@@ -50,6 +50,7 @@ class CreepSection : public SectionForceDeformation
  private:
   SectionForceDeformation *theSection;
   double creepFactor;
+  double shrinkage;
 };
 
 #endif
