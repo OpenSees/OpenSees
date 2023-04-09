@@ -3962,6 +3962,7 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
+    int numTerms = 2;
     for (int i = 2; i < argc; i++) {
       if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
 	i++;
@@ -3985,6 +3986,10 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
 	i++;
 	maxDim = atoi(argv[i]);
       }
+      else if (strcmp(argv[i],"-numTerms") == 0 && i+1 < argc) {
+	i++;
+	numTerms = atoi(argv[i]);
+      }      
     }
 
     if (theTest == 0) {
@@ -3992,8 +3997,13 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;	  
     }
 
-    Accelerator *theAccel;
-    theAccel = new SecantAccelerator2(maxDim, iterateTangent); 
+    Accelerator *theAccel = 0;
+    if (numTerms <= 1)
+      theAccel = new SecantAccelerator1(maxDim, iterateTangent);
+    if (numTerms >= 3)
+      theAccel = new SecantAccelerator3(maxDim, iterateTangent);
+    if (numTerms == 2)
+      theAccel = new SecantAccelerator2(maxDim, iterateTangent);
 
     theNewAlgo = new AcceleratedNewton(*theTest, theAccel, incrementTangent);
   }

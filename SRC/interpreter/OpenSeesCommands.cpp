@@ -89,7 +89,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <KrylovAccelerator.h>
 #include <AcceleratedNewton.h>
 #include <RaphsonAccelerator.h>
+#include <SecantAccelerator1.h>
 #include <SecantAccelerator2.h>
+#include <SecantAccelerator3.h>
 #include <PeriodicAccelerator.h>
 #include <LineSearch.h>
 #include <InitialInterpolatedLineSearch.h>
@@ -2537,6 +2539,7 @@ void* OPS_SecantNewton()
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
+    int numTerms = 2;
     while (OPS_GetNumRemainingInputArgs() > 0) {
 	const char* flag = OPS_GetString();
 
@@ -2566,10 +2569,16 @@ void* OPS_SecantNewton()
 	    }
 	} else if (strcmp(flag,"-maxDim") == 0 && OPS_GetNumRemainingInputArgs()>0) {
 
-	    maxDim = atoi(flag);
 	    int numdata = 1;
 	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
-		opserr<< "WARNING KrylovNewton failed to read maxDim\n";
+		opserr<< "WARNING SecantNewton failed to read maxDim\n";
+		return 0;
+	    }
+	} else if (strcmp(flag,"-numTerms") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+
+	    int numdata = 1;
+	    if (OPS_GetIntInput(&numdata, &numTerms) < 0) {
+		opserr<< "WARNING SecantNewton failed to read maxDim\n";
 		return 0;
 	    }
 	}
@@ -2581,8 +2590,13 @@ void* OPS_SecantNewton()
       return 0;
     }
 
-    Accelerator *theAccel;
-    theAccel = new SecantAccelerator2(maxDim, iterateTangent);
+    Accelerator *theAccel = 0;
+    if (numTerms <= 1)
+      theAccel = new SecantAccelerator1(maxDim, iterateTangent);
+    if (numTerms >= 3)
+      theAccel = new SecantAccelerator3(maxDim, iterateTangent);
+    if (numTerms == 2)
+      theAccel = new SecantAccelerator2(maxDim, iterateTangent);        
 
     return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
 }
