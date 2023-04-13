@@ -2540,6 +2540,8 @@ void* OPS_SecantNewton()
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
     int numTerms = 2;
+    bool cutOut = false;
+    double R[2];
     while (OPS_GetNumRemainingInputArgs() > 0) {
 	const char* flag = OPS_GetString();
 
@@ -2581,6 +2583,14 @@ void* OPS_SecantNewton()
 		opserr<< "WARNING SecantNewton failed to read maxDim\n";
 		return 0;
 	    }
+	} else if ((strcmp(flag,"-cutOut") == 0 || strcmp(flag,"-cutout") == 0)
+		   && OPS_GetNumRemainingInputArgs() > 1) {
+	  int numdata = 2;
+	  if (OPS_GetDoubleInput(&numdata, R) < 0) {
+	    opserr << "WARNING SecantNewton failed to read cutOut values R1 and R2" << endln;
+	    return 0;
+	  }
+	  cutOut = true;
 	}
     }
 
@@ -2592,11 +2602,20 @@ void* OPS_SecantNewton()
 
     Accelerator *theAccel = 0;
     if (numTerms <= 1)
-      theAccel = new SecantAccelerator1(maxDim, iterateTangent);
+      if (cutOut)
+	theAccel = new SecantAccelerator1(maxDim, iterateTangent, R[0], R[1]);
+      else
+	theAccel = new SecantAccelerator1(maxDim, iterateTangent);
     if (numTerms >= 3)
-      theAccel = new SecantAccelerator3(maxDim, iterateTangent);
+      if (cutOut)
+	theAccel = new SecantAccelerator3(maxDim, iterateTangent, R[0], R[1]);
+      else
+	theAccel = new SecantAccelerator3(maxDim, iterateTangent);
     if (numTerms == 2)
-      theAccel = new SecantAccelerator2(maxDim, iterateTangent);        
+      if (cutOut)
+	theAccel = new SecantAccelerator2(maxDim, iterateTangent, R[0], R[1]);
+      else
+	theAccel = new SecantAccelerator2(maxDim, iterateTangent);            
 
     return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
 }
