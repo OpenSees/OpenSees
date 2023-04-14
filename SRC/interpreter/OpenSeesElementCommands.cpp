@@ -103,6 +103,7 @@ void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
 void* OPS_MVLEM_3D();
 void* OPS_SFI_MVLEM_3D();
+void* OPS_E_SFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
