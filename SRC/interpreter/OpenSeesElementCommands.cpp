@@ -684,6 +684,7 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));    
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
 	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		
