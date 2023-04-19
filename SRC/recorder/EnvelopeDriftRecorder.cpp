@@ -523,3 +523,10 @@ double EnvelopeDriftRecorder::getRecordedValue(int clmnId, int rowOffset, bool r
 		first = true;
 	return res;
 }
+
+int EnvelopeDriftRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
+}

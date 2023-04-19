@@ -42,6 +42,7 @@ class DataFileStream : public OPS_Stream
   int setFile(const char *fileName, openMode mode = OVERWRITE);
   int open(void);
   int close(void);
+  int flush();
 
   int setPrecision(int precision);
   int setFloatField(floatField);

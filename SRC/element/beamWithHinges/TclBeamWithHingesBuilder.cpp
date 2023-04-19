@@ -85,6 +85,7 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	}
 
 	int tag, ndI, ndJ, secTagI, secTagJ, transfTag;
+  int dampingTag = 0;
 	double lenI, lenJ, E, A, I;
 	double massDens = 0.0;
 	int numIters = 10;
@@ -158,12 +159,22 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	bool useFour = false;
 	bool isShear = false;
 	int shearTag = 0;
+	int numSubdivide = 4;
+	double subdivideFactor=10.0;
 
 	if (argc > 13) {
 	    for (int i = 13; i < argc; i++) {
 		if (strcmp(argv[i],"-mass") == 0 && ++i < argc) {
 		    if (Tcl_GetDouble(interp, argv[i], &massDens) != TCL_OK) {
 			opserr << "WARNING invalid massDens\n";
+			opserr << "BeamWithHinges: " << tag << endln;
+			return TCL_ERROR;
+		    }
+		}
+		
+		if (strcmp(argv[i],"-damp") == 0 && ++i < argc) {
+		    if (Tcl_GetInt(interp, argv[i], &dampingTag) != TCL_OK) {
+			opserr << "WARNING invalid dampingTag\n";
 			opserr << "BeamWithHinges: " << tag << endln;
 			return TCL_ERROR;
 		    }
@@ -180,10 +191,10 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 
 		if (strcmp(argv[i],"-iter") == 0 && i+2 < argc) {
 			if (Tcl_GetInt(interp, argv[++i], &numIters) != TCL_OK) {
-				opserr << "WARNING invalid maxIters\n";
-				opserr << "BeamWithHinges: " << tag << endln;
-				return TCL_ERROR;
-		    }
+			  opserr << "WARNING invalid maxIters\n";
+			  opserr << "BeamWithHinges: " << tag << endln;
+			  return TCL_ERROR;
+			}
 			if (Tcl_GetDouble(interp, argv[++i], &tol) != TCL_OK) {
 			  opserr << "WARNING invalid tolerance\n";
 			  opserr << "BeamWithHinges: " << tag << endln;
@@ -192,6 +203,20 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 		}
 		if (strcmp(argv[i],"-useFour") == 0)
 		  useFour = true;
+
+		if(strcmp(argv[i],"-subdivide") == 0) {
+		  if (Tcl_GetInt(interp, argv[++i], &numSubdivide) != TCL_OK) {
+			  opserr << "WARNING invalid numSubdivide\n";
+			  opserr << "BeamWithHinges: " << tag << endln;
+			  return TCL_ERROR;
+		  }
+		  if (Tcl_GetDouble(interp, argv[++i], &subdivideFactor) != TCL_OK) {
+			  opserr << "WARNING invalid subdivideFactor\n";
+			  opserr << "BeamWithHinges: " << tag << endln;
+			  return TCL_ERROR;		    
+		  }
+		  
+		}
 	    }
 	}	
 	
@@ -223,6 +248,19 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 	    opserr << "\nBeamWithHinges: " << tag << endln;
 	    return TCL_ERROR;
 	}	
+	
+  Damping *theDamping2d = 0;
+  if (dampingTag)
+  {
+    theDamping2d = OPS_getDamping(dampingTag);
+    if (theDamping2d == 0)
+    {
+      opserr << "WARNING damping not found\n";
+      opserr << "damping: " << dampingTag;
+      opserr << "\nBeamWithHinges: " << tag << endln;
+      return TCL_ERROR;
+    }
+  }
 	
 	Element *theElement = 0;
 	int numSections = 0;
@@ -297,7 +335,7 @@ TclModelBuilder_addBeamWithHinges (ClientData clientData, Tcl_Interp *interp,
 
 	theElement = new ForceBeamColumn2d(tag, ndI, ndJ, numSections,
 					   sections, *theBeamIntegr,
-					   *theTransf,massDens,numIters,tol);
+					   *theTransf,massDens,numIters,tol,numSubdivide, subdivideFactor, theDamping2d);
 
 	delete theBeamIntegr;
 

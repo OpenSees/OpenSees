@@ -63,6 +63,7 @@ class DamageRecorder: public Recorder
     int playback(int commitTag);
 
     int restart(void);    
+    int flush();
     
   protected:
     

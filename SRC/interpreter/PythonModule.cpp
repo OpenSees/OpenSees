@@ -47,8 +47,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <cstring>
 #include <cctype>
 
-#define OPSPY_VERSION "3.4.0.3"
-
 // define opserr
 static PythonStream sserr;
 OPS_Stream *opserrPtr = &sserr;
@@ -255,7 +253,7 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
     // Py_DECREF(space);
     // Py_DECREF(empty);
 
-    int lenres = strlen(res) + 1;
+    int lenres = int(strlen(res)) + 1;
     if (lenres > len) {
         lenres = len;
     }
@@ -289,6 +287,21 @@ PythonModule::setInt(int *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setInt(std::vector<std::vector<int>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setInt(std::map<const char*, int>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setInt(std::map<const char*, std::vector<int>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     wrapper.setOutputs(data, numArgs, scalar);
@@ -296,10 +309,47 @@ PythonModule::setDouble(double *data, int numArgs, bool scalar) {
     return 0;
 }
 
+int PythonModule::setDouble(std::vector<std::vector<double>> &data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setDouble(std::map<const char*, double>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setDouble(std::map<const char*, std::vector<double>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
 int
 PythonModule::setString(const char *str) {
     wrapper.setOutputs(str);
 
+    return 0;
+}
+
+int
+PythonModule::setString(std::vector<const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int
+PythonModule::setString(std::vector<std::vector<const char*>>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setString(std::map<const char*, const char*>& data) {
+    wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setString(std::map<const char*, std::vector<const char*>>& data) {
+    wrapper.setOutputs(data);
     return 0;
 }
 
@@ -410,31 +460,6 @@ initopensees(void)
     }
     if (PyModule_AddObject(pymodule, "OpenSeesParameter", par) < 0) {
         Py_DECREF(par);
-        INITERROR;
-    }
-
-    // add OpenSeesInfo dict
-    auto *info = PyDict_New();
-    if (info == NULL) {
-      INITERROR;
-    }
-    if (PyModule_AddObject(pymodule, "OpenSeesInfo", info) < 0) {
-        Py_DECREF(info);
-        INITERROR;
-    }
-
-    auto* opsver = PyUnicode_FromString(OPS_VERSION);
-    if (PyDict_SetItemString(info, "OpenSeesVersion", opsver) < 0) {
-        Py_DECREF(info);
-        Py_DECREF(opsver);
-        INITERROR;
-    }
-
-    PyObject* opspyver = PyUnicode_FromString(OPSPY_VERSION);
-    if (PyDict_SetItemString(info, "OpenSeesPyVersion", opspyver) < 0) {
-        Py_DECREF(info);
-        Py_DECREF(opsver);
-        Py_DECREF(opspyver);
         INITERROR;
     }
 

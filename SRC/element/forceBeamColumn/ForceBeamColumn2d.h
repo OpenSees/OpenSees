@@ -69,6 +69,7 @@ Journal of Structural Engineering, Approved for publication, February 2007.
 #include <BeamIntegration.h>
 #include <SectionForceDeformation.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 
 class Response;
 class ElementalLoad;
@@ -81,7 +82,9 @@ class ForceBeamColumn2d: public Element
 		    int numSections, SectionForceDeformation **sec,
 		    BeamIntegration &beamIntegr,
 		    CrdTransf &coordTransf, double rho = 0.0, 
-		    int maxNumIters = 10, double tolerance = 1.0e-12);
+		    int maxNumIters = 10, double tolerance = 1.0e-12,
+		    int maxNumSubdivide = 4, double subdivideFactor = 10.0,
+		    Damping *theDamping = 0);
   
   ~ForceBeamColumn2d();
   
@@ -94,6 +97,7 @@ class ForceBeamColumn2d: public Element
   int getNumDOF(void);
   
   void setDomain(Domain *theDomain);
+  int setDamping(Domain *theDomain, Damping *theDamping);
   int commitState(void);
   int revertToLastCommit(void);        
   int revertToStart(void);
@@ -108,6 +112,7 @@ class ForceBeamColumn2d: public Element
   int addInertiaLoadToUnbalance(const Vector &accel);
   
   const Vector &getResistingForce(void);
+  const Vector &getDampingForce(void);
   const Vector &getResistingForceIncInertia(void);            
   
   int sendSelf(int cTag, Channel &theChannel);
@@ -201,6 +206,7 @@ class ForceBeamColumn2d: public Element
 
   // following are added for subdivision of displacement increment
   int    maxSubdivisions;       // maximum number of subdivisons of dv for local iterations
+  double subdivideFactor;
   
   static Vector vsSubdivide[];
   static Vector SsrSubdivide[];
@@ -215,7 +221,7 @@ class ForceBeamColumn2d: public Element
   void computeSectionForceSensitivity(Vector &dspdh, int isec, int gradNumber);
   // AddingSensitivity:END ///////////////////////////////////////////
 
-  Matrix tjcMass;
+  Damping *theDamping;
 };
 
 #endif

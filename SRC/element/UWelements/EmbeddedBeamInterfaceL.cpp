@@ -41,12 +41,16 @@
 #include <NodeIter.h>
 #include <FileStream.h>
 
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-#endif
 
 static int num_EmbeddedBeamInterfaceL = 0;
 static const double m_Pi = 3.141592653589793;
+
+#ifdef _PARALLEL_PROCESSING
+#include <PartitionedDomain.h>
+extern PartitionedDomain theDomain;
+#else
+extern Domain theDomain;
+#endif
 
 void *
 OPS_EmbeddedBeamInterfaceL(void)
@@ -56,6 +60,7 @@ OPS_EmbeddedBeamInterfaceL(void)
         opserr << "EmbeddedBeamInterfaceL element - Written: A.Ghofrani, D.Turello, P.Arduino, U.Washington\n";
     }
 
+    
     Element *theElement = 0;
 
     int numArgs = OPS_GetNumRemainingInputArgs();
@@ -89,21 +94,26 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) : Element(tag, ELE_TAG_E
 
 }
 
-EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTag, std::vector <int> solidTag, int crdTransfTag,
-    std::vector <double>  beamRho, std::vector <double>  beamTheta, std::vector <double>  solidXi, std::vector <double>  solidEta,
-    std::vector <double>  solidZeta, double radius, std::vector <double> area, std::vector <double> length, bool writeConnectivity,
-    const char * connectivityFN): Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
-    m_beam_radius(radius), mQa(3, 3), mQb(3, 3), mQc(3, 3),
-    mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
-{
-  
-    // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
+EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
+					       std::vector <int> beamTag,
+					       std::vector <int> solidTag,
+					       int crdTransfTag,
+					       std::vector <double>  beamRho,
+					       std::vector <double>  beamTheta,
+					       std::vector <double>  solidXi,
+					       std::vector <double>  solidEta,
+					       std::vector <double>  solidZeta,
+					       double radius,
+					       std::vector <double> area,
+					       std::vector <double> length,
+					       Domain *theDomainPtr,
+					       bool writeConnectivity,
+					       const char * connectivityFN)
 
+: Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+  m_beam_radius(radius), mQa(3, 3), mQb(3, 3), mQc(3, 3),
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
+{
     m_numEmbeddedPoints = solidTag.size();
     theSolidTags  = new int[m_numEmbeddedPoints];
     solidNodeTags = new int[8 * m_numEmbeddedPoints];
@@ -127,9 +137,9 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
         m_area(ii)          = area[ii];
         m_beamLength(ii)    = length[ii];
 
-        theElement = theDomain.getElement(solidTag[ii]);
+        theElement = theDomainPtr->getElement(solidTag[ii]);
         if (ii == 0)
-            m_numSolidDOF = theElement->getNodePtrs()[0]->getNumberDOF();
+	  m_numSolidDOF = theElement->getNodePtrs()[0]->getNumberDOF();
         // opserr << "Point " << ii +1 << " : element " << solidTag[ii] << " at (" << solidXi[ii] << "," << solidEta[ii] << "," << solidZeta[ii] << ") , beam: " << beamTag << " at (" << beamRho[ii] << "," << beamTheta[ii] << ")" << endln;
         for (int jj = 0; jj < 8; jj++)
         {
@@ -137,7 +147,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
             solidNodeTags[ii * 8 + jj] = theElement->getNodePtrs()[jj]->getTag();
         }
         uniqueBeamTags.insert(beamTag[ii]);
-        theElement = theDomain.getElement(beamTag[ii]);
+        theElement = theDomainPtr->getElement(beamTag[ii]);
         // opserr << "Point " << ii +1 << " : element " << solidTag[ii] << " at (" << solidXi[ii] << "," << solidEta[ii] << "," << solidZeta[ii] << ") , beam: " << beamTag << " at (" << beamRho[ii] << "," << beamTheta[ii] << ")" << endln;
         for (int jj = 0; jj < 2; jj++)
         {
@@ -157,7 +167,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
     m_beamInitDisp  = Vector(m_numBeamNodes * 6);
 
     // create the Lagrange multiplier nodes
-    NodeIter& theNodeIter = theDomain.getNodes();
+    NodeIter& theNodeIter = theDomainPtr->getNodes();
     Node * theNode = theNodeIter();
     int maxTag = theNode->getTag();
     while ((theNode = theNodeIter()) != 0)
@@ -165,7 +175,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
             maxTag = theNode->getTag();
 
     for (int ii = 0; ii < m_numBeamNodes; ii++)
-        theDomain.addNode(new Node(maxTag + ii + 1, 6, 0.0, 0.0, 0.0));
+        theDomainPtr->addNode(new Node(maxTag + ii + 1, 6, 0.0, 0.0, 0.0));
 
 
 
@@ -178,7 +188,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
         m_solidNodeMap[*it] = count;
         externalNodes(count) = *it;
 
-        theNodes[count] = theDomain.getNode(*it);
+        theNodes[count] = theDomainPtr->getNode(*it);
 
         Vector tempDisp = theNodes[count]->getDisp();
         m_solidInitDisp(count * 3 + 0) = tempDisp(0);
@@ -194,7 +204,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
         m_beamNodeMap[*it] = count - curCount;
         externalNodes(count) = *it;
 
-        theNodes[count] = theDomain.getNode(*it);
+        theNodes[count] = theDomainPtr->getNode(*it);
 
         Vector tempDisp = theNodes[count]->getDisp();
         m_beamInitDisp((count - curCount) * 6 + 0) = tempDisp(0);
@@ -212,7 +222,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
         int lagNodeTag = maxTag + ii + 1;
         externalNodes(count) = lagNodeTag;
 
-        theNodes[count] = theDomain.getNode(lagNodeTag);
+        theNodes[count] = theDomainPtr->getNode(lagNodeTag);
         count++;
     }
 
@@ -470,7 +480,7 @@ EmbeddedBeamInterfaceL::updateParameter(int parameterID, Information &info)
 }
 
 void
-EmbeddedBeamInterfaceL::setDomain(Domain *theDomain)
+EmbeddedBeamInterfaceL::setDomain(Domain *theDomainPtr)
 {
     for (int ii = 0; ii < m_numSolidNodes + 2 * m_numBeamNodes; ii++)
     {
@@ -492,7 +502,7 @@ EmbeddedBeamInterfaceL::setDomain(Domain *theDomain)
     }
     
     // initialize the transformation
-    if (crdTransf->initialize(theDomain->getNode(beamNodeTags[0]), theDomain->getNode(beamNodeTags[1])))
+    if (crdTransf->initialize(theDomainPtr->getNode(beamNodeTags[0]), theDomainPtr->getNode(beamNodeTags[1])))
     {
         opserr << "EmbeddedBeamInterfaceL::setDomain(): Error initializing coordinate transformation";
         return;
@@ -609,7 +619,7 @@ EmbeddedBeamInterfaceL::setDomain(Domain *theDomain)
             m_InterfaceStiffness(m_numSolidDOF * m_numSolidNodes + 6 * m_numBeamNodes + jj, m_numSolidDOF * m_numSolidNodes + ii) = -mB(ii, jj);
         }
 
-    this->DomainComponent::setDomain(theDomain);
+    this->DomainComponent::setDomain(theDomainPtr);
     return;
 }
 

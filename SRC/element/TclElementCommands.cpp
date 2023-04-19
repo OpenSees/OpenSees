@@ -81,6 +81,7 @@ extern void printCommand(int argc, TCL_Char **argv);
 //
 
 extern  void *OPS_ComponentElement2d(void);
+extern  void *OPS_ComponentElement3d(void);
 //extern  void *OPS_ComponentElementDamp2d(void);
 extern  void *OPS_TrussElement(void);
 extern  void *OPS_TrussSectionElement(void);
@@ -165,6 +166,7 @@ extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
+extern void *OPS_TenNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
 extern void *OPS_ASDAbsorbingBoundary2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ASDAbsorbingBoundary3D(void); // Massimo Petracca (ASDEA)
@@ -478,8 +480,12 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
 
-  } else if (strcmp(argv[1],"componentElement2d") == 0) {
-    void *theEle = OPS_ComponentElement2d();
+  } else if (strcmp(argv[1],"componentElement2d") == 0 || strcmp(argv[1],"componentElement") == 0) {
+    void *theEle = 0;
+    if (OPS_GetNDM() == 2)
+      theEle = OPS_ComponentElement2d();
+    if (OPS_GetNDM() == 3)
+      theEle = OPS_ComponentElement3d();    
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -1317,6 +1323,20 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "FourNodeTetrahedron") == 0) {
       void *theEle = OPS_FourNodeTetrahedron();
+      if (theEle != 0) 
+      {
+        theElement = (Element*)theEle;
+      } 
+      else 
+      {
+        opserr<<"tclelementcommand -- unable to create element of type : "
+            <<argv[1]<<endln;
+        return TCL_ERROR;
+      }
+
+  }
+  else if (strcmp(argv[1], "TenNodeTetrahedron") == 0) {
+      void *theEle = OPS_TenNodeTetrahedron();
       if (theEle != 0) 
       {
         theElement = (Element*)theEle;

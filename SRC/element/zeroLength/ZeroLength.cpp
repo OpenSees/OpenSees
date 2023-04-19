@@ -255,7 +255,8 @@ ZeroLength::ZeroLength(int tag,
   connectedExternalNodes(2),
   dimension(dim), numDOF(0), transformation(3,3), useRayleighDamping(doRayleigh),
   theMatrix(0), theVector(0),
-  numMaterials1d(1), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0)
+  numMaterials1d(1), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0),
+  theDamping(0), fd(0)
 {
   // allocate memory for numMaterials1d uniaxial material models
   theMaterial1d = new UniaxialMaterial*  [numMaterials1d];
@@ -299,7 +300,8 @@ ZeroLength::ZeroLength(int tag,
   connectedExternalNodes(2),
   dimension(dim), numDOF(0), transformation(3,3), useRayleighDamping(2),
   theMatrix(0), theVector(0),
-  numMaterials1d(1), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0)
+  numMaterials1d(1), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0),
+  theDamping(0), fd(0)
 {
   // allocate memory for numMaterials1d uniaxial material models
   theMaterial1d = new UniaxialMaterial*[2];
@@ -345,12 +347,14 @@ ZeroLength::ZeroLength(int tag,
 		       int n1dMat,
 		       UniaxialMaterial** theMat,
 		       const ID& direction,
-		       int doRayleigh)
+		       int doRayleigh,
+		       Damping *damping)
  :Element(tag,ELE_TAG_ZeroLength),     
   connectedExternalNodes(2),
   dimension(dim), numDOF(0), transformation(3,3), useRayleighDamping(doRayleigh),
   theMatrix(0), theVector(0),
-  numMaterials1d(n1dMat), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0)
+  numMaterials1d(n1dMat), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0),
+  theDamping(0), fd(0)
 {
 
     // allocate memory for numMaterials1d uniaxial material models
@@ -382,6 +386,16 @@ ZeroLength::ZeroLength(int tag,
     // establish the connected nodes and set up the transformation matrix for orientation
     this->setUp( Nd1, Nd2, x, yp);
 
+    if (damping)
+    {
+      theDamping =(*damping).getCopy();
+      
+      if (!theDamping) {
+        opserr << "Error: ForceBeamColumn2d::ForceBeamColumn2d: could not create copy of damping\n";
+        exit(-1);
+      }
+    }
+
     // designate to setDomain that this is the initial construction of the element
     mInitialize = 1;
 }
@@ -401,7 +415,8 @@ ZeroLength::ZeroLength(int tag,
   connectedExternalNodes(2),
   dimension(dim), numDOF(0), transformation(3,3), useRayleighDamping(doRayleigh),
   theMatrix(0), theVector(0),
-  numMaterials1d(n1dMat), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0)
+  numMaterials1d(n1dMat), theMaterial1d(0), dir1d(0), t1d(0), d0(0), v0(0),
+  theDamping(0), fd(0)
 {
 
     // allocate memory for numMaterials1d uniaxial material models
@@ -448,7 +463,8 @@ ZeroLength::ZeroLength(void)
   dimension(0), numDOF(0), transformation(3,3),
   theMatrix(0), theVector(0),
   numMaterials1d(0), theMaterial1d(0),
-  dir1d(0), t1d(0), d0(0), v0(0)
+  dir1d(0), t1d(0), d0(0), v0(0),
+  theDamping(0), fd(0)
 {
     // ensure the connectedExternalNode ID is of correct size 
     if (connectedExternalNodes.Size() != 2)
@@ -489,6 +505,12 @@ ZeroLength::~ZeroLength()
   
   if (v0 != 0)
     delete v0;
+    
+  if (theDamping)
+  {
+    delete theDamping;
+    delete fd;
+  }
 }
 
 
@@ -648,9 +670,39 @@ ZeroLength::setDomain(Domain *theDomain)
       if (diffV != 0)
         v0 = new Vector(diffV);
     }      
+
+    if (theDamping)
+    {
+      if(theDamping->setDomain(theDomain, numMaterials1d)) {
+        opserr << "ZeroLength::setDomain(): Error initializing damping";  
+        exit(0);
+      }
+      fd = new Vector(numDOF);
+    }
 }   	 
 
+int
+ZeroLength::setDamping(Domain *theDomain, Damping *damping)
+{
+  if (theDomain && damping)
+  {
+    if (theDamping) delete theDamping;
 
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "ZeroLength::setDamping -- failed to get copy of damping\n";
+      return -1;
+    }
+    if (theDamping->setDomain(theDomain, numMaterials1d)) {
+      opserr << "ZeroLength::setDamping -- Error initializing damping\n";
+      return -2;
+    }
+    fd = new Vector(numDOF);
+  }
+  
+  return 0;
+}
 
 int
 ZeroLength::commitState()
@@ -669,6 +721,8 @@ ZeroLength::commitState()
     for (int i=0; i<numMat; i++) 
 	code += theMaterial1d[i]->commitState();
 
+  if (theDamping) code += theDamping->commitState();
+
     return code;
 }
 
@@ -684,6 +738,8 @@ ZeroLength::revertToLastCommit()
     for (int i=0; i<numMat; i++) 
 	code += theMaterial1d[i]->revertToLastCommit();
     
+  if (theDamping) code += theDamping->revertToLastCommit();
+
     return code;
 }
 
@@ -700,6 +756,8 @@ ZeroLength::revertToStart()
     for (int i=0; i<numMat; i++) 
 	code += theMaterial1d[i]->revertToStart();
     
+  if (theDamping) code += theDamping->revertToStart();
+
     return code;
 }
 
@@ -738,6 +796,15 @@ ZeroLength::update(void)
 	}
     }
 
+  if (theDamping)
+  {
+    Vector q(numMaterials1d);
+    for (int i = 0; i < numMaterials1d; ++i)
+      q(i) = theMaterial1d[i]->getStress();
+    
+    theDamping->update(q);
+  }
+
     return ret;
 }
 
@@ -759,6 +826,7 @@ ZeroLength::getTangentStiff(void)
       
       // get tangent for material
       E = theMaterial1d[mat]->getTangent();
+      if(theDamping) E *= theDamping->getStiffnessMultiplier();
       
       // compute contribution of material to tangent matrix
       for (int i=0; i<numDOF; i++)
@@ -796,6 +864,7 @@ ZeroLength::getInitialStiff(void)
       
       // get tangent for material
       E = theMaterial1d[mat]->getInitialTangent();
+      if(theDamping) E *= theDamping->getStiffnessMultiplier();
       
       // compute contribution of material to tangent matrix
       for (int i=0; i<numDOF; i++)
@@ -929,10 +998,36 @@ ZeroLength::getResistingForce()
 
 
 const Vector &
+ZeroLength::getDampingForce()
+{
+  // zero the residual
+  fd->Zero();
+  
+  if (theDamping) {
+    Vector qd(numMaterials1d);
+    qd = theDamping->getDampingForce();
+  
+    // loop over 1d materials
+    for (int mat=0; mat<numMaterials1d; mat++) {
+    
+      // compute residual due to resisting force
+      for (int i=0; i<numDOF; i++)
+        (*fd)(i)  += (*t1d)(mat,i) * qd(mat);
+    
+    } // end loop over 1d materials
+  }
+  
+  return *fd;
+}
+
+
+const Vector &
 ZeroLength::getResistingForceIncInertia()
 {	
   // this already includes damping forces from materials
   this->getResistingForce();
+  
+  if (theDamping) *theVector += this->getDampingForce();
   
   // add the damping forces from rayleigh damping
   if (useRayleighDamping == 1) {
@@ -971,7 +1066,7 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 
 	// Make one size bigger so not a multiple of 3, otherwise will conflict
 	// with classTags ID
-	static ID idData(7);
+	static ID idData(9);
 
 	idData(0) = this->getTag();
 	idData(1) = dimension;
@@ -980,6 +1075,19 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 	idData(4) = connectedExternalNodes(0);
 	idData(5) = connectedExternalNodes(1);
 	idData(6) = useRayleighDamping;
+
+  idData(7) = 0;
+  idData(8) = 0;
+  if (theDamping) {
+    idData(7) = theDamping->getClassTag();
+    int dbTag = theDamping->getDbTag();
+    if (dbTag == 0) {
+      dbTag = theChannel.getDbTag();
+      if (dbTag != 0)
+	      theDamping->setDbTag(dbTag);
+	  }
+    idData(8) = dbTag;
+  }
 
 	res += theChannel.sendID(dataTag, commitTag, idData);
 	if (res < 0) {
@@ -1030,6 +1138,15 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 		}
 	}
 
+  // Ask the Damping to send itself
+  if (theDamping) {
+    res += theDamping->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "ZeroLength::sendSelf -- could not send Damping\n";
+      return res;
+    }
+  }
+
 	return res;
 }
 
@@ -1043,7 +1160,7 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
   // ZeroLength creates an ID, receives the ID and then sets the 
   // internal data with the data in the ID
 
-  static ID idData(7);
+  static ID idData(9);
 
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1146,6 +1263,40 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
     }
   }
 
+  // Check if the Damping is null; if so, get a new one
+  int dmpTag = (int)idData(7);
+  if (dmpTag) {
+    if (theDamping == 0) {
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "ZeroLength::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Check that the Damping is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (theDamping->getClassTag() != dmpTag) {
+      delete theDamping;
+      theDamping = theBroker.getNewDamping(dmpTag);
+      if (theDamping == 0) {
+        opserr << "ZeroLength::recvSelf -- could not get a Damping\n";
+        exit(-1);
+      }
+    }
+  
+    // Now, receive the Damping
+    theDamping->setDbTag((int)idData(8));
+    res += theDamping->recvSelf(commitTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ZeroLength::recvSelf -- could not receive Damping\n";
+      return res;
+    }
+  }
+  else {
+    if (theDamping) delete theDamping;
+  }
+    
   return res;
 }
 
@@ -1363,6 +1514,27 @@ ZeroLength::setResponse(const char **argv, int argc, OPS_Stream &output)
             theResponse = new ElementResponse(this, 15, Vector(numDOF));
     }
 
+    if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
+
+            char outputData[20];
+            int numDOFperNode = numDOF/2;
+            for (int i=0; i<numDOFperNode; i++) {
+                sprintf(outputData,"P1_%d", i+1);
+                output.tag("ResponseType", outputData);
+            }
+            for (int j=0; j<numDOFperNode; j++) {
+                sprintf(outputData,"P2_%d", j+1);
+                output.tag("ResponseType", outputData);
+            }
+            theResponse = new ElementResponse(this, 31, Vector(numDOF));
+    }
+
+
+   if (theDamping && (strcmp(argv[0],"basicDampingForce") == 0 || strcmp(argv[0],"basicDampingForces") == 0 ||
+	       strcmp(argv[0],"localDampingForce") == 0 || strcmp(argv[0],"localDampingForces") == 0)) {
+            theResponse = new ElementResponse(this, 32, Vector(numMaterials1d));
+    }
+
     output.endTag();
 
 
@@ -1405,10 +1577,17 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
       }
       return eleInformation.setVector(*theVector);
 
+    case 31:
+        return eleInformation.setVector(this->getDampingForce());
+
+    case 32:
+        return eleInformation.setVector(theDamping->getDampingForce());
+
     case 2:
         if (eleInformation.theVector != 0) {
             for (int i = 0; i < numMaterials1d; i++)
                 (*(eleInformation.theVector))(i) = theMaterial1d[i]->getStress();
+            if (theDamping) *(eleInformation.theVector) += theDamping->getDampingForce();
         }
         return 0;
 

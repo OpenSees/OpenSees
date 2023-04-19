@@ -33,6 +33,7 @@
 #include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
+#include <MaterialResponse.h>
 
 #include <OPS_Globals.h>
 
@@ -306,6 +307,38 @@ InitStrainMaterial::Print(OPS_Stream &s, int flag)
 		  s << "\"Material\": " << "NULL" << ", ";
 		s << "\"initialStrain\": " << epsInit <<  "}";
 	}
+}
+
+Response*
+InitStrainMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
+{
+  Response *theResponse = 0;
+
+  if (strcmp(argv[0],"strain") == 0) {
+    theResponse = new MaterialResponse(this, 100, 0.0);
+    return theResponse;
+  }
+
+  if (strcmp(argv[0],"material") == 0) {
+    theResponse = theMaterial->setResponse(&argv[1], argc-1, theOutput);
+  }
+
+  if (theResponse == 0)
+    theResponse = UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+  return theResponse;
+}
+
+int
+InitStrainMaterial::getResponse(int responseID, Information &info)
+{
+  if (responseID == 100)
+    return info.setDouble(localStrain+epsInit);
+
+  if (theMaterial != 0)
+    return theMaterial->getResponse(responseID, info);
+
+  return UniaxialMaterial::getResponse(responseID, info);
 }
 
 int 
