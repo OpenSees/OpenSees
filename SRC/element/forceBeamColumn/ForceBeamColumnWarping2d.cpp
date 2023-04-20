@@ -741,25 +741,6 @@ ForceBeamColumnWarping2d::update()
 	  f.Zero();
 	  vr.Zero();
 
-	  if (beamIntegr->addElasticFlexibility(L, f) < 0) {
-	    vr(0) += f(0,0)*SeTrial(0);
-	    vr(1) += f(1,1)*SeTrial(1) + f(1,2)*SeTrial(2) + f(1,3)*SeTrial(3) + f(1,4)*SeTrial(4);
-	    vr(2) += f(2,1)*SeTrial(1) + f(2,2)*SeTrial(2) + f(2,3)*SeTrial(3) + f(2,4)*SeTrial(4);
-		vr(3) += f(3,1)*SeTrial(1) + f(3,2)*SeTrial(2) + f(3,3)*SeTrial(3) + f(3,4)*SeTrial(4);
-		vr(4) += f(4,1)*SeTrial(1) + f(4,2)*SeTrial(2) + f(4,3)*SeTrial(3) + f(4,4)*SeTrial(4);
-	  }
-
-	  double v0[3];
-	  v0[0] = 0.0; v0[1] = 0.0; v0[2] = 0.0;
-
-	  for (int ie = 0; ie < numEleLoads; ie++) 
-	    beamIntegr->addElasticDeformations(eleLoads[ie], eleLoadFactors[ie], L, v0);
-
-	  // Add effects of element loads
-	  vr(0) += v0[0];
-	  vr(1) += v0[1];
-	  vr(3) += v0[2];
-	  
 	  for (i=0; i<numSections; i++) {
 	    
 	    int order      = sections[i]->getOrder();
@@ -1952,9 +1933,6 @@ ForceBeamColumnWarping2d::getInitialFlexibility(Matrix &fe)
   double L = crdTransf->getInitialLength();
   double oneOverL  = 1.0/L;  
   
-  // Flexibility from elastic interior
-  beamIntegr->addElasticFlexibility(L, fe);
-  
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
   
@@ -2900,8 +2878,6 @@ ForceBeamColumnWarping2d::getResponse(int responseID, Information &eleInfo)
       d2 += (wts[i]*L)*kappa*b;
     }
     
-    d2 += beamIntegr->getTangentDriftI(L, LI, Se(1), Se(3));
-    
     for (i = numSections-1; i >= 0; i--) {
       double x = pts[i]*L;
       if (x < LI)
@@ -2916,8 +2892,6 @@ ForceBeamColumnWarping2d::getResponse(int responseID, Information &eleInfo)
       d3 += (wts[i]*L)*kappa*b;
     }
     
-    d3 += beamIntegr->getTangentDriftJ(L, LI, Se(1), Se(3));
-
     static Vector d(2);
     d(0) = d2;
     d(1) = d3;
@@ -3540,9 +3514,6 @@ ForceBeamColumnWarping2d::computedqdh(int gradNumber)
   static Matrix dfedh(5,5);
   dfedh.Zero();
 
-  if (beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh) < 0)
-    dvdh.addMatrixVector(1.0, dfedh, Se, -1.0);
-  
   //opserr << "dfedh: " << dfedh << endln;
 
   static Vector dqdh(5);
@@ -3565,8 +3536,6 @@ ForceBeamColumnWarping2d::computedfedh(int gradNumber)
 
   double dLdh = crdTransf->getdLdh();
   double d1oLdh = crdTransf->getd1overLdh();
-
-  beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh);
 
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);

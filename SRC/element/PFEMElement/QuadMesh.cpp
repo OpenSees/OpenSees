@@ -164,7 +164,7 @@ QuadMesh::mesh() {
         return -1;
     }
     if (lines.size() != 4) {
-        opserr << "WARNING: input number of lines != 4 3\n";
+        opserr << "WARNING: input number of lines != 4\n";
         return -1;
     }
     this->setNodeTags(ndtags);
