@@ -1257,7 +1257,7 @@ std::vector<int> ASDConcrete3DMaterial::CrackPlanes::getMax3Normals(double smoot
 			}
 		}
 		if (v1 > 0.0) {
-			out.push_back(p1);
+			out.push_back(static_cast<int>(p1));
 			const Vector3& N1 = normals[p1];
 
 			// find 2
@@ -1274,7 +1274,7 @@ std::vector<int> ASDConcrete3DMaterial::CrackPlanes::getMax3Normals(double smoot
 				}
 			}
 			if (v2 > 0.0) {
-				out.push_back(p2);
+				out.push_back(static_cast<int>(p2));
 				const Vector3& N2 = normals[p2];
 
 				// find 3
@@ -1293,7 +1293,7 @@ std::vector<int> ASDConcrete3DMaterial::CrackPlanes::getMax3Normals(double smoot
 					}
 				}
 				if (v3 > 0.0) {
-					out.push_back(v3);
+					out.push_back(static_cast<int>(p3));
 				}
 			}
 		}
@@ -1326,7 +1326,7 @@ void ASDConcrete3DMaterial::CrackPlanes::deserialize(Vector& data, int& pos)
 	m_current_normal.x = data(pos++);
 	m_current_normal.y = data(pos++);
 	m_current_normal.z = data(pos++);
-	m_closest_normal_loc = static_cast<double>(data(pos++));
+	m_closest_normal_loc = static_cast<std::size_t>(data(pos++));
 	for (std::size_t i = 0; i < m_equivalent_strain.size(); ++i)
 		m_equivalent_strain[i] = data(pos++);
 }
@@ -1612,6 +1612,9 @@ int ASDConcrete3DMaterial::revertToStart(void)
 	stress_eff.Zero();
 	stress_eff_commit.Zero();
 	C = getInitialTangent();
+	PT_commit.Zero();
+	for (int i = 0; i < 6; ++i)
+		PT_commit(i, i) = 0.5;
 
 	// Output variables
 	dt_bar = 0.0;
