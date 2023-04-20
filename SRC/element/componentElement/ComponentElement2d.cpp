@@ -55,7 +55,7 @@ OPS_ComponentElement2d(void)
 
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs < 3) {
-    opserr << "Invalid #args,  want: element CompositeElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
+    opserr << "Invalid #args,  want: element componentElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
     return 0;
   }
   
@@ -63,22 +63,43 @@ OPS_ComponentElement2d(void)
   double dData[3];  
   int numData = 3;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids ints" << endln;
+    opserr << "WARNING componentElement - invalid ints" << endln;
     return 0;
   }
 
   numData = 3;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids double" << endln;
+    opserr << "WARNING componentElement - invalid doubles" << endln;
     return 0;
   }
 
-  numData = 3;
+  numData = 1;
   if (OPS_GetIntInput(&numData, &iData[3]) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids second set ints" << endln;
+    opserr << "WARNING componentElement - invalid second transformation tag" << endln;
     return 0;
   }
 
+  bool useK = false;
+  double k[2];
+
+  std::string flag = OPS_GetString();
+  if (flag == "-stiffness" || flag == "-k") {
+    numData = 2;
+    if (OPS_GetDoubleInput(&numData, k) != 0) {
+      opserr << "WARNING componentElement - invalid stiffness values" << endln;
+      return 0;
+    }
+    useK = true;
+  }
+  else {
+    OPS_ResetCurrentInputArg(-1);
+    numData = 2;
+    if (OPS_GetIntInput(&numData, &iData[4]) != 0) {
+      opserr << "WARNING componentElement - invalid material tags" << endln;
+      return 0;
+    }    
+  }
+  
   double mass = 0.0;
   int cMass = 0;
   while(OPS_GetNumRemainingInputArgs() > 0) {
@@ -95,17 +116,25 @@ OPS_ComponentElement2d(void)
 
   CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
 
-  UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
-  UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
-
-  // Parsing was successful, allocate the material
-  theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2], 
-				      iData[1], iData[2], 
-				      *theTrans, end1, end2, 
-				      mass,cMass);
+  if (useK) {
+    theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2],
+					iData[1], iData[2], 
+					*theTrans, k[0], k[1],
+					mass,cMass);
+  }
+  else {
+    UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
+    UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
+    
+    // Parsing was successful, allocate the material
+    theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2],
+					iData[1], iData[2], 
+					*theTrans, end1, end2,
+					mass,cMass);
+  }  
 
   if (theElement == 0) {
-    opserr << "WARNING could not create element of type ComponentElement2d\n";
+    opserr << "WARNING could not create element of type componentElement\n";
     return 0;
   }
   

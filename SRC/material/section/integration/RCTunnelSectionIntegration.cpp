@@ -628,7 +628,7 @@ RCTunnelSectionIntegration::recvSelf(int cTag, Channel &theChannel,
   Asinner  = data(2);
   Asouter  = data(3);
   coverinner    = data(4);
-  coverinner    = data(5);
+  coverouter    = data(5);
   Nrings = (int)data(6);
   Nwedges   = (int)data(7);
   Nbarsinner = (int)data(8);

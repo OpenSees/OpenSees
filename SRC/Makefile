@@ -161,7 +161,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
 	$(FE)/element/feap/TclFeapElementCommand.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
-	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
 	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
@@ -753,6 +752,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HardeningMaterial2.o \
 	$(FE)/material/uniaxial/ParallelMaterial.o \
 	$(FE)/material/uniaxial/SeriesMaterial.o \
+	$(FE)/material/uniaxial/FlagShapeMaterial.o \
 	$(FE)/material/uniaxial/Neoprene.o \
 	$(FE)/material/uniaxial/ASD_SMA_3K.o \
 	$(FE)/material/uniaxial/Concrete01.o \
@@ -848,6 +848,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
         $(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
+	$(FE)/material/uniaxial/Hertzdamp.o \
+	$(FE)/material/uniaxial/JankowskiImpact.o \
+	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \

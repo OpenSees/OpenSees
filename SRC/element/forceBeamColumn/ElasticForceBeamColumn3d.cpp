@@ -767,9 +767,6 @@ ElasticForceBeamColumn3d::getInitialFlexibility(Matrix &fe)
   double L = crdTransf->getInitialLength();
   double oneOverL  = 1.0/L;  
   
-  // Flexibility from elastic interior
-  beamIntegr->addElasticFlexibility(L, fe);
-  
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
   
@@ -1483,9 +1480,6 @@ ElasticForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
       }
     }
 
-    d2z += beamIntegr->getTangentDriftI(L, LIz, Se(1), Se(2));
-    d2y += beamIntegr->getTangentDriftI(L, LIy, Se(3), Se(4), true);
-
     for (i = numSections-1; i >= 0; i--) {
       double x = pts[i]*L;
       const ID &type = sections[i]->getType();
@@ -1507,9 +1501,6 @@ ElasticForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 	d3y += (wts[i]*L)*kappa*b;
       }
     }
-
-    d3z += beamIntegr->getTangentDriftJ(L, LIz, Se(1), Se(2));
-    d3y += beamIntegr->getTangentDriftJ(L, LIy, Se(3), Se(4), true);
 
     static Vector d(4);
     d(0) = d2z;
