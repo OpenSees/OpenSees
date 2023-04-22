@@ -235,7 +235,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
         theNodes[i] = 0;
     
     // check the number of directions
-    if (numDIR < 1 || numDIR > 6)  {
+    if (numDIR < 1) {
         opserr << "TwoNodeLink::TwoNodeLink() - element: "
             << this->getTag() << " wrong number of directions\n";
         exit(-1);

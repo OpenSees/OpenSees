@@ -246,7 +246,7 @@ Inerter::Inerter(int tag, int dim, int Nd1, int Nd2,
         theNodes[i] = 0;
     
     // check the number of directions
-    if (numDIR < 1 || numDIR > 6)  {
+    if (numDIR < 1) {
         opserr << "Inerter::Inerter() - element: "
             << this->getTag() << " wrong number of directions\n";
         exit(-1);
