@@ -51,6 +51,9 @@ class CreepSection : public SectionForceDeformation
   SectionForceDeformation *theSection;
   double creepFactor;
   double shrinkage;
+
+  int numFibers;
+  double *initialStrain;
 };
 
 #endif
