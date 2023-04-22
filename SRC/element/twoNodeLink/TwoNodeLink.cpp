@@ -339,7 +339,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
 	opserr << "TwoNodeLink::TwoNodeLink() - "
 	       << "Shear distance ratio shearDistIz is negative\n";
 	shearDistI(1) = -shearDistI(1);
-	opserr << "Making the value positive " << shearDistI(0) << endln;
+	opserr << "Making the value positive " << shearDistI(1) << endln;
       }
       if (shearDistI(1) > 1.0) {
 	opserr << "TwoNodeLink::TwoNodeLink() - "
