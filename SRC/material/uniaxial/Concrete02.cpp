@@ -49,6 +49,8 @@
 #include <elementAPI.h>
 #include <OPS_Globals.h>
 
+#include <MaterialResponse.h> // for FSAM
+
 void *
 OPS_Concrete02()
 {
@@ -493,4 +495,56 @@ Concrete02::getVariable(const char *varName, Information &theInfo)
     return 0;
   } else
     return -1;
+}
+
+// for FSAM
+Response* Concrete02::setResponse(const char** argv, int argc,
+    OPS_Stream& theOutput)
+{
+    Response* theResponse = 0;
+
+    if (strcmp(argv[0], "getInputParameters") == 0) {
+        Vector data1(8);
+        data1.Zero();
+        theResponse = new MaterialResponse(this, 100, data1);
+
+    }
+    else
+
+        return this->UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+    return theResponse;
+}
+
+// for FSAM
+int Concrete02::getResponse(int responseID, Information& matInfo)
+{
+    if (responseID == 100) {
+        matInfo.setVector(this->getInputParameters());
+
+    }
+    else
+
+        return this->UniaxialMaterial::getResponse(responseID, matInfo);
+
+    return 0;
+}
+
+// for FSAM
+Vector Concrete02::getInputParameters(void)
+{
+    Vector input_par(8); // size = max number of parameters (assigned + default)
+
+    input_par.Zero();
+
+    input_par(0) = this->getTag();
+    input_par(1) = fc;
+    input_par(2) = epsc0;
+    input_par(3) = fcu;
+    input_par(4) = epscu;
+    input_par(5) = rat;
+    input_par(6) = ft;
+    input_par(7) = Ets;
+
+    return input_par;
 }
