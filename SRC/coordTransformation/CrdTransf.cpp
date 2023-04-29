@@ -184,7 +184,8 @@ CrdTransf::getResponse(int responseID, Information &eleInfo)
     }
     if (responseID == 204) {
       static Vector offsets(6);
-
+      
+      offsets.Zero();
       this->getRigidOffsets(offsets);
 
       return eleInfo.setVector(offsets);

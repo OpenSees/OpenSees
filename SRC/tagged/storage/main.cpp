@@ -29,7 +29,7 @@
 #include <MapOfTaggedObjectsIter.h>
 
 #include <stdlib.h>
-#include <ZZZ>
+#include <iostream>
 
 int main(int argc, char **argv)
 {

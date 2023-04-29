@@ -4,6 +4,8 @@
 #include <Node.h>
 #include <elementAPI.h>
 
+#include <cmath>
+
 int OPS_BeamBrick() {
     // get inputs
     int ndm = OPS_GetNDM();
@@ -128,7 +130,15 @@ int BeamBrick::create_line(Node* nd1, Node* nd2, int& nodeTag,
     for (int i = 0; i < crds1.Size(); ++i) {
         curr[i] = crds1(i);
     }
-    curr[dir] = crds1[dir] + size;
+    if (fabs(crds1[dir] - crds2[dir]) < 1.2 * size) {
+        opserr << "nd1 or nd2 too close - create_line\n";
+        return -1;
+    }
+    if (crds1[dir] < crds2[dir]) {
+        curr[dir] = crds1[dir] + size;
+    } else {
+        curr[dir] = crds2[dir] + size;
+    }
 
     // add ele nodes
     elenodes.push_back(nd1->getTag());
@@ -137,7 +147,10 @@ int BeamBrick::create_line(Node* nd1, Node* nd2, int& nodeTag,
     lnodes.push_back(nd1->getTag());
 
     // loop from nd1 to nd2
-    while (curr[dir] < crds2[dir] - size * 0.1) {
+    while ((crds1[dir] < crds2[dir] &&
+            curr[dir] < crds2[dir] - size * 0.1) ||
+           (crds2[dir] < crds1[dir] &&
+            curr[dir] < crds1[dir] - size * 0.1)) {
         if (create_node(curr, nodeTag) == 0) {
             opserr << "failed to create node - create_line\n";
             return -1;
