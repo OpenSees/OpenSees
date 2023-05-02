@@ -141,6 +141,9 @@
 #include "drain/DrainPinch1Material.h"
 #include "HyperbolicGapMaterial.h"
 #include "ImpactMaterial.h"
+#include "Hertzdamp.h"
+#include "JankowskiImpact.h"
+#include "ViscoelasticGap.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -150,6 +153,7 @@
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
 #include "SectionAggregator.h"
+#include "ParallelSection.h"
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
@@ -181,6 +185,7 @@
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
+#include "Series3DMaterial.h"
 #include "PlaneStressRebarMaterial.h"
 #include "PlaneStressLayeredMaterial.h"
 //start Yuli Huang & Xinzheng L
@@ -199,6 +204,7 @@
 #include "soil/FluidSolidPorousMaterial.h"
 #include "soil/PressureDependMultiYield.h"
 #include "soil/PressureDependMultiYield02.h"
+#include "soil/PressureDependMultiYield03.h"
 #include "soil/PressureIndependMultiYield.h"
 
 #include "UWmaterials/ContactMaterial2D.h"
@@ -222,6 +228,7 @@
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
+#include "ASDConcrete3DMaterial.h"
 
 // Fibers
 #include "fiber/UniaxialFiber2d.h"
@@ -261,6 +268,8 @@
 #include "fourNodeQuad/ConstantPressureVolumeQuad.h"
 #include "elasticBeamColumn/ElasticBeam2d.h"
 #include "elasticBeamColumn/ElasticBeam3d.h"
+#include "componentElement/ComponentElement2d.h"
+#include "componentElement/ComponentElement3d.h"
 #include "elasticBeamColumn/ModElasticBeam2d.h"			//SAJalali
 #include "elasticBeamColumn/ElasticTimoshenkoBeam2d.h"
 #include "elasticBeamColumn/ElasticTimoshenkoBeam3d.h"
@@ -375,6 +384,9 @@
 #include "LowOrderBeamIntegration.h"
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
+
+#include "ConcentratedPlasticityBeamIntegration.h"
+#include "ConcentratedCurvatureBeamIntegration.h"
 
 #include "RCCircularSectionIntegration.h"
 #include "RCSectionIntegration.h"
@@ -762,6 +774,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_ElasticBeam3d:
       return new ElasticBeam3d();
+
+    case ELE_TAG_ComponentElement2d:
+      return new ComponentElement2d();
+
+    case ELE_TAG_ComponentElement3d:
+      return new ComponentElement3d();      
       
     case ELE_TAG_ElasticTimoshenkoBeam2d:
       return new ElasticTimoshenkoBeam2d();
@@ -1208,6 +1226,12 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
   case BEAM_INTEGRATION_TAG_CompositeSimpson:        
     return new CompositeSimpsonBeamIntegration();
 
+  case BEAM_INTEGRATION_TAG_ConcentratedPlasticity:
+	  return new ConcentratedPlasticityBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_ConcentratedCurvature:
+	  return new ConcentratedCurvatureBeamIntegration();
+
   case BEAM_INTEGRATION_TAG_HingeMidpoint:
     return new HingeMidpointBeamIntegration();
     
@@ -1468,6 +1492,15 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ImpactMaterial:
 		return new ImpactMaterial();
 
+	case MAT_TAG_Hertzdamp:
+		return new Hertzdamp();
+
+	case MAT_TAG_JankowskiImpact:
+		return new JankowskiImpact();
+
+	case MAT_TAG_ViscoelasticGap:
+		return new ViscoelasticGap();
+
 	case MAT_TAG_Bilin:
 		return new Bilin();
 
@@ -1565,6 +1598,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_Aggregator:
 	     return new SectionAggregator();
+
+	case SEC_TAG_Parallel:
+	     return new ParallelSection();	     
 
 	     //case SEC_TAG_Fiber:
 	     //return new FiberSection();
@@ -1665,6 +1701,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_OrthotropicMaterial:
     return new OrthotropicMaterial();
 
+  case ND_TAG_Series3DMaterial:
+    return new Series3DMaterial();
+
   case ND_TAG_PlaneStressRebarMaterial:
     return new PlaneStressRebarMaterial();
 
@@ -1697,6 +1736,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PressureDependMultiYield02:
     return new PressureDependMultiYield02();
 
+  case ND_TAG_PressureDependMultiYield03:
+    return new PressureDependMultiYield03();
+	
   case ND_TAG_PressureIndependMultiYield:
     return new PressureIndependMultiYield();
 
@@ -1777,6 +1819,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitStressNDMaterial:
       return new InitStressNDMaterial();
+
+  case ND_TAG_ASDConcrete3DMaterial:
+      return new ASDConcrete3DMaterial();
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";

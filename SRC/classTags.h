@@ -152,6 +152,9 @@
 #define MAT_TAG_Concrete07                      37
 #define MAT_TAG_HyperbolicGapMaterial           38
 #define MAT_TAG_ImpactMaterial                  39
+#define MAT_TAG_Hertzdamp                  420
+#define MAT_TAG_JankowskiImpact            421
+#define MAT_TAG_ViscoelasticGap            422
 #define MAT_TAG_ShearPanelMaterial		40
 #define MAT_TAG_SAWSMaterial			41
 #define MAT_TAG_ConcreteL01			42
@@ -244,6 +247,7 @@
 #define MAT_TAG_TDConcreteMC10 226
 #define MAT_TAG_TDConcreteMC10NL 227
 #define MAT_TAG_CoulombDamperMaterial 228
+#define MAT_TAG_FlagShapeMaterial 229
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -452,6 +456,7 @@
 #define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_BeamFiberMaterial2dPS		2005
 #define ND_TAG_OrthotropicMaterial		2006
+#define ND_TAG_Series3DMaterial		2007
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -523,6 +528,8 @@
 #define ND_TAG_ElasticPlaneStress 7014
 #define ND_TAG_ElasticOrthotropicPlaneStress 7015
 #define ND_TAG_VonPapaDamage 7016
+
+#define ND_TAG_ASDConcrete3DMaterial 7017 // Massimo Petracca ASDEA Software
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
@@ -804,6 +811,7 @@
 #define ELE_TAG_GradientInelasticBeamColumn3d	193
 #define ELE_TAG_CohesiveZoneQuad 194
 #define ELE_TAG_ComponentElement2d       195
+#define ELE_TAG_ComponentElement3d       195195
 #define ELE_TAG_InerterElement 196
 #define ELE_TAG_BeamColumn2DwLHNMYS 197
 #define ELE_TAG_BeamColumn3DwLHNMYS 198
@@ -836,6 +844,7 @@
 #define ELE_TAG_IGAKLShell       	  253 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
 #define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
 #define ELE_TAG_PFEMContact3D             255
+#define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
 
 #define ELE_TAG_ExternalElement           99990
 
@@ -859,6 +868,9 @@
 #define BEAM_INTEGRATION_TAG_FixedLocation     8
 #define BEAM_INTEGRATION_TAG_LowOrder     9
 #define BEAM_INTEGRATION_TAG_MidDistance     40
+
+#define BEAM_INTEGRATION_TAG_ConcentratedPlasticity     41
+#define BEAM_INTEGRATION_TAG_ConcentratedCurvature     42
 
 #define BEAM_INTEGRATION_TAG_HingeMidpoint 10
 #define BEAM_INTEGRATION_TAG_HingeEndpoint 11

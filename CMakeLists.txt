@@ -42,9 +42,9 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
- set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
  set(BUILD_SHARED_LIBS OFF)
- set(CMAKE_EXE_LINKER_FLAGS "-static")
+ # set(CMAKE_EXE_LINKER_FLAGS "-static")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
  set(BUILD_SHARED_LIBS OFF)
@@ -591,10 +591,10 @@ if(MPI_FOUND)
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
     endif()
 
     target_link_libraries(OpenSeesSP 
@@ -650,14 +650,14 @@ if(MPI_FOUND)
     
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
-    endif()			    
+    endif()         
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
     endif()
     
     target_link_libraries(OpenSeesMP 

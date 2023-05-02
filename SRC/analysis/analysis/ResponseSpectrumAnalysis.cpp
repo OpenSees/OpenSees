@@ -137,7 +137,7 @@ OPS_ResponseSpectrumAnalysis(void)
 	if (nargs < 2) {
 		opserr << "ResponseSpectrumAnalysis $tsTag $dir <-scale $scale> <-damp $damp>\n"
 			<< "or\n"
-			<< "ResponseSpectrumAnalysis $dir -Tn $TnValues -Sa $SaValues <-scale $scale> <-damp $damp>\n"
+			<< "ResponseSpectrumAnalysis $dir -Tn $TnValues -fn $fnValues -Sa $SaValues <-scale $scale> <-damp $damp>\n"
 			"Error: at least 2 arguments should be provided.\n";
 		return -1;
 	}
@@ -148,18 +148,18 @@ OPS_ResponseSpectrumAnalysis(void)
 	bool found_Sa = false;
 	while (OPS_GetNumRemainingInputArgs() > 0) {
 		const char* arg = OPS_GetString();
-		if (!found_Tn && strcmp(arg, "-Tn") == 0)
+		if (!found_Tn && (strcmp(arg, "-Tn") == 0 || strcmp(arg, "-fn") == 0))
 			found_Tn = true;
 		if (!found_Sa && strcmp(arg, "-Sa") == 0)
 			found_Sa = true;
 	}
 	bool use_lists = found_Tn && found_Sa;
 	if (found_Tn && !found_Sa) {
-		opserr << "ResponseSpectrumAnalysis Error: found -Tn but not -Sa, please specify both of them or use a timeSeries\n";
+		opserr << "ResponseSpectrumAnalysis Error: found -Tn or -fn but not -Sa, please specify both of them or use a timeSeries\n";
 		return -1;
 	}
 	if (found_Sa && !found_Tn) {
-		opserr << "ResponseSpectrumAnalysis Error: found -Sa but not -Tn, please specify both of them or use a timeSeries\n";
+		opserr << "ResponseSpectrumAnalysis Error: found -Sa but not -Tn or -fn, please specify both of them or use a timeSeries\n";
 		return -1;
 	}
 	OPS_ResetCurrentInputArg(-nargs);
@@ -220,7 +220,7 @@ OPS_ResponseSpectrumAnalysis(void)
 				return -1;
 			}
 		}
-		else if (strcmp(value, "-Tn") == 0) {
+		else if (strcmp(value, "-Tn") == 0 || strcmp(value, "-fn") == 0) {
 			// first try expanded list like {*}$the_list,
 			// also used in python like *the_list
 			Tn.clear();
@@ -232,6 +232,9 @@ OPS_ResponseSpectrumAnalysis(void)
 					if (new_num_rem < old_num_rem)
 						OPS_ResetCurrentInputArg(-1);
 					break;
+				}
+				if (strcmp(value, "-fn") == 0 && item != 0) {
+					item = 1.0 / item;
 				}
 				Tn.push_back(item);
 			}

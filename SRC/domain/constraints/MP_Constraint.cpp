@@ -69,6 +69,11 @@ int OPS_EqualDOF()
     // get ndf
     int ndf = num-2;
 
+    // No DOFs specified, so make all DOFs equal
+    if (ndf == 0) {
+      ndf = OPS_GetNDF(); // Assume NDF is same for both nodes and the current model builder
+    }
+    
     // constraint matrix
     Matrix Ccr(ndf,ndf);
 
@@ -77,9 +82,10 @@ int OPS_EqualDOF()
 
     // create mp constraint
     for(int i=0; i<ndf; i++) {
-	rcDOF(i) = data(2+i)-1;
-	Ccr(i,i) = 1.0;
+      rcDOF(i) = (num-2) == 0 ? i : data(2+i)-1;
+      Ccr(i,i) = 1.0;
     }
+    
     MP_Constraint* theMP = new MP_Constraint(data(0),data(1),Ccr,rcDOF,rcDOF);
     if(theMP == 0) {
 	opserr<<"WARNING: failed to create MP_Constraint\n";
