@@ -30,31 +30,31 @@
 
 
 #include "../EvolvingVariable.h"
-#include "../ASDPlasticMaterialGlobals.h" // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
+#include "../ASDPlasticMaterialGlobals.h"
+#include "../AllASDModelParameterTypes.h"
 
 
 class LinearHardeningScalar_EV : public EvolvingVariable<VoigtScalar, LinearHardeningScalar_EV> //CRTP on LinearHardeningScalar_EV
 {
 public:
 
-    LinearHardeningScalar_EV( VoigtScalar H_) : EvolvingVariable(0.0), H(H_) {};
+    LinearHardeningScalar_EV() : EvolvingVariable(0.0) {}
+    LinearHardeningScalar_EV(VoigtScalar k0) : EvolvingVariable(k0) {};
 
-    LinearHardeningScalar_EV( VoigtScalar H_, VoigtScalar k0) : EvolvingVariable(k0), H(H_) {};
-
+    template<class ParameterStorageType>
     const VoigtScalar& getDerivative(const VoigtVector &depsilon,
                                 const VoigtVector &m,
-                                const VoigtVector& stress) const
+                                const VoigtVector& stress,
+        const ParameterStorageType& parameters_storage) const
     {
+        double H = parameters_storage.template get<LinearHardeningForScalar> ().value;
         derivative = H * sqrt((2 * m.dot(m)) / 3);
         return derivative;
     }
 
-    // int sendSelf(int commitTag, Channel &theChannel) {return 0;}
-    // int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {return 0;}
-
+    using parameters_t = std::tuple<LinearHardeningForScalar>;
 
 private:
-    VoigtScalar H;
     static VoigtScalar derivative; //Must return a reference.
 };
 

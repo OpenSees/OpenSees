@@ -24,35 +24,39 @@
 //
 // Fully general templated material class for plasticity modeling
 
-#ifndef ElasticityBase_H
-#define ElasticityBase_H
 
-#include "EigenAPI.h"
-#include "EvolvingVariable.h"
-#include <Channel.h>
+#ifndef Linear_HardeningScalarV_H
+#define Linear_HardeningScalarV_H
 
-// Helper template to check if a class has a parameters_t type alias
-template <typename T, typename = void>
-struct has_parameters_t : std::false_type {};
 
-template <typename T>
-struct has_parameters_t<T, typename std::enable_if<!std::is_same<typename T::parameters_t, void>::value>::type> : std::true_type {};
+#include "../EvolvingVariable.h"
+#include "../ASDPlasticMaterialGlobals.h" // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
 
-template <class T>
-class ElasticityBase
+
+class LinearHardeningScalar_EV : public EvolvingVariable<VoigtScalar, LinearHardeningScalar_EV> //CRTP on LinearHardeningScalar_EV
 {
 public:
 
-    ElasticityBase() {
-        static_assert(has_parameters_t<T>::value, "Derived class must have a 'parameters_t' type alias.");
-    }
-    
-    template<class ParameterStorageType>
-    const VoigtMatrix& operator()(const VoigtVector& stress,
-        const ParameterStorageType& P) 
+    LinearHardeningScalar_EV() : EvolvingVariable(0.0), H(0.0);
+
+    LinearHardeningScalar_EV( VoigtScalar H_) : EvolvingVariable(0.0), H(H_) {};
+
+    LinearHardeningScalar_EV( VoigtScalar H_, VoigtScalar k0) : EvolvingVariable(k0), H(H_) {};
+
+    const VoigtScalar& getDerivative(const VoigtVector &depsilon,
+                                const VoigtVector &m,
+                                const VoigtVector& stress) const
     {
-        return static_cast<T*>(this)->operator()(stress, P);
+        derivative = H * sqrt((2 * m.dot(m)) / 3);
+        return derivative;
     }
+
+
+private:
+    VoigtScalar H;
+    static VoigtScalar derivative; //Must return a reference.
 };
 
-#endif
+ VoigtScalar LinearHardeningScalar_EV::derivative;
+
+#endif //Linear_HardeningScalarV_H

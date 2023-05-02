@@ -42,16 +42,19 @@
 #include "ASDPlasticMaterialGlobals.h"
 
 
-#include "MaterialInternalVariables.h"
+// #include "MaterialInternalVariables.h"
 #include "YieldFunctions/AllYieldFunctions.h"
 #include "PlasticFlowDirections/AllPlasticFlowDirections.h"
 #include "ElasticityModels/AllElasticityModels.h"
-#include "EvolvingVariables/AllEvolvingVariables.h"
+#include "AllASDModelParameterTypes.h"
+#include "AllASDInternalVariableTypes.h"
+#include "AllASDHardeningFunctions.h"
 
-
+#include "utuple_storage.h"
 
 // for print p, q, theta
 #include <tuple>
+
 // for debugging printing
 #include <fstream>
 
@@ -88,23 +91,61 @@ C++ "Rule of 5"
 
 * PlasticFlowType must additionally provide
 
-
-
-
-
 */
+
+// template <typename T>
+// struct ExtractParameterTypes;
+
+// template <template <typename...> class Tuple, typename... Ts>
+// struct ExtractParameterTypes<Tuple<Ts...>> {
+//     using type = std::tuple<typename Ts::parameters_t...>;
+// };
+
+// template <class... IVs>
+// struct ExtractParameterTypes<std::tuple<IVs...>> {
+//     using type = typename parameter_type_list<IVs...>::type;
+// };
+
 
 using namespace ASDPlasticMaterialGlobals;
 
 
 
-template < class ElasticityType, class YieldFunctionType, class @for, class MaterialInternalVariablesType, int thisClassTag, class T >
+template <
+    class ElasticityType,
+    class YieldFunctionType,
+    class PlasticFlowType,
+    int thisClassTag,
+    class T >
 class ASDPlasticMaterial : public NDMaterial
 {
 
 public:
 
+    // Concatenate the internal varibles into the storage
+    // using iv_concat_types = utuple_concat_type <
+    //                         typename YieldFunctionType::internal_variables_t,
+    //                         typename PlasticFlowType::internal_variables_t >;
+    // using iv_storage_t = utuple_storage<iv_concat_types>;
+    using iv_concat_types = utuple_concat_unique_type <
+                            typename YieldFunctionType::internal_variables_t,
+                            typename PlasticFlowType::internal_variables_t >;
+    using iv_storage_t = utuple_storage<iv_concat_types>;
 
+    // Concatenate the model parameters into the storage
+    using parameters_concat_types = utuple_concat_type <
+                                    typename YieldFunctionType::parameters_t,
+                                    typename PlasticFlowType::parameters_t,
+                                    typename ElasticityType::parameters_t >;
+    using parameters_storage_t = utuple_storage<parameters_concat_types>;
+    // Concatenate the model parameters into the storage
+    // using extracted_parameters_t = typename ExtractParameterTypes<iv_concat_types>::type;
+    // using parameters_concat_types = utuple_concat_type <
+    //                                 typename YieldFunctionType::parameters_t,
+    //                                 typename PlasticFlowType::parameters_t,
+    //                                 typename ElasticityType::parameters_t,
+    //                                 extracted_parameters_t>;
+    // using parameters_storage_t = utuple_storage<parameters_concat_types>;
 
 //==================================================================================================
 //  Void constructor
@@ -124,23 +165,17 @@ public:
 //==================================================================================================
 // Constructor... invokes copy constructor for base elastoplastic template parameters
     ASDPlasticMaterial(int tag,
-                       double rho_,
-                       double p0,
-                       const YieldFunctionType& yf_in,
-                       const ElasticityType& et_in,
-                       const PlasticFlowType& pf_in,
-                       const MaterialInternalVariablesType& internal_variables_in
+                       double rho_
                       )
         : NDMaterial(tag, thisClassTag),
-          rho(rho_),
-          yf(yf_in),
-          et(et_in),
-          pf(pf_in),
-          internal_variables(internal_variables_in)
+          rho(rho_)
     {
         // cout << "Copy ctor in CEP" << endl;
         //Set initial stress to some value. Needed for models
         // like Drucker-Prager which blow up at sigma_ii = 0 :)
+
+        double p0 = 0.;
+
         TrialStress(0) = -p0;
         TrialStress(1) = -p0;
         TrialStress(2) = -p0;
@@ -172,6 +207,14 @@ public:
         CommitStrain(5) = 0;
 
         first_step = true;
+
+
+        Print(cout);
+
+        // for (int i = 0; i < parameters_storage.size(); ++i)
+        // {
+        //     cout << "  Param " << i << " : " << std::get<i>(parameters_storage.data) << endl;
+        // }
     }
 
 
@@ -420,7 +463,7 @@ public:
         CommitStrain = TrialStrain;
         CommitPlastic_Strain = TrialPlastic_Strain;
 
-        internal_variables.commit();
+        // internal_variables.commit();
 
         // if (first_step)
         // {
@@ -439,7 +482,7 @@ public:
         TrialStrain = CommitStrain;
         TrialPlastic_Strain = CommitPlastic_Strain;
 
-        internal_variables.revert();
+        // internal_variables.revert();
 
         return errorcode;
     }
@@ -452,21 +495,22 @@ public:
 
     NDMaterial *getCopy(void)
     {
-        ASDPlasticMaterial< ElasticityType,
-                            YieldFunctionType,
-                            PlasticFlowType,
-                            MaterialInternalVariablesType,
-                            thisClassTag,
-                            T > * newmaterial = new T( this->getTag(), rho, this->getPressure(), yf, et, pf, internal_variables);
-        newmaterial->internal_variables.setVars(this->internal_variables);
-        newmaterial->TrialStrain = (this->TrialStrain);
-        newmaterial->TrialStress = (this->TrialStress);
-        newmaterial->TrialPlastic_Strain = (this->TrialPlastic_Strain);
-        newmaterial->CommitStress = (this->CommitStress);
-        newmaterial->CommitStrain = (this->CommitStrain);
-        newmaterial->CommitPlastic_Strain = (this->CommitPlastic_Strain);
+        // ASDPlasticMaterial< ElasticityType,
+        //                     YieldFunctionType,
+        //                     PlasticFlowType,
+        //                     MaterialInternalVariablesType,
+        //                     thisClassTag,
+        //                     T > * newmaterial = new T( this->getTag(), rho, this->getPressure(), yf, et, pf, internal_variables);
+        // newmaterial->internal_variables.setVars(this->internal_variables);
+        // newmaterial->TrialStrain = (this->TrialStrain);
+        // newmaterial->TrialStress = (this->TrialStress);
+        // newmaterial->TrialPlastic_Strain = (this->TrialPlastic_Strain);
+        // newmaterial->CommitStress = (this->CommitStress);
+        // newmaterial->CommitStrain = (this->CommitStrain);
+        // newmaterial->CommitPlastic_Strain = (this->CommitPlastic_Strain);
         // newmaterial->Stiffness = (this->Stiffness);
-        return newmaterial;
+        // return newmaterial;
+        return NULL;
     }
 
     // NDMaterial *getCopy(const char *code);
@@ -624,18 +668,28 @@ public:
 
         return 0;
     }
+
     void Print(ostream &s, int flag = 0)
     {
         using namespace ASDPlasticMaterialGlobals;
-        static VoigtVector zeroTensor(3, 3, 0);
-        s << "TrialStress =  " <<  TrialStress << endl;
-        s << "CommitStress = " <<  CommitStress << endl;
-        s << "yf  = " << yf(CommitStress) << endl;
-        const VoigtVector& n = yf.df_dsigma_ij(CommitStress);
-        const VoigtVector& m = pf(zeroTensor, CommitStress);
-        s << "n = " <<  n  << endl;
-        s << "m = " <<  m  << endl;
-        s << "xi_star_h_star  = " << yf.xi_star_h_star(zeroTensor, m, CommitStress) << endl;
+
+        s << "ASDPlasticMaterial" << endl;
+        s << "  Yield Function          : " << yf.NAME << endl;
+        s << "  Plastic flow direction  : " << pf.NAME << endl;
+        s << "  Elasticity              : " << et.NAME << endl;
+        s << "  # of Internal variables : " << iv_storage.size() <<  endl;
+        iv_storage.print_components();
+        s << "  # of Parameters         : " << parameters_storage.size() <<  endl;
+        // parameters_storage.print_components();
+
+        // s << "TrialStress =  " <<  TrialStress << endl;
+        // s << "CommitStress = " <<  CommitStress << endl;
+        // s << "yf  = " << yf(CommitStress) << endl;
+        // const VoigtVector& n = yf.df_dsigma_ij(CommitStress);
+        // const VoigtVector& m = pf(zeroTensor, CommitStress);
+        // s << "n = " <<  n  << endl;
+        // s << "m = " <<  m  << endl;
+        // s << "xi_star_h_star  = " << yf.xi_star_h_star(zeroTensor, m, CommitStress) << endl;
     }
 
     int getObjectSize()
@@ -652,7 +706,7 @@ public:
         size += sizeof(yf);//yf->getObjectSize();
         size += sizeof(et);//et->getObjectSize();
         size += sizeof(pf);//pf->getObjectSize();
-        size += sizeof(internal_variables);//internal_variables->getObjectSize();
+        // size += sizeof(internal_variables);//internal_variables->getObjectSize();
         size += sizeof(NDMaterial);
 
         // size += static_cast<T*>(this)->getObjectSize();
@@ -713,22 +767,25 @@ private:
     // int Forward_Euler(const VoigtVector &strain_incr, bool const& with`_return2yield_surface)
     int Forward_Euler(const VoigtVector &strain_incr)
     {
-        // using namespace ASDPlasticMaterialGlobals;
-        // // ----------------------------------------------------------------
-        // // Print p, q, theta for debug--------------------------------------
-        // // ----------------------------------------------------------------
-        // //double enter_yf = yf(CommitStress);
-        // //double enter_p,enter_q,enter_theta;
-        // //std::tie(enter_p,enter_q,enter_theta) = getpqtheta(CommitStress);
-        // //fprintf(stderr, "--------------------------------------------\n ");
-        // //fprintf(stderr, "--------------------------------------------\n ");
-        // //fprintf(stderr, "-----------start iteration step %d----------\n",Nsteps );
-        // //fprintf(stderr, "When Enter Euler Step\n");
-        // //fprintf(stderr, "yf start (:<0) = %16.8f \n" , enter_yf );
-        // //fprintf(stderr, "    enter_p    = %16.8f \n"  , enter_p );
-        // //fprintf(stderr, "    enter_q    = %16.8f \n"  , enter_q );
-        // //fprintf(stderr, "enter_theta    = %16.8f \n"  , enter_theta );
-        // // ----------------------------------------------------------------
+        using namespace ASDPlasticMaterialGlobals;
+        // ----------------------------------------------------------------
+        // Print p, q, theta for debug--------------------------------------
+        // ----------------------------------------------------------------
+        double enter_yf = yf(CommitStress, iv_storage, parameters_storage);
+        double enter_p, enter_q, enter_theta;
+        // std::tie(enter_p,enter_q,enter_theta) = getpqtheta(CommitStress);
+        enter_p = CommitStress.meanStress();
+        enter_q = CommitStress.stressDeviatorQ();
+        enter_theta = CommitStress.lodeAngle();
+        fprintf(stderr, "--------------------------------------------\n ");
+        fprintf(stderr, "--------------------------------------------\n ");
+        fprintf(stderr, "-----------start iteration step %d----------\n", 1 );
+        fprintf(stderr, "When Enter Euler Step\n");
+        fprintf(stderr, "yf start (:<0) = %16.8f \n" , enter_yf );
+        fprintf(stderr, "    enter_p    = %16.8f \n"  , enter_p );
+        fprintf(stderr, "    enter_q    = %16.8f \n"  , enter_q );
+        fprintf(stderr, "enter_theta    = %16.8f \n"  , enter_theta );
+        // ----------------------------------------------------------------
 
         int errorcode = -1;
 
@@ -739,14 +796,16 @@ private:
         const VoigtVector& sigma = CommitStress;
         const VoigtVector& epsilon = CommitStrain;
 
-        internal_variables.revert();
-        internal_variables.commit_tmp();
+        // internal_variables.revert();
+        iv_storage.revert_all();
+        // internal_variables.commit_tmp();
+        // internal_variables.commit_all();
 
         dsigma *= 0;
         intersection_stress *= 0;
         intersection_strain *= 0;
 
-        VoigtMatrix& Eelastic = et(sigma);
+        VoigtMatrix& Eelastic = et(sigma, parameters_storage);
         Stiffness = Eelastic;
 
         dsigma = Eelastic * depsilon;
@@ -757,8 +816,8 @@ private:
         TrialStrain = CommitStrain + depsilon;
         TrialPlastic_Strain = CommitPlastic_Strain;
 
-        double yf_val_start = yf(sigma);
-        double yf_val_end = yf(TrialStress);
+        double yf_val_start = yf(sigma, iv_storage, parameters_storage);
+        double yf_val_end = yf(TrialStress, iv_storage, parameters_storage);
 
         VoigtVector& start_stress = CommitStress;
         VoigtVector& end_stress = TrialStress;
@@ -767,7 +826,7 @@ private:
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            VoigtMatrix& Eelastic = et(TrialStress);
+            VoigtMatrix& Eelastic = et(TrialStress, parameters_storage);
             Stiffness = Eelastic;
         }
         else  //Plasticity
@@ -783,134 +842,134 @@ private:
 
             TrialStress = intersection_stress;
 
-            Eelastic = et(intersection_stress);
+            Eelastic = et(intersection_stress, parameters_storage);
             TrialStress  += Eelastic * depsilon_elpl;
 
             //Compute normal to YF (n) and Plastic Flow direction (m)
-            const VoigtVector& n = yf.df_dsigma_ij(intersection_stress);
-            const VoigtVector& m = pf(depsilon_elpl, intersection_stress);
+            const VoigtVector& n = yf.df_dsigma_ij(intersection_stress, iv_storage, parameters_storage);
+            const VoigtVector& m = pf(depsilon_elpl, intersection_stress, iv_storage, parameters_storage);
 
-            double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  intersection_stress);
-            double den = n.transpose() * Eelastic * m - xi_star_h_star;
+            // double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  intersection_stress, iv_storage, parameters_storage);
+            // double den = n.transpose() * Eelastic * m - xi_star_h_star;
 
-            //Compute the plastic multiplier
-            // Yuan and Boris 10Sep2016, change from "==0"
-            if (abs(den) < MACHINE_EPSILON)
-            {
-                cout << "CEP - den = 0\n";
-                cout << "yf_val_start = " << yf_val_start << endl;
-                cout << "yf_val_end = " << yf_val_end << endl;
-                printTensor("m", m);
-                printTensor("n", n);
-                cout << "xi_star_h_star = " << xi_star_h_star << endl;
-                cout << "den = " << den << endl;
-                printTensor("depsilon_elpl", depsilon_elpl);
-                return -1;
-            }
-            double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
-            dLambda /= den;
-
-            // if (dLambda <= 0)
+            // //Compute the plastic multiplier
+            // // Yuan and Boris 10Sep2016, change from "==0"
+            // if (abs(den) < MACHINE_EPSILON)
             // {
-            //     cout << "CEP - dLambda = " << dLambda << " <= 0\n";
+            //     cout << "CEP - den = 0\n";
+            //     cout << "yf_val_start = " << yf_val_start << endl;
+            //     cout << "yf_val_end = " << yf_val_end << endl;
             //     printTensor("m", m);
             //     printTensor("n", n);
             //     cout << "xi_star_h_star = " << xi_star_h_star << endl;
             //     cout << "den = " << den << endl;
             //     printTensor("depsilon_elpl", depsilon_elpl);
-            //     // return -1;
+            //     return -1;
             // }
+            // double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
+            // dLambda /= den;
 
-            // Update the trial plastic strain.
-            TrialPlastic_Strain += dLambda * m;
-            // Update the internal variables (k and alpha)
-            internal_variables.evolve(dLambda, depsilon_elpl, m, intersection_stress);
-            internal_variables.commit_tmp();
+            // // if (dLambda <= 0)
+            // // {
+            // //     cout << "CEP - dLambda = " << dLambda << " <= 0\n";
+            // //     printTensor("m", m);
+            // //     printTensor("n", n);
+            // //     cout << "xi_star_h_star = " << xi_star_h_star << endl;
+            // //     cout << "den = " << den << endl;
+            // //     printTensor("depsilon_elpl", depsilon_elpl);
+            // //     // return -1;
+            // // }
+
+            // // Update the trial plastic strain.
+            // TrialPlastic_Strain += dLambda * m;
+            // // Update the internal variables (k and alpha)
+            // internal_variables.evolve(dLambda, depsilon_elpl, m, intersection_stress);
+            // internal_variables.commit_tmp();
 
 
-            // vonMises does NOT enter this part.
-            // DruckerPrager requries this part.
-            // if (yf.hasCorner() && yf.in_Apex(TrialStress))
+            // // vonMises does NOT enter this part.
+            // // DruckerPrager requries this part.
+            // // if (yf.hasCorner() && yf.in_Apex(TrialStress))
+            // // {
+            // //     static VoigtVector small_stress(3, 3, 0.0);
+            // //     small_stress *= 0;
+            // //     // The small value 50*Pa refers to the lowest confinement test:
+            // //     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
+            // //     double DP_k = yf.get_k();
+            // //     double DP_p = 50 ;
+            // //     // To make it on the yield surface, the q is equal to k*p.
+            // //     double DP_q = DP_k * DP_p ;
+            // //     // Assume the triaxial conditions sigma_2 = sigma_3.
+            // //     small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
+            // //     small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
+            // //     small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
+            // //     static VoigtVector dstress(3, 3, 0.0);
+            // //     dstress(i, j) = small_stress(i, j) - sigma(i, j);
+            // //     static VoigtVector depsilon_Inv(3, 3, 0.0);
+            // //     depsilon_Inv = depsilon.Inv();
+
+            // //     // Return results (member variables) :
+            // //     Stiffness(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
+            // //     TrialStress(i, j) = small_stress(i, j);
+            // //     // plastic_strain and internal variables are already updated.
+            // //     return 0;
+            // // }
+
+            // //Correct the trial stress
+            // TrialStress = TrialStress - dLambda * Eelastic * m;
+
+            // // Calculate the stiffness for the global iteration:
+            // Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
+
+
+            // // // ============================================================================================
+            // // // Add the additional step: returning to the yield surface.
+            // // // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
+            // // // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
+            // // // ============================================================================================
+            // // if(with_return2yield_surface){
+            // // if (true)
+            // // {
+            // //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
+            // //     // Make surface the internal variables are already updated. And then, return to the yield surface.
+            // //     double yf_val_after_corrector = yf(TrialStress);
+            // //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
+            // //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
+            // //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
+            // //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
+            // //     double dLambda_after_corrector = yf_val_after_corrector / (
+            // //                                          n_after_corrector(i, j) * Eelastic(i, j, k, l) * m_after_corrector(k, l) - xi_star_h_star_after_corrector
+            // //                                      );
+            // //     TrialStress(i, j) = TrialStress(i, j) - dLambda_after_corrector * Eelastic(i, j, k, l) * m_after_corrector(k, l);
+            // //     TrialPlastic_Strain(i, j) += dLambda_after_corrector * m_after_corrector(i, j);
+
+            // //     double den_after_corrector = n_after_corrector(p, q) * Eelastic(p, q, r, s) * m_after_corrector(r, s) - xi_star_h_star_after_corrector;
+            // //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
+            // // }
+            // // // ============================================================================================
+            // // // ============================================================================================
+
+            // double norm_trial_stress = TrialStress.transpose() * TrialStress;
+            // if (norm_trial_stress != norm_trial_stress) //check for nan
             // {
-            //     static VoigtVector small_stress(3, 3, 0.0);
-            //     small_stress *= 0;
-            //     // The small value 50*Pa refers to the lowest confinement test:
-            //     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
-            //     double DP_k = yf.get_k();
-            //     double DP_p = 50 ;
-            //     // To make it on the yield surface, the q is equal to k*p.
-            //     double DP_q = DP_k * DP_p ;
-            //     // Assume the triaxial conditions sigma_2 = sigma_3.
-            //     small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
-            //     small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
-            //     small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
-            //     static VoigtVector dstress(3, 3, 0.0);
-            //     dstress(i, j) = small_stress(i, j) - sigma(i, j);
-            //     static VoigtVector depsilon_Inv(3, 3, 0.0);
-            //     depsilon_Inv = depsilon.Inv();
+            //     cout << "Numeric error!\n";
+            //     printTensor("TrialStress = " , TrialStress);
+            //     printTensor("CommitStress = " , CommitStress);
+            //     printTensor("depsilon = " , depsilon);
+            //     printTensor("dsigma   = " , dsigma);
+            //     printTensor("intersection_stress = " , intersection_stress);
+            //     printTensor4("Eelastic = " , Eelastic);
+            //     printTensor4("Stiffness = " , Stiffness);
+            //     cout << "yf_val_start = " << yf_val_start << endl;
+            //     cout << "yf_val_end = " << yf_val_end << endl;
+            //     printTensor("n = " , n );
+            //     printTensor("m = " , m );
+            //     cout << "xi_star_h_star  = " << xi_star_h_star << endl;
+            //     cout << "den = " << den << endl;
+            //     cout << "dLambda = " << dLambda << endl;
 
-            //     // Return results (member variables) :
-            //     Stiffness(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
-            //     TrialStress(i, j) = small_stress(i, j);
-            //     // plastic_strain and internal variables are already updated.
-            //     return 0;
+            //     errorcode = -1;
             // }
-
-            //Correct the trial stress
-            TrialStress = TrialStress - dLambda * Eelastic * m;
-
-            // Calculate the stiffness for the global iteration:
-            Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
-
-
-            // // ============================================================================================
-            // // Add the additional step: returning to the yield surface.
-            // // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
-            // // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
-            // // ============================================================================================
-            // if(with_return2yield_surface){
-            // if (true)
-            // {
-            //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
-            //     // Make surface the internal variables are already updated. And then, return to the yield surface.
-            //     double yf_val_after_corrector = yf(TrialStress);
-            //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
-            //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
-            //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
-            //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
-            //     double dLambda_after_corrector = yf_val_after_corrector / (
-            //                                          n_after_corrector(i, j) * Eelastic(i, j, k, l) * m_after_corrector(k, l) - xi_star_h_star_after_corrector
-            //                                      );
-            //     TrialStress(i, j) = TrialStress(i, j) - dLambda_after_corrector * Eelastic(i, j, k, l) * m_after_corrector(k, l);
-            //     TrialPlastic_Strain(i, j) += dLambda_after_corrector * m_after_corrector(i, j);
-
-            //     double den_after_corrector = n_after_corrector(p, q) * Eelastic(p, q, r, s) * m_after_corrector(r, s) - xi_star_h_star_after_corrector;
-            //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
-            // }
-            // // ============================================================================================
-            // // ============================================================================================
-
-            double norm_trial_stress = TrialStress.transpose() * TrialStress;
-            if (norm_trial_stress != norm_trial_stress) //check for nan
-            {
-                cout << "Numeric error!\n";
-                printTensor("TrialStress = " , TrialStress);
-                printTensor("CommitStress = " , CommitStress);
-                printTensor("depsilon = " , depsilon);
-                printTensor("dsigma   = " , dsigma);
-                printTensor("intersection_stress = " , intersection_stress);
-                printTensor4("Eelastic = " , Eelastic);
-                printTensor4("Stiffness = " , Stiffness);
-                cout << "yf_val_start = " << yf_val_start << endl;
-                cout << "yf_val_end = " << yf_val_end << endl;
-                printTensor("n = " , n );
-                printTensor("m = " , m );
-                cout << "xi_star_h_star  = " << xi_star_h_star << endl;
-                cout << "den = " << den << endl;
-                cout << "dLambda = " << dLambda << endl;
-
-                errorcode = -1;
-            }
 
         }
 
@@ -2531,8 +2590,8 @@ private:
         sigma_a = start_stress * (1 - a)  + end_stress * a;
         sigma_b = start_stress * (1 - b)  + end_stress * b;
 
-        double fa = yf(sigma_a);
-        double fb = yf(sigma_b);
+        double fa = yf(sigma_a, iv_storage, parameters_storage);
+        double fb = yf(sigma_b, iv_storage, parameters_storage);
 
         // cout << "   brent fa = " << fa << " fb = " << fb << endl;
 
@@ -2629,7 +2688,7 @@ private:
 
             // fb = func(start_stress, end_stress, *ptr_material_parameter, b);
             sigma_b = start_stress * (1 - b)  + end_stress * b;
-            fb = yf(sigma_b);
+            fb = yf(sigma_b, iv_storage, parameters_storage);
         }
 
         return 0.0;
@@ -2663,8 +2722,9 @@ protected:
     YieldFunctionType yf;
     ElasticityType    et;
     PlasticFlowType   pf;
-    MaterialInternalVariablesType internal_variables;
 
+    iv_storage_t iv_storage;
+    parameters_storage_t parameters_storage;
 
 protected:
     bool set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations)
@@ -2715,20 +2775,20 @@ protected:
 
 };
 
-template < class E, class Y, class P, class M, int tag, class T >
+template < class E, class Y, class P, int tag, class T >
 // ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set;
-ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
 
-template < class E, class Y, class P, class M, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::dsigma;
-template < class E, class Y, class P, class M, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::depsilon_elpl;  //Used to compute the yield surface intersection.
-template < class E, class Y, class P, class M, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_stress;  //Used to compute the yield surface intersection.
-template < class E, class Y, class P, class M, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::intersection_strain;  //Used to compute the yield surface intersection.
-template < class E, class Y, class P, class M, int tag, class T >
-VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::Stiffness;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag, class T >
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::dsigma;
+template < class E, class Y, class P, int tag, class T >
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::depsilon_elpl;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag, class T >
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_stress;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag, class T >
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_strain;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag, class T >
+VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  tag,  T >::Stiffness;  //Used to compute the yield surface intersection.
 
 
 #endif

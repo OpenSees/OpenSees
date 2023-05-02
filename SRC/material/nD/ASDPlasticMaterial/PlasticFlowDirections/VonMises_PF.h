@@ -30,28 +30,35 @@
 #include "../PlasticFlowBase.h"
 #include "../ASDPlasticMaterialGlobals.h"
 
-#include "../EvolvingVariable.h"
 #include <cmath>
+#include <typeinfo>
 
 
+using namespace std;
 
 template<class AlphaHardeningType, class KHardeningType>
 class VonMises_PF : public PlasticFlowBase<VonMises_PF<AlphaHardeningType, KHardeningType>> // CRTP
 {
 public:
 
-    typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
-    typedef EvolvingVariable<VoigtScalar, KHardeningType> KType;
+    static constexpr const char* NAME = "VonMises_PF";
 
-    // PlasticFlowBase<VonMises_PF<HardeningType>>::PlasticFlowBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-    VonMises_PF( AlphaType &alpha_in, KType &k_in):
-        PlasticFlowBase<VonMises_PF<AlphaHardeningType , KHardeningType >>::PlasticFlowBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-                alpha_(alpha_in), k_(k_in) { }
+    VonMises_PF():
+        PlasticFlowBase<VonMises_PF<AlphaHardeningType , KHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
+                { }
 
-    const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
+    template <typename StorageType, typename ParameterStorageType>
+    const VoigtVector& operator()(
+    	const VoigtVector &depsilon, 
+    	const VoigtVector& sigma, 
+    	const StorageType& internal_variables_storage, 
+    	const ParameterStorageType& parameters_storage)
     {
         //Identical to derivative of VonMises_YF wrt sigma (a.k.a nij)
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
+        const AlphaHardeningType& AHT = 
+        internal_variables_storage.template get<AlphaHardeningType> ();
+
+        VoigtVector alpha = AHT.trial_value;
 
         result = sigma.deviator() - alpha;
 
@@ -62,9 +69,10 @@ public:
         return result;
     }
 
+    using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
+    using parameters_t = std::tuple<>;
+
 private:
-    AlphaType &alpha_;
-    KType &k_;
 
     static VoigtVector result; //For returning VoigtVectors
 };

@@ -29,6 +29,7 @@
 
 #include "../EvolvingVariable.h"
 #include "../ElasticityBase.h"
+#include "../AllASDModelParameterTypes.h"
 
 #include <iostream>
 
@@ -36,16 +37,25 @@
 class LinearIsotropic3D_EL : public ElasticityBase<LinearIsotropic3D_EL> // CRTP on ElasticityBase
 {
 public:
-	LinearIsotropic3D_EL(double E, double nu): ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
+
+    static constexpr const char* NAME = "LinearIsotropic3D";
+
+	LinearIsotropic3D_EL(): ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
 	{
-		lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
-		mu = E / ( 2.0 * ( 1.0 + nu ) );
+
 	}
 
-	VoigtMatrix& operator()(const VoigtVector& stress)
+	template<class ParameterStorageType>
+	VoigtMatrix& operator()(const VoigtVector& stress,
+        const ParameterStorageType& parameters_storage)
 	{
-		Ee.setZero(); //Zero it. It may have values from another instance with different parameters;
 
+		double E = parameters_storage.template get<YoungsModulus> ().value;
+		double nu = parameters_storage.template get<PoissonsRatio> ().value;
+
+		Ee.setZero(); //Zero it. It may have values from another instance with different parameters;
+		double lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
+		double mu = E / ( 2.0 * ( 1.0 + nu ) );
 		// const double mu2 = mu * mu;
 
 		Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = 2*mu + lambda;
@@ -57,13 +67,10 @@ public:
 		return Ee;
 	}
 
-	int sendSelf(int commitTag, Channel &theChannel) {return 0;}
-	int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {return 0;}
+	using parameters_t = std::tuple<YoungsModulus, PoissonsRatio>;
 
 private:
 
-	double lambda;
-	double mu;
 	static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
