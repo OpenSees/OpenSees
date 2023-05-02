@@ -44,7 +44,7 @@ class HystereticBackbone : public TaggedObject, public MovableObject
   
   virtual double getStress(double strain) = 0;
   virtual double getTangent(double strain) = 0;
-  virtual double getEnergy(double strain) = 0;
+  virtual double getEnergy(double strain);
   
   virtual double getYieldStrain(void) = 0;
   
