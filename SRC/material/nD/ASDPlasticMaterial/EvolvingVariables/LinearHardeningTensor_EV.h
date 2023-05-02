@@ -29,7 +29,8 @@
 #define LinearHardeningTensor_EV_H
 
 #include "../EvolvingVariable.h"
-#include "../ASDPlasticMaterialGlobals.h" // Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
+#include "../ASDPlasticMaterialGlobals.h" 
+#include "../AllASDModelParameterTypes.h"
 
 
 
@@ -37,14 +38,16 @@ class LinearHardeningTensor_EV : public EvolvingVariable<VoigtVector, LinearHard
 {
 public:
 
-    LinearHardeningTensor_EV( double H_) : EvolvingVariable(VoigtVector(0,0,0,0,0,0)), H(H_) {};
+    LinearHardeningTensor_EV() : EvolvingVariable(VoigtVector(0,0,0,0,0,0)) {};
+    LinearHardeningTensor_EV(VoigtVector v0) : EvolvingVariable(v0) {};
 
-    LinearHardeningTensor_EV( double H_, const VoigtVector& alpha0)  : EvolvingVariable(alpha0), H(H_) {};
-
+    template<class ParameterStorageType>
     const VoigtVector& getDerivative(const VoigtVector &depsilon,
                                      const VoigtVector &m,
-                                     const VoigtVector& stress) const
+                                     const VoigtVector& stress,
+        const ParameterStorageType& parameters_storage) const
     {
+        double H = parameters_storage.template get<LinearHardeningForTensor> ().value;
         derivative = H * m.deviator();
         return derivative;
     }
@@ -52,8 +55,9 @@ public:
     // int sendSelf(int commitTag, Channel &theChannel) {return 0;}
     // int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {return 0;}
 
+    using parameters_t = std::tuple<LinearHardeningForTensor>;
+
 private:
-    double H;
     static VoigtVector derivative;     // Needs to be static so multiple instances only do one malloc call and we can return a const-reference
 };
 

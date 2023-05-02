@@ -49,12 +49,7 @@ class EvolvingVariable
 {
 public:
 
-    EvolvingVariable(VarType a_): a(a_), a_committed(a_), a_tmp(a_)
-    {
-        // a_tmp = a_;
-        // cout << "EvolvingVariable::EvolvingVariable(a) a_ = " << a_ << endl;
-        // cout << "EvolvingVariable::EvolvingVariable(a) a_committed = " << a_committed << endl;
-    }
+    EvolvingVariable(VarType a_): a(a_), a_committed(a_), a_tmp(a_) { }
 
     const VarType &getDerivative(const VoigtVector &depsilon,
                                  const VoigtVector &m,

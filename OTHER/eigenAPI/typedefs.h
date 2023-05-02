@@ -27,6 +27,7 @@
 
 #include "EigenAPI.h"
 #include "Eigen/Dense"
+#include <Eigen/Eigenvalues>
 
 #include <iostream>
 #include <typeinfo>
@@ -163,7 +164,7 @@ public:
 
 	// friend ostream & operator << (ostream &out, const VoigtVector &c);
 	// friend istream & operator >> (istream &in,  VoigtVector &c);
-	
+
 	/***********************************************************************
 
 	ConsStrainVectorVoigttructors and assignment operators needed for inheriting from Eigen
@@ -203,11 +204,50 @@ public:
 	};
 
 
-	// static EIGEN_DEVICE_FUNC EIGEN_STRONG_INLINE const opsEigen::IdentityReturnTypeT4
-	//     Identity()
-	// {
-	//         return Eigen::Matrix6d::NullaryExpr(6, 6, opsEigen::scalar_identity_op_T4<double>());
-	// }
+
+public:
+	Eigen::Vector3d principalStresses() const {
+		// Convert Voigt vector to a stress tensor.
+		Eigen::Matrix3d stress_tensor;
+		stress_tensor << v11(), v12(), v13(),
+		              v12(), v22(), v23(),
+		              v13(), v23(), v33();
+
+		// Compute the eigenvalues (principal stresses).
+		Eigen::SelfAdjointEigenSolver<Eigen::Matrix3d> eigen_solver(stress_tensor);
+		return eigen_solver.eigenvalues();
+	}
+
+	double meanStress() const {
+		return this->trace() / 3.0;
+	}
+
+	double stressDeviatorQ() const {
+		VoigtVector deviator = this->deviator();
+		double J2 = 0.5 * (
+		                deviator.v11() * deviator.v11() + deviator.v22() * deviator.v22() + deviator.v33() * deviator.v33()
+		                - 2 * deviator.v11() * deviator.v22()
+		                - 2 * deviator.v22() * deviator.v33()
+		                - 2 * deviator.v33() * deviator.v11()
+		                + 6 * (deviator.v12() * deviator.v12() + deviator.v23() * deviator.v23() + deviator.v13() * deviator.v13())
+		            );
+
+		return std::sqrt(0.5 * J2);
+	}
+
+	double lodeAngle() const {
+		Eigen::Vector3d principal_stresses = this->principalStresses();
+		double s1 = principal_stresses(0);
+		double s2 = principal_stresses(1);
+		double s3 = principal_stresses(2);
+
+		double lode_angle = std::atan(
+		                        std::sqrt(3) * (s1 - s3) / (2 * (s2 - s3) - (s1 - s3))
+		                    );
+
+		return lode_angle;
+	}
+
 };
 
 EIGEN_STRONG_INLINE VoigtVector kronecker_delta()

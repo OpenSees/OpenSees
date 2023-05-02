@@ -31,26 +31,42 @@
 
 #include "EigenAPI.h"
 
+
+// Helper template to check if a class has a parameters_t type alias
+template <typename T, typename = void>
+struct pf_has_parameters_t : std::false_type {};
+
+template <typename T>
+struct pf_has_parameters_t<T, typename std::enable_if<!std::is_same<typename T::parameters_t, void>::value>::type> : std::true_type {};
+
+// Helper template to check if a class has a internal_variables_t type alias
+template <typename T, typename = void>
+struct pf_has_internal_variables_t : std::false_type {};
+
+template <typename T>
+struct pf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<typename T::internal_variables_t, void>::value>::type> : std::true_type {};
+
+
 template <class T>
 class PlasticFlowBase
 {
 public:
-    PlasticFlowBase()
-    {
-
+    PlasticFlowBase() { 
+        static_assert(pf_has_parameters_t<T>::value, "Derived class must have a 'parameters_t' type alias.");
+        static_assert(pf_has_internal_variables_t<T>::value, "Derived class must have a 'internal_variables_t' type alias.");
     }
 
-    const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
+    template <typename StorageType, typename ParameterStorageType>
+    const VoigtVector& operator()(
+    	const VoigtVector &depsilon, 
+    	const VoigtVector& sigma, 
+    	const StorageType& internal_variables_storage, 
+    	const ParameterStorageType& parameters_storage)
     {
-        return static_cast<T*>(this)->operator()( depsilon,  sigma);
+        return static_cast<T*>(this)->operator()( depsilon,  sigma, internal_variables_storage, parameters_storage);
     }
 
-
-private:
-
+    inline const char* getName() const { return static_cast<T*>(this)->NAME; }
 };
-
-
-
 
 #endif

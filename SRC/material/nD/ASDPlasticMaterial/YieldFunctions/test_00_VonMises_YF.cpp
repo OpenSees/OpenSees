@@ -1,31 +1,46 @@
 #include "VonMises_YF.h"
-#include "../EvolvingVariables/LinearHardeningScalar_EV.h"
-#include "../EvolvingVariables/LinearHardeningTensor_EV.h"
-
+#include "../utuple_storage.h"
+#include "../AllASDInternalVariableTypes.h"
+#include "../AllASDHardeningFunctions.h"
 #include <vector>
 
 int main(void)
 {
+    
+    // LinearHardeningForScalar
+    ScalarLinearHardeningParameter H_scalar(1.0);
+    double initial_scalar = 1.0;
+    using VMSL = VonMisesRadiusIV<ScalarLinearHardeningFunction>;
+    VMSL kH(initial_scalar);
+    
+    // LinearHardeningForTensor
+    TensorLinearHardeningParameter H_tensor(1.0);
+    VoigtVector initial_tensor(0,0,0,0,0,0);
+    using BSTL = BackStressIV<TensorLinearHardeningFunction>;
+    BSTL alphaH(initial_tensor);
 
-    double H_scalar = 0;
-    double k = 1.0;
-    LinearHardeningScalar_EV kH(H_scalar, k);
 
-    double H_tensor = 1;
-    VoigtVector alpha01(0,0,0,0,0,0);
-    VoigtVector alpha02(0.,0,0.5,0,0,0);
+    using VM = VonMises_YF<BSTL, VMSL>;
+    VM yf;
+    
+    //Setup the storage for the model parameters
+    using parameter_storage_t = utuple_storage<tuple<ScalarLinearHardeningParameter, TensorLinearHardeningParameter>>;
+    parameter_storage_t parameter_storage;
+    parameter_storage.set(H_scalar);
+    parameter_storage.set(H_tensor);
 
-    LinearHardeningTensor_EV alphaH1(H_tensor, alpha01.deviator()); //alpha should be deviatoric
-    LinearHardeningTensor_EV alphaH2(H_tensor, alpha02.deviator());
-
-    VonMises_YF yf1(alphaH1, kH);
-    VonMises_YF yf2(alphaH2, kH);
+    //Setup the storage for the internal variables
+    using concat_types = utuple_concat_type<VM::internal_variables_t>;
+    using iv_storage_t = utuple_storage<concat_types>;
+    iv_storage_t iv_storage;
+    iv_storage.set(kH);
+    iv_storage.set(alphaH);
 
 
     std::vector<VoigtVector> stresses;
 
     VoigtVector depsilon;
-    VoigtVector m;
+    // VoigtVector m;
     // VoigtVector sigma = {1., 1., 1., 1., 1., 1.0};
 
     double p = 10;
@@ -51,26 +66,20 @@ int main(void)
         VoigtVector sigma = *i;
         cout << "\nat sigma (" << index << ") = " << sigma.transpose() << endl;
 
-        double yf1_val = yf1(sigma);
-        cout << "   yf1_val = " << yf1_val << endl;
-        double yf2_val = yf2(sigma);
-        cout << "   yf2_val = " << yf2_val << endl;
+        double yf_val = yf(sigma, iv_storage, parameter_storage);
+        cout << "   yf_val = " << yf_val << endl;
 
-        auto yf1_der = yf1.df_dsigma_ij(sigma);
-        cout << "   yf1_der = " << yf1_der.transpose() << endl;
-        auto yf2_der = yf2.df_dsigma_ij(sigma);
-        cout << "   yf2_der = " << yf2_der.transpose() << endl;
+        auto yf_der = yf.df_dsigma_ij(sigma, iv_storage, parameter_storage);
+        cout << "   yf_der = " << yf_der.transpose() << endl;
 
-        auto xi_star_h_star1 = yf1.xi_star_h_star(depsilon, yf1_der, sigma);
-        cout << "   xi_star_h_star1 = " << xi_star_h_star1 << endl;
-        auto xi_star_h_star2 = yf2.xi_star_h_star(depsilon, yf1_der, sigma);
-        cout << "   xi_star_h_star2 = " << xi_star_h_star2 << endl;
+        auto xi_star_h_star = yf.xi_star_h_star(depsilon, yf_der, sigma, iv_storage, parameter_storage);
+        cout << "   xi_star_h_star = " << xi_star_h_star << endl;
 
 
     }
 
-    // VoigtVector alpha(1,1,1,1,1,1);
-    // VoigtScalar k(1);
+    // // VoigtVector alpha(1,1,1,1,1,1);
+    // // VoigtScalar k(1);
 
 
     return 0;

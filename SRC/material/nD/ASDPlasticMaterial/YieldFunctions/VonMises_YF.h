@@ -27,7 +27,7 @@
 #ifndef VonMises_YF_H
 #define VonMises_YF_H
 
-#include "../EvolvingVariable.h"
+// #include "../EvolvingVariable.h"
 #include "../YieldFunctionBase.h"
 #include "cmath"
 #include <iostream>
@@ -44,19 +44,29 @@ class VonMises_YF : public YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHa
 {
 public:
 
-    typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
-    typedef EvolvingVariable<VoigtScalar, KHardeningType> KType;
+    static constexpr const char* NAME = "VonMises_YF";
 
-    VonMises_YF( AlphaType &alpha_in, KType& k_in):
-        YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHardeningType>>::YieldFunctionBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-                alpha_(alpha_in), k_(k_in) {}
 
-    double operator()(const VoigtVector& sigma) const 
+    VonMises_YF( ):
+        YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHardeningType>>::YieldFunctionBase() // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
+                {}
+
+    template <typename IVStorageType, typename ParameterStorageType>
+    double operator()( const VoigtVector& sigma, 
+    	const IVStorageType& internal_variables_storage,
+        const ParameterStorageType& parameters_storage) const 
     {
         auto s = sigma.deviator();
 
-        auto alpha = alpha_.getVariableConstReference();
-        auto k = k_.getVariableConstReference();
+        // auto alpha = alpha_.getVariableConstReference();
+        const AlphaHardeningType& AHT = 
+        internal_variables_storage.template get<AlphaHardeningType> ();
+        auto alpha = AHT.trial_value;
+
+        // auto k = k_.getVariableConstReference();
+        const KHardeningType& KHT = 
+        internal_variables_storage.template get<KHardeningType> ();
+        auto k = KHT.trial_value;
 
         double tmp = (s - alpha).dot(s - alpha);
 
@@ -68,9 +78,15 @@ public:
         return std::sqrt( tmp ) - SQRT_2_over_3 * k.value() ;  // This one assumes p positive in tension
     }
 
-    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
+    template <typename IVStorageType, typename ParameterStorageType>
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma,
+    	const IVStorageType& internal_variables_storage,
+        const ParameterStorageType& parameters_storage)
     {
-        VoigtVector alpha = alpha_.getVariable();
+        // VoigtVector alpha = alpha_.getVariable();
+        const AlphaHardeningType& AHT = 
+        internal_variables_storage.template get<AlphaHardeningType> ();
+        auto alpha = AHT.trial_value;
 
         result = sigma.deviator() - alpha;
 
@@ -81,13 +97,25 @@ public:
         return result;
 
     }
-
-    double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
+    
+    template <typename IVStorageType, typename ParameterStorageType>
+    double xi_star_h_star(const VoigtVector& depsilon, 
+        const VoigtVector& m, 
+        const VoigtVector& sigma,
+        const IVStorageType& internal_variables_storage,
+        const ParameterStorageType& parameters_storage)
     {
         double dbl_result = 0.0;
 
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        const VoigtScalar &k = k_.getVariableConstReference();
+        // const VoigtVector &alpha = alpha_.getVariableConstReference();
+        const AlphaHardeningType& AHT = 
+        internal_variables_storage.template get<AlphaHardeningType> ();
+        auto alpha = AHT.trial_value;
+
+        // const VoigtScalar &k = k_.getVariableConstReference();
+        const KHardeningType& KHT = 
+        internal_variables_storage.template get<KHardeningType> ();
+        auto k = KHT.trial_value;
 
         //Zero the stress deviator
         auto s = sigma.deviator();
@@ -96,18 +124,18 @@ public:
 
         // This is for the hardening of k
         constexpr double df_dk = -SQRT_2_over_3;
-        dbl_result +=  (df_dk * k_.getDerivative(depsilon, m, sigma)).value();
+        dbl_result +=  (df_dk * KHT.hardening_function(depsilon, m, sigma, parameters_storage)).value();
 
-        //This is for the hardening of alpha
-        double den = sqrt((s - alpha).dot(s - alpha));
+        // //This is for the hardening of alpha
+        // double den = sqrt((s - alpha).dot(s - alpha));
 
-        if (abs(den) < 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
-        {
-            return dbl_result;
-        }
+        // if (abs(den) < 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+        // {
+        //     return dbl_result;
+        // }
 
-        auto df_dalpha = -(s - alpha) / den;
-        dbl_result +=  df_dalpha.dot(alpha_.getDerivative(depsilon, m, sigma));
+        // auto df_dalpha = -(s - alpha) / den;
+        // dbl_result +=  df_dalpha.dot(AHT.hardening_function(depsilon, m, sigma, internal_variables_storage));
 
         return dbl_result;
     }
@@ -119,16 +147,13 @@ public:
         std::cout<<"von Mises yield surface does not have a corner. This function should never be callled!"<<std::endl;
         return false;
     }
-    double get_k() const{
-        return k_.getVariableConstReference();
-    }
-    VoigtVector const& get_alpha() const{
-        return alpha_.getVariableConstReference();
-    }
+
+    using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
+    using parameters_t = std::tuple<>;
+
+
 private:
 
-    AlphaType &alpha_;
-    KType &k_;
     static VoigtVector s; //Stress deviator
     static VoigtVector result; //For returning VoigtVector's
 
