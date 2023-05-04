@@ -291,6 +291,7 @@
 #include "UWelements/QuadBeamEmbedContact.h"
 #include "UWelements/Quad4FiberOverlay.h"
 #include "UWelements/Brick8FiberOverlay.h"
+#include "EmbeddedBeamInterfaceL.h"
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
@@ -865,6 +866,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 	
 	case ELE_TAG_Brick8FiberOverlay:
       return new Brick8FiberOverlay(); //Amin Pakzad
+
+	case ELE_TAG_EmbeddedBeamInterfaceL:
+	  return new EmbeddedBeamInterfaceL(); //Amin Pakzad
 	
 	case ELE_TAG_PML2D:
 	  return new PML2D();
