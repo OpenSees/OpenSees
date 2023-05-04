@@ -44,7 +44,6 @@ class ReeseSandBackbone : public HystereticBackbone
   
   double getStress(double strain);
   double getTangent(double strain);
-  double getEnergy(double strain);
   
   double getYieldStrain(void);
   
