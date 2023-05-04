@@ -33,14 +33,7 @@
 #include <Matrix.h>
 #include <ID.h>
 
-// number of nodes per element
-#define SL_NUM_NODE 4
-// d.o.f. per node
-#define SL_NUM_NDF  2
-// degrees of freedom per element
-#define SL_NUM_DOF  8
-// displacement degrees of freedom per element
-#define SL_NUM_DDOF  8
+
 
 class Domain;
 class Node;

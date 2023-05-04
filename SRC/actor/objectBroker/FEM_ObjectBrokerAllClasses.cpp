@@ -289,6 +289,8 @@
 #include "UWelements/BeamEndContact3D.h"
 #include "UWelements/BeamEndContact3Dp.h"
 #include "UWelements/QuadBeamEmbedContact.h"
+#include "UWelements/Quad4FiberOverlay.h"
+#include "UWelements/Brick8FiberOverlay.h"
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
@@ -858,6 +860,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
 
+    case ELE_TAG_Quad4FiberOverlay:
+      return new Quad4FiberOverlay(); //Amin Pakzad
+	
+	case ELE_TAG_Brick8FiberOverlay:
+      return new Brick8FiberOverlay(); //Amin Pakzad
+	
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
