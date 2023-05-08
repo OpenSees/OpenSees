@@ -101,7 +101,6 @@ OPS_HystereticSMMaterial(void)
         }
     }
 
-    OPS_ResetCurrentInputArg(-numArgs);
     while (OPS_GetNumRemainingInputArgs() > 0) {
         std::string theType = OPS_GetString();
         if (theType == "-forceLimitStates") {
@@ -121,9 +120,7 @@ OPS_HystereticSMMaterial(void)
     }
 
 
-    OPS_ResetCurrentInputArg(-numArgs);
     double degEnvFactor = 0;
-    OPS_ResetCurrentInputArg(-numArgs);
     while (OPS_GetNumRemainingInputArgs() > 0) {
         std::string theType = OPS_GetString();
         if (theType == "-degEnvFactor") {
