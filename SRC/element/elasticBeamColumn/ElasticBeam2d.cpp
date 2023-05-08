@@ -416,24 +416,34 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
 ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
 			     CrdTransf &coordTransf, double Alpha, double depth, double r, int cm, int rel,
                  Damping *damping)
-  :Element(tag,ELE_TAG_ElasticBeam2d), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
+  :Element(tag,ELE_TAG_ElasticBeam2d), A(0.0), E(1.0), I(0.0),
+   alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
   theDamping(0)
 {
-  E = 1.0;
-  rho = r;
-  cMass = cm;
+  // Try to find E in the section
+  const char *argv[1] = {"E"};
+  int argc = 1;
+  Parameter param;
+  int ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    E = param.getValue();
 
+  if (E == 0.0) {
+    opserr << "ElasticBeam2d::ElasticBeam2d - E from section is zero, using E = 1" << endln;
+    E = 1.0;
+  }
+  
   const Matrix &sectTangent = section.getInitialTangent();
   const ID &sectCode = section.getType();
   for (int i=0; i<sectCode.Size(); i++) {
     int code = sectCode(i);
     switch(code) {
     case SECTION_RESPONSE_P:
-      A = sectTangent(i,i);
+      A = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MZ:
-      I = sectTangent(i,i);
+      I = sectTangent(i,i)/E;
       break;
     default:
       break;
