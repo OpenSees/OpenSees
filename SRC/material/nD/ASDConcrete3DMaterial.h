@@ -277,6 +277,7 @@ public:
 		double _v,
 		double _rho,
 		double _eta,
+		double _Kc,
 		bool _implex,
 		bool _implex_control,
 		double _implex_error_tolerance,
@@ -362,6 +363,8 @@ private:
 	double rho = 0.0;
 	// Viscosity for rate-dependent damage
 	double eta = 0.0;
+	// Kc parameter for triaxial compression (default suggested by Lubliner et al.)
+	double Kc = 2.0 / 3.0;
 	// True = use the IMPL-EX algorithm
 	bool implex = false;
 	// True = keep IMPL-EX error under control

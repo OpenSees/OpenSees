@@ -380,6 +380,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 	double implex_time_redution_limit = 0.01;
 	double implex_alpha = 1.0;
 	double eta = 0.0;
+	double Kc = 2.0 / 3.0; // default suggested by Lubliner et al.
 	bool tangent = false;
 	bool auto_regularization = false;
 	double lch_ref = 1.0;
@@ -467,6 +468,14 @@ void *OPS_ASDConcrete3DMaterial(void)
 		if (strcmp(value, "-rho") == 0) {
 			if (!lam_optional_double("rho", rho))
 				return nullptr;
+		}
+		else if (strcmp(value, "-Kc") == 0) {
+			if (!lam_optional_double("Kc", Kc))
+				return nullptr;
+			if (Kc < 2.0 / 3.0 || Kc > 1.0) {
+				opserr << "nDMaterial ASDConcrete3D Error: 'Kc' (" << Kc << ") double be >= 2/3 and <= 1.\n";
+				return nullptr;
+			}
 		}
 		else if (strcmp(value, "-implex") == 0) {
 			implex = true;
@@ -595,7 +604,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 	// create the material
 	NDMaterial* instance = new ASDConcrete3DMaterial(
 		tag, 
-		E, v, rho, eta, 
+		E, v, rho, eta, Kc,
 		implex, implex_control, implex_error_tolerance, implex_time_redution_limit, implex_alpha,
 		tangent, auto_regularization, lch_ref,
 		HT, HC,
@@ -1337,6 +1346,7 @@ ASDConcrete3DMaterial::ASDConcrete3DMaterial(
 	double _v,
 	double _rho,
 	double _eta,
+	double _Kc,
 	bool _implex,
 	bool _implex_control,
 	double _implex_error_tolerance,
@@ -1355,6 +1365,7 @@ ASDConcrete3DMaterial::ASDConcrete3DMaterial(
 	, v(_v)
 	, rho(_rho)
 	, eta(_eta)
+	, Kc(_Kc)
 	, implex(_implex)
 	, implex_control(_implex_control)
 	, implex_error_tolerance(_implex_error_tolerance)
@@ -1664,7 +1675,7 @@ int ASDConcrete3DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	int counter;
 
 	// variable DBL data size
-	int nv_dbl = 128 +
+	int nv_dbl = 129 +
 		ht.serializationDataSize() +
 		hc.serializationDataSize() +
 		svt.serializationDataSize() +
@@ -1700,6 +1711,7 @@ int ASDConcrete3DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = v;
 	ddata(counter++) = rho;
 	ddata(counter++) = eta;
+	ddata(counter++) = Kc;
 	ddata(counter++) = implex_error_tolerance;
 	ddata(counter++) = implex_time_redution_limit;
 	ddata(counter++) = implex_alpha;
@@ -1781,6 +1793,7 @@ int ASDConcrete3DMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_Obj
 	v = ddata(counter++);
 	rho = ddata(counter++);
 	eta = ddata(counter++);
+	Kc = ddata(counter++);
 	implex_error_tolerance = ddata(counter++);
 	implex_time_redution_limit = ddata(counter++);
 	implex_alpha = ddata(counter++);
@@ -2213,7 +2226,6 @@ int ASDConcrete3DMaterial::compute(bool do_implex, bool do_tangent)
 double ASDConcrete3DMaterial::lublinerCriterion(double s1, double s2, double s3, double ft, double fc, double k1, double scale) const
 {
 	double fb = 1.16 * fc;
-	double Kc = 2.0 / 3.0;
 	double gamma = 3.0 * (1.0 - Kc) / (2.0 * Kc - 1.0);
 	double alpha = (fb - fc) / (2.0 * fb - fc);
 	double I1 = s1 + s2 + s3;
