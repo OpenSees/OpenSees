@@ -181,8 +181,6 @@ double ReeseStiffClayAboveWS::getStress(double strain) {
   return 0.0;
 }
 
-double ReeseStiffClayAboveWS::getEnergy(double strain) { return 0.0; }
-
 double ReeseStiffClayAboveWS::getYieldStrain(void) { return 0.0; }
 
 HystereticBackbone *ReeseStiffClayAboveWS::getCopy(void) {

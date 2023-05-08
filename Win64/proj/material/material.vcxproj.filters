@@ -1484,6 +1484,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscoelasticGap.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GMG_CyclicReinforcedConcrete.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
