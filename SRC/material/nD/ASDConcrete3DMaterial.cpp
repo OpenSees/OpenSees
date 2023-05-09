@@ -359,7 +359,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 			"nDMaterial ASDConcrete3D Error: Few arguments (< 3).\n"
 			"nDMaterial ASDConcrete3D $tag $E $v "
 			"-Te $Te -Ts $Ts <-Td $Td> -Ce $Ce -Cs $Cs <-Cd $Cd> "
-			"<-rho $rho> "
+			"<-rho $rho> <-Kc $Kc>"
 			"<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
 			"<-crackPlanes $nct $ncc $smoothingAngle>"
 			"<-eta $eta> <-tangent> <-autoRegularization $lch_ref>\n";
