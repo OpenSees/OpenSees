@@ -3,6 +3,7 @@
 #include <Parameter.h>
 #include <Response.h>
 #include <DummyStream.h>
+#include <math.h>
 
 #include <classTags.h>
 #include <elementAPI.h>
@@ -215,10 +216,9 @@ CreepSection::updateParameter(int paramID, Information &info)
     char buffer[80];
     
     numFibers = nFibers;
-    double *currentStrain = new double[numFibers];
 
     for (int i = 0; i < numFibers; i++) {
-      currentStrain[i] = 0.0;
+      double currentStrain = 0.0;
 	
       sprintf(buffer,"%d",i);
       argvResp[1] = buffer;
@@ -231,7 +231,7 @@ CreepSection::updateParameter(int paramID, Information &info)
       theResponse->getResponse();
       Information &secinfo = theResponse->getInformation();
       double eps0 = secinfo.theDouble;
-      currentStrain[i] = eps0;
+      currentStrain = eps0;
       //opserr << ' ' << i << ' ' << eps0 << endln;
       
       delete theResponse;
@@ -247,10 +247,9 @@ CreepSection::updateParameter(int paramID, Information &info)
 	
       // Update the initial strain parameter
       //if (eps0 < 0.0)
-      param.update(-creepFactor*currentStrain[i] + shrinkage);
+      param.update(-creepFactor*currentStrain + shrinkage);
     }
 
-    delete [] currentStrain;
     delete theResponse;
     //  param.update(creepFactor);
   }  
@@ -274,15 +273,10 @@ CreepSection::updateParameter(int paramID, Information &info)
     argvParam[0] = "fiberIndex";
     argvParam[2] = "epsInit";
     
-    const char *argvResp[4];
-    argvResp[0] = "fiberIndex";
-    argvResp[2] = "material";
-    argvResp[3] = "strain";
     char buffer[80];
     for (int i = 0; i < numFibers; i++) {
       sprintf(buffer,"%d",i);
       argvParam[1] = buffer;
-      argvResp[1] = buffer;
       
       // Get the initial strain parameter
       Parameter param;
