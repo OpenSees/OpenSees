@@ -45,15 +45,6 @@
 #include <stdlib.h>
 #include <stdio.h> 
 
-// number of nodes per element
-#define SL_NUM_NODE 8
-// d.o.f. per node
-#define SL_NUM_NDF  3
-// degrees of freedom per element
-#define SL_NUM_DOF  24
-// displacement degrees of freedom per element
-#define SL_NUM_DDOF  24
-
 
 double Brick8FiberOverlay::pts[2][3];
 double Brick8FiberOverlay::wts[2];

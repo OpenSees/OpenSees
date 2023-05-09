@@ -85,7 +85,17 @@ class Quad4FiberOverlay : public Element
 	protected:
 
 	private:
-		// private member functions - only available to objects of the class              
+		// private member functions - only available to objects of the class  
+				enum {
+			// number of nodes per element
+			SL_NUM_NODE = 4,
+			// d.o.f. per node
+			SL_NUM_NDF  =  2,
+			// degrees of freedom per element
+			SL_NUM_DOF  =  8,
+			// displacement degrees of freedom per element
+			SL_NUM_DDOF =  8,
+		};              
 		
 		double computeCurrentStrain(void) ;
 		int Dual();
