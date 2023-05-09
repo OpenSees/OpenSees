@@ -193,13 +193,36 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
 						 SectionForceDeformation &section,
 						 CrdTransf &coordTransf, double r, int cm, int gnl)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam3d),
-    connectedExternalNodes(2), theCoordTransf(0), 
+    connectedExternalNodes(2), theCoordTransf(0),
+      E(1.0), G(1.0), A(0.0), Jx(0.0),
+    Iy(0.0), Iz(0.0), Avy(0.0), Avz(0.0),      
     rho(r), cMass(cm), nlGeo(gnl), phiY(0.0),
     phiZ(0.0), L(0.0), ul(12), ql(12), ql0(12), kl(12,12), klgeo(12,12),
     Tgl(12,12), Ki(12,12), M(12,12), theLoad(12)
 {
-  E = 1.0;
-  G = 1.0;
+  // Try to find E in the section
+  const char *argv[1] = {"E"};
+  int argc = 1;
+  Parameter param;
+  int ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    E = param.getValue();
+
+  if (E == 0.0) {
+    opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d - E from section is zero, using E = 1" << endln;
+    E = 1.0;
+  }
+
+  // Try to find G in the section
+  argv[0] = {"G"};
+  ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    G = param.getValue();
+
+  if (G == 0.0) {
+    opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d - G from section is zero, using G = 1" << endln;
+    G = 1.0;
+  }  
 
   const Matrix &sectTangent = section.getInitialTangent();
   const ID &sectCode = section.getType();
@@ -207,52 +230,57 @@ ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d(int tag, int Nd1, int Nd2,
     int code = sectCode(i);
     switch(code) {
     case SECTION_RESPONSE_P:
-      A = sectTangent(i,i);
+      A = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MZ:
-      Iz = sectTangent(i,i);
+      Iz = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MY:
-      Iy = sectTangent(i,i);
+      Iy = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_VY:
-      Avy = sectTangent(i,i);
+      Avy = sectTangent(i,i)/G;
       break;
     case SECTION_RESPONSE_VZ:
-      Avz = sectTangent(i,i);
+      Avz = sectTangent(i,i)/G;
       break;      
     case SECTION_RESPONSE_T:
-      Jx = sectTangent(i,i);
+      Jx = sectTangent(i,i)/G;
       break;
     default:
       break;
     }
   }
-  
-    // ensure the connectedExternalNode ID is of correct size & set values
-    if (connectedExternalNodes.Size() != 2)  {
-        opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - element: "
-            << this->getTag() << " - failed to create an ID of size 2.\n";
-        exit(-1);
-    }
-    
-    connectedExternalNodes(0) = Nd1;
-    connectedExternalNodes(1) = Nd2;
-    
-    // set node pointers to NULL
-    for (int i=0; i<2; i++)
-        theNodes[i] = 0;
-    
-    // get a copy of the coordinate transformation
-    theCoordTransf = coordTransf.getCopy3d();
-    if (!theCoordTransf)  {
-        opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - "
-            << "failed to get copy of coordinate transformation.\n";
-        exit(-1);
-    }
 
-    // zero fixed end forces vector
-    ql0.Zero();
+  if (Avy == 0.0)
+    Avy = A;
+  if (Avz == 0.0)
+    Avz = A;
+  
+  // ensure the connectedExternalNode ID is of correct size & set values
+  if (connectedExternalNodes.Size() != 2)  {
+    opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - element: "
+	   << this->getTag() << " - failed to create an ID of size 2.\n";
+    exit(-1);
+  }
+  
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+  
+  // set node pointers to NULL
+  for (int i=0; i<2; i++)
+    theNodes[i] = 0;
+  
+  // get a copy of the coordinate transformation
+  theCoordTransf = coordTransf.getCopy3d();
+  if (!theCoordTransf)  {
+    opserr << "ElasticTimoshenkoBeam3d::ElasticTimoshenkoBeam3d() - "
+	   << "failed to get copy of coordinate transformation.\n";
+    exit(-1);
+  }
+  
+  // zero fixed end forces vector
+  ql0.Zero();
 }
 
 

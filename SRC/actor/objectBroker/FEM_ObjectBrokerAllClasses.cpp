@@ -110,6 +110,7 @@
 
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
+#include <GMG_CyclicReinforcedConcrete.h>      // Rasool Ghorbani
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -152,6 +153,7 @@
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
 #include "SectionAggregator.h"
+#include "ParallelSection.h"
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
@@ -1547,6 +1549,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_DuctileFracture:
 		return new DuctileFracture();
 
+	case MAT_TAG_GMG_CyclicReinforcedConcrete:
+		return new GMG_CyclicReinforcedConcrete();
+
 
 	default:
 
@@ -1593,6 +1598,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_Aggregator:
 	     return new SectionAggregator();
+
+	case SEC_TAG_Parallel:
+	     return new ParallelSection();	     
 
 	     //case SEC_TAG_Fiber:
 	     //return new FiberSection();

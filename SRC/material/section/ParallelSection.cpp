@@ -406,6 +406,43 @@ ParallelSection::revertToStart(void)
 int
 ParallelSection::sendSelf(int cTag, Channel &theChannel)
 {
+  static ID data(3); // 3 so no conflict if only one section
+  data(0) = this->getDbTag();
+  data(1) = numSections;
+
+  int dbTag = this->getDbTag();
+  
+  if (theChannel.sendID(dbTag, cTag, data) < 0) {
+    opserr << "ParallelSection::sendSelf() - failed to send data" << endln;
+    return -1;
+  }  
+
+  // now create an ID containing the class tags and dbTags of all
+  // the MaterialModel objects in this ParallelMaterial
+  // then send each of the MaterialModel objects
+  ID classTags(numSections*2);
+  for (int i=0; i<numSections; i++) {
+    classTags(i) = theSections[i]->getClassTag();
+    int matDbTag = theSections[i]->getDbTag();
+    if (matDbTag == 0) {
+      matDbTag  = theChannel.getDbTag();
+      if (matDbTag != 0)
+	theSections[i]->setDbTag(matDbTag);
+    }
+    classTags(i+numSections) = matDbTag;
+  }
+  
+  if (theChannel.sendID(dbTag, cTag, classTags) < 0) {
+    opserr << "ParallelSection::sendSelf() - failed to send classTags" << endln;
+    return -3;
+  }
+  
+  for (int j=0; j<numSections; j++)
+    if (theSections[j]->sendSelf(cTag, theChannel) < 0) {
+      opserr << "ParallelSection::sendSelf() - failed to send section" << endln;
+      return -4;
+    }
+  
   return 0;
 }
 
@@ -413,7 +450,68 @@ ParallelSection::sendSelf(int cTag, Channel &theChannel)
 int
 ParallelSection::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  return 0;
+  static ID data(3);
+  int dbTag = this->getDbTag();
+  
+  if (theChannel.recvID(dbTag, cTag, data) < 0) {
+    opserr << "ParallelSection::recvSelf() - failed to receive data" << endln;
+    return -1;
+  }
+  
+  this->setTag(int(data(0)));
+  int numSectionsSent = int(data(1));
+  if (numSections != numSectionsSent) { 
+    numSections = numSectionsSent;
+    if (theSections != 0) {
+      for (int i=0; i<numSections; i++)
+	delete theSections[i];
+      
+      delete [] theSections;
+    }
+    
+    theSections = new SectionForceDeformation *[numSections];      
+    if (theSections == 0) {
+      opserr << "FATAL ParallelSection::recvSelf() - ran out of memory";
+      opserr << " for array of size: " << numSections << endln;
+      return -2;
+    }
+    for (int i=0; i<numSections; i++)
+      theSections[i] = 0;
+  }
+  
+  // create and receive an ID for the classTags and dbTags of the local 
+  // MaterialModel objects
+  ID classTags(numSections*2);
+  if (theChannel.recvID(dbTag, cTag, classTags) < 0) {
+    opserr << "ParallelSection::recvSelf() - failed to receive classTags" << endln;
+    return -4;
+  }
+  
+  // now for each of the MaterialModel objects, create a new object
+  // and invoke recvSelf() on it
+  for (int i=0; i<numSections; i++) {
+    int matClassTag = classTags(i);
+    if (theSections[i] == 0 || theSections[i]->getClassTag() != matClassTag) {
+      if (theSections[i] == 0)
+	delete theSections[i];
+      SectionForceDeformation *theSectionModel = 
+	theBroker.getNewSection(matClassTag);
+      if (theSectionModel != 0) {
+	theSections[i] = theSectionModel;
+	theSectionModel->setDbTag(classTags(i+numSections));
+      }
+      else {
+	opserr << "FATAL ParallelSection::recvSelf() ";
+	opserr << " could not get a SectionForceDeformation" << endln;
+	return -5;
+      }    	    
+    }
+    if (theSections[i]->recvSelf(cTag, theChannel, theBroker) < 0) {
+      opserr << "ParallelSection::recvSelf - failed to receive section" << endln;
+      return -6;
+    }
+  }
+  return 0;  
 }
 
 void
