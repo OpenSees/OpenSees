@@ -122,11 +122,13 @@ MaterialBackbone::getStress (double strain)
 double
 MaterialBackbone::getEnergy (double strain)
 {
-  const double incr = 1.0e-6;
+  const int N = 100;
+
+  double incr = strain/N;
   double energy = 0.0;
   
   // Mid-point integration
-  for (double x = incr/2; x < strain; x += incr) {
+  for (double x = 0.5*incr; x < strain; x += incr) {
     theMaterial->setTrialStrain(sign*x);
     energy += sign*theMaterial->getStress();
   }

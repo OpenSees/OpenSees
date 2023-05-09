@@ -196,12 +196,34 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
 						 CrdTransf &coordTransf,
 						 double r, int cm, int gnl)
     : Element(tag, ELE_TAG_ElasticTimoshenkoBeam2d),
-    connectedExternalNodes(2), theCoordTransf(0), 
+    connectedExternalNodes(2), theCoordTransf(0),
+      E(1.0), G(1.0), A(0.0), Iz(0.0), Avy(0.0),
     rho(r), cMass(cm), nlGeo(gnl), phi(0.0), L(0.0), ul(6), ql(6),
     ql0(6), kl(6,6), klgeo(6,6), Tgl(6,6), Ki(6,6), M(6,6), theLoad(6)
 {
-  E = 1.0;
-  G = 1.0;
+  // Try to find E in the section
+  const char *argv[1] = {"E"};
+  int argc = 1;
+  Parameter param;
+  int ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    E = param.getValue();
+
+  if (E == 0.0) {
+    opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d - E from section is zero, using E = 1" << endln;
+    E = 1.0;
+  }
+
+  // Try to find G in the section
+  argv[0] = {"G"};
+  ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    G = param.getValue();
+
+  if (G == 0.0) {
+    opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d - G from section is zero, using G = 1" << endln;
+    G = 1.0;
+  }  
 
   const Matrix &sectTangent = section.getInitialTangent();
   const ID &sectCode = section.getType();
@@ -209,43 +231,46 @@ ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d(int tag, int Nd1, int Nd2,
     int code = sectCode(i);
     switch(code) {
     case SECTION_RESPONSE_P:
-      A = sectTangent(i,i);
+      A = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MZ:
-      Iz = sectTangent(i,i);
+      Iz = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_VY:
-      Avy = sectTangent(i,i);
+      Avy = sectTangent(i,i)/G;
       break;      
     default:
       break;
     }
   }
-  
-    // ensure the connectedExternalNode ID is of correct size & set values
-    if (connectedExternalNodes.Size() != 2)  {
-        opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d() - element: "
-            << this->getTag() << " - failed to create an ID of size 2.\n";
-        exit(-1);
-    }
-    
-    connectedExternalNodes(0) = Nd1;
-    connectedExternalNodes(1) = Nd2;
-    
-    // set node pointers to NULL
-    for (int i=0; i<2; i++)
-        theNodes[i] = 0;
-    
-    // get a copy of the coordinate transformation
-    theCoordTransf = coordTransf.getCopy2d();
-    if (!theCoordTransf)  {
-        opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d() - "
-            << "failed to get copy of coordinate transformation.\n";
-        exit(-1);
-    }
 
-    // zero fixed end forces vector
-    ql0.Zero();
+  if (Avy == 0.0)
+    Avy = A;
+    
+  // ensure the connectedExternalNode ID is of correct size & set values
+  if (connectedExternalNodes.Size() != 2)  {
+    opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d() - element: "
+	   << this->getTag() << " - failed to create an ID of size 2.\n";
+    exit(-1);
+  }
+  
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+  
+  // set node pointers to NULL
+  for (int i=0; i<2; i++)
+    theNodes[i] = 0;
+  
+  // get a copy of the coordinate transformation
+  theCoordTransf = coordTransf.getCopy2d();
+  if (!theCoordTransf)  {
+    opserr << "ElasticTimoshenkoBeam2d::ElasticTimoshenkoBeam2d() - "
+	   << "failed to get copy of coordinate transformation.\n";
+    exit(-1);
+  }
+  
+  // zero fixed end forces vector
+  ql0.Zero();
 }
 
 

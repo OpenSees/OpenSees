@@ -325,6 +325,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GMG_CyclicReinforcedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\GNGMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp" />

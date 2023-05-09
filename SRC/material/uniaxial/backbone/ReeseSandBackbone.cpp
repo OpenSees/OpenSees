@@ -144,12 +144,6 @@ ReeseSandBackbone::getStress (double strain)
 }
 
 double
-ReeseSandBackbone::getEnergy (double strain)
-{
-  return 0.0;
-}
-
-double
 ReeseSandBackbone::getYieldStrain(void)
 {
   return 0.0;

@@ -132,12 +132,6 @@ ReeseSoftClayBackbone::getStress (double strain)
 }
 
 double
-ReeseSoftClayBackbone::getEnergy (double strain)
-{
-  return 0.0;
-}
-
-double
 ReeseSoftClayBackbone::getYieldStrain(void)
 {
   return 0.0;
