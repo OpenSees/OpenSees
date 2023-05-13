@@ -44,8 +44,7 @@ class HystereticSMMaterial : public UniaxialMaterial
  public:
 
 	HystereticSMMaterial(int tag, const Vector& posEnv, const Vector& negEnv, const Vector& pinchArray, const Vector& damageArray, double beta ,
-		 const Vector& forceLimitStates, const Vector& defoLimitStates , double degEnvFactor = 1, int YXorder = 1, int printInput = 0);
-
+		const Vector& degEnvArray, const Vector& forceLimitStates, const Vector& defoLimitStates , int YXorder = 1, int printInput = 0);
 	//HystereticSMMaterial(int tag,
 	//	double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
 	//	double mom4p, double rot4p, double mom5p, double rot5p, double mom6p, double rot6p, double mom7p, double rot7p,
@@ -102,6 +101,10 @@ class HystereticSMMaterial : public UniaxialMaterial
   // Damage parameters
   double damfc1;		// Deformation
   double damfc2;		// Energy
+
+  // Degrading envelope parameters
+  double degEnvp;
+  double degEnvn;
   
   
   // Trial history variables
@@ -181,7 +184,9 @@ class HystereticSMMaterial : public UniaxialMaterial
   Vector forceLimitStates;
   int nDefoLimitStates;
   int nForceLimitStates;
-  double degEnvFactor;
+  //double degEnvFactor;
+  Vector degEnvArray;
+  int ndegEnvArray;
 
   void setEnvelope(void);
   
