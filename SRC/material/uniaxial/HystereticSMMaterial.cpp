@@ -919,7 +919,7 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
                     mom5p = (1 - fabs(degEnvp) * damfc) * mom5p;
                     mom6p = (1 - fabs(degEnvp) * damfc) * mom6p;
                     mom7p = (1 - fabs(degEnvp) * damfc) * mom7p;
-                    if (degEnvp < 0) {
+                    if (degEnvp > 0) {
                         rot2p = (1 - fabs(degEnvp) * damfc) * rot2p;
                         rot3p = (1 - fabs(degEnvp) * damfc) * rot3p;
                         rot4p = (1 - fabs(degEnvp) * damfc) * rot4p;
@@ -1025,7 +1025,7 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
                     mom5n = (1 - fabs(degEnvn) * damfc) * mom5n;
                     mom6n = (1 - fabs(degEnvn) * damfc) * mom6n;
                     mom7n = (1 - fabs(degEnvn) * damfc) * mom7n;
-                    if (degEnvn < 0) {
+                    if (degEnvn > 0) {
                         rot2n = (1 - fabs(degEnvn) * damfc) * rot2n;
                         rot3n = (1 - fabs(degEnvn) * damfc) * rot3n;
                         rot4n = (1 - fabs(degEnvn) * damfc) * rot4n;
