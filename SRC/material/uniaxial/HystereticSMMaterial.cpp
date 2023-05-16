@@ -1010,7 +1010,7 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
     kp = (kp < 1.0) ? 1.0 : 1.0 / kp;
 
     if (TloadIndicator == 1) {
-        TloadIndicator = 2;
+        TloadIndicator   = 2;
         if (Cstress >= 0.0) {
             TrotPu = Cstrain - Cstress / (Eup * kp);
             double energy = CenergyD - 0.5 * Cstress / (Eup * kp) * Cstress;
