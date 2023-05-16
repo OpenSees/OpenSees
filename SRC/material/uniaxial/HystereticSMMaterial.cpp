@@ -79,6 +79,8 @@ OPS_HystereticSMMaterial(void)
     int npinchArray = 0;
     std::vector<double> damageArray;
     int ndamageArray = 0;
+    std::vector<double> degEnvArray;
+    int ndegEnvArray = 0;
     std::vector<double> defoLimitStates;
     int nDefoLimitStates = 0;
     std::vector<double> forceLimitStates;
@@ -90,7 +92,7 @@ OPS_HystereticSMMaterial(void)
     
     int loc = 2;
 
-    double degEnvFactor = 0;
+    //double degEnvFactor = 0;
     double beta = 0;
 
 
@@ -168,7 +170,7 @@ OPS_HystereticSMMaterial(void)
                 numOptionalArgs++;
             }
         }
-        if (theType == "-defoLimitStates" || theType == "defoLimitStates") {
+        if (theType == "-defoLimitStates" || theType == "defoLimitStates" || theType == "-defoLimitState" || theType == "defoLimitState") {
             numOptionalArgs++;
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 double val;
@@ -182,7 +184,7 @@ OPS_HystereticSMMaterial(void)
                 numOptionalArgs++;
             }
         }
-        if (theType == "-forceLimitStates" || theType == "forceLimitStates") {
+        if (theType == "-forceLimitStates" || theType == "forceLimitStates" || theType == "-forceLimitState" || theType == "forceLimitState") {
             numOptionalArgs++;
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 double val;
@@ -207,17 +209,33 @@ OPS_HystereticSMMaterial(void)
                 numOptionalArgs++;
             }
         }
-        if (theType == "-degEnvFactor" || theType == "degEnvFactor") {
+        //if (theType == "-degEnvFactor" || theType == "degEnvFactor") {
+        //    numOptionalArgs++;
+        //    if (OPS_GetNumRemainingInputArgs() > 0) {
+        //        if (OPS_GetDoubleInput(&numData, &degEnvFactor) < 0)
+        //        {
+        //            opserr << "WARNING need to input a value of degEnvFactor after its flag for uniaxialMaterial HystereticSM" << endln;
+        //            return 0;
+        //        }
+        //        numOptionalArgs++;
+        //    }
+        //}
+        if (theType == "-degEnv" || theType == "degEnv") {
             numOptionalArgs++;
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                if (OPS_GetDoubleInput(&numData, &degEnvFactor) < 0)
-                {
-                    opserr << "WARNING need to input a value of degEnvFactor after its flag for uniaxialMaterial HystereticSM" << endln;
-                    return 0;
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                double val;
+                if (OPS_GetDoubleInput(&numdata, &val) < 0) {
+                    OPS_ResetCurrentInputArg(-1);
+                    break;
                 }
+                degEnvArray.push_back(val);
+                //loc++;
+                ndegEnvArray++;
                 numOptionalArgs++;
             }
         }
+
+
         if (theType == "-XYorder" || theType == "XYorder" || theType == "-xyOrder" || theType == "xyOrder") {
             numOptionalArgs++;
             YXorder = -1;
@@ -291,7 +309,7 @@ OPS_HystereticSMMaterial(void)
         opserr << "Incorrect Input. Want: uniaxialMaterial HystereticSM tag? -posEnv mom1p? rot1p? mom2p? rot2p? <mom3p? rot3p? mom4p? rot4p? mom5p? rot5p? mom6p? rot6p? mom7p? rot7p?> "
             << "\n-negEnv mom1n? rot1n? mom2n? rot2n? <mom3n? rot3n? mom4n? rot4n? mom5n? rot5n? mom6n? rot6n? mom7n? rot7n?> "
             << "\n<-pinch pinchX? pinchY?> <-damage damfc1? damfc2?> <-beta beta?> "
-            << "\n<-degEnvFactor degEnvFactor?> "
+            << "\n<-degEnv degEnvp <degEnvn?>> "
             << "\n<-defoLimitStates lsD1? <lsD2?>...> "
             << "\n<-forceLimitStates lsF1? <lsF2?>...> ";
         return 0;
@@ -306,6 +324,7 @@ OPS_HystereticSMMaterial(void)
     Vector thenegEnv(&negEnv[0], (int)negEnv.size());
     Vector thepinchArray(&pinchArray[0], (int)pinchArray.size());
     Vector thedamageArray(&damageArray[0], (int)damageArray.size());
+    Vector thedegEnvArray(&degEnvArray[0], (int)degEnvArray.size());
     Vector theLSdefo(&defoLimitStates[0], (int)defoLimitStates.size());
     Vector theLSforce(&forceLimitStates[0], (int)forceLimitStates.size());
 
@@ -331,6 +350,7 @@ OPS_HystereticSMMaterial(void)
         opserr << "pinch:  " << thepinchArray << endln;
         opserr << "damage:  " << thedamageArray << endln;
         opserr << "beta:  " << beta << endln;
+        opserr << "degEnv:  " << thedegEnvArray << endln;
         opserr << "defoLimitStates:  " << theLSdefo << endln;
         opserr << "forceLimitStates: " << theLSforce << endln;
         if (YXorder < 0) {
@@ -339,7 +359,7 @@ OPS_HystereticSMMaterial(void)
 
     }
 
-    theMaterial = new HystereticSMMaterial(iData[0], theposEnv, thenegEnv, thepinchArray, thedamageArray, beta, theLSforce, theLSdefo, degEnvFactor, YXorder, printInput);
+    theMaterial = new HystereticSMMaterial(iData[0], theposEnv, thenegEnv, thepinchArray, thedamageArray, beta, thedegEnvArray, theLSforce, theLSdefo, YXorder, printInput);
 
 
     if (theMaterial == 0) {
@@ -353,11 +373,12 @@ OPS_HystereticSMMaterial(void)
 
 
 HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, const Vector& negEnvIN, const Vector& pinchArrayIN, const Vector& damageArrayIN, double betaIN,
-    const Vector& forceLimitStatesIN, const Vector& defoLimitStatesIN, double degEnvFactorIN, int YXorderIN, int printInputIN) :
+    const Vector& degEnvIN, const Vector& forceLimitStatesIN, const Vector& defoLimitStatesIN,  int YXorderIN, int printInputIN) :
     UniaxialMaterial(tag, MAT_TAG_HystereticSM),
     posEnv(posEnvIN), negEnv(negEnvIN), pinchArray(pinchArrayIN), damageArray(damageArrayIN), beta(betaIN),
+    degEnvArray(degEnvIN), 
     forceLimitStates(forceLimitStatesIN), defoLimitStates(defoLimitStatesIN),
-    degEnvFactor(degEnvFactorIN),YXorder(YXorderIN),printInput(printInputIN)
+    YXorder(YXorderIN),printInput(printInputIN)
 {
     nDefoLimitStates = defoLimitStates.Size();
     nForceLimitStates = forceLimitStates.Size();
@@ -367,6 +388,7 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
 
     npinchArray = pinchArray.Size();
     ndamageArray = damageArray.Size();
+    ndegEnvArray = degEnvArray.Size();
 
     bool error = false;
     double temp = 0;
@@ -399,14 +421,18 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
         damfc2 = damageArray[1];
     }
 
-    //if (printInput == 1) {
-    //    opserr << "pinchX: " << pinchX;
-    //    opserr << "pinchY: " << pinchY;
-    //    opserr << "damfc1: " << damfc1;
-    //    opserr << "damfc2: " << damfc2;
-    //    opserr << "beta: " << beta;
-    //}
-
+    if (ndegEnvArray == 1) {
+        degEnvp = degEnvArray[0];
+        degEnvn = degEnvArray[0];
+    }
+    else if (ndegEnvArray == 0) {
+        degEnvp = 0;
+        degEnvn = 0;
+    }
+    else {
+        degEnvp = degEnvArray[0];
+        degEnvn = degEnvArray[1];
+    }
 
 
     // Positive backbone parameters
@@ -877,18 +903,33 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
     kn = (kn < 1.0) ? 1.0 : 1.0 / kn;
     double kp = pow(CrotMax / rot1p, beta);
     kp = (kp < 1.0) ? 1.0 : 1.0 / kp;
-    double damfc = 0.0; // 220905sm moved this here
     if (TloadIndicator == 2) {
         TloadIndicator = 1;
         if (Cstress <= 0.0) {
             TrotNu = Cstrain - Cstress / (Eun * kn);
             double energy = CenergyD - 0.5 * Cstress / (Eun * kn) * Cstress;
-            // double damfc = 0.0;
+            double damfc = 0.0;
             if (CrotMin < rot1n) {
                 damfc = damfc2 * energy / energyA;
                 damfc += damfc1 * (CrotMin - rot1n) / rot1n;
+                if (degEnvp != 0) {
+                    mom2p = (1 - fabs(degEnvp) * damfc) * mom2p;
+                    mom3p = (1 - fabs(degEnvp) * damfc) * mom3p;
+                    mom4p = (1 - fabs(degEnvp) * damfc) * mom4p;
+                    mom5p = (1 - fabs(degEnvp) * damfc) * mom5p;
+                    mom6p = (1 - fabs(degEnvp) * damfc) * mom6p;
+                    mom7p = (1 - fabs(degEnvp) * damfc) * mom7p;
+                    if (degEnvp > 0) {
+                        rot2p = (1 - fabs(degEnvp) * damfc) * rot2p;
+                        rot3p = (1 - fabs(degEnvp) * damfc) * rot3p;
+                        rot4p = (1 - fabs(degEnvp) * damfc) * rot4p;
+                        rot5p = (1 - fabs(degEnvp) * damfc) * rot5p;
+                        rot6p = (1 - fabs(degEnvp) * damfc) * rot6p;
+                        rot7p = (1 - fabs(degEnvp) * damfc) * rot7p;
+                    }
+                    this->setEnvelope();
+                }
             }
-
             TrotMax = CrotMax * (1.0 + damfc);
         }
     }
@@ -900,13 +941,6 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
 
     TrotMax = (TrotMax > rot1p) ? TrotMax : rot1p;
     double maxmom = posEnvlpStress(TrotMax);
-
-    //double maxmom = posEnvlpStress(TrotMax) * (1.0 - damfc * degEnvFactor); // 220905sm added damfc
-    //if (damfc != 0) {
-    //    opserr << "damfc positiveIncrement HystereticSM " << damfc << endln;
-    //    opserr << "(1.0 - damfc* degEnvFactor) positiveIncrement HystereticSM " << (1.0 - damfc * degEnvFactor) << endln;
-    //    opserr << "maxmom positiveIncrement HystereticSM " << maxmom << endln;
-    //}
 
     double rotlim = negEnvlpRotlim(CrotMin);
     double rotrel = (rotlim > TrotNu) ? rotlim : TrotNu;
@@ -964,12 +998,7 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
             Tstress = tmpmo2;
     }
 
-    ////// 220905sm added damfc
-    //double TstressRedux = (1.0 - damfc * degEnvFactor);
-    //if (TstressRedux < 0) {
-    //    TstressRedux = 0;
-    //}
-    //Tstress = Tstress * TstressRedux;
+
 }
 
 void
@@ -980,16 +1009,32 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
     double kp = pow(CrotMax / rot1p, beta);
     kp = (kp < 1.0) ? 1.0 : 1.0 / kp;
 
-    double damfc = 0.0; // 220905sm moved this here
     if (TloadIndicator == 1) {
         TloadIndicator = 2;
         if (Cstress >= 0.0) {
             TrotPu = Cstrain - Cstress / (Eup * kp);
             double energy = CenergyD - 0.5 * Cstress / (Eup * kp) * Cstress;
-            //double damfc = 0.0;
+            double damfc = 0.0;
             if (CrotMax > rot1p) {
                 damfc = damfc2 * energy / energyA;
                 damfc += damfc1 * (CrotMax - rot1p) / rot1p;
+                if (degEnvn != 0) {
+                    mom2n = (1 - fabs(degEnvn) * damfc) * mom2n;
+                    mom3n = (1 - fabs(degEnvn) * damfc) * mom3n;
+                    mom4n = (1 - fabs(degEnvn) * damfc) * mom4n;
+                    mom5n = (1 - fabs(degEnvn) * damfc) * mom5n;
+                    mom6n = (1 - fabs(degEnvn) * damfc) * mom6n;
+                    mom7n = (1 - fabs(degEnvn) * damfc) * mom7n;
+                    if (degEnvn > 0) {
+                        rot2n = (1 - fabs(degEnvn) * damfc) * rot2n;
+                        rot3n = (1 - fabs(degEnvn) * damfc) * rot3n;
+                        rot4n = (1 - fabs(degEnvn) * damfc) * rot4n;
+                        rot5n = (1 - fabs(degEnvn) * damfc) * rot5n;
+                        rot6n = (1 - fabs(degEnvn) * damfc) * rot6n;
+                        rot7n = (1 - fabs(degEnvn) * damfc) * rot7n;
+                    }
+                    this->setEnvelope();
+                }
             }
 
             TrotMin = CrotMin * (1.0 + damfc);
@@ -1005,14 +1050,6 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
 
 
     double minmom = negEnvlpStress(TrotMin);
-
-    //double minmom = negEnvlpStress(TrotMin) * (1.0 - damfc * degEnvFactor); // 220905sm added damfc
-    //if (damfc != 0) {
-    //    opserr << "damfc negativeIncrement HystereticSM " << damfc << endln;
-    //    opserr << "(1.0 - damfc* degEnvFactor) negativeIncrement HystereticSM " << (1.0 - damfc * degEnvFactor) << endln;
-    //    opserr << "minmom negativeIncrement HystereticSM " << minmom << endln;
-    //}
-
     double rotlim = posEnvlpRotlim(CrotMax);
     double rotrel = (rotlim < TrotPu) ? rotlim : TrotPu;
 
@@ -1067,13 +1104,6 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
         else
             Tstress = tmpmo2;
     }
-
-    //    //// 220905sm added damfc
-    //    double TstressRedux = (1.0 - damfc * degEnvFactor);
-    //    if (TstressRedux < 0) {
-    //        TstressRedux = 0;
-    //    }
-    //    Tstress = Tstress * TstressRedux;
 
 }
 
@@ -1132,7 +1162,7 @@ UniaxialMaterial*
 HystereticSMMaterial::getCopy(void)
 {
     HystereticSMMaterial* theCopy = new HystereticSMMaterial(this->getTag(),
-        posEnv, negEnv, pinchArray, damageArray, beta, forceLimitStates, defoLimitStates, degEnvFactor );
+        posEnv, negEnv, pinchArray, damageArray, beta, forceLimitStates, defoLimitStates, degEnvArray );
 
     theCopy->CrotMax = CrotMax;
     theCopy->CrotMin = CrotMin;
