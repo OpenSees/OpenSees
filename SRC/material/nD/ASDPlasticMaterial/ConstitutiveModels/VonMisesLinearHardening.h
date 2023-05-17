@@ -72,10 +72,10 @@ public:
         	iv_storage.set(vmsl);
         	iv_storage.set(bstl);
 
-		    YoungsModulus E(1000);
-		    PoissonsRatio nu(0.25);
-			ScalarLinearHardeningParameter HS(2.0);
-			TensorLinearHardeningParameter HT(1.0);
+		    YoungsModulus E(1);
+		    PoissonsRatio nu(0.);
+			ScalarLinearHardeningParameter HS(0.0);
+			TensorLinearHardeningParameter HT(0.0);
 			
 		    parameters_storage.set(E);
 		    parameters_storage.set(nu);
