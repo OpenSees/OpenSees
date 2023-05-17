@@ -1,3 +1,7 @@
+#ifndef _ASD_UTUPLE_STORAGE
+#define _ASD_UTUPLE_STORAGE
+
+
 #include <iostream>
 #include <tuple>
 /**
@@ -17,8 +21,6 @@
 // struct utuple_index<T, std::tuple<U, Types...>> {
 //     static const std::size_t value = 1 + utuple_index<T, std::tuple<Types...>>::value;
 // };
-
-
 
 
 // utuple indexing helper struct
@@ -95,7 +97,32 @@ call_revert_on_tuple_elements(std::tuple<T...>&) {}
 
 
 
+// For getting parameters types
 
+template <typename Tuple1, typename Tuple2>
+struct tuple_cat_helper;
+
+template <typename... Ts1, typename... Ts2>
+struct tuple_cat_helper<std::tuple<Ts1...>, std::tuple<Ts2...>> {
+    using type = std::tuple<Ts1..., Ts2...>;
+};
+
+template <typename Tuple1, typename Tuple2>
+using tuple_cat_t = typename tuple_cat_helper<Tuple1, Tuple2>::type;
+
+
+// For operating on utuple_storage elements
+
+template <std::size_t I = 0, typename Function, typename... Tp>
+inline typename std::enable_if<I == sizeof...(Tp), void>::type
+apply_to_each_in_tuple(std::tuple<Tp...>&, Function) { }
+
+template <std::size_t I = 0, typename Function, typename... Tp>
+inline typename std::enable_if<I < sizeof...(Tp), void>::type
+apply_to_each_in_tuple(std::tuple<Tp...>& t, Function f) {
+    f(std::get<I>(t));
+    apply_to_each_in_tuple<I + 1, Function, Tp...>(t, f);
+}
 
 
 
@@ -137,6 +164,18 @@ public:
     void print_components() const {
         print_components_impl<0>();
     }
+
+    // New method to concatenate parameters_t tuples.
+    auto concatenate_parameters() const {
+        return concatenate_parameters_impl<0>();
+    }
+
+    //Apply a function to each element of the utuple_storage
+	template<typename Function>
+	void apply(Function f) {
+	    apply_to_each_in_tuple(data, f);
+	}
+
     // The wrapped std::tuple
     tuple_t data;
 private:
@@ -158,7 +197,38 @@ private:
     void print_components_impl() const {
         // Base case, do nothing.
     }
+
+
+    // Helper function to recursively concatenate parameters_t tuples.
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    auto concatenate_parameters_impl() const {
+        using current_type = typename std::tuple_element<I, tuple_t>::type;
+        using parameters_tuple_type = typename current_type::parameters_t;
+        auto current_parameters = std::get<I>(data).template hardening_function_parameters<parameters_tuple_type>();
+        auto remaining_parameters = concatenate_parameters_impl<I + 1>();
+        return tuple_cat_t<parameters_tuple_type, decltype(remaining_parameters)>(std::tuple_cat(current_parameters, remaining_parameters));
+    }
+
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    auto concatenate_parameters_impl() const {
+        return std::tuple<>();
+    }
 };
+
+
+namespace std {
+    template<typename... Ts>
+    class tuple_size<utuple_storage<Ts...>> : public std::tuple_size<std::tuple<Ts...>> {
+    };
+}
+
+
+
+
+
+
+
+
 
 /**
  * utuple_concat:
@@ -221,3 +291,4 @@ struct utuple_concat_unique<std::tuple<Ts...>> {
 template <typename... Ts>
 using utuple_concat_unique_type = typename utuple_concat_unique<Ts...>::type;
 
+#endif //_ASD_UTUPLE_STORAGE

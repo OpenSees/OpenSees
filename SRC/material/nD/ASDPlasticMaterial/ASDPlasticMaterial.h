@@ -54,6 +54,7 @@
 
 // for print p, q, theta
 #include <tuple>
+#include "std_tuple_concat.h"
 
 // for debugging printing
 #include <fstream>
@@ -93,22 +94,29 @@ C++ "Rule of 5"
 
 */
 
+
 // template <typename T>
 // struct ExtractParameterTypes;
 
 // template <template <typename...> class Tuple, typename... Ts>
 // struct ExtractParameterTypes<Tuple<Ts...>> {
-//     using type = std::tuple<typename Ts::parameters_t...>;
+//     using type = std::tuple_cat<typename Ts::parameters_t...>;
 // };
 
-// template <class... IVs>
-// struct ExtractParameterTypes<std::tuple<IVs...>> {
-//     using type = typename parameter_type_list<IVs...>::type;
-// };
+template <typename T>
+struct ExtractNestedParameterTypes;
+
+template <typename... Ts>
+struct ExtractNestedParameterTypes<std::tuple<Ts...>> {
+    using type = std_tuple_concat_Type<typename Ts::parameters_t...>;
+};
+
+template <typename T>
+using ExtractNestedParameterTypes_t = typename ExtractNestedParameterTypes<T>::type;
+
 
 
 using namespace ASDPlasticMaterialGlobals;
-
 
 
 template <
@@ -133,11 +141,13 @@ public:
     using iv_storage_t = utuple_storage<iv_concat_types>;
 
     // Concatenate the model parameters into the storage
-    using parameters_concat_types = utuple_concat_type <
-                                    typename YieldFunctionType::parameters_t,
-                                    typename PlasticFlowType::parameters_t,
-                                    typename ElasticityType::parameters_t >;
-    using parameters_storage_t = utuple_storage<parameters_concat_types>;
+    // using parameters_concat_types = utuple_concat_type <
+    //                                 typename YieldFunctionType::parameters_t,
+    //                                 typename PlasticFlowType::parameters_t,
+    //                                 typename ElasticityType::parameters_t >;
+    // using parameters_storage_t = utuple_storage<parameters_concat_types>;
+    
+
     // Concatenate the model parameters into the storage
     // using extracted_parameters_t = typename ExtractParameterTypes<iv_concat_types>::type;
     // using parameters_concat_types = utuple_concat_type <
@@ -146,6 +156,19 @@ public:
     //                                 typename ElasticityType::parameters_t,
     //                                 extracted_parameters_t>;
     // using parameters_storage_t = utuple_storage<parameters_concat_types>;
+    using extracted_parameters_t = utuple_concat_unique_type <
+        ExtractNestedParameterTypes_t<typename YieldFunctionType::internal_variables_t>,
+        ExtractNestedParameterTypes_t<typename PlasticFlowType::internal_variables_t>
+    >;
+
+    using parameters_concat_types = utuple_concat_type <
+        typename YieldFunctionType::parameters_t,
+        typename PlasticFlowType::parameters_t,
+        typename ElasticityType::parameters_t,
+        extracted_parameters_t
+    >;
+    using parameters_storage_t = utuple_storage<parameters_concat_types>;
+
 
 //==================================================================================================
 //  Void constructor
@@ -849,42 +872,51 @@ private:
             const VoigtVector& n = yf.df_dsigma_ij(intersection_stress, iv_storage, parameters_storage);
             const VoigtVector& m = pf(depsilon_elpl, intersection_stress, iv_storage, parameters_storage);
 
-            // double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  intersection_stress, iv_storage, parameters_storage);
-            // double den = n.transpose() * Eelastic * m - xi_star_h_star;
+            double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  intersection_stress, iv_storage, parameters_storage);
+            double den = n.transpose() * Eelastic * m - xi_star_h_star;
 
-            // //Compute the plastic multiplier
-            // // Yuan and Boris 10Sep2016, change from "==0"
-            // if (abs(den) < MACHINE_EPSILON)
-            // {
-            //     cout << "CEP - den = 0\n";
-            //     cout << "yf_val_start = " << yf_val_start << endl;
-            //     cout << "yf_val_end = " << yf_val_end << endl;
-            //     printTensor("m", m);
-            //     printTensor("n", n);
-            //     cout << "xi_star_h_star = " << xi_star_h_star << endl;
-            //     cout << "den = " << den << endl;
-            //     printTensor("depsilon_elpl", depsilon_elpl);
-            //     return -1;
-            // }
-            // double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
-            // dLambda /= den;
+            //Compute the plastic multiplier
+            // Yuan and Boris 10Sep2016, change from "==0"
+            if (abs(den) < MACHINE_EPSILON)
+            {
+                cout << "CEP - den = 0\n";
+                cout << "yf_val_start = " << yf_val_start << endl;
+                cout << "yf_val_end = " << yf_val_end << endl;
+                printTensor("m", m);
+                printTensor("n", n);
+                cout << "xi_star_h_star = " << xi_star_h_star << endl;
+                cout << "den = " << den << endl;
+                printTensor("depsilon_elpl", depsilon_elpl);
+                return -1;
+            }
+            double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
+            dLambda /= den;
 
-            // // if (dLambda <= 0)
-            // // {
-            // //     cout << "CEP - dLambda = " << dLambda << " <= 0\n";
-            // //     printTensor("m", m);
-            // //     printTensor("n", n);
-            // //     cout << "xi_star_h_star = " << xi_star_h_star << endl;
-            // //     cout << "den = " << den << endl;
-            // //     printTensor("depsilon_elpl", depsilon_elpl);
-            // //     // return -1;
-            // // }
+            if (dLambda <= 0)
+            {
+                cout << "CEP - dLambda = " << dLambda << " <= 0\n";
+                printTensor("m", m);
+                printTensor("n", n);
+                cout << "xi_star_h_star = " << xi_star_h_star << endl;
+                cout << "den = " << den << endl;
+                printTensor("depsilon_elpl", depsilon_elpl);
+                // return -1;
+            }
 
-            // // Update the trial plastic strain.
-            // TrialPlastic_Strain += dLambda * m;
-            // // Update the internal variables (k and alpha)
+            // Update the trial plastic strain.
+            TrialPlastic_Strain += dLambda * m;
+            // Update the internal variables (k and alpha)
             // internal_variables.evolve(dLambda, depsilon_elpl, m, intersection_stress);
+            // iv_storage.apply([](auto& internal_variable) 
+            //     { 
+            //     internal_variable.trial_value*=2; 
+            //     internal_variable.trial_value*=2; 
+            //     internal_variable.trial_value*=2; 
+            //     internal_variable.trial_value*=2; 
+            //     });
             // internal_variables.commit_tmp();
+
+            // iv_storage.call_commit();
 
 
             // // vonMises does NOT enter this part.

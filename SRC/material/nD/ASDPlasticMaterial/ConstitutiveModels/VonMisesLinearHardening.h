@@ -74,9 +74,13 @@ public:
 
 		    YoungsModulus E(1000);
 		    PoissonsRatio nu(0.25);
-
+			ScalarLinearHardeningParameter HS(2.0);
+			TensorLinearHardeningParameter HT(1.0);
+			
 		    parameters_storage.set(E);
 		    parameters_storage.set(nu);
+		    parameters_storage.set(HT);
+		    parameters_storage.set(HS);
 
 		    cout << "ASDPlasticMaterial" << endl;
 	        cout << "  Yield Function          : " << yf.NAME << endl;
@@ -85,7 +89,7 @@ public:
 	        cout << "  # of Internal variables :" << iv_storage.size() <<  endl;
 	        iv_storage.print_components();
 	        cout << "  # of Parameters         :" << parameters_storage.size() <<  endl;
-	        // parameters_storage.print_components();
+	        parameters_storage.print_components();
         }
 
     // VonMisesLinearHardening(int tag_in, double k0_in, double H_alpha, double H_k, double E, double nu, double rho_) :

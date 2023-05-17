@@ -126,22 +126,24 @@ public:
         constexpr double df_dk = -SQRT_2_over_3;
         dbl_result +=  (df_dk * KHT.hardening_function(depsilon, m, sigma, parameters_storage)).value();
 
-        // //This is for the hardening of alpha
-        // double den = sqrt((s - alpha).dot(s - alpha));
+        //This is for the hardening of alpha
+        double den = sqrt((s - alpha).dot(s - alpha));
 
-        // if (abs(den) < 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
-        // {
-        //     return dbl_result;
-        // }
+        if (abs(den) < 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+        {
+            return dbl_result;
+        }
 
-        // auto df_dalpha = -(s - alpha) / den;
-        // dbl_result +=  df_dalpha.dot(AHT.hardening_function(depsilon, m, sigma, internal_variables_storage));
+        auto df_dalpha = -(s - alpha) / den;
+        dbl_result +=  df_dalpha.dot(AHT.hardening_function(depsilon, m, sigma, parameters_storage));
 
         return dbl_result;
     }
+
     bool hasCorner() const{
         return false;
     }
+
     bool in_Apex(VoigtVector const& TrialStress)
     {
         std::cout<<"von Mises yield surface does not have a corner. This function should never be callled!"<<std::endl;
@@ -149,6 +151,15 @@ public:
     }
 
     using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
+
+    // using iv_parameters_t = std_tuple_concat_Type <
+    //                         typename AlphaHardeningType::parameters_t,
+    //                         typename KHardeningType::parameters_t >;
+
+    // using more_parameters_t = std::tuple<>;
+
+    // using parameters_t = std_tuple_concat_Type<iv_parameters_t, more_parameters_t>;
+
     using parameters_t = std::tuple<>;
 
 
