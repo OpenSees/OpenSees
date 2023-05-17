@@ -42,6 +42,8 @@ https://eigen.tuxfamily.org/dox/group__TopicStructHavingEigenMembers.html
 */
 
 #define EIGEN_MAX_ALIGN_BYTES 0
+#define EIGEN_MAX_CPP_VER 14
+
 
 #include "Eigen/Dense"
 

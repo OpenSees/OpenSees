@@ -257,35 +257,76 @@ using utuple_concat_type = typename utuple_concat<Ts...>::type;
  * A struct to concatenate tuples, but make it unique.
  */
 // Forward declaration of utuple_contains
+
+
+// // C++17 version
+// template <typename T, typename Tuple>
+// struct utuple_contains;
+
+// // Check if a tuple contains a specific type
+// template <typename T, typename... Ts>
+// struct utuple_contains<T, std::tuple<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
+
+
+//C++14 version 
 template <typename T, typename Tuple>
 struct utuple_contains;
 
-// Check if a tuple contains a specific type
 template <typename T, typename... Ts>
-struct utuple_contains<T, std::tuple<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
+struct utuple_contains<T, std::tuple<T, Ts...>> : std::true_type {};
 
-// utuple_concat_unique: A struct to concatenate tuples with unique types
-template <typename... Ts>
+template <typename T, typename U, typename... Ts>
+struct utuple_contains<T, std::tuple<U, Ts...>> : utuple_contains<T, std::tuple<Ts...>> {};
+
+template <typename T>
+struct utuple_contains<T, std::tuple<>> : std::false_type {};
+
+
+
+
+// // C++17 version
+// // utuple_concat_unique: A struct to concatenate tuples with unique types
+// template <typename... Ts>
+// struct utuple_concat_unique;
+
+// template <typename T, typename... Ts1, typename... Ts2, typename... Rest>
+// struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<T, Ts2...>, Rest...> {
+//     using type = std::conditional_t<
+//         utuple_contains<T, std::tuple<Ts1...>>::value,
+//         typename utuple_concat_unique<std::tuple<Ts1...>, std::tuple<Ts2...>, Rest...>::type,
+//         typename utuple_concat_unique<std::tuple<Ts1..., T>, std::tuple<Ts2...>, Rest...>::type>;
+// };
+
+// // Specialization for the case when the second tuple is empty
+// template <typename... Ts1>
+// struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<>> {
+//     using type = std::tuple<Ts1...>;
+// };
+
+// template <typename... Ts>
+// struct utuple_concat_unique<std::tuple<Ts...>> {
+//     using type = std::tuple<Ts...>;
+// };
+
+
+//C++14 version
+template <typename Tuple1, typename Tuple2>
 struct utuple_concat_unique;
 
-template <typename T, typename... Ts1, typename... Ts2, typename... Rest>
-struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<T, Ts2...>, Rest...> {
-    using type = std::conditional_t<
-        utuple_contains<T, std::tuple<Ts1...>>::value,
-        typename utuple_concat_unique<std::tuple<Ts1...>, std::tuple<Ts2...>, Rest...>::type,
-        typename utuple_concat_unique<std::tuple<Ts1..., T>, std::tuple<Ts2...>, Rest...>::type>;
-};
-
-// Specialization for the case when the second tuple is empty
 template <typename... Ts1>
 struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<>> {
     using type = std::tuple<Ts1...>;
 };
 
-template <typename... Ts>
-struct utuple_concat_unique<std::tuple<Ts...>> {
-    using type = std::tuple<Ts...>;
+template <typename... Ts1, typename T, typename... Ts2>
+struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<T, Ts2...>> {
+    using type = typename std::conditional<
+        utuple_contains<T, std::tuple<Ts1...>>::value,
+        typename utuple_concat_unique<std::tuple<Ts1...>, std::tuple<Ts2...>>::type,
+        typename utuple_concat_unique<std::tuple<Ts1..., T>, std::tuple<Ts2...>>::type
+    >::type;
 };
+
 
 // Type alias to use the concatenated tuple type with unique types
 template <typename... Ts>
