@@ -493,6 +493,8 @@ public:
         //     first_step = false;
         // }
 
+        iv_storage.commit_all();
+
         return errorcode;
     }
 
@@ -505,7 +507,7 @@ public:
         TrialStrain = CommitStrain;
         TrialPlastic_Strain = CommitPlastic_Strain;
 
-        // internal_variables.revert();
+        iv_storage.revert_all();
 
         return errorcode;
     }
@@ -908,7 +910,7 @@ private:
             // Update the internal variables (k and alpha)
             // internal_variables.evolve(dLambda, depsilon_elpl, m, intersection_stress);
             // This code iterates internal variables and updates the trial values
-            iv_storage.apply([](auto& internal_variable) 
+            iv_storage.apply([&m,&dLambda, this](auto& internal_variable) 
                 { 
                 // internal_variable.trial_value*=2; 
                 // internal_variable.trial_value*=2; 
