@@ -84,12 +84,79 @@ void *OPS_ElasticBeam2d(const ID &info) {
         return 0;
     }
 
+    // Read optional arguments first
+    int numOptionalArgs = 0;
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      std::string type = OPS_GetString();
+      if (type == "-alpha") {
+	numOptionalArgs++;
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetDoubleInput(&numData, &alpha) < 0) {
+	    opserr << "WARNING: failed to get alpha" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;
+	}
+      }
+      else if (type == "-depth") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetDoubleInput(&numData, &depth) < 0) {
+	    opserr << "WARNING: failed to get depth" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  
+	}
+      }
+      else if (type == "-release" || type == "-releasez") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numData, &release) < 0) {
+	    opserr << "WARNING: failed to get release" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  
+	}
+      }
+      else if (type == "-mass") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+	    opserr << "WARNING: failed to get mass" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  	  
+	}
+      }
+      else if (type == "-cMass") {
+	numOptionalArgs++;	
+	cMass = 1;
+      }
+      else if (type == "-damp") {
+	numOptionalArgs++;	
+	if(OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numData,&dampingTag) < 0)
+	    return 0;
+	  numOptionalArgs++;	  
+	  theDamping = OPS_getDamping(dampingTag);
+	  if(theDamping == 0) {
+	    opserr << "ElasticBeam2d - damping not found" << endln;
+	    return 0;
+	  }
+	}
+      }      
+    }
+
+    OPS_ResetCurrentInputArg(-numArgs);
+    numArgs = numArgs - numOptionalArgs;
+
     /*!
 2. for regular elements, which are not in a mesh,
 to get element tag and node tags
     */
     if (info.Size() == 0) {
-        if (OPS_GetNumRemainingInputArgs() < 5) {
+        if (numArgs < 5) {
             opserr << "insufficient "
                       "arguments:eleTag,iNode,jNode,<A,E,Iz>or<"
                       "sectionTag>,transfTag\n";
@@ -102,14 +169,14 @@ to get element tag and node tags
             opserr << "WARNING failed to read integers\n";
             return 0;
         }
+	numArgs -= numData;
     }
-
     /*!
 3. for regular elements and those in a mesh
 to get element data
     */
     if (info.Size() == 0 || info(0) == 1) {
-        if (OPS_GetNumRemainingInputArgs() > 3) {
+        if (numArgs > 3) {
             // Read A, E, Iz
             numData = 3;
             if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
@@ -125,59 +192,16 @@ to get element data
             }
             section = true;
         }
-        if (OPS_GetNumRemainingInputArgs() < 1) {
+
+	numArgs -= numData;
+	
+        if (numArgs < 1) {
           opserr << "WARNING: transfTag is needed\n";
         }
         numData = 1;
         if (OPS_GetIntInput(&numData, &transfTag) < 0) {
             opserr << "WARNING transfTag is not integer\n";
             return 0;
-        }
-
-        // options
-        while (OPS_GetNumRemainingInputArgs() > 0) {
-            std::string type = OPS_GetString();
-            if (type == "-alpha") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &alpha) < 0) {
-                        opserr << "WARNING: failed to get alpha";
-                        return 0;
-                    }
-                }
-            } else if (type == "-depth") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &depth) < 0) {
-                        opserr << "WARNING: failed to get depth";
-                        return 0;
-                    }
-                }
-            } else if (type == "-release" || type == "-releasez") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetIntInput(&numData, &release) < 0) {
-                        opserr << "WARNING: failed to get release";
-                        return 0;
-                    }
-                }
-
-            } else if (type == "-mass") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
-                        opserr << "WARNING: failed to get mass";
-                        return 0;
-                    }
-                }
-            } else if (type == "-cMass") {
-                cMass = 1;
-	          } else if (type == "-damp") {
-	              if(OPS_GetNumRemainingInputArgs() > 0) {
-                    if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
-	          	      theDamping = OPS_getDamping(dampingTag);
-                    if(theDamping == 0) {
-	                      opserr<<"damping not found\n";
-	                      return 0;
-                    }
-	              }
-            }
         }
     }
 
