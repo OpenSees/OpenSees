@@ -910,10 +910,12 @@ private:
             // This code iterates internal variables and updates the trial values
             iv_storage.apply([](auto& internal_variable) 
                 { 
-                internal_variable.trial_value*=2; 
-                internal_variable.trial_value*=2; 
-                internal_variable.trial_value*=2; 
-                internal_variable.trial_value*=2; 
+                // internal_variable.trial_value*=2; 
+                // internal_variable.trial_value*=2; 
+                // internal_variable.trial_value*=2; 
+                // internal_variable.trial_value*=2; 
+                	auto h = internal_variable.hardening_function(depsilon_elpl, m, intersection_stress, parameters_storage);
+                	internal_variable.trial_value += dLambda*h;
                 });
             // internal_variables.commit_tmp();
 
