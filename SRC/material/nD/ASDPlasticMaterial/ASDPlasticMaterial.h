@@ -907,13 +907,14 @@ private:
             TrialPlastic_Strain += dLambda * m;
             // Update the internal variables (k and alpha)
             // internal_variables.evolve(dLambda, depsilon_elpl, m, intersection_stress);
-            // iv_storage.apply([](auto& internal_variable) 
-            //     { 
-            //     internal_variable.trial_value*=2; 
-            //     internal_variable.trial_value*=2; 
-            //     internal_variable.trial_value*=2; 
-            //     internal_variable.trial_value*=2; 
-            //     });
+            // This code iterates internal variables and updates the trial values
+            iv_storage.apply([](auto& internal_variable) 
+                { 
+                internal_variable.trial_value*=2; 
+                internal_variable.trial_value*=2; 
+                internal_variable.trial_value*=2; 
+                internal_variable.trial_value*=2; 
+                });
             // internal_variables.commit_tmp();
 
             // iv_storage.call_commit();
