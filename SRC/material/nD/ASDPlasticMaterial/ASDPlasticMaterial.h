@@ -486,13 +486,6 @@ public:
         CommitStrain = TrialStrain;
         CommitPlastic_Strain = TrialPlastic_Strain;
 
-        // internal_variables.commit();
-
-        // if (first_step)
-        // {
-        //     first_step = false;
-        // }
-
         iv_storage.commit_all();
 
         return errorcode;
@@ -910,21 +903,14 @@ private:
 
             // Update the trial plastic strain.
             TrialPlastic_Strain += dLambda * m;
-            // Update the internal variables (k and alpha)
-            // internal_variables.evolve(dLambda, depsilon_elpl, m, intersection_stress);
+
             // This code iterates internal variables and updates the trial values
             iv_storage.apply([&m,&dLambda, this](auto& internal_variable) 
                 { 
-                // internal_variable.trial_value*=2; 
-                // internal_variable.trial_value*=2; 
-                // internal_variable.trial_value*=2; 
-                // internal_variable.trial_value*=2; 
                 	auto h = internal_variable.hardening_function(depsilon_elpl, m, intersection_stress, parameters_storage);
                 	internal_variable.trial_value += dLambda*h;
                 });
-            // internal_variables.commit_tmp();
 
-            // iv_storage.call_commit();
 
 
             // vonMises does NOT enter this part.
