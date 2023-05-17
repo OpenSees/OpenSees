@@ -843,6 +843,8 @@ private:
 
         double yf_val_start = yf(sigma, iv_storage, parameters_storage);
         double yf_val_end = yf(TrialStress, iv_storage, parameters_storage);
+        fprintf(stderr, "  - yf_val_start (:<0) = %16.8f \n" , yf_val_start );
+        fprintf(stderr, "  - yf_val_end   (:<0) = %16.8f \n" , yf_val_end );
 
         VoigtVector& start_stress = CommitStress;
         VoigtVector& end_stress = TrialStress;
@@ -893,6 +895,7 @@ private:
             }
             double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
             dLambda /= den;
+            cout << "CEP - dLambda = " << dLambda << " > 0\n";
 
             if (dLambda <= 0)
             {
@@ -924,89 +927,89 @@ private:
             // iv_storage.call_commit();
 
 
-            // // vonMises does NOT enter this part.
-            // // DruckerPrager requries this part.
-            // // if (yf.hasCorner() && yf.in_Apex(TrialStress))
-            // // {
-            // //     static VoigtVector small_stress(3, 3, 0.0);
-            // //     small_stress *= 0;
-            // //     // The small value 50*Pa refers to the lowest confinement test:
-            // //     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
-            // //     double DP_k = yf.get_k();
-            // //     double DP_p = 50 ;
-            // //     // To make it on the yield surface, the q is equal to k*p.
-            // //     double DP_q = DP_k * DP_p ;
-            // //     // Assume the triaxial conditions sigma_2 = sigma_3.
-            // //     small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
-            // //     small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
-            // //     small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
-            // //     static VoigtVector dstress(3, 3, 0.0);
-            // //     dstress(i, j) = small_stress(i, j) - sigma(i, j);
-            // //     static VoigtVector depsilon_Inv(3, 3, 0.0);
-            // //     depsilon_Inv = depsilon.Inv();
-
-            // //     // Return results (member variables) :
-            // //     Stiffness(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
-            // //     TrialStress(i, j) = small_stress(i, j);
-            // //     // plastic_strain and internal variables are already updated.
-            // //     return 0;
-            // // }
-
-            // //Correct the trial stress
-            // TrialStress = TrialStress - dLambda * Eelastic * m;
-
-            // // Calculate the stiffness for the global iteration:
-            // Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
-
-
-            // // // ============================================================================================
-            // // // Add the additional step: returning to the yield surface.
-            // // // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
-            // // // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
-            // // // ============================================================================================
-            // // if(with_return2yield_surface){
-            // // if (true)
-            // // {
-            // //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
-            // //     // Make surface the internal variables are already updated. And then, return to the yield surface.
-            // //     double yf_val_after_corrector = yf(TrialStress);
-            // //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
-            // //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
-            // //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
-            // //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
-            // //     double dLambda_after_corrector = yf_val_after_corrector / (
-            // //                                          n_after_corrector(i, j) * Eelastic(i, j, k, l) * m_after_corrector(k, l) - xi_star_h_star_after_corrector
-            // //                                      );
-            // //     TrialStress(i, j) = TrialStress(i, j) - dLambda_after_corrector * Eelastic(i, j, k, l) * m_after_corrector(k, l);
-            // //     TrialPlastic_Strain(i, j) += dLambda_after_corrector * m_after_corrector(i, j);
-
-            // //     double den_after_corrector = n_after_corrector(p, q) * Eelastic(p, q, r, s) * m_after_corrector(r, s) - xi_star_h_star_after_corrector;
-            // //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
-            // // }
-            // // // ============================================================================================
-            // // // ============================================================================================
-
-            // double norm_trial_stress = TrialStress.transpose() * TrialStress;
-            // if (norm_trial_stress != norm_trial_stress) //check for nan
+            // vonMises does NOT enter this part.
+            // DruckerPrager requries this part.
+            // if (yf.hasCorner() && yf.in_Apex(TrialStress))
             // {
-            //     cout << "Numeric error!\n";
-            //     printTensor("TrialStress = " , TrialStress);
-            //     printTensor("CommitStress = " , CommitStress);
-            //     printTensor("depsilon = " , depsilon);
-            //     printTensor("dsigma   = " , dsigma);
-            //     printTensor("intersection_stress = " , intersection_stress);
-            //     printTensor4("Eelastic = " , Eelastic);
-            //     printTensor4("Stiffness = " , Stiffness);
-            //     cout << "yf_val_start = " << yf_val_start << endl;
-            //     cout << "yf_val_end = " << yf_val_end << endl;
-            //     printTensor("n = " , n );
-            //     printTensor("m = " , m );
-            //     cout << "xi_star_h_star  = " << xi_star_h_star << endl;
-            //     cout << "den = " << den << endl;
-            //     cout << "dLambda = " << dLambda << endl;
+            //     static VoigtVector small_stress(3, 3, 0.0);
+            //     small_stress *= 0;
+            //     // The small value 50*Pa refers to the lowest confinement test:
+            //     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
+            //     double DP_k = yf.get_k();
+            //     double DP_p = 50 ;
+            //     // To make it on the yield surface, the q is equal to k*p.
+            //     double DP_q = DP_k * DP_p ;
+            //     // Assume the triaxial conditions sigma_2 = sigma_3.
+            //     small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
+            //     small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
+            //     small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
+            //     static VoigtVector dstress(3, 3, 0.0);
+            //     dstress(i, j) = small_stress(i, j) - sigma(i, j);
+            //     static VoigtVector depsilon_Inv(3, 3, 0.0);
+            //     depsilon_Inv = depsilon.Inv();
 
-            //     errorcode = -1;
+            //     // Return results (member variables) :
+            //     Stiffness(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
+            //     TrialStress(i, j) = small_stress(i, j);
+            //     // plastic_strain and internal variables are already updated.
+            //     return 0;
             // }
+
+            //Correct the trial stress
+            TrialStress = TrialStress - dLambda * Eelastic * m;
+
+            // Calculate the stiffness for the global iteration:
+            Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
+
+
+            // // ============================================================================================
+            // // Add the additional step: returning to the yield surface.
+            // // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
+            // // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
+            // // ============================================================================================
+            // if(with_return2yield_surface){
+            // if (true)
+            // {
+            //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
+            //     // Make surface the internal variables are already updated. And then, return to the yield surface.
+            //     double yf_val_after_corrector = yf(TrialStress);
+            //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
+            //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
+            //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
+            //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
+            //     double dLambda_after_corrector = yf_val_after_corrector / (
+            //                                          n_after_corrector(i, j) * Eelastic(i, j, k, l) * m_after_corrector(k, l) - xi_star_h_star_after_corrector
+            //                                      );
+            //     TrialStress(i, j) = TrialStress(i, j) - dLambda_after_corrector * Eelastic(i, j, k, l) * m_after_corrector(k, l);
+            //     TrialPlastic_Strain(i, j) += dLambda_after_corrector * m_after_corrector(i, j);
+
+            //     double den_after_corrector = n_after_corrector(p, q) * Eelastic(p, q, r, s) * m_after_corrector(r, s) - xi_star_h_star_after_corrector;
+            //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
+            // }
+            // // ============================================================================================
+            // // ============================================================================================
+
+            double norm_trial_stress = TrialStress.transpose() * TrialStress;
+            if (norm_trial_stress != norm_trial_stress) //check for nan
+            {
+                cout << "Numeric error!\n";
+                printTensor("TrialStress = " , TrialStress);
+                printTensor("CommitStress = " , CommitStress);
+                printTensor("depsilon = " , depsilon);
+                printTensor("dsigma   = " , dsigma);
+                printTensor("intersection_stress = " , intersection_stress);
+                printTensor4("Eelastic = " , Eelastic);
+                printTensor4("Stiffness = " , Stiffness);
+                cout << "yf_val_start = " << yf_val_start << endl;
+                cout << "yf_val_end = " << yf_val_end << endl;
+                printTensor("n = " , n );
+                printTensor("m = " , m );
+                cout << "xi_star_h_star  = " << xi_star_h_star << endl;
+                cout << "den = " << den << endl;
+                cout << "dLambda = " << dLambda << endl;
+
+                errorcode = -1;
+            }
 
         }
 
