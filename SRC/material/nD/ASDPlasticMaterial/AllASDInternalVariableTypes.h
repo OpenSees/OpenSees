@@ -50,8 +50,6 @@ struct InternalVariableType {
 
     using parameters_t = typename HardeningType::parameters_t;
 
-    // template <class ParameterStorageType>
-    // using parameters_t = typename HardeningType::template parameters_t<ParameterStorageType>;
 
 };
 
@@ -72,81 +70,3 @@ using BackStressIV = InternalVariableType<VoigtVector, HardeningType, BackStress
 struct VonMisesRadiusName { static constexpr const char* name = "VonMisesRadius";};
 template <class HardeningType>
 using VonMisesRadiusIV = InternalVariableType<VoigtScalar, HardeningType, VonMisesRadiusName>;
-
-// template<class T, class EVT> 
-// T& operator << (T& stream, const BackStress<EVT>& x) {
-//     return stream << x.value;
-// }
-
-//VonMises Cylinder radius type
-// template <class EvolvingVariableType>
-// struct VonMises_m {
-//     static constexpr const char* NAME = "VonMises_m";
-//     EvolvingVariableType value;
-//     VonMises_m() = default;
-//     VonMises_m(EvolvingVariableType x) : value(x) {}
-//     inline const char* getName() const { return NAME; }
-// };
-// template<class T, class EVT> 
-// T& operator << (T& stream, const VonMises_m<EVT>& x) {
-//     return stream << x.value;
-// }
-
-
-
-
-// Base template struct
-// template<typename Derived, typename EvolvingVariableType>
-// struct EvolvingVariable {
-//     static constexpr const char* NAME = Derived::NAME;
-//     EvolvingVariableType value;
-//     EvolvingVariable() = default;
-//     EvolvingVariable(EvolvingVariableType x) : value(x) {}
-//     inline const char* getName() const { return NAME; }
-// };
-// template<typename Derived, typename EvolvingVariableType>
-// std::ostream& operator<<(std::ostream& os, const EvolvingVariable<Derived, EvolvingVariableType>& param) {
-//     // os << param.getName() << ": " << param.value;
-//     os << param.value;
-//     return os;
-// }
-
-// // Backstress variable type
-// struct BackStressTag { static constexpr const char* NAME = "BackStress"; };
-// template<typename EvolvingVariableType>
-// struct BackStress : public EvolvingVariable<BackStress<EvolvingVariableType>, EvolvingVariableType> {};
-
-// // VonMises Cylinder radius type
-// struct VonMises_mTag { static constexpr const char* NAME = "VonMises_m"; };
-// template<typename EvolvingVariableType>
-// struct VonMises_m : public EvolvingVariable<VonMises_m<EvolvingVariableType>, EvolvingVariableType> {};
-
-
-// //Backstress variable type
-// template <class EvolvingVariableType>
-// struct BackStress {
-//     static constexpr const char* NAME = "BackStress";
-//     EvolvingVariableType value;
-//     BackStress() = default;
-//     BackStress(EvolvingVariableType x) : value(x) {}
-//     inline const char* getName() const { return NAME; }
-// };
-// template<class T, class EVT> 
-// T& operator << (T& stream, const BackStress<EVT>& x) {
-//     return stream << x.value;
-// }
-
-// //VonMises Cylinder radius type
-// template <class EvolvingVariableType>
-// struct VonMises_m {
-//     static constexpr const char* NAME = "VonMises_m";
-//     EvolvingVariableType value;
-//     VonMises_m() = default;
-//     VonMises_m(EvolvingVariableType x) : value(x) {}
-//     inline const char* getName() const { return NAME; }
-// };
-// template<class T, class EVT> 
-// T& operator << (T& stream, const VonMises_m<EVT>& x) {
-//     return stream << x.value;
-// }
-

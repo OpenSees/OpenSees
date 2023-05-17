@@ -332,4 +332,20 @@ struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<T, Ts2...>> {
 template <typename... Ts>
 using utuple_concat_unique_type = typename utuple_concat_unique<Ts...>::type;
 
+
+
+// For parameter extraction
+template <typename T>
+struct ExtractNestedParameterTypes;
+
+template <typename... Ts>
+struct ExtractNestedParameterTypes<std::tuple<Ts...>> {
+    using type = std_tuple_concat_Type<typename Ts::parameters_t...>;
+};
+
+template <typename T>
+using ExtractNestedParameterTypes_t = typename ExtractNestedParameterTypes<T>::type;
+
+
+
 #endif //_ASD_UTUPLE_STORAGE
