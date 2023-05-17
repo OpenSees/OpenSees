@@ -28,8 +28,10 @@
 #define YieldFunctionBase_H
 
 #include "EigenAPI.h"
-#include "EvolvingVariable.h"
+// #include "EvolvingVariable.h"
 #include <Channel.h>
+// #include "utuple_storage.h"
+#include "std_tuple_concat.h"
 
 // Helper template to check if a class has a parameters_t type alias
 template <typename T, typename = void>
@@ -82,6 +84,7 @@ public:
     }
 
     inline const char* getName() const { return static_cast<T*>(this)->NAME; }
+
 };
 
 #endif

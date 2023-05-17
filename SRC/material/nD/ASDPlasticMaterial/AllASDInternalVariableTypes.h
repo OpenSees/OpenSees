@@ -48,10 +48,10 @@ struct InternalVariableType {
         return HardeningType::f(depsilon, m, sigma, parameters);
     }
 
-    // using parameters_t = typename HardeningType::parameters_t;
-    
-    template <class ParameterStorageType>
-    using parameters_t = typename HardeningType::template parameters_t<ParameterStorageType>;
+    using parameters_t = typename HardeningType::parameters_t;
+
+    // template <class ParameterStorageType>
+    // using parameters_t = typename HardeningType::template parameters_t<ParameterStorageType>;
 
 };
 
@@ -59,6 +59,8 @@ struct InternalVariableType {
 template <class EvolvingVariableType, class HardeningType, class NAMER>
 std::ostream& operator<<(std::ostream& os, const InternalVariableType<EvolvingVariableType, HardeningType, NAMER>& param) {
     os << param.getName() << ": [Trial: " << param.trial_value.transpose() << ", Committed: " << param.committed_value.transpose() << "]";
+    os << endl;
+    os << "   HardeningType::parameters --> " << typeid(typename InternalVariableType<EvolvingVariableType, HardeningType, NAMER>::parameters_t).name() << endl;
     return os;
 }
 

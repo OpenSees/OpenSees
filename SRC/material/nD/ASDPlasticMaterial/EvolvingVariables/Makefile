@@ -3,7 +3,7 @@ EIGENDIR=$(OPS_BASE)/OTHER/eigenAPI
 OPS_SRC=$(OPS_BASE)/SRC
 
 CXX=g++
-CXXFLAGS=\
+CXXFLAGS=  \
    -I$(EIGENDIR)\
    -I$(EIGENDIR)/eigen\
    -I$(OPS_SRC)\

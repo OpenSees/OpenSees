@@ -35,8 +35,8 @@
 
 
 // Hardening policies
-template <class ParameterStorageType>
 struct LinearHardeningForTensorPolicy {
+	template <class ParameterStorageType>
     static VoigtVector f(
     	const VoigtVector& depsilon,
         const VoigtVector& m,
@@ -49,8 +49,8 @@ struct LinearHardeningForTensorPolicy {
     using parameters_t = tuple<TensorLinearHardeningParameter>;
 };
 
-template <class ParameterStorageType>
 struct LinearHardeningForScalarPolicy {
+	template <class ParameterStorageType>
     static double f(
     	const VoigtVector& depsilon,
         const VoigtVector& m,
@@ -64,7 +64,7 @@ struct LinearHardeningForScalarPolicy {
 };
 
 // Function wrapper base class
-template <typename T, template <class> class HardeningPolicy>
+template <typename T, class HardeningPolicy>
 struct HardeningFunction {
 	template< class ParameterStorageType>
     static T f(
@@ -73,11 +73,10 @@ struct HardeningFunction {
         const VoigtVector& sigma,
         const ParameterStorageType& parameters) 
     {
-        return HardeningPolicy<ParameterStorageType>::f(depsilon, m, sigma, parameters);
+        return HardeningPolicy::f(depsilon, m, sigma, parameters);
     }
 
-	template< class ParameterStorageType>
-    using parameters_t = typename HardeningPolicy<ParameterStorageType>::parameters_t;
+    using parameters_t = typename HardeningPolicy::parameters_t;
 };
 
 
@@ -86,113 +85,11 @@ using TensorLinearHardeningFunction = HardeningFunction<VoigtVector, LinearHarde
 using ScalarLinearHardeningFunction = HardeningFunction<VoigtScalar, LinearHardeningForScalarPolicy>;
 
 
-template <typename T, template <class> class HardeningPolicy>
+template <typename T, class HardeningPolicy>
 std::ostream& operator<<(std::ostream& os, const HardeningFunction<T, HardeningPolicy>& obj) {
-    os << "HardeningFunction<" << typeid(T).name() << ", " << typeid(HardeningPolicy<void>).name() << ">";
+    os << "HardeningFunction<" << typeid(T).name() << ", " << typeid(HardeningPolicy).name() << ">";
     return os;
 }
-
-
-
-// // Function wrapper base class
-// template <typename T, class ParameterStorageType>
-// struct HardeningFunctionWrapper {
-//     static T hardening(
-//         const T& variable,
-//         const VoigtVector &depsilon,
-//         const VoigtVector &m,
-//         const VoigtVector& sigma,
-//         const ParameterStorageType& parameters);
-// };
-
-// // Template specialization for VoigtVector and ParameterStorageType
-// template <class ParameterStorageType>
-// struct HardeningFunctionWrapper<VoigtVector, ParameterStorageType> {
-//     static VoigtVector hardening(
-//         const VoigtVector& variable,
-//         const VoigtVector& depsilon,
-//         const VoigtVector& m,
-//         const VoigtVector& sigma,
-//         const ParameterStorageType& parameters) 
-//     {
-//         double H = parameters.template get<LinearHardeningForTensor>().value;
-//         auto derivative = H * m.deviator();
-//         return derivative;
-//     }
-
-//     using parameters_t = std::tuple<LinearHardeningForTensor>;
-// };
-
-// // Alias for HardeningFunctionWrapper with VoigtVector and specific ParameterStorageType
-// template <class ParameterStorageType>
-// using VoigtVectorHardening = HardeningFunctionWrapper<VoigtVector, ParameterStorageType>;
-
-
-// // Template specialization for VoigtScalar and ParameterStorageType
-// template <class ParameterStorageType>
-// struct HardeningFunctionWrapper<VoigtScalar, ParameterStorageType> {
-//     static VoigtScalar hardening(
-//         const VoigtScalar& variable,
-//         const VoigtVector& depsilon,
-//         const VoigtVector& m,
-//         const VoigtVector& sigma,
-//         const ParameterStorageType& parameters) 
-//     {
-//         double H = parameters.template get<LinearHardeningForScalar>().value;
-//         auto derivative = H * sqrt((2 * m.dot(m)) / 3);
-//         return derivative;
-//     }
-
-//     using parameters_t = std::tuple<LinearHardeningForScalar>;
-// };
-
-// // Alias for HardeningFunctionWrapper with VoigtScalar and specific ParameterStorageType
-// template <class ParameterStorageType>
-// using ScalarLinearHardening = HardeningFunctionWrapper<VoigtScalar, ParameterStorageType>;
-
-
-// // Function wrapper base class
-// template <typename T, class ParameterStorageType>
-// struct HardeningFunctionWrapper {
-//     static T hardening(
-//                 const T& variable,
-//                 const VoigtVector &depsilon,
-//                 const VoigtVector &m,
-//                 const VoigtVector& sigma,
-//                 const ParameterStorageType& parameters);
-// };
-
-// template <class ParameterStorageType>
-// struct HardeningFunctionWrapper<VoigtVector, ParameterStorageType> {
-//     static VoigtVector function(const VoigtVector& variable,
-//                 const VoigtVector &depsilon,
-//                 const VoigtVector &m,
-//                 const VoigtVector& sigma,
-//                 const ParameterStorageType& parameters) 
-//     {
-//         double H = parameters.template get<LinearHardeningForTensor> ().value;
-//         auto derivative = H * m.deviator();
-//         return derivative;
-//     }
-
-//     using parameters_t = std::tuple<LinearHardeningForTensor>;
-// } ;
-
-// template <class ParameterStorageType>
-// struct HardeningFunctionWrapper<VoigtScalar, ParameterStorageType> {
-//     static VoigtScalar function(const VoigtScalar& variable,
-//                 const VoigtVector &depsilon,
-//                 const VoigtVector &m,
-//                 const VoigtVector& sigma,
-//                 const ParameterStorageType& parameters) 
-//     {
-//         double H = parameters.template get<LinearHardeningForScalar> ().value;
-//         auto derivative = H * sqrt((2 * m.dot(m)) / 3);
-//         return derivative;
-//     }
-
-//     using parameters_t = std::tuple<LinearHardeningForScalar>;
-// } ;
 
 
 #endif //not defined _AllASDHardeningFunctions

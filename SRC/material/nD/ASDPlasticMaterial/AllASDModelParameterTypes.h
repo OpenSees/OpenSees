@@ -63,11 +63,9 @@ using InternalFrictionAngle = ModelParameterType<double, InternalFrictionAngleNa
 
 // ============================================================================
 // Internal variables associated with Evolving Variables
-struct ScalarLinearHardeningParameter_Name { static constexpr const char* name = "LinearHardeningForScalar";};
+struct ScalarLinearHardeningParameter_Name { static constexpr const char* name = "ScalarLinearHardeningParameter";};
 using ScalarLinearHardeningParameter = ModelParameterType<double, ScalarLinearHardeningParameter_Name>;
-struct TensorLinearHardeningParameter_Name { static constexpr const char* name = "LinearHardeningForTensor";};
+struct TensorLinearHardeningParameter_Name { static constexpr const char* name = "TensorLinearHardeningParameter";};
 using TensorLinearHardeningParameter = ModelParameterType<double, TensorLinearHardeningParameter_Name>;
-// struct LinearHardeningName { static constexpr const char* name = "LinearHardening";};
-// using LinearHardening = ModelParameterType<double, LinearHardeningName>;
 
 #endif //not defined _AllASDModelParametersType
