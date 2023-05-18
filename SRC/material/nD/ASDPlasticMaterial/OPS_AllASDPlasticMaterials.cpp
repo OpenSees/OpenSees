@@ -174,7 +174,11 @@ void *OPS_AllASDPlasticMaterials(void)
 	// 	}
 	// }
 
-	NDMaterial* instance = new VonMisesLinearHardening(tag, rho_);
+	VonMisesLinearHardening* instance = new VonMisesLinearHardening(tag, rho_);
+
+	auto parameter_names = instance->getParameterNames();
+
+	
 
 	// double p0_in = 0.;                       const YieldFunctionType& yf_in,
 //                       const ElasticityType& et_in,

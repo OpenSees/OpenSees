@@ -135,6 +135,10 @@ apply_to_each_in_tuple(std::tuple<Tp...>& t, Function f) {
 template<typename tuple_t>
 class utuple_storage {
 public:
+
+    // The wrapped std::tuple
+    tuple_t data;
+	
     // Sets the value of the element with type T in the tuple.
     template<class T>
     void set(const T& value) {
@@ -176,8 +180,12 @@ public:
 	    apply_to_each_in_tuple(data, f);
 	}
 
-    // The wrapped std::tuple
-    tuple_t data;
+    auto getParameterNames() const
+    {
+        return getParameterNamesTuple(data);
+    }
+
+
 private:
 
     template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
@@ -213,6 +221,22 @@ private:
     auto concatenate_parameters_impl() const {
         return std::tuple<>();
     }
+
+
+
+    // template<std::size_t I = 0>
+    // void setParameterByName(const char* name, double value) {
+    //     if (I < std::tuple_size<std::tuple<Ts...>>::value) {
+    //         if (std::strcmp(std::get<I>(data).getName(), name) == 0) {
+    //             std::get<I>(data).value = value;
+    //         }
+    //         else {
+    //             setParameterByName<I + 1>(name, value);
+    //         }
+    //     }
+    // }
+
+
 };
 
 
@@ -347,5 +371,15 @@ template <typename T>
 using ExtractNestedParameterTypes_t = typename ExtractNestedParameterTypes<T>::type;
 
 
+// To get parameter names, for initialization
+template<std::size_t... Is, typename... Ts>
+auto getParameterNamesTuple(std::index_sequence<Is...>, const std::tuple<Ts...>& params) {
+    return std::make_tuple(std::get<Is>(params).getName()...);
+}
+
+template<typename... Ts>
+auto getParameterNamesTuple(const std::tuple<Ts...>& params) {
+    return getParameterNamesTuple(std::make_index_sequence<sizeof...(Ts)>(), params);
+}
 
 #endif //_ASD_UTUPLE_STORAGE

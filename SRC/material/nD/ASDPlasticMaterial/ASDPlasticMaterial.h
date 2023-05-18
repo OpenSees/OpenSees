@@ -189,12 +189,17 @@ public:
 
     }
 
+    //==================================================================================================
+    // To set parameter values for the model
+    //==================================================================================================
+    auto getParameterNames() const
+    {
+        return parameters_storage.getParameterNames();
+    }
 
-
-
-//==================================================================================================
-//  Class type function
-//==================================================================================================
+    //==================================================================================================
+    //  Class type function
+    //==================================================================================================
     const char *getClassType(void) const
     {
         std::string name("ASDPlasticMaterial");
@@ -426,13 +431,13 @@ public:
 
     int revertToStart(void)
     {
-    	cerr << "ASDPlasticMaterial::revertToStart - not implemented!!!\n" ;
+        cerr << "ASDPlasticMaterial::revertToStart - not implemented!!!\n" ;
         return -1;
     }
 
     NDMaterial *getCopy(void)
     {
-    	cerr << "ASDPlasticMaterial::getCopy - not implemented!!!\n" ;
+        cerr << "ASDPlasticMaterial::getCopy - not implemented!!!\n" ;
         // ASDPlasticMaterial< ElasticityType,
         //                     YieldFunctionType,
         //                     PlasticFlowType,
@@ -456,7 +461,7 @@ public:
 
     int sendSelf(int commitTag, Channel &theChannel)
     {
-    	cerr << "ASDPlasticMaterial::sendSelf - not implemented!!!\n" ;
+        cerr << "ASDPlasticMaterial::sendSelf - not implemented!!!\n" ;
         // int pos = 0;
         // static Vector data(1 + 9 * 6 + 4); // rho and all the DTensors2 get packed into one vector
 
@@ -536,7 +541,7 @@ public:
 
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
-    	cerr << "ASDPlasticMaterial::recvSelf - not implemented!!!\n" ;
+        cerr << "ASDPlasticMaterial::recvSelf - not implemented!!!\n" ;
         // // cout << "Receiving data" << endl;
         // static Vector data(1 + 9 * 6 + 4); // rho and all the DTensors2 get packed into one vector
         // if (theChannel.receiveVector(0, commitTag, data) != 0)
@@ -704,6 +709,9 @@ protected:
         TrialStress = stress;
         return;
     }
+
+
+
 
 private:
 
