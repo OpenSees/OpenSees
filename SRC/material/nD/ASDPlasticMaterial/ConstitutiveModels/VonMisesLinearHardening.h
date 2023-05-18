@@ -39,24 +39,24 @@
 //Von Mises Model with linear hardening (VMLH)
 class VonMisesLinearHardening;  //This model we will define
 
-//Typedefs for internal variables list, yield function, and plastic flow function
-// typedef MaterialInternalVariables < LinearHardeningTensor_EV, LinearHardeningScalar_EV> VMLHVarsType;
-// typedef VonMises_YF < LinearHardeningTensor_EV, LinearHardeningScalar_EV> VMLH_YFType;
-// typedef VonMises_PF < LinearHardeningTensor_EV, LinearHardeningScalar_EV> VMLH_PFType;
-
-
+//Model internal variables
 using VMSL = VonMisesRadiusIV<ScalarLinearHardeningFunction>;
 using BSTL = BackStressIV<TensorLinearHardeningFunction>;
-using VMLH_YFType = VonMises_YF<BSTL, VMSL>;
-using VMLH_PFType = VonMises_PF<BSTL, VMSL>;
 
-using VMLHBase = ASDPlasticMaterial <LinearIsotropic3D_EL,
-        VMLH_YFType,
-        VMLH_PFType,
+//Select elasticity model
+using EL = LinearIsotropic3D_EL;
+
+//Select Yield-function model, using the internal variables
+using YF = VonMises_YF<BSTL, VMSL>;
+
+//Select Plastic-flow model, using the internal variables
+using PF = VonMises_PF<BSTL, VMSL>;
+
+using VMLHBase = ASDPlasticMaterial <EL,
+        YF,
+        PF,
         ND_TAG_ASDPlasticMaterial,
         VonMisesLinearHardening > ;
-
-
 
 
 //Define the new class. We must provide two constructor and the evolving variables as data-members.
@@ -82,15 +82,7 @@ public:
 		    parameters_storage.set(HT);
 		    parameters_storage.set(HS);
 
-		    cout << "ASDPlasticMaterial" << endl;
-	        cout << "  Yield Function          : " << yf.NAME << endl;
-	        cout << "  Plastic flow direction  : " << pf.NAME << endl;
-	        cout << "  Elasticity              : " << et.NAME << endl;
-	        cout << "  # of Internal variables :" << iv_storage.size() <<  endl;
-	        iv_storage.print_components();
-	        cout << "  # of Parameters         :" << parameters_storage.size() <<  endl;
-	        parameters_storage.print_components();
+		    Print(opserr);
         }
-
 };
 
