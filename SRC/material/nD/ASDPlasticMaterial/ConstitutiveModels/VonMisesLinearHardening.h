@@ -66,23 +66,7 @@ public:
     VonMisesLinearHardening(int tag_in, double rho_) :
         VMLHBase::ASDPlasticMaterial(tag_in,rho_) 
         {
-        	VMSL vmsl(1);
-        	BSTL bstl(VoigtVector(0,0,0,0,0,0)); 
 
-        	iv_storage.set(vmsl);
-        	iv_storage.set(bstl);
-
-		    YoungsModulus E(1);
-		    PoissonsRatio nu(0.);
-			ScalarLinearHardeningParameter HS(0.0);
-			TensorLinearHardeningParameter HT(0.0);
-			
-		    parameters_storage.set(E);
-		    parameters_storage.set(nu);
-		    parameters_storage.set(HT);
-		    parameters_storage.set(HS);
-
-		    Print(opserr);
         }
 };
 

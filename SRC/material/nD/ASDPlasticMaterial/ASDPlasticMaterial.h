@@ -197,6 +197,13 @@ public:
         return parameters_storage.getParameterNames();
     }
 
+    auto setParameterByName(const char * param_name, double param_value) 
+    {
+        cout << "  --->  Setting " << param_name << " = " << param_value << endl;
+        return parameters_storage.setParameterByName(param_name, param_value);
+    }
+
+
     //==================================================================================================
     //  Class type function
     //==================================================================================================
