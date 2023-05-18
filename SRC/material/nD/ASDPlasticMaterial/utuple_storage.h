@@ -186,6 +186,53 @@ public:
     }
 
 
+    //To set a parameter by name
+    void setParameterByName(const char* name, double value)  {
+        setParameterByName_impl<0>(name, value);
+    }
+
+    // template<std::size_t I = 0, typename... Ts>
+    // std::enable_if_t<I == sizeof...(Ts), void> 
+    // setParameterByName( std::tuple<Ts...>&, const char* name, double value) {
+    //     // End of recursion, do nothing.
+    // }
+
+    // template<std::size_t I = 0, typename... Ts>
+    // std::enable_if_t<I < sizeof...(Ts), void> 
+    // setParameterByName(const std::tuple<Ts...>& tuple, const char* name, double value) {
+    //     if (std::strcmp(std::get<I>(tuple).getName(), name) == 0) {
+    //         std::get<I>(tuple).value = value;
+    //     } else {
+    //         setParameterByName<I + 1>(tuple, name, value);
+    //     }
+    // }
+
+    // template<typename... Ts>
+    // void setParameterByName(const char* name, double value) {
+    //     setParameterByName<0>(data, name, value);
+    // }
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    void setParameterByName_impl(const char* name, double value)  {
+        using current_type = typename std::tuple_element<I, tuple_t>::type;
+
+        auto current_name =std::get<I>(data).getName();
+
+
+        if (std::strcmp(current_name, name) == 0) {
+            std::get<I>(data).value = value;
+            // std::get<I>(data).setValue(value);
+        } else {
+            setParameterByName_impl<I + 1>(name, value);
+        }
+
+        setParameterByName_impl<I + 1>(name, value);
+    }
+
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    void setParameterByName_impl(const char* name, double value)  {
+        // Base case, do nothing.
+    }
+
 private:
 
     template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
@@ -221,20 +268,6 @@ private:
     auto concatenate_parameters_impl() const {
         return std::tuple<>();
     }
-
-
-
-    // template<std::size_t I = 0>
-    // void setParameterByName(const char* name, double value) {
-    //     if (I < std::tuple_size<std::tuple<Ts...>>::value) {
-    //         if (std::strcmp(std::get<I>(data).getName(), name) == 0) {
-    //             std::get<I>(data).value = value;
-    //         }
-    //         else {
-    //             setParameterByName<I + 1>(name, value);
-    //         }
-    //     }
-    // }
 
 
 };
@@ -281,15 +314,6 @@ using utuple_concat_type = typename utuple_concat<Ts...>::type;
  * A struct to concatenate tuples, but make it unique.
  */
 // Forward declaration of utuple_contains
-
-
-// // C++17 version
-// template <typename T, typename Tuple>
-// struct utuple_contains;
-
-// // Check if a tuple contains a specific type
-// template <typename T, typename... Ts>
-// struct utuple_contains<T, std::tuple<Ts...>> : std::bool_constant<(std::is_same_v<T, Ts> || ...)> {};
 
 
 //C++14 version 
@@ -381,5 +405,25 @@ template<typename... Ts>
 auto getParameterNamesTuple(const std::tuple<Ts...>& params) {
     return getParameterNamesTuple(std::make_index_sequence<sizeof...(Ts)>(), params);
 }
+
+
+
+//Foreach
+
+
+template<std::size_t I = 0, typename FuncT, typename... Tp>
+inline typename std::enable_if<I == sizeof...(Tp), void>::type
+for_each_in_tuple(std::tuple<Tp...> &, FuncT) // Unused arguments are ignored
+{ }
+
+template<std::size_t I = 0, typename FuncT, typename... Tp>
+inline typename std::enable_if<I < sizeof...(Tp), void>::type
+for_each_in_tuple(std::tuple<Tp...>& t, FuncT f)
+{
+    f(std::get<I>(t));
+    for_each_in_tuple<I + 1, FuncT, Tp...>(t, f);
+}
+
+
 
 #endif //_ASD_UTUPLE_STORAGE
