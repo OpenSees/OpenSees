@@ -56,7 +56,7 @@ public:
 	// Constructors
 	GradientInelasticBeamColumn3d();
 	GradientInelasticBeamColumn3d(int tag, int nodeI, int nodeJ,
-		int numSec, SectionForceDeformation **endSec1, SectionForceDeformation **sec, SectionForceDeformation **endSec2, double R1, double R2,
+		int numSec, SectionForceDeformation &endSec1, SectionForceDeformation &sec, SectionForceDeformation &endSec2, double R1, double R2,
 		BeamIntegration &BI, CrdTransf &CT, double LC,
 		double minTolerance = 1.0e-10, double maxTolerance = 1.0e-8, int maxNumIters = 50,
 		bool updateH = false,

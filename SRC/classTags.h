@@ -302,6 +302,8 @@
 
 #define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
 
+#define MAT_TAG_GMG_CyclicReinforcedConcrete    9999    // Rasool Ghorbani
+
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
@@ -843,6 +845,7 @@
 #define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
 #define ELE_TAG_PFEMContact3D             255
 #define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
+#define ELE_TAG_E_SFI        			257 // C. N. Lopez
 
 #define ELE_TAG_ExternalElement           99990
 

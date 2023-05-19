@@ -289,7 +289,7 @@ OPS_EnvelopeElementRecorder()
     if (domain == 0)
         return 0;
     EnvelopeElementRecorder* recorder = new EnvelopeElementRecorder(&elements,
-        data, nargrem, *domain, *theOutputStream, dT, echoTimeFlag, &dofs);
+        data, nargrem, *domain, *theOutputStream, dT, rTolDt, echoTimeFlag, &dofs);
 
     return recorder;
 }
