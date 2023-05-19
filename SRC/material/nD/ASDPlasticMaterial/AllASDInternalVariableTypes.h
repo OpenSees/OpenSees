@@ -37,6 +37,7 @@ struct InternalVariableType {
     void commit() {committed_value = trial_value;};
     void revert() {trial_value = committed_value;};
     inline const char* getName() const { return NAME; }
+    int size() const {return trial_value.size();}
 
     template <class ParameterStorageType>
     EvolvingVariableType hardening_function(

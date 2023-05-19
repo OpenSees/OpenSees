@@ -71,6 +71,7 @@ void call_revert(T& t) {
     t.revert();
 }
 
+
 // Recursive function to call commit on all elements in the tuple
 template <std::size_t I = 0, typename... T>
 typename std::enable_if<I < sizeof...(T), void>::type
@@ -82,6 +83,7 @@ call_commit_on_tuple_elements(std::tuple<T...>& tuple) {
 template <std::size_t I = 0, typename... T>
 typename std::enable_if<I == sizeof...(T), void>::type
 call_commit_on_tuple_elements(std::tuple<T...>&) {}
+
 
 // Recursive function to call revert on all elements in the tuple
 template <std::size_t I = 0, typename... T>
@@ -98,7 +100,6 @@ call_revert_on_tuple_elements(std::tuple<T...>&) {}
 
 
 // For getting parameters types
-
 template <typename Tuple1, typename Tuple2>
 struct tuple_cat_helper;
 
@@ -112,7 +113,6 @@ using tuple_cat_t = typename tuple_cat_helper<Tuple1, Tuple2>::type;
 
 
 // For operating on utuple_storage elements
-
 template <std::size_t I = 0, typename Function, typename... Tp>
 inline typename std::enable_if<I == sizeof...(Tp), void>::type
 apply_to_each_in_tuple(std::tuple<Tp...>&, Function) { }
@@ -138,7 +138,7 @@ public:
 
     // The wrapped std::tuple
     tuple_t data;
-	
+    
     // Sets the value of the element with type T in the tuple.
     template<class T>
     void set(const T& value) {
@@ -169,17 +169,15 @@ public:
         print_components_impl<0>();
     }
 
-    // New method to concatenate parameters_t tuples.
-    auto concatenate_parameters() const {
-        return concatenate_parameters_impl<0>();
+
+    //Apply a function to each element of the utuple_storage, serves as a
+    // foreach loop over stored variables
+    template<typename Function>
+    void apply(Function f) {
+        apply_to_each_in_tuple(data, f);
     }
 
-    //Apply a function to each element of the utuple_storage
-	template<typename Function>
-	void apply(Function f) {
-	    apply_to_each_in_tuple(data, f);
-	}
-
+    //Get names of parameter types
     auto getParameterNames() const
     {
         return getParameterNamesTuple(data);
@@ -191,50 +189,27 @@ public:
         setParameterByName_impl<0>(name, value);
     }
 
-    // template<std::size_t I = 0, typename... Ts>
-    // std::enable_if_t<I == sizeof...(Ts), void> 
-    // setParameterByName( std::tuple<Ts...>&, const char* name, double value) {
-    //     // End of recursion, do nothing.
-    // }
-
-    // template<std::size_t I = 0, typename... Ts>
-    // std::enable_if_t<I < sizeof...(Ts), void> 
-    // setParameterByName(const std::tuple<Ts...>& tuple, const char* name, double value) {
-    //     if (std::strcmp(std::get<I>(tuple).getName(), name) == 0) {
-    //         std::get<I>(tuple).value = value;
-    //     } else {
-    //         setParameterByName<I + 1>(tuple, name, value);
-    //     }
-    // }
-
-    // template<typename... Ts>
-    // void setParameterByName(const char* name, double value) {
-    //     setParameterByName<0>(data, name, value);
-    // }
-    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
-    void setParameterByName_impl(const char* name, double value)  {
-        using current_type = typename std::tuple_element<I, tuple_t>::type;
-
-        auto current_name =std::get<I>(data).getName();
-
-
-        if (std::strcmp(current_name, name) == 0) {
-            std::get<I>(data).value = value;
-            // std::get<I>(data).setValue(value);
-        } else {
-            setParameterByName_impl<I + 1>(name, value);
-        }
-
-        setParameterByName_impl<I + 1>(name, value);
+    //Get names of parameter types
+    auto getInternalVariableNames() const
+    {
+        return getInternalVariableNamesTuple(data);
     }
 
-    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
-    void setParameterByName_impl(const char* name, double value)  {
-        // Base case, do nothing.
+    //To set an internal variable by name
+    int getInternalVariableSizeByName(const char* name)  const {
+        return getInternalVariableSizeByName_impl<0>(name);
     }
+
+    //To set an internal variable by name
+    void setInternalVariableByName(const char* name, int size, double *values)  {
+        setInternalVariableByName_impl<0>(name, size, values);
+    }
+    
+
 
 private:
 
+    // Implementations for print_components
     template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
     void print_components_impl() const {
         using current_type = typename std::tuple_element<I, tuple_t>::type;
@@ -254,21 +229,77 @@ private:
     }
 
 
-    // Helper function to recursively concatenate parameters_t tuples.
+    // Implementations for setParameterByName
     template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
-    auto concatenate_parameters_impl() const {
+    void setParameterByName_impl(const char* name, double value)  {
         using current_type = typename std::tuple_element<I, tuple_t>::type;
-        using parameters_tuple_type = typename current_type::parameters_t;
-        auto current_parameters = std::get<I>(data).template hardening_function_parameters<parameters_tuple_type>();
-        auto remaining_parameters = concatenate_parameters_impl<I + 1>();
-        return tuple_cat_t<parameters_tuple_type, decltype(remaining_parameters)>(std::tuple_cat(current_parameters, remaining_parameters));
+
+        auto current_name =std::get<I>(data).getName();
+
+
+        if (std::strcmp(current_name, name) == 0) {
+            std::get<I>(data).value = value;
+        } else {
+            setParameterByName_impl<I + 1>(name, value);
+        }
+
+        setParameterByName_impl<I + 1>(name, value);
     }
 
     template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
-    auto concatenate_parameters_impl() const {
-        return std::tuple<>();
+    void setParameterByName_impl(const char* name, double value)  {
+        // Base case, do nothing.
     }
 
+
+    // Implementations for setInternalVariableByName
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    int getInternalVariableSizeByName_impl(const char* name) const {
+        using current_type = typename std::tuple_element<I, tuple_t>::type;
+
+        auto current_name =std::get<I>(data).getName();
+
+
+        if (std::strcmp(current_name, name) == 0) {
+            return std::get<I>(data).size();
+        } else {
+            return getInternalVariableSizeByName_impl<I + 1>(name);
+        }
+
+        getInternalVariableSizeByName_impl<I + 1>(name);
+    }
+
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    int getInternalVariableSizeByName_impl(const char* name) const  {
+        // Base case, do nothing.
+        return -1;
+    }
+
+        // Implementations for setInternalVariableByName
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    void setInternalVariableByName_impl(const char* name, int size, double * values)  {
+        using current_type = typename std::tuple_element<I, tuple_t>::type;
+
+        auto current_name =std::get<I>(data).getName();
+
+
+        if (std::strcmp(current_name, name) == 0) {
+            for (int i = 0; i < size; ++i)
+            {
+                std::get<I>(data).trial_value[i] = values[i];
+                std::get<I>(data).committed_value[i] = values[i];
+            }
+        } else {
+            setInternalVariableByName_impl<I + 1>(name, size, values);
+        }
+
+        setInternalVariableByName_impl<I + 1>(name, size, values);
+    }
+
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    void setInternalVariableByName_impl(const char* name, int size, double *values)  {
+        // Base case, do nothing.
+    }
 
 };
 
@@ -332,32 +363,7 @@ struct utuple_contains<T, std::tuple<>> : std::false_type {};
 
 
 
-// // C++17 version
-// // utuple_concat_unique: A struct to concatenate tuples with unique types
-// template <typename... Ts>
-// struct utuple_concat_unique;
-
-// template <typename T, typename... Ts1, typename... Ts2, typename... Rest>
-// struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<T, Ts2...>, Rest...> {
-//     using type = std::conditional_t<
-//         utuple_contains<T, std::tuple<Ts1...>>::value,
-//         typename utuple_concat_unique<std::tuple<Ts1...>, std::tuple<Ts2...>, Rest...>::type,
-//         typename utuple_concat_unique<std::tuple<Ts1..., T>, std::tuple<Ts2...>, Rest...>::type>;
-// };
-
-// // Specialization for the case when the second tuple is empty
-// template <typename... Ts1>
-// struct utuple_concat_unique<std::tuple<Ts1...>, std::tuple<>> {
-//     using type = std::tuple<Ts1...>;
-// };
-
-// template <typename... Ts>
-// struct utuple_concat_unique<std::tuple<Ts...>> {
-//     using type = std::tuple<Ts...>;
-// };
-
-
-//C++14 version
+// utuple_concat_unique: A struct to concatenate tuples with unique types
 template <typename Tuple1, typename Tuple2>
 struct utuple_concat_unique;
 
@@ -405,6 +411,19 @@ template<typename... Ts>
 auto getParameterNamesTuple(const std::tuple<Ts...>& params) {
     return getParameterNamesTuple(std::make_index_sequence<sizeof...(Ts)>(), params);
 }
+
+
+// To get internal_variables names, for initialization
+template<std::size_t... Is, typename... Ts>
+auto getInternalVariableNamesTuple(std::index_sequence<Is...>, const std::tuple<Ts...>& ivs) {
+    return std::make_tuple(std::get<Is>(ivs).getName()...);
+}
+
+template<typename... Ts>
+auto getInternalVariableNamesTuple(const std::tuple<Ts...>& ivs) {
+    return getInternalVariableNamesTuple(std::make_index_sequence<sizeof...(Ts)>(), ivs);
+}
+
 
 
 

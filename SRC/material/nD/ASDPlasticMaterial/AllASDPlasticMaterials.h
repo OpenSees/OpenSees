@@ -25,6 +25,35 @@
 // Fully general templated material class for plasticity modeling
 
 #include "ConstitutiveModels/VonMisesLinearHardening.h"
+
+
+
+// ASDPlasticMaterial * get_instace_of_ASDPlasticMaterial(const char * name)
+// {
+	
+// }
+
+
+    // using proto_map_key = std::tuple<
+    //     const char* /* yield surface*/, 
+    //     const char* /* plastic potential*/>;
+    // using proto_map_value NDMaterial*;
+    // using proto_map_t = std::map<proto_map_key, proto_map_value>;
+    // inline make_prototypes() {
+    //     proto_map_t m;
+        
+    //     { // a proto of VM + VM
+    //         auto iproto = new ASDPlastic<VMYS, VMPP>();
+    //         m[std::make_tuple(VMYS::NAME, VMPP::NAME)] = iprotp;
+    //     }
+        
+    //     return m;
+    // }
+    // static proto_map_t TheAvailableProtos = make_prototypes();
+    
+
+
+
 // #include "ConstitutiveModels/DruckerPragerLinearHardening.h"
 // #include "ConstitutiveModels/DruckerPragerVonMisesLinearHardening.h"
 // #include "ConstitutiveModels/DruckerPragerArmstrongFrederickLE.h"

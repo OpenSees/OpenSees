@@ -74,7 +74,7 @@ void *OPS_AllASDPlasticMaterials(void)
         return nullptr;
     }
 
- 
+
 
 
 
@@ -180,23 +180,80 @@ void *OPS_AllASDPlasticMaterials(void)
     VonMisesLinearHardening* instance = new VonMisesLinearHardening(tag, rho_);
 
 
-    cout << "\n\nPrinting parameters\n";
-    auto parameter_names = instance->getParameterNames();
 
-    for_each_in_tuple(parameter_names, [](auto& name)
+    cout << "\n\nDefined internal variables: \n";
+    auto iv_names = instance->getInternalVariablesNames();
+    for_each_in_tuple(iv_names, [instance](auto & name)
     {
-        std::cout << name << std::endl;
+        std::cout << "   "  << name << " size = " << instance->getInternalVariableSizeByName(name) << std::endl;
     });
-    // NDMaterial* instance = new VonMisesLinearHardening(tag, rho_in, p0_in, yf_in, et_in, pf_in, internal_variables_in);
 
-    cout << "\n\nReading parameters form input\n";
-    while(OPS_GetNumRemainingInputArgs()>0){
-		double param_value;
-		const char *param_name = OPS_GetString();
-		OPS_GetDouble(&numData, &param_value);
-		cout << param_name << " = " << param_value << endl;
-		instance->setParameterByName(param_name, param_value);
+    cout << "\n\nDefined model parameters\n";
+    auto parameter_names = instance->getParameterNames();
+    for_each_in_tuple(parameter_names, [](auto & name)
+    {
+        std::cout << "   "  <<  name << std::endl;
+    });
+
+
+    // Loop over input arguments
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+
+        //Current command
+        const char *cmd = OPS_GetString();
+
+        // Specifying internal variables
+        if (std::strcmp(cmd, "Begin_Internal_Variables") == 0)
+        {
+            cout << "\n\nReading internal variables from input\n";
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                double iv_values[6];
+                const char *iv_name = OPS_GetString();
+
+                if (std::strcmp(iv_name, "End_Internal_Variables") == 0)
+                {
+                    break;
+                }
+
+                int iv_size = instance->getInternalVariableSizeByName(iv_name);
+                OPS_GetDouble(&iv_size, iv_values);
+                cout << iv_name << " = ";
+                for (int i = 0; i < iv_size; ++i)
+                {
+                    cout << iv_values[i] << " ";
+                }
+                cout << endl;
+                instance->setInternalVariableByName(iv_name, iv_size, &iv_values[0]);
+            }
+
+        }
+
+
+        // Specifying model parameters
+        if (std::strcmp(cmd, "Begin_Model_Parameters") == 0)
+        {
+            cout << "\n\nReading parameters from input\n";
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                double param_value;
+                const char *param_name = OPS_GetString();
+                if (std::strcmp(param_name, "End_Model_Parameters") == 0)
+                {
+                    break;
+                }
+
+                OPS_GetDouble(&numData, &param_value);
+                cout << param_name << " = " << param_value << endl;
+                instance->setParameterByName(param_name, param_value);
+            }
+        }
     }
+
+
+
+
+
+
+
 
 
     cout << "\n\nPrinting material info\n";
