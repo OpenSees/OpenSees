@@ -98,12 +98,7 @@ EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag, std::vector <int> beamTa
     mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
 {
     // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
+    Domain &theDomain = *(OPS_GetDomain());
 
     m_numEmbeddedPoints = solidTag.size();
     theSolidTags = new int[m_numEmbeddedPoints];

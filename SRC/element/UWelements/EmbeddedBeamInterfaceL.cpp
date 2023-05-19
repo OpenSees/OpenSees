@@ -98,12 +98,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
 {
   
     // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
-
+  Domain &theDomain = *(OPS_GetDomain());
         
     if (num_EmbeddedBeamInterfaceL == 0) {
         num_EmbeddedBeamInterfaceL++;
