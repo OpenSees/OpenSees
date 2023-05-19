@@ -99,12 +99,17 @@ C++ "Rule of 5"
 using namespace ASDPlasticMaterialGlobals;
 
 
+// template <
+//     class ElasticityType,
+//     class YieldFunctionType,
+//     class PlasticFlowType,
+//     int thisClassTag,
+//     class T >
 template <
     class ElasticityType,
     class YieldFunctionType,
     class PlasticFlowType,
-    int thisClassTag,
-    class T >
+    int thisClassTag>
 class ASDPlasticMaterial : public NDMaterial
 {
 
@@ -126,7 +131,8 @@ public:
                                     typename YieldFunctionType::parameters_t,
                                     typename PlasticFlowType::parameters_t,
                                     typename ElasticityType::parameters_t,
-                                    extracted_parameters_t
+                                    extracted_parameters_t,
+                                    std::tuple<MassDensity>
                                     >;
     using parameters_storage_t = utuple_storage<parameters_concat_types>;
 
@@ -142,11 +148,8 @@ public:
     }
 
 
-    ASDPlasticMaterial(int tag,
-                       double rho_
-                      )
-        : NDMaterial(tag, thisClassTag),
-          rho(rho_)
+    ASDPlasticMaterial(int tag)
+        : NDMaterial(tag, thisClassTag)
     {
 
         double p0 = 0.;
@@ -242,7 +245,7 @@ public:
 
     double getRho(void)
     {
-        return rho;
+        return parameters_storage.template get<MassDensity>().value;
     }
 
     double getPressure(void)
@@ -251,6 +254,11 @@ public:
         return -CommitStress.trace() / 3;
     }
 
+    std::string getYFName() const {return YieldFunctionType::NAME;}
+    std::string getPFName() const {return PlasticFlowType::NAME;}
+    std::string getELName() const {return ElasticityType::NAME;}
+    std::string getIVName() const {return iv_storage.getVariableNamesAndHardeningLaws();}
+ 
 
     //==================================================================================================
     //  Set Trial strain and trial strain increment
@@ -2529,24 +2537,24 @@ private:
     //     return errorcode;
     // }
 
-    template <typename U = T>
-    typename std::enable_if < !supports_pre_integration_callback<U>::value, int >::type
-// typename std::enable_if < !std::is_base_of<defines_pre_integration_callback, U>::value, int >::type
-    pre_integration_callback_(const VoigtVector &depsilon, const VoigtVector &dsigma,  const VoigtVector &TrialStress, const VoigtMatrix &Stiffness, double yf1, double yf2, bool & returns)
-    {
-        // cout << "pre_integration_callback_ disabled\n";
-        returns = false;
-        return 0;
-    }
+//     template <typename U = T>
+//     typename std::enable_if < !supports_pre_integration_callback<U>::value, int >::type
+// // typename std::enable_if < !std::is_base_of<defines_pre_integration_callback, U>::value, int >::type
+//     pre_integration_callback_(const VoigtVector &depsilon, const VoigtVector &dsigma,  const VoigtVector &TrialStress, const VoigtMatrix &Stiffness, double yf1, double yf2, bool & returns)
+//     {
+//         // cout << "pre_integration_callback_ disabled\n";
+//         returns = false;
+//         return 0;
+//     }
 
-    template <typename U = T>
-    typename std::enable_if<supports_pre_integration_callback<U>::value, int>::type
-// typename std::enable_if<std::is_base_of<defines_pre_integration_callback, U>::value, int>::type
-    pre_integration_callback_(const VoigtVector &depsilon, const VoigtVector &dsigma, const VoigtVector &TrialStress, const VoigtMatrix &Stiffness, double yf1, double yf2, bool & returns)
-    {
-        // cout << "pre_integration_callback_ enabled\n";
-        return static_cast<U*>(this)->pre_integration_callback(depsilon, dsigma, TrialStress, Stiffness,  yf1,  yf2, returns);
-    }
+//     template <typename U = T>
+//     typename std::enable_if<supports_pre_integration_callback<U>::value, int>::type
+// // typename std::enable_if<std::is_base_of<defines_pre_integration_callback, U>::value, int>::type
+//     pre_integration_callback_(const VoigtVector &depsilon, const VoigtVector &dsigma, const VoigtVector &TrialStress, const VoigtMatrix &Stiffness, double yf1, double yf2, bool & returns)
+//     {
+//         // cout << "pre_integration_callback_ enabled\n";
+//         return static_cast<U*>(this)->pre_integration_callback(depsilon, dsigma, TrialStress, Stiffness,  yf1,  yf2, returns);
+//     }
 
 private:
     // Routine used by yield_surface_cross to find the stresstensor at cross point
@@ -2679,8 +2687,6 @@ private:
 
 protected:
 
-    double rho;
-
     VoigtVector TrialStrain;
     VoigtVector TrialStress;
     VoigtVector TrialPlastic_Strain;
@@ -2746,20 +2752,32 @@ protected:
 
 };
 
-template < class E, class Y, class P, int tag, class T >
 // ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set;
-ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+// template < class E, class Y, class P, int tag, class T >
+// ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+template < class E, class Y, class P, int tag>
+ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag>::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
 
-template < class E, class Y, class P, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::dsigma;
-template < class E, class Y, class P, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::depsilon_elpl;  //Used to compute the yield surface intersection.
-template < class E, class Y, class P, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_stress;  //Used to compute the yield surface intersection.
-template < class E, class Y, class P, int tag, class T >
-VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_strain;  //Used to compute the yield surface intersection.
-template < class E, class Y, class P, int tag, class T >
-VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  tag,  T >::Stiffness;  //Used to compute the yield surface intersection.
+// template < class E, class Y, class P, int tag, class T >
+// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::dsigma;
+template < class E, class Y, class P, int tag>
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag>::dsigma;
+// template < class E, class Y, class P, int tag, class T >
+// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::depsilon_elpl;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag>
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag>::depsilon_elpl;  //Used to compute the yield surface intersection.
+// template < class E, class Y, class P, int tag, class T >
+// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_stress;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag>
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag >::intersection_stress;  //Used to compute the yield surface intersection.
+// template < class E, class Y, class P, int tag, class T >
+// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_strain;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag>
+VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag>::intersection_strain;  //Used to compute the yield surface intersection.
+// template < class E, class Y, class P, int tag, class T >
+// VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  tag,  T >::Stiffness;  //Used to compute the yield surface intersection.
+template < class E, class Y, class P, int tag>
+VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  tag>::Stiffness;  //Used to compute the yield surface intersection.
 
 
 #endif

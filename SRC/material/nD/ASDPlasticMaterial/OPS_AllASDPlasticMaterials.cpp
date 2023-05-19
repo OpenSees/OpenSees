@@ -67,15 +67,6 @@ void *OPS_AllASDPlasticMaterials(void)
     }
 
 
-    double rho_ = 0;
-    numData = 1;
-    if (OPS_GetDouble(&numData, &rho_) != 0)  {
-        opserr << "nDMaterial ASDPlasticMaterial Error: invalid 'rho'.\n";
-        return nullptr;
-    }
-
-
-
 
 
     // if (OPS_GetDouble(&numData, &k0_in) != 0) {
@@ -177,9 +168,19 @@ void *OPS_AllASDPlasticMaterials(void)
     //     }
     // }
 
-    VonMisesLinearHardening* instance = new VonMisesLinearHardening(tag, rho_);
+    // VonMisesLinearHardening* instance = new VonMisesLinearHardening(tag);
+
+    static proto_map_t TheAvailableProtos = make_prototypes();
 
 
+
+    const char *yf_type = OPS_GetString();
+    const char *pf_type = OPS_GetString();
+    const char *el_type = OPS_GetString();
+    const char *iv_type = OPS_GetString();
+
+
+    auto instance = TheAvailableProtos[std::make_tuple(yf_type,pf_type,el_type,iv_type)];
 
     cout << "\n\nDefined internal variables: \n";
     auto iv_names = instance->getInternalVariablesNames();
@@ -195,12 +196,12 @@ void *OPS_AllASDPlasticMaterials(void)
         std::cout << "   "  <<  name << std::endl;
     });
 
-
     // Loop over input arguments
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
         //Current command
         const char *cmd = OPS_GetString();
+
 
         // Specifying internal variables
         if (std::strcmp(cmd, "Begin_Internal_Variables") == 0)

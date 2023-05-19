@@ -25,6 +25,7 @@
 // Fully general templated material class for plasticity modeling
 
 #include "ASDPlasticMaterialGlobals.h"
+#include <string>
 
 //Base template struct for all internal variables
 template <class EvolvingVariableType, class HardeningType, class NAMER>
@@ -36,7 +37,13 @@ struct InternalVariableType {
     InternalVariableType(EvolvingVariableType x) : trial_value(x), committed_value(x) {}
     void commit() {committed_value = trial_value;};
     void revert() {trial_value = committed_value;};
-    inline const char* getName() const { return NAME; }
+    const char *  getName() const { return NAME;}//(std::string(NAME) + std::string("(") + std::string(HardeningType::NAME) + std::string(")")).c_str(); }
+    std::string getFullName() const 
+    { 
+        std::string fullname = std::string(NAME) + std::string("(") + std::string(HardeningType::NAME) + std::string(")");
+        // cout << "fullname = " << fullname << endl;
+        return fullname; 
+    }
     int size() const {return trial_value.size();}
 
     template <class ParameterStorageType>
@@ -57,9 +64,10 @@ struct InternalVariableType {
 //Stream operator for internal variables
 template <class EvolvingVariableType, class HardeningType, class NAMER>
 std::ostream& operator<<(std::ostream& os, const InternalVariableType<EvolvingVariableType, HardeningType, NAMER>& param) {
-    os << param.getName() << ": [Trial: " << param.trial_value.transpose() << ", Committed: " << param.committed_value.transpose() << "]";
+    os << param.getFullName() << 
+    "\n               : [Trial: " << param.trial_value.transpose() << ", Committed: " << param.committed_value.transpose() << "]";
     os << endl;
-    os << "   HardeningType::parameters --> " << typeid(typename InternalVariableType<EvolvingVariableType, HardeningType, NAMER>::parameters_t).name() << endl;
+    // os << "   HardeningType::parameters --> " << typeid(typename InternalVariableType<EvolvingVariableType, HardeningType, NAMER>::parameters_t).name() << endl;
     return os;
 }
 
