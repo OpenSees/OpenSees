@@ -190,6 +190,32 @@ public:
     }
 
     //==================================================================================================
+    // To set internal variables values for the model
+    //==================================================================================================
+    auto getInternalVariablesNames() const
+    {
+        return iv_storage.getParameterNames();
+    }
+
+    int getInternalVariableSizeByName(const char * iv_name) const
+    {
+        return iv_storage.getInternalVariableSizeByName(iv_name);
+    }
+
+    auto setInternalVariableByName(const char * iv_name, int iv_size, double* iv_values) 
+    {
+        cout << "  --->  Setting " << iv_name << " = ";
+        for (int i = 0; i < iv_size; ++i)
+        {
+            cout << iv_values[i] << " ";
+        }
+        cout << endl;
+        return iv_storage.setInternalVariableByName(iv_name, iv_size, iv_values);
+    }
+
+
+
+    //==================================================================================================
     // To set parameter values for the model
     //==================================================================================================
     auto getParameterNames() const
