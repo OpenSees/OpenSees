@@ -36,6 +36,7 @@
 
 // Hardening policies
 struct LinearHardeningForTensorPolicy {
+    static constexpr const char* NAME = "LinearHardeningForTensor";
 	template <class ParameterStorageType>
     static VoigtVector f(
     	const VoigtVector& depsilon,
@@ -50,6 +51,7 @@ struct LinearHardeningForTensorPolicy {
 };
 
 struct LinearHardeningForScalarPolicy {
+    static constexpr const char* NAME = "LinearHardeningForScalar";
 	template <class ParameterStorageType>
     static double f(
     	const VoigtVector& depsilon,
@@ -75,7 +77,7 @@ struct HardeningFunction {
     {
         return HardeningPolicy::f(depsilon, m, sigma, parameters);
     }
-
+    static constexpr const char* NAME = HardeningPolicy::NAME;
     using parameters_t = typename HardeningPolicy::parameters_t;
 };
 

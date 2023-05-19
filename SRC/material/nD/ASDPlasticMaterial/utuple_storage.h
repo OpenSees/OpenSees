@@ -98,7 +98,7 @@ typename std::enable_if<I == sizeof...(T), void>::type
 call_revert_on_tuple_elements(std::tuple<T...>&) {}
 
 
-
+    
 // For getting parameters types
 template <typename Tuple1, typename Tuple2>
 struct tuple_cat_helper;
@@ -205,7 +205,9 @@ public:
         setInternalVariableByName_impl<0>(name, size, values);
     }
     
-
+    std::string getVariableNamesAndHardeningLaws() const {
+        return getVariableNamesAndHardeningLaws_impl<0>();
+    }
 
 private:
 
@@ -301,7 +303,31 @@ private:
         // Base case, do nothing.
     }
 
-};
+
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    std::string getVariableNamesAndHardeningLaws_impl() const {
+        using current_type = typename std::tuple_element<I, tuple_t>::type;
+
+        // Get variable name
+        std::string var_name = std::get<I>(data).getFullName();
+
+        // cout << "var_name = " << var_name << endl;
+
+        // Get hardening law type
+        // std::string law_name = typeid(typename current_type::parameters_t::HardeningPolicy).name();
+        // std::string law_name = current_type.;
+
+        return var_name + ":" + getVariableNamesAndHardeningLaws_impl<I + 1>();
+    }
+
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    std::string getVariableNamesAndHardeningLaws_impl() const {
+        // Base case, do nothing.
+        return "";
+    }
+
+
+};  //end utuple_storage
 
 
 namespace std {

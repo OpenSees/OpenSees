@@ -28,7 +28,7 @@
 #define _AllASDModelParametersType
 
 // ============================================================================
-// Internal variables base template struct
+// Model Parameters base template struct
 template<typename T, class NAMER>
 struct ModelParameterType {
 
@@ -47,25 +47,31 @@ std::ostream& operator<<(std::ostream& os, const ModelParameterType<T, NAMER>& p
 }
 
 // ============================================================================
-// Internal variables associated with Elasticity
+// Model Parameters associated with Elasticity
 struct YoungsModulusName { static constexpr const char* name = "YoungsModulus";};
 using YoungsModulus = ModelParameterType<double, YoungsModulusName>;
 struct PoissonsRatioName { static constexpr const char* name = "PoissonsRatio";};
 using PoissonsRatio = ModelParameterType<double, PoissonsRatioName>;
 
 // ============================================================================
-// Internal variables associated with Yield Function
+// Model Parameters associated with Yield Function
 struct InternalFrictionAngleName { static constexpr const char* name = "InternalFrictionAngle";};
 using InternalFrictionAngle = ModelParameterType<double, InternalFrictionAngleName>;
 
 // ============================================================================
-// Internal variables associated with Plastic flow
+// Model Parameters associated with Plastic flow
 
 // ============================================================================
-// Internal variables associated with Evolving Variables
+// Model Parameters associated with Evolving Variables
 struct ScalarLinearHardeningParameter_Name { static constexpr const char* name = "ScalarLinearHardeningParameter";};
 using ScalarLinearHardeningParameter = ModelParameterType<double, ScalarLinearHardeningParameter_Name>;
 struct TensorLinearHardeningParameter_Name { static constexpr const char* name = "TensorLinearHardeningParameter";};
 using TensorLinearHardeningParameter = ModelParameterType<double, TensorLinearHardeningParameter_Name>;
+
+// ============================================================================
+// Other Model Parameters 
+struct MassDensity_Name { static constexpr const char* name = "MassDensity";};
+using MassDensity = ModelParameterType<double, MassDensity_Name>;
+
 
 #endif //not defined _AllASDModelParametersType

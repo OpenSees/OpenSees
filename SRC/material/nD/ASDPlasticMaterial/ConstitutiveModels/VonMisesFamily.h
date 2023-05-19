@@ -29,6 +29,7 @@
 
 
 
+#include <classTags.h>
 // New materials are created by subclassing instances of the ASDPlasticMaterial<.,.,.,.,>
 // template class, with the appropriate components as template parameters.
 // Heavy use of templating is made, therefore typedeffing is a friend in helping clear up the mess.
@@ -36,36 +37,48 @@
 
 
 //Von Mises Model with linear hardening (VMLH)
-class VonMisesLinearHardening;  //This model we will define
+// template<typename Halpha, typename Hk>
+// class VonMises;  //This model we will define
 
 //Model internal variables
-using VMSL = VonMisesRadiusIV<ScalarLinearHardeningFunction>;
-using BSTL = BackStressIV<TensorLinearHardeningFunction>;
+// template<typename Halpha>
+// using alpha = BackStressIV<Halpha>;
 
-//Select elasticity model
-using EL = LinearIsotropic3D_EL;
+// template<typename Hk>
+// using k = VonMisesRadiusIV<Hk>;
 
-//Select Yield-function model, using the internal variables
-using YF = VonMises_YF<BSTL, VMSL>;
+// //Select elasticity model
+// using EL = LinearIsotropic3D_EL;
 
-//Select Plastic-flow model, using the internal variables
-using PF = VonMises_PF<BSTL, VMSL>;
+// //Select Yield-function model, using the internal variables
+// template<typename Halpha, typename Hk>
+// using YF = VonMises_YF<alpha<Halpha>, k<Hk>>;
 
-using VMLHBase = ASDPlasticMaterial <EL,
-        YF,
-        PF,
-        ND_TAG_ASDPlasticMaterial,
-        VonMisesLinearHardening > ;
+// //Select Plastic-flow model, using the internal variables
+// template<typename Halpha, typename Hk>
+// using PF = VonMises_PF<alpha<Halpha>, k<Hk>>;
 
+// template<typename Halpha, typename Hk>
+// using VMLHBase = ASDPlasticMaterial <EL,
+//         YF<Halpha, Hk>,
+//         PF<Halpha, Hk>,
+//         ND_TAG_ASDPlasticMaterial
+//         >;
 
-//Define the new class. We must provide two constructor and the evolving variables as data-members.
-class VonMisesLinearHardening : public VMLHBase
-{
-public:
-    VonMisesLinearHardening(int tag_in) :
-        VMLHBase::ASDPlasticMaterial(tag_in) 
-        {
+// template<typename Halpha, typename Hk>
+// using VonMises = VMLHBase<Halpha, Hk>;
 
-        }
-};
+// using VonMisesLinearHardening = VonMises<TensorLinearHardeningFunction, ScalarLinearHardeningFunction>;
 
+// using VonMisesLinearHardening =
+//     ASDPlasticMaterial <LinearIsotropic3D_EL,
+//         VonMises_YF<
+//             BackStressIV<TensorLinearHardeningFunction>, 
+//             VonMisesRadiusIV<ScalarLinearHardeningFunction>
+//             >,
+//         VonMises_PF<
+//             BackStressIV<TensorLinearHardeningFunction>, 
+//             VonMisesRadiusIV<ScalarLinearHardeningFunction>
+//             >,
+//         ND_TAG_ASDPlasticMaterial
+//         >;
