@@ -84,7 +84,10 @@ OPS_EmbeddedBeamInterfaceL(void)
 }
 
 
-EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) : Element(tag, ELE_TAG_EmbeddedBeamInterfaceL)
+EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) :
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  crdTransf(0)
 {
 
 }
@@ -92,18 +95,15 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) : Element(tag, ELE_TAG_E
 EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTag, std::vector <int> solidTag, int crdTransfTag,
     std::vector <double>  beamRho, std::vector <double>  beamTheta, std::vector <double>  solidXi, std::vector <double>  solidEta,
     std::vector <double>  solidZeta, double radius, std::vector <double> area, std::vector <double> length, bool writeConnectivity,
-    const char * connectivityFN): Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
-    m_beam_radius(radius), mQa(3, 3), mQb(3, 3), mQc(3, 3),
-    mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
+    const char * connectivityFN):
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  m_beam_radius(radius), mQa(3, 3), mQb(3, 3), mQc(3, 3),
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8), crdTransf(0)
 {
   
     // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
-
+  Domain &theDomain = *(OPS_GetDomain());
         
     if (num_EmbeddedBeamInterfaceL == 0) {
         num_EmbeddedBeamInterfaceL++;
@@ -231,7 +231,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
 
 
     // get the coordinate transformation object
-    crdTransf = OPS_GetCrdTransf(crdTransfTag)->getCopy3d();
+    crdTransf = OPS_getCrdTransf(crdTransfTag)->getCopy3d();
 
     if (writeConnectivity)
     {
@@ -256,19 +256,31 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTa
 }
 
 EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL()
-    : Element(0, ELE_TAG_EmbeddedBeamInterfaceL),
-    m_beam_radius(0), mQa(3, 3), mQb(3, 3), mQc(3, 3),
-    mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
+    :
+  Element(0, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  m_beam_radius(0), mQa(3, 3), mQb(3, 3), mQc(3, 3),
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8), crdTransf(0)
 {
-    crdTransf = 0;
     // mInitialize = false;
     theNodes = new Node*[2];
-
 }
 
 EmbeddedBeamInterfaceL::~EmbeddedBeamInterfaceL()
 {
+  if (theSolidTags != 0)
+    delete [] theSolidTags;
+  if (solidNodeTags != 0)
+    delete [] solidNodeTags;
+  if (theBeamTags != 0)
+    delete [] theBeamTags;
+  if (beamNodeTags != 0)
+    delete [] beamNodeTags;
 
+  if (crdTransf != 0)
+    delete crdTransf;
+  if (theNodes != 0)
+    delete [] theNodes;
 }
 
 int
