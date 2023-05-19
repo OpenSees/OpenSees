@@ -219,7 +219,7 @@ EmbeddedEPBeamInterface::EmbeddedEPBeamInterface(int tag, std::vector <int> beam
         m_intWidth = 0.1 * m_beam_radius;
 
     // get the coordinate transformation object
-    crdTransf = OPS_GetCrdTransf(crdTransfTag)->getCopy3d();
+    crdTransf = OPS_getCrdTransf(crdTransfTag)->getCopy3d();
     if (writeConnectivity)
     {
         FileStream connFile(connectivityFN, APPEND);
