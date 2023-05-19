@@ -84,7 +84,10 @@ OPS_EmbeddedBeamInterfaceL(void)
 }
 
 
-EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) : Element(tag, ELE_TAG_EmbeddedBeamInterfaceL)
+EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) :
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  crdTransf(0)
 {
 
 }
