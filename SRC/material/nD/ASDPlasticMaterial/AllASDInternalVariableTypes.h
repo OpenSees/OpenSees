@@ -74,8 +74,8 @@ std::ostream& operator<<(std::ostream& os, const InternalVariableType<EvolvingVa
 //Definitions of possible internal variables
 struct BackStressName { static constexpr const char* name = "BackStress";};
 template <class HardeningType>
-using BackStressIV = InternalVariableType<VoigtVector, HardeningType, BackStressName>;
+using BackStress = InternalVariableType<VoigtVector, HardeningType, BackStressName>;
 
 struct VonMisesRadiusName { static constexpr const char* name = "VonMisesRadius";};
 template <class HardeningType>
-using VonMisesRadiusIV = InternalVariableType<VoigtScalar, HardeningType, VonMisesRadiusName>;
+using VonMisesRadius = InternalVariableType<VoigtScalar, HardeningType, VonMisesRadiusName>;

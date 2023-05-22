@@ -38,7 +38,7 @@ class LinearIsotropic3D_EL : public ElasticityBase<LinearIsotropic3D_EL> // CRTP
 {
 public:
 
-    static constexpr const char* NAME = "LinearIsotropic3D";
+    static constexpr const char* NAME = "LinearIsotropic3D_EL";
 
 	LinearIsotropic3D_EL(): ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
 	{

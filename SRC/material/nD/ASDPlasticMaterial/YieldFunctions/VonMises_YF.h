@@ -152,26 +152,15 @@ public:
 
     using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
 
-    // using iv_parameters_t = std_tuple_concat_Type <
-    //                         typename AlphaHardeningType::parameters_t,
-    //                         typename KHardeningType::parameters_t >;
-
-    // using more_parameters_t = std::tuple<>;
-
-    // using parameters_t = std_tuple_concat_Type<iv_parameters_t, more_parameters_t>;
-
     using parameters_t = std::tuple<>;
 
 
 private:
 
-    static VoigtVector s; //Stress deviator
     static VoigtVector result; //For returning VoigtVector's
 
 };
 
-template <class AlphaHardeningType,  class KHardeningType>
-VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::s;
 template <class AlphaHardeningType,  class KHardeningType>
 VoigtVector VonMises_YF<AlphaHardeningType, KHardeningType>::result;
 

@@ -132,7 +132,8 @@ public:
                                     typename PlasticFlowType::parameters_t,
                                     typename ElasticityType::parameters_t,
                                     extracted_parameters_t,
-                                    std::tuple<MassDensity>
+                                    std::tuple<MassDensity>,
+                                    std::tuple<InitialP0>
                                     >;
     using parameters_storage_t = utuple_storage<parameters_concat_types>;
 
@@ -152,36 +153,11 @@ public:
         : NDMaterial(tag, thisClassTag)
     {
 
-        double p0 = 0.;
 
-        TrialStress(0) = -p0;
-        TrialStress(1) = -p0;
-        TrialStress(2) = -p0;
-        TrialStress(3) = 0.;
-        TrialStress(4) = 0.;
-        TrialStress(5) = 0.;
-
-
-        CommitStress(0) = -p0;
-        CommitStress(1) = -p0;
-        CommitStress(2) = -p0;
-        CommitStress(3) = 0.;
-        CommitStress(4) = 0.;
-        CommitStress(5) = 0.;
-
-        TrialStrain(0) = 0;
-        TrialStrain(1) = 0;
-        TrialStrain(2) = 0;
-        TrialStrain(3) = 0;
-        TrialStrain(4) = 0;
-        TrialStrain(5) = 0;
-
-        CommitStrain(0) = 0;
-        CommitStrain(1) = 0;
-        CommitStrain(2) = 0;
-        CommitStrain(3) = 0;
-        CommitStrain(4) = 0;
-        CommitStrain(5) = 0;
+        TrialStress *= 0;
+        CommitStress *= 0;
+        TrialStrain *= 0;
+        CommitStrain *= 0;
 
         first_step = true;
     }
@@ -271,6 +247,19 @@ public:
 
     int setTrialStrain(const Vector &v)
     {
+
+        if (first_step)
+        {
+            double p0 = parameters_storage.template get<InitialP0>().value;
+            TrialStress(0) = p0;
+            TrialStress(1) = p0;
+            TrialStress(2) = p0;
+            CommitStress(0) = p0;
+            CommitStress(1) = p0;
+            CommitStress(2) = p0;     
+        }
+        
+
         TrialStrain = VoigtVector::fromStrain(v);
         return setTrialStrainIncr( TrialStrain - CommitStrain );
     }
@@ -445,29 +434,26 @@ public:
     int commitState(void)
     {
 
-        using namespace ASDPlasticMaterialGlobals;
-        int errorcode = 0;
         CommitStress = TrialStress;
         CommitStrain = TrialStrain;
         CommitPlastic_Strain = TrialPlastic_Strain;
 
         iv_storage.commit_all();
 
-        return errorcode;
+        return 0;
     }
 
     //Reverts the commited variables to the trials and calls revert on BET Classes.
     int revertToLastCommit(void)
     {
-        using namespace ASDPlasticMaterialGlobals;
-        int errorcode = 0;
+
         TrialStress = CommitStress;
         TrialStrain = CommitStrain;
         TrialPlastic_Strain = CommitPlastic_Strain;
 
         iv_storage.revert_all();
 
-        return errorcode;
+        return 0;
     }
 
     int revertToStart(void)

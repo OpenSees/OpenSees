@@ -72,6 +72,8 @@ using TensorLinearHardeningParameter = ModelParameterType<double, TensorLinearHa
 // Other Model Parameters 
 struct MassDensity_Name { static constexpr const char* name = "MassDensity";};
 using MassDensity = ModelParameterType<double, MassDensity_Name>;
+struct InitialP0_Name { static constexpr const char* name = "InitialP0";};
+using InitialP0 = ModelParameterType<double, InitialP0_Name>;
 
 
 #endif //not defined _AllASDModelParametersType
