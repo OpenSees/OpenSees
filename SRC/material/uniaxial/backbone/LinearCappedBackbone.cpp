@@ -136,9 +136,13 @@ LinearCappedBackbone::getEnergy (double strain)
 {
   if (strain < eCap)
     return theBackbone->getEnergy(strain);
-  else
+  else if (strain < eRes)
     return theBackbone->getEnergy(eCap) +
       0.5*(sCap + this->getStress(strain))*(strain-eCap);
+  else
+    return theBackbone->getEnergy(eCap) +
+      0.5*(sCap + sRes)*(eRes - eCap) +
+      sRes*(strain-eRes);
 }
 
 double

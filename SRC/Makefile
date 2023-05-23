@@ -161,7 +161,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
 	$(FE)/element/feap/TclFeapElementCommand.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
-	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
 	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
@@ -655,6 +654,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
 	$(FE)/element/mvlem/MVLEM_3D.o \
 	$(FE)/element/mvlem/SFI_MVLEM_3D.o \
+	$(FE)/element/mvlem/E_SFI.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
@@ -854,6 +854,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/GMG_CyclicReinforcedConcrete.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/SPSW02.o \

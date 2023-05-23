@@ -18,9 +18,6 @@
     <Filter Include="zeroLength">
       <UniqueIdentifier>{34edf597-ca23-45a1-a1c7-7723635d5919}</UniqueIdentifier>
     </Filter>
-    <Filter Include="beamWithHinges">
-      <UniqueIdentifier>{83a3c374-25f8-4682-9247-90334059a512}</UniqueIdentifier>
-    </Filter>
     <Filter Include="crdTransf">
       <UniqueIdentifier>{169394f8-16cf-4672-a034-6695caa4febc}</UniqueIdentifier>
     </Filter>
@@ -220,9 +217,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthSection.cpp">
       <Filter>zeroLength</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\beamWithHinges\TclBeamWithHingesBuilder.cpp">
-      <Filter>beamWithHinges</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransf2d.cpp">
       <Filter>crdTransf</Filter>
@@ -952,6 +946,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
       <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
+      <Filter>mvlem</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1698,6 +1695,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
       <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
+      <Filter>mvlem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
