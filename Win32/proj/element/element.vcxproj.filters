@@ -947,6 +947,9 @@
     <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
       <Filter>PML</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1692,6 +1695,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
       <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
+      <Filter>mvlem</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

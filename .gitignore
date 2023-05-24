@@ -90,5 +90,6 @@ Concrete.h
 forumat.for
 build
 bin
+CMakeListsmy.txt
 __pycache__
 *.dat
