@@ -671,10 +671,49 @@ TDConcreteNL::Tens_Envlp (double epsc, double &sigc, double &Ect)
 void
 TDConcreteNL::Compr_Envlp (double epsc, double &sigc, double &Ect) 
 {
-//Linear
-Ect = Ec;
-sigc = Ect*epsc;
-  return;
+  //Linear
+  //Ect = Ec;
+  //sigc = Ect*epsc;
+  //Non-linear with linear softening
+  /*-----------------------------------------------------------------------
+    ! monotonic envelope of concrete in compression (negative envelope)
+    !
+    !   fc    = concrete compressive strength
+    !   fcu   = stress at ultimate (crushing) strain
+    !   epscu = ultimate (crushing) strain
+    !   Ec0   = initial concrete tangent modulus
+    !   epsc  = strain
+    !
+    !   returned variables
+    !   sigc  = current stress
+    !   Ect   = tangent concrete modulus
+    -----------------------------------------------------------------------*/
+  
+  double Ec0 = Ec; //ntosic
+  double epsc0 = 2.0*fc / Ec0; //ntosic
+  
+  double ratLocal = epsc / epsc0;
+  if (epsc >= epsc0) {
+    sigc = fc * ratLocal*(2.0 - ratLocal);
+    Ect = Ec0 * (1.0 - ratLocal);
+  }
+  else {
+    
+    //   linear descending branch between epsc0 and epscu
+    if (epsc > epscu) {
+      sigc = (fcu - fc)*(epsc - epsc0) / (epscu - epsc0) + fc;
+      Ect = (fcu - fc) / (epscu - epsc0);
+    }
+    else {
+      
+      // flat friction branch for strains larger than epscu
+      
+      sigc = fcu;
+      Ect = 1.0e-10;
+      //       Ect  = 0.0  
+      return;
+    }
+  }  
 }
 
 int
