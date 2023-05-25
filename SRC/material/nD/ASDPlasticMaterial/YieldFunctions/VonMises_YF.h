@@ -32,7 +32,6 @@
 #include "cmath"
 #include <iostream>
 
-// Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
 #include "../ASDPlasticMaterialGlobals.h"
 using namespace ASDPlasticMaterialGlobals;
 
@@ -46,47 +45,25 @@ public:
 
     static constexpr const char* NAME = "VonMises_YF";
 
-
     VonMises_YF( ):
         YieldFunctionBase<VonMises_YF<AlphaHardeningType, KHardeningType>>::YieldFunctionBase() // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
                 {}
 
-    template <typename IVStorageType, typename ParameterStorageType>
-    double operator()( const VoigtVector& sigma, 
-    	const IVStorageType& internal_variables_storage,
-        const ParameterStorageType& parameters_storage) const 
+    YIELD_FUNCTION
     {
         auto s = sigma.deviator();
 
-        // auto alpha = alpha_.getVariableConstReference();
-        const AlphaHardeningType& AHT = 
-        internal_variables_storage.template get<AlphaHardeningType> ();
-        auto alpha = AHT.trial_value;
-
-        // auto k = k_.getVariableConstReference();
-        const KHardeningType& KHT = 
-        internal_variables_storage.template get<KHardeningType> ();
-        auto k = KHT.trial_value;
+        auto alpha = GET_TRIAL_INTERNAL_VARIABLE(AlphaHardeningType);
+        auto k = GET_TRIAL_INTERNAL_VARIABLE(KHardeningType);
 
         double tmp = (s - alpha).dot(s - alpha);
-
-        // printTensor("s", s);
-        // printTensor("alpha", alpha);
-        // // printTensor("k", k);
-        // cout << "k = " << k(0) << endl;
-
         return std::sqrt( tmp ) - SQRT_2_over_3 * k.value() ;  // This one assumes p positive in tension
     }
 
-    template <typename IVStorageType, typename ParameterStorageType>
-    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma,
-    	const IVStorageType& internal_variables_storage,
-        const ParameterStorageType& parameters_storage)
+    YIELD_FUNCTION_STRESS_DERIVATIVE
     {
-        // VoigtVector alpha = alpha_.getVariable();
-        const AlphaHardeningType& AHT = 
-        internal_variables_storage.template get<AlphaHardeningType> ();
-        auto alpha = AHT.trial_value;
+        auto alpha = GET_TRIAL_INTERNAL_VARIABLE(AlphaHardeningType);
+        auto k = GET_TRIAL_INTERNAL_VARIABLE(KHardeningType);
 
         result = sigma.deviator() - alpha;
 
@@ -98,44 +75,30 @@ public:
 
     }
     
-    template <typename IVStorageType, typename ParameterStorageType>
-    double xi_star_h_star(const VoigtVector& depsilon, 
-        const VoigtVector& m, 
-        const VoigtVector& sigma,
-        const IVStorageType& internal_variables_storage,
-        const ParameterStorageType& parameters_storage)
+    YIELD_FUNCTION_XI_STAR_H_STAR
     {
         double dbl_result = 0.0;
 
-        // const VoigtVector &alpha = alpha_.getVariableConstReference();
-        const AlphaHardeningType& AHT = 
-        internal_variables_storage.template get<AlphaHardeningType> ();
-        auto alpha = AHT.trial_value;
-
-        // const VoigtScalar &k = k_.getVariableConstReference();
-        const KHardeningType& KHT = 
-        internal_variables_storage.template get<KHardeningType> ();
-        auto k = KHT.trial_value;
+        auto alpha = GET_TRIAL_INTERNAL_VARIABLE(AlphaHardeningType);
+        auto k = GET_TRIAL_INTERNAL_VARIABLE(KHardeningType);
 
         //Zero the stress deviator
         auto s = sigma.deviator();
 
-        //Denominator of the expression
-
         // This is for the hardening of k
-        constexpr double df_dk = -SQRT_2_over_3;
-        dbl_result +=  (df_dk * KHT.hardening_function(depsilon, m, sigma, parameters_storage)).value();
+        double df_dk = -SQRT_2_over_3;
+        dbl_result +=  (df_dk * GET_INTERNAL_VARIABLE_HARDENING(KHardeningType)).value();
 
         //This is for the hardening of alpha
         double den = sqrt((s - alpha).dot(s - alpha));
 
-        if (abs(den) < 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+        if (abs(den) < sqrt(s.dot(s))*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
         {
             return dbl_result;
         }
 
         auto df_dalpha = -(s - alpha) / den;
-        dbl_result +=  df_dalpha.dot(AHT.hardening_function(depsilon, m, sigma, parameters_storage));
+        dbl_result +=  df_dalpha.dot(GET_INTERNAL_VARIABLE_HARDENING(AlphaHardeningType));
 
         return dbl_result;
     }

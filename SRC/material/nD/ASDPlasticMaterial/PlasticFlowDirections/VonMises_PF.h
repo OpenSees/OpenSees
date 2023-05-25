@@ -47,23 +47,15 @@ public:
         PlasticFlowBase<VonMises_PF<AlphaHardeningType , KHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
                 { }
 
-    template <typename StorageType, typename ParameterStorageType>
-    const VoigtVector& operator()(
-    	const VoigtVector &depsilon, 
-    	const VoigtVector& sigma, 
-    	const StorageType& internal_variables_storage, 
-    	const ParameterStorageType& parameters_storage)
+    PLASTIC_FLOW_DIRECTION
     {
-        //Identical to derivative of VonMises_YF wrt sigma (a.k.a nij)
-        const AlphaHardeningType& AHT = 
-        internal_variables_storage.template get<AlphaHardeningType> ();
+        auto alpha = GET_TRIAL_INTERNAL_VARIABLE(AlphaHardeningType);
 
-        VoigtVector alpha = AHT.trial_value;
-
-        result = sigma.deviator() - alpha;
+        auto s = sigma.deviator();
+        result = s - alpha;
 
         double den = sqrt(result.dot(result));
-        if (abs(den) > 100*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
+        if (abs(den) > sqrt(s.dot(s))*ASDPlasticMaterialGlobals::MACHINE_EPSILON)
             result = result / den;
 
         return result;

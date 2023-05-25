@@ -21,6 +21,7 @@
 // struct utuple_index<T, std::tuple<U, Types...>> {
 //     static const std::size_t value = 1 + utuple_index<T, std::tuple<Types...>>::value;
 // };
+#include "std_tuple_concat.h"
 
 
 // utuple indexing helper struct
@@ -207,6 +208,13 @@ public:
     
     std::string getVariableNamesAndHardeningLaws() const {
         return getVariableNamesAndHardeningLaws_impl<0>();
+    }
+
+    template<typename VarType>
+    auto getTrialInternalVariable() const
+    {
+    	const VarType& var = this->template get<VarType> ();
+        return var.trial_value;
     }
 
 private:

@@ -440,6 +440,14 @@ public:
 
         iv_storage.commit_all();
 
+        cout << "Committed!" << endl;
+
+        cout <<  "CommitStress = " << CommitStress.transpose() << endl;
+        cout <<  "CommitStrain = " << CommitStrain.transpose() << endl;
+
+        Print(cout);
+        cout << "\n" << endl;
+
         return 0;
     }
 
@@ -784,7 +792,7 @@ private:
         intersection_stress *= 0;
         intersection_strain *= 0;
 
-        VoigtMatrix& Eelastic = et(sigma, parameters_storage);
+        VoigtMatrix Eelastic = et(sigma, parameters_storage);
         Stiffness = Eelastic;
 
         dsigma = Eelastic * depsilon;
@@ -800,14 +808,14 @@ private:
         fprintf(stderr, "  - yf_val_start (:<0) = %16.8f \n" , yf_val_start );
         fprintf(stderr, "  - yf_val_end   (:<0) = %16.8f \n" , yf_val_end );
 
-        VoigtVector& start_stress = CommitStress;
-        VoigtVector& end_stress = TrialStress;
+        VoigtVector start_stress = CommitStress;
+        VoigtVector end_stress = TrialStress;
 
         intersection_stress = start_stress;
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            VoigtMatrix& Eelastic = et(TrialStress, parameters_storage);
+            VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
             Stiffness = Eelastic;
         }
         else  //Plasticity

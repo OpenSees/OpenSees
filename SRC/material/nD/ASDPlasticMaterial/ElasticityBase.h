@@ -38,6 +38,13 @@ struct has_parameters_t : std::false_type {};
 template <typename T>
 struct has_parameters_t<T, typename std::enable_if<!std::is_same<typename T::parameters_t, void>::value>::type> : std::true_type {};
 
+#define ELASTICITY_MATRIX template<class ParameterStorageType> \
+    const VoigtMatrix& operator()(const VoigtVector& stress, \
+        const ParameterStorageType& parameters_storage) const 
+
+#define GET_PARAMETER_VALUE(type) parameters_storage.template get<type> ().value
+
+
 template <class T>
 class ElasticityBase
 {
@@ -47,11 +54,9 @@ public:
         static_assert(has_parameters_t<T>::value, "Derived class must have a 'parameters_t' type alias.");
     }
     
-    template<class ParameterStorageType>
-    const VoigtMatrix& operator()(const VoigtVector& stress,
-        const ParameterStorageType& P) 
+    ELASTICITY_MATRIX
     {
-        return static_cast<T*>(this)->operator()(stress, P);
+        return static_cast<T*>(this)->operator()(stress, parameters_storage);
     }
 };
 
