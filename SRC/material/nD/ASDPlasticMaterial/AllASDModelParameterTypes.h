@@ -58,6 +58,18 @@ using PoissonsRatio = ModelParameterType<double, PoissonsRatioName>;
 struct InternalFrictionAngleName { static constexpr const char* name = "InternalFrictionAngle";};
 using InternalFrictionAngle = ModelParameterType<double, InternalFrictionAngleName>;
 
+//RMC: Rounded-Mohr-Coulomb
+struct RMC_m_Name { static constexpr const char* name = "RMC_m";};
+using RMC_m = ModelParameterType<double, RMC_m_Name>;
+struct RMC_qa_Name { static constexpr const char* name = "RMC_qa";};
+using RMC_qa = ModelParameterType<double, RMC_qa_Name>;
+struct RMC_pc_Name { static constexpr const char* name = "RMC_pc";};
+using RMC_pc = ModelParameterType<double, RMC_pc_Name>;
+struct RMC_e_Name { static constexpr const char* name = "RMC_e";};
+using RMC_e = ModelParameterType<double, RMC_e_Name>;
+
+
+
 // ============================================================================
 // Model Parameters associated with Plastic flow
 

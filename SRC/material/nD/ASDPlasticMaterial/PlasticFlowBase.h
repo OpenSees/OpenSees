@@ -47,6 +47,17 @@ template <typename T>
 struct pf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<typename T::internal_variables_t, void>::value>::type> : std::true_type {};
 
 
+#define PLASTIC_FLOW_DIRECTION template <typename StorageType, typename ParameterStorageType> \
+    const VoigtVector& operator()( \
+        const VoigtVector &depsilon, \
+        const VoigtVector& sigma, \
+        const StorageType& internal_variables_storage,  \
+        const ParameterStorageType& parameters_storage)
+
+#define GET_TRIAL_INTERNAL_VARIABLE(type) \
+    ((internal_variables_storage).template get<type>().trial_value)
+
+
 template <class T>
 class PlasticFlowBase
 {
@@ -56,12 +67,7 @@ public:
         static_assert(pf_has_internal_variables_t<T>::value, "Derived class must have a 'internal_variables_t' type alias.");
     }
 
-    template <typename StorageType, typename ParameterStorageType>
-    const VoigtVector& operator()(
-    	const VoigtVector &depsilon, 
-    	const VoigtVector& sigma, 
-    	const StorageType& internal_variables_storage, 
-    	const ParameterStorageType& parameters_storage)
+    PLASTIC_FLOW_DIRECTION
     {
         return static_cast<T*>(this)->operator()( depsilon,  sigma, internal_variables_storage, parameters_storage);
     }

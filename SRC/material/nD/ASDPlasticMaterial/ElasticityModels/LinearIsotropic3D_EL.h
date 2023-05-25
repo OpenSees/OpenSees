@@ -40,38 +40,36 @@ public:
 
     static constexpr const char* NAME = "LinearIsotropic3D_EL";
 
-	LinearIsotropic3D_EL(): ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
-	{
+    LinearIsotropic3D_EL(): ElasticityBase<LinearIsotropic3D_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
+    {
 
-	}
+    }
 
-	template<class ParameterStorageType>
-	VoigtMatrix& operator()(const VoigtVector& stress,
-        const ParameterStorageType& parameters_storage)
-	{
+    ELASTICITY_MATRIX
+    {
 
-		double E = parameters_storage.template get<YoungsModulus> ().value;
-		double nu = parameters_storage.template get<PoissonsRatio> ().value;
+        double E = GET_PARAMETER_VALUE(YoungsModulus);
+        double nu = GET_PARAMETER_VALUE(PoissonsRatio);
 
-		Ee.setZero(); //Zero it. It may have values from another instance with different parameters;
-		double lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
-		double mu = E / ( 2.0 * ( 1.0 + nu ) );
-		// const double mu2 = mu * mu;
+        Ee.setZero(); //Zero it. It may have values from another instance with different parameters;
+        double lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
+        double mu = E / ( 2.0 * ( 1.0 + nu ) );
+        // const double mu2 = mu * mu;
 
-		Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = 2*mu + lambda;
-		Ee(0, 1) = Ee(1, 0) = Ee(0, 2) = Ee(2, 0) = Ee(1, 2) = Ee(2, 1) = lambda;
-		Ee(3, 3) = mu;
-		Ee(4, 4) = mu;
-		Ee(5, 5) = mu;
+        Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = 2*mu + lambda;
+        Ee(0, 1) = Ee(1, 0) = Ee(0, 2) = Ee(2, 0) = Ee(1, 2) = Ee(2, 1) = lambda;
+        Ee(3, 3) = mu;
+        Ee(4, 4) = mu;
+        Ee(5, 5) = mu;
 
-		return Ee;
-	}
+        return Ee;
+    }
 
-	using parameters_t = std::tuple<YoungsModulus, PoissonsRatio>;
+    using parameters_t = std::tuple<YoungsModulus, PoissonsRatio>;
 
 private:
 
-	static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
+    static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
 

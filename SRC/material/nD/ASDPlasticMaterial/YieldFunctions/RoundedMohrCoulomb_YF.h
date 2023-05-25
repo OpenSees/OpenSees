@@ -27,8 +27,6 @@
 #ifndef RoundedMohrCoulomb_YF_H
 #define RoundedMohrCoulomb_YF_H
 
-#include "../../../ltensor/LTensor.h"
-#include "../EvolvingVariable.h"
 #include "../YieldFunctionBase.h"
 #include "cmath"
 #include <iostream>
@@ -44,7 +42,7 @@ class RoundedMohrCoulomb_YF : public YieldFunctionBase<RoundedMohrCoulomb_YF< ET
 {
 public:
 
-    typedef EvolvingVariable<double, ETAHardeningType> ETAType;
+    static constexpr const char* NAME = "RoundedMohrCoulomb_YF";
 
     RoundedMohrCoulomb_YF( double m_in, double qa_in, double pc_in, double e_in, ETAType& eta_in):
         YieldFunctionBase<RoundedMohrCoulomb_YF<ETAHardeningType>>::YieldFunctionBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
@@ -168,146 +166,19 @@ private:
         double dg = (2 * pow(e, 2) - 2) * (4 * ((2 * e - 1) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)) + (-2 * pow(e, 2) + 2) * cos(theta)) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)) * cos(theta) - ((4 * e - 2) * cos(theta) + sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2))) * (pow(2 * e - 1, 2) + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2))) * sin(theta) / (pow((2 * e - 1) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)) + (-2 * pow(e, 2) + 2) * cos(theta), 2) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)));
         return dg;
     }
-
-    double m, qa, pc, e;
-    ETAType &eta_;
-    static VoigtVector s; //Stress deviator
+    using internal_variables_t = std::tuple<ETAType>;
+    using parameters_t = std::tuple<RMC_m,RMC_qa,RMC_pc,RMC_e>;
+    
+    // double m, qa, pc, e;
+    // ETAType &eta_;
+    // static VoigtVector s; //Stress deviator
     static VoigtVector result; //For returning VoigtVector's
 };
 
-template < class ETAHardeningType>
-VoigtVector RoundedMohrCoulomb_YF< ETAHardeningType>::s(3, 3, 0.0);
+
 template <  class ETAHardeningType>
-VoigtVector RoundedMohrCoulomb_YF< ETAHardeningType>::result(3, 3, 0.0);
+VoigtVector RoundedMohrCoulomb_YF< ETAHardeningType>::result;
 
-
-
-
-//  Jose (Sep 27 2016)
-//  Unfinished implementation trying to use kinematic hardening... this was folly.
-// The reason is that RMC should be used to set the ultimate strength of the material
-//  and not initial yielding. The purpose of KH is to set the ultimate through the
-// hardening law.
-//
-// It makes more sense to use RMC as a bounding surface than as a YF.
-//
-//
-// template<class AlphaHardeningType, class ETAHardeningType>
-// class RoundedMohrCoulomb_YF : public YieldFunctionBase<RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>> // CRTP
-// {
-// public:
-
-//     typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
-//     typedef EvolvingVariable<double, ETAHardeningType> ETAType;
-
-
-//     RoundedMohrCoulomb_YF( AlphaType &alpha_in, ETAType& k_in):
-//         YieldFunctionBase<RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>>::YieldFunctionBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-//                 alpha_(alpha_in), k_(k_in)
-//     {
-//         // std::cout << "k_in = " << &k_in << std::endl;
-//     }
-
-//     double operator()(const VoigtVector& sigma) const
-//     {
-//         double p, q, theta;
-//         std::tie(p, q, theta) = getpqtheta(sigma);
-
-//         theta *= M_PI / 180;  // Convert theta back to radians! :/
-
-//         const VoigtVector &alpha = alpha_.getVariableConstReference();
-//         const double &k = k_.getVariableConstReference();
-
-//         double yf = q * pow(1 + q / qa, m)  - k * (p - pc) / g(theta);
-
-//         return yf;
-//     }
-
-//     const VoigtVector& df_dsigma_ij(const VoigtVector& sigma)
-//     {
-//         const VoigtVector &alpha = alpha_.getVariableConstReference();
-//         const double &k = k_.getVariableConstReference();
-
-//         double p, q, theta;
-//         static VoigtVector sigma_minus_alpha(3, 3, 0.0);
-//         sigma_minus_alpha *= 0;
-//         sigma_minus_alpha(i, j) = sigma(i, j) - sigma(i, i) / 3 * alpha(i, j);
-
-//         std::tie(p, q, theta) = getpqtheta(sigma_minus_alpha);
-//         theta *= M_PI / 180;  // Convert theta back to radians! :/
-//         double gg = g(theta);
-//         double dgg = dg_dlode(theta);
-
-//         static VoigtVector dq_dsij(3, 3, 0);
-//         static VoigtVector dtheta_dsij(3, 3, 0);
-//         dq_dsij * = 0;
-//         dtheta_dsij * = 0;
-//         dq_dsigma_ij(sigma_minus_alpha, dq_dsij);
-//         dtheta_dsigma_ij(sigma_minus_alpha, dtheta_dsij);
-
-//         result(i, j) = dq_dsij(i, j) * pow(1 + 1 / qa, m - 1) * (1 + q / qa + q * m) -
-//                        k * (-kronecker_delta(i, j) / 3 / gg - (p - pc) / (gg * gg) * dgg * dtheta_dsij(i, j) );
-
-//         return result;
-//     }
-
-//     double xi_star_h_star(const VoigtVector& depsilon, const VoigtVector& m, const VoigtVector& sigma)
-//     {
-
-//         return dbl_result;
-//     }
-
-//     bool hasCorner() const
-//     {
-//         return true;
-//     }
-//     double get_k() const
-//     {
-//         return k_.getVariableConstReference();
-//     }
-//     VoigtVector const& get_alpha() const
-//     {
-//         return alpha_.getVariableConstReference();
-//     }
-// private:
-
-//     //================================================================================
-//     double g(lode)
-//     {
-//         double coslode = cos(lode);
-//         double coslode2 = coslode * coslode;
-//         double num = 4 * (1 - e * e) * coslode2  + (2 * e - 1) * (2 * e - 1);
-//         double den = 2 * (1 - e * e) * coslode + (2 * e - 1) * sqrt(4 * (1 - e * e) * coslode2 + 5 * e * e - 4 * e);
-//         return num / den;
-//     }
-
-//     double dg_dlode(lode)
-//     {
-//         // === Python code to generate this function
-//         // import sympy
-//         //e = sympy.S("e")
-//         //theta = sympy.S("theta")
-//         //costheta = sympy.cos(theta)
-//         //num = 4 * (1 - e * e) * costheta**2  + (2 * e - 1) * (2 * e - 1)
-//         //den = 2 * (1 - e * e) * costheta + (2 * e - 1) * sympy.sqrt(4 * (1 - e * e) * costheta**2 + 5 * e * e - 4 * e)
-//         //g = num/den
-//         //dg = sympy.simplify(sympy.diff(g, theta))
-//         //print sympy.ccode(dg)
-//         double dg = (2 * pow(e, 2) - 2) * (4 * ((2 * e - 1) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)) + (-2 * pow(e, 2) + 2) * cos(theta)) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)) * cos(theta) - ((4 * e - 2) * cos(theta) + sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2))) * (pow(2 * e - 1, 2) + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2))) * sin(theta) / (pow((2 * e - 1) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)) + (-2 * pow(e, 2) + 2) * cos(theta), 2) * sqrt(5 * pow(e, 2) - 4 * e + (-4 * pow(e, 2) + 4) * pow(cos(theta), 2)));
-//         return dg;
-//     }
-
-//     double m, qa, pc, e;
-//     AlphaType &alpha_;
-//     ETAType &k_;
-//     static VoigtVector s; //Stress deviator
-//     static VoigtVector result; //For returning VoigtVector's
-// };
-
-// template <class AlphaHardeningType,  class ETAHardeningType>
-// VoigtVector RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>::s(3, 3, 0.0);
-// template <class AlphaHardeningType,  class ETAHardeningType>
-// VoigtVector RoundedMohrCoulomb_YF<AlphaHardeningType, ETAHardeningType>::result(3, 3, 0.0);
 
 
 #endif

@@ -31,7 +31,7 @@
 // #include "EvolvingVariable.h"
 #include <Channel.h>
 // #include "utuple_storage.h"
-#include "std_tuple_concat.h"
+// #include "std_tuple_concat.h"
 
 // Helper template to check if a class has a parameters_t type alias
 template <typename T, typename = void>
@@ -48,6 +48,29 @@ template <typename T>
 struct yf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<typename T::internal_variables_t, void>::value>::type> : std::true_type {};
 
 
+#define YIELD_FUNCTION template <typename IVStorageType, typename ParameterStorageType> \
+    double operator()( const VoigtVector& sigma, \
+        const IVStorageType& internal_variables_storage, \
+        const ParameterStorageType& parameters_storage) const 
+
+#define YIELD_FUNCTION_STRESS_DERIVATIVE template <typename IVStorageType, typename ParameterStorageType> \
+    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma, \
+        const IVStorageType& internal_variables_storage, \
+        const ParameterStorageType& parameters_storage)
+
+#define YIELD_FUNCTION_XI_STAR_H_STAR template <typename IVStorageType, typename ParameterStorageType> \
+    double xi_star_h_star(const VoigtVector& depsilon, \
+        const VoigtVector& m, \
+        const VoigtVector& sigma,\
+        const IVStorageType& internal_variables_storage,\
+        const ParameterStorageType& parameters_storage)
+
+#define GET_INTERNAL_VARIABLE_HARDENING(type) \
+    internal_variables_storage.template get<type> ().hardening_function(depsilon, m, sigma, parameters_storage)
+
+#define GET_TRIAL_INTERNAL_VARIABLE(type) \
+    ((internal_variables_storage).template get<type>().trial_value)
+
 template <class T>
 class YieldFunctionBase
 {
@@ -57,28 +80,17 @@ public:
         static_assert(yf_has_internal_variables_t<T>::value, "Derived class must have a 'internal_variables_t' type alias.");
     }
 
-    template <typename IVStorageType, typename ParameterStorageType>
-    double operator()( const VoigtVector& sigma, 
-    	const IVStorageType& internal_variables_storage,
-        const ParameterStorageType& parameters_storage) const
+    YIELD_FUNCTION
     {
         return static_cast<T*>(this)->operator()(sigma, internal_variables_storage, parameters_storage);
     }
 
-    template <typename IVStorageType, typename ParameterStorageType>
-    const VoigtVector& df_dsigma_ij(const VoigtVector& sigma,
-    	const IVStorageType& internal_variables_storage,
-        const ParameterStorageType& parameters_storage)
+    YIELD_FUNCTION_STRESS_DERIVATIVE
     {
         return static_cast<T*>(this)->df_dsigma_ij(sigma, internal_variables_storage, parameters_storage);
     }
 
-    template <typename IVStorageType, typename ParameterStorageType>
-    double xi_star_h_star(const VoigtVector& depsilon, 
-        const VoigtVector& m, 
-        const VoigtVector& sigma,
-        const IVStorageType& internal_variables_storage,
-        const ParameterStorageType& parameters_storage)
+    YIELD_FUNCTION_XI_STAR_H_STAR
     {
         return static_cast<T*>(this)->df_dxi_star_h_star(depsilon, m , sigma, internal_variables_storage, parameters_storage);
     }

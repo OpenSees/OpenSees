@@ -27,6 +27,7 @@
 #include <FEM_ObjectBroker.h>
 #include <OPS_Globals.h>
 #include <elementAPI.h>
+#include <list>
 #include "AllASDPlasticMaterials.h"
 
 template <typename T>
@@ -35,6 +36,8 @@ void populate_ASDPlasticMaterial(T* instance);
 NDMaterial*  ASDPlasticMaterialFactory(int tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type);
 
 
+template<typename EL, typename YF, typename PF>
+NDMaterial* createASDPlasticMaterial(int instance_tag, const char* yf_type, const char* pf_type, const char* el_type, const char* iv_type, std::list<NDMaterial*> &instance_pointers);
 
 void *OPS_AllASDPlasticMaterials(void)
 {
@@ -82,10 +85,17 @@ void *OPS_AllASDPlasticMaterials(void)
     // auto instance = TheAvailableProtos[std::make_tuple(yf_type,pf_type,el_type,iv_type)];
 
 
+    cout << "Searching for instance with:\n";
+
+
+    cout << "yf_type = " << yf_type << "\n";
+    cout << "pf_type = " << pf_type << "\n";
+    cout << "el_type = " << el_type << "\n";
+    cout << "iv_type = " << iv_type << "\n";
 
     NDMaterial* instance = ASDPlasticMaterialFactory(tag, yf_type,pf_type,el_type,iv_type);
 
-    if(instance==0)
+    if(instance==nullptr)
     {
         cout << "ASDPlasticMaterial -- Material not found for input specification:\n";
         cout << "yf_type = " << yf_type << "\n";
@@ -97,6 +107,84 @@ void *OPS_AllASDPlasticMaterials(void)
     return instance;
 
 }
+
+
+
+NDMaterial*  ASDPlasticMaterialFactory(int instance_tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type)
+{
+
+    std::list<NDMaterial*> instance_pointers;
+
+    createASDPlasticMaterial<
+            LinearIsotropic3D_EL, 
+            DruckerPrager_YF<
+                BackStress<TensorLinearHardeningFunction>, 
+                VonMisesRadius<ScalarLinearHardeningFunction>
+                >, 
+            VonMises_PF<
+                BackStress<TensorLinearHardeningFunction>, 
+                VonMisesRadius<ScalarLinearHardeningFunction>
+                >
+            > (instance_tag, yf_type, pf_type, el_type, iv_type, instance_pointers);
+
+    createASDPlasticMaterial<
+            LinearIsotropic3D_EL, 
+            VonMises_YF<
+                BackStress<TensorLinearHardeningFunction>, 
+                VonMisesRadius<ScalarLinearHardeningFunction>
+                >, 
+            VonMises_PF<
+                BackStress<TensorLinearHardeningFunction>, 
+                VonMisesRadius<ScalarLinearHardeningFunction>
+                >
+            > (instance_tag, yf_type, pf_type, el_type, iv_type, instance_pointers);
+
+    //Search for the valid pointer and return that one
+    for(auto instance : instance_pointers)
+    {
+        if(instance != nullptr)
+        {
+            return instance;
+        }
+    }
+
+    return nullptr;
+}
+
+
+
+
+
+
+template<typename EL, typename YF, typename PF>
+NDMaterial* createASDPlasticMaterial(int instance_tag, 
+        const char* yf_type, const char* pf_type, const char* el_type, const char* iv_type, std::list<NDMaterial*> &instance_pointers) {
+    auto instance = new ASDPlasticMaterial<EL, YF, PF, ND_TAG_ASDPlasticMaterial>(instance_tag);
+    if(
+        std::strcmp(yf_type,instance->getYFName().c_str())==0 &&
+        std::strcmp(pf_type,instance->getPFName().c_str())==0 &&
+        std::strcmp(el_type,instance->getELName().c_str())==0 &&
+        std::strcmp(iv_type,instance->getIVName().c_str())==0 
+        )
+    {
+        populate_ASDPlasticMaterial(instance);
+        cout << "\n\nPrinting material info\n";
+        instance->Print(opserr);
+        cout << "\n\nDone creating ASDPlasticMaterial \n\n\n";
+        instance_pointers.push_back(static_cast<NDMaterial*>(instance));
+        return static_cast<NDMaterial*>(instance);
+    }  
+    else
+    {
+        delete instance;
+        instance_pointers.push_back(nullptr);        
+        return nullptr;
+    }
+}
+
+
+
+
 
 
 
@@ -174,130 +262,3 @@ void populate_ASDPlasticMaterial(T* instance)
         }
     }
 }
-
-NDMaterial*  ASDPlasticMaterialFactory(int tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type)
-{
-
-    cout << "Searching for instance with:\n";
-
-
-    cout << "yf_type = " << yf_type << "\n";
-    cout << "pf_type = " << pf_type << "\n";
-    cout << "el_type = " << el_type << "\n";
-    cout << "iv_type = " << iv_type << "\n";
-
-    if(
-        std::strcmp(yf_type,"VonMises_YF")==0 &&
-        std::strcmp(pf_type,"VonMises_PF")==0 &&
-        std::strcmp(el_type,"LinearIsotropic3D_EL")==0 &&
-        std::strcmp(iv_type,"BackStress(TensorLinearHardeningFunction):VonMisesRadius(ScalarLinearHardeningFunction):")==0
-        )
-    {
-        auto instance = new 
-            ASDPlasticMaterial <LinearIsotropic3D_EL,
-                VonMises_YF<
-                    BackStress<TensorLinearHardeningFunction>,
-                    VonMisesRadius<ScalarLinearHardeningFunction>
-                >,
-                VonMises_PF<
-                    BackStress<TensorLinearHardeningFunction>,
-                    VonMisesRadius<ScalarLinearHardeningFunction>
-                >,
-            ND_TAG_ASDPlasticMaterial
-            >(tag);
-        populate_ASDPlasticMaterial(instance);
-        cout << "\n\nPrinting material info\n";
-        instance->Print(opserr);
-        cout << "\n\nDone creating ASDPlasticMaterial \n\n\n";
-        return static_cast<NDMaterial*>(instance);
-    }   
-    else if(
-    std::strcmp(yf_type,"DruckerPrager_YF")==0 &&
-    std::strcmp(pf_type,"VonMises_PF")==0 &&
-    std::strcmp(el_type,"LinearIsotropic3D_EL")==0 &&
-    std::strcmp(iv_type,"BackStress(TensorLinearHardeningFunction):VonMisesRadius(ScalarLinearHardeningFunction):")==0
-    )
-    {
-        auto instance = new 
-            ASDPlasticMaterial <LinearIsotropic3D_EL,
-                DruckerPrager_YF<
-                    BackStress<TensorLinearHardeningFunction>,
-                    VonMisesRadius<ScalarLinearHardeningFunction>
-                >,
-                VonMises_PF<
-                    BackStress<TensorLinearHardeningFunction>,
-                    VonMisesRadius<ScalarLinearHardeningFunction>
-                >,
-            ND_TAG_ASDPlasticMaterial
-            >(tag);
-        populate_ASDPlasticMaterial(instance);
-        cout << "\n\nPrinting material info\n";
-        instance->Print(opserr);
-        cout << "\n\nDone creating ASDPlasticMaterial \n\n\n";
-        return static_cast<NDMaterial*>(instance);
-    } 
-
-
-
-    return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//Idea to automatically generate tensor product of types...
-
-#include <tuple>
-#include <utility>
-
-template<typename T, typename S, typename U>
-class TypeHolder
-{
-public:
-    TypeHolder(T t_, S s_, U u_) : t(t_), s(s_), u(u_) {}
-
-private:
-    T t;
-    S s;
-    U u;
-};
-
-using the_types_T = std::tuple<double, int, char *>;
-using the_types_S = std::tuple<int, double>;
-using the_types_U = std::tuple<float, long>; // example types for U
-
-template <typename Sequence1, typename Sequence2, typename Sequence3>
-class TypeHolderGenerator;
-
-template <std::size_t... I1, std::size_t... I2, std::size_t... I3>
-class TypeHolderGenerator<std::index_sequence<I1...>, std::index_sequence<I2...>, std::index_sequence<I3...>>
-{
-public:
-    std::tuple<TypeHolder<std::tuple_element_t<I1, the_types_T>, std::tuple_element_t<I2, the_types_S>, std::tuple_element_t<I3, the_types_U>>...> holders;
-};
-
-using HolderGenerator = TypeHolderGenerator<
-    std::make_index_sequence<std::tuple_size<the_types_T>::value>,
-    std::make_index_sequence<std::tuple_size<the_types_S>::value>,
-    std::make_index_sequence<std::tuple_size<the_types_U>::value>>;
