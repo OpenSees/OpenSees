@@ -89,6 +89,9 @@ OPS_HystereticSMMaterial(void)
     int numdata = 1;
     int printInput = 0;
     int YXorder = 1;
+
+    std::map<const char*, std::vector<double>> returnData;
+
     
     int loc = 2;
 
@@ -294,11 +297,14 @@ OPS_HystereticSMMaterial(void)
             negEnv.push_back(dData[i+ numArgsOver2]);
             nnegEnv++;
             numArgs = numArgs - 1;
+            
+            returnData["negEnv"].push_back(dData[i + numArgsOver2]);
         }
         // put back the tag
         numArgs = numArgs + 1;
 
     }
+
 
 
 
@@ -366,6 +372,43 @@ OPS_HystereticSMMaterial(void)
         opserr << "WARNING could not create uniaxialMaterial of type HystereticSM\n";
         return 0;
     }
+
+    //returnData["uniaxialMaterial"] = ['HystereticSM'];
+
+
+    returnData["matTag"].push_back(iData[0]);
+    // returnData["uniaxialMaterial"].push_back('HystereticSM');
+    for (int i = 0; i < theposEnv.Size(); i += 1) {
+        returnData["posEnv"].push_back(theposEnv[i]);
+    }
+    for (int i = 0; i < thenegEnv.Size(); i += 1) {
+        returnData["negEnv"].push_back(thenegEnv[i]);
+    }
+    for (int i = 0; i < thepinchArray.Size(); i += 1) {
+        returnData["pinch"].push_back(thepinchArray[i]);
+    }
+    for (int i = 0; i < thedamageArray.Size(); i += 1) {
+        returnData["damage"].push_back(thedamageArray[i]);
+    }
+    //returnData["beta"].push_back(beta);
+
+    for (int i = 0; i < thedegEnvArray.Size(); i += 1) {
+        returnData["degEnv"].push_back(thedegEnvArray[i]);
+    }
+    for (int i = 0; i < theLSforce.Size(); i += 1) {
+        returnData["LSforce"].push_back(theLSforce[i]);
+    }
+    for (int i = 0; i < theLSdefo.Size(); i += 1) {
+        returnData["LSdefo"].push_back(theLSdefo[i]);
+    }
+    //returnData["mom1p"].push_back(mom1p);
+    
+
+    if (OPS_SetDoubleDictListOutput(returnData) < 0) {
+        opserr
+            << "WARNING: failed to set outputs for HystereticSM\n";
+    }
+    
 
 
     return theMaterial;
@@ -766,9 +809,6 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
     // Initialize history variables
     this->revertToStart();
     this->revertToLastCommit();
-
-
-
 
 
 
