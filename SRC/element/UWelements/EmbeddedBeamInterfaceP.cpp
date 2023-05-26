@@ -85,7 +85,10 @@ OPS_EmbeddedBeamInterfaceP(void)
 }
 
 
-EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag) : Element(tag, ELE_TAG_EmbeddedBeamInterfaceP)
+EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag) :
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceP),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  crdTransf(0)  
 {
 
 }
@@ -93,17 +96,14 @@ EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag) : Element(tag, ELE_TAG_E
 EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag, std::vector <int> beamTag, std::vector <int> solidTag, int crdTransfTag,
     std::vector <double>  beamRho, std::vector <double>  beamTheta, std::vector <double>  solidXi, std::vector <double>  solidEta,
     std::vector <double>  solidZeta, double radius, std::vector <double> area, std::vector <double> length, double penaltyParam, 
-    bool writeConnectivity, const char * connectivityFN): Element(tag, ELE_TAG_EmbeddedBeamInterfaceP), m_beam_radius(radius), 
-    m_ep(penaltyParam), mQa(3, 3), mQb(3, 3), mQc(3, 3),
-    mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
+    bool writeConnectivity, const char * connectivityFN):
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceP), m_beam_radius(radius),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  m_ep(penaltyParam), mQa(3, 3), mQb(3, 3), mQc(3, 3),
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8), crdTransf(0)
 {
     // get domain to access element tags and their nodes
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-    extern PartitionedDomain theDomain;
-#else
-    extern Domain theDomain;
-#endif
+    Domain &theDomain = *(OPS_GetDomain());
 
     m_numEmbeddedPoints = solidTag.size();
     theSolidTags = new int[m_numEmbeddedPoints];
@@ -211,7 +211,7 @@ EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag, std::vector <int> beamTa
 
 
     // get the coordinate transformation object
-    crdTransf = OPS_GetCrdTransf(crdTransfTag)->getCopy3d();
+    crdTransf = OPS_getCrdTransf(crdTransfTag)->getCopy3d();
 
 
     if (writeConnectivity)
@@ -237,9 +237,23 @@ EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP(int tag, std::vector <int> beamTa
 }
 
 EmbeddedBeamInterfaceP::EmbeddedBeamInterfaceP()
-    : Element(0, ELE_TAG_EmbeddedBeamInterfaceP)
+  : Element(0, ELE_TAG_EmbeddedBeamInterfaceP),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+    crdTransf(0)
 {
+  if (theSolidTags != 0)
+    delete [] theSolidTags;
+  if (solidNodeTags != 0)
+    delete [] solidNodeTags;
+  if (theBeamTags != 0)
+    delete [] theBeamTags;
+  if (beamNodeTags != 0)
+    delete [] beamNodeTags;
 
+  if (crdTransf != 0)
+    delete crdTransf;
+  if (theNodes != 0)
+    delete [] theNodes;
 }
 
 EmbeddedBeamInterfaceP::~EmbeddedBeamInterfaceP()
