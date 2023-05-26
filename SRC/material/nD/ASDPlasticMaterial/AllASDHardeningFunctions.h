@@ -56,34 +56,36 @@ struct LinearHardeningForScalarPolicy {
     using parameters_t = tuple<ScalarLinearHardeningParameter>;
 };
 
-// struct ArmstrongFrederickPolicy {
-//     static constexpr const char* NAME = "ArmstrongFrederickHardeningFunction";
-//     HARDENING_FUNCTION_DEFINITION
-//     {
-//         double ha = GET_PARAMETER_VALUE(AF_ha);
-//         double cr = GET_PARAMETER_VALUE(AF_cr);
-//         auto h = H * m.deviator();
+struct ArmstrongFrederickPolicy {
+    static constexpr const char* NAME = "ArmstrongFrederickHardeningFunction";
+    HARDENING_FUNCTION_DEFINITION
+    {
+        double ha = GET_PARAMETER_VALUE(AF_ha);
+        double cr = GET_PARAMETER_VALUE(AF_cr);
 
-//         auto alpha = current_value;
+        auto alpha = current_value;
 
 
-//         auto mdev = m.deviator()
-//         //Compute the derivative (hardening function)
-//         // const VoigtVector &alpha = this->getVariableConstReference();
-//         // static VoigtVector mdev(3, 3, 0);
-//         // mdev *= 0;
-//         // mdev(i, j) = m(i, j) - m(k, k) / 3 * kronecker_delta(i, j);
-//         // derivative(i, j) =  (2. / 3.) * ha * m(i, j) - cr * sqrt((2. / 3.) * m(k, l) * m(k, l)) * alpha(i, j);
-//         auto derivative =  (2. / 3.) * ha * mdev - cr * sqrt((2. / 3.) * mdev.dot(mdev)) * alpha;
+        auto mdev = m.deviator();
+        //Compute the derivative (hardening function)
+        // const VoigtVector &alpha = this->getVariableConstReference();
+        // static VoigtVector mdev(3, 3, 0);
+        // mdev *= 0;
+        // mdev(i, j) = m(i, j) - m(k, k) / 3 * kronecker_delta(i, j);
+        // derivative(i, j) =  (2. / 3.) * ha * m(i, j) - cr * sqrt((2. / 3.) * m(k, l) * m(k, l)) * alpha(i, j);
+        auto derivative =  (2. / 3.) * ha * mdev - cr * sqrt((2. / 3.) * mdev.dot(mdev)) * alpha;
 
-//     }
-//     using parameters_t = tuple<TensorLinearHardeningParameter>;
-// };
+        return derivative;
+
+    }
+    using parameters_t = tuple<AF_ha, AF_cr>;
+};
 
 
 // Aliases for HardeningFunction with specific hardening policies
 using TensorLinearHardeningFunction = HardeningFunction<VoigtVector, LinearHardeningForTensorPolicy>;
 using ScalarLinearHardeningFunction = HardeningFunction<VoigtScalar, LinearHardeningForScalarPolicy>;
+using ArmstrongFrederickHardeningFunction = HardeningFunction<VoigtVector, ArmstrongFrederickPolicy>;
 
 
 #endif //not defined _AllASDHardeningFunctions

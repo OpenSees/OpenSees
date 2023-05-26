@@ -115,29 +115,8 @@ NDMaterial*  ASDPlasticMaterialFactory(int instance_tag, const char * yf_type, c
 
     std::list<NDMaterial*> instance_pointers;
 
-    createASDPlasticMaterial<
-            LinearIsotropic3D_EL, 
-            DruckerPrager_YF<
-                BackStress<TensorLinearHardeningFunction>, 
-                VonMisesRadius<ScalarLinearHardeningFunction>
-                >, 
-            VonMises_PF<
-                BackStress<TensorLinearHardeningFunction>, 
-                VonMisesRadius<ScalarLinearHardeningFunction>
-                >
-            > (instance_tag, yf_type, pf_type, el_type, iv_type, instance_pointers);
 
-    createASDPlasticMaterial<
-            LinearIsotropic3D_EL, 
-            VonMises_YF<
-                BackStress<TensorLinearHardeningFunction>, 
-                VonMisesRadius<ScalarLinearHardeningFunction>
-                >, 
-            VonMises_PF<
-                BackStress<TensorLinearHardeningFunction>, 
-                VonMisesRadius<ScalarLinearHardeningFunction>
-                >
-            > (instance_tag, yf_type, pf_type, el_type, iv_type, instance_pointers);
+	#include "ASD_material_definitions.cpp"    
 
     //Search for the valid pointer and return that one
     for(auto instance : instance_pointers)

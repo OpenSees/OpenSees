@@ -62,6 +62,13 @@ using ScalarLinearHardeningParameter = ModelParameterType<double, ScalarLinearHa
 struct TensorLinearHardeningParameter_Name { static constexpr const char* name = "TensorLinearHardeningParameter";};
 using TensorLinearHardeningParameter = ModelParameterType<double, TensorLinearHardeningParameter_Name>;
 
+
+//For Armstrong-Frederick Hardening
+struct AF_ha_Name { static constexpr const char* name = "AF_ha";};
+using AF_ha = ModelParameterType<double, AF_ha_Name>;
+struct AF_cr_Name { static constexpr const char* name = "AF_cr";};
+using AF_cr = ModelParameterType<double, AF_cr_Name>;
+
 // ============================================================================
 // Other Model Parameters 
 struct MassDensity_Name { static constexpr const char* name = "MassDensity";};

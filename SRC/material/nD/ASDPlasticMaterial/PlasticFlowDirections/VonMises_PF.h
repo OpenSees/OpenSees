@@ -36,15 +36,15 @@
 
 using namespace std;
 
-template<class AlphaHardeningType, class KHardeningType>
-class VonMises_PF : public PlasticFlowBase<VonMises_PF<AlphaHardeningType, KHardeningType>> // CRTP
+template<class AlphaHardeningType>
+class VonMises_PF : public PlasticFlowBase<VonMises_PF<AlphaHardeningType>> // CRTP
 {
 public:
 
     static constexpr const char* NAME = "VonMises_PF";
 
     VonMises_PF():
-        PlasticFlowBase<VonMises_PF<AlphaHardeningType , KHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
+        PlasticFlowBase<VonMises_PF<AlphaHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
                 { }
 
     PLASTIC_FLOW_DIRECTION
@@ -61,7 +61,7 @@ public:
         return result;
     }
 
-    using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
+    using internal_variables_t = std::tuple<AlphaHardeningType>;
     using parameters_t = std::tuple<>;
 
 private:
@@ -69,8 +69,8 @@ private:
     static VoigtVector result; //For returning VoigtVectors
 };
 
-template<class AlphaHardeningType, class KHardeningType>
-VoigtVector VonMises_PF<AlphaHardeningType , KHardeningType >::result;
+template<class AlphaHardeningType>
+VoigtVector VonMises_PF<AlphaHardeningType  >::result;
 
 
 #endif
