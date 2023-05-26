@@ -323,6 +323,7 @@
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
 #include "twoNodeLink/TwoNodeLink.h"
+#include "twoNodeLink/TwoNodeLinkSection.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
 
@@ -921,7 +922,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new Joint2D();			// Arash
       
     case ELE_TAG_TwoNodeLink:				
-      return new TwoNodeLink();			
+      return new TwoNodeLink();
+
+    case ELE_TAG_TwoNodeLinkSection:				
+      return new TwoNodeLinkSection();			      
       
     case ELE_TAG_LinearElasticSpring:
         return new LinearElasticSpring();
