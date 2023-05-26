@@ -17,46 +17,55 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // Original implementation: José Abell (UANDES), Massimo Petracca (ASDEA)
 //
 // ASDPlasticMaterial
 //
 // Fully general templated material class for plasticity modeling
 
-#ifndef ElasticityBase_H
-#define ElasticityBase_H
 
-#include "EigenAPI.h"
-#include <Channel.h>
-
-// Helper template to check if a class has a parameters_t type alias
-template <typename T, typename = void>
-struct has_parameters_t : std::false_type {};
-
-template <typename T>
-struct has_parameters_t<T, typename std::enable_if<!std::is_same<typename T::parameters_t, void>::value>::type> : std::true_type {};
-
-#define ELASTICITY_MATRIX template<class ParameterStorageType> \
-    const VoigtMatrix& operator()(const VoigtVector& stress, \
-        const ParameterStorageType& parameters_storage) const 
-
-#define GET_PARAMETER_VALUE(type) parameters_storage.template get<type> ().value
+#include "../ASDPlasticMaterial.h"
 
 
-template <class T>
-class ElasticityBase
+
+// New materials are created by subclassing instances of the ASDPlasticMaterial<.,.,.,.,>
+// template class, with the appropriate components as template parameters.
+// Heavy use of templating is made, therefore typedeffing is a friend in helping clear up the mess.
+
+
+
+//Von Mises Model with linear hardening (VMLH)
+class VonMisesLinearHardening;  //This model we will define
+
+//Model internal variables
+using VMSL = VonMisesRadiusIV<ScalarLinearHardeningFunction>;
+using BSTL = BackStressIV<TensorLinearHardeningFunction>;
+
+//Select elasticity model
+using EL = LinearIsotropic3D_EL;
+
+//Select Yield-function model, using the internal variables
+using YF = VonMises_YF<BSTL, VMSL>;
+
+//Select Plastic-flow model, using the internal variables
+using PF = VonMises_PF<BSTL, VMSL>;
+
+using VMLHBase = ASDPlasticMaterial <EL,
+        YF,
+        PF,
+        ND_TAG_ASDPlasticMaterial,
+        VonMisesLinearHardening > ;
+
+
+//Define the new class. We must provide two constructor and the evolving variables as data-members.
+class VonMisesLinearHardening : public VMLHBase
 {
 public:
+    VonMisesLinearHardening(int tag_in) :
+        VMLHBase::ASDPlasticMaterial(tag_in) 
+        {
 
-    ElasticityBase() {
-        static_assert(has_parameters_t<T>::value, "Derived class must have a 'parameters_t' type alias.");
-    }
-    
-    ELASTICITY_MATRIX
-    {
-        return static_cast<T*>(this)->operator()(stress, parameters_storage);
-    }
+        }
 };
 
-#endif
