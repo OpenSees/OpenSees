@@ -12,17 +12,14 @@ target_sources(OPS_Material
       AllASDPlasticMaterials.h     
       ASDPlasticMaterial.h        
       ElasticityBase.h    
-      MaterialInternalVariables.h  
       YieldFunctionBase.h
       ASDPlasticMaterialGlobals.h  
       ASDPlasticMaterialTraits.h  
-      EvolvingVariable.h  
       PlasticFlowBase.h
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(ConstitutiveModels)
 add_subdirectory(ElasticityModels)
 add_subdirectory(EvolvingVariables)
 add_subdirectory(PlasticFlowDirections)

@@ -57,6 +57,8 @@ struct pf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<type
 #define GET_TRIAL_INTERNAL_VARIABLE(type) \
     ((internal_variables_storage).template get<type>().trial_value)
 
+#define GET_PARAMETER_VALUE(type) parameters_storage.template get<type> ().value
+
 
 template <class T>
 class PlasticFlowBase

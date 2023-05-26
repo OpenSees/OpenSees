@@ -30,20 +30,15 @@
 
 #include "ASDPlasticMaterialGlobals.h" 
 #include "AllASDModelParameterTypes.h" 
-
-
+#include "HardeningFunction.h" 
 
 
 // Hardening policies
 struct LinearHardeningForTensorPolicy {
     static constexpr const char* NAME = "TensorLinearHardeningFunction";
-	template <class ParameterStorageType>
-    static VoigtVector f(
-    	const VoigtVector& depsilon,
-        const VoigtVector& m,
-        const VoigtVector& sigma,
-        const ParameterStorageType& parameters) {
-        double H = parameters.template get<TensorLinearHardeningParameter>().value;
+    HARDENING_FUNCTION_DEFINITION
+    {
+        double H = GET_PARAMETER_VALUE(TensorLinearHardeningParameter);
         auto h = H * m.deviator();
         return h;
     }
@@ -52,46 +47,43 @@ struct LinearHardeningForTensorPolicy {
 
 struct LinearHardeningForScalarPolicy {
     static constexpr const char* NAME = "ScalarLinearHardeningFunction";
-	template <class ParameterStorageType>
-    static double f(
-    	const VoigtVector& depsilon,
-        const VoigtVector& m,
-        const VoigtVector& sigma,
-        const ParameterStorageType& parameters) {
-        double H = parameters.template get<ScalarLinearHardeningParameter>().value;
+    HARDENING_FUNCTION_DEFINITION 
+    {
+        double H = GET_PARAMETER_VALUE(ScalarLinearHardeningParameter);
         double h = H * sqrt((2 * m.dot(m)) / 3);
         return h;
     }
     using parameters_t = tuple<ScalarLinearHardeningParameter>;
 };
 
-// Function wrapper base class
-template <typename T, class HardeningPolicy>
-struct HardeningFunction {
-	template< class ParameterStorageType>
-    static T f(
-        const VoigtVector& depsilon,
-        const VoigtVector& m,
-        const VoigtVector& sigma,
-        const ParameterStorageType& parameters) 
-    {
-        return HardeningPolicy::f(depsilon, m, sigma, parameters);
-    }
-    static constexpr const char* NAME = HardeningPolicy::NAME;
-    using parameters_t = typename HardeningPolicy::parameters_t;
-};
+// struct ArmstrongFrederickPolicy {
+//     static constexpr const char* NAME = "ArmstrongFrederickHardeningFunction";
+//     HARDENING_FUNCTION_DEFINITION
+//     {
+//         double ha = GET_PARAMETER_VALUE(AF_ha);
+//         double cr = GET_PARAMETER_VALUE(AF_cr);
+//         auto h = H * m.deviator();
+
+//         auto alpha = current_value;
+
+
+//         auto mdev = m.deviator()
+//         //Compute the derivative (hardening function)
+//         // const VoigtVector &alpha = this->getVariableConstReference();
+//         // static VoigtVector mdev(3, 3, 0);
+//         // mdev *= 0;
+//         // mdev(i, j) = m(i, j) - m(k, k) / 3 * kronecker_delta(i, j);
+//         // derivative(i, j) =  (2. / 3.) * ha * m(i, j) - cr * sqrt((2. / 3.) * m(k, l) * m(k, l)) * alpha(i, j);
+//         auto derivative =  (2. / 3.) * ha * mdev - cr * sqrt((2. / 3.) * mdev.dot(mdev)) * alpha;
+
+//     }
+//     using parameters_t = tuple<TensorLinearHardeningParameter>;
+// };
 
 
 // Aliases for HardeningFunction with specific hardening policies
 using TensorLinearHardeningFunction = HardeningFunction<VoigtVector, LinearHardeningForTensorPolicy>;
 using ScalarLinearHardeningFunction = HardeningFunction<VoigtScalar, LinearHardeningForScalarPolicy>;
-
-
-template <typename T, class HardeningPolicy>
-std::ostream& operator<<(std::ostream& os, const HardeningFunction<T, HardeningPolicy>& obj) {
-    os << "HardeningFunction<" << typeid(T).name() << ", " << typeid(HardeningPolicy).name() << ">";
-    return os;
-}
 
 
 #endif //not defined _AllASDHardeningFunctions

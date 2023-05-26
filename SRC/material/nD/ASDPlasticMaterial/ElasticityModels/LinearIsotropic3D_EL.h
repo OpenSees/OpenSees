@@ -27,7 +27,6 @@
 #ifndef LinearIsotropic3D_EL_H
 #define LinearIsotropic3D_EL_H
 
-#include "../EvolvingVariable.h"
 #include "../ElasticityBase.h"
 #include "../AllASDModelParameterTypes.h"
 

@@ -28,7 +28,6 @@
 #define ElasticityBase_H
 
 #include "EigenAPI.h"
-#include "EvolvingVariable.h"
 #include <Channel.h>
 
 // Helper template to check if a class has a parameters_t type alias
