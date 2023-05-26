@@ -63,7 +63,6 @@
 void* OPS_ArcLength()
 {
     double arcLength;
-    double alpha;
     if (OPS_GetNumRemainingInputArgs() < 2) {
 	opserr << "WARNING integrator ArcLength arcLength alpha \n";
 	return 0;
@@ -74,11 +73,16 @@ void* OPS_ArcLength()
 	opserr << "WARNING integrator ArcLength failed to read arc length\n";
 	return 0;
     }
-    if (OPS_GetDoubleInput(&numdata, &alpha) < 0) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      double alpha;
+      if (OPS_GetDoubleInput(&numdata, &alpha) < 0) {
 	opserr << "WARNING integrator ArcLength failed to read alpha\n";
 	return 0;
+      }
+      return new ArcLength(arcLength,alpha);
+    } else {
+      return new ArcLength(arcLength);
     }
-    return new ArcLength(arcLength,alpha); 
 }
 
 ArcLength::ArcLength(double arcLength, double alpha)
