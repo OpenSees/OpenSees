@@ -1071,6 +1071,8 @@ int OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data
     return interp->setDouble(data);
 }
 
+
+
 const char * OPS_GetString(void)
 {
     if (cmds == 0) return "Invalid String Input!";
