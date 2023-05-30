@@ -439,7 +439,7 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
     UniaxialMaterial(tag, MAT_TAG_HystereticSM),
     posEnv(posEnvIN), negEnv(negEnvIN), pinchArray(pinchArrayIN), damageArray(damageArrayIN), beta(betaIN),
     degEnvArray(degEnvIN), 
-    forceLimitStates(forceLimitStatesIN), defoLimitStates(defoLimitStatesIN), internalValues(internalValues),
+    forceLimitStates(forceLimitStatesIN), defoLimitStates(defoLimitStatesIN),
     YXorder(YXorderIN),printInput(printInputIN)
 {
     nDefoLimitStates = defoLimitStates.Size();
@@ -1266,8 +1266,9 @@ HystereticSMMaterial::revertToStart(void)
 UniaxialMaterial*
 HystereticSMMaterial::getCopy(void)
 {
+    Vector dummyVector(43);
     HystereticSMMaterial* theCopy = new HystereticSMMaterial(this->getTag(),
-        posEnv, negEnv, pinchArray, damageArray, beta, forceLimitStates, defoLimitStates, degEnvArray, internalValues);
+        posEnv, negEnv, pinchArray, damageArray, beta, forceLimitStates, defoLimitStates, degEnvArray, dummyVector);
 
     theCopy->CrotMax = CrotMax;
     theCopy->CrotMin = CrotMin;
@@ -1289,7 +1290,7 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
 {
     int res = 0;
 
-    static Vector data(43);
+    static Vector data(45);
 
     data(0) = this->getTag();
     data(1) = mom1p;
@@ -1352,7 +1353,7 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
 {
     int res = 0;
 
-    static Vector data(43);
+    static Vector data(45);
     res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
     if (res < 0) {

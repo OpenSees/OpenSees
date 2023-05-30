@@ -188,7 +188,6 @@ class HystereticSMMaterial : public UniaxialMaterial
   Vector degEnvArray;
   int ndegEnvArray;
 
-  Vector internalValues;
 
   void setEnvelope(void);
   
