@@ -121,6 +121,7 @@ extern  void *OPS_ConcreteMcftNonlinear5(void);
 extern  void *OPS_ConcreteMcftNonlinear7(void);
 extern  void *OPS_ConcreteS(void);
 extern void *OPS_PressureDependentElastic3D(void);
+extern  void *OPS_LadeDuncanMultiYield(void);
 
 extern  void *OPS_ElasticIsotropicMaterialThermal(void);  //L.Jiang [SIF]
 extern  void *OPS_DruckerPragerMaterialThermal(void);//L.Jiang [SIF]
@@ -586,6 +587,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }
+     
+     else if (strcmp(argv[1],"LadeDuncanMultiYield") == 0) {
+      	void *theMat = OPS_LadeDuncanMultiYield();
+      	if (theMat != 0) 
+     		theMaterial = (NDMaterial *)theMat;
+     	else 
+	return TCL_ERROR;
+    }
+
 
     // Check argv[1] for J2PlaneStrain material type
     else if ((strcmp(argv[1],"J2Plasticity") == 0)  ||
