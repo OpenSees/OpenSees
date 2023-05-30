@@ -172,6 +172,7 @@ extern void *OPS_LysmerTriangle(void);
 extern void *OPS_ASDAbsorbingBoundary2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ASDAbsorbingBoundary3D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_TwoNodeLink(void);
+extern void *OPS_TwoNodeLinkSection(void);
 extern void *OPS_LinearElasticSpring(void);
 extern void *OPS_Inerter(void);
 extern void *OPS_Adapter(void);
@@ -1375,6 +1376,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "twoNodeLink") == 0) {
   void *theEle = OPS_TwoNodeLink();
+  if (theEle != 0) {
+      theElement = (Element*)theEle;
+  }
+  else {
+      opserr << "tclelementcommand -- unable to create element of type : "
+          << argv[1] << endln;
+      return TCL_ERROR;
+  }
+  }
+
+  else if (strcmp(argv[1], "twoNodeLinkSection") == 0) {
+  void *theEle = OPS_TwoNodeLinkSection();
   if (theEle != 0) {
       theElement = (Element*)theEle;
   }
