@@ -36,3 +36,4 @@ using BackStress = InternalVariableType<VoigtVector, HardeningType, BackStressNa
 struct VonMisesRadiusName { static constexpr const char* name = "VonMisesRadius";};
 template <class HardeningType>
 using VonMisesRadius = InternalVariableType<VoigtScalar, HardeningType, VonMisesRadiusName>;
+

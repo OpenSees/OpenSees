@@ -21,6 +21,5 @@ target_sources(OPS_Material
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 add_subdirectory(ElasticityModels)
-add_subdirectory(EvolvingVariables)
 add_subdirectory(PlasticFlowDirections)
 add_subdirectory(YieldFunctions)
