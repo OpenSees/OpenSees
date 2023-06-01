@@ -89,6 +89,10 @@ OPS_HystereticSMMaterial(void)
     int numdata = 1;
     int printInput = 0;
     int YXorder = 1;
+
+    static Vector internalValues(43);
+    std::map<const char*, std::vector<double>> returnData;
+
     
     int loc = 2;
 
@@ -294,11 +298,14 @@ OPS_HystereticSMMaterial(void)
             negEnv.push_back(dData[i+ numArgsOver2]);
             nnegEnv++;
             numArgs = numArgs - 1;
+            
+            returnData["negEnv"].push_back(dData[i + numArgsOver2]);
         }
         // put back the tag
         numArgs = numArgs + 1;
 
     }
+
 
 
 
@@ -359,7 +366,7 @@ OPS_HystereticSMMaterial(void)
 
     }
 
-    theMaterial = new HystereticSMMaterial(iData[0], theposEnv, thenegEnv, thepinchArray, thedamageArray, beta, thedegEnvArray, theLSforce, theLSdefo, YXorder, printInput);
+    theMaterial = new HystereticSMMaterial(iData[0], theposEnv, thenegEnv, thepinchArray, thedamageArray, beta, thedegEnvArray, theLSforce, theLSdefo, internalValues, YXorder, printInput);
 
 
     if (theMaterial == 0) {
@@ -367,13 +374,68 @@ OPS_HystereticSMMaterial(void)
         return 0;
     }
 
+    //returnData["uniaxialMaterial"] = ['HystereticSM'];
+
+    returnData["matTag"].push_back(iData[0]);
+
+    // the following were returned from the construcator, as it filled in default values
+    for (int i = 1; i < 15; i += 1) {
+        returnData["posEnv"].push_back(internalValues[i]);
+    }
+    for (int i = 15; i < 29; i += 1) {
+        returnData["negEnv"].push_back(internalValues[i]);
+    }
+    for (int i = 29; i < 31; i += 1) {
+        returnData["pinch"].push_back(internalValues[i]);
+    }
+    for (int i = 31; i < 33; i += 1) {
+        returnData["damage"].push_back(internalValues[i]);
+    }
+    for (int i = 33; i < 34; i += 1) {
+        returnData["beta"].push_back(internalValues[i]);
+    }
+
+    for (int i = 34; i < 36; i += 1) {
+        returnData["degEnv"].push_back(internalValues[i]);
+    }
+    for (int i = 36; i < 37; i += 1) {
+        returnData["energyA"].push_back(internalValues[i]);
+    }
+
+    // also, just because I can:
+    for (int i = 1; i < 15; i += 2) {
+        returnData["posEnvY"].push_back(internalValues[i]);
+        returnData["posEnvX"].push_back(internalValues[i + 1]);
+    }
+    for (int i = 15; i < 29; i += 2) {
+        returnData["negEnvY"].push_back(internalValues[i]);
+        returnData["negEnvX"].push_back(internalValues[i + 1]);
+    }
+
+
+    // back to being user-defined
+    for (int i = 0; i < theLSforce.Size(); i += 1) {
+        returnData["LSforce"].push_back(theLSforce[i]);
+    }
+    for (int i = 0; i < theLSdefo.Size(); i += 1) {
+        returnData["LSdefo"].push_back(theLSdefo[i]);
+    }
+    //returnData["mom1p"].push_back(mom1p);
+    
+
+    if (OPS_SetDoubleDictListOutput(returnData) < 0) {
+        opserr
+            << "WARNING: failed to set outputs for HystereticSM\n";
+    }
+    
+
 
     return theMaterial;
 }
 
 
 HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, const Vector& negEnvIN, const Vector& pinchArrayIN, const Vector& damageArrayIN, double betaIN,
-    const Vector& degEnvIN, const Vector& forceLimitStatesIN, const Vector& defoLimitStatesIN,  int YXorderIN, int printInputIN) :
+    const Vector& degEnvIN, const Vector& forceLimitStatesIN, const Vector& defoLimitStatesIN, Vector& internalValues,  int YXorderIN, int printInputIN) :
     UniaxialMaterial(tag, MAT_TAG_HystereticSM),
     posEnv(posEnvIN), negEnv(negEnvIN), pinchArray(pinchArrayIN), damageArray(damageArrayIN), beta(betaIN),
     degEnvArray(degEnvIN), 
@@ -760,6 +822,50 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
 
     //opserr << "energyA  HystereticSM " << energyA << endln;
 
+// return the internal values:
+    //static Vector data(43);
+
+    internalValues(0) = this->getTag();
+    internalValues(1) = mom1p;
+    internalValues(2) = rot1p;
+    internalValues(3) = mom2p;
+    internalValues(4) = rot2p;
+    internalValues(5) = mom3p;
+    internalValues(6) = rot3p;
+    internalValues(7) = mom4p;
+    internalValues(8) = rot4p;
+    internalValues(9) = mom5p;
+    internalValues(10) = rot5p;
+    internalValues(11) = mom6p;
+    internalValues(12) = rot6p;
+    internalValues(13) = mom7p;
+    internalValues(14) = rot7p;
+    internalValues(15) = mom1n;
+    internalValues(16) = rot1n;
+    internalValues(17) = mom2n;
+    internalValues(18) = rot2n;
+    internalValues(19) = mom3n;
+    internalValues(20) = rot3n;
+    internalValues(21) = mom4n;
+    internalValues(22) = rot4n;
+    internalValues(23) = mom5n;
+    internalValues(24) = rot5n;
+    internalValues(25) = mom6n;
+    internalValues(26) = rot6n;
+    internalValues(27) = mom7n;
+    internalValues(28) = rot7n;
+    internalValues(29) = pinchX;
+    internalValues(30) = pinchY;
+    internalValues(31) = damfc1;
+    internalValues(32) = damfc2;
+    internalValues(33) = beta;
+    internalValues(34) = degEnvp;
+    internalValues(35) = degEnvn;
+    internalValues(36) = energyA;
+
+
+
+
     // Set envelope slopes
     this->setEnvelope();
 
@@ -768,8 +874,7 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
     this->revertToLastCommit();
 
 
-
-
+    
 
 
 }
@@ -1010,7 +1115,7 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
     kp = (kp < 1.0) ? 1.0 : 1.0 / kp;
 
     if (TloadIndicator == 1) {
-        TloadIndicator = 2;
+        TloadIndicator   = 2;
         if (Cstress >= 0.0) {
             TrotPu = Cstrain - Cstress / (Eup * kp);
             double energy = CenergyD - 0.5 * Cstress / (Eup * kp) * Cstress;
@@ -1161,8 +1266,9 @@ HystereticSMMaterial::revertToStart(void)
 UniaxialMaterial*
 HystereticSMMaterial::getCopy(void)
 {
+    Vector dummyVector(43);
     HystereticSMMaterial* theCopy = new HystereticSMMaterial(this->getTag(),
-        posEnv, negEnv, pinchArray, damageArray, beta, forceLimitStates, defoLimitStates, degEnvArray );
+        posEnv, negEnv, pinchArray, damageArray, beta, forceLimitStates, defoLimitStates, degEnvArray, dummyVector);
 
     theCopy->CrotMax = CrotMax;
     theCopy->CrotMin = CrotMin;
@@ -1184,7 +1290,7 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
 {
     int res = 0;
 
-    static Vector data(43);
+    static Vector data(45);
 
     data(0) = this->getTag();
     data(1) = mom1p;
@@ -1220,15 +1326,17 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
     data(31) = damfc1;
     data(32) = damfc2;
     data(33) = beta;
-    data(34) = CrotMax;
-    data(35) = CrotMin;
-    data(36) = CrotPu;
-    data(37) = CrotNu;
-    data(38) = CenergyD;
-    data(39) = CloadIndicator;
-    data(40) = Cstress;
-    data(41) = Cstrain;
-    data(42) = Ttangent;
+    data(34) = degEnvp;
+    data(35) = degEnvn;
+    data(36) = CrotMax;
+    data(37) = CrotMin;
+    data(38) = CrotPu;
+    data(39) = CrotNu;
+    data(40) = CenergyD;
+    data(41) = CloadIndicator;
+    data(42) = Cstress;
+    data(43) = Cstrain;
+    data(44) = Ttangent;
 
 
     res = theChannel.sendVector(this->getDbTag(), commitTag, data);
@@ -1245,7 +1353,7 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
 {
     int res = 0;
 
-    static Vector data(43);
+    static Vector data(45);
     res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
     if (res < 0) {
@@ -1287,15 +1395,17 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
         damfc1 = data(31);
         damfc2 = data(32);
         beta = data(33);
-        CrotMax = data(34);
-        CrotMin = data(35);
-        CrotPu = data(36);
-        CrotNu = data(37);
-        CenergyD = data(38);
-        CloadIndicator = (int)data(39);
-        Cstress = data(40);
-        Cstrain = data(41);
-        Ttangent = data(42);
+        degEnvp = data(34);
+        degEnvn = data(35);
+        CrotMax = data(36);
+        CrotMin = data(37);
+        CrotPu = data(38);
+        CrotNu = data(39);
+        CenergyD = data(40);
+        CloadIndicator = (int)data(41);
+        Cstress = data(42);
+        Cstrain = data(43);
+        Ttangent = data(44);
 
 
         // set the trial values
