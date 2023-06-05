@@ -626,6 +626,8 @@ int OPS_Patch()
 	    theActiveNDFiberSectionWarping2d->addFiber(*theFiber);
 	}
 
+	if (theFiber != 0)
+	  delete theFiber;
 	delete cells[j];
     }
 
@@ -782,7 +784,8 @@ int OPS_Layer()
 	    theActiveNDFiberSectionWarping2d->addFiber(*theFiber);
 	}
     
-
+	if (theFiber != 0)
+	  delete theFiber;
     }
 
     delete [] reinfBar;
