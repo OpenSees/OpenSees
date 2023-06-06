@@ -153,7 +153,9 @@ void *OPS_ElasticBeam2d(const ID &info) {
       }      
     }
 
-    OPS_ResetCurrentInputArg(-numArgs);
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);
+    }
     numArgs = numArgs - numOptionalArgs;
 
     /*!

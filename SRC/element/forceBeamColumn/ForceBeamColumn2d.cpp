@@ -507,7 +507,9 @@ OPS_BeamWithHinges(void)
     }
   }
 
-  OPS_ResetCurrentInputArg(-numArgs);
+  if (numArgs > 0) {
+    OPS_ResetCurrentInputArg(-numArgs);
+  }
   numArgs = numArgs - numOptionalArgs;
 
   if (ndm == 2 && numArgs < 11) {
