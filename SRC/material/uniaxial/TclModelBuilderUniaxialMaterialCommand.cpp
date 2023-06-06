@@ -48,6 +48,7 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_TDConcreteEXP(void); // ntosic
 extern void *OPS_TDConcrete(void); // ntosic
+extern void *OPS_TDConcreteNL(void); // ntosic,MHS
 extern void *OPS_TDConcreteMC10(void); //ntosic
 extern void *OPS_TDConcreteMC10NL(void); //ntosic
 extern void *OPS_ECC01(void);
@@ -288,6 +289,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 			return TCL_ERROR;
 	}
 
+	// ntosic,MHS
+	if (strcmp(argv[1], "TDConcreteNL") == 0) {
+		void *theMat = OPS_TDConcreteNL();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+	
 	// ntosic
 	if (strcmp(argv[1], "TDConcreteMC10") == 0) {
 		void *theMat = OPS_TDConcreteMC10();
