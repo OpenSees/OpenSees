@@ -243,6 +243,7 @@
 #define MAT_TAG_Trilinwp2 222
 #define MAT_TAG_Trilinwpd 223
 #define MAT_TAG_TDConcrete 224
+#define MAT_TAG_TDConcreteNL 2240
 #define MAT_TAG_TDConcreteEXP 225
 #define MAT_TAG_TDConcreteMC10 226
 #define MAT_TAG_TDConcreteMC10NL 227

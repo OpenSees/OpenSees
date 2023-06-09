@@ -73,6 +73,7 @@ void* OPS_ElasticBeam3d(void)
 	if (theType == "-mass") {
 	  numOptionalArgs++;
 	  if(OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;	    
 	    if(OPS_GetDoubleInput(&numData,&mass) < 0)
 	      return 0;
 	    numOptionalArgs++;	    
@@ -83,6 +84,7 @@ void* OPS_ElasticBeam3d(void)
 	} else if (theType == "-releasez") {
 	  numOptionalArgs++;	  
 	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;	    
 	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
 	      opserr << "WARNING: failed to get releasez";
 	      return 0;
@@ -92,6 +94,7 @@ void* OPS_ElasticBeam3d(void)
 	} else if (theType == "-releasey") {
 	  numOptionalArgs++;	  
 	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;
 	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
 	      opserr << "WARNING: failed to get releasey";
 	      return 0;
@@ -101,17 +104,20 @@ void* OPS_ElasticBeam3d(void)
 	} else if(theType == "-damp"){
 	  numOptionalArgs++;	  
 	  if(OPS_GetNumRemainingInputArgs() > 0) {
-      if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
-		  theDamping = OPS_getDamping(dampingTag);
-      if(theDamping == 0) {
+	    numData = 1;
+	    if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+	    theDamping = OPS_getDamping(dampingTag);
+	    if(theDamping == 0) {
 	      opserr<<"damping not found\n";
 	      return 0;
-      }
-    }
+	    }
+	  }
 	} 
     }
 
-    OPS_ResetCurrentInputArg(-numArgs);    
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);    
+    }
     numArgs = numArgs - numOptionalArgs;
       
     if(numArgs < 10 && numArgs != 5) {
