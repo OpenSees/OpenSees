@@ -130,6 +130,7 @@ extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
+extern void *OPS_TripleFrictionPendulumX(void);
 extern void *OPS_Truss2(void);
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
@@ -736,6 +737,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if (strcmp(argv[1], "TripleFrictionPendulumX") == 0) {
+  
+  void* theEle = OPS_TripleFrictionPendulumX();
+  if (theEle != 0)
+      theElement = (Element*)theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+	  
   } else if (strcmp(argv[1],"HDR") == 0) {
     
     void *theEle = OPS_HDR();
