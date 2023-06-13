@@ -96,6 +96,7 @@ void* OPS_PileToe3D();
 void* OPS_TFP_Bearing();
 void* OPS_FPBearingPTV();
 void* OPS_TripleFrictionPendulum();
+void* OPS_TripleFrictionPendulumX();
 void* OPS_HDR();
 void* OPS_LeadRubberX();
 void* OPS_ElastomericX();
@@ -677,6 +678,7 @@ namespace {
 	functionMap.insert(std::make_pair("TFP", &OPS_TFP_Bearing));
 	functionMap.insert(std::make_pair("FPBearingPTV", &OPS_FPBearingPTV));
 	functionMap.insert(std::make_pair("TripleFrictionPendulum", &OPS_TripleFrictionPendulum));
+	functionMap.insert(std::make_pair("TripleFrictionPendulumX", &OPS_TripleFrictionPendulumX));
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
