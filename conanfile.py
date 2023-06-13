@@ -13,7 +13,6 @@ class OpenSeesDependencies(ConanFile):
     generators = "cmake", "cmake_find_package"
     build_policy = "missing"
     requires = "hdf5/1.12.0", \
-        "zlib/1.2.11", \
         "tcl/8.6.11"
     # Custom attributes for Bincrafters recipe conventions
     _source_subfolder = "source_subfolder"
