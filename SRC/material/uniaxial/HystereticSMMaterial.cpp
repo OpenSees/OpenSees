@@ -213,17 +213,7 @@ OPS_HystereticSMMaterial(void)
                 numOptionalArgs++;
             }
         }
-        //if (theType == "-degEnvFactor" || theType == "degEnvFactor") {
-        //    numOptionalArgs++;
-        //    if (OPS_GetNumRemainingInputArgs() > 0) {
-        //        if (OPS_GetDoubleInput(&numData, &degEnvFactor) < 0)
-        //        {
-        //            opserr << "WARNING need to input a value of degEnvFactor after its flag for uniaxialMaterial HystereticSM" << endln;
-        //            return 0;
-        //        }
-        //        numOptionalArgs++;
-        //    }
-        //}
+
         if (theType == "-degEnv" || theType == "degEnv") {
             numOptionalArgs++;
             while (OPS_GetNumRemainingInputArgs() > 0) {
