@@ -69,10 +69,8 @@
 #include <float.h>
 #include <Channel.h>
 #include <Information.h>
-#include <iostream> //Added by AMK for debugging
 #include <elementAPI.h> //Added by AMK to use methods for parsing data line;
 #include <Domain.h> //Added by AMK to get current Domain time;
-using namespace std; //Added by AMK for debugging
 #include <MaterialResponse.h>
 #include <Vector.h>
 
@@ -318,7 +316,7 @@ TDConcreteNL::setTrialStrain(double trialStrain, double strainRate)
         		//	eps_cr = setCreepStrain(t,sig);
         		//}
         		//if (t < tcast) {
-        		//cout << "\nWARNING: TDConcreteNL loaded before tcast, creep and shrinkage not calculated";
+        		//opserr << "\nWARNING: TDConcreteNL loaded before tcast, creep and shrinkage not calculated";
         		//	eps_sh = epsP_sh;
         		//	eps_cr = epsP_cr;
         		//	eps_m = eps_total - eps_cr - eps_sh;
@@ -482,7 +480,8 @@ TDConcreteNL::commitState(void)
 	epsP_m = eps_m;
     if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
         double s = fabs(eps_m/fc)*Ec;
-        cout<<"\n          Strain Compression Limit Exceeded: "<<s<<"fc'";
+        s = 0.5*fabs(fc/Ec);
+        opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
     }
 	
 	//Cracking flags:

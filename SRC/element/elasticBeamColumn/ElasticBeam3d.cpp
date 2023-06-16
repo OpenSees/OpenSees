@@ -115,7 +115,9 @@ void* OPS_ElasticBeam3d(void)
 	} 
     }
 
-    OPS_ResetCurrentInputArg(-numArgs);    
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);    
+    }
     numArgs = numArgs - numOptionalArgs;
       
     if(numArgs < 10 && numArgs != 5) {
