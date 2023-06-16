@@ -265,7 +265,6 @@ OPS_HystereticSMMaterial(void)
         return 0;
     }
 
-    opserr << "numArgs" << numArgs << endln;
 
     if (numArgs > 1) {
         double dData[33];
@@ -1007,6 +1006,7 @@ HystereticSMMaterial::getTangent(void)
 void
 HystereticSMMaterial::positiveIncrement(double dStrain)
 {
+    double damAdjHere = 0;
     double kn = pow(CrotMin / rot1n, beta);
     kn = (kn < 1.0) ? 1.0 : 1.0 / kn;
     double kp = pow(CrotMax / rot1p, beta);
@@ -1021,19 +1021,23 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
                 damfc = damfc2 * energy / energyA;
                 damfc += damfc1 * (CrotMin - rot1n) / rot1n;
                 if (degEnvp != 0) {
-                    mom2p = (1 - fabs(degEnvp) * damfc) * mom2p;
-                    mom3p = (1 - fabs(degEnvp) * damfc) * mom3p;
-                    mom4p = (1 - fabs(degEnvp) * damfc) * mom4p;
-                    mom5p = (1 - fabs(degEnvp) * damfc) * mom5p;
-                    mom6p = (1 - fabs(degEnvp) * damfc) * mom6p;
-                    mom7p = (1 - fabs(degEnvp) * damfc) * mom7p;
+                    damAdjHere = (1 - fabs(degEnvp) * damfc);
+                    if (damAdjHere < 1e-9) {
+                        damAdjHere = 1e-9;
+                    }
+                    mom2p = damAdjHere * mom2p;
+                    mom3p = damAdjHere * mom3p;
+                    mom4p = damAdjHere * mom4p;
+                    mom5p = damAdjHere * mom5p;
+                    mom6p = damAdjHere * mom6p;
+                    mom7p = damAdjHere * mom7p;
                     if (degEnvp > 0) {
-                        rot2p = (1 - fabs(degEnvp) * damfc) * rot2p;
-                        rot3p = (1 - fabs(degEnvp) * damfc) * rot3p;
-                        rot4p = (1 - fabs(degEnvp) * damfc) * rot4p;
-                        rot5p = (1 - fabs(degEnvp) * damfc) * rot5p;
-                        rot6p = (1 - fabs(degEnvp) * damfc) * rot6p;
-                        rot7p = (1 - fabs(degEnvp) * damfc) * rot7p;
+                        rot2p = damAdjHere * rot2p;
+                        rot3p = damAdjHere * rot3p;
+                        rot4p = damAdjHere * rot4p;
+                        rot5p = damAdjHere * rot5p;
+                        rot6p = damAdjHere * rot6p;
+                        rot7p = damAdjHere * rot7p;
                     }
                     this->setEnvelope();
                 }
@@ -1112,6 +1116,7 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
 void
 HystereticSMMaterial::negativeIncrement(double dStrain)
 {
+    double damAdjHere = 0;
     double kn = pow(CrotMin / rot1n, beta);
     kn = (kn < 1.0) ? 1.0 : 1.0 / kn;
     double kp = pow(CrotMax / rot1p, beta);
@@ -1127,19 +1132,23 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
                 damfc = damfc2 * energy / energyA;
                 damfc += damfc1 * (CrotMax - rot1p) / rot1p;
                 if (degEnvn != 0) {
-                    mom2n = (1 - fabs(degEnvn) * damfc) * mom2n;
-                    mom3n = (1 - fabs(degEnvn) * damfc) * mom3n;
-                    mom4n = (1 - fabs(degEnvn) * damfc) * mom4n;
-                    mom5n = (1 - fabs(degEnvn) * damfc) * mom5n;
-                    mom6n = (1 - fabs(degEnvn) * damfc) * mom6n;
-                    mom7n = (1 - fabs(degEnvn) * damfc) * mom7n;
+                    damAdjHere = (1 - fabs(degEnvn) * damfc);
+                    if (damAdjHere < 1e-9) {
+                        damAdjHere = 1e-9;
+                    }
+                    mom2n = damAdjHere * mom2n;
+                    mom3n = damAdjHere * mom3n;
+                    mom4n = damAdjHere * mom4n;
+                    mom5n = damAdjHere * mom5n;
+                    mom6n = damAdjHere * mom6n;
+                    mom7n = damAdjHere * mom7n;
                     if (degEnvn > 0) {
-                        rot2n = (1 - fabs(degEnvn) * damfc) * rot2n;
-                        rot3n = (1 - fabs(degEnvn) * damfc) * rot3n;
-                        rot4n = (1 - fabs(degEnvn) * damfc) * rot4n;
-                        rot5n = (1 - fabs(degEnvn) * damfc) * rot5n;
-                        rot6n = (1 - fabs(degEnvn) * damfc) * rot6n;
-                        rot7n = (1 - fabs(degEnvn) * damfc) * rot7n;
+                        rot2n = damAdjHere * rot2n;
+                        rot3n = damAdjHere * rot3n;
+                        rot4n = damAdjHere * rot4n;
+                        rot5n = damAdjHere * rot5n;
+                        rot6n = damAdjHere * rot6n;
+                        rot7n = damAdjHere * rot7n;
                     }
                     this->setEnvelope();
                 }
@@ -2233,7 +2242,6 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
             data(4) = this->Cstrain / rot5p;
             data(5) = this->Cstrain / rot6p;
             data(6) = this->Cstrain / rot7p;
-            data(0) = this->Cstrain / rot1p;
         }
         else {
             data(0) = this->Cstrain / rot1n;
@@ -2243,7 +2251,6 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
             data(4) = this->Cstrain / rot5n;
             data(5) = this->Cstrain / rot6n;
             data(6) = this->Cstrain / rot7n;
-            data(0) = this->Cstrain / rot1n;
         }
 
         return matInfo.setVector(data);
