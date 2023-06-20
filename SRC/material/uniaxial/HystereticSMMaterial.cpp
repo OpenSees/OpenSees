@@ -254,6 +254,8 @@ OPS_HystereticSMMaterial(void)
         opserr << "WARNING invalid tag for uniaxialMaterial HystereticSM" << endln;
         return 0;
     }
+    opserr << " forceLimitStates " << forceLimitStates[0] << endln;
+    opserr << " defoLimitStates " << defoLimitStates[0] << endln;
 
 
     if (numArgs > 1) {
@@ -340,6 +342,10 @@ OPS_HystereticSMMaterial(void)
             thenegEnv[i + 1] = tmp;
         }
     }
+    opserr << "defoLimitStates: a  " << defoLimitStates[0] << endln;
+    opserr << "forceLimitStates: a " << forceLimitStates[0] << endln;
+    opserr << "defoLimitStates: b  " << theLSdefo[0] << endln;
+    opserr << "forceLimitStates: b " << theLSforce[0] << endln;
 
     if (printInput == 1) {
         opserr << "\n" << " --  user-requested HystereticSM-material input --\n";
@@ -407,10 +413,10 @@ OPS_HystereticSMMaterial(void)
 
     // back to being user-defined
     for (int i = 0; i < theLSforce.Size(); i += 1) {
-        returnData["LSforce"].push_back(theLSforce[i]);
+        returnData["forceLimitStates"].push_back(theLSforce[i]);
     }
     for (int i = 0; i < theLSdefo.Size(); i += 1) {
-        returnData["LSdefo"].push_back(theLSdefo[i]);
+        returnData["defoLimitStates"].push_back(theLSdefo[i]);
     }
     //returnData["mom1p"].push_back(mom1p);
 
@@ -2132,6 +2138,12 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
         return new MaterialResponse(this, 21, 0.0);
     }
 
+    if (strcmp(argv[0], "strain") == 0 ) {
+        return new MaterialResponse(this, 111, 0.0);
+    }
+    if (strcmp(argv[0], "stress") == 0 ) {
+        return new MaterialResponse(this, 112, 0.0);
+    }
 
     // backbone pts DCR
     // deformation
@@ -2197,6 +2209,12 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
             return matInfo.setDouble(this->Cstrain / rot1p);
         else
             return matInfo.setDouble(this->Cstrain / rot1n);
+    }
+    if (responseID == 111) {
+        return matInfo.setDouble(this->Cstrain);
+    }
+    if (responseID == 112) {
+        return matInfo.setDouble(this->Cstress);
     }
 
     // plastic deformation
@@ -2272,7 +2290,9 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     // defo
     // input values
     else if (responseID == 96) {
+        
         return matInfo.setVector(defoLimitStates);
+        //return matInfo.setVector(theLSdefo);
     }
     // current step
     else if (responseID == 961) {
@@ -2315,7 +2335,9 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     // force
     // input values
     else if (responseID == 97) {
+    
         return matInfo.setVector(forceLimitStates);
+        //return matInfo.setVector(theLSforce);
     }
     // current step
     else if (responseID == 971) {
