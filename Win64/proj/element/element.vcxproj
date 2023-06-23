@@ -231,6 +231,7 @@
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\NineNodeQuad.cpp" />
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\SixNodeTri.cpp" />
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\FPBearingPTV.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulumX.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\TclGradientInelasticBeamColumnCommand.cpp" />
