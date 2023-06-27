@@ -162,8 +162,6 @@ double WeakRock::getStress(double strain) {
   return signStrain * stress;
 }
 
-double WeakRock::getEnergy(double strain) { return 0.0; }
-
 double WeakRock::getYieldStrain(void) { return 0.0; }
 
 HystereticBackbone *WeakRock::getCopy(void) {
