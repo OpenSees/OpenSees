@@ -84,6 +84,9 @@ OBJS       = UniaxialMaterial.o \
 	UniaxialJ2Plasticity.o \
 	HyperbolicGapMaterial.o \
 	ImpactMaterial.o \
+	Hertzdamp.o \
+	JankowskiImpact.o \
+	ViscoelasticGap.o \
 	KinematicHardening.o \
 	NewUniaxialMaterial.o \
 	TclNewUnixialMaterial.o \
@@ -135,6 +138,7 @@ OBJS       = UniaxialMaterial.o \
 	OOHystereticMaterial.o \
 	SPSW02.o \
 	TDConcrete.o \
+	TDConcreteNL.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \
@@ -154,6 +158,8 @@ OBJS       = UniaxialMaterial.o \
 	HystereticSmooth.o \
 	HystereticAsym.o \
 	CoulombDamperMaterial.o \
+	FlagShapeMaterial.o \
+	GMG_CyclicReinforcedConcrete.o \
     TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

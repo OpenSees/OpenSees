@@ -319,7 +319,14 @@ InitStrainMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutp
     return theResponse;
   }
 
-  return UniaxialMaterial::setResponse(argv, argc, theOutput);
+  if (strcmp(argv[0],"material") == 0) {
+    theResponse = theMaterial->setResponse(&argv[1], argc-1, theOutput);
+  }
+
+  if (theResponse == 0)
+    theResponse = UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+  return theResponse;
 }
 
 int
@@ -327,6 +334,9 @@ InitStrainMaterial::getResponse(int responseID, Information &info)
 {
   if (responseID == 100)
     return info.setDouble(localStrain+epsInit);
+
+  if (theMaterial != 0)
+    return theMaterial->getResponse(responseID, info);
 
   return UniaxialMaterial::getResponse(responseID, info);
 }

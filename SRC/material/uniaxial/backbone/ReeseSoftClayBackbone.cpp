@@ -34,6 +34,42 @@
 
 #include <math.h>
 
+#include <elementAPI.h>
+
+void *
+OPS_ReeseSoftClayBackbone(void)
+{
+  HystereticBackbone *theBackbone = 0;
+
+  if (OPS_GetNumRemainingInputArgs() < 6) {
+    opserr << "Invalid number of args, want: hystereticBackbone ReeseSoftClay tag? kx? pu? y50? n?" << endln;
+    return 0;
+  }
+
+  int matTag;
+  double dData[3];
+  
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, &matTag) != 0) {
+    opserr << "WARNING invalid tag for hystereticBackbone ReeseSoftClay" << endln;
+    return 0;
+  }
+  numData = 3;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "WARNING invalid values for hystereticBackbone ReeseSoftClay" << endln;
+    return 0;
+  }  
+
+  theBackbone = new ReeseSoftClayBackbone(matTag, dData[0], dData[1], dData[2]);
+
+  if (theBackbone == 0) {
+    opserr << "WARNING could not create ReeseSoftClayBackbone\n";
+    return 0;
+  }
+
+  return theBackbone;  
+}
+
 ReeseSoftClayBackbone::ReeseSoftClayBackbone(int tag, double p, double y, double nn):
   HystereticBackbone(tag,BACKBONE_TAG_ReeseSoftClay),
   pu(p), y50(y), n(nn)
@@ -93,12 +129,6 @@ ReeseSoftClayBackbone::getStress (double strain)
     stress = pu*0.5*pow(0.001,exp)/minStrain*strain;
 
   return signStrain*stress;
-}
-
-double
-ReeseSoftClayBackbone::getEnergy (double strain)
-{
-  return 0.0;
 }
 
 double

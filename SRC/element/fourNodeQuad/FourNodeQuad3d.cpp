@@ -10,7 +10,7 @@
 ** University of California, Berkeley, is strictly prohibited.  See   **
 ** file 'COPYRIGHT'  in main directory for information on usage and   **
 ** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
+**                                                             .       **
 ** Developed by:                                                      **
 **   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
 **   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
@@ -659,7 +659,10 @@ FourNodeQuad3d::addInertiaLoadToUnbalance(const Vector &accel)
   static double rhoi[4];
   double sum = 0.0;
   for (i = 0; i < 4; i++) {
-    rhoi[i] = theMaterial[i]->getRho();
+    if (rho == 0)
+      rhoi[i] = theMaterial[i]->getRho();
+    else
+      rhoi[i] = rho;
     sum += rhoi[i];
   }
   
@@ -759,7 +762,10 @@ FourNodeQuad3d::getResistingForceIncInertia()
   static double rhoi[4];
   double sum = 0.0;
   for (i = 0; i < 4; i++) {
-    rhoi[i] = theMaterial[i]->getRho();
+    if (rho == 0)
+      rhoi[i] = theMaterial[i]->getRho();
+    else
+      rhoi[i] = rho;	 
     sum += rhoi[i];
   }
   

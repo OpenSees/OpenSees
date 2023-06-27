@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ShellMITC4.h>
 #include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
+#include <TenNodeTetrahedron.h>
 
 #include <BeamIntegration.h>
 #include <LobattoBeamIntegration.h>
@@ -80,6 +81,7 @@ void* OPS_CorotTrussSectionElement();
 void* OPS_ZeroLengthContactNTS2D();
 void* OPS_ZeroLengthInterface2D();
 void* OPS_ComponentElement2d();
+void* OPS_ComponentElement3d();
 void* OPS_ZeroLengthImpact3D();
 void* OPS_ModElasticBeam2d();
 void* OPS_ElasticTimoshenkoBeam2d();
@@ -94,6 +96,7 @@ void* OPS_PileToe3D();
 void* OPS_TFP_Bearing();
 void* OPS_FPBearingPTV();
 void* OPS_TripleFrictionPendulum();
+void* OPS_TripleFrictionPendulumX();
 void* OPS_HDR();
 void* OPS_LeadRubberX();
 void* OPS_ElastomericX();
@@ -101,6 +104,7 @@ void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
 void* OPS_MVLEM_3D();
 void* OPS_SFI_MVLEM_3D();
+void* OPS_E_SFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
@@ -227,6 +231,7 @@ void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
+void* OPS_TenNodeTetrahedron();
 void* OPS_CatenaryCableElement();
 void *OPS_ASDEmbeddedNodeElement(void);
 void* OPS_GradientInelasticBeamColumn2d();
@@ -235,6 +240,9 @@ void* OPS_RockingBC();
 void* OPS_InertiaTrussElement();
 void *OPS_ASDAbsorbingBoundary2D(void);
 void *OPS_ASDAbsorbingBoundary3D(void);
+void* OPS_MasonPan12(void);
+void* OPS_MasonPan3D(void);
+void* OPS_BeamGT(void);
 
 namespace {
 
@@ -304,6 +312,16 @@ namespace {
 	}
     }
 
+  static void* OPS_ComponentElement()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    return OPS_ComponentElement2d();
+	} else {
+	    return OPS_ComponentElement3d();
+	}
+    }
+
     static void* OPS_ElasticBeam()
     {
 	int ndm = OPS_GetNDM();
@@ -321,7 +339,8 @@ namespace {
 	if(ndm == 2)
 	    return OPS_MVLEM();
 	if(ndm == 3)
-	    return OPS_MVLEM_3D();	
+	    return OPS_MVLEM_3D();
+	return 0;	
     }
 
     static void* OPS_SFI_MVLEM2d3d()
@@ -331,6 +350,7 @@ namespace {
 	    return OPS_SFI_MVLEM();
 	if(ndm == 3)
 	    return OPS_SFI_MVLEM_3D();	
+	return 0;
     }    
 
     static void* OPS_DispBeamColumn()
@@ -634,7 +654,8 @@ namespace {
 	functionMap.insert(std::make_pair("CorotTrussSection", &OPS_CorotTrussSectionElement));
 	functionMap.insert(std::make_pair("zeroLengthContactNTS2D", &OPS_ZeroLengthContactNTS2D));
 	functionMap.insert(std::make_pair("zeroLengthInterface2D", &OPS_ZeroLengthInterface2D));
-	functionMap.insert(std::make_pair("componentElement2d", &OPS_ComponentElement2d));
+	functionMap.insert(std::make_pair("componentElement2d", &OPS_ComponentElement));
+	functionMap.insert(std::make_pair("componentElement", &OPS_ComponentElement));	
 	functionMap.insert(std::make_pair("zeroLengthImpact3D", &OPS_ZeroLengthImpact3D));
 	functionMap.insert(std::make_pair("ModElasticBeam2d", &OPS_ModElasticBeam2d));
 	functionMap.insert(std::make_pair("modElasticBeam2d", &OPS_ModElasticBeam2d));
@@ -657,6 +678,7 @@ namespace {
 	functionMap.insert(std::make_pair("TFP", &OPS_TFP_Bearing));
 	functionMap.insert(std::make_pair("FPBearingPTV", &OPS_FPBearingPTV));
 	functionMap.insert(std::make_pair("TripleFrictionPendulum", &OPS_TripleFrictionPendulum));
+	functionMap.insert(std::make_pair("TripleFrictionPendulumX", &OPS_TripleFrictionPendulumX));
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
@@ -664,6 +686,10 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));    
+	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
+	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
+	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
@@ -722,6 +748,7 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
+	functionMap.insert(std::make_pair("TenNodeTetrahedron", &OPS_TenNodeTetrahedron));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));
 	functionMap.insert(std::make_pair("ASDEmbeddedNodeElement", &OPS_ASDEmbeddedNodeElement));
 	functionMap.insert(std::make_pair("gradientInelasticBeamColumn", &OPS_GradientInelasticBeamColumn));

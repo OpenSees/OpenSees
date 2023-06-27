@@ -20,6 +20,7 @@
                                                                        
 // Created: M. Chiaramonte,  P. Arduino,  P.Mackenzie-Helnwein, UW, 03.29.2011
 // Modified: Alborz Ghofrani, UW, 2011
+// Modified: Amin Pakzad, UW, 2023
 //
 // Description: This file contains the implementation of the Brick8FiberOverlay class
 
@@ -43,6 +44,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h> 
+
 
 double Brick8FiberOverlay::pts[2][3];
 double Brick8FiberOverlay::wts[2];
@@ -634,12 +636,120 @@ int
 Brick8FiberOverlay::recvSelf(int commitTag, Channel &theChannel,
 						FEM_ObjectBroker &theBroker)
 {
-return 0;
+	int res = 0 ;
+	int dataTag = this->getDbTag();
+	Vector data(12);
+	res += theChannel.recvVector(dataTag, commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING Brick8FiberOverlay::recvSelf() - failed to receive Vector\n";
+		return -1;
+	}
+
+	int eleTag = (int)data(0);
+	this->setTag(eleTag);
+	int matClassTag1 = (int)data(1);
+	int matDbTag1    = (int)data(2);
+	int matClassTag2 = (int)data(3);
+	int matDbTag2    = (int)data(4);
+	Af = data(5);
+	nFi(0) = data(6);
+	nFi(1) = data(7);
+	nFi(2) = data(8);
+	nFj(0) = data(9);
+	nFj(1) = data(10);
+	nFj(2) = data(11);
+
+	res += theChannel.recvID(dataTag, commitTag, externalNodes);
+	if (res < 0) {
+		opserr << "WARNING Brick8FiberOverlay::recvSelf() - failed to receive ID\n";
+		return -2;
+	}
+
+
+	Vf = nFj - nFi;
+	Vf.Normalize();
+
+	//set up integration parameters (2 intgr pts)
+	pts[0][0] = nFi(0) + Vf(0) * (1 - 0.5773502691896258);
+	pts[0][1] = nFi(1) + Vf(1) * (1 - 0.5773502691896258);
+	pts[0][2] = nFi(2) + Vf(2) * (1 - 0.5773502691896258);
+	pts[1][0] = nFj(0) - Vf(0) * (1 - 0.5773502691896258);
+	pts[1][1] = nFj(1) - Vf(1) * (1 - 0.5773502691896258);
+	pts[1][2] = nFj(2) - Vf(2) * (1 - 0.5773502691896258);
+
+	theMaterial[0] = theBroker.getNewUniaxialMaterial(matClassTag1);
+	theMaterial[1] = theBroker.getNewUniaxialMaterial(matClassTag2);
+	if (theMaterial[0] == 0 || theMaterial[1] == 0) {
+		opserr << "WARNING Brick8FiberOverlay::recvSelf() - failed to create a Material\n";
+		return -3;
+	}
+	theMaterial[0]->setDbTag(matDbTag1);
+	theMaterial[1]->setDbTag(matDbTag2);
+	res += theMaterial[0]->recvSelf(commitTag, theChannel, theBroker);
+	res += theMaterial[1]->recvSelf(commitTag, theChannel, theBroker);
+	if (res < 0) {
+		opserr << "WARNING Brick8FiberOverlay::recvSelf() - failed to receive the Material\n";
+		return -3;
+	}
+	return 0;
 }
 int
 Brick8FiberOverlay::sendSelf(int commitTag, Channel &theChannel)
 {
-return 0;
+	int res = 0 ;
+	int dataTag = this->getDbTag();
+	int eleTag = this->getTag();
+
+	Vector data(12);
+	data(0) = eleTag;
+	for (int ind = 0; ind < 2; ind++) {
+		int matClassTag = theMaterial[ind]->getClassTag();
+		int matDbTag = theMaterial[ind]->getDbTag();
+		if (matDbTag == 0) {
+			matDbTag = theChannel.getDbTag();
+			if (matDbTag != 0) {
+				theMaterial[0]->setDbTag(matDbTag);
+			}
+		}
+		data(1+2*ind) = matClassTag;
+		data(2+2*ind) = matDbTag;
+	}
+	data(5)  = Af;
+	data(6)  = nFi(0);
+	data(7)  = nFi(1);
+	data(8)  = nFi(2);
+	data(9)  = nFj(0);
+	data(10) = nFj(1);
+	data(11) = nFj(2);
+
+	res += theChannel.sendVector(dataTag, commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING Brick8FiberOverlay::sendSelf() - failed to send Vector\n";
+		return -1;
+	}
+	ID IDdata(8);
+	IDdata(0) = externalNodes(0);
+	IDdata(1) = externalNodes(1);
+	IDdata(2) = externalNodes(2);
+	IDdata(3) = externalNodes(3);
+	IDdata(4) = externalNodes(4);
+	IDdata(5) = externalNodes(5);
+	IDdata(6) = externalNodes(6);
+	IDdata(7) = externalNodes(7);
+
+	res += theChannel.sendID(dataTag, commitTag, externalNodes);
+	if (res < 0) {
+		opserr << "WARNING Brick8FiberOverlay::sendSelf() - failed to send ID\n";
+		return -2;
+	}
+
+	res += theMaterial[0]->sendSelf(commitTag, theChannel);
+	res += theMaterial[1]->sendSelf(commitTag, theChannel);
+	if (res < 0) {
+		opserr << "WARNING Brick8FiberOverlay::sendSelf() - failed to send the Material\n";
+		return -3;
+	}
+	return 0;
 }
 
 
