@@ -311,28 +311,16 @@ ProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
 
     if (fact == 1.0) { // do not need to multiply 
 	for (int i=0; i<idSize; i++) {
-		opserr << "i = " << i << "\n";
 	    int col = id(i);
-		opserr << "col = " << col << "\n";
-		opserr << "Asize = " << Asize << "\n";
-		opserr << "iDiagLoc[col] = " << iDiagLoc[col] << "\n";
 	    if (col < size && col >= 0) {
 		double *coliiPtr = &A[iDiagLoc[col] -1]; // -1 as fortran indexing 
-		opserr << "colPtr\n";
 		int minColRow;
 		if (col == 0)
 		    minColRow = 0;
 		else
 		    minColRow = col - (iDiagLoc[col] - iDiagLoc[col-1]) +1;
-		opserr << "minColRow = " << minColRow << "\n";;
 		for (int j=0; j<idSize; j++) {
-			opserr << "j = " << j << "\n";
 		    int row = id(j);
-			opserr << "row = " << row << "\n";
-			opserr << "size = " << size << "\n";
-			opserr << "col = " << col << "\n";
-			opserr << "m.row = " << m.noRows() << "\n";
-			opserr << "m.col = " << m.noCols() << "\n";
 		    if (row <size && row >= 0 && 
 			row <= col && row >= minColRow) { 
 
@@ -340,9 +328,7 @@ ProfileSPDLinSOE::addA(const Matrix &m, const ID &id, double fact)
 			double *APtr = coliiPtr + (row-col);
 			 *APtr += m(j,i);
 		     }
-			 opserr << "row-col = " << row-col << "\n"; 
 		}  // for j
-		opserr << "loop j\n";
 	    } 
 	}  // for i
     } else {
