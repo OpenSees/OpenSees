@@ -9,6 +9,7 @@ OBJS       = FlatSliderSimple2d.o \
 	TFP_Bearing2d.o \
 	TPB1D.o \
 	TripleFrictionPendulum.o \
+	TripleFrictionPendulumX.o \
 	MultiFP2d.o \
 	RJWatsonEQS2d.o \
 	RJWatsonEQS3d.o \

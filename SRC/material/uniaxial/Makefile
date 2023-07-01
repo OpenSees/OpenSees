@@ -139,6 +139,7 @@ OBJS       = UniaxialMaterial.o \
 	OOHystereticMaterial.o \
 	SPSW02.o \
 	TDConcrete.o \
+	TDConcreteNL.o \
 	TDConcreteEXP.o \
 	TDConcreteMC10.o \
 	TDConcreteMC10NL.o \

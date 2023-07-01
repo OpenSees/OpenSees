@@ -290,6 +290,9 @@
 #include "UWelements/BeamEndContact3D.h"
 #include "UWelements/BeamEndContact3Dp.h"
 #include "UWelements/QuadBeamEmbedContact.h"
+#include "UWelements/Quad4FiberOverlay.h"
+#include "UWelements/Brick8FiberOverlay.h"
+#include "EmbeddedBeamInterfaceL.h"
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
@@ -326,7 +329,8 @@
 #include "mvlem/MVLEM.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
 #include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
-#include "mvlem/SFI_MVLEM_3D.h"		// Kristijan Kolozvari
+#include "mvlem/SFI_MVLEM_3D.h"	// Kristijan Kolozvari
+#include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
@@ -345,6 +349,7 @@
 #include "frictionBearing/SingleFPSimple2d.h"
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
+#include "frictionBearing/TripleFrictionPendulumX.h"
 
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
@@ -859,6 +864,15 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
 
+    case ELE_TAG_Quad4FiberOverlay:
+      return new Quad4FiberOverlay(); //Amin Pakzad
+	
+	case ELE_TAG_Brick8FiberOverlay:
+      return new Brick8FiberOverlay(); //Amin Pakzad
+
+	case ELE_TAG_EmbeddedBeamInterfaceL:
+	  return new EmbeddedBeamInterfaceL(); //Amin Pakzad
+	
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
@@ -927,6 +941,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_SFI_MVLEM_3D:		// Kristijan Kolozvari
 		return new SFI_MVLEM_3D();	// Kristijan Kolozvari
+		
+	case ELE_TAG_E_SFI:			// C. N. Lopez
+		return new E_SFI();		// C. N. Lopez	
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
@@ -991,6 +1008,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
+    case ELE_TAG_TripleFrictionPendulumX:
+      return new TripleFrictionPendulumX();
+		    
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
 
