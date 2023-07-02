@@ -291,6 +291,7 @@ public:
 		int _nct,
 		int _ncc,
 		double _smoothing_angle);
+  ASDConcrete3DMaterial(int tag, double E, double v, double fc, double ft);
 	ASDConcrete3DMaterial();
 	~ASDConcrete3DMaterial();
 
@@ -353,6 +354,7 @@ private:
 	const Vector& getCrushPattern() const;
 	const Vector& getImplexError() const;
 	const Vector& getTimeIncrements() const;
+  double bezier3(double xi, double x0,double x1,double x2, double y0,double y1,double y2);
 
 private:
 	// Young's modulus
