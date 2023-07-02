@@ -144,8 +144,12 @@ PenaltyMaterial::setTrialStrain(double strain, double temp, double strainRate)
 double 
 PenaltyMaterial::getStress(void)
 {
-  if (theMaterial)
-    return theMaterial->getStress() + penalty*theMaterial->getStrain();
+  if (theMaterial) {
+    double sig = theMaterial->getStress();
+    if (addStress)
+      sig += penalty*theMaterial->getStrain();
+    return sig;
+  }
   else
     return 0.0;
 }
