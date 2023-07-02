@@ -544,7 +544,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 				return nullptr;
 			if (!lam_optional_int("ncc", ncc))
 				return nullptr;
-			if (!lam_optional_double("$smoothingAngle", smoothing_angle))
+			if (!lam_optional_double("smoothingAngle", smoothing_angle))
 				return nullptr;
 		}
 	}
