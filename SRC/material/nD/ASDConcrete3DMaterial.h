@@ -291,7 +291,6 @@ public:
 		int _nct,
 		int _ncc,
 		double _smoothing_angle);
-  ASDConcrete3DMaterial(int tag, double E, double v, double fc, double ft);
 	ASDConcrete3DMaterial();
 	~ASDConcrete3DMaterial();
 

@@ -343,6 +343,29 @@ namespace {
 
 }
 
+// long name so not confused with other bezier3 functions
+double bezier3_for_ASDConcrete3D(double xi,
+				 double x0, double x1, double x2,
+				 double y0, double y1, double y2)
+{
+  double A = x0 - 2.0 * x1 + x2;
+  double B = 2.0 * (x1 - x0);
+  double C = x0 - xi;
+  if (fabs(A) < 1.0e-12) {
+    x1 = x1 + 1.0E-6 * (x2 - x0);
+    A = x0 - 2.0 * x1 + x2;
+    B = 2.0 * (x1 - x0);
+    C = x0 - xi;
+  }
+  if (A == 0.0)
+    return 0.0;
+  
+  double D = B*B - 4.0*A*C;
+  double t = (sqrt(D) - B) / (2.0*A);
+  
+  return (y0 - 2.0*y1 + y2)*t*t + 2.0*(y1 - y0)*t + y0;
+}
+
 void *OPS_ASDConcrete3DMaterial(void)
 {
 	// some kudos
@@ -462,6 +485,12 @@ void *OPS_ASDConcrete3DMaterial(void)
 		return true;
 	};
 
+	double fc;
+	double ft;
+	bool have_fc = false;
+	bool have_ft = false;	
+	bool have_lch_ref = false;
+	
 	// optional parameters
 	while (OPS_GetNumRemainingInputArgs() > 0) {
 		const char* value = OPS_GetString();
@@ -469,6 +498,16 @@ void *OPS_ASDConcrete3DMaterial(void)
 			if (!lam_optional_double("rho", rho))
 				return nullptr;
 		}
+		else if (strcmp(value, "-fc") == 0) {
+			if (!lam_optional_double("fc", fc))
+				return nullptr;
+			have_fc = true;
+		}
+		else if (strcmp(value, "-ft") == 0) {
+			if (!lam_optional_double("ft", ft))
+				return nullptr;
+			have_ft = true;
+		}		
 		else if (strcmp(value, "-Kc") == 0) {
 			if (!lam_optional_double("Kc", Kc))
 				return nullptr;
@@ -510,6 +549,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 			}
 			if (!lam_optional_double("lch_ref", lch_ref))
 				return nullptr;
+			have_lch_ref = true;
 		}
 		else if (strcmp(value, "-Te") == 0) {
 			if (!lam_optional_list("Te", Te))
@@ -549,6 +589,117 @@ void *OPS_ASDConcrete3DMaterial(void)
 		}
 	}
 
+	// Set a default value of tension strength if none specified
+	if (have_fc && !have_ft)
+	  ft = 0.1*fc;
+
+	if (have_fc) {
+	  double ec = 2*fc/E;
+	  double Gt = 0.073*pow(fc,0.18);
+	  double Gc = 2*Gt*(fc*fc)/(ft*ft);
+	  
+	  
+	  if (!have_lch_ref) {
+	    //
+	    // _get_lch_ref from ASDConcrete3D_MakeLaws.py
+	    //
+	    
+	    // min lch for tension
+	    double et_el = ft/E;
+	    double Gt_min = 0.5*ft*et_el;
+	    double hmin_t = 0.01*Gt/Gt_min;
+	    
+	    // min lch for compression
+	    double ec1 = fc/E;
+	    double ec_pl = (ec-ec1)*0.4 + ec1;
+	    double Gc_min = 0.5*fc*(ec-ec_pl);
+	    double hmin_c = 0.01*Gc/Gc_min;
+	    
+	    lch_ref = std::min(hmin_c,hmin_t);
+	  }
+	  
+	  //
+	  // _make_tension from ASDConcrete3D_MakeLaws.py
+	  //
+
+	  Gt = Gt/lch_ref;
+	  
+	  double f0 = 0.9*ft;
+	  double f1 = ft;
+	  double e0 = f0/E;
+	  double e1 = 1.5*f1/E;
+	  double ep = e1 - f1/E;
+	  double f2 = 0.2*ft;
+	  double f3 = 1.0e-3*ft;
+	  double w2 = Gt/ft;
+	  double w3 = 5.0*w2;
+	  double e2 = w2 + f2/E + ep;
+	  if (e2 <= e1)
+	    e2 = 1.001*e1;
+	  double e3 = w3 + f3/E + ep;
+	  if (e3 <= e2)
+	    e3 = 1.001*e2;  
+	  double e4 = 10.0*e3;
+	  Te.resize(6); Te = {0.0, e0, e1, e2, e3, e4};
+	  Ts.resize(6); Ts = {0.0, f0, f1, f2, f3, f3};
+	  Td.resize(6); Td = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
+	  double Tpl[6] = {0.0, 0.0, ep, 0.9*e2, 0.8*e3, 0.8*e3};
+	  
+	  for (int i = 2; i < 6; i++) {
+	    double xi = Te[i];
+	    double si = Ts[i];
+	    double xipl = Tpl[i];
+	    double xipl_max = xi-si/E;
+	    xipl = std::min(xipl, xipl_max);
+	    double qi = (xi-xipl)*E;
+	    Td[i] = 1.0 - si/qi;
+	  }
+	  
+	  
+	  
+	  //
+	  // _make_compression from ASDConcrete3D_MakeLaws.py
+	  //
+
+	  Gc = Gc/lch_ref;
+	  
+	  double fc0 = 0.5*fc;
+	  double ec0 = fc0/E;
+	  double ec1 = fc/E;
+	  double fcr = 0.1*fc;
+	  double ec_pl = (ec-ec1)*0.4 + ec1;
+	  double Gc1 = 0.5*fc*(ec-ec_pl);
+	  double Gc2 = std::max(0.01*Gc1,Gc-Gc1);
+	  double ecr = ec + 2.0*Gc2/(fc+fcr);
+	  const int nc = 10;
+	  Ce.resize(nc+3); Ce[0] = 0.0; Ce[1] = ec0;
+	  Cs.resize(nc+3); Cs[0] = 0.0; Cs[1] = fc0;
+	  double Cpl[nc+3]; Cpl[0] = 0.0; Cpl[1] = 0.0;
+	  double dec = (ec-ec0)/(nc-1);
+	  for (int i = 0; i < nc-1; i++) {
+	    double iec = ec0 + (i+1)*dec;
+	    Ce[i+2] = iec;
+	    Cs[i+2] = bezier3_for_ASDConcrete3D(iec,  ec0, ec1, ec,  fc0, fc, fc);
+	    Cpl[i+2] = Cpl[i+1] + 0.7*(iec-Cpl[i+1]);
+	  }
+	  Ce[nc+1] = ecr;
+	  Cs[nc+1] = fcr;
+	  Cpl[nc+1] = Cpl[nc] + 0.7*(ecr-Cpl[nc]);
+	  Ce[nc+2] = ecr + ec0;
+	  Cs[nc+2] = fcr;
+	  Cpl[nc+2] = Cpl[nc+1];
+	  Cd.resize(nc+3); Cd[0] = 0.0; Cd[1] = 0.0;
+	  for (int i = 2; i < nc+3; i++) {
+	    double xi = Ce[i];
+	    double si = Cs[i];
+	    double xipl = Cpl[i];
+	    double xipl_max = xi-si/E;
+	    xipl = std::min(xipl, xipl_max);
+	    double qi = (xi-xipl)*E;
+	    Cd[i] = 1.0 - si/qi;
+	  }
+	}
+	
 	// check lists
 	if (Te.size() < 1) {
 		opserr << "nDMaterial ASDConcrete3D Error: 'Te' list is empty. At least 1 non-zero value should be provided.\n";
@@ -1338,140 +1489,6 @@ void ASDConcrete3DMaterial::CrackPlanes::deserialize(Vector& data, int& pos)
 	m_closest_normal_loc = static_cast<std::size_t>(data(pos++));
 	for (std::size_t i = 0; i < m_equivalent_strain.size(); ++i)
 		m_equivalent_strain[i] = data(pos++);
-}
-
-double 
-ASDConcrete3DMaterial::bezier3(double xi,
-			       double x0, double x1, double x2,
-			       double y0, double y1, double y2)
-{
-  double A = x0 - 2.0 * x1 + x2;
-  double B = 2.0 * (x1 - x0);
-  double C = x0 - xi;
-  if (fabs(A) < 1.0e-12) {
-    double x1 = x1 + 1.0E-6 * (x2 - x0);
-    A = x0 - 2.0 * x1 + x2;
-    B = 2.0 * (x1 - x0);
-    C = x0 - xi;
-  }
-  if (A == 0.0)
-    return 0.0;
-  
-  double D = B*B - 4.0*A*C;
-  double t = (sqrt(D) - B) / (2.0*A);
-  
-  return (y0 - 2.0*y1 + y2)*t*t + 2.0*(y1 - y0)*t + y0;
-}
-
-ASDConcrete3DMaterial::ASDConcrete3DMaterial(int _tag,
-					     double _E, double _v,
-					     double fc, double ft):
-  NDMaterial(_tag, ND_TAG_ASDConcrete3DMaterial),
-  E(_E), v(_v)
-{
-  double ec = 2*fc/E;
-  double Gt = 0.073*pow(fc,0.18);
-  double Gc = 2*Gt*(fc*fc)/(ft*ft);
-
-
-  //
-  // _get_lch_ref from ASDConcrete3D_MakeLaws.py
-  //
-  
-  // min lch for tension
-  double et_el = ft/E;
-  double Gt_min = 0.5*ft*et_el;
-  double hmin_t = 0.01*Gt/Gt_min;
-
-  // min lch for compression
-  double ec1 = fc/E;
-  double ec_pl = (ec-ec1)*0.4 + ec1;
-  double Gc_min = 0.5*fc*(ec-ec_pl);
-  double hmin_c = 0.01*Gc/Gc_min;
-
-  lch_ref = (hmin_c < hmin_t) ? hmin_c : hmin_t;
-
-
-  //
-  // _make_tension from ASDConcrete3D_MakeLaws.py
-  //
-
-  double f0 = 0.9*ft;
-  double f1 = ft;
-  double e0 = f0/E;
-  double e1 = 1.5*f1/E;
-  double ep = e1 - f1/E;
-  double f2 = 0.2*ft;
-  double f3 = 1.0e-3*ft;
-  double w2 = Gt/ft;
-  double w3 = 5.0*w2;
-  double e2 = w2 + f2/E + ep;
-  if (e2 <= e1)
-    e2 = 1.001*e1;
-  double e3 = w3 + f3/E + ep;
-  if (e3 <= e2)
-    e3 = 1.001*e2;  
-  double e4 = 10.0*e3;
-  double Te[6] = {0.0, e0, e1, e2, e3, e4};
-  double Ts[6] = {0.0, f0, f1, f2, f3, f3};
-  double Td[6] = {0.0, 0.0, 0.0, 0.0, 0.0, 0.0};
-  double Tpl[6] = {0.0, 0.0, ep, 0.9*e2, 0.8*e3, 0.8*e3};
-
-  for (int i = 2; i < 6; i++) {
-    double xi = Te[i];
-    double si = Ts[i];
-    double xipl = Tpl[i];
-    double xipl_max = xi-si/E;
-    if (xipl > xipl_max)
-      xipl = xipl_max;
-    double qi = (xi-xipl)*E;
-    Td[i] = 1.0 - si/qi;
-  }
-
-
-
-  //
-  // _make_compression from ASDConcrete3D_MakeLaws.py
-  //
-
-  double fc0 = 0.5*fc;
-  double ec0 = fc0/E;
-  ec1 = fc/E;
-  double fcr = 0.1*fc;
-  ec_pl = (ec-ec1)*0.4 + ec1;
-  double Gc1 = 0.5*fc*(ec-ec_pl);
-  double Gc2 = Gc-Gc1;
-  if (Gc2 < 0.01*Gc1)
-    Gc2 = 0.01*Gc1;
-  double ecr = ec + 2.0*Gc2/(fc+fcr);
-  const int nc = 10;
-  double Ce[nc+3]; Ce[0] = 0.0; Ce[1] = ec0;
-  double Cs[nc+3]; Cs[0] = 0.0; Cs[1] = fc0;
-  double Cpl[nc+3]; Cpl[0] = 0.0; Cpl[1] = 0.0;
-  double dec = (ec-ec0)/(nc-1);
-  for (int i = 0; i < nc-1; i++) {
-    double iec = ec0 + (i+1)*dec;
-    Ce[i+2] = iec;
-    Cs[i+2] = bezier3(iec,  ec0, ec1, ec,  fc0, fc, fc);
-    Cpl[i+2] = Cpl[i+1] + 0.7*(iec-Cpl[i+1]);
-  }
-  Ce[nc+1] = ecr;
-  Cs[nc+1] = fcr;
-  Cpl[nc+1] = Cpl[nc] + 0.7*(ecr-Cpl[nc]);
-  Ce[nc+2] = ecr + ec0;
-  Cs[nc+2] = fcr;
-  Cpl[nc+2] = Cpl[nc+1];
-  double Cd[nc+3]; Cd[0] = 0.0; Cd[1] = 0.0;
-  for (int i = 2; i < nc+3; i++) {
-    double xi = Ce[i];
-    double si = Cs[i];
-    double xipl = Cpl[i];
-    double xipl_max = xi-si/E;
-    if (xipl > xipl_max)
-      xipl = xipl_max;
-    double qi = (xi-xipl)*E;
-    Cd[i] = 1.0 - si/qi;
-  }
 }
 
 ASDConcrete3DMaterial::ASDConcrete3DMaterial(
