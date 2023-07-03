@@ -113,6 +113,7 @@ extern void *OPS_TFP_Bearing(void);
 extern void *OPS_FPBearingPTV();
 extern void *OPS_MultiFP2d(void);
 extern void *OPS_CoupledZeroLength(void);
+extern void *OPS_GMG_CMAZ2D(void);
 extern void *OPS_FourNodeQuad3d(void);
 extern void *OPS_Tri31(const ID &info);
 extern void *OPS_SSPquad(void);
@@ -1001,6 +1002,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+
+  } else if ((strcmp(argv[1], "GMG_CMAZ2D") == 0) || (strcmp(argv[1], "GMG_CMAZ2D") == 0)) {
+
+	  void *theEle = OPS_GMG_CMAZ2D();
+	  if (theEle != 0)
+		  theElement = (Element *)theEle;
+	  else {
+		  opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+		  return TCL_ERROR;
+	  }
 
   } else if ((strcmp(argv[1],"BeamContact2d") == 0) || (strcmp(argv[1],"BeamContact2D") == 0)) {
     

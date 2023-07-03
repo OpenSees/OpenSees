@@ -122,6 +122,13 @@ UniaxialMaterial::setTrialStrain(double strain, double temperature, double strai
   return res;
 }
 
+// Needed preparation for sending a vector of strains to Uniaxial material, Rasool Ghorbani, UT San Antonio
+int
+UniaxialMaterial::setTrialStrain(const Vector strain_from_element)
+{
+	opserr << "UniaxialMaterial::setTrialStrain -- subclass responsibility\n";
+	return -1;
+}
 
 int
 UniaxialMaterial::setTrial(double strain, double &stress, double &tangent, double strainRate)

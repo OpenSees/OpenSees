@@ -111,6 +111,7 @@
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
 #include <GMG_CyclicReinforcedConcrete.h>      // Rasool Ghorbani
+#include <GMG_CMAC2D.h>      // Rasool Ghorbani
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -1571,7 +1572,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_GMG_CyclicReinforcedConcrete:
 		return new GMG_CyclicReinforcedConcrete();
-
+	
+	case MAT_TAG_GMG_CMAC2D:
+		return new GMG_CMAC2D();
 
 	default:
 

@@ -60,6 +60,7 @@ class UniaxialMaterial : public Material
     virtual int setTrialStrain (double strain, double temperature, double strainRate);
     virtual int setTrial (double strain, double &stress, double &tangent, double strainRate = 0.0);
     virtual int setTrial (double strain, double temperature, double &stress, double &tangent, double &thermalElongation, double strainRate = 0.0);
+	virtual int setTrialStrain(const Vector strain_from_element); // Needed preparation for sending a vector of strains to Uniaxial material, Rasool Ghorbani, UT San Antonio
 
     virtual double getStrain (void) = 0;
     virtual double getStrainRate (void);
