@@ -341,29 +341,30 @@ namespace {
 		}
 	};
 
-}
-
-// long name so not confused with other bezier3 functions
-double bezier3_for_ASDConcrete3D(double xi,
-				 double x0, double x1, double x2,
-				 double y0, double y1, double y2)
-{
-  double A = x0 - 2.0 * x1 + x2;
-  double B = 2.0 * (x1 - x0);
-  double C = x0 - xi;
-  if (fabs(A) < 1.0e-12) {
-    x1 = x1 + 1.0E-6 * (x2 - x0);
-    A = x0 - 2.0 * x1 + x2;
-    B = 2.0 * (x1 - x0);
-    C = x0 - xi;
+  
+  double bezier3(double xi,
+		 double x0, double x1, double x2,
+		 double y0, double y1, double y2)
+  {
+    double A = x0 - 2.0 * x1 + x2;
+    double B = 2.0 * (x1 - x0);
+    double C = x0 - xi;
+    if (fabs(A) < 1.0e-12) {
+      x1 = x1 + 1.0E-6 * (x2 - x0);
+      A = x0 - 2.0 * x1 + x2;
+      B = 2.0 * (x1 - x0);
+      C = x0 - xi;
+    }
+    if (A == 0.0)
+      return 0.0;
+    
+    double D = B*B - 4.0*A*C;
+    double t = (sqrt(D) - B) / (2.0*A);
+    
+    return (y0 - 2.0*y1 + y2)*t*t + 2.0*(y1 - y0)*t + y0;
   }
-  if (A == 0.0)
-    return 0.0;
+
   
-  double D = B*B - 4.0*A*C;
-  double t = (sqrt(D) - B) / (2.0*A);
-  
-  return (y0 - 2.0*y1 + y2)*t*t + 2.0*(y1 - y0)*t + y0;
 }
 
 void *OPS_ASDConcrete3DMaterial(void)
@@ -679,7 +680,7 @@ void *OPS_ASDConcrete3DMaterial(void)
 	  for (int i = 0; i < nc-1; i++) {
 	    double iec = ec0 + (i+1)*dec;
 	    Ce[i+2] = iec;
-	    Cs[i+2] = bezier3_for_ASDConcrete3D(iec,  ec0, ec1, ec,  fc0, fc, fc);
+	    Cs[i+2] = bezier3(iec,  ec0, ec1, ec,  fc0, fc, fc);
 	    Cpl[i+2] = Cpl[i+1] + 0.7*(iec-Cpl[i+1]);
 	  }
 	  Ce[nc+1] = ecr;
