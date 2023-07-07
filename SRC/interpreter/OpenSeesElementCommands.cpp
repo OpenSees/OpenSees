@@ -1117,7 +1117,7 @@ int OPS_doBlock2D()
 	    } else if (strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
 
 		if (numEleNodes != 4) {
-		    opserr<<"WARNING ShellNLDKGQ element only needs four nodes\n";
+		    opserr<<"WARNING ShellDKGQ element only needs four nodes\n";
 		    return -1;
 		}
 		SectionForceDeformation *sec = OPS_getSectionForceDeformation(secTag);
