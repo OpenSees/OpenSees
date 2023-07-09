@@ -21,7 +21,7 @@
 // $Date: 2023-01-20 20:16:29 $
 // $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/MPAccSeries.cpp,v $
 
-// Written: Tang.S
+// Written: Tang.S from SEU
 // Created: 2023-01-20
 //
 // Purpose: This file contains the class implementation of MPAccSeries.

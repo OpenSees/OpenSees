@@ -26,7 +26,7 @@
 #ifndef MPAccSeries_h
 #define MPAccSeries_h
 
-// Written: Tang.S 
+// Written: Tang.S from SEU
 // Created: 2023-01
 // Revision: A
 
