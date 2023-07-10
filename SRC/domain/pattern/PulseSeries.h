@@ -65,7 +65,7 @@ public:
     double getDuration () {return tFinish-tStart;}
     double getPeakFactor () {return cFactor;}
     double getTimeIncr (double pseudoTime) {return tFinish-tStart;}
-    double getStartTime() { return 0.0; } // dummy function
+    double getStartTime() { return tStart; } 
     // methods for output    
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
