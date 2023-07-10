@@ -331,7 +331,7 @@
       <Filter>pattern\drm</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\pattern\SigSeries.cpp">
-      <Filter>pattern</Filter>
+      <Filter>timeSeries</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -615,7 +615,7 @@
       <Filter>pattern\drm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\pattern\SigSeries.h">
-      <Filter>pattern</Filter>
+      <Filter>timeSeries</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
