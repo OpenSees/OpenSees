@@ -37,6 +37,7 @@
 #include <ConstantSeries.h>
 #include <RectangularSeries.h>
 #include <TrigSeries.h>
+#include <SigSeries.h> // CDM
 #include <PulseSeries.h>
 #include <TriangleSeries.h>
 #include <PathTimeSeries.h>
@@ -72,6 +73,7 @@ extern void *OPS_ConstantSeries(void);
 extern void *OPS_LinearSeries(void);
 extern void *OPS_TriangleSeries(void);
 extern void *OPS_TrigSeries(void);
+extern void* OPS_SigSeries(void); // CDM
 extern void *OPS_RectangularSeries(void);
 extern void *OPS_PulseSeries(void);
 extern void *OPS_PeerMotion(void);
@@ -114,6 +116,14 @@ TclTimeSeriesCommand(ClientData clientData,
     void *theResult = OPS_LinearSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
+
+  }
+
+  else if ((strcmp(argv[0], "Sigmoid") == 0) || (strcmp(argv[0], "SigSeries") == 0)) { // CDM
+
+      void* theResult = OPS_SigSeries();
+      if (theResult != 0)
+          theSeries = (TimeSeries*)theResult;
 
   }
 
