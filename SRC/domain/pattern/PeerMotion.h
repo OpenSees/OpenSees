@@ -67,7 +67,7 @@ class PeerMotion : public TimeSeries
     double getTimeIncr (double pseudoTime);
     double getDt();
     int getNPts();
-
+    double getStartTime() { return 0.0; } // dummy function
     // methods for output
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 

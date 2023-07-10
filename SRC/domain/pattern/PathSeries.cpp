@@ -223,7 +223,7 @@ void* OPS_PathSeries()
 
 PathSeries::PathSeries()	
   :TimeSeries(TSERIES_TAG_PathSeries),
-   thePath(0), pathTimeIncr(0.0), cFactor(0.0), otherDbTag(0), lastSendCommitTag(-1)
+   thePath(0), pathTimeIncr(0.0), cFactor(0.0), otherDbTag(0), lastSendCommitTag(-1), startTime(0.0)
 {
   // does nothing
 }
@@ -242,7 +242,7 @@ PathSeries::PathSeries(int tag,
   // create a copy of the vector containing path points
   if (prependZero == false) {
     thePath = new Vector(theLoadPath);
-  } else if (theLoadPath != 0) {
+  } else {
     // prepend a zero value
     thePath = new Vector(1 + theLoadPath.Size());
     thePath->Assemble(theLoadPath, 1);
@@ -338,11 +338,8 @@ PathSeries::~PathSeries()
 
 TimeSeries *
 PathSeries::getCopy(void) {
-  if (thePath != 0)
   return new PathSeries(this->getTag(), *thePath, pathTimeIncr, cFactor,
                         useLast, false, startTime);
-  else
-  return 0;
 }
 
 double
@@ -378,8 +375,16 @@ PathSeries::getDuration()
     opserr << "WARNING -- PathSeries::getDuration() on empty Vector" << endln;
 	return 0.0;
   }
-  return (startTime + thePath->Size()*pathTimeIncr);
+  return (thePath->Size()*pathTimeIncr);
+  //return (startTime + thePath->Size()*pathTimeIncr);
 }
+
+double
+PathSeries::getStartTime() {
+
+	return startTime;
+}
+
 
 double
 PathSeries::getPeakFactor()

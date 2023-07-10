@@ -73,14 +73,13 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
   }
 
   // Add one to get ceiling out of type cast
-  int numSteps = (int)(theSeries->getDuration()/delta + 1.0);
+  long long numSteps = (long long)theSeries->getDuration() / delta + 1.0;
 
   Vector *theIntegratedValues = new Vector (numSteps);
 
   // Check that the Vector was allocated properly
   if (theIntegratedValues == 0 || theIntegratedValues->Size() == 0) {
-    opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory allocating Vector of size " <<
-      numSteps << endln;
+    opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory allocating Vector of size " << endln;
 
     if (theIntegratedValues != 0)
       delete theIntegratedValues;
@@ -88,7 +87,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
     return 0;
   }
 
-  int i;                // Counter for indexing
+  long long i;                // Counter for indexing
   double dummyTime;     // Dummy variable for integrating
   double previousValue; // Temporary storage to avoid accessing same value twice
 	                        // through identical method calls
@@ -102,7 +101,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
 
   previousValue = (*theIntegratedValues)[0];
   
-  dummyTime = delta;
+  dummyTime = delta + theSeries->getStartTime();
     
   for (i = 1; i < numSteps; i++, dummyTime += delta) {
     currentValue = theSeries->getFactor(dummyTime);
@@ -122,7 +121,6 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
 
   // Set the method return value
   PathSeries *returnSeries = new PathSeries (0, *theIntegratedValues, delta, true);
-  delete theIntegratedValues;
 
   if (returnSeries == 0) {
     opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory creating PathSeries\n";
