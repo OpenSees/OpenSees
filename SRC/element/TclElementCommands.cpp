@@ -130,6 +130,7 @@ extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
+extern void *OPS_TripleFrictionPendulumX(void);
 extern void *OPS_Truss2(void);
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
@@ -737,6 +738,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if (strcmp(argv[1], "TripleFrictionPendulumX") == 0) {
+  
+  void* theEle = OPS_TripleFrictionPendulumX();
+  if (theEle != 0)
+      theElement = (Element*)theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+	  
   } else if (strcmp(argv[1],"HDR") == 0) {
     
     void *theEle = OPS_HDR();
@@ -1637,7 +1648,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
       }
   }
-  
+  else if (strcmp(argv[1],"beamWithHinges") == 0) {
+    void *theEle = OPS_BeamWithHinges();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;    
+    }
+  }
+	
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {
@@ -1682,14 +1702,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addForceBeamColumn(clientData, interp, argc, argv,
 						    theTclDomain, theTclBuilder);
     return result;
-  } else if (strcmp(argv[1],"beamWithHinges") == 0) {
-    void *theEle = OPS_BeamWithHinges();
-    if (theEle != 0) 
-      theElement = (Element *)theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;    
-    }
   } else if ((strcmp(argv[1],"quad") == 0) || (strcmp(argv[1],"stdQuad") == 0)) {
     int result = TclModelBuilder_addFourNodeQuad(clientData, interp, argc, argv,
 						 theTclDomain, theTclBuilder);

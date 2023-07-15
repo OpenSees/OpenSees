@@ -126,7 +126,7 @@ ENTMaterial::getTangent(void)
     return 0;
   else {
     double tanhB = tanh(trialStrain*b);
-    return a*E*(1.0-tanhB*tanhB);
+    return a*E*b*(1.0-tanhB*tanhB);
   }
 }
 

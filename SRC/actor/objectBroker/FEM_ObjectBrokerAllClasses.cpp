@@ -350,6 +350,7 @@
 #include "frictionBearing/SingleFPSimple2d.h"
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
+#include "frictionBearing/TripleFrictionPendulumX.h"
 
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
@@ -1011,6 +1012,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
+    case ELE_TAG_TripleFrictionPendulumX:
+      return new TripleFrictionPendulumX();
+		    
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
 

@@ -1392,6 +1392,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_TFP_Bearing] = GMSH_LINE;
     gmshtypes[ELE_TAG_TFP_Bearing2d] = GMSH_LINE;
     gmshtypes[ELE_TAG_TripleFrictionPendulum] = GMSH_LINE;
+    gmshtypes[ELE_TAG_TripleFrictionPendulumX] = GMSH_LINE;
     gmshtypes[ELE_TAG_PFEMElement2D] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_FourNodeQuad02] = GMSH_QUAD;
     gmshtypes[ELE_TAG_cont2d01] = GMSH_POLY_VERTEX;

@@ -53,7 +53,7 @@ void *OPS_LehighJoint2d()
 
   // check no of arguments
   int numData = OPS_GetNumRemainingInputArgs();
-  if (numData != 15 ) {
+  if (numData < 14) {
     opserr << "WARNING insufficient arguments\n";
     opserr << "Want: element LehighJoint eleTag? node1? node2? node3? node4? matTag1? matTag2? matTag3? ";
     opserr << "matTag4? matTag5? matTag6? matTag7? matTag8? matTag9? \n";
