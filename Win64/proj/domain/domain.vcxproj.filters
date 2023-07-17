@@ -330,7 +330,7 @@
     <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp">
       <Filter>pattern\drm</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\domain\pattern\SigSeries.cpp">
+    <ClCompile Include="..\..\..\SRC\domain\pattern\RampSeries.cpp">
       <Filter>timeSeries</Filter>
     </ClCompile>
   </ItemGroup>
@@ -614,7 +614,7 @@
     <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRM.h">
       <Filter>pattern\drm</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\domain\pattern\SigSeries.h">
+    <ClInclude Include="..\..\..\SRC\domain\pattern\RampSeries.h">
       <Filter>timeSeries</Filter>
     </ClInclude>
   </ItemGroup>
