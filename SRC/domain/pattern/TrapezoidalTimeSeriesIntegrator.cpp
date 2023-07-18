@@ -79,7 +79,8 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
 
   // Check that the Vector was allocated properly
   if (theIntegratedValues == 0 || theIntegratedValues->Size() == 0) {
-    opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory allocating Vector of size " << endln;
+    opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory allocating Vector " << endln;
+
 
     if (theIntegratedValues != 0)
       delete theIntegratedValues;
@@ -121,6 +122,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
 
   // Set the method return value
   PathSeries *returnSeries = new PathSeries (0, *theIntegratedValues, delta, true);
+  delete theIntegratedValues;
 
   if (returnSeries == 0) {
     opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory creating PathSeries\n";

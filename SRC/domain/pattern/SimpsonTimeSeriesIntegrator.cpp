@@ -77,7 +77,8 @@ TimeSeries* SimpsonTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double
     
     // check that the Vector was allocated properly
     if (theInt == 0 || theInt->Size() == 0)  {
-        opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory allocating Vector of size " << endln;
+        opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory allocating Vector " << endln;
+
         
         if (theInt != 0)
             delete theInt;
