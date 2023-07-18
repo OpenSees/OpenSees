@@ -39,9 +39,13 @@
 
 #include <superlu_ddefs.h>
 
+// SuperLU_DIST 'options' was redefined starting in Version 5.X.X
+#ifdef SUPERLU_DIST_MAIN_VERSION > 4
+    superlu_dist_options_t options;
+#else
+    superlu_options_t options;
+#endif
 
-
-superlu_options_t options;
 SuperLUStat_t stat;
 SuperMatrix A;
 ScalePermstruct_t ScalePermstruct;
