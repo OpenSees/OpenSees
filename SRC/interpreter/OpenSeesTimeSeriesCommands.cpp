@@ -52,6 +52,7 @@ void* OPS_ConstantSeries();
 void* OPS_LinearSeries();
 void* OPS_TriangleSeries();
 void* OPS_TrigSeries();
+void* OPS_RampSeries();
 void* OPS_RectangularSeries();
 void* OPS_PulseSeries();
 
@@ -210,6 +211,8 @@ namespace {
     {
 	functionMap.insert(std::make_pair("Constant", &OPS_ConstantSeries));
 	functionMap.insert(std::make_pair("ConstantSeries", &OPS_ConstantSeries));
+	functionMap.insert(std::make_pair("RampSeries", &OPS_RampSeries));
+	functionMap.insert(std::make_pair("Ramp", &OPS_RampSeries));
 	functionMap.insert(std::make_pair("Trig", &OPS_TrigSeries));
 	functionMap.insert(std::make_pair("TrigSeries", &OPS_TrigSeries));
 	functionMap.insert(std::make_pair("Sine", &OPS_TrigSeries));
