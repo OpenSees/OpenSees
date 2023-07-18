@@ -20,12 +20,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -109,17 +109,20 @@
     <ClCompile Include="..\..\..\SRC\handler\DummyStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\FileStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\OPS_Stream.cpp" />
+    <ClCompile Include="..\..\..\SRC\handler\SocketStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\StandardStream.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\TCP_Stream.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\XmlFileStream.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\handler\BinaryFileStream.h" />
+    <ClInclude Include="..\..\..\SRC\handler\DatabaseStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\DataFileStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\DataFileStreamAdd.h" />
     <ClInclude Include="..\..\..\SRC\handler\DummyStream.h" />
     <ClInclude Include="..\..\..\Src\handler\FileStream.h" />
     <ClInclude Include="..\..\..\Src\handler\OPS_Stream.h" />
+    <ClInclude Include="..\..\..\SRC\handler\SocketStream.h" />
     <ClInclude Include="..\..\..\Src\handler\StandardStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\TCP_Stream.h" />
     <ClInclude Include="..\..\..\SRC\handler\XmlFileStream.h" />
