@@ -335,6 +335,7 @@ ERRORHANDLER_LIBS = $(FE)/handler/StandardStream.o \
 	$(FE)/handler/BinaryFileStream.o \
 	$(FE)/handler/DummyStream.o \
 	$(FE)/handler/TCP_Stream.o \
+	$(FE)/handler/SocketStream.o \
 	$(FE)/handler/DatabaseStream.o 
 
 
@@ -668,9 +669,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
 	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
 	$(FE)/element/PML/pml_3d.o \
-        $(FE)/element/PML/PML3D.o \
-        $(FE)/element/PML/pml_2d.o \
-        $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML3D.o \
+	$(FE)/element/PML/pml_2d.o \
+	$(FE)/element/PML/PML2D.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
@@ -842,10 +843,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ShearPanelMaterial.o \
 	$(FE)/material/uniaxial/BarSlipMaterial.o \
 	$(FE)/material/uniaxial/Bond_SP01.o \
-        $(FE)/material/uniaxial/FRCC.o \
-        $(FE)/material/uniaxial/ConcreteZBH_original.o \
-        $(FE)/material/uniaxial/ConcreteZBH_fitted.o \
-        $(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
+	$(FE)/material/uniaxial/FRCC.o \
+	$(FE)/material/uniaxial/ConcreteZBH_original.o \
+	$(FE)/material/uniaxial/ConcreteZBH_fitted.o \
+	$(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
 	$(FE)/material/uniaxial/Hertzdamp.o \
@@ -937,10 +938,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
-       $(FE)/element/PML/pml_3d.o \
-       $(FE)/element/PML/PML3D.o \
-       $(FE)/element/PML/pml_2d.o \
-       $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/pml_3d.o \
+	$(FE)/element/PML/PML3D.o \
+	$(FE)/element/PML/pml_2d.o \
+	$(FE)/element/PML/PML2D.o \
 	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \

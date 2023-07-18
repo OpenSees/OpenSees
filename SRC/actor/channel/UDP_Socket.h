@@ -42,9 +42,9 @@ class UDP_Socket : public Channel
 {
   public:
     UDP_Socket();
-    UDP_Socket(unsigned int port, bool checkEndianness = false);   
-    UDP_Socket(unsigned int other_Port, char *other_InetAddr,
-        bool checkEndianness = false);  
+    UDP_Socket(unsigned int port, bool checkEndianness = false);
+    UDP_Socket(unsigned int other_Port, const char *other_InetAddr,
+        bool checkEndianness = false);
     ~UDP_Socket();
     
     char *addToProgram();
@@ -55,42 +55,42 @@ class UDP_Socket : public Channel
     virtual ChannelAddress *getLastSendersAddress(){ return 0;};
 
     int sendObj(int commitTag,
-		MovableObject &theObject, 
+		MovableObject &theObject,
 		ChannelAddress *theAddress =0);
     int recvObj(int commitTag,
-		MovableObject &theObject, 
+		MovableObject &theObject,
 		FEM_ObjectBroker &theBroker,
 		ChannelAddress *theAddress =0);
-		
-    int sendMsg(int dbTag, int commitTag, 
-		const Message &, 
-		ChannelAddress *theAddress =0);    
-    int recvMsg(int dbTag, int commitTag, 
-		Message &, 
-		ChannelAddress *theAddress =0);        
-    int recvMsgUnknownSize(int dbTag, int commitTag, 
-		Message &, 
-		ChannelAddress *theAddress =0);        
+	
+    int sendMsg(int dbTag, int commitTag,
+		const Message &,
+		ChannelAddress *theAddress =0);
+    int recvMsg(int dbTag, int commitTag,
+		Message &,
+		ChannelAddress *theAddress =0);
+    int recvMsgUnknownSize(int dbTag, int commitTag,
+		Message &,
+		ChannelAddress *theAddress =0);
 
-    int sendMatrix(int dbTag, int commitTag, 
-		   const Matrix &theMatrix, 
+    int sendMatrix(int dbTag, int commitTag,
+		   const Matrix &theMatrix,
 		   ChannelAddress *theAddress =0);
-    int recvMatrix(int dbTag, int commitTag, 
-		   Matrix &theMatrix, 
+    int recvMatrix(int dbTag, int commitTag,
+		   Matrix &theMatrix,
 		   ChannelAddress *theAddress =0);
     
-    int sendVector(int dbTag, int commitTag, 
+    int sendVector(int dbTag, int commitTag,
 		   const Vector &theVector, ChannelAddress *theAddress =0);
-    int recvVector(int dbTag, int commitTag, 
-		   Vector &theVector, 
+    int recvVector(int dbTag, int commitTag,
+		   Vector &theVector,
 		   ChannelAddress *theAddress =0);
     
-    int sendID(int dbTag, int commitTag, 
-	       const ID &theID, 
+    int sendID(int dbTag, int commitTag,
+	       const ID &theID,
 	       ChannelAddress *theAddress =0);
-    int recvID(int dbTag, int commitTag, 
-	       ID &theID, 
-	       ChannelAddress *theAddress =0);    
+    int recvID(int dbTag, int commitTag,
+	       ID &theID,
+	       ChannelAddress *theAddress =0);
     
   protected:
     unsigned int getPortNumber() const;

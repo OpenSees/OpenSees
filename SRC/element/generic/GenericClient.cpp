@@ -192,7 +192,7 @@ void* OPS_GenericClient()
 // responsible for allocating the necessary space needed
 // by each object and storing the tags of the end nodes.
 GenericClient::GenericClient(int tag, ID nodes, ID *dof, int _port,
-    char *machineinetaddr, int _ssl, int _udp, int datasize, int addRay)
+    const char *machineinetaddr, int _ssl, int _udp, int datasize, int addRay)
     : Element(tag, ELE_TAG_GenericClient),
     connectedExternalNodes(nodes), basicDOF(1), numExternalNodes(0),
     numDOF(0), numBasicDOF(0), port(_port), machineInetAddr(0), ssl(_ssl),
@@ -1044,6 +1044,8 @@ int GenericClient::setupConnection()
     if (theChannel->setUpConnection() != 0)  {
         opserr << "GenericClient::setupConnection() "
             << "- failed to setup connection\n";
+        delete theChannel;
+        theChannel = 0;
         return -2;
     }
     

@@ -45,7 +45,7 @@
 #include <XmlFileStream.h>
 #include <BinaryFileStream.h>
 #include <DatabaseStream.h>
-#include <TCP_Stream.h>
+#include <SocketStream.h>
 
 #include <elementAPI.h>
 
@@ -73,7 +73,7 @@ OPS_EnvelopeElementRecorder()
     const int DATABASE_STREAM = 3;
     const int BINARY_STREAM = 4;
     const int DATA_STREAM_CSV = 5;
-    const int TCP_STREAM = 6;
+    const int SOCKET_STREAM = 6;
     const int DATA_STREAM_ADD = 7;
 
     int eMode = STANDARD_STREAM;
@@ -89,6 +89,7 @@ OPS_EnvelopeElementRecorder()
 
     const char *inetAddr = 0;
     int inetPort;
+    bool udp = false;
 
     ID elements(0, 6);
     ID dofs(0, 6);
@@ -138,7 +139,21 @@ OPS_EnvelopeElementRecorder()
                     return 0;
                 }
             }
-            eMode = TCP_STREAM;
+            eMode = SOCKET_STREAM;
+        }
+        else if (strcmp(option, "-udp") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                inetAddr = OPS_GetString();
+            }
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int num = 1;
+                if (OPS_GetIntInput(&num, &inetPort) < 0) {
+                    opserr << "WARNING: failed to read inetPort\n";
+                    return 0;
+                }
+            }
+            eMode = SOCKET_STREAM;
+            udp = true;
         }
         else if (strcmp(option, "-xml") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -278,8 +293,8 @@ OPS_EnvelopeElementRecorder()
     //    theOutputStream = new DatabaseStream(theDatabase, tableName);
     else if (eMode == BINARY_STREAM && filename != 0)
         theOutputStream = new BinaryFileStream(filename);
-    else if (eMode == TCP_STREAM && inetAddr != 0)
-        theOutputStream = new TCP_Stream(inetPort, inetAddr);
+    else if (eMode == SOCKET_STREAM)
+        theOutputStream = new SocketStream(inetPort, inetAddr, udp);
     else
         theOutputStream = new StandardStream();
 
@@ -583,7 +598,7 @@ EnvelopeElementRecorder::sendSelf(int commitTag, Channel &theChannel)
 
   int msgLength = 0;
   for (int i=0; i<numArgs; i++) 
-    msgLength += strlen(responseArgs[i])+1;
+    msgLength += (int)strlen(responseArgs[i])+1;
   idData(2) = msgLength;
 
 
@@ -798,7 +813,7 @@ EnvelopeElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   char *currentLoc = allResponseArgs;
   for (int j=0; j<numArgs; j++) {
 
-    int argLength = strlen(currentLoc)+1;
+    int argLength = (int)strlen(currentLoc)+1;
 
     responseArgs[j] = new char[argLength];
     if (responseArgs[j] == 0) {
