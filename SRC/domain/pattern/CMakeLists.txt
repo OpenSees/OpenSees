@@ -22,6 +22,7 @@ target_sources(OPS_Domain
         TrapezoidalTimeSeriesIntegrator.cpp
         TriangleSeries.cpp
         TrigSeries.cpp
+        RampSeries.cpp
         UniformExcitation.cpp
     PUBLIC
         ConstantSeries.h
@@ -40,6 +41,7 @@ target_sources(OPS_Domain
         TrapezoidalTimeSeriesIntegrator.h
         TriangleSeries.h
         TrigSeries.h
+        RampSeries.h
         UniformExcitation.h
 )
 
