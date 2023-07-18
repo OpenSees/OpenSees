@@ -40,7 +40,7 @@
 #include <superlu_ddefs.h>
 
 // SuperLU_DIST 'options' was redefined starting in Version 5.X.X
-#ifdef SUPERLU_DIST_MAIN_VERSION > 4
+#if defined(SUPERLU_DIST_MAJOR_VERSION) && SUPERLU_DIST_MAJOR_VERSION >= 5
     superlu_dist_options_t options;
 #else
     superlu_options_t options;
