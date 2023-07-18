@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <ShellMITC4.h>
+#include <ShellDKGQ.h>
 #include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
 #include <TenNodeTetrahedron.h>
@@ -96,6 +97,7 @@ void* OPS_PileToe3D();
 void* OPS_TFP_Bearing();
 void* OPS_FPBearingPTV();
 void* OPS_TripleFrictionPendulum();
+void* OPS_TripleFrictionPendulumX();
 void* OPS_HDR();
 void* OPS_LeadRubberX();
 void* OPS_ElastomericX();
@@ -103,6 +105,7 @@ void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
 void* OPS_MVLEM_3D();
 void* OPS_SFI_MVLEM_3D();
+void* OPS_E_SFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
@@ -676,6 +679,7 @@ namespace {
 	functionMap.insert(std::make_pair("TFP", &OPS_TFP_Bearing));
 	functionMap.insert(std::make_pair("FPBearingPTV", &OPS_FPBearingPTV));
 	functionMap.insert(std::make_pair("TripleFrictionPendulum", &OPS_TripleFrictionPendulum));
+	functionMap.insert(std::make_pair("TripleFrictionPendulumX", &OPS_TripleFrictionPendulumX));
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
@@ -683,6 +687,7 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));    
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
 	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		
@@ -868,7 +873,8 @@ int OPS_doBlock2D()
 	cArg = 7;
 
 	
-    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
+    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 ||
+	       strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr<<"WARNING: want - secTag\n";
 	    return -1;
@@ -1107,6 +1113,25 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new ShellNLDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);
+
+	    } else if (strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
+
+		if (numEleNodes != 4) {
+		    opserr<<"WARNING ShellDKGQ element only needs four nodes\n";
+		    return -1;
+		}
+		SectionForceDeformation *sec = OPS_getSectionForceDeformation(secTag);
+
+		if (sec == 0) {
+		    opserr << "WARNING:  section " << secTag << " not found\n";
+		    return -1;
+		}
+
+		int nd1 = nodeTags(0) + idata[2];
+		int nd2 = nodeTags(1) + idata[2];
+		int nd3 = nodeTags(2) + idata[2];
+		int nd4 = nodeTags(3) + idata[2];
+		theEle = new ShellDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);		
 
 		
 			

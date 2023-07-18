@@ -421,6 +421,7 @@ int OPS_resetModel();
 int OPS_initializeAnalysis();
 int OPS_printA();
 int OPS_printB();
+int OPS_printX();
 int OPS_printModel();
 int OPS_Database();
 int OPS_save();

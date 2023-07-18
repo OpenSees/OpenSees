@@ -172,7 +172,7 @@ ShellNLDKGT::ShellNLDKGT(  int tag,
    	                     int node3,
 	                     SectionForceDeformation &theMaterial,
                        Damping *damping) :
-Element( tag, ELE_TAG_ShellDKGT ),
+Element( tag, ELE_TAG_ShellNLDKGT ),
 connectedExternalNodes(3), CstrainGauss(32),TstrainGauss(32),load(0), Ki(0)
 {
   int i;
