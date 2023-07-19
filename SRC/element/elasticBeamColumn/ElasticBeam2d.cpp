@@ -92,6 +92,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
       if (type == "-alpha") {
 	numOptionalArgs++;
 	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
 	  if (OPS_GetDoubleInput(&numData, &alpha) < 0) {
 	    opserr << "WARNING: failed to get alpha" << endln;
 	    return 0;
@@ -102,6 +103,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
       else if (type == "-depth") {
 	numOptionalArgs++;	
 	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;
 	  if (OPS_GetDoubleInput(&numData, &depth) < 0) {
 	    opserr << "WARNING: failed to get depth" << endln;
 	    return 0;
@@ -112,6 +114,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
       else if (type == "-release" || type == "-releasez") {
 	numOptionalArgs++;	
 	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
 	  if (OPS_GetIntInput(&numData, &release) < 0) {
 	    opserr << "WARNING: failed to get release" << endln;
 	    return 0;
@@ -122,6 +125,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
       else if (type == "-mass") {
 	numOptionalArgs++;	
 	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
 	  if (OPS_GetDoubleInput(&numData, &mass) < 0) {
 	    opserr << "WARNING: failed to get mass" << endln;
 	    return 0;
@@ -136,6 +140,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
       else if (type == "-damp") {
 	numOptionalArgs++;	
 	if(OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
 	  if (OPS_GetIntInput(&numData,&dampingTag) < 0)
 	    return 0;
 	  numOptionalArgs++;	  
@@ -148,7 +153,9 @@ void *OPS_ElasticBeam2d(const ID &info) {
       }      
     }
 
-    OPS_ResetCurrentInputArg(-numArgs);
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);
+    }
     numArgs = numArgs - numOptionalArgs;
 
     /*!

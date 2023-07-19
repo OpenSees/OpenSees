@@ -34,8 +34,8 @@
  //----------------------------------------------------------------------------------------------------------------------------
 
  //----------------------------------------------------------------------------------------------------------------------------
- // Description: This file contains the source code of TDConcrete. 
- // TDConcrete is a time-dependent concrete material model that calculates
+ // Description: This file contains the source code of TDConcreteNL. 
+ // TDConcreteNL is a time-dependent concrete material model that calculates
  // creep and shrinkage strains.
  /*-------------------------------
  ! Concrete Compression - Linear
@@ -57,22 +57,22 @@
  //----------------------------------------------------------------------------------------------------------------------------
 
 
-#ifndef TDConcrete_h
-#define TDConcrete_h
+#ifndef TDConcreteNL_h
+#define TDConcreteNL_h
 
 #include <UniaxialMaterial.h>
 #include <Domain.h> //Added by AMK
 
-class TDConcrete : public UniaxialMaterial
+class TDConcreteNL : public UniaxialMaterial
 {
   public:
-    TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast);
+  TDConcreteNL(int tag, double _fc, double _fcu, double _epscu, double _ft, double _Ec, double _beta, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast);
 
-    TDConcrete(void);
+    TDConcreteNL(void);
 
-    virtual ~TDConcrete();
+    virtual ~TDConcreteNL();
 
-    const char *getClassType(void) const {return "TDConcrete";};    
+    const char *getClassType(void) const {return "TDConcreteNL";};    
     double getInitialTangent(void);
     UniaxialMaterial *getCopy(void);
 

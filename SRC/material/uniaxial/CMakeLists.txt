@@ -144,6 +144,7 @@ target_sources(OPS_Material
       Neoprene.cpp
       OOHystereticMaterial.cpp
       PathIndependentMaterial.cpp
+      PenaltyMaterial.cpp      
       Pinching4Material.cpp
       PrestressedSteelMaterial.cpp
       RambergOsgoodSteel.cpp
@@ -171,6 +172,7 @@ target_sources(OPS_Material
       SteelFractureDI.cpp
       SteelMP.cpp
       TDConcrete.cpp
+      TDConcreteNL.cpp
       TDConcreteEXP.cpp
       TDConcreteMC10.cpp
       TDConcreteMC10NL.cpp
@@ -263,6 +265,7 @@ target_sources(OPS_Material
       Neoprene.h
       OOHystereticMaterial.h
       PathIndependentMaterial.h
+      PenaltyMaterial.h
       Pinching4Material.h
       PrestressedSteelMaterial.h
       RambergOsgoodSteel.h
@@ -289,6 +292,7 @@ target_sources(OPS_Material
       SteelECThermal.h
       SteelMP.h
       TDConcrete.h
+      TDConcreteNL.h
       TDConcreteEXP.h
       TDConcreteMC10.h
       TDConcreteMC10NL.h

@@ -133,6 +133,7 @@ void* OPS_ImpactMaterial();
 void* OPS_HyperbolicGapMaterial();
 void* OPS_LimiStateMaterial();
 void* OPS_MinMaxMaterial();
+void* OPS_PenaltyMaterial();
 void* OPS_TensionOnlyMaterial();
 void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
@@ -253,6 +254,7 @@ void* OPS_DuctileFracture();  // Kuanshi Zhong
 
 void* OPS_TDConcreteEXP(void);
 void* OPS_TDConcrete(void);
+void* OPS_TDConcreteNL(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
 
@@ -408,7 +410,9 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("MinMaxMaterial", &OPS_MinMaxMaterial));
   uniaxialMaterialsMap.insert(
-      std::make_pair("TensionOnly", &OPS_TensionOnlyMaterial));
+      std::make_pair("Penalty", &OPS_PenaltyMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TensionOnly", &OPS_TensionOnlyMaterial));  
   uniaxialMaterialsMap.insert(
       std::make_pair("ElasticBilin", &OPS_ElasticBilin));
   uniaxialMaterialsMap.insert(
@@ -587,6 +591,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteEXP", &OPS_TDConcreteEXP));
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcrete", &OPS_TDConcrete));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("TDConcreteNL", &OPS_TDConcreteNL));  
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10));
   uniaxialMaterialsMap.insert(
