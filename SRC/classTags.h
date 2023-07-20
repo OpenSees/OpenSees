@@ -849,6 +849,7 @@
 #define ELE_TAG_E_SFI        			257 // C. N. Lopez
 #define ELE_TAG_TripleFrictionPendulumX               258
 #define ELE_TAG_ExternalElement           99990
+#define ELE_TAG_GMG_CMAZ2D           99992
 
 
 
