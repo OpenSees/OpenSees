@@ -331,6 +331,12 @@ PeerNGAMotion::getDuration()
 }
 
 double
+PeerNGAMotion::getStartTime()
+{
+    return 0.0;
+}
+
+double
 PeerNGAMotion::getPeakFactor()
 {
   if (thePath == 0)
