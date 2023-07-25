@@ -38,23 +38,26 @@ void* OPS_RampSeries(void)
 
     int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
-    if (numRemainingArgs < 3) {
-        opserr << "WARNING: invalid num args RampSeries tag? $tStart $tRamp <$tDelay?> <-offset $offset?> <-smooth $smoothness? > <-factor $cFactor> \n";
+    if (numRemainingArgs < 2) {
+        opserr << "WARNING: invalid num args RampSeries <tag?> $tStart $tRamp <-offset $offset?> <-smooth $smoothness? > <-factor $cFactor> \n";
         return 0;
     }
 
     int tag = 0;      // default tag = 0
     double dData[5]{};
-    dData[4] = 1.0;
+    dData[4] = 1.0; // cFactor default = 1.0
 
     int numData = 0;
-    
-    //Parse Tag
-    numData = 1;
-    if (OPS_GetIntInput(&numData, &tag) != 0) {
-        opserr << "WARNING invalid series tag in RampSeries tag " << endln;
-        return 0;
+
+    if (numRemainingArgs == 9 || numRemainingArgs == 7 || numRemainingArgs == 5 || numRemainingArgs == 3) {
+        //Parse Tag
+        numData = 1;
+        if (OPS_GetIntInput(&numData, &tag) != 0) {
+            opserr << "WARNING invalid series tag in RampSeries tag " << endln;
+            return 0;
+        }
     }
+
     //Parse tStart
     numData = 1;
     if (OPS_GetDouble(&numData, &dData[0]) != 0) {
@@ -168,7 +171,7 @@ double RampSeries::getFactor(double pseudoTime)
 int RampSeries::sendSelf(int commitTag, Channel& theChannel)
 {
     int dbTag = this->getDbTag();
-    Vector data(6);
+    Vector data(5);
     data(0) = tStart;
     data(1) = tRamp;
     data(2) = offsetFact;
