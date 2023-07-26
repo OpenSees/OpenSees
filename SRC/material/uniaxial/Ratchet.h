@@ -37,7 +37,7 @@
 class Ratchet : public UniaxialMaterial
 {
   public:
-    Ratchet(int tag, double E, double toothSize);    
+    Ratchet(int tag, double E, double fTravel, double fTravelInitial, int RatType);    
     Ratchet();    
 
     ~Ratchet();
@@ -73,11 +73,13 @@ class Ratchet : public UniaxialMaterial
     double trialTangent;
     
     double E;            //d
-    double toothSize;    //d
+    double freeTravel;    //d
+    double fTravelInitial;    //d
     double engageStrain; //
     double currentStrain;//
    
-	  int nratchet; //ratchet count
+	  int RatType;
+    int nratchet; //ratchet count
 	  int commitNratchet;
    
 };
