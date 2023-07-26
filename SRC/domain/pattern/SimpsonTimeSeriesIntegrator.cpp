@@ -70,15 +70,15 @@ TimeSeries* SimpsonTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double
     }
     
     // add one to get ceiling out of type cast
-    int numSteps = (int)(theSeries->getDuration()/delta + 1.0);
+    long long numSteps = (long long)(theSeries->getDuration()/delta + 1.0);
     
     // create new vector for integrated values
     Vector *theInt = new Vector(numSteps);
     
     // check that the Vector was allocated properly
     if (theInt == 0 || theInt->Size() == 0)  {
-        opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory allocating Vector of size "
-            << numSteps << endln;
+        opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory allocating Vector " << endln;
+
         
         if (theInt != 0)
             delete theInt;
@@ -97,7 +97,7 @@ TimeSeries* SimpsonTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double
     (*theInt)[1] = delta/12.0*(5.0*fi + 8.0*fj - fk);
     
     // calculate remaining integrated values
-    for (int i=2; i<numSteps-1; i++)  {
+    for (long long i=2; i<numSteps-1; i++)  {
         
         (*theInt)[i] = (*theInt)[i-2] + delta/3.0*(fi + 4.0*fj + fk);
         
