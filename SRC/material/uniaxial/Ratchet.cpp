@@ -203,15 +203,15 @@ Ratchet::commitState(void)
 
 	if (trialStrain <= currentStrain && trialStrain <= engageStrain - freeTravel)
 	{
-		if (RatType == 1) 
+		if (RatType == 1)
 		{
-			while (trialStrain <= (engageStrain - freeTravel + preciValue)) 
+			while (trialStrain <= (engageStrain - freeTravel + preciValue))
 			{
 				engageStrain -= freeTravel;
 				nratchet++;
 			}
 		}
-		else if (RatType == 2) 
+		else if (RatType == 2)
 		{
 			engageStrain = trialStrain + freeTravel;
 		}
@@ -289,14 +289,47 @@ Ratchet::getCopy(void)
 int
 Ratchet::sendSelf(int cTag, Channel& theChannel)
 {
-	return -1;
+	int res = 0;
+	static Vector data(8);
+	data(0) = this->getTag();
+	data(1) = E;
+	data(2) = freeTravel;
+	data(3) = RatType;
+	data(4) = engageStrain;
+	data(5) = currentStrain;
+	data(6) = nratchet;
+	data(7) = commitNratchet;
+	res = theChannel.sendVector(this->getDbTag(), cTag, data);
+	if (res < 0)
+		opserr << "RatchetMaterial::sendSelf() - failed to send data" << endln;
+
+	return res;
 }
 
 int
 Ratchet::recvSelf(int cTag, Channel& theChannel,
 	FEM_ObjectBroker& theBroker)
 {
-	return -1;
+	int res = 0;
+	static Vector data(8);
+	res = theChannel.recvVector(this->getDbTag(), cTag, data);
+
+	if (res < 0) {
+		opserr << "RatchetMaterial::recvSelf() - failed to receive data" << endln;
+		this->setTag(0);
+	}
+	else {
+		this->setTag(int(data(0)));
+		E = data(1);
+		freeTravel = data(2);
+		RatType = data(3);
+		engageStrain = data(4);
+		currentStrain = data(5);
+		nratchet = data(6);
+		commitNratchet = data(7);
+	}
+
+	return res;
 }
 
 void
