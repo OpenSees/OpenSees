@@ -3657,7 +3657,7 @@ void* OPS_MumpsSolver() {
     return theSOE;
 #endif
 #endif
-
+    return 0;
 }
 
 // Sensitivity:BEGIN /////////////////////////////////////////////

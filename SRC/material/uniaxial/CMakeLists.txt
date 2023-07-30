@@ -144,6 +144,7 @@ target_sources(OPS_Material
       Neoprene.cpp
       OOHystereticMaterial.cpp
       PathIndependentMaterial.cpp
+      PenaltyMaterial.cpp      
       Pinching4Material.cpp
       PrestressedSteelMaterial.cpp
       RambergOsgoodSteel.cpp
@@ -264,6 +265,7 @@ target_sources(OPS_Material
       Neoprene.h
       OOHystereticMaterial.h
       PathIndependentMaterial.h
+      PenaltyMaterial.h
       Pinching4Material.h
       PrestressedSteelMaterial.h
       RambergOsgoodSteel.h

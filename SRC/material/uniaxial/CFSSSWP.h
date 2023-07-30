@@ -83,7 +83,8 @@
    
    // Shear Wall Panel's Dimensions :
    
-   double hight; int width, Precision; double A; double L;
+   double hight; int width; double A; double L;
+   enum {Precision = 100};
    
    // Characteristics and material properties of the steel framing studs :
    
