@@ -148,6 +148,7 @@ target_sources(OPS_Material
       Pinching4Material.cpp
       PrestressedSteelMaterial.cpp
       RambergOsgoodSteel.cpp
+      Ratchet.cpp
       ReinforcingSteel.cpp
       ResilienceMaterialHR.cpp
       SAWSMaterial.cpp
@@ -269,6 +270,7 @@ target_sources(OPS_Material
       Pinching4Material.h
       PrestressedSteelMaterial.h
       RambergOsgoodSteel.h
+      Ratchet.h
       ReinforcingSteel.h
       ResilienceMaterialHR.h
       SAWSMaterial.h
