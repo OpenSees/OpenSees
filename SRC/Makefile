@@ -856,6 +856,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/Ratchet.o \
 	$(FE)/material/uniaxial/GMG_CyclicReinforcedConcrete.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
