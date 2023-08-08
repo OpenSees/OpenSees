@@ -1043,6 +1043,9 @@
     <ClCompile Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulumX.cpp">
       <Filter>frictionBearing</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1826,6 +1829,9 @@
       <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
   </ItemGroup>
