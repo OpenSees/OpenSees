@@ -25,5 +25,5 @@ target_sources(OPS_Material_nD_Feap_f
 )
 
 target_link_libraries(OPS_Material PUBLIC OPS_Material_nD_Feap_f)
-target_include_directories(OPS_Material PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
