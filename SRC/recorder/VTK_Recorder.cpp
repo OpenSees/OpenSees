@@ -447,7 +447,7 @@ VTK_Recorder::vtu()
   this->incrLevel();
 
   // node tags
-  theFileVTU<<"<DataArray type=\"Int32\" Name=\"Node Tag\" format=\"ascii\">\n";
+  theFileVTU<<"<DataArray type=\"Int64\" Name=\"Node Tag\" format=\"ascii\">\n";
   this->incrLevel();
   for (auto i : theNodeTags)
     theFileVTU << i << " ";
@@ -547,14 +547,14 @@ VTK_Recorder::vtu()
   theFileVTU<<"</PointData>\n<CellData>\n";
 
   // ele tags
-  theFileVTU<<"<DataArray type=\"Int32\" Name=\"Element Tag\" format=\"ascii\">\n";
+  theFileVTU<<"<DataArray type=\"Int64\" Name=\"Element Tag\" format=\"ascii\">\n";
   this->incrLevel();
   for (auto i : theEleTags)
     theFileVTU << i << " ";
   theFileVTU<<"\n</DataArray>\n";
 
   // ele class tags
-  theFileVTU<<"<DataArray type=\"Int32\" Name=\"Element Class\" format=\"ascii\">\n";
+  theFileVTU<<"<DataArray type=\"Int64\" Name=\"Element Class\" format=\"ascii\">\n";
   this->incrLevel();
   for (auto i : theEleClassTags)
     theFileVTU << i << " ";
