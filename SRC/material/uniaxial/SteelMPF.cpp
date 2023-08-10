@@ -1349,3 +1349,157 @@ void SteelMPF::Print (OPS_Stream& s, int flag)
         s << "\"a4\": " << a6 << "}";
     }
 }
+
+// Functions to return yield stress for epsX expression in SFI_MVLEM_3D_E
+// KK
+Vector SteelMPF::getInputParameters(void)
+{
+	Vector input_par(3); // size = max number of parameters (assigned + default)
+
+	input_par.Zero();
+
+	input_par(0) = this->getTag();
+	input_par(1) = sigyieldp;
+	input_par(2) = sigyieldn;
+
+	return input_par;
+}
+
+// KK
+Response*
+SteelMPF::setResponse(const char** argv, int argc,
+	OPS_Stream& theOutput)
+{
+	Response* theResponse = 0;
+
+	if (strcmp(argv[0], "getInputParameters") == 0) {
+		Vector data1(3);
+		data1.Zero();
+		theResponse = new MaterialResponse(this, 100, data1);
+	}
+	else
+		return this->UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+	return theResponse;
+}
+
+// KK
+int
+SteelMPF::getResponse(int responseID, Information& matInfo)
+{
+	if (responseID == 100) {
+		matInfo.setVector(this->getInputParameters());
+
+	}
+	else
+
+		return this->UniaxialMaterial::getResponse(responseID, matInfo);
+
+	return 0;
+}
+
+
+// AddingSensitivity:BEGIN ///////////////////////////////////
+int
+SteelMPF::setParameter(const char** argv, int argc, Parameter& param)
+{
+
+	if (strcmp(argv[0], "sigmaYp") == 0 || strcmp(argv[0], "fyp") == 0 || strcmp(argv[0], "Fyp") == 0) {
+		param.setValue(sigyieldp);
+		return param.addObject(1, this);
+	}
+	if (strcmp(argv[0], "sigmaYn") == 0 || strcmp(argv[0], "fyn") == 0 || strcmp(argv[0], "Fyn") == 0) {
+		param.setValue(sigyieldn);
+		return param.addObject(2, this);
+	}
+	if (strcmp(argv[0], "E") == 0) {
+		param.setValue(E0);
+		return param.addObject(3, this);
+	}
+	if (strcmp(argv[0], "bp") == 0) {
+		param.setValue(bp);
+		return param.addObject(4, this);
+	}
+	if (strcmp(argv[0], "bn") == 0) {
+		param.setValue(bn);
+		return param.addObject(5, this);
+	}
+	if (strcmp(argv[0], "R0") == 0) {
+		param.setValue(R0);
+		return param.addObject(6, this);
+	}
+	if (strcmp(argv[0], "a1") == 0) {
+		param.setValue(aa1);
+		return param.addObject(7, this);
+	}
+	if (strcmp(argv[0], "a2") == 0) {
+		param.setValue(a2);
+		return param.addObject(8, this);
+	}
+	if (strcmp(argv[0], "a3") == 0) {
+		param.setValue(a3);
+		return param.addObject(9, this);
+	}
+	if (strcmp(argv[0], "a4") == 0) {
+		param.setValue(a4);
+		return param.addObject(10, this);
+	}
+	if (strcmp(argv[0], "a5") == 0) {
+		param.setValue(a5);
+		return param.addObject(11, this);
+	}
+	if (strcmp(argv[0], "a6") == 0) {
+		param.setValue(a6);
+		return param.addObject(12, this);
+	}
+	return -1;
+}
+
+int
+SteelMPF::updateParameter(int parameterID, Information& info)
+{
+	switch (parameterID) {
+	case -1:
+		return -1;
+	case 1:
+		this->sigyieldp = info.theDouble;
+		break;
+	case 2:
+		this->sigyieldn = info.theDouble;
+		break;
+	case 3:
+		this->E0 = info.theDouble;
+		break;
+	case 4:
+		this->bp = info.theDouble;
+		break;
+	case 5:
+		this->bn = info.theDouble;
+		break;
+	case 6:
+		this->R0 = info.theDouble;
+		break;
+	case 7:
+		this->a1 = info.theDouble;
+		break;
+	case 8:
+		this->a2 = info.theDouble;
+		break;
+	case 9:
+		this->a3 = info.theDouble;
+		break;
+	case 10:
+		this->a4 = info.theDouble;
+		break;
+	case 11:
+		this->a5 = info.theDouble;
+		break;
+	case 12:
+		this->a6 = info.theDouble;
+		break;
+	default:
+		return -1;
+	}
+
+	return 0;
+}

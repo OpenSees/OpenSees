@@ -69,6 +69,13 @@ public:
 
 	void Print(OPS_Stream &s, int flag = 0);
 
+	int setParameter(const char** argv, int argc, Parameter& param); // KK 2023
+	int updateParameter(int parameterID, Information& info); // KK 2023
+
+	Vector getInputParameters(void); // KK 2023
+	Response* setResponse(const char** argv, int argc, OPS_Stream& theOutputStream); // KK 2023
+	int getResponse(int responseID, Information& matInformation); // KK 2023
+
 protected:
 
 private:
