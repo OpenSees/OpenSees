@@ -31,7 +31,7 @@
 // Reference: 
 // Sirotti, S., Pelliciari, M., Di Trapani, F.,
 // Briseghella, B., Carlo Marano, G., Nuti, C., & Tarantino, A. M. (2021).
-// Development and validation of new Bouc–Wen data-driven hysteresis model 
+// Development and validation of new Boucâ€“Wen data-driven hysteresis model 
 // for masonry infilled RC frames. 
 // Journal of Engineering Mechanics, 147(11), 04021092.
 //
@@ -50,6 +50,14 @@
 void *
 OPS_BoucWenInfill(void)
 {
+    int numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata < 16) {
+	opserr << "WARNING: Insufficient arguments\n";
+	opserr << "Want: uniaxialMaterial BoucWenInfill tag? mass? alpha? beta0? eta0?" << endln
+		<< "n? k? xy? deltak? deltaf? psi? Zs? As? epsp? tol? maxNumIter?" << endln;
+	return 0;
+    }
+
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 

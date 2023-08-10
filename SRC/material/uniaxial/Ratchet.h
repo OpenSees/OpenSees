@@ -18,43 +18,40 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision$
-// $Date$
-// $Source$
-                                                      
-// Description: This file contains the class definition for 
-// PenaltyMaterial. PenaltyMaterial adds a small stiffness to
-// its wrapped UniaxialMaterial object. This wrapper can help you
-// avoid a singular stiffness due to perfect plasticity and is a
-// downsized approach to putting the wrapped material in parallel
-// with an ElasticMaterial.
+// $Date: 2018/11/25 
+                                                   
+#ifndef Ratchet_h
+#define Ratchet_h
 
-#ifndef PenaltyMaterial_h
-#define PenaltyMaterial_h
+// Written: Yi Xiao from Tongji University/University of Washington 
+// Modified from GNGMaterial by Jook
+//
+// Description: This file contains the class definition for 
+// Ratchet.
+//
+// What: "@(#) Ratchet.h, revA"
 
 #include <UniaxialMaterial.h>
+#define MAT_TAG_Ratchet 2017
 
-class PenaltyMaterial : public UniaxialMaterial
+class Ratchet : public UniaxialMaterial
 {
   public:
-  PenaltyMaterial(int tag, UniaxialMaterial &material, double penalty, bool addSig); 
-    PenaltyMaterial();
-    ~PenaltyMaterial();
-    
-    const char *getClassType(void) const {return "PenaltyMaterial";};
+    Ratchet(int tag, double E, double fTravel, double fTravelInitial, int RatType);    
+    Ratchet();    
+
+    ~Ratchet();
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
-    int setTrialStrain(double strain, double FiberTemperature, double strainRate); 
     double getStrain(void);          
-    double getStrainRate(void);
     double getStress(void);
     double getTangent(void);
-    double getDampTangent(void);
-    double getInitialTangent(void) {return theMaterial->getInitialTangent();}
+
+    double getInitialTangent(void) ;
 
     int commitState(void);
     int revertToLastCommit(void);    
-    int revertToStart(void);        
+    int revertToStart(void);    
 
     UniaxialMaterial *getCopy(void);
     
@@ -63,33 +60,32 @@ class PenaltyMaterial : public UniaxialMaterial
 		 FEM_ObjectBroker &theBroker);    
     
     void Print(OPS_Stream &s, int flag =0);
-
-    int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter(int parameterID, Information &info);
-    
-    // AddingSensitivity:BEGIN //////////////////////////////////////////
-    int activateParameter(int parameterID);
-    double getStressSensitivity     (int gradIndex, bool conditional);
-    double getStrainSensitivity     (int gradIndex);
-    double getInitialTangentSensitivity(int gradIndex);
-    double getDampTangentSensitivity(int gradIndex);
-    double getRhoSensitivity        (int gradIndex);
-    int    commitSensitivity        (double strainGradient, int gradIndex, int numGrads);
-    // AddingSensitivity:END ///////////////////////////////////////////
     
   protected:
     
   private:
-    UniaxialMaterial *theMaterial;
-
-    double penalty;
-  bool addStress;
-
-    // AddingSensitivity:BEGIN //////////////////////////////////////////
-    int parameterID;
-    // AddingSensitivity:END ///////////////////////////////////////////
+    double commitStrain; //
+    double commitStress;
+    double commitTangent;
+    double commitEngageStrain;
+    double trialStrain;	// 
+    double trialStress; 
+    double trialTangent;
+    
+    double E;            //d
+    double freeTravel;    //d
+    double fTravelInitial;    //d
+    double engageStrain; //
+    double currentStrain;//
+   
+	  int RatType;
+    int nratchet; //ratchet count
+	  int commitNratchet;
+   
 };
 
 
 #endif
+
+
 

@@ -25,7 +25,7 @@ do
 		echo "    PUBLIC";
 		ls -1 *.h | sed 's|^\([A-z]\)|        \1|g' | grep -v Tcl;
 		echo ")";
-		echo "target_include_directories(OPS_$name PUBLIC \$(CMAKE_CURRENT_LIST_DIR))";
+		echo "target_include_directories(OPS_$name PUBLIC \${CMAKE_CURRENT_LIST_DIR})";
 		echo "";
 		for d in ./*/
 		do
