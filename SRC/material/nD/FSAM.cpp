@@ -398,7 +398,7 @@ FSAM::FSAM (int tag,
 	}
 
 	// get/set responses
-	theResponses = new Response *[4];  
+	theResponses = new Response *[2];  
 	if ( theResponses == 0) {
 		opserr << " FSAM::FSAM - failed allocate responses array\n";
 		exit(-1);
@@ -429,47 +429,12 @@ FSAM::FSAM (int tag,
 			exit(-1);
 	}
 
-	// get steel input parameters
-	if (strcmp(s1->getClassType(), "SteelMPF") == 0 || strcmp(s1->getClassType(), "Steel02") == 0) {
-		argv[0] = "getInputParameters";
-	}
-
-	theResponses[2] = theMaterial[0]->setResponse(argv, 1, theDummyStream); // SteelX
-
-	if (theResponses[2] == 0) {
-		opserr << " FSAM::FSAM - failed to set appropriate responses for material with tag: " << tag << "\n";
-		exit(-1);
-	}
-
-	theResponses[3] = theMaterial[1]->setResponse(argv, 1, theDummyStream); // SteelY
-
-	if (theResponses[3] == 0) {
-		opserr << " FSAM::FSAM - failed to set appropriate responses for material with tag: " << tag << "\n";
-		exit(-1);
-	}
-
 	//delete theDummyStream;
 
 	// Get ConcreteCM material input variables
 	theResponses[1]->getResponse();
 	Information &theInfoInput = theResponses[1]->getInformation();
 	const Vector &ConcreteInput = theInfoInput.getData();
-
-	// Get SteelX material input variables
-	theResponses[2]->getResponse();
-	Information& theSteelXInfoInput = theResponses[2]->getInformation();
-	const Vector InputSteelX = theSteelXInfoInput.getData();
-
-	for (int i = 0; i < InputSteelX.Size(); i++)
-		SteelXinput[i] = InputSteelX[i];
-
-	// Get SteelX material input variables
-	theResponses[3]->getResponse();
-	Information& theSteelYInfoInput = theResponses[3]->getInformation();
-	const Vector InputSteelY = theSteelYInfoInput.getData();
-
-	for (int i = 0; i < InputSteelY.Size(); i++)
-		SteelYinput[i] = InputSteelY[i];
 
 	// Now create monotonic concrete materials for uncracked stage of behavior
 	// Concrete 1.1
@@ -2767,11 +2732,7 @@ Vector FSAM::getInputParameters(void)
 	input_par(4) = rouy;
 	input_par(5) = nu;
 	input_par(6) = alfadow;
-	//input_par(7) = typeAggLock; // will be incorporated later - placeholder
-	//input_par(8) = typeCrackB;  // will be incorporated later - placeholder
 	input_par(9) = Ec; // added for quadWall element
-	input_par(10) = SteelXinput[1]; // fyx, added for epsX in E_SFI_MVLEM_3D
-	input_par(11) = SteelYinput[1]; // fyy, added for epsX in E_SFI_MVLEM_3D
 
 	return input_par;
 }

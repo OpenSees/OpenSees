@@ -142,8 +142,6 @@ private:
 	double   nu;					// friction Coefficient of Shear Aggregate Interlock 
 	double   alfadow;				// stiffness Coefficient of Dowel Action 
 	Vector ConcreteInput;			// vector for storing concrete input variables
-	Vector SteelXinput;				// vector for storing steelX input variables
-	Vector SteelYinput;				// vector for storing steelY input variables
 
 	// Biaxial Damage Parameters ......................
 	// Variables for getting value from betaf4 function
