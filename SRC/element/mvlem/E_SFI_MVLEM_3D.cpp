@@ -185,9 +185,9 @@ void* OPS_E_SFI_MVLEM_3D(void)
 E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	double Dens,
 	int Nd1, int Nd2, int Nd3, int Nd4,
-	NDMaterial **materials,
-	double *thickness,
-	double *width,
+	NDMaterial** materials,
+	double* thickness,
+	double* width,
 	int mm = 0,
 	double cc = 0.0,
 	double nn = 0.0,
@@ -196,12 +196,10 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	:Element(tag, ELE_TAG_E_SFI_MVLEM_3D),
 	density(Dens),
 	externalNodes(4),
-	theNodesX(0),
-	theNodesALL(0),
 	theMaterial(0), theLoad(0),
 	E_SFI_MVLEM_3DStrainX(0), E_SFI_MVLEM_3DStrainY(0), E_SFI_MVLEM_3DStrainXY(0), E_SFI_MVLEM_3DStrain(0),
 	x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), Kh(0), Fx(0), Fy(0), Fxy(0), Dx(0), Dy(0), Dxy(0),
-	rhox(0), fyx(0), fpc(0), // for epsX expression
+	rhox(0), // for epsX expression
 	E_SFI_MVLEM_3DK(24, 24), E_SFI_MVLEM_3DR(24), E_SFI_MVLEM_3DD(24, 24), E_SFI_MVLEM_3DM(24, 24),
 	E_SFI_MVLEM_3DKlocal(24, 24), E_SFI_MVLEM_3DDlocal(24, 24), E_SFI_MVLEM_3DRlocal(24), E_SFI_MVLEM_3DMlocal(24, 24),
 	P_24DOF(24), P_24DOF_local(24),
@@ -209,11 +207,12 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	T(24, 24), Tt(3, 3), T6(6, 6),
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {
-	
+
 	TotalMass = 0.0;
 	NodeMass = 0.0;
 	h = 0.0;
 	d = 0.0;
+	Lw = 0.0;
 
 	// Out of Plane parameters
 	Eave = 0.0;
@@ -247,14 +246,6 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	theNodes[2] = 0;
 	theNodes[3] = 0;
 
-	// Allocate memory for the nodes
-	theNodesALL = new Node*[4];
-
-	// Set theNodesALL pointers to NULL
-	for (int i = 0; i < 4; i++) {
-		theNodesALL[i] = 0;
-	}
-
 	// Check thickness and width input
 	if (thickness == 0) {
 		opserr << "E_SFI_MVLEM_3D::E_SFI_MVLEM_3D() - "
@@ -272,9 +263,8 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	// Input parameters
 	t = new double[m];
 	b = new double[m];
-	Lw = 0.0;
 
-	for (int i = 0; i<m; i++) {
+	for (int i = 0; i < m; i++) {
 		t[i] = thickness[i];
 		b[i] = width[i];
 		Lw += b[i];		// Total length of the wall
@@ -287,7 +277,7 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 
 	for (int i = 0; i < m; i++) {
 		double sumb_i = 0.0;
-		for (int j = 0; j<i + 1; j++)
+		for (int j = 0; j < i + 1; j++)
 			sumb_i += b[j];
 
 		x[i] = (sumb_i - b[i] / 2.0) - Lw / 2.0;
@@ -301,7 +291,7 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	}
 
 	// Allocate memory for the ND materials
-	theMaterial = new NDMaterial*[m];
+	theMaterial = new NDMaterial * [m];
 
 	if (theMaterial == 0) {
 		opserr << "E_SFI_MVLEM_3D::E_SFI_MVLEM_3D() - "
@@ -351,6 +341,9 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	E_SFI_MVLEM_3DStrainXY = new double[m];
 	E_SFI_MVLEM_3DStrain = new double[3 * m];
 
+	// for epsX expression
+	rhox = new double[m];
+
 	// Assign zero to element arrays
 	for (int i = 0; i < m; i++) {
 
@@ -375,6 +368,9 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 		E_SFI_MVLEM_3DStrain[i] = 0.0;
 		E_SFI_MVLEM_3DStrain[i + m] = 0.0;
 		E_SFI_MVLEM_3DStrain[i + 2 * m] = 0.0;
+
+		rhox[i] = 0.0;
+
 	}
 
 	Kh = 0.0;
@@ -387,11 +383,10 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 E_SFI_MVLEM_3D::E_SFI_MVLEM_3D()
 	:Element(0, ELE_TAG_E_SFI_MVLEM_3D),
 	externalNodes(4),
-	theNodesX(0),
-	theNodesALL(0),
 	theMaterial(0), theLoad(0),
 	E_SFI_MVLEM_3DStrainX(0), E_SFI_MVLEM_3DStrainY(0), E_SFI_MVLEM_3DStrainXY(0), E_SFI_MVLEM_3DStrain(0),
 	x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), Kh(0), Fx(0), Fy(0), Fxy(0), Dx(0), Dy(0), Dxy(0),
+	rhox(0), // for epsX expression
 	E_SFI_MVLEM_3DK(24, 24), E_SFI_MVLEM_3DR(24), E_SFI_MVLEM_3DD(24, 24), E_SFI_MVLEM_3DM(24, 24),
 	E_SFI_MVLEM_3DKlocal(24, 24), E_SFI_MVLEM_3DDlocal(24, 24), E_SFI_MVLEM_3DRlocal(24), E_SFI_MVLEM_3DMlocal(24, 24),
 	P_24DOF(24), P_24DOF_local(24),
@@ -400,21 +395,12 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D()
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {
 	if (externalNodes.Size() != 4)
-		opserr << "FATAL E_SFI_MVLEM_3D::E_SFI_MVLEM_3D() - out of memory, could not create an ID of size 2\n";
+		opserr << "FATAL E_SFI_MVLEM_3D::E_SFI_MVLEM_3D() - out of memory, could not create an ID of size 4\n";
 
 	theNodes[0] = 0;
 	theNodes[1] = 0;
 	theNodes[2] = 0;
 	theNodes[3] = 0;
-
-	// Allocate memory for nodes
-	theNodesALL = new Node*[4];	// all nodes
-
-	// Set theNodesALL pointers to zero
-	for (int i = 0; i < 4; i++)
-	{
-		theNodesALL[i] = 0;
-	}
 
 }
 
@@ -436,45 +422,43 @@ E_SFI_MVLEM_3D::~E_SFI_MVLEM_3D()
 	if (theLoad != 0)
 		delete theLoad;
 	if (x != 0)
-		delete []x;
+		delete[]x;
 	if (b != 0)
-		delete []b;
+		delete[]b;
 	if (AcX != 0)
-		delete []AcX;
+		delete[]AcX;
 	if (AcY != 0)
-		delete []AcY;
+		delete[]AcY;
 	if (kx != 0)
-		delete []kx;
+		delete[]kx;
 	if (ky != 0)
-		delete []ky;
+		delete[]ky;
 	if (Fx != 0)
-		delete []Fx;
+		delete[]Fx;
 	if (Fy != 0)
-		delete []Fy;
+		delete[]Fy;
 	if (Fxy != 0)
-		delete []Fxy;
+		delete[]Fxy;
 	if (Dx != 0)
-		delete []Dx;
+		delete[]Dx;
 	if (Dy != 0)
-		delete []Dy;
+		delete[]Dy;
 	if (Dxy != 0)
-		delete []Dxy;
+		delete[]Dxy;
+	if (rhox != 0)
+		delete rhox;
 	if (E_SFI_MVLEM_3DStrainX != 0)
-		delete []E_SFI_MVLEM_3DStrainX;
+		delete[]E_SFI_MVLEM_3DStrainX;
 	if (E_SFI_MVLEM_3DStrainY != 0)
-		delete []E_SFI_MVLEM_3DStrainY;
+		delete[]E_SFI_MVLEM_3DStrainY;
 	if (E_SFI_MVLEM_3DStrainXY != 0)
-		delete []E_SFI_MVLEM_3DStrainXY;
+		delete[]E_SFI_MVLEM_3DStrainXY;
 	if (E_SFI_MVLEM_3DStrain != 0)
-		delete []E_SFI_MVLEM_3DStrain;
-	if (theNodesX != 0)
-		delete []theNodesX;
-	if (theNodesALL != 0)
-		delete []theNodesALL;
+		delete[]E_SFI_MVLEM_3DStrain;
 	if (modifiedT != 0)
-		delete []modifiedT;
+		delete[]modifiedT;
 	if (t != 0)
-		delete []t;
+		delete[]t;
 
 }
 
@@ -485,21 +469,15 @@ int E_SFI_MVLEM_3D::getNumExternalNodes(void) const
 }
 
 // Get node tags
-const ID & E_SFI_MVLEM_3D::getExternalNodes(void)
+const ID& E_SFI_MVLEM_3D::getExternalNodes(void)
 {
 	return externalNodes;
 }
 
 // Get node pointers
-Node ** E_SFI_MVLEM_3D::getNodePtrs(void)
+Node** E_SFI_MVLEM_3D::getNodePtrs(void)
 {
-
-	// Pack external and internal node pointers into one array
-	for (int i = 0; i < 4; i++) {
-		theNodesALL[i] = theNodes[i];
-	}
-
-	return theNodesALL;
+	return theNodes;
 }
 
 // Get number of DOFs 
@@ -511,7 +489,7 @@ int E_SFI_MVLEM_3D::getNumDOF(void) {
 }
 
 // Set Domain
-void E_SFI_MVLEM_3D::setDomain(Domain *theDomain)
+void E_SFI_MVLEM_3D::setDomain(Domain* theDomain)
 {
 	// Check Domain is not null - invoked when object removed from a domain
 	if (theDomain == 0)
@@ -664,16 +642,16 @@ void E_SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	//const char **argv = new const char *[1];
 	//argv[0] = "getInputParameters"; // to get input parameters from concrete material
 	char aa[80] = "getInputParameters";
-	const char *argv[1];
+	const char* argv[1];
 	argv[0] = aa;
-	
+
 	for (int i = 0; i < m; i++)
 	{
-	  //theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
-	  Response *theResponse = theMaterial[i]->setResponse(argv, 1, theDummyStream);
+		//theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
+		Response* theResponse = theMaterial[i]->setResponse(argv, 1, theDummyStream);
 
-	  //if (theResponses[0] == 0) {
-		if (theResponse == 0) {		  
+		//if (theResponses[0] == 0) {
+		if (theResponse == 0) {
 			opserr << " E_SFI_MVLEM_3D::E_SFI_MVLEM_3D - failed to get input parameters for FSAM material with tag: " << this->getTag() << "\n";
 			exit(-1);
 		}
@@ -681,19 +659,22 @@ void E_SFI_MVLEM_3D::setDomain(Domain *theDomain)
 		// Get FSAM material input variables
 		//theResponses[0]->getResponse();
 		//Information &theInfoInput = theResponses[0]->getInformation();		
-		theResponse->getResponse();		
-		Information &theInfoInput = theResponse->getInformation();
-		const Vector &InputNDMat = theInfoInput.getData();
+		theResponse->getResponse();
+		Information& theInfoInput = theResponse->getInformation();
+		const Vector& InputNDMat = theInfoInput.getData();
 
 		// Calculate out-of-plane modulus of elasticity (average modulus)
 		Eave += AcY[i] * InputNDMat[9] / A;
+
+		// Assign parameters for EpsX formula calculsions
+		rhox[i] = InputNDMat[3];
 
 		delete theResponse;
 
 	}
 
 	//delete theDummyStream;
-	
+
 	// Internal beam parameters
 	Eib = Eave;
 	Hib = h;
@@ -780,7 +761,6 @@ int E_SFI_MVLEM_3D::revertToStart()
 int E_SFI_MVLEM_3D::update()
 {
 	// Get the current strain given trial displacements at nodes 
-	//E_SFI_MVLEM_3DStrain = this->computeCurrentStrain();
 	this->computeCurrentStrain();
 
 	// Set the strain in the materials
@@ -803,13 +783,13 @@ int E_SFI_MVLEM_3D::update()
 }
 
 // Get current strains at RC panels (macro-fibers)
-double *E_SFI_MVLEM_3D::computeCurrentStrain(void)
+double* E_SFI_MVLEM_3D::computeCurrentStrain(void)
 {
 
-	const Vector &disp1 = theNodes[0]->getTrialDisp();
-	const Vector &disp2 = theNodes[1]->getTrialDisp();
-	const Vector &disp3 = theNodes[2]->getTrialDisp();
-	const Vector &disp4 = theNodes[3]->getTrialDisp();
+	const Vector& disp1 = theNodes[0]->getTrialDisp();
+	const Vector& disp2 = theNodes[1]->getTrialDisp();
+	const Vector& disp3 = theNodes[2]->getTrialDisp();
+	const Vector& disp4 = theNodes[3]->getTrialDisp();
 
 	Vector dispG(24); // Vector of total 24 displacemets in global coordinates
 	dispG.Zero();
@@ -831,15 +811,15 @@ double *E_SFI_MVLEM_3D::computeCurrentStrain(void)
 
 	dispL_inPlan2N(0) = dispL(0) / 2.0 + dispL(6) / 2.0;
 	dispL_inPlan2N(1) = dispL(1) / 2.0 + dispL(7) / 2.0;
-	dispL_inPlan2N(2) = dispL(5) / (2.0 * (d*d) + 2.0) + dispL(11) / (2.0 * (d*d) + 2.0) - (dispL(1)*d) / (2.0 * (d*d) + 2.0) + (dispL(7)*d) / (2.0 * (d*d) + 2.0);
+	dispL_inPlan2N(2) = dispL(5) / (2.0 * (d * d) + 2.0) + dispL(11) / (2.0 * (d * d) + 2.0) - (dispL(1) * d) / (2.0 * (d * d) + 2.0) + (dispL(7) * d) / (2.0 * (d * d) + 2.0);
 	dispL_inPlan2N(3) = dispL(12) / 2.0 + dispL(18) / 2.0;
 	dispL_inPlan2N(4) = dispL(13) / 2.0 + dispL(19) / 2.0;
-	dispL_inPlan2N(5) = dispL(17) / (2.0 * (d*d) + 2.0) + dispL(23) / (2.0 * (d*d) + 2.0) - (dispL(13)*d) / (2.0 * (d*d) + 2.0) + (dispL(19)*d) / (2.0 * (d*d) + 2.0);
+	dispL_inPlan2N(5) = dispL(17) / (2.0 * (d * d) + 2.0) + dispL(23) / (2.0 * (d * d) + 2.0) - (dispL(13) * d) / (2.0 * (d * d) + 2.0) + (dispL(19) * d) / (2.0 * (d * d) + 2.0);
 
 	// Deformations at each RC panel (macro-fiber) - MVLEM formulation
 	for (int i = 0; i < m; i++) {
 		Dy[i] = -dispL_inPlan2N(1) - x[i] * dispL_inPlan2N(2) + dispL_inPlan2N(4) + x[i] * dispL_inPlan2N(5);
-		Dxy[i] = dispL_inPlan2N(0) - dispL_inPlan2N(3) - c * h*dispL_inPlan2N(2) - (1.0 - c)*h*dispL_inPlan2N(5);
+		Dxy[i] = dispL_inPlan2N(0) - dispL_inPlan2N(3) - c * h * dispL_inPlan2N(2) - (1.0 - c) * h * dispL_inPlan2N(5);
 	}
 
 	Dsh = -Dxy[0]; // Store shear deformations for the recorder
@@ -849,7 +829,6 @@ double *E_SFI_MVLEM_3D::computeCurrentStrain(void)
 		E_SFI_MVLEM_3DStrainY[i] = Dy[i] / h;
 		E_SFI_MVLEM_3DStrainXY[i] = -Dxy[i] / h;
 		E_SFI_MVLEM_3DStrainX[i] = 0.55 * pow((1.0 + rhox[i]), -60.0) * (1.0 - pow(3.0, -800.0 * abs(E_SFI_MVLEM_3DStrainXY[i]))) * abs(E_SFI_MVLEM_3DStrainXY[i]); // Massone et al.
-
 	}
 
 	// Store strains into a single vector
@@ -865,7 +844,7 @@ double *E_SFI_MVLEM_3D::computeCurrentStrain(void)
 }
 
 // Get the element initial element tangent matrix
-const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
+const Matrix& E_SFI_MVLEM_3D::getInitialStiff(void)
 {
 
 	E_SFI_MVLEM_3DK.Zero();		// Global stiffness matrix
@@ -876,13 +855,13 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	for (int i = 0; i < m; i++)
 	{
 		// Get material initial tangent
-		const Matrix &D = theMaterial[i]->getInitialTangent();
+		const Matrix& D = theMaterial[i]->getInitialTangent();
 
 		double D00 = D(0, 0); double D01 = D(0, 1); double D02 = D(0, 2);
 		double D10 = D(1, 0); double D11 = D(1, 1); double D12 = D(1, 2);
 		double D20 = D(2, 0); double D21 = D(2, 1); double D22 = D(2, 2);
 
-		kx[i] = D00 * h*t[i] / b[i];
+		kx[i] = D00 * h * t[i] / b[i];
 		ky[i] = D11 * b[i] * t[i] / h;
 		Kh += D22 * b[i] * t[i] / h;
 
@@ -891,7 +870,7 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	// Build the initial stiffness matrix
 	double Kv = 0.0; double Km = 0.0; double e = 0.0; // double ex = 0.0;
 
-	for (int i = 0; i<m; ++i)
+	for (int i = 0; i < m; ++i)
 	{
 		Kv += ky[i];
 		Km += ky[i] * x[i] * x[i];
@@ -899,55 +878,55 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	}
 
 	// Assemble element stiffness matrix
-	E_SFI_MVLEM_3DKlocal(0, 0) = Kh / 4.0 + (Aib*Eib) / Lw;
-	E_SFI_MVLEM_3DKlocal(0, 1) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 0) = Kh / 4.0 + (Aib * Eib) / Lw;
+	E_SFI_MVLEM_3DKlocal(0, 1) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(0, 2) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 3) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 4) = 0.0;
-	E_SFI_MVLEM_3DKlocal(0, 5) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(0, 6) = Kh / 4.0 - (Aib*Eib) / Lw;
-	E_SFI_MVLEM_3DKlocal(0, 7) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 5) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 6) = Kh / 4.0 - (Aib * Eib) / Lw;
+	E_SFI_MVLEM_3DKlocal(0, 7) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(0, 8) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 9) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 10) = 0.0;
-	E_SFI_MVLEM_3DKlocal(0, 11) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 11) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(0, 12) = -Kh / 4.0;
-	E_SFI_MVLEM_3DKlocal(0, 13) = -(Kh*d*h*(c - 1)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 13) = -(Kh * d * h * (c - 1)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(0, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(0, 17) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 17) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(0, 18) = -Kh / 4;
-	E_SFI_MVLEM_3DKlocal(0, 19) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 19) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(0, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(0, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(0, 23) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(0, 23) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 
 	E_SFI_MVLEM_3DKlocal(1, 0) = E_SFI_MVLEM_3DKlocal(0, 1);
-	E_SFI_MVLEM_3DKlocal(1, 1) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib) / (Lw*Lw*Lw);
+	E_SFI_MVLEM_3DKlocal(1, 1) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) + (12.0 * Eib * Iib) / (Lw * Lw * Lw);
 	E_SFI_MVLEM_3DKlocal(1, 2) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 3) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 4) = 0.0;
-	E_SFI_MVLEM_3DKlocal(1, 5) = (e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-	E_SFI_MVLEM_3DKlocal(1, 6) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(1, 7) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (d*(e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) - (12.0 * Eib*Iib) / (Lw*Lw*Lw);
+	E_SFI_MVLEM_3DKlocal(1, 5) = (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
+	E_SFI_MVLEM_3DKlocal(1, 6) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(1, 7) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (d * (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) - (12.0 * Eib * Iib) / (Lw * Lw * Lw);
 	E_SFI_MVLEM_3DKlocal(1, 8) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 9) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 10) = 0.0;
-	E_SFI_MVLEM_3DKlocal(1, 11) = (e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-	E_SFI_MVLEM_3DKlocal(1, 12) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(1, 13) = (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - Kv / 4.0 + (d*(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(1, 11) = (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
+	E_SFI_MVLEM_3DKlocal(1, 12) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(1, 13) = (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - Kv / 4.0 + (d * (e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
 	E_SFI_MVLEM_3DKlocal(1, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(1, 17) = -(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
-	E_SFI_MVLEM_3DKlocal(1, 18) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(1, 19) = (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - Kv / 4.0 - (d*(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(1, 17) = -(e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(1, 18) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(1, 19) = (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - Kv / 4.0 - (d * (e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
 	E_SFI_MVLEM_3DKlocal(1, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(1, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(1, 23) = -(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(1, 23) = -(e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
 
 	E_SFI_MVLEM_3DKlocal(2, 0) = E_SFI_MVLEM_3DKlocal(0, 2);
 	E_SFI_MVLEM_3DKlocal(2, 1) = E_SFI_MVLEM_3DKlocal(1, 2);
@@ -1029,25 +1008,25 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(5, 2) = E_SFI_MVLEM_3DKlocal(2, 5);
 	E_SFI_MVLEM_3DKlocal(5, 3) = E_SFI_MVLEM_3DKlocal(3, 5);
 	E_SFI_MVLEM_3DKlocal(5, 4) = E_SFI_MVLEM_3DKlocal(4, 5);
-	E_SFI_MVLEM_3DKlocal(5, 5) = (Km + Kh*(c*c)*(h*h)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-	E_SFI_MVLEM_3DKlocal(5, 6) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(5, 7) = e / (2.0 * (2.0 * (d*d) + 2.0)) + (d*(Km + Kh*(c*c)*(h*h))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) - (6.0 * Eib*Iib) / (Lw*Lw);
+	E_SFI_MVLEM_3DKlocal(5, 5) = (Km + Kh * (c * c) * (h * h)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
+	E_SFI_MVLEM_3DKlocal(5, 6) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 7) = e / (2.0 * (2.0 * (d * d) + 2.0)) + (d * (Km + Kh * (c * c) * (h * h))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) - (6.0 * Eib * Iib) / (Lw * Lw);
 	E_SFI_MVLEM_3DKlocal(5, 8) = 0.0;
 	E_SFI_MVLEM_3DKlocal(5, 9) = 0.0;
 	E_SFI_MVLEM_3DKlocal(5, 10) = 0.0;
-	E_SFI_MVLEM_3DKlocal(5, 11) = (Km + Kh*(c*c)*(h*h)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (2.0 * Eib*Iib) / Lw;
-	E_SFI_MVLEM_3DKlocal(5, 12) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(5, 13) = (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) - e / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 11) = (Km + Kh * (c * c) * (h * h)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (2.0 * Eib * Iib) / Lw;
+	E_SFI_MVLEM_3DKlocal(5, 12) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 13) = (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) - e / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(5, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(5, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(5, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(5, 17) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(5, 18) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(5, 19) = -e / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 17) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 18) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 19) = -e / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(5, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(5, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(5, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(5, 23) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(5, 23) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
 
 	E_SFI_MVLEM_3DKlocal(6, 0) = E_SFI_MVLEM_3DKlocal(0, 6);
 	E_SFI_MVLEM_3DKlocal(6, 1) = E_SFI_MVLEM_3DKlocal(1, 6);
@@ -1055,24 +1034,24 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(6, 3) = E_SFI_MVLEM_3DKlocal(3, 6);
 	E_SFI_MVLEM_3DKlocal(6, 4) = E_SFI_MVLEM_3DKlocal(4, 6);
 	E_SFI_MVLEM_3DKlocal(6, 5) = E_SFI_MVLEM_3DKlocal(5, 6);
-	E_SFI_MVLEM_3DKlocal(6, 6) = Kh / 4.0 + (Aib*Eib) / Lw;
-	E_SFI_MVLEM_3DKlocal(6, 7) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(6, 6) = Kh / 4.0 + (Aib * Eib) / Lw;
+	E_SFI_MVLEM_3DKlocal(6, 7) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(6, 8) = 0.0;
 	E_SFI_MVLEM_3DKlocal(6, 9) = 0.0;
 	E_SFI_MVLEM_3DKlocal(6, 10) = 0.0;
-	E_SFI_MVLEM_3DKlocal(6, 11) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(6, 11) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(6, 12) = -Kh / 4;
-	E_SFI_MVLEM_3DKlocal(6, 13) = -(Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(6, 13) = -(Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(6, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(6, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(6, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(6, 17) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(6, 17) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(6, 18) = -Kh / 4.0;
-	E_SFI_MVLEM_3DKlocal(6, 19) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(6, 19) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(6, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(6, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(6, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(6, 23) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(6, 23) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 
 	E_SFI_MVLEM_3DKlocal(7, 0) = E_SFI_MVLEM_3DKlocal(0, 7);
 	E_SFI_MVLEM_3DKlocal(7, 1) = E_SFI_MVLEM_3DKlocal(1, 7);
@@ -1081,23 +1060,23 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(7, 4) = E_SFI_MVLEM_3DKlocal(4, 7);
 	E_SFI_MVLEM_3DKlocal(7, 5) = E_SFI_MVLEM_3DKlocal(5, 7);
 	E_SFI_MVLEM_3DKlocal(7, 6) = E_SFI_MVLEM_3DKlocal(6, 7);
-	E_SFI_MVLEM_3DKlocal(7, 7) = Kv / 4.0 + (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (d*(e / 2.0 + (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib) / (Lw*Lw*Lw);
+	E_SFI_MVLEM_3DKlocal(7, 7) = Kv / 4.0 + (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (d * (e / 2.0 + (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) + (12.0 * Eib * Iib) / (Lw * Lw * Lw);
 	E_SFI_MVLEM_3DKlocal(7, 8) = 0.0;
 	E_SFI_MVLEM_3DKlocal(7, 9) = 0.0;
 	E_SFI_MVLEM_3DKlocal(7, 10) = 0.0;
-	E_SFI_MVLEM_3DKlocal(7, 11) = (e / 2.0 + (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) - (6.0 * Eib*Iib) / (Lw*Lw);
-	E_SFI_MVLEM_3DKlocal(7, 12) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(7, 13) = (d*(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - Kv / 4.0;
+	E_SFI_MVLEM_3DKlocal(7, 11) = (e / 2.0 + (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) - (6.0 * Eib * Iib) / (Lw * Lw);
+	E_SFI_MVLEM_3DKlocal(7, 12) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(7, 13) = (d * (e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - Kv / 4.0;
 	E_SFI_MVLEM_3DKlocal(7, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(7, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(7, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(7, 17) = -(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
-	E_SFI_MVLEM_3DKlocal(7, 18) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(7, 19) = -Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(7, 17) = -(e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(7, 18) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(7, 19) = -Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
 	E_SFI_MVLEM_3DKlocal(7, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(7, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(7, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(7, 23) = -(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(7, 23) = -(e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
 
 	E_SFI_MVLEM_3DKlocal(8, 0) = E_SFI_MVLEM_3DKlocal(0, 8);
 	E_SFI_MVLEM_3DKlocal(8, 1) = E_SFI_MVLEM_3DKlocal(1, 8);
@@ -1184,19 +1163,19 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(11, 8) = E_SFI_MVLEM_3DKlocal(8, 11);
 	E_SFI_MVLEM_3DKlocal(11, 9) = E_SFI_MVLEM_3DKlocal(9, 11);
 	E_SFI_MVLEM_3DKlocal(11, 10) = E_SFI_MVLEM_3DKlocal(10, 11);
-	E_SFI_MVLEM_3DKlocal(11, 11) = (Km + Kh*(c*c)*(h*h)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-	E_SFI_MVLEM_3DKlocal(11, 12) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(11, 13) = (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) - e / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(11, 11) = (Km + Kh * (c * c) * (h * h)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
+	E_SFI_MVLEM_3DKlocal(11, 12) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(11, 13) = (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) - e / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(11, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(11, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(11, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(11, 17) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(11, 18) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(11, 19) = -e / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(11, 17) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(11, 18) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(11, 19) = -e / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(11, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(11, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(11, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(11, 23) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(11, 23) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
 
 	E_SFI_MVLEM_3DKlocal(12, 0) = E_SFI_MVLEM_3DKlocal(0, 12);
 	E_SFI_MVLEM_3DKlocal(12, 1) = E_SFI_MVLEM_3DKlocal(1, 12);
@@ -1210,18 +1189,18 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(12, 9) = E_SFI_MVLEM_3DKlocal(9, 12);
 	E_SFI_MVLEM_3DKlocal(12, 10) = E_SFI_MVLEM_3DKlocal(10, 12);
 	E_SFI_MVLEM_3DKlocal(12, 11) = E_SFI_MVLEM_3DKlocal(11, 12);
-	E_SFI_MVLEM_3DKlocal(12, 12) = Kh / 4.0 + (Aib*Eib) / Lw;
-	E_SFI_MVLEM_3DKlocal(12, 13) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(12, 12) = Kh / 4.0 + (Aib * Eib) / Lw;
+	E_SFI_MVLEM_3DKlocal(12, 13) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(12, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(12, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(12, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(12, 17) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(12, 18) = Kh / 4.0 - (Aib*Eib) / Lw;
-	E_SFI_MVLEM_3DKlocal(12, 19) = -(Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(12, 17) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(12, 18) = Kh / 4.0 - (Aib * Eib) / Lw;
+	E_SFI_MVLEM_3DKlocal(12, 19) = -(Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(12, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(12, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(12, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(12, 23) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(12, 23) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 
 	E_SFI_MVLEM_3DKlocal(13, 0) = E_SFI_MVLEM_3DKlocal(0, 13);
 	E_SFI_MVLEM_3DKlocal(13, 1) = E_SFI_MVLEM_3DKlocal(1, 13);
@@ -1236,17 +1215,17 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(13, 10) = E_SFI_MVLEM_3DKlocal(10, 13);
 	E_SFI_MVLEM_3DKlocal(13, 11) = E_SFI_MVLEM_3DKlocal(11, 13);
 	E_SFI_MVLEM_3DKlocal(13, 12) = E_SFI_MVLEM_3DKlocal(12, 13);
-	E_SFI_MVLEM_3DKlocal(13, 13) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (12.0 * Eib*Iib) / (Lw*Lw*Lw) - (d*(e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(13, 13) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (12.0 * Eib * Iib) / (Lw * Lw * Lw) - (d * (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
 	E_SFI_MVLEM_3DKlocal(13, 14) = 0.0;
 	E_SFI_MVLEM_3DKlocal(13, 15) = 0.0;
 	E_SFI_MVLEM_3DKlocal(13, 16) = 0.0;
-	E_SFI_MVLEM_3DKlocal(13, 17) = (e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-	E_SFI_MVLEM_3DKlocal(13, 18) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(13, 19) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - (12.0 * Eib*Iib) / (Lw*Lw*Lw) + (d*(e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(13, 17) = (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
+	E_SFI_MVLEM_3DKlocal(13, 18) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(13, 19) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - (12.0 * Eib * Iib) / (Lw * Lw * Lw) + (d * (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
 	E_SFI_MVLEM_3DKlocal(13, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(13, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(13, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(13, 23) = (e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
+	E_SFI_MVLEM_3DKlocal(13, 23) = (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
 
 	E_SFI_MVLEM_3DKlocal(14, 0) = E_SFI_MVLEM_3DKlocal(0, 14);
 	E_SFI_MVLEM_3DKlocal(14, 1) = E_SFI_MVLEM_3DKlocal(1, 14);
@@ -1340,13 +1319,13 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(17, 14) = E_SFI_MVLEM_3DKlocal(14, 17);
 	E_SFI_MVLEM_3DKlocal(17, 15) = E_SFI_MVLEM_3DKlocal(15, 17);
 	E_SFI_MVLEM_3DKlocal(17, 16) = E_SFI_MVLEM_3DKlocal(16, 17);
-	E_SFI_MVLEM_3DKlocal(17, 17) = (Km + Kh*(h*h)*((c - 1.0)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-	E_SFI_MVLEM_3DKlocal(17, 18) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	E_SFI_MVLEM_3DKlocal(17, 19) = e / (2.0 * (2.0 * (d*d) + 2.0)) - (6.0 * Eib*Iib) / (Lw*Lw) + (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(17, 17) = (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
+	E_SFI_MVLEM_3DKlocal(17, 18) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(17, 19) = e / (2.0 * (2.0 * (d * d) + 2.0)) - (6.0 * Eib * Iib) / (Lw * Lw) + (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(17, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(17, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(17, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(17, 23) = (Km + Kh*(h*h)*((c - 1.0)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (2.0 * Eib*Iib) / Lw;
+	E_SFI_MVLEM_3DKlocal(17, 23) = (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (2.0 * Eib * Iib) / Lw;
 
 	E_SFI_MVLEM_3DKlocal(18, 0) = E_SFI_MVLEM_3DKlocal(0, 18);
 	E_SFI_MVLEM_3DKlocal(18, 1) = E_SFI_MVLEM_3DKlocal(1, 18);
@@ -1366,12 +1345,12 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(18, 15) = E_SFI_MVLEM_3DKlocal(15, 18);
 	E_SFI_MVLEM_3DKlocal(18, 16) = E_SFI_MVLEM_3DKlocal(16, 18);
 	E_SFI_MVLEM_3DKlocal(18, 17) = E_SFI_MVLEM_3DKlocal(17, 18);
-	E_SFI_MVLEM_3DKlocal(18, 18) = Kh / 4.0 + (Aib*Eib) / Lw;
-	E_SFI_MVLEM_3DKlocal(18, 19) = -(Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(18, 18) = Kh / 4.0 + (Aib * Eib) / Lw;
+	E_SFI_MVLEM_3DKlocal(18, 19) = -(Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 	E_SFI_MVLEM_3DKlocal(18, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(18, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(18, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(18, 23) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
+	E_SFI_MVLEM_3DKlocal(18, 23) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
 
 	E_SFI_MVLEM_3DKlocal(19, 0) = E_SFI_MVLEM_3DKlocal(0, 19);
 	E_SFI_MVLEM_3DKlocal(19, 1) = E_SFI_MVLEM_3DKlocal(1, 19);
@@ -1392,11 +1371,11 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(19, 16) = E_SFI_MVLEM_3DKlocal(16, 19);
 	E_SFI_MVLEM_3DKlocal(19, 17) = E_SFI_MVLEM_3DKlocal(17, 19);
 	E_SFI_MVLEM_3DKlocal(19, 18) = E_SFI_MVLEM_3DKlocal(18, 19);
-	E_SFI_MVLEM_3DKlocal(19, 19) = Kv / 4.0 + (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (12.0 * Eib*Iib) / (Lw*Lw*Lw) + (d*(e / 2.0 + (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
+	E_SFI_MVLEM_3DKlocal(19, 19) = Kv / 4.0 + (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (12.0 * Eib * Iib) / (Lw * Lw * Lw) + (d * (e / 2.0 + (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
 	E_SFI_MVLEM_3DKlocal(19, 20) = 0.0;
 	E_SFI_MVLEM_3DKlocal(19, 21) = 0.0;
 	E_SFI_MVLEM_3DKlocal(19, 22) = 0.0;
-	E_SFI_MVLEM_3DKlocal(19, 23) = (e / 2.0 + (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) - (6.0 * Eib*Iib) / (Lw*Lw);
+	E_SFI_MVLEM_3DKlocal(19, 23) = (e / 2.0 + (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) - (6.0 * Eib * Iib) / (Lw * Lw);
 
 	E_SFI_MVLEM_3DKlocal(20, 0) = E_SFI_MVLEM_3DKlocal(0, 20);
 	E_SFI_MVLEM_3DKlocal(20, 1) = E_SFI_MVLEM_3DKlocal(1, 20);
@@ -1496,7 +1475,7 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 	E_SFI_MVLEM_3DKlocal(23, 20) = E_SFI_MVLEM_3DKlocal(20, 23);
 	E_SFI_MVLEM_3DKlocal(23, 21) = E_SFI_MVLEM_3DKlocal(21, 23);
 	E_SFI_MVLEM_3DKlocal(23, 22) = E_SFI_MVLEM_3DKlocal(22, 23);
-	E_SFI_MVLEM_3DKlocal(23, 23) = (Km + Kh*(h*h)*((c - 1.0)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
+	E_SFI_MVLEM_3DKlocal(23, 23) = (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
 
 	E_SFI_MVLEM_3DK.addMatrixTripleProduct(0.0, T, E_SFI_MVLEM_3DKlocal, 1.0);  // Convert matrix from local to global cs
 
@@ -1506,7 +1485,7 @@ const Matrix & E_SFI_MVLEM_3D::getInitialStiff(void)
 }
 
 // Get current element tangent stiffness matrix from the material for the last updated strain
-const Matrix & E_SFI_MVLEM_3D::getTangentStiff(void)
+const Matrix& E_SFI_MVLEM_3D::getTangentStiff(void)
 {
 
 	E_SFI_MVLEM_3DK.Zero();		// Global stiffness matrix
@@ -1517,13 +1496,13 @@ const Matrix & E_SFI_MVLEM_3D::getTangentStiff(void)
 	for (int i = 0; i < m; i++)
 	{
 		// Get the material tangent
-		const Matrix &D = theMaterial[i]->getTangent();
+		const Matrix& D = theMaterial[i]->getTangent();
 
 		double D00 = D(0, 0); double D01 = D(0, 1); double D02 = D(0, 2);
 		double D10 = D(1, 0); double D11 = D(1, 1); double D12 = D(1, 2);
 		double D20 = D(2, 0); double D21 = D(2, 1); double D22 = D(2, 2);
 
-		kx[i] = D00 * h*t[i] / b[i];
+		kx[i] = D00 * h * t[i] / b[i];
 		ky[i] = D11 * b[i] * t[i] / h;
 		Kh += D22 * b[i] * t[i] / h;
 
@@ -1532,7 +1511,7 @@ const Matrix & E_SFI_MVLEM_3D::getTangentStiff(void)
 	// Build the tangent stiffness matrix
 	double Kv = 0.0; double Km = 0.0; double e = 0.0; // double ex = 0.0;
 
-	for (int i = 0; i<m; ++i)
+	for (int i = 0; i < m; ++i)
 	{
 		Kv += ky[i];
 		Km += ky[i] * x[i] * x[i];
@@ -2148,7 +2127,7 @@ const Matrix & E_SFI_MVLEM_3D::getTangentStiff(void)
 }
 
 // Get element mass matrix assuming lumped mass
-const Matrix & E_SFI_MVLEM_3D::getMass(void)
+const Matrix& E_SFI_MVLEM_3D::getMass(void)
 {
 
 	E_SFI_MVLEM_3DM.Zero();
@@ -2172,14 +2151,14 @@ const Matrix & E_SFI_MVLEM_3D::getMass(void)
 	E_SFI_MVLEM_3DMlocal(20, 20) = NodeMass;
 
 	// Convert matrix from local to global cs
-	E_SFI_MVLEM_3DM.addMatrixTripleProduct(0.0, T, E_SFI_MVLEM_3DMlocal, 1.0); 
+	E_SFI_MVLEM_3DM.addMatrixTripleProduct(0.0, T, E_SFI_MVLEM_3DMlocal, 1.0);
 
 	// Return element mass matrix
 	return E_SFI_MVLEM_3DM;
 }
 
 // Get element damping matrix
-const Matrix & E_SFI_MVLEM_3D::getDamp(void)
+const Matrix& E_SFI_MVLEM_3D::getDamp(void)
 {
 	E_SFI_MVLEM_3DD.Zero();
 
@@ -2196,13 +2175,13 @@ void E_SFI_MVLEM_3D::zeroLoad(void)
 }
 
 // N/A to this model - no element loads
-int E_SFI_MVLEM_3D::addLoad(ElementalLoad *theLoad, double loadFactor)
+int E_SFI_MVLEM_3D::addLoad(ElementalLoad* theLoad, double loadFactor)
 {
 	return 0;
 }
 
 
-int E_SFI_MVLEM_3D::addInertiaLoadToUnbalance(const Vector &accel)
+int E_SFI_MVLEM_3D::addInertiaLoadToUnbalance(const Vector& accel)
 {
 	if (density == 0.0)
 		return 0;
@@ -2241,7 +2220,7 @@ int E_SFI_MVLEM_3D::addInertiaLoadToUnbalance(const Vector &accel)
 	// Take advantage of lumped mass matrix
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 3; j++) {
-			E_SFI_MVLEM_3DRlocal(6 * i + j) += - E_SFI_MVLEM_3DMlocal(6 * i + j, 6 * i + j) * RaccelL(6 * i + j);
+			E_SFI_MVLEM_3DRlocal(6 * i + j) += -E_SFI_MVLEM_3DMlocal(6 * i + j, 6 * i + j) * RaccelL(6 * i + j);
 		}
 	}
 
@@ -2252,17 +2231,17 @@ int E_SFI_MVLEM_3D::addInertiaLoadToUnbalance(const Vector &accel)
 }
 
 // Get element force vector
-const Vector & E_SFI_MVLEM_3D::getResistingForce()
+const Vector& E_SFI_MVLEM_3D::getResistingForce()
 {
 
 	E_SFI_MVLEM_3DR.Zero();
 	E_SFI_MVLEM_3DRlocal.Zero();
 
 	// Get Trial Displacements
-	const Vector &disp1 = theNodes[0]->getTrialDisp();
-	const Vector &disp2 = theNodes[1]->getTrialDisp();
-	const Vector &disp3 = theNodes[2]->getTrialDisp();
-	const Vector &disp4 = theNodes[3]->getTrialDisp();
+	const Vector& disp1 = theNodes[0]->getTrialDisp();
+	const Vector& disp2 = theNodes[1]->getTrialDisp();
+	const Vector& disp3 = theNodes[2]->getTrialDisp();
+	const Vector& disp4 = theNodes[3]->getTrialDisp();
 
 	Vector dispG(24); // Vector of total 24 displacemets in global coordinates
 	dispG.Zero();
@@ -2292,7 +2271,7 @@ const Vector & E_SFI_MVLEM_3D::getResistingForce()
 	for (int i = 0; i < m; i++)
 	{
 		// Get the material stress
-		const Vector &Stress = theMaterial[i]->getStress();
+		const Vector& Stress = theMaterial[i]->getStress();
 
 		double fx = Stress(0);
 		double fy = Stress(1);
@@ -2310,48 +2289,48 @@ const Vector & E_SFI_MVLEM_3D::getResistingForce()
 
 	for (int i = 0; i < m; i++)
 	{
-		Fh += -1.0*Fxy[i];
+		Fh += -1.0 * Fxy[i];
 		Fysum += Fy[i];
 	}
 
 	R1 = Fh;
 	R2 = -Fysum;
-	R3 = -Fh*c*h;
+	R3 = -Fh * c * h;
 	R4 = -Fh;
 	R5 = Fysum;
-	R6 = -Fh*(1.0 - c)*h;
+	R6 = -Fh * (1.0 - c) * h;
 
-	for (int i = 0; i<m; i++) {
+	for (int i = 0; i < m; i++) {
 		R3 -= Fy[i] * x[i];
 		R6 += +Fy[i] * x[i];
 	}
 
 	// Calculate force vector in local cs
-	E_SFI_MVLEM_3DRlocal(0) = R1 / 2.0 + (Aib*Eib*dispL(0)) / Lw - (Aib*Eib*dispL(6)) / Lw;
-	E_SFI_MVLEM_3DRlocal(1) = R2 / 2.0 - (R3*d) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib*dispL(1)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(5)) / (Lw*Lw) - (12.0 * Eib*Iib*dispL(7)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(11)) / (Lw*Lw);
-	E_SFI_MVLEM_3DRlocal(2) = (Eave*(Tave*Tave*Tave)*(dispL(9))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(3))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(4))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(10))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(16))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(22))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(3) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(4))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h) - (h*h)*NUelastic + 5 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(4) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(3))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (9.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (45.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(10))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(5) = R3 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(1)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(5)) / Lw - (6.0 * Eib*Iib*dispL(7)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(11)) / Lw;
-	E_SFI_MVLEM_3DRlocal(6) = R1 / 2.0 - (Aib*Eib*dispL(0)) / Lw + (Aib*Eib*dispL(6)) / Lw;
-	E_SFI_MVLEM_3DRlocal(7) = R2 / 2.0 + (R3*d) / (2.0 * (d*d) + 2.0) - (12.0 * Eib*Iib*dispL(1)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(5)) / (Lw*Lw) + (12.0 * Eib*Iib*dispL(7)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(11)) / (Lw*Lw);
-	E_SFI_MVLEM_3DRlocal(8) = (Eave*(Tave*Tave*Tave)*(dispL(3))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*(4.0 * (h*h)*NUelastic + (h*h) + 10 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(4))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(10))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(22))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(16))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(9) = (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(10))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(3))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(10) = (Eave*(Tave*Tave*Tave)*(dispL(2))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(9))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*(Tave*Tave*Tave)*(dispL(10))*(5.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(11) = R3 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(1)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(5)) / Lw - (6.0 * Eib*Iib*dispL(7)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(11)) / Lw;
-	E_SFI_MVLEM_3DRlocal(12) = R4 / 2.0 + (Aib*Eib*dispL(12)) / Lw - (Aib*Eib*dispL(18)) / Lw;
-	E_SFI_MVLEM_3DRlocal(13) = R5 / 2.0 - (R6*d) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib*dispL(13)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(17)) / (Lw*Lw) - (12.0 * Eib*Iib*dispL(19)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(23)) / (Lw*Lw);
-	E_SFI_MVLEM_3DRlocal(14) = (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(15))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(4))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(16))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(22))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(10))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(15) = (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(16))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(16) = (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (9.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (45.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(10))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(15))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(17) = R6 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(13)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(17)) / Lw - (6.0 * Eib*Iib*dispL(19)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(23)) / Lw;
-	E_SFI_MVLEM_3DRlocal(18) = R4 / 2.0 - (Aib*Eib*dispL(12)) / Lw + (Aib*Eib*dispL(18)) / Lw;
-	E_SFI_MVLEM_3DRlocal(19) = R5 / 2.0 + (R6*d) / (2.0 * (d*d) + 2.0) - (12.0 * Eib*Iib*dispL(13)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(17)) / (Lw*Lw) + (12.0 * Eib*Iib*dispL(19)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(23)) / (Lw*Lw);
-	E_SFI_MVLEM_3DRlocal(20) = (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(21))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(10))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(16))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(22))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(4))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(21) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(22))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(22) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(21))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (9.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (45.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(10))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	E_SFI_MVLEM_3DRlocal(23) = R6 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(13)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(17)) / Lw - (6.0 * Eib*Iib*dispL(19)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(23)) / Lw;
-	
+	E_SFI_MVLEM_3DRlocal(0) = R1 / 2.0 + (Aib * Eib * dispL(0)) / Lw - (Aib * Eib * dispL(6)) / Lw;
+	E_SFI_MVLEM_3DRlocal(1) = R2 / 2.0 - (R3 * d) / (2.0 * (d * d) + 2.0) + (12.0 * Eib * Iib * dispL(1)) / (Lw * Lw * Lw) + (6.0 * Eib * Iib * dispL(5)) / (Lw * Lw) - (12.0 * Eib * Iib * dispL(7)) / (Lw * Lw * Lw) + (6.0 * Eib * Iib * dispL(11)) / (Lw * Lw);
+	E_SFI_MVLEM_3DRlocal(2) = (Eave * (Tave * Tave * Tave) * (dispL(9)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(3)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(4)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(10)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(16)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(2)) * (10.0 * (h * h * h * h) + 10.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(8)) * (10.0 * (h * h * h * h) - 5.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(14)) * (5.0 * (h * h * h * h) - 10.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(20)) * (5.0 * (h * h * h * h) + 5.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(22)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(3) = (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(4))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (Eave * (Tave * Tave * Tave) * (dispL(3)) * ((h * h) - (h * h) * NUelastic + 5 * (Lw * Lw))) / (45.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(2)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(8)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1)) + (Eave * (Tave * Tave * Tave) * (dispL(14)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(9)) * (2.0 * (h * h) * NUelastic - 2.0 * (h * h) + 5.0 * (Lw * Lw))) / (90.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * ((h * h) * NUelastic - (h * h) + 10.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(20)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(4) = (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(3))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (dispL(4)) * ((Eave * h * (Tave * Tave * Tave)) / (9.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (45.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(10)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(22)) * ((Eave * h * (Tave * Tave * Tave)) / (36.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(16)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (2.0 * NUelastic - 2.0)) / (90.0 * h * ((NUelastic * NUelastic) - 1.0))) + (Eave * (Tave * Tave * Tave) * (dispL(2)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(14)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(20)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(5) = R3 / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib * dispL(1)) / (Lw * Lw) + (4.0 * Eib * Iib * dispL(5)) / Lw - (6.0 * Eib * Iib * dispL(7)) / (Lw * Lw) + (2.0 * Eib * Iib * dispL(11)) / Lw;
+	E_SFI_MVLEM_3DRlocal(6) = R1 / 2.0 - (Aib * Eib * dispL(0)) / Lw + (Aib * Eib * dispL(6)) / Lw;
+	E_SFI_MVLEM_3DRlocal(7) = R2 / 2.0 + (R3 * d) / (2.0 * (d * d) + 2.0) - (12.0 * Eib * Iib * dispL(1)) / (Lw * Lw * Lw) - (6.0 * Eib * Iib * dispL(5)) / (Lw * Lw) + (12.0 * Eib * Iib * dispL(7)) / (Lw * Lw * Lw) - (6.0 * Eib * Iib * dispL(11)) / (Lw * Lw);
+	E_SFI_MVLEM_3DRlocal(8) = (Eave * (Tave * Tave * Tave) * (dispL(3)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(9)) * (4.0 * (h * h) * NUelastic + (h * h) + 10 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(4)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(10)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(22)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(2)) * (10.0 * (h * h * h * h) - 5.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(14)) * (5.0 * (h * h * h * h) + 5.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * (10.0 * (h * h * h * h) + 10.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(20)) * (5.0 * (h * h * h * h) - 10.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(16)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(9) = (Eave * (Tave * Tave * Tave) * (dispL(2)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(10))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (Eave * (Tave * Tave * Tave) * (dispL(9)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (45.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(20)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(3)) * (2.0 * (h * h) * NUelastic - 2.0 * (h * h) + 5.0 * (Lw * Lw))) / (90.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(14)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * ((h * h) * NUelastic - (h * h) + 10.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(10) = (Eave * (Tave * Tave * Tave) * (dispL(2)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (dispL(4)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(16)) * ((Eave * h * (Tave * Tave * Tave)) / (36.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(9))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (dispL(22)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (2.0 * NUelastic - 2.0)) / (90.0 * h * ((NUelastic * NUelastic) - 1.0))) - (Eave * (Tave * Tave * Tave) * (dispL(10)) * (5.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (45.0 * h * Lw * ((NUelastic * NUelastic) - 1)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(20)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(14)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(11) = R3 / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib * dispL(1)) / (Lw * Lw) + (2.0 * Eib * Iib * dispL(5)) / Lw - (6.0 * Eib * Iib * dispL(7)) / (Lw * Lw) + (4.0 * Eib * Iib * dispL(11)) / Lw;
+	E_SFI_MVLEM_3DRlocal(12) = R4 / 2.0 + (Aib * Eib * dispL(12)) / Lw - (Aib * Eib * dispL(18)) / Lw;
+	E_SFI_MVLEM_3DRlocal(13) = R5 / 2.0 - (R6 * d) / (2.0 * (d * d) + 2.0) + (12.0 * Eib * Iib * dispL(13)) / (Lw * Lw * Lw) + (6.0 * Eib * Iib * dispL(17)) / (Lw * Lw) - (12.0 * Eib * Iib * dispL(19)) / (Lw * Lw * Lw) + (6.0 * Eib * Iib * dispL(23)) / (Lw * Lw);
+	E_SFI_MVLEM_3DRlocal(14) = (Eave * (Tave * Tave * Tave) * (dispL(3)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(15)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(4)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(16)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(22)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(2)) * (5.0 * (h * h * h * h) - 10.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(8)) * (5.0 * (h * h * h * h) + 5.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(14)) * (10.0 * (h * h * h * h) + 10.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(20)) * (10.0 * (h * h * h * h) - 5.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(9)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(10)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(15) = (Eave * (Tave * Tave * Tave) * (dispL(14)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(2)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(9)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (45.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(16))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (Eave * (Tave * Tave * Tave) * (dispL(20)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(3)) * ((h * h) * NUelastic - (h * h) + 10.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * (2.0 * (h * h) * NUelastic - 2.0 * (h * h) + 5.0 * (Lw * Lw))) / (90.0 * h * Lw * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(16) = (Eave * (Tave * Tave * Tave) * (dispL(14)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (dispL(16)) * ((Eave * h * (Tave * Tave * Tave)) / (9.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (45.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(22)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(10)) * ((Eave * h * (Tave * Tave * Tave)) / (36.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(15))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (Eave * (Tave * Tave * Tave) * (dispL(2)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (dispL(4)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (2.0 * NUelastic - 2.0)) / (90.0 * h * ((NUelastic * NUelastic) - 1.0))) - (Eave * (Tave * Tave * Tave) * (dispL(20)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(17) = R6 / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib * dispL(13)) / (Lw * Lw) + (4.0 * Eib * Iib * dispL(17)) / Lw - (6.0 * Eib * Iib * dispL(19)) / (Lw * Lw) + (2.0 * Eib * Iib * dispL(23)) / Lw;
+	E_SFI_MVLEM_3DRlocal(18) = R4 / 2.0 - (Aib * Eib * dispL(12)) / Lw + (Aib * Eib * dispL(18)) / Lw;
+	E_SFI_MVLEM_3DRlocal(19) = R5 / 2.0 + (R6 * d) / (2.0 * (d * d) + 2.0) - (12.0 * Eib * Iib * dispL(13)) / (Lw * Lw * Lw) - (6.0 * Eib * Iib * dispL(17)) / (Lw * Lw) + (12.0 * Eib * Iib * dispL(19)) / (Lw * Lw * Lw) - (6.0 * Eib * Iib * dispL(23)) / (Lw * Lw);
+	E_SFI_MVLEM_3DRlocal(20) = (Eave * (Tave * Tave * Tave) * (dispL(9)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(21)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(10)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(16)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(22)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(2)) * (5.0 * (h * h * h * h) + 5.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * (5.0 * (h * h * h * h) - 10.0 * (Lw * Lw * Lw * Lw) - 7.0 * (h * h) * (Lw * Lw) + 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(14)) * (10.0 * (h * h * h * h) - 5.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(20)) * (10.0 * (h * h * h * h) + 10.0 * (Lw * Lw * Lw * Lw) + 7.0 * (h * h) * (Lw * Lw) - 2.0 * (h * h) * NUelastic * (Lw * Lw))) / (30.0 * (h * h * h) * (Lw * Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(3)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(4)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(21) = (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(22))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (Eave * (Tave * Tave * Tave) * (dispL(3)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(8)) * ((h * h) - (h * h) * NUelastic + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(14)) * (4.0 * (h * h) * NUelastic + (h * h) - 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(21)) * ((h * h) - (h * h) * NUelastic + 5.0 * (Lw * Lw))) / (45.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(20)) * (4.0 * (h * h) * NUelastic + (h * h) + 10.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(2)) * ((h * h) * NUelastic - (h * h) + 5.0 * (Lw * Lw))) / (60.0 * (h * h) * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(9)) * ((h * h) * NUelastic - (h * h) + 10.0 * (Lw * Lw))) / (180.0 * h * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(15)) * (2.0 * (h * h) * NUelastic - 2.0 * (h * h) + 5.0 * (Lw * Lw))) / (90.0 * h * Lw * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(22) = (Eave * NUelastic * (Tave * Tave * Tave) * (dispL(21))) / (12.0 * (NUelastic * NUelastic) - 12.0) - (dispL(22)) * ((Eave * h * (Tave * Tave * Tave)) / (9.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (45.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(16)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(4)) * ((Eave * h * (Tave * Tave * Tave)) / (36.0 * Lw * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * Lw * (NUelastic - 1.0)) / (180.0 * h * ((NUelastic * NUelastic) - 1.0))) - (dispL(10)) * ((Eave * h * (Tave * Tave * Tave)) / (18.0 * Lw * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * Lw * (2.0 * NUelastic - 2.0)) / (90.0 * h * ((NUelastic * NUelastic) - 1.0))) + (Eave * (Tave * Tave * Tave) * (dispL(8)) * (4.0 * NUelastic * (Lw * Lw) - 5.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(14)) * (10.0 * (h * h) - NUelastic * (Lw * Lw) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) - (Eave * (Tave * Tave * Tave) * (dispL(20)) * (4.0 * NUelastic * (Lw * Lw) + 10.0 * (h * h) + (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0)) + (Eave * (Tave * Tave * Tave) * (dispL(2)) * (NUelastic * (Lw * Lw) + 5.0 * (h * h) - (Lw * Lw))) / (60.0 * h * (Lw * Lw) * ((NUelastic * NUelastic) - 1.0));
+	E_SFI_MVLEM_3DRlocal(23) = R6 / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib * dispL(13)) / (Lw * Lw) + (2.0 * Eib * Iib * dispL(17)) / Lw - (6.0 * Eib * Iib * dispL(19)) / (Lw * Lw) + (4.0 * Eib * Iib * dispL(23)) / Lw;
+
 	// Convert force vector from local to global cs
 	E_SFI_MVLEM_3DR.addMatrixTransposeVector(0.0, T, E_SFI_MVLEM_3DRlocal, 1.0);
 
@@ -2360,7 +2339,7 @@ const Vector & E_SFI_MVLEM_3D::getResistingForce()
 }
 
 // Get resisting force increment from inertial forces
-const Vector & E_SFI_MVLEM_3D::getResistingForceIncInertia()
+const Vector& E_SFI_MVLEM_3D::getResistingForceIncInertia()
 {
 	// if no mass terms .. just add damping terms
 	if (density == 0.0) {
@@ -2420,7 +2399,7 @@ const Vector & E_SFI_MVLEM_3D::getResistingForceIncInertia()
 }
 
 // Send Self
-int E_SFI_MVLEM_3D::sendSelf(int commitTag, Channel &theChannel)
+int E_SFI_MVLEM_3D::sendSelf(int commitTag, Channel& theChannel)
 {
 	int res;
 	int dataTag = this->getDbTag();
@@ -2455,7 +2434,7 @@ int E_SFI_MVLEM_3D::sendSelf(int commitTag, Channel &theChannel)
 }
 
 // Receive Self
-int E_SFI_MVLEM_3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+int E_SFI_MVLEM_3D::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
 	int res;
 	int dataTag = this->getDbTag();
@@ -2470,7 +2449,7 @@ int E_SFI_MVLEM_3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
 		delete[] theMaterial;
 	}
 
-	Vector data(6); 
+	Vector data(6);
 	res = theChannel.recvVector(dataTag, commitTag, data);
 	if (res < 0) {
 		opserr << "WARNING E_SFI_MVLEM_3D::recvSelf() - failed to receive Vector\n";
@@ -2496,7 +2475,7 @@ int E_SFI_MVLEM_3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroke
 	res = theChannel.recvID(0, commitTag, matClassTags);
 
 	// Allocate memory for the uniaxial materials
-	theMaterial = new NDMaterial*[m];
+	theMaterial = new NDMaterial * [m];
 	if (theMaterial == 0) {
 		opserr << "E_SFI_MVLEM_3D::recvSelf() - "
 			<< "failed to allocate pointers for uniaxial materials.\n";
@@ -2536,18 +2515,18 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 	// scalse the up based on thedisplay factor
 	if (displayMode >= 0) {
 
-		const Vector &end1Disp = theNodes[0]->getDisp();
-		const Vector &end2Disp = theNodes[1]->getDisp();
-		const Vector &end3Disp = theNodes[2]->getDisp();
-		const Vector &end4Disp = theNodes[3]->getDisp();
+		const Vector& end1Disp = theNodes[0]->getDisp();
+		const Vector& end2Disp = theNodes[1]->getDisp();
+		const Vector& end3Disp = theNodes[2]->getDisp();
+		const Vector& end4Disp = theNodes[3]->getDisp();
 
 		for (int i = 0; i < 3; i++) { // loop over coordinates (3 for 3D elements)
 
 	// add displacement (multiplied with the displacement facotr) to the original node location to obtain current node location
-			Gv1(i) = nd1Crds(i) + end1Disp(i)*fact;
-			Gv2(i) = nd2Crds(i) + end2Disp(i)*fact;
-			Gv3(i) = nd3Crds(i) + end3Disp(i)*fact;
-			Gv4(i) = nd4Crds(i) + end4Disp(i)*fact;
+			Gv1(i) = nd1Crds(i) + end1Disp(i) * fact;
+			Gv2(i) = nd2Crds(i) + end2Disp(i) * fact;
+			Gv3(i) = nd3Crds(i) + end3Disp(i) * fact;
+			Gv4(i) = nd4Crds(i) + end4Disp(i) * fact;
 
 		}
 
@@ -2556,19 +2535,19 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 
 		int mode = displayMode * -1;
 
-		const Matrix &eigen1 = theNodes[0]->getEigenvectors();
-		const Matrix &eigen2 = theNodes[1]->getEigenvectors();
-		const Matrix &eigen3 = theNodes[2]->getEigenvectors();
-		const Matrix &eigen4 = theNodes[3]->getEigenvectors();
+		const Matrix& eigen1 = theNodes[0]->getEigenvectors();
+		const Matrix& eigen2 = theNodes[1]->getEigenvectors();
+		const Matrix& eigen3 = theNodes[2]->getEigenvectors();
+		const Matrix& eigen4 = theNodes[3]->getEigenvectors();
 
 		if (eigen1.noCols() >= mode) {
 
 			for (int i = 0; i < 3; i++) {
 
-				Gv1(i) = nd1Crds(i) + eigen1(i, mode - 1)*fact;
-				Gv2(i) = nd2Crds(i) + eigen2(i, mode - 1)*fact;
-				Gv3(i) = nd3Crds(i) + eigen3(i, mode - 1)*fact;
-				Gv4(i) = nd4Crds(i) + eigen4(i, mode - 1)*fact;
+				Gv1(i) = nd1Crds(i) + eigen1(i, mode - 1) * fact;
+				Gv2(i) = nd2Crds(i) + eigen2(i, mode - 1) * fact;
+				Gv3(i) = nd3Crds(i) + eigen3(i, mode - 1) * fact;
+				Gv4(i) = nd4Crds(i) + eigen4(i, mode - 1) * fact;
 
 			}
 
@@ -2628,15 +2607,15 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 		values(0) = 0.0;
 
 		if (displayMode < 4 && displayMode > 0) {
-			const Vector &stress = theMaterial[panel]->getStrain();
+			const Vector& stress = theMaterial[panel]->getStrain();
 			values(0) = stress(displayMode - 1);
 		}
 
 		// Determine the deformation - rotation - other is taken from v1, v2
-		const Vector &end1Disp4G = theNodes[0]->getDisp();
-		const Vector &end2Disp4G = theNodes[1]->getDisp();
-		const Vector &end3Disp4G = theNodes[2]->getDisp();
-		const Vector &end4Disp4G = theNodes[3]->getDisp();
+		const Vector& end1Disp4G = theNodes[0]->getDisp();
+		const Vector& end2Disp4G = theNodes[1]->getDisp();
+		const Vector& end3Disp4G = theNodes[2]->getDisp();
+		const Vector& end4Disp4G = theNodes[3]->getDisp();
 
 		static Vector end1Disp4(6); end1Disp4.Zero();
 		static Vector end2Disp4(6); end2Disp4.Zero();
@@ -2657,11 +2636,11 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 			end1Disp(i) = 0.5 * (end1Disp4(i) + end2Disp4(i));
 			end2Disp(i) = 0.5 * (end3Disp4(i) + end4Disp4(i));
 		}
-		end1Disp(4) = end1Disp4(4) / (2.0 * (d*d) + 2.0) + end2Disp4(4) / (2.0 * (d*d) + 2.0) + (end1Disp4(2)*d) / (2.0 * (d*d) + 2.0) - (end2Disp4(2)*d) / (2.0 * (d*d) + 2.0);
-		end1Disp(5) = end1Disp4(5) / (2.0 * (d*d) + 2.0) + end2Disp4(5) / (2.0 * (d*d) + 2.0) - (end1Disp4(1)*d) / (2.0 * (d*d) + 2.0) + (end2Disp4(1)*d) / (2.0 * (d*d) + 2.0);
+		end1Disp(4) = end1Disp4(4) / (2.0 * (d * d) + 2.0) + end2Disp4(4) / (2.0 * (d * d) + 2.0) + (end1Disp4(2) * d) / (2.0 * (d * d) + 2.0) - (end2Disp4(2) * d) / (2.0 * (d * d) + 2.0);
+		end1Disp(5) = end1Disp4(5) / (2.0 * (d * d) + 2.0) + end2Disp4(5) / (2.0 * (d * d) + 2.0) - (end1Disp4(1) * d) / (2.0 * (d * d) + 2.0) + (end2Disp4(1) * d) / (2.0 * (d * d) + 2.0);
 
-		end2Disp(4) = end3Disp4(4) / (2.0 * (d*d) + 2.0) + end4Disp4(4) / (2.0 * (d*d) + 2.0) + (end3Disp4(2)*d) / (2.0 * (d*d) + 2.0) - (end4Disp4(2)*d) / (2.0 * (d*d) + 2.0);
-		end2Disp(5) = end3Disp4(5) / (2.0 * (d*d) + 2.0) + end4Disp4(5) / (2.0 * (d*d) + 2.0) - (end3Disp4(1)*d) / (2.0 * (d*d) + 2.0) + (end4Disp4(1)*d) / (2.0 * (d*d) + 2.0);
+		end2Disp(4) = end3Disp4(4) / (2.0 * (d * d) + 2.0) + end4Disp4(4) / (2.0 * (d * d) + 2.0) + (end3Disp4(2) * d) / (2.0 * (d * d) + 2.0) - (end4Disp4(2) * d) / (2.0 * (d * d) + 2.0);
+		end2Disp(5) = end3Disp4(5) / (2.0 * (d * d) + 2.0) + end4Disp4(5) / (2.0 * (d * d) + 2.0) - (end3Disp4(1) * d) / (2.0 * (d * d) + 2.0) + (end4Disp4(1) * d) / (2.0 * (d * d) + 2.0);
 
 		// Fiber nodes
 		NodePLotCrds(panel, 0) = panel + 1; // panel id
@@ -2670,8 +2649,8 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 		Vector GlCoord(3); GlCoord.Zero();
 		// Local node 1 - bottom left
 		LocCoord(0) = Lv1_(0) + x[panel] - b[panel] / 2.0; // x 
-		LocCoord(1) = Lv1_(1) + (x[panel] - b[panel] / 2.0)*end1Disp(5)*fact; // y
-		LocCoord(2) = Lv1_(2) - (x[panel] - b[panel] / 2.0)*end1Disp(4)*fact; // z
+		LocCoord(1) = Lv1_(1) + (x[panel] - b[panel] / 2.0) * end1Disp(5) * fact; // y
+		LocCoord(2) = Lv1_(2) - (x[panel] - b[panel] / 2.0) * end1Disp(4) * fact; // z
 		GlCoord.addMatrixTransposeVector(0.0, Tt, LocCoord, 1.0);
 		NodePLotCrds(panel, 1) = GlCoord(0);
 		NodePLotCrds(panel, 2) = GlCoord(1);
@@ -2680,8 +2659,8 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 		GlCoord.Zero();
 		// Local node 2 - bottom right
 		LocCoord(0) = Lv1_(0) + x[panel] + b[panel] / 2.0; // x
-		LocCoord(1) = Lv1_(1) + (x[panel] + b[panel] / 2.0)*end1Disp(5)*fact; // y
-		LocCoord(2) = Lv1_(2) - (x[panel] + b[panel] / 2.0)*end1Disp(4)*fact; // z
+		LocCoord(1) = Lv1_(1) + (x[panel] + b[panel] / 2.0) * end1Disp(5) * fact; // y
+		LocCoord(2) = Lv1_(2) - (x[panel] + b[panel] / 2.0) * end1Disp(4) * fact; // z
 		GlCoord.addMatrixTransposeVector(0.0, Tt, LocCoord, 1.0);
 		NodePLotCrds(panel, 4) = GlCoord(0);
 		NodePLotCrds(panel, 5) = GlCoord(1);
@@ -2690,8 +2669,8 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 		GlCoord.Zero();
 		// Local node 3 - top left
 		LocCoord(0) = Lv2_(0) + x[panel] + b[panel] / 2.0; // x
-		LocCoord(1) = Lv2_(1) + (x[panel] + b[panel] / 2.0)*end2Disp(5)*fact; // y
-		LocCoord(2) = Lv2_(2) - (x[panel] + b[panel] / 2.0)*end2Disp(4)*fact; // z
+		LocCoord(1) = Lv2_(1) + (x[panel] + b[panel] / 2.0) * end2Disp(5) * fact; // y
+		LocCoord(2) = Lv2_(2) - (x[panel] + b[panel] / 2.0) * end2Disp(4) * fact; // z
 		GlCoord.addMatrixTransposeVector(0.0, Tt, LocCoord, 1.0);
 		NodePLotCrds(panel, 7) = GlCoord(0);
 		NodePLotCrds(panel, 8) = GlCoord(1);
@@ -2700,8 +2679,8 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 		GlCoord.Zero();
 		// Local node 4 - top right
 		LocCoord(0) = Lv2_(0) + x[panel] - b[panel] / 2.0; // x
-		LocCoord(1) = Lv2_(1) + (x[panel] - b[panel] / 2.0)*end2Disp(5)*fact; // y
-		LocCoord(2) = Lv2_(2) - (x[panel] - b[panel] / 2.0)*end2Disp(4)*fact; // z
+		LocCoord(1) = Lv2_(1) + (x[panel] - b[panel] / 2.0) * end2Disp(5) * fact; // y
+		LocCoord(2) = Lv2_(2) - (x[panel] - b[panel] / 2.0) * end2Disp(4) * fact; // z
 		GlCoord.addMatrixTransposeVector(0.0, Tt, LocCoord, 1.0);
 		NodePLotCrds(panel, 10) = GlCoord(0);
 		NodePLotCrds(panel, 11) = GlCoord(1);
@@ -2733,7 +2712,7 @@ int E_SFI_MVLEM_3D::displaySelf(Renderer& theViewer, int displayMode, float fact
 }
 
 // Print Element Information
-void E_SFI_MVLEM_3D::Print(OPS_Stream &s, int flag)
+void E_SFI_MVLEM_3D::Print(OPS_Stream& s, int flag)
 {
 	if (flag == 0) {
 		s << "E_SFI_MVLEM_3D Element tag: " << this->getTag() << endln;
@@ -2757,10 +2736,10 @@ void E_SFI_MVLEM_3D::Print(OPS_Stream &s, int flag)
 }
 
 // Set element responses
-Response *E_SFI_MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
+Response* E_SFI_MVLEM_3D::setResponse(const char** argv, int argc, OPS_Stream& s)
 {
 
-	Response *theResponse = 0;
+	Response* theResponse = 0;
 
 	s.tag("ElementOutput");
 	s.attr("eleType", "E_SFI_MVLEM_3D");
@@ -2910,7 +2889,7 @@ Vector E_SFI_MVLEM_3D::getResistingForce_24DOF(void)
 }
 
 // Obtain element responses
-int E_SFI_MVLEM_3D::getResponse(int responseID, Information &eleInfo)
+int E_SFI_MVLEM_3D::getResponse(int responseID, Information& eleInfo)
 {
 
 	switch (responseID)
@@ -2989,7 +2968,7 @@ void  E_SFI_MVLEM_3D::setTransformationMatrix(void) {
 
 	// (Ze) = (Xe) x (Ye)
 	Zex = Xey * Yez - Xez * Yey;
-	Zey = -(Xex*Yez - Xez * Yex);
+	Zey = -(Xex * Yez - Xez * Yex);
 	Zez = Xex * Yey - Xey * Yex;
 
 	// Fill in transformation matrices 
