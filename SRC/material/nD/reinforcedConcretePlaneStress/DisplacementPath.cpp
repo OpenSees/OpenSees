@@ -135,7 +135,7 @@ DisplacementPath::newStep(void)
     theLinSOE->setB(*phat);
 
     if (theLinSOE->solve() < 0) {
-      opserr << "DisplacementControl::newStep(void) - failed in solver\n";
+      opserr << "DisplacementPath::newStep(void) - failed in solver\n";
       return -1;
     }
     
@@ -190,7 +190,7 @@ DisplacementPath::update(const Vector &dU)
 {
     // opserr << " update is invoked " << endln;
 	if (theDofID == -1) {
-		opserr << "DisplacementControl::newStep() - domainChanged has not been called\n";
+		opserr << "DisplacementPath::newStep() - domainChanged has not been called\n";
 		return -1;
 	}
     AnalysisModel *theModel = this->getAnalysisModel();
@@ -363,7 +363,7 @@ DisplacementPath::domainChanged(void)
     
     Node *theNodePtr = theDomain->getNode(theNode);
 	if (theNodePtr == 0) {
-		opserr << "DisplacementControl::domainChanged - no node\n";
+		opserr << "DisplacementPath::domainChanged - no node\n";
 		return -1;
 	}
 
