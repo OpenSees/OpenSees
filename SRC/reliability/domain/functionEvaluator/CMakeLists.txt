@@ -14,6 +14,6 @@ target_sources(OPS_ReliabilityTcl
         TclEvaluator.h
 )
 
-target_include_directories(OPS_Reliability PUBLIC $(CMAKE_CURRENT_LIST_DIR))
-target_include_directories(OPS_ReliabilityTcl PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Reliability PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OPS_ReliabilityTcl PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

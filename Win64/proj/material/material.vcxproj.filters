@@ -1493,6 +1493,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PenaltyMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Ratchet.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
