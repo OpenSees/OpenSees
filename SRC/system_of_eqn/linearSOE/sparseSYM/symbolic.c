@@ -164,7 +164,7 @@ int symFactorization(int *fxadj, int *adjncy, int neq, int LSPARSE,
    assert(rowblks != 0) ;
 
 /* set up the elimination tree, perform postordering           */
-   if (LSPARSE < 4) {
+   if (LSPARSE > 0 && LSPARSE < 4) {
        nblks = pfordr( neq, padj, perm, invp, parent, fchild, sibling,
 		       winvp, wperm, marker, rowblks ) ;
    } 
