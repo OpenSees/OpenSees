@@ -77,8 +77,10 @@ void *OPS_EnhancedQuad(const ID& info);
 void *OPS_SSPquad(const ID& info);
 
 void *OPS_ShellNLDKGQ(const ID &info);
+void *OPS_ShellNLDKGT(const ID &info);
 
 void *OPS_ShellDKGQ(const ID &info);
+void *OPS_ShellDKGT(const ID &info);
 
 void *OPS_CorotTrussElement(const ID &info);
 
@@ -426,6 +428,14 @@ Mesh::setEleArgs() {
         }
         numelenodes = 4;
 
+    } else if (strcmp(type, "ShellNLDKGT") == 0) {
+        eleType = ELE_TAG_ShellNLDKGT;
+        if (OPS_ShellNLDKGT(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 3;
+	
     } else if (strcmp(type, "ShellDKGQ") == 0) {
         eleType = ELE_TAG_ShellDKGQ;
         if (OPS_ShellDKGQ(info) == 0) {
@@ -434,6 +444,14 @@ Mesh::setEleArgs() {
         }
         numelenodes = 4;		
 
+    } else if (strcmp(type, "ShellDKGT") == 0) {
+        eleType = ELE_TAG_ShellDKGT;
+        if (OPS_ShellDKGT(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 3;		
+	
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
         if (OPS_CorotTrussElement(info) == 0) {
@@ -562,9 +580,15 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ShellNLDKGQ:
 	  OPS_Func = OPS_ShellNLDKGQ;
             break;
+        case ELE_TAG_ShellNLDKGT:
+	  OPS_Func = OPS_ShellNLDKGT;
+            break;
         case ELE_TAG_ShellDKGQ:
 	  OPS_Func = OPS_ShellDKGQ;
-            break;	    	    
+            break;
+        case ELE_TAG_ShellDKGT:
+	  OPS_Func = OPS_ShellDKGT;
+            break;	    	    	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;
