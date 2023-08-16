@@ -15,5 +15,5 @@ target_sources(OPS_Material
 )
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(./limitCurve/)
+add_subdirectory(limitCurve)
 
