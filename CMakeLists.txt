@@ -18,7 +18,7 @@
 #
 #==============================================================================
 
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.23)
 project(OpenSeesFramework LANGUAGES C CXX Fortran)
 
 
@@ -40,31 +40,46 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 # Compiler SPECIFIC
 #
 
-if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
- MESSAGE("COMPILER: Clang")
- # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
- set(BUILD_SHARED_LIBS OFF)
- # set(CMAKE_EXE_LINKER_FLAGS "-static")
-elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
- set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
- set(BUILD_SHARED_LIBS OFF)
- set(CMAKE_EXE_LINKER_FLAGS "-static")
- # add_compile_options(-fPIC)
- set(CMAKE_POSITION_INDEPENDENT_CODE ON)
- set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
- MESSAGE("COMPILER: Clang")
-elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
- MESSAGE("COMPILER: Intel")
- add_compile_options(-fPIC)
-elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
- MESSAGE("COMPILER: MSVC")
- set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
- set(BUILD_SHARED_LIBS OFF)
- set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
-else()
-  MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
-endif()
+# On CMake 3.25 or older CXX_COMPILER_FRONTEND_VARIANT is not always set
 
+if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "")
+  set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "${CMAKE_CXX_COMPILER_ID}")
+endif()
+MESSAGE(STATUS "CMAKE_CXX_COMPILER_ID: ${CMAKE_CXX_COMPILER_ID}")
+MESSAGE(STATUS "CMAKE_CXX_SIMULATE_ID: ${CMAKE_CXX_SIMULATE_ID}")
+MESSAGE(STATUS "CMAKE_CXX_COMPILER_FRONTEND_VARIANT: ${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}")
+
+if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
+    set(BUILD_SHARED_LIBS OFF)
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+    set(BUILD_SHARED_LIBS OFF)
+    set(CMAKE_EXE_LINKER_FLAGS "-static")
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
+    find_package(IntelSYCL REQUIRED)
+    if ("${CMAKE_CXX_COMPILER_FRONTEND_VARIANT}" MATCHES "MSVC")
+      set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+      set(BUILD_SHARED_LIBS OFF)
+      set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+      set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")        
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT /W0")
+    elseif()
+      add_compile_options(-fPIC)
+    endif()
+    
+elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
+    set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+    set(BUILD_SHARED_LIBS OFF)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+    set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
+
+else()
+    MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
+endif()
  
 #
 # external packages
@@ -77,7 +92,7 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 # Conan (manages external dependencies for a typical build)
 # 
 
-MESSAGE("${CMAKE_BINARY_DIR}")
+MESSAGE(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
 
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 
@@ -129,6 +144,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+  if(CMAKE_GENERATOR MATCHES "Ninja")
+    # Prevent a "command line is too long" failure in Windows.
+    set(CMAKE_NINJA_FORCE_RESPONSE_FILE 1)
+    message(STATUS "Force Ninja to use Response Files to prevent command line is too long error")
+  endif()
     target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
     add_compile_definitions(_WIN32 _TCL85)
   if (NOT_USING_CONAN)
@@ -257,26 +277,101 @@ include_directories(${OPS_INCLUDE_DIRS})
 # NUMERICAL LIBRARIES
 #
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_5.1.1")
-set (SUPERLU_LIBRARIES SUPERLU)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/UMFPACK")
-set (UMFPACK_LIBRARIES UMFPACK)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/AMD")
-set (AMD_LIBRARIES AMD)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ARPACK")
-set (ARPACK_LIBRARIES ARPACK)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/CSPARSE")
-set (CSPARSE_LIBRARIES CSPARSE)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
-set (TETGEN_LIBRARIES tet)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
-set (TRIANGLE_LIBRARIES triangle)
+###
+# To allow the CMake build to work better with existing package or module build 
+# workflows, check if the user has defined the location of any of the following
+# external packages before adding the bundled "/OTHER/<package>" subdirectories 
+# to the build.
+# Even if a "FIND_<PACKAGE>" module does not currently exist in CMAKE_ROOT or 
+# CMAKE_MODULE_PATH, add the command anyways (with "QUIET" designation) incase 
+# one is added in future updates
+###
 
+#SUPERLU
+MESSAGE(STATUS "Looking for SUPERLU...")
+find_package(SUPERLU )
+if(NOT SUPERLU_FOUND)
+  MESSAGE(STATUS "SUPERLU Not Found... Use bundled version")
+  set (SUPERLU_FOUND TRUE CACHE BOOL "providing own SUPERLU lib")
+  unset(SUPERLU_LIBRARIES CACHE)
+  unset(SUPERLU_INCLUDES CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_5.1.1")
+  set (SUPERLU_LIBRARIES SUPERLU)
+endif()
 
-if (NOT DEFINED LAPACK_LIBRARIES) 
-   find_package(LAPACK)
-else()
-   set (LAPACK_FOUND TRUE CACHE BOOL "providing own lapack lib")
+#UMFPACK
+MESSAGE(STATUS "Looking for User UMFPACK...${UMFPACK}")
+find_package(UMFPACK QUIET)
+if(NOT UMFPACK_FOUND)
+  MESSAGE(STATUS "User UMFPACK Not Found... Use bundled version")
+  set (UMFPACK_FOUND TRUE CACHE BOOL "providing own UMFPACK lib")
+  unset(UMFPACK_DIR CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/UMFPACK")
+  set (UMFPACK_LIBRARIES UMFPACK)
+endif()
+
+#AMD
+MESSAGE(STATUS "Looking for User AMD...${AMD}")
+find_package(AMD )
+if(NOT AMD_FOUND)
+  MESSAGE(STATUS "User AMD Not Found... Use bundled version")
+  set (AMD_FOUND TRUE CACHE BOOL "providing own AMD lib")
+  unset(AMD_AMD_INCLUDE_DIR CACHE)
+  unset(AMD_LIBRARY CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/AMD")
+  set (AMD_LIBRARIES AMD)
+endif()
+
+#ARPACK
+MESSAGE(STATUS "Looking for User ARPACK...")
+find_package(ARPACK )
+if(NOT ARPACK_FOUND)
+  MESSAGE(STATUS "User ARPACK Not Found... Use bundled version")
+  set (ARPACK_FOUND TRUE CACHE BOOL "providing own ARPACK lib")
+  unset(ARPACK_LIBRARIES CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ARPACK")
+  set (ARPACK_LIBRARIES ARPACK)
+endif()
+
+#CSPARSE
+MESSAGE(STATUS "Looking for User CSPARSE...")
+find_package(CSPARSE QUIET)
+if(NOT CSPARSE_FOUND)
+  MESSAGE(STATUS "User CSPARSE Not Found... Use bundled version")
+  set (CSPARSE_FOUND TRUE CACHE BOOL "providing own CSPARSE lib")
+  unset(CSPARSE_DIR CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/CSPARSE")
+  set (CSPARSE_LIBRARIES CSPARSE)
+endif()
+
+#TETGEN
+MESSAGE(STATUS "Looking for User TETGEN...")
+find_package(TETGEN QUIET)
+if(NOT TETGEN_FOUND)
+  MESSAGE(STATUS "User TETGEN Not Found... Use bundled version")
+  set (TETGEN_FOUND TRUE CACHE BOOL "providing own TETGEN lib")
+  unset(TETGEN_DIR CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
+  set (TETGEN_LIBRARIES tet)
+endif()
+
+#TRIANGLE
+MESSAGE(STATUS "Looking for User TRIANGLE...")
+find_package(TRIANGLE QUIET)
+if(NOT TRIANGLE_FOUND)
+  MESSAGE(STATUS "User TRIANGLE Not Found... Use bundled version")
+  set (TRIANGLE_FOUND TRUE CACHE BOOL "providing own TRIANGLE lib")
+  unset(TRIANGLE_DIR CACHE)
+  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
+  set (TRIANGLE_LIBRARIES triangle)
+endif()
+
+#LAPACK
+MESSAGE(STATUS "Looking for LAPACK...")
+find_package(LAPACK)
+if(NOT LAPACK_FOUND)  
+  MESSAGE(STATUS "LAPACK Not Found...")
+  set (LAPACK_FOUND TRUE CACHE BOOL "providing own LAPACK lib")
 endif()
 
 find_package (Python COMPONENTS Interpreter Development)
@@ -285,61 +380,89 @@ find_package (Python COMPONENTS Interpreter Development)
 find_package(MPI)
 find_package(MKL)
 
-#set (LAPACK_FOUND FALSE)
-#set (BLAS_FOUND FALSE)
 
 if(LAPACK_FOUND)
   message(STATUS "LAPACK was found.")
   message(STATUS "LAPACK_LINKER_FLAGS = ${LAPACK_LINKER_FLAGS}")
   message(STATUS "LAPACK_LIBRARIES = ${LAPACK_LIBRARIES}" )
 else()
+  MESSAGE(STATUS "LAPACK NOT FOUND ... Use bundled version")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/BLAS") 
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/LAPACK")
   set(LAPACK_LIBRARIES LAPACK)
 endif()
 
 if(PYTHON_FOUND)
-  message("Python_FOUND:${Python_FOUND}")
-  message("Python_VERSION:${Python_VERSION}")
-  message("Python_Development_FOUND:${Python_Development_FOUND}")
-  message("Python_LIBRARIES:${Python_LIBRARIES}")
-  message("Python_INCLUDES:${Python_INCLUDE_DIRS}")  
+  message(STATUS "Python_FOUND:${Python_FOUND}")
+  message(STATUS "Python_VERSION:${Python_VERSION}")
+  message(STATUS "Python_Development_FOUND:${Python_Development_FOUND}")
+  message(STATUS "Python_LIBRARIES:${Python_LIBRARIES}")
+  message(STATUS "Python_INCLUDES:${Python_INCLUDE_DIRS}")  
 else()
   message(STATUS "PYTHON NOT FOUND")
 endif()
 
 
 if(MPI_FOUND)
-  message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
-  #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
-  #if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  if (NOT DEFINED MUMPS_DIR)
-  #    include(ExternalProject)
-  #    ExternalProject_Add(mumps
-  #       GIT_REPOSITORY    https://github.com/scivision/mumps.git
-  #       GIT_TAG           v5.5.1.5
-  #       SOURCE_DIR        "${CMAKE_BINARY_DIR}/mumps-src"
-  #       BINARY_DIR        "${CMAKE_BINARY_DIR}"
-  #       INSTALL_COMMAND   ""
-  #     )
-  #
-  #    set (MUMPS_LIBRARIES "${CMAKE_BINARY_DIR}/libdmumps.lib;${CMAKE_BINARY_DIR}/libmumps_common.lib;${CMAKE_BINARY_DIR}/libpord.lib")
-     set (MUMPS_FLAG -D_NOMUMPS)
-     set (MUMPS_LIBRARIES "")
-  else()
-     set (MUMPS_FLAG -D_MUMPS)  
-     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-       set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
-     else()
-       set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
-     endif()
 
+  #MUMPS
+  MESSAGE(STATUS "Looking for MUMPS...")
+  find_package(MUMPS QUIET)
+  if (NOT MUMPS_FOUND)
+    message(STATUS "MUMPS NOT Found. Build it from source...")
+    unset(MUMPS_DIR CACHE)
+    include(ExternalProject)
+      ExternalProject_Add(mumps
+      GIT_REPOSITORY    https://github.com/OpenSees/mumps.git
+      GIT_TAG           main
+      GIT_SHALLOW       True
+      PREFIX            "mumps-extern"
+      CMAKE_CACHE_ARGS   "-Darith:STRING=d"
+      BUILD_ALWAYS      True
+      BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config <CONFIG>
+      INSTALL_COMMAND ""
+    )
+    ExternalProject_Get_property(mumps BINARY_DIR)
+    set (MUMPS_FLAG -D_MUMPS)  
+    set(MUMPS_DIR ${BINARY_DIR})
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+      set (MUMPS_LIBRARIES "${BINARY_DIR}/dmumps;${BINARY_DIR}/mumps_common;${BINARY_DIR}/pord")
+    else()
+      set (MUMPS_LIBRARIES "${BINARY_DIR}/libdmumps.a;${BINARY_DIR}/libmumps_common.a;${BINARY_DIR}/libpord.a")
+    endif()
+    message(STATUS "MUMPS_LIBRARIES: ${MUMPS_LIBRARIES}")
+  else()
+    set (MUMPS_FLAG -D_MUMPS)  
+    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+      set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
+    else()
+      set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
+    endif()
   endif()
 
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
+  #SUPERLU_DIST
+  MESSAGE(STATUS "Looking for SUPERLU_DIST...")
+  find_package(SUPERLU_DIST QUIET)
+  if(NOT SUPERLU_DIST_FOUND)
+    MESSAGE(STATUS "SUPERLU_DIST Not Found... Use bundled version")
+    set (SUPERLU_DIST_FOUND TRUE CACHE BOOL "providing own SUPERLU_DIST lib")
+    unset(SUPERLU_DIST_DIR CACHE)
+    add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
+  endif()
+  
+  #METIS
+  MESSAGE(STATUS "Looking for METIS...")
+  find_package(METIS QUIET)
+  if(NOT METIS_FOUND)
+    MESSAGE(STATUS "METIS Not Found... Use bundled version")
+    set (METIS_FOUND TRUE CACHE BOOL "providing own METIS lib")
+    unset(METIS_INCLUDES CACHE)
+    unset(METIS_LIBRARIES CACHE)
+    add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")
+  endif()
+
 else()
   message(STATUS "MPI was NOT found.")
 endif()
@@ -355,14 +478,16 @@ if(MKL_FOUND)
   message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")     
 else()
   message(STATUS "MKL NOT found .. user to provide -DSCALAPACK_LIBRARIES=")
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
-endif()
+
+  #SCALAPACK
+  MESSAGE(STATUS "Looking for SCALAPACK...")
+  find_package(SCALAPACK QUIET)
+  if(SCALAPACK_FOUND)
+    MESSAGE(STATUS "SCALAPACK Found")
+    message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
+  endif()
   
-#get_cmake_property(_variableNames VARIABLES)
-#list (SORT _variableNames)
-#foreach (_variableName ${_variableNames})
-#  message(STATUS "${_variableName}=${${_variableName}}")
-#endforeach()  
+endif()
 
 add_library(OPS_Numerics INTERFACE)
 
@@ -373,8 +498,7 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${UMFPACK_LIBRARIES}
        ${TETGEN_LIBRARIES}
        ${TRIANGLE_LIBRARIES}                     
-       ${AMD_LIBRARIES}
-       ${AMD_LIBRARIES}       
+       ${AMD_LIBRARIES}   
        ${LAPACK_LIBRARIES}
 )
 
