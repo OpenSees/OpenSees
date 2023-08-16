@@ -38,11 +38,13 @@ set(AMD_SOURCES
 
 add_library(AMD_DINT ${AMD_SOURCES})
 target_compile_definitions(AMD_DINT PRIVATE DINT)
-target_compile_options(AMD_DINT PRIVATE -fexceptions -fPIC -I.)
+#target_compile_options(AMD_DINT PRIVATE -fexceptions -fPIC -I.)
+target_compile_options(AMD_DINT PRIVATE -I.)
 
 add_library(AMD_DLNG ${AMD_SOURCES})
 target_compile_definitions(AMD_DLNG PRIVATE DLONG)
-target_compile_options(AMD_DLNG PRIVATE -fexceptions -fPIC -I.)
+#target_compile_options(AMD_DLNG PRIVATE -fexceptions -fPIC -I.)
+target_compile_options(AMD_DLNG PRIVATE -I.)
 
 #-------------------------------------------------------------------------------
 
