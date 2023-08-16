@@ -1,0 +1,38 @@
+{
+    "version": 2,
+    "configurePresets": [
+        {
+            "name": "Intel_oneAPI",
+            "displayName": "Intel oneAPI C++ Compiler 2023.2.0",
+            "description": "Using compilers: C = C:\\Program Files (x86)\\Intel\\oneAPI\\compiler\\latest\\windows\\bin\\icx.exe, CXX = C:\\Program Files (x86)\\Intel\\oneAPI\\compiler\\latest\\windows\\bin\\icx.exe, Fortran = C:\\Program Files (x86)\\Intel\\oneAPI\\compiler\\latest\\windows\\bin\\ifx.exe",
+            "generator": "Ninja",
+            "binaryDir": "${sourceDir}/build/",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "C:/Program Files/OpenSees Framework",
+                "CMAKE_C_COMPILER": "C:/Program Files (x86)/Intel/oneAPI/compiler/latest/windows/bin/icx.exe",
+                "CMAKE_CXX_COMPILER": "C:/Program Files (x86)/Intel/oneAPI/compiler/latest/windows/bin/icx.exe",
+                "CMAKE_Fortran_COMPILER": "C:/Program Files (x86)/Intel/oneAPI/compiler/latest/windows/bin/ifx.exe",
+                "CMAKE_BUILD_TYPE": "Release",
+                "HDF5_DIR": "C:/Program Files/HDF_Group/HDF5/1.12.0/cmake/hdf5",
+                "BLA_STATIC": "ON",
+                "MKL_LINK": "static",
+                "MKL_INTERFACE_FULL": "intel_lp64"
+            }
+        }
+    ],
+    "buildPresets": [
+        {
+            "name": "Intel_oneAPI",
+            "configurePreset": "Intel_oneAPI",
+            "configuration": "Release"
+        },
+        {
+            "name": "Intel_oneAPI-Fort",
+            "configurePreset": "Intel_oneAPI",
+            "configuration": "Release",
+            "nativeToolOptions": [
+                "-j 1"
+            ]
+        }
+    ]
+}
