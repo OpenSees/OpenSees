@@ -41,6 +41,24 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Pinching4Material.h>   // NM
 #include <ShearPanelMaterial.h>  // NM
 #include <BarSlipMaterial.h>     // NM
+#include <Bond_SP01.h>	// JZ
+#include <FRCC.h> // FLK + ARB
+#include <SteelMP.h>             //Quan & Michele
+#include <SteelBRB.h>             //Quan & Michele
+#include <SmoothPSConcrete.h>      //Quan & Michele
+#include <SelfCenteringMaterial.h> //JAE
+#include <ASD_SMA_3K.h> //LA
+
+#include <KikuchiAikenHDR.h>
+#include <KikuchiAikenLRB.h>
+#include <AxialSp.h>
+#include <AxialSpHD.h>
+
+#include <SMAMaterial.h>     // Davide Fugazza
+#include <Masonry.h>
+#include <Trilinwp.h>
+#include <Trilinwp2.h>
+#include <Masonryt.h>
 
 #include <Vector.h>
 #include <string.h>
