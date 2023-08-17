@@ -43,6 +43,7 @@ class RCSectionIntegration : public SectionIntegration
   void getFiberLocations(int nFibers, double *yi, double *zi = 0);
   void getFiberWeights(int nFibers, double *wt);
 
+  const char* getClassType(void) const {return "RCSectionIntegration";}
   SectionIntegration *getCopy(void);
 
   int sendSelf(int cTag, Channel &theChannel);

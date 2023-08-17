@@ -24,8 +24,8 @@
 
 // Written: MHS
 // Created: July 2000
-// Modified to 7 points: Silvia Mazzoni
-//	April 2022
+// Modified to 7 points, etc: Silvia Mazzoni
+//	April 2023
 //
 // Description: This file contains the class definition for 
 // Hysteretic7ptMaterial.  Hysteretic7ptMaterial provides the implementation
@@ -42,38 +42,17 @@
 class HystereticSMMaterial : public UniaxialMaterial
 {
  public:
-  HystereticSMMaterial(int tag,
-		double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
-		double mom4p, double rot4p, double mom5p, double rot5p, double mom6p, double rot6p, double mom7p, double rot7p,
-		double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
-		double mom4n, double rot4n, double mom5n, double rot5n, double mom6n, double rot6n, double mom7n, double rot7n,
-		double pinchX, double pinchY, const Vector &theLSforce, const Vector &theLSdefo, double degEnvFactor,
-		double damfc1 = 0.0, double damfc2 = 0.0,
-		double beta = 0.0);
 
-  HystereticSMMaterial(int tag,
-	  double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
-	  double mom4p, double rot4p, double mom5p, double rot5p,
-	  double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
-	  double mom4n, double rot4n, double mom5n, double rot5n,
-	  double pinchX, double pinchY, const Vector &theLSforce, const Vector &theLSdefo, double degEnvFactor,
-	  double damfc1 = 0.0, double damfc2 = 0.0,
-	  double beta = 0.0);
-
-  HystereticSMMaterial(int tag,
-	  double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
-	  double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
-	  double pinchX, double pinchY, const Vector &theLSforce, const Vector &theLSdefo, double degEnvFactor,
-	  double damfc1 = 0.0, double damfc2 = 0.0,
-	  double beta = 0.0);
-
-  HystereticSMMaterial(int tag,
-	  double m1p, double r1p, double m2p, double r2p,
-	  double m1n, double r1n, double m2n, double r2n,
-	  double pinchX, double pinchY, const Vector &theLSforce, const Vector &theLSdefo, double degEnvFactor,
-	  double damfc1 = 0.0, double damfc2 = 0.0,
-	  double beta = 0.0);
-
+	HystereticSMMaterial(int tag, const Vector& posEnv, const Vector& negEnv, const Vector& pinchArray, const Vector& damageArray, double beta ,
+		const Vector& degEnvArray, const Vector& forceLimitStates, const Vector& defoLimitStates, Vector& internalValues, int YXorder = 1, int printInput = 0);
+	//HystereticSMMaterial(int tag,
+	//	double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
+	//	double mom4p, double rot4p, double mom5p, double rot5p, double mom6p, double rot6p, double mom7p, double rot7p,
+	//	double m1n, double r1n, double m2n, double r2n, double m3n, double r3n,
+	//	double mom4n, double rot4n, double mom5n, double rot5n, double mom6n, double rot6n, double mom7n, double rot7n,
+	//	double pinchX, double pinchY, const Vector& theLSforce, const Vector& theLSdefo, double degEnvFactor,
+	//	double damfc1 = 0.0, double damfc2 = 0.0,
+	//	double beta = 0.0);
 
   HystereticSMMaterial();
   ~HystereticSMMaterial();
@@ -122,9 +101,11 @@ class HystereticSMMaterial : public UniaxialMaterial
   // Damage parameters
   double damfc1;		// Deformation
   double damfc2;		// Energy
+
+  // Degrading envelope parameters
+  double degEnvp;
+  double degEnvn;
   
-  // Unloading parameter
-  double beta;
   
   // Trial history variables
   double TrotMax;
@@ -180,12 +161,33 @@ class HystereticSMMaterial : public UniaxialMaterial
 
   double energyA;
 
-  
+  Vector posEnv;
+  Vector negEnv;
+  int nposEnv;
+  int nnegEnv;
+
+  Vector pinchArray;
+  Vector damageArray;
+  int npinchArray;
+  int ndamageArray;
+
+  // Unloading parameter
+  double beta;
+
+  int printInput;
+  int YXorder;
+  int xIndexIncr;
+  int yIndexIncr;
+
+
   Vector defoLimitStates;
   Vector forceLimitStates;
   int nDefoLimitStates;
   int nForceLimitStates;
-  double degEnvFactor;
+  //double degEnvFactor;
+  Vector degEnvArray;
+  int ndegEnvArray;
+
 
   void setEnvelope(void);
   

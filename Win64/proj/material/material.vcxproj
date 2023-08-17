@@ -325,6 +325,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GMG_CyclicReinforcedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\GNGMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp" />
@@ -363,12 +364,14 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PD1.c" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ParallelMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PathIndependentMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PenaltyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Pinching4Material.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Ratchet.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ReinforcingSteel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceLow.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.cpp" />
@@ -416,6 +419,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteEXP.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteNL.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Trilinwp2.cpp" />
@@ -848,6 +852,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteEXP.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteMC10NL.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteNL.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TensionOnlyMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Trilinwp.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Trilinwp2.h" />

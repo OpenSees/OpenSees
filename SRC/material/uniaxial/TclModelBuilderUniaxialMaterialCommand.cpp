@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    Opensee - Open System for Earthquake Engineering Simulation    **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -48,6 +48,7 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_TDConcreteEXP(void); // ntosic
 extern void *OPS_TDConcrete(void); // ntosic
+extern void *OPS_TDConcreteNL(void); // ntosic,MHS
 extern void *OPS_TDConcreteMC10(void); //ntosic
 extern void *OPS_TDConcreteMC10NL(void); //ntosic
 extern void *OPS_ECC01(void);
@@ -182,6 +183,8 @@ extern void *OPS_AxialSp(void);
 extern void *OPS_AxialSpHD(void);
 extern void *OPS_KikuchiAikenHDR(void);
 extern void *OPS_KikuchiAikenLRB(void);
+extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
+extern void* OPS_Ratchet(void); // Yi Xiao
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -287,6 +290,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 			return TCL_ERROR;
 	}
 
+	// ntosic,MHS
+	if (strcmp(argv[1], "TDConcreteNL") == 0) {
+		void *theMat = OPS_TDConcreteNL();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+	}
+	
 	// ntosic
 	if (strcmp(argv[1], "TDConcreteMC10") == 0) {
 		void *theMat = OPS_TDConcreteMC10();
@@ -2074,6 +2086,25 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
+
+	if (strcmp(argv[1], "GMG_CyclicReinforcedConcrete") == 0) {
+		void *theMat = OPS_GMG_CyclicReinforcedConcrete();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+
+	}
+
+    if (strcmp(argv[1], "Ratchet") == 0) {
+        void* theMat = OPS_Ratchet();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+
+    }
+
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)

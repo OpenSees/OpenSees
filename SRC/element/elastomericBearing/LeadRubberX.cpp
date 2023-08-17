@@ -256,6 +256,9 @@ void *OPS_LeadRubberX()
             opserr << ", for space problem need 6 - LeadRubberX \n"; 
         }
         theEle = new LeadRubberX(iData[0], iData[1], iData[2], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], y, x, kl, phi, al, sDratio, m, cd1, tc1, qL1, cL1, kS1, aS1, tag1, tag2, tag3, tag4, tag5);
+    } else {
+        opserr << "LeadRubberX is only available for ndm=3 three-dimensional models" << endln;
+        return 0;
     }
     
     if (theEle == 0) {

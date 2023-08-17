@@ -14,5 +14,5 @@ target_sources(OPS_Reliability
         ModulatingFunctionIter.h
         TrapezoidalModulatingFunction.h
 )
-target_include_directories(OPS_Renderer PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Renderer PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
