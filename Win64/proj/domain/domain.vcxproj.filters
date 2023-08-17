@@ -330,6 +330,9 @@
     <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp">
       <Filter>pattern\drm</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\RampSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -610,6 +613,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRM.h">
       <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\RampSeries.h">
+      <Filter>timeSeries</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

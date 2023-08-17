@@ -41,7 +41,7 @@ class HystereticBackbone;
 class BackboneMaterial : public UniaxialMaterial
 {
   public:
-    BackboneMaterial(int tag, HystereticBackbone &backbone); 
+  BackboneMaterial(int tag, HystereticBackbone &backbone, double multiplier = 1.0); 
     BackboneMaterial();
     ~BackboneMaterial();
 
@@ -70,6 +70,7 @@ class BackboneMaterial : public UniaxialMaterial
   private:
     HystereticBackbone *theBackbone;
     double strain;
+  double multiplier;
 };
 
 

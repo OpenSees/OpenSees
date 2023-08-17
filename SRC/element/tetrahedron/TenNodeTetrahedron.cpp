@@ -205,7 +205,7 @@ const double  TenNodeTetrahedron::sg[] = { alpha, beta, beta, beta} ;
 const double  TenNodeTetrahedron::wg[] = { 0.25} ;
 
 
-static Matrix B(NumStressComponents, NumDOFsPerNode) ;
+Matrix TenNodeTetrahedron::B(NumStressComponents, NumDOFsPerNode) ;
 
 //null constructor
 TenNodeTetrahedron::TenNodeTetrahedron( )

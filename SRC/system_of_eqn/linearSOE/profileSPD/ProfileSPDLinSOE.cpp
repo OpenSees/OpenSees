@@ -204,8 +204,14 @@ ProfileSPDLinSOE::setSize(Graph &theGraph)
     if (iDiagLoc != 0)
 	iDiagLoc[0] = 1; // NOTE FORTRAN ARRAY LOCATION
 
-    for (int j=1; j<size; j++)
+    for (int j=1; j<size; j++) {
 	iDiagLoc[j] = iDiagLoc[j] + 1 + iDiagLoc[j-1];
+	if (iDiagLoc[j] < 0) {
+		// int value overflow here!!
+		opserr << "ERROR: too many entries for profileSPD causing integer value overflow. Suggest to use other solvers\n";
+		return -1;
+	}
+	}
 
     if (iDiagLoc != 0)       
     	profileSize = iDiagLoc[size-1];

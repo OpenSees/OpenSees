@@ -880,13 +880,14 @@ PressureDependMultiYield::getCopy (void)
 NDMaterial *
 PressureDependMultiYield::getCopy (const char *code)
 {
-  if (strcmp(code,"PlaneStrain") == 0 ||
-      strcmp(code,"ThreeDimensional") == 0) {
+  if (strcmp(code,"PlaneStrain") == 0 || strcmp(code,"ThreeDimensional") == 0) {
     PressureDependMultiYield * copy = new PressureDependMultiYield(*this);
     return copy;
   }
-
-  return 0;
+  else {
+    opserr << "ERROR PressureDependMultiYield::getCopy -- cannot make copy for type " << code << endln;
+    return 0;
+  }
 }
 
 const char *

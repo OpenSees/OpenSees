@@ -47,18 +47,18 @@ static void byte_swap(void *array, long long nArray,int size);
 #endif
 
 
-// UDP_Socket(): 
-//	constructor to open a socket with my inet_addr and with a port number 
-//	assigned by the OS from the available free port numbers.
-UDP_Socket::UDP_Socket() 
+// UDP_Socket():
+// constructor to open a socket with my inet_addr and with a port number
+// assigned by the OS from the available free port numbers.
+UDP_Socket::UDP_Socket()
     : myPort(0), connectType(0),
     checkEndianness(false), endiannessProblem(false)
 {
     // initialize sockets
     startup_sockets();
     
-    // set up my_Addr 
-    bzero((char *) &my_Addr, sizeof(my_Addr));    
+    // set up my_Addr
+    bzero((char *) &my_Addr, sizeof(my_Addr));
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(0);
     
@@ -84,9 +84,9 @@ UDP_Socket::UDP_Socket()
 }
 
 
-// UDP_Socket(unsigned int port): 
-//	constructor to open a socket with my inet_addr and with a port number port.
-UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness) 
+// UDP_Socket(unsigned int port):
+// constructor to open a socket with my inet_addr and with a port number port.
+UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
     : myPort(0), connectType(0),
     checkEndianness(checkendianness), endiannessProblem(false)
 {
@@ -123,13 +123,13 @@ UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
 }
 
 
-// UDP_Socket(unsigned int other_Port, char *other_InetAddr): 
-// 	constructor to open a socket with my inet_addr and with a port number 
-//	given by the OS. It then sends a messege comprising of a single character
-// 	to an address given by other_InetAddr and other_Port. This is to allow
-// 	a shadow object to find address of the actor it initiatites.
+// UDP_Socket(unsigned int other_Port, char *other_InetAddr):
+// constructor to open a socket with my inet_addr and with a port number
+// given by the OS. It then sends a messege comprising of a single character
+// to an address given by other_InetAddr and other_Port. This is to allow
+// a shadow object to find address of the actor it initiatites.
 UDP_Socket::UDP_Socket(unsigned int other_Port,
-    char *other_InetAddr, bool checkendianness) 
+    char *other_InetAddr, bool checkendianness)
     : myPort(0), connectType(1),
     checkEndianness(checkendianness), endiannessProblem(false)
 {
@@ -147,7 +147,7 @@ UDP_Socket::UDP_Socket(unsigned int other_Port,
     other_Addr.addr_in.sin_addr.s_addr = inet_addr(other_InetAddr);
 #endif
     
-    // set up my_Addr.addr_in 
+    // set up my_Addr.addr_in
     bzero((char *) &my_Addr, sizeof(my_Addr));
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(0);
@@ -168,9 +168,10 @@ UDP_Socket::UDP_Socket(unsigned int other_Port,
         opserr << "UDP_Socket::UDP_Socket() - could not bind local address\n";
     }
     
+    // get my_address info
     addrLength = sizeof(my_Addr.addr);
     getsockname(sockfd, &my_Addr.addr, &addrLength);
-    myPort = ntohs(my_Addr.addr_in.sin_port);    
+    myPort = ntohs(my_Addr.addr_in.sin_port);
 }
 
 
@@ -192,14 +193,34 @@ UDP_Socket::~UDP_Socket()
 int 
 UDP_Socket::setUpConnection()
 {
+    int ierr, trial;
+    char data;
+    
     if (connectType == 1) {
         
-        // send a message to address
-        char data = 'a';
-        sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
+        // send a 1-byte message to address (try 3-times)
+        data = 'a';
+        addrLength = sizeof(other_Addr.addr);
+        trial = 0;
+        do {
+            ierr = sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
+            trial++;
+        } while (ierr != 1 && trial < 3);
+        if (ierr != 1) {
+            opserr << "UDP_Socket::setUpConnection() - client could not send intial message\n";
+            return -1;
+        }
         
-        // receive a message from other
-        recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);    
+        // receive a 1-byte message from other (try 3-times)
+        trial = 0;
+        do {
+            ierr = recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);
+            trial++;
+        } while (ierr != 1 && data != 'b' && trial < 3);
+        if (ierr != 1) {
+            opserr << "UDP_Socket::setUpConnection() - client could not receive intial message\n";
+            return -1;
+        }
         
         // check for endianness problem if requested
         if (checkEndianness) {
@@ -226,13 +247,29 @@ UDP_Socket::setUpConnection()
         
     } else {
         
-        // wait for remote process to send message
-        char data;
-        recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);    
+        // wait for remote process to send a 1-byte message (try 3-times)
+        addrLength = sizeof(other_Addr.addr);
+        trial = 0;
+        do {
+            ierr = recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);
+            trial++;
+        } while (ierr != 1 && data != 'a' && trial < 3);
+        if (ierr != 1) {
+            opserr << "UDP_Socket::setUpConnection() - server could not receive intial message\n";
+            return -1;
+        }
         
-        // then send a message back
+        // then send a 1-byte message back (try 3-times)
         data = 'b';
-        sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);        
+        trial = 0;
+        do {
+            ierr = sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
+            trial++;
+        } while (ierr != 1 && trial < 3);
+        if (ierr != 1) {
+            opserr << "UDP_Socket::setUpConnection() - server could not send intial message\n";
+            return -1;
+        }
         
         // check for endianness problem if requested
         if (checkEndianness) {
@@ -255,34 +292,34 @@ UDP_Socket::setUpConnection()
             }
         }
     }
-
-    return 0;    
-}    
+    
+    return 0;
+}
 
 
 int
 UDP_Socket::setNextAddress(const ChannelAddress &theAddress)
-{	
+{
     SocketAddress *theSocketAddress = 0;
     if (theAddress.getType() == SOCKET_TYPE) {
-        theSocketAddress = (SocketAddress *)(&theAddress);    
+        theSocketAddress = (SocketAddress *)(&theAddress);
         // set up the address of the Socket to which data will be sent
-        bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr, 
+        bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr,
             theSocketAddress->addrLength);
-        addrLength = theSocketAddress->addrLength;	
-
-        return  0;	    
+        addrLength = theSocketAddress->addrLength;
+        
+        return  0;
     }
     else {
         opserr << "UDP_Socket::setNextAddress() - a UDP_Socket ";
         opserr << "can only communicate with a UDP_Socket";
-        opserr << " address given is not of type SocketAddress\n"; 
-        return -1;	    
-    }		    	
+        opserr << " address given is not of type SocketAddress\n";
+        return -1;
+    }
 }
 
 
-int 
+int
 UDP_Socket::sendObj(int commitTag,
     MovableObject &theObject, ChannelAddress *theAddress)
 {
@@ -293,7 +330,7 @@ UDP_Socket::sendObj(int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength);
             addrLength = theSocketAddress->addrLength;
         }
@@ -311,11 +348,11 @@ UDP_Socket::sendObj(int commitTag,
 
 int 
 UDP_Socket::recvObj(int commitTag,
-    MovableObject &theObject, FEM_ObjectBroker &theBroker, 
+    MovableObject &theObject, FEM_ObjectBroker &theBroker,
     ChannelAddress *theAddress)
 {
     int res = theObject.recvSelf(commitTag, *this, theBroker);
-    if (res < 0) 
+    if (res < 0)
         return res;
     
     // check the address that message came from was correct
@@ -325,10 +362,10 @@ UDP_Socket::recvObj(int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvObj() - a UDP_Socket ";
-                    opserr << "can only look at first incoming message\n"; 
+                    opserr << "can only look at first incoming message\n";
                     opserr << "The last message did not come from write scource\n";
                     return -1;
             }
@@ -348,8 +385,8 @@ UDP_Socket::recvObj(int commitTag,
 int
 UDP_Socket::recvMsg(int dbTag, int commitTag,
     Message &msg, ChannelAddress *theAddress)
-{	
-    // if o.k. get a pointer to the data in the message and 
+{
+    // if o.k. get a pointer to the data in the message and
     // place the incoming data there
     int size;
     char *gMsg;
@@ -375,10 +412,10 @@ UDP_Socket::recvMsg(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
-                    opserr << "can only look at first incoming message\n"; 
+                    opserr << "can only look at first incoming message\n";
                     opserr << "The last message did not come from write scource\n";
                     return -1;
             }
@@ -398,16 +435,16 @@ UDP_Socket::recvMsg(int dbTag, int commitTag,
 int
 UDP_Socket::recvMsgUnknownSize(int dbTag, int commitTag,
     Message &msg, ChannelAddress *theAddress)
-{	
+{
     opserr << "UDP_Socket::recvMsgUnknownSize() - not implemented yet.";
-    return -1;	    
+    return -1;
 }
 
-    
+
 int
 UDP_Socket::sendMsg(int dbTag, int commitTag,
     const Message &msg, ChannelAddress *theAddress)
-{	
+{
     // set up the address of the Socket to which data will be sent
     if (theAddress != 0) {
         SocketAddress *theSocketAddress = 0;
@@ -415,7 +452,7 @@ UDP_Socket::sendMsg(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength);
             addrLength = theSocketAddress->addrLength;
         }
@@ -428,7 +465,7 @@ UDP_Socket::sendMsg(int dbTag, int commitTag,
     }
     
     // send the data
-    int size; 
+    int size;
     char *gMsg;
     gMsg = msg.data;
     size = msg.length;
@@ -438,7 +475,7 @@ UDP_Socket::sendMsg(int dbTag, int commitTag,
             sendto(sockfd, gMsg, size, 0, &other_Addr.addr, addrLength);
             size = 0;
         }
-        else {	
+        else {
             sendto(sockfd, gMsg, MAX_UDP_DATAGRAM, 0, &other_Addr.addr, addrLength);
             gMsg += MAX_UDP_DATAGRAM;
             size -= MAX_UDP_DATAGRAM;
@@ -452,12 +489,12 @@ UDP_Socket::sendMsg(int dbTag, int commitTag,
 int
 UDP_Socket::recvMatrix(int dbTag, int commitTag,
     Matrix &theMatrix, ChannelAddress *theAddress)
-{	
-    // if o.k. get a pointer to the data in the message and 
+{
+    // if o.k. get a pointer to the data in the message and
     // place the incoming data there
     int size;
     double *data = theMatrix.data;
-    char *gMsg = (char *)data;;
+    char *gMsg = (char *)data;
     size = theMatrix.dataSize * sizeof(double);
     
     while (size > 0) {
@@ -484,12 +521,12 @@ UDP_Socket::recvMatrix(int dbTag, int commitTag,
         SocketAddress *theSocketAddress = 0;
         
         if (theAddress->getType() == SOCKET_TYPE) {
-            theSocketAddress = (SocketAddress *)theAddress;	
+            theSocketAddress = (SocketAddress *)theAddress;
             
-            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
-                    opserr << "can only look at first incoming message\n"; 
+                    opserr << "can only look at first incoming message\n";
                     opserr << "The last message did not come from write scource\n";
                     return -1;
             }
@@ -509,7 +546,7 @@ UDP_Socket::recvMatrix(int dbTag, int commitTag,
 int
 UDP_Socket::sendMatrix(int dbTag, int commitTag,
     const Matrix &theMatrix, ChannelAddress *theAddress)
-{	
+{
     // set up the address of the Socket to which data will be sent
     if (theAddress != 0) {
         SocketAddress *theSocketAddress = 0;
@@ -517,9 +554,9 @@ UDP_Socket::sendMatrix(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength);
-            addrLength = theSocketAddress->addrLength;	
+            addrLength = theSocketAddress->addrLength;
         }
         else {
             opserr << "UDP_Socket::sendMatrix() - a UDP_Socket ";
@@ -530,9 +567,9 @@ UDP_Socket::sendMatrix(int dbTag, int commitTag,
     }
     
     // send the data
-    int size; 
+    int size;
     double *data = theMatrix.data;
-    char *gMsg = (char *)data;;
+    char *gMsg = (char *)data;
     size = theMatrix.dataSize * sizeof(double);
     
 #ifndef _WIN32
@@ -568,12 +605,12 @@ UDP_Socket::sendMatrix(int dbTag, int commitTag,
 int
 UDP_Socket::recvVector(int dbTag, int commitTag,
     Vector &theVector, ChannelAddress *theAddress)
-{	
-    // if o.k. get a pointer to the data in the message and 
+{
+    // if o.k. get a pointer to the data in the message and
     // place the incoming data there
     int size;
     double *data = theVector.theData;
-    char *gMsg = (char *)data;;
+    char *gMsg = (char *)data;
     size = theVector.sz * sizeof(double);
     
     while (size > 0) {
@@ -602,7 +639,7 @@ UDP_Socket::recvVector(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n";
@@ -625,7 +662,7 @@ UDP_Socket::recvVector(int dbTag, int commitTag,
 int
 UDP_Socket::sendVector(int dbTag, int commitTag,
     const Vector &theVector, ChannelAddress *theAddress)
-{	
+{
     // set up the address of the Socket to which data will be sent
     if (theAddress != 0) {
         SocketAddress *theSocketAddress = 0;
@@ -633,9 +670,9 @@ UDP_Socket::sendVector(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength);
-            addrLength = theSocketAddress->addrLength;	
+            addrLength = theSocketAddress->addrLength;
         }
         else {
             opserr << "UDP_Socket::sendVector() - a UDP_Socket ";
@@ -646,9 +683,9 @@ UDP_Socket::sendVector(int dbTag, int commitTag,
     }
     
     // send the data
-    int size; 
+    int size;
     double *data = theVector.theData;
-    char *gMsg = (char *)data;;
+    char *gMsg = (char *)data;
     size = theVector.sz * sizeof(double);
     
 #ifndef _WIN32
@@ -684,12 +721,12 @@ UDP_Socket::sendVector(int dbTag, int commitTag,
 int
 UDP_Socket::recvID(int dbTag, int commitTag,
     ID &theID, ChannelAddress *theAddress)
-{	
-    // if o.k. get a pointer to the data in the message and 
+{
+    // if o.k. get a pointer to the data in the message and
     // place the incoming data there
     int size;
     int *data = theID.data;
-    char *gMsg = (char *)data;;
+    char *gMsg = (char *)data;
     size = theID.sz * sizeof(int);
     
     while (size > 0) {
@@ -718,7 +755,7 @@ UDP_Socket::recvID(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            if (memcmp((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength) != 0) {
                     opserr << "UDP_Socket::recvMsg() - a UDP_Socket ";
                     opserr << "can only look at first incoming message\n";
@@ -741,7 +778,7 @@ UDP_Socket::recvID(int dbTag, int commitTag,
 int
 UDP_Socket::sendID(int dbTag, int commitTag,
     const ID &theID, ChannelAddress *theAddress)
-{	
+{
     // set up the address of the Socket to which data will be sent
     if (theAddress != 0) {
         SocketAddress *theSocketAddress = 0;
@@ -749,7 +786,7 @@ UDP_Socket::sendID(int dbTag, int commitTag,
         if (theAddress->getType() == SOCKET_TYPE) {
             theSocketAddress = (SocketAddress *)theAddress;
             
-            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr, 
+            bcopy((char *) &theSocketAddress->address.addr, (char *) &other_Addr.addr,
                 theSocketAddress->addrLength);
             addrLength = theSocketAddress->addrLength;
         }
@@ -762,9 +799,9 @@ UDP_Socket::sendID(int dbTag, int commitTag,
     }
     
     // send the data
-    int size; 
+    int size;
     int *data = theID.data;
-    char *gMsg = (char *)data;;
+    char *gMsg = (char *)data;
     size = theID.sz * sizeof(int);
     
 #ifndef _WIN32
@@ -835,15 +872,15 @@ UDP_Socket::addToProgram()
     GetHostAddr(me,my_InetAddr);
     
     char *newStuff =(char *)malloc(100*sizeof(char));
-    for (int i=0; i<100; i++) 
+    for (int i=0; i<100; i++)
         newStuff[i] = ' ';
     
     strcpy(newStuff,tcp);
-    strcat(newStuff," ");          
+    strcat(newStuff," ");
     strcat(newStuff,my_InetAddr);
     strcat(newStuff," ");
     strcat(newStuff,myPortNum);
-    strcat(newStuff," ");    
+    strcat(newStuff," ");
     
     return newStuff;
 }
@@ -852,17 +889,17 @@ UDP_Socket::addToProgram()
 static int
 GetHostAddr(char *host, char *IntAddr)
 {
-  //    register struct hostent *hostptr;
+  // register struct hostent *hostptr;
   struct hostent *hostptr;
-
-    if ( (hostptr = gethostbyname(host)) == NULL) 
+    
+    if ( (hostptr = gethostbyname(host)) == NULL)
         return (-1);
-
+    
     switch(hostptr->h_addrtype) {
       case AF_INET:
           strcpy(IntAddr,inet_ntoa(*(struct in_addr *)*hostptr->h_addr_list));
           return (0);
-
+      
       default:
           return (-2);
     }
@@ -890,10 +927,10 @@ byte_swap(void *array, long long nArray,int size)
     int half = size/2;
     unsigned char temp;
     unsigned char *out;
-
+    
     if(size < 2)
         return;
-
+    
     for(i=0; i < nArray;i++) {
         out = p + size -1;
         for (j = 0; j < half; ++j)

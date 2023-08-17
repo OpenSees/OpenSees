@@ -114,9 +114,12 @@ target_sources(OPS_Material
       FRPConfinedConcrete02.cpp
       FatigueMaterial.cpp
       #FedeasMaterial.cpp
+      FlagShapeMaterial.cpp
+      GMG_CyclicReinforcedConcrete.cpp
       GNGMaterial.cpp
       HardeningMaterial.cpp
       #HardeningMaterial2.cpp
+      Hertzdamp.cpp
       HookGap.cpp
       HyperbolicGapMaterial.cpp
       HystereticAsym.cpp
@@ -127,6 +130,7 @@ target_sources(OPS_Material
       ImpactMaterial.cpp
       InitStrainMaterial.cpp
       InitStressMaterial.cpp
+      JankowskiImpact.cpp
       KikuchiAikenHDR.cpp
       KikuchiAikenLRB.cpp
       Maxwell.cpp                      # Uses ops_Dt
@@ -140,9 +144,11 @@ target_sources(OPS_Material
       Neoprene.cpp
       OOHystereticMaterial.cpp
       PathIndependentMaterial.cpp
+      PenaltyMaterial.cpp      
       Pinching4Material.cpp
       PrestressedSteelMaterial.cpp
       RambergOsgoodSteel.cpp
+      Ratchet.cpp
       ReinforcingSteel.cpp
       ResilienceMaterialHR.cpp
       SAWSMaterial.cpp
@@ -167,11 +173,13 @@ target_sources(OPS_Material
       SteelFractureDI.cpp
       SteelMP.cpp
       TDConcrete.cpp
+      TDConcreteNL.cpp
       TDConcreteEXP.cpp
       TDConcreteMC10.cpp
       TDConcreteMC10NL.cpp
       TensionOnlyMaterial.cpp
       UniaxialJ2Plasticity.cpp
+      ViscoelasticGap.cpp
       ViscousDamper.cpp
       ViscousMaterial.cpp
       WrapperUniaxialMaterial.cpp
@@ -228,9 +236,12 @@ target_sources(OPS_Material
       FRPConfinedConcrete02.h
       FatigueMaterial.h
       #FedeasMaterial.h
+      FlagShapeMaterial.h
       GNGMaterial.h
+      GMG_CyclicReinforcedConcrete.h
       HardeningMaterial.h
       #HardeningMaterial2.h
+      Hertzdamp.h
       HookGap.h
       HyperbolicGapMaterial.h
       HystereticAsym.h
@@ -241,6 +252,7 @@ target_sources(OPS_Material
       ImpactMaterial.h
       InitStrainMaterial.h
       InitStressMaterial.h
+      JankowskiImpact.h
       KikuchiAikenHDR.h
       KikuchiAikenLRB.h
       Maxwell.h
@@ -254,9 +266,11 @@ target_sources(OPS_Material
       Neoprene.h
       OOHystereticMaterial.h
       PathIndependentMaterial.h
+      PenaltyMaterial.h
       Pinching4Material.h
       PrestressedSteelMaterial.h
       RambergOsgoodSteel.h
+      Ratchet.h
       ReinforcingSteel.h
       ResilienceMaterialHR.h
       SAWSMaterial.h
@@ -280,11 +294,13 @@ target_sources(OPS_Material
       SteelECThermal.h
       SteelMP.h
       TDConcrete.h
+      TDConcreteNL.h
       TDConcreteEXP.h
       TDConcreteMC10.h
       TDConcreteMC10NL.h
       TensionOnlyMaterial.h
       UniaxialJ2Plasticity.h
+      ViscoelasticGap.h
       ViscousDamper.h
       ViscousMaterial.h
       WrapperUniaxialMaterial.h

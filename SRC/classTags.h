@@ -101,6 +101,7 @@
 #define TSERIES_TAG_PeerMotion       11
 #define TSERIES_TAG_PeerNGAMotion       12
 #define TSERIES_TAG_PathTimeSeriesThermal  13  //L.Jiang [ SIF ]
+#define TSERIES_TAG_RampSeries  14  //CDM
 
 #define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2
@@ -152,6 +153,9 @@
 #define MAT_TAG_Concrete07                      37
 #define MAT_TAG_HyperbolicGapMaterial           38
 #define MAT_TAG_ImpactMaterial                  39
+#define MAT_TAG_Hertzdamp                  420
+#define MAT_TAG_JankowskiImpact            421
+#define MAT_TAG_ViscoelasticGap            422
 #define MAT_TAG_ShearPanelMaterial		40
 #define MAT_TAG_SAWSMaterial			41
 #define MAT_TAG_ConcreteL01			42
@@ -240,10 +244,12 @@
 #define MAT_TAG_Trilinwp2 222
 #define MAT_TAG_Trilinwpd 223
 #define MAT_TAG_TDConcrete 224
+#define MAT_TAG_TDConcreteNL 2240
 #define MAT_TAG_TDConcreteEXP 225
 #define MAT_TAG_TDConcreteMC10 226
 #define MAT_TAG_TDConcreteMC10NL 227
 #define MAT_TAG_CoulombDamperMaterial 228
+#define MAT_TAG_FlagShapeMaterial 229
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -297,6 +303,8 @@
 #define MAT_TAG_ExternalUniaxialMaterial 999901
 
 #define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
+
+#define MAT_TAG_GMG_CyclicReinforcedConcrete    9999    // Rasool Ghorbani
 
 
 // GNG material - J.Cook UCanterbury
@@ -839,7 +847,8 @@
 #define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
 #define ELE_TAG_PFEMContact3D             255
 #define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
-
+#define ELE_TAG_E_SFI        			257 // C. N. Lopez
+#define ELE_TAG_TripleFrictionPendulumX               258
 #define ELE_TAG_ExternalElement           99990
 
 

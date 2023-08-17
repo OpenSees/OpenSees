@@ -35,7 +35,9 @@
 #include <UniaxialMaterial.h>
 #include <ElasticMaterial.h>
 #include <NDMaterial.h>
+#include <FiberSection2d.h>
 #include <FiberSection3d.h>
+#include <NDFiberSection2d.h>
 #include <NDFiberSection3d.h>
 
 void* OPS_TubeSection()
@@ -45,6 +47,8 @@ void* OPS_TubeSection()
     opserr << "Want: section Tube tag? matTag? D? t? nfw? nfr? <-nd shape?>" << endln;
     return 0;
   }
+
+  int ndm = OPS_GetNDM();
   
   int tag, matTag;
   double D, t;
@@ -90,20 +94,46 @@ void* OPS_TubeSection()
   TubeSectionIntegration tubesect(D, t, nfw, nfr);
   
   int numFibers = tubesect.getNumFibers();
-  
-  if (OPS_GetNumRemainingInputArgs() > 0) {
-    
-    double shape = 1.0;
-    if (OPS_GetNumRemainingInputArgs() > 1) {
+  bool isND = false; double shape = 1.0;
+  UniaxialMaterial *torsion = 0;
+  bool deleteTorsion = false;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char* flag = OPS_GetString();
+    // read <-nd>
+    if (strcmp(flag,"-nd") == 0)
+      isND = true;
+    // read <-shape shape>
+    if (strcmp(flag,"-shape") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
       if (OPS_GetDoubleInput(&numdata, &shape) < 0) {
 	opserr << "WARNING invalid shape" << endln;
 	opserr << "Tube section: " << tag << endln;
 	return 0;
       }
+      isND = true;
     }
-    
+    // read <-GJ GJ>
+    if (strcmp(flag,"-GJ") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      double GJ;
+      if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	opserr << "WARNING: failed to read GJ\n";
+	return 0;
+      }
+      torsion = new ElasticMaterial(0,GJ);
+      deleteTorsion = true;	    
+    }
+    // read <-torsion tag>
+    if (strcmp(flag,"-torsion") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+      int torsionTag;
+      if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	opserr << "WARNING: failed to read torsion\n";
+	return 0;
+      }
+      torsion = OPS_getUniaxialMaterial(torsionTag);	    
+    }
+  }
+  
+  if (isND) {
     NDMaterial *theSteel = OPS_getNDMaterial(matTag);
-    
     if (theSteel == 0) {
       opserr << "WARNING ND material does not exist\n";
       opserr << "material: " << matTag;
@@ -112,26 +142,18 @@ void* OPS_TubeSection()
     }
     
     NDMaterial **theMats = new NDMaterial *[numFibers];
-    
     tubesect.arrangeFibers(theMats, theSteel);
+
+    if (ndm == 2)
+      theSection = new NDFiberSection2d(tag, numFibers, theMats, tubesect);
+    if (ndm == 3)
+      theSection = new NDFiberSection3d(tag, numFibers, theMats, tubesect, shape);
     
-    // Parsing was successful, allocate the section
-    theSection = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* flag = OPS_GetString();
-      if (strcmp(flag,"-nd") == 0) {
-	theSection = new NDFiberSection3d(tag, numFibers, theMats, tubesect, shape);
-      } else if (strcmp(flag,"-ndWarping") == 0) {
-	opserr << "TubeSection -- not implemented yet for fiber warping section" << endln;
-	theSection = 0;
-	//theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, tubesect, shape);
-      }
-    }
     delete [] theMats;
   }
+
   else {
     UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
-    
     if (theSteel == 0) {
       opserr << "WARNING uniaxial material does not exist\n";
       opserr << "material: " << matTag;
@@ -139,49 +161,25 @@ void* OPS_TubeSection()
       return 0;
     }
     
-    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-    
-    tubesect.arrangeFibers(theMats, theSteel);
-
-
-    UniaxialMaterial *torsion = 0;
-    if (OPS_GetNumRemainingInputArgs() < 2) {
-      opserr << "WARNING torsion not specified for TubeSection\n";
-      opserr << "Use either -GJ $GJ or -torsion $matTag\n";
-      opserr << "\nTubeSection: " << tag << endln;
-      return 0;
-    }
-    const char* opt = OPS_GetString();
-    numdata = 1;
-    bool deleteTorsion = false;
-    if (strcmp(opt, "-GJ") == 0) {
-      double GJ;
-      if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
-	opserr << "WARNING: failed to read GJ\n";
-	return 0;
-      }
-      torsion = new ElasticMaterial(0,GJ);
-      deleteTorsion = true;
-    }
-    if (strcmp(opt, "-torsion") == 0) {
-      int torsionTag;
-      if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
-	opserr << "WARNING: failed to read torsion\n";
-	return 0;
-      }
-      torsion = OPS_getUniaxialMaterial(torsionTag);
-    }
     if (torsion == 0) {
-      opserr << "WARNING torsion not speified for TubeSection\n";
-      opserr << "\nTubeSection section: " << tag << endln;
+      opserr << "WARNING torsion not speified for FiberSection\n";
+      opserr << "\nTube section: " << tag << endln;
       return 0;
     }
     
-    // Parsing was successful, allocate the section
-    theSection = new FiberSection3d(tag, numFibers, theMats, tubesect, *torsion);
+    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+    tubesect.arrangeFibers(theMats, theSteel);
+    
+    if (ndm == 2)
+      theSection = new FiberSection2d(tag, numFibers, theMats, tubesect);
+    if (ndm == 3)
+      theSection = new FiberSection3d(tag, numFibers, theMats, tubesect, *torsion);
+    
+    if (deleteTorsion)
+      delete torsion;
     
     delete [] theMats;
-  }
+  }  
   
   return theSection;
 }
