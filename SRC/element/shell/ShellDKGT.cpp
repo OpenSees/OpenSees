@@ -119,6 +119,89 @@ OPS_ShellDKGT(void)
   return theElement;
 }
 
+void *
+OPS_ShellDKGT(const ID& info)
+{
+
+    if (info.Size() == 0) {
+	opserr << "WARNING: info is empty -- ShellDKGT\n";
+	return 0;
+    }
+
+    // save data
+    static std::map<int,Vector> meshdata;
+    if (info(0) == 1) {
+
+	// check input
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+	if (OPS_GetNumRemainingInputArgs() < 1) {
+	    opserr << "WARNING: insuficient arguments -- secTag <-updateBasis>\n";
+	    return 0;
+	}
+
+	// save data
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(2);
+	mdata.Zero();
+
+	// get secTag
+	int numdata = 1;
+	int secTag;
+	if (OPS_GetIntInput(&numdata, &secTag) < 0) {
+	    opserr << "WARNING: failed to get section tag -- ShellDKGT\n";
+	    return 0;
+	}
+	mdata(0) = (double)secTag;
+
+	// update basis
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	    const char* type = OPS_GetString();
+	    if (strcmp(type, "-updateBasis") == 0) {
+		mdata(1) = 1;
+	    }
+	}
+
+	return &meshdata;
+    }
+
+    // load data
+    if (info(0) == 2) {
+	if (info.Size() < 6) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3\n";
+	    return 0;
+	}
+	int eleTag = info(2);
+
+	// get data
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 2) {
+	    return 0;
+	}
+
+	// get section
+	int secTag = (int)mdata(0);
+	SectionForceDeformation *theSection = OPS_getSectionForceDeformation(secTag);
+	if (theSection == 0) {
+	    opserr << "ERROR:  element ShellDKGT " << info(2) << "section " << secTag << " not found\n";
+	    return 0;
+	}
+
+	// update basis
+	bool updateBasis = false;
+	if (mdata(1) == 1) {
+	    updateBasis = true;
+	}
+
+	return new ShellDKGT(info(2), info(3), info(4), info(5),
+			     *theSection);
+    }
+    
+
+    return 0;
+}
 
 //static data
 Matrix  ShellDKGT::stiff(18,18) ;                   

@@ -44,8 +44,8 @@ target_sources(OPS_Reliability
         WeibullRV.h
 )
 
-target_include_directories(OPS_Reliability PUBLIC $(CMAKE_CURRENT_LIST_DIR))
-target_include_directories(OpenSeesPy PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Reliability PUBLIC ${CMAKE_CURRENT_LIST_DIR})
+target_include_directories(OpenSeesPy PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
 target_sources(OpenSeesPy
     PRIVATE
