@@ -124,6 +124,7 @@
     <ClCompile Include="..\..\..\SRC\recorder\PVDRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\Recorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\RemoveRecorder.cpp" />
+    <ClCompile Include="..\..\..\SRC\recorder\response\CrdTransfResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\TclRecorderCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\CompositeResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\ElementResponse.cpp" />
@@ -156,6 +157,7 @@
     <ClInclude Include="..\..\..\SRC\recorder\PatternRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\Recorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\CompositeResponse.h" />
+    <ClInclude Include="..\..\..\SRC\recorder\response\CrdTransfResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\ElementResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\FiberResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\MaterialResponse.h" />

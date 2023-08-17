@@ -1828,5 +1828,32 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\Damping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\SecStifDamping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\UniformDamping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\URDDamping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\URDDampingbeta.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement3d.h">
+      <Filter>componentElement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulumX.h">
+      <Filter>frictionBearing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.h">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
