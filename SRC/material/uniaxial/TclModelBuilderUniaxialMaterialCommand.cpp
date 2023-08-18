@@ -41,6 +41,24 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Pinching4Material.h>   // NM
 #include <ShearPanelMaterial.h>  // NM
 #include <BarSlipMaterial.h>     // NM
+#include <Bond_SP01.h>	// JZ
+#include <FRCC.h> // FLK + ARB
+#include <SteelMP.h>             //Quan & Michele
+#include <SteelBRB.h>             //Quan & Michele
+#include <SmoothPSConcrete.h>      //Quan & Michele
+#include <SelfCenteringMaterial.h> //JAE
+#include <ASD_SMA_3K.h> //LA
+
+#include <KikuchiAikenHDR.h>
+#include <KikuchiAikenLRB.h>
+#include <AxialSp.h>
+#include <AxialSpHD.h>
+
+#include <SMAMaterial.h>     // Davide Fugazza
+#include <Masonry.h>
+#include <Trilinwp.h>
+#include <Trilinwp2.h>
+#include <Masonryt.h>
 
 #include <Vector.h>
 #include <string.h>
@@ -184,6 +202,7 @@ extern void *OPS_AxialSpHD(void);
 extern void *OPS_KikuchiAikenHDR(void);
 extern void *OPS_KikuchiAikenLRB(void);
 extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
+extern void* OPS_Ratchet(void); // Yi Xiao
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -2094,6 +2113,16 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 			return TCL_ERROR;
 
 	}
+
+    if (strcmp(argv[1], "Ratchet") == 0) {
+        void* theMat = OPS_Ratchet();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+
+    }
+
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)
