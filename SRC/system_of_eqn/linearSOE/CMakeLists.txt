@@ -27,7 +27,7 @@ add_subdirectory(sparseSYM)
 add_subdirectory(umfGEN)
 
 add_subdirectory(profileSPD)
-#add_subdirectory(cg)
+add_subdirectory(cg)
 #add_subdirectory(petsc)
 #add_subdirectory(mumps)
 #add_subdirectory(itpack)

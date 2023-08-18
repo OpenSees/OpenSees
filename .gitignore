@@ -45,6 +45,7 @@ obj
 
 # CLion
 .gitignore
+#.gitignore
 .idea
 cmake-build-debug
 cmake-build-release
@@ -89,6 +90,7 @@ CThreeDimensional.h
 Concrete.h
 forumat.for
 build
+install
 bin
 CMakeListsmy.txt
 __pycache__
