@@ -48,6 +48,9 @@
 #include <Information.h>
 #include <Parameter.h>
 
+#include <Channel.h>
+
+
 void* OPS_Pinching4Material()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -560,13 +563,259 @@ UniaxialMaterial* Pinching4Material::getCopy(void)
 
 int Pinching4Material::sendSelf(int commitTag, Channel &theChannel)
 {
-	return -1;
+
+    // Instantiate a Vector to store the relevant class attributes
+    static Vector data(120);
+
+    // Fill the Vector with class attributes.
+    data(0) = this->getTag();
+	int indx = 0;
+
+	// Backbone parameters
+	data(indx++) = stress1p;
+	data(indx++) = strain1p;
+	data(indx++) = stress2p;
+	data(indx++) = strain2p;
+	data(indx++) = stress3p;
+	data(indx++) = strain3p;
+	data(indx++) = stress4p;
+	data(indx++) = strain4p;
+	data(indx++) = stress1n;
+	data(indx++) = strain1n;
+	data(indx++) = stress2n;
+	data(indx++) = strain2n;
+	data(indx++) = stress3n;
+	data(indx++) = strain3n;
+	data(indx++) = stress4n;
+	data(indx++) = strain4n;
+
+	// material tag
+	data(indx++) = tagMat;
+
+	// Damage parameters
+	data(indx++) = gammaK1;
+	data(indx++) = gammaK2;
+	data(indx++) = gammaK3;
+	data(indx++) = gammaK4;
+	data(indx++) = gammaKLimit;
+	data(indx++) = gammaD1;
+	data(indx++) = gammaD2;
+	data(indx++) = gammaD3;
+	data(indx++) = gammaD4;
+	data(indx++) = gammaDLimit;
+	data(indx++) = gammaF1;
+	data(indx++) = gammaF2;
+	data(indx++) = gammaF3;
+	data(indx++) = gammaF4;
+	data(indx++) = gammaFLimit;
+	data(indx++) = gammaE;
+	data(indx++) = TnCycle;
+	data(indx++) = CnCycle;
+	data(indx++) = DmgCyc;
+
+	// unloading-reloading parameters
+	data(indx++) = rDispP;
+	data(indx++) = rForceP;
+	data(indx++) = uForceP;
+	data(indx++) = rDispN;
+	data(indx++) = rForceN;
+	data(indx++) = uForceN;
+
+	// Converged Material History parameters
+	data(indx++) = Cstate;
+	data(indx++) = Cstrain;
+	data(indx++) = Cstress;
+	data(indx++) = CstrainRate;
+	data(indx++) = lowCstateStrain;
+	data(indx++) = lowCstateStress;
+	data(indx++) = hghCstateStrain;
+	data(indx++) = hghCstateStress;
+	data(indx++) = CminStrainDmnd;
+	data(indx++) = CmaxStrainDmnd;
+	data(indx++) = Cenergy;
+	data(indx++) = CgammaK;
+	data(indx++) = CgammaD;
+	data(indx++) = CgammaF;
+	data(indx++) = gammaKUsed;
+	data(indx++) = gammaFUsed;
+
+	// strength and stiffness parameters
+	data(indx++) = kElasticPos;
+	data(indx++) = kElasticNeg;
+	data(indx++) = kElasticPosDamgd;
+	data(indx++) = kElasticNegDamgd;
+	data(indx++) = uMaxDamgd;
+	data(indx++) = uMinDamgd;
+
+	// energy parameters
+	data(indx++) = energyCapacity;
+	data(indx++) = kunload;
+	data(indx++) = elasticStrainEnergy;
+
+	// Vector-type variable contents
+	for (int k = 0; k<6; k++){
+	  data(indx++) = envlpPosStress[k];
+	  data(indx++) = envlpPosStrain[k];
+	  data(indx++) = envlpNegStress[k];
+	  data(indx++) = envlpNegStrain[k];          
+	  data(indx++) = envlpPosDamgdStress[k];
+	  data(indx++) = envlpNegDamgdStress[k];
+	}
+	for (int k = 0; k<4; k++){
+	  data(indx++) = state3Stress[k];
+	  data(indx++) = state3Strain[k];
+	  data(indx++) = state4Stress[k];
+	  data(indx++) = state4Strain[k];
+	}
+
+	// Send the data vector
+    int res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+    if (res < 0) 
+    {
+        opserr << "Pinching4Material::sendSelf() - failed to send data\n";
+        return res;
+    }
+
+    return res;
 }
 
-int Pinching4Material::recvSelf(int commitTag, Channel &theChannel,
-							   FEM_ObjectBroker & theBroker)
+int Pinching4Material::recvSelf(
+    int commitTag, Channel &theChannel,
+	FEM_ObjectBroker & theBroker)
 {
-	return -1;
+
+	// Instantiate a Vector to store the relevant class attributes
+    static Vector data(120);
+
+    int res = theChannel.recvVector(this->getDbTag(), commitTag, data);
+    if (res < 0) 
+    {
+        opserr << "Pinching4Material::recvSelf() - failed to receive data\n";
+        return res;
+    }
+
+    // Assign the received values to the class attributes
+
+    this->setTag((int)data(0));
+
+	int indx = 0;
+	
+	// Backbone parameters
+	stress1p = data(indx++);
+	strain1p = data(indx++);
+	stress2p = data(indx++);
+	strain2p = data(indx++);
+	stress3p = data(indx++);
+	strain3p = data(indx++);
+	stress4p = data(indx++);
+	strain4p = data(indx++);
+	stress1n = data(indx++);
+	strain1n = data(indx++);
+	stress2n = data(indx++);
+	strain2n = data(indx++);
+	stress3n = data(indx++);
+	strain3n = data(indx++);
+	stress4n = data(indx++);
+	strain4n = data(indx++);
+
+	// material tag
+	tagMat = (int)data(indx++);
+
+	// Damage parameters
+	gammaK1 = data(indx++);
+	gammaK2 = data(indx++);
+	gammaK3 = data(indx++);
+	gammaK4 = data(indx++);
+	gammaKLimit = data(indx++);
+	gammaD1 = data(indx++);
+	gammaD2 = data(indx++);
+	gammaD3 = data(indx++);
+	gammaD4 = data(indx++);
+	gammaDLimit = data(indx++);
+	gammaF1 = data(indx++);
+	gammaF2 = data(indx++);
+	gammaF3 = data(indx++);
+	gammaF4 = data(indx++);
+	gammaFLimit = data(indx++);
+	gammaE = data(indx++);
+	TnCycle = data(indx++);
+	CnCycle = data(indx++);
+	DmgCyc = (int)data(indx++);
+
+	// unloading-reloading parameters
+	rDispP = data(indx++);
+	rForceP = data(indx++);
+	uForceP = data(indx++);
+	rDispN = data(indx++);
+	rForceN = data(indx++);
+	uForceN = data(indx++);
+
+	// Converged Material History parameters
+	Cstate = (int)data(indx++);
+	Cstrain = data(indx++);
+	Cstress = data(indx++);
+	CstrainRate = data(indx++);
+	lowCstateStrain = data(indx++);
+	lowCstateStress = data(indx++);
+	hghCstateStrain = data(indx++);
+	hghCstateStress = data(indx++);
+	CminStrainDmnd = data(indx++);
+	CmaxStrainDmnd = data(indx++);
+	Cenergy = data(indx++);
+	CgammaK = data(indx++);
+	CgammaD = data(indx++);
+	CgammaF = data(indx++);
+	gammaKUsed = data(indx++);
+	gammaFUsed = data(indx++);
+
+	// strength and stiffness parameters
+	kElasticPos = data(indx++);
+	kElasticNeg = data(indx++);
+	kElasticPosDamgd = data(indx++);
+	kElasticNegDamgd = data(indx++);
+	uMaxDamgd = data(indx++);
+	uMinDamgd = data(indx++);
+
+	// energy parameters
+	energyCapacity = data(indx++);
+	kunload = data(indx++);
+	elasticStrainEnergy = data(indx++);
+
+	// Vector-type variable contents
+	for (int k = 0; k<6; k++){
+	  envlpPosStress[k] = data(indx++);
+	  envlpPosStrain[k] = data(indx++);
+	  envlpNegStress[k] = data(indx++);
+	  envlpNegStrain[k] = data(indx++);
+	  envlpPosDamgdStress[k] = data(indx++);
+	  envlpNegDamgdStress[k] = data(indx++);
+	}
+	for (int k = 0; k<4; k++){
+	  state3Stress[k] = data(indx++);
+	  state3Strain[k] = data(indx++);
+	  state4Stress[k] = data(indx++);
+	  state4Strain[k] = data(indx++);
+	}
+
+	// Set trial variables to the last converged values
+	Tstress = Cstress;
+	Tstrain = Cstrain;
+	Ttangent = 0.0;
+	Tstate = Cstate;
+	dstrain = 0.0;
+	TstrainRate = CstrainRate;
+	lowTstateStrain = lowCstateStrain;
+	lowTstateStress = lowCstateStress;
+	hghTstateStrain = hghCstateStrain;
+	hghTstateStress = hghCstateStress;
+	TminStrainDmnd = CminStrainDmnd;
+	TmaxStrainDmnd = CmaxStrainDmnd;
+	Tenergy = Cenergy;
+	TgammaK = CgammaK;
+	TgammaD = CgammaD;
+	TgammaF = CgammaF;
+	
+    return res;
 }
 
 void Pinching4Material::Print(OPS_Stream &s, int flag)
