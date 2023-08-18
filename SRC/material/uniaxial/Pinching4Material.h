@@ -162,7 +162,7 @@ private:
 	double TgammaD;
 	double TgammaF;
 
-	// strength and stiffness parameters;
+	// strength and stiffness parameters
 	double kElasticPos;
 	double kElasticNeg;
 	double kElasticPosDamgd;
