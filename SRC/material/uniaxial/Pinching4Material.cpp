@@ -565,7 +565,7 @@ int Pinching4Material::sendSelf(int commitTag, Channel &theChannel)
 {
 
     // Instantiate a Vector to store the relevant class attributes
-    static Vector data(120);
+    static Vector data(119);
 
     // Fill the Vector with class attributes.
     data(0) = this->getTag();
@@ -588,9 +588,6 @@ int Pinching4Material::sendSelf(int commitTag, Channel &theChannel)
 	data(indx++) = strain3n;
 	data(indx++) = stress4n;
 	data(indx++) = strain4n;
-
-	// material tag
-	data(indx++) = tagMat;
 
 	// Damage parameters
 	data(indx++) = gammaK1;
@@ -685,7 +682,7 @@ int Pinching4Material::recvSelf(
 {
 
 	// Instantiate a Vector to store the relevant class attributes
-    static Vector data(120);
+    static Vector data(119);
 
     int res = theChannel.recvVector(this->getDbTag(), commitTag, data);
     if (res < 0) 
@@ -717,9 +714,6 @@ int Pinching4Material::recvSelf(
 	strain3n = data(indx++);
 	stress4n = data(indx++);
 	strain4n = data(indx++);
-
-	// material tag
-	tagMat = (int)data(indx++);
 
 	// Damage parameters
 	gammaK1 = data(indx++);
