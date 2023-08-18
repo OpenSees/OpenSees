@@ -559,8 +559,9 @@ int Pinching4Material::sendSelf(int commitTag, Channel &theChannel)
     static Vector data(119);
 
     // Fill the Vector with class attributes.
-    data(0) = this->getTag();
-	int indx = 1;
+	int indx = 0;
+
+	data(indx++) = this->getTag();
 
 	// Backbone parameters
 	data(indx++) = stress1p;
@@ -684,9 +685,9 @@ int Pinching4Material::recvSelf(
 
     // Assign the received values to the class attributes
 
-    this->setTag((int)data(0));
+	int indx = 0;
 
-	int indx = 1;
+	this->setTag((int)data(indx++));
 	
 	// Backbone parameters
 	stress1p = data(indx++);
