@@ -29,12 +29,11 @@ set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
 
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/cmake")
-include(OpenSeesFunctions)
+#What is the purpose of "OpenSeesFunctions"... adds unnecessary steps to build
+#include(OpenSeesFunctions)
 
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
-
-#cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
 #
 # Compiler SPECIFIC
@@ -66,7 +65,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
       set(BUILD_SHARED_LIBS OFF)
       set(CMAKE_POSITION_INDEPENDENT_CODE ON)
       set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")        
-      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT /W0")
+      set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /MT /W0 /nologo")
     else()
       add_compile_options(-fPIC)
     endif()
@@ -145,15 +144,13 @@ endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   if(CMAKE_GENERATOR MATCHES "Ninja")
-    # Prevent a "command line is too long" failure in Windows.
-    set(CMAKE_NINJA_FORCE_RESPONSE_FILE 1)
-    message(STATUS "Force Ninja to use Response Files to prevent command line is too long error")
+    set(CMAKE_Fortran_PREPROCESS OFF)
   endif()
-    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
-    add_compile_definitions(_WIN32 _TCL85)
   if (NOT_USING_CONAN)
     include(OpenSeesDependenciesWin)
   endif()      
+  target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
+  add_compile_definitions(_WIN32 _TCL85)
 endif()
 
 #==============================================================================
@@ -166,7 +163,7 @@ endif()
 
 # Fortran
 #--------------------------------------
-enable_language(Fortran)
+#enable_language(Fortran)   # Redundant project(... Fortran ...) does this already
 
 # C++
 #--------------------------------------
@@ -194,68 +191,12 @@ set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 # Global Includes
 #----------------------------------------------------------------
 # include paths to main abstract classes
- 
-# NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
+# include all directories with CMakeLists.txt files through glob
+# Searching for *.h masks when CMakeLists.txt are not setup
 
-include_directories(
-  ${OPS_SRC_DIR}
-  ${OPS_SRC_DIR}/matrix
-  ${OPS_SRC_DIR}/handler
-  ${OPS_SRC_DIR}/database
-  ${OPS_SRC_DIR}/element
-  ${OPS_SRC_DIR}/element/forceBeamColumn
-  ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
-  ${OPS_SRC_DIR}/coordTransformation
-  ${OPS_SRC_DIR}/damping
-  ${OPS_SRC_DIR}/tagged
-  ${OPS_SRC_DIR}/tagged/storage
-  ${OPS_SRC_DIR}/recorder
-  ${OPS_SRC_DIR}/renderer
-  ${OPS_SRC_DIR}/damage
-  ${OPS_SRC_DIR}/recorder/response
-  ${OPS_SRC_DIR}/material
-  ${OPS_SRC_DIR}/material/section
-  ${OPS_SRC_DIR}/material/uniaxial
-  ${OPS_SRC_DIR}/material/nD
-  ${OPS_SRC_DIR}/graph/graph
-  ${OPS_SRC_DIR}/graph/numberer
-  ${OPS_SRC_DIR}/graph/partitioner
-  ${OPS_SRC_DIR}/domain/component
-  ${OPS_SRC_DIR}/domain/domain
-  ${OPS_SRC_DIR}/domain/subdomain
-  ${OPS_SRC_DIR}/domain/load
-  ${OPS_SRC_DIR}/domain/loadBalancer
-  ${OPS_SRC_DIR}/domain/pattern
-  ${OPS_SRC_DIR}/domain/groundMotion
-  ${OPS_SRC_DIR}/domain/node
-  ${OPS_SRC_DIR}/domain/constraints
-  ${OPS_SRC_DIR}/domain/region
-  ${OPS_SRC_DIR}/analysis/algorithm
-  ${OPS_SRC_DIR}/analysis/dof_grp
-  ${OPS_SRC_DIR}/analysis/fe_ele
-  ${OPS_SRC_DIR}/analysis/algorithm/equiSolnAlgo
-  ${OPS_SRC_DIR}/analysis/algorithm/eigenAlgo
-  ${OPS_SRC_DIR}/analysis/algorithm/domainDecompAlgo
-  ${OPS_SRC_DIR}/analysis/analysis
-  ${OPS_SRC_DIR}/analysis/integrator
-  ${OPS_SRC_DIR}/analysis/handler
-  ${OPS_SRC_DIR}/analysis/numberer
-  ${OPS_SRC_DIR}/analysis/model
-  ${OPS_SRC_DIR}/convergenceTest
-  ${OPS_SRC_DIR}/modelbuilder
-  ${OPS_SRC_DIR}/system_of_eqn
-  ${OPS_SRC_DIR}/system_of_eqn/linearSOE
-  ${OPS_SRC_DIR}/system_of_eqn/eigenSOE
-  ${OPS_SRC_DIR}/actor/actor
-  ${OPS_SRC_DIR}/actor/channel
-  ${OPS_SRC_DIR}/actor/objectBroker
-  ${OPS_SRC_DIR}/actor/message
-)
-
-# TODO: Temporary fix; include all directories with .h files through glob
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
-    ${OPS_SRC_DIR}/*.h
-    ${OPS_BUNDLED_DIR}/*.h
+    ${OPS_SRC_DIR}/CMakeLists.txt
+    ${OPS_BUNDLED_DIR}/CMakeLists.txt
 )
 set(OPS_INCLUDE_DIRS "")
 foreach(filepath ${ops_include_files})
@@ -265,7 +206,6 @@ endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 
 include_directories(${OPS_INCLUDE_DIRS})
-# end TODO
 
 # ##############################################################
 #
@@ -409,8 +349,11 @@ if(MPI_FOUND)
 
   #MUMPS
   MESSAGE(STATUS "Looking for MUMPS...")
-  find_package(MUMPS QUIET)
+  set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${MUMPS_DIR}")
+  find_package(MUMPS)
   if (NOT MUMPS_FOUND)
+    # Add MUMPS as external project. Downloads source, builds it, and installs it in
+    # top-level project build directory for linking against.
     message(STATUS "MUMPS NOT Found. Build it from source...")
     unset(MUMPS_DIR CACHE)
     include(ExternalProject)
@@ -422,7 +365,7 @@ if(MPI_FOUND)
       CMAKE_CACHE_ARGS   "-Darith:STRING=d"
       BUILD_ALWAYS      True
       BUILD_COMMAND ${CMAKE_COMMAND} --build <BINARY_DIR> --config <CONFIG>
-      INSTALL_COMMAND ""
+      INSTALL_COMMAND ${CMAKE_COMMAND} --install <BINARY_DIR> --prefix <INSTALL_DIR>
     )
     ExternalProject_Get_property(mumps BINARY_DIR)
     set (MUMPS_FLAG -D_MUMPS)  
@@ -435,11 +378,6 @@ if(MPI_FOUND)
     message(STATUS "MUMPS_LIBRARIES: ${MUMPS_LIBRARIES}")
   else()
     set (MUMPS_FLAG -D_MUMPS)  
-    if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-      set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
-    else()
-      set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
-    endif()
   endif()
 
   #SUPERLU_DIST
@@ -449,7 +387,7 @@ if(MPI_FOUND)
     MESSAGE(STATUS "SUPERLU_DIST Not Found... Use bundled version")
     set (SUPERLU_DIST_FOUND TRUE CACHE BOOL "providing own SUPERLU_DIST lib")
     unset(SUPERLU_DIST_DIR CACHE)
-    add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
+    add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3")
   endif()
   
   #METIS
@@ -466,7 +404,6 @@ if(MPI_FOUND)
 else()
   message(STATUS "MPI was NOT found.")
 endif()
-
 
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
@@ -553,10 +490,8 @@ add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_InterpTcl          STATIC)
 
 target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  target_include_directories(OPS_InterpTcl PUBLIC ${TCL_INCLUDE_PATH})
-  target_link_libraries(OPS_InterpTcl PRIVATE ${TCL_LIBRARIES})
-endif()
+target_include_directories(OPS_InterpTcl PUBLIC ${TCL_INCLUDE_PATH})
+target_link_libraries(OPS_InterpTcl PRIVATE ${TCL_LIBRARIES})
 
 #
 # OpenSees G3 Library - a slimmed down OpenSees
@@ -917,10 +852,7 @@ endif()
 
 # Reliability
 #----------------------------
-#if ("OPS_Reliability" IN_LIST OPS_Extension_List)
-    add_compile_definitions(_RELIABILITY)
-    #target_link_libraries(${OPS_FINAL_TARGET} OPS_Reliability)
-#endif()
+add_compile_definitions(_RELIABILITY)
 
 
 #----------------------------
