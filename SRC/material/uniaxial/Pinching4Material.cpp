@@ -186,10 +186,6 @@ Pinching4Material::Pinching4Material(int tag,
 	energyCapacity = 0.0; kunload = 0.0; elasticStrainEnergy = 0.0;
 
 
-#ifdef _G3DEBUG
-	fg = new FileStream();
-	fg->setFile("PinchDamage.out", APPEND);
-#endif
 	// set envelope slopes
 	this->SetEnvelope();
 
@@ -273,9 +269,7 @@ Pinching4Material::Pinching4Material():
 
 Pinching4Material::~Pinching4Material()
 {
-#ifdef _G3DEBUG
-	fg->close();
-#endif
+
 }
 
 int Pinching4Material::setTrialStrain(double strain, double CstrainRate)
@@ -408,9 +402,6 @@ int Pinching4Material::commitState(void)  {
 
 	CnCycle = TnCycle; // number of cycles of loading
 
-#ifdef _G3DEBUG
-	(*fg) << tagMat << "  " << CgammaF << "  " << CgammaK << "  " << CgammaD << endln;
-#endif
 	return 0;
 }
 

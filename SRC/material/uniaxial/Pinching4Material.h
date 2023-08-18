@@ -190,9 +190,6 @@ private:
 	double Envlp4Stress(Vector , Vector , double);
 	void updateDmg(double, double);
 
-#ifdef _G3DEBUG
-	FileStream* fg;
-#endif
 
 };
 #endif
