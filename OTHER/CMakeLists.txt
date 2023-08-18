@@ -1,33 +1,39 @@
-#==============================================================================
-# 
-#        OpenSees -- Open System For Earthquake Engineering Simulation
-#                Pacific Earthquake Engineering Research Center
-#
-#     (c) Copyright 1999-2021 The Regents of the University of California
-#                             All Rights Reserved
-# (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
-#
-#------------------------------------------------------------------------------
-# Pre-compile OpenSees numeric libraries
-#==============================================================================
+##CDM: 18-Aug-2023
+# Commented entire file to see what breaks. The project referenced in this CMake List
+# does not appear to be used anywhere else in the main project.
+# If this breaks something (not related to building the core OpenSees program), then
+# this should be refactored.
 
-cmake_minimum_required(VERSION 3.16)
-project(OpenSeesNumPack)
+# #==============================================================================
+# # 
+# #        OpenSees -- Open System For Earthquake Engineering Simulation
+# #                Pacific Earthquake Engineering Research Center
+# #
+# #     (c) Copyright 1999-2021 The Regents of the University of California
+# #                             All Rights Reserved
+# # (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
+# #
+# #------------------------------------------------------------------------------
+# # Pre-compile OpenSees numeric libraries
+# #==============================================================================
 
-set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
+# cmake_minimum_required(VERSION 3.16)
+# project(OpenSeesNumPack)
 
-add_subdirectory(AMD)
-add_subdirectory(UMFPACK)
-add_subdirectory(ITPACK)
-add_subdirectory(ARPACK)
-add_subdirectory(SuperLU_5.1.1)
-add_subdirectory(CSPARSE)
+# set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
-if(MPI_FOUND)
-message("adding MUMPS and SUPERLU_DIST")
-add_subdirectory(MUMPS_5.4.1)
-add_subdirectory(SUPERLU_DIST_4.3/SRC)
-else()
-message("NOT adding MUMPS and SUPERLU_DIST")
-endif()
+# add_subdirectory(AMD)
+# add_subdirectory(UMFPACK)
+# add_subdirectory(ITPACK)
+# add_subdirectory(ARPACK)
+# add_subdirectory(SuperLU_5.1.1)
+# add_subdirectory(CSPARSE)
+
+# if(MPI_FOUND)
+# message("adding MUMPS and SUPERLU_DIST")
+# add_subdirectory(MUMPS_5.4.1)
+# add_subdirectory(SUPERLU_DIST_4.3/SRC)
+# else()
+# message("NOT adding MUMPS and SUPERLU_DIST")
+# endif()
 
