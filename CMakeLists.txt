@@ -87,34 +87,11 @@ endif()
 add_library(OPS_External_packages INTERFACE)
 add_library(OPS_OS_Specific_libs INTERFACE)
 
-# 
-# Conan (manages external dependencies for a typical build)
-# 
-
-MESSAGE(STATUS "CMAKE_BINARY_DIR: ${CMAKE_BINARY_DIR}")
-
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-
-   MESSAGE("USING CONAN")
-   include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-   conan_basic_setup()
-   set (HDF5_FOUND TRUE)
-   set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
-   set (HDF5_VERSION "1.12.0")
-   set(USING_CONAN TRUE)
-   set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
-   set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
-
-else()
-
-  MESSAGE("NOT USING CONAN")
-  include(OpenSeesFunctions)
-  set(NOT_USING_CONAN TRUE)
-  set (CONAN_LIBS )
-  find_package(HDF5 REQUIRED)
-  find_package(TCL REQUIRED)
-
-endif()
+# Conan 2.X no longer needs to be mentioned at all in the CMakeLists.txt file
+# Conan now works with the CMake find_package() tools natively
+#include(OpenSeesFunctions)
+find_package(HDF5 REQUIRED)
+find_package(TCL REQUIRED)
 
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
@@ -122,35 +99,29 @@ set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
 
 #
 # OS Configuration:
-#  defines: compile flags & user supplied paths and includes if not using conan
+#  defines: compile flags
 #
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
   add_compile_definitions(_LINUX _UNIX _TCL85)
-  if (NOT_USING_CONAN)
-    include(OpenSeesDependenciesUnix)
-  endif()
+  include(OpenSeesDependenciesUnix)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
   set(OPS_Use_Graphics_Option None)
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
   add_compile_definitions(_LINUX _UNIX _TCL85)
-  if (NOT_USING_CONAN)
-    include(OpenSeesDependenciesUnix)
-  endif()  
+  include(OpenSeesDependenciesUnix)
 endif()
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   if(CMAKE_GENERATOR MATCHES "Ninja")
     set(CMAKE_Fortran_PREPROCESS OFF)
   endif()
-  if (NOT_USING_CONAN)
-    include(OpenSeesDependenciesWin)
-  endif()      
   target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
   add_compile_definitions(_WIN32 _TCL85)
+  include(OpenSeesDependenciesWin)  
 endif()
 
 #==============================================================================
@@ -582,24 +553,7 @@ add_executable(OpenSees EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
 )
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
-
-  FILE(COPY ${CONAN_LIB_DIRS_TCL}/tcl8.6
-       DESTINATION ${PROJECT_BINARY_DIR}/lib/tcl8.6
-       FILES_MATCHING PATTERN .tcl)
-     
-else ()
-     FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
-     add_custom_command(
-      TARGET OpenSees POST_BUILD
-  COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
-      COMMAND ${CMAKE_COMMAND} -E copy
-        ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
-     )
-endif()
-
+target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
 
 target_link_libraries(OpenSees
   OPS_InterpTcl 
@@ -611,7 +565,6 @@ target_link_libraries(OpenSees
   OPS_Recorder
   ${CMAKE_DL_LIBS} 
   ${HDF5_LIBRARIES} 
-  ${CONAN_LIBS}
 )
 
 
@@ -668,7 +621,6 @@ if(MPI_FOUND)
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
-       ${CONAN_LIBS}
        ${MPI_CXX_LIBRARIES}
        ${SCALAPACK_LIBRARIES}
        ${MPI_Fortran_LIBRARIES}       
@@ -731,7 +683,6 @@ if(MPI_FOUND)
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS} 
        ${HDF5_LIBRARIES} 
-       ${CONAN_LIBS}
        ${MPI_CXX_LIBRARIES}
        ${SCALAPACK_LIBRARIES}
        ${MPI_Fortran_LIBRARIES}       
@@ -760,7 +711,6 @@ target_link_libraries(OpenSeesPy
    OPS_Recorder
    OPS_Numerics 
    ${HDF5_LIBRARIES} 
-   ${CONAN_LIBS} 
    ${Python_LIBRARIES}
 )
 
