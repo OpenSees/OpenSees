@@ -11,36 +11,55 @@
 #
 # Major sections:
 # - General Setup
-# - External Libreries (Conan or User supplied paths)
+# - External Libraries (Conan or User supplied paths)
 # - Libraries
 # - Executables
 # - Option Application
 #
 #==============================================================================
 
+# CMake minimum version requirement
 cmake_minimum_required(VERSION 3.23)
-project(OpenSeesFramework LANGUAGES C CXX Fortran)
 
+MESSAGE("==== Configure CMake Build for OpenSees Framework") 
+
+#---- Check if a multi-configuration generator is used and set a build type if none was specified
+get_property(is_multi_config GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+if(NOT is_multi_config AND NOT (CMAKE_BUILD_TYPE OR DEFINED ENV{CMAKE_BUILD_TYPE}))
+  set(CMAKE_BUILD_TYPE Release CACHE STRING "Release default")
+  MESSAGE(STATUS "CMAKE_BUILD_TYPE not set, defaulting to Release") 
+endif()
+
+MESSAGE(STATUS "CMAKE_BUILD_TYPE: ${CMAKE_BUILD_TYPE}")
+
+project(OpenSeesFramework 
+  LANGUAGES C CXX Fortran
+  VERSION 3.5.1
+  DESCRIPTION "Open System for Earthquake Engineering Simulation"
+  HOMEPAGE_URL "https://opensees.berkeley.edu/index.php"
+)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_C_STANDARD 11)
+set(CMAKE_FORTRAN_STANDARD 08)
+
+set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
-set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
-set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
-set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
-set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC/")
+set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER")
+set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER")
+set(OPS_BUNDLED_DIR "${PROJECT_SOURCE_DIR}/OTHER")
+set(OPS_SRC_DIR "${PROJECT_SOURCE_DIR}/SRC")
 
-set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${PROJECT_SOURCE_DIR}/cmake/cmake")
-#What is the purpose of "OpenSeesFunctions"... adds unnecessary steps to build
-#include(OpenSeesFunctions)
+#---- Make project-provided Find modules available
+list(APPEND CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/cmake/cmake")
 
-# include user config
+#---- include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
-#
-# Compiler SPECIFIC
-#
-
+#---- Compiler Specific Settings 
+MESSAGE("==== Set Compiler Specific Settings") 
 # On CMake 3.25 or older CXX_COMPILER_FRONTEND_VARIANT is not always set
-
 if(CMAKE_CXX_COMPILER_FRONTEND_VARIANT STREQUAL "")
   set(CMAKE_CXX_COMPILER_FRONTEND_VARIANT "${CMAKE_CXX_COMPILER_ID}")
 endif()
@@ -80,27 +99,25 @@ else()
     MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
 endif()
  
-#
-# external packages
-#
-
+# --- External packages
 add_library(OPS_External_packages INTERFACE)
 add_library(OPS_OS_Specific_libs INTERFACE)
 
-# Conan 2.X no longer needs to be mentioned at all in the CMakeLists.txt file
-# Conan now works with the CMake find_package() tools natively
+# --- Dependencies
+# Set cache variable CMAKE_PROJECT_TOP_LEVEL_INCLUDES to include the path of a dependency provider 
+# Configuration file. For Conan, this is "${sourceDir}/cmake/cmake/conan_provider.cmake" 
+MESSAGE("==== Search for Dependencies")
 #include(OpenSeesFunctions)
+find_package(TCL REQUIRED )
 find_package(HDF5 REQUIRED)
-find_package(TCL REQUIRED)
 
-# define user-selectable options for end target
+
+# --- Define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS 
     G3 OpenSees OpenSeesMP OpenSeesSP OpenSeesPy)
 
-#
-# OS Configuration:
+# --- OS Configuration:
 #  defines: compile flags
-#
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
@@ -124,47 +141,11 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
   include(OpenSeesDependenciesWin)  
 endif()
 
-#==============================================================================
-#                            General Setup
-#
-#==============================================================================
-#----------------------------------------------------------------
-# Compilers
-#---------------------------------------------------------------- 
-
-# Fortran
-#--------------------------------------
-#enable_language(Fortran)   # Redundant project(... Fortran ...) does this already
-
-# C++
-#--------------------------------------
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_FORTRAN_STANDARD 08)
-
-set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
-#add_compile_options(-g)
-
-# Warnings
-#opensees_add_cxx_flag(
-#    GNU  -Wall
-#    MSVC /W0
-#)
-
-# Floating-point
-#opensees_add_cxx_flag(
-#    GNU  -ffloat-store
-#    MSVC /fp:precise
-#)
-
-#----------------------------------------------------------------
-# Global Includes
-#----------------------------------------------------------------
+# --- Global Includes
 # include paths to main abstract classes
 # include all directories with CMakeLists.txt files through glob
 # Searching for *.h masks when CMakeLists.txt are not setup
-
+include_directories(${OPS_SRC_DIR})
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
     ${OPS_SRC_DIR}/CMakeLists.txt
     ${OPS_BUNDLED_DIR}/CMakeLists.txt
@@ -178,17 +159,8 @@ list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 
 include_directories(${OPS_INCLUDE_DIRS})
 
-# ##############################################################
-#
-# NUMERICAL and OpenSees LIBRARIES
-#
-# ##############################################################
-
-#
-# NUMERICAL LIBRARIES
-#
-
-###
+# --- Numerical Libraries
+MESSAGE("==== Search for and Add Numerical and Other Libraries")
 # To allow the CMake build to work better with existing package or module build 
 # workflows, check if the user has defined the location of any of the following
 # external packages before adding the bundled "/OTHER/<package>" subdirectories 
@@ -196,25 +168,23 @@ include_directories(${OPS_INCLUDE_DIRS})
 # Even if a "FIND_<PACKAGE>" module does not currently exist in CMAKE_ROOT or 
 # CMAKE_MODULE_PATH, add the command anyways (with "QUIET" designation) incase 
 # one is added in future updates
-###
 
 #SUPERLU
-MESSAGE(STATUS "Looking for SUPERLU...")
+MESSAGE("Looking for SUPERLU...")
 find_package(SUPERLU )
 if(NOT SUPERLU_FOUND)
   MESSAGE(STATUS "SUPERLU Not Found... Use bundled version")
   set (SUPERLU_FOUND TRUE CACHE BOOL "providing own SUPERLU lib")
-  unset(SUPERLU_LIBRARIES CACHE)
   unset(SUPERLU_INCLUDES CACHE)
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_5.1.1")
   set (SUPERLU_LIBRARIES SUPERLU)
 endif()
 
 #UMFPACK
-MESSAGE(STATUS "Looking for User UMFPACK...${UMFPACK}")
+MESSAGE("Looking for UMFPACK...${UMFPACK}")
 find_package(UMFPACK QUIET)
 if(NOT UMFPACK_FOUND)
-  MESSAGE(STATUS "User UMFPACK Not Found... Use bundled version")
+  MESSAGE(STATUS "UMFPACK Not Found... Use bundled version")
   set (UMFPACK_FOUND TRUE CACHE BOOL "providing own UMFPACK lib")
   unset(UMFPACK_DIR CACHE)
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/UMFPACK")
@@ -222,10 +192,10 @@ if(NOT UMFPACK_FOUND)
 endif()
 
 #AMD
-MESSAGE(STATUS "Looking for User AMD...${AMD}")
+MESSAGE("Looking for AMD...${AMD}")
 find_package(AMD )
 if(NOT AMD_FOUND)
-  MESSAGE(STATUS "User AMD Not Found... Use bundled version")
+  MESSAGE(STATUS "AMD Not Found... Use bundled version")
   set (AMD_FOUND TRUE CACHE BOOL "providing own AMD lib")
   unset(AMD_AMD_INCLUDE_DIR CACHE)
   unset(AMD_LIBRARY CACHE)
@@ -234,10 +204,10 @@ if(NOT AMD_FOUND)
 endif()
 
 #ARPACK
-MESSAGE(STATUS "Looking for User ARPACK...")
+MESSAGE("Looking for ARPACK...")
 find_package(ARPACK )
 if(NOT ARPACK_FOUND)
-  MESSAGE(STATUS "User ARPACK Not Found... Use bundled version")
+  MESSAGE(STATUS "ARPACK Not Found... Use bundled version")
   set (ARPACK_FOUND TRUE CACHE BOOL "providing own ARPACK lib")
   unset(ARPACK_LIBRARIES CACHE)
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ARPACK")
@@ -245,10 +215,10 @@ if(NOT ARPACK_FOUND)
 endif()
 
 #CSPARSE
-MESSAGE(STATUS "Looking for User CSPARSE...")
+MESSAGE("Looking for CSPARSE...")
 find_package(CSPARSE QUIET)
 if(NOT CSPARSE_FOUND)
-  MESSAGE(STATUS "User CSPARSE Not Found... Use bundled version")
+  MESSAGE(STATUS "CSPARSE Not Found... Use bundled version")
   set (CSPARSE_FOUND TRUE CACHE BOOL "providing own CSPARSE lib")
   unset(CSPARSE_DIR CACHE)
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/CSPARSE")
@@ -256,10 +226,10 @@ if(NOT CSPARSE_FOUND)
 endif()
 
 #TETGEN
-MESSAGE(STATUS "Looking for User TETGEN...")
+MESSAGE("Looking for TETGEN...")
 find_package(TETGEN QUIET)
 if(NOT TETGEN_FOUND)
-  MESSAGE(STATUS "User TETGEN Not Found... Use bundled version")
+  MESSAGE(STATUS "TETGEN Not Found... Use bundled version")
   set (TETGEN_FOUND TRUE CACHE BOOL "providing own TETGEN lib")
   unset(TETGEN_DIR CACHE)
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
@@ -267,10 +237,10 @@ if(NOT TETGEN_FOUND)
 endif()
 
 #TRIANGLE
-MESSAGE(STATUS "Looking for User TRIANGLE...")
+MESSAGE("Looking for TRIANGLE...")
 find_package(TRIANGLE QUIET)
 if(NOT TRIANGLE_FOUND)
-  MESSAGE(STATUS "User TRIANGLE Not Found... Use bundled version")
+  MESSAGE(STATUS "TRIANGLE Not Found... Use bundled version")
   set (TRIANGLE_FOUND TRUE CACHE BOOL "providing own TRIANGLE lib")
   unset(TRIANGLE_DIR CACHE)
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
@@ -278,31 +248,21 @@ if(NOT TRIANGLE_FOUND)
 endif()
 
 #LAPACK
-MESSAGE(STATUS "Looking for LAPACK...")
+MESSAGE("Looking for LAPACK...")
 find_package(LAPACK)
-if(NOT LAPACK_FOUND)  
-  MESSAGE(STATUS "LAPACK Not Found...")
-  set (LAPACK_FOUND TRUE CACHE BOOL "providing own LAPACK lib")
-endif()
-
-find_package (Python COMPONENTS Interpreter Development)
-
-
-find_package(MPI)
-find_package(MKL)
-
-
 if(LAPACK_FOUND)
   message(STATUS "LAPACK was found.")
-  message(STATUS "LAPACK_LINKER_FLAGS = ${LAPACK_LINKER_FLAGS}")
   message(STATUS "LAPACK_LIBRARIES = ${LAPACK_LIBRARIES}" )
 else()
   MESSAGE(STATUS "LAPACK NOT FOUND ... Use bundled version")
+  set (LAPACK_FOUND TRUE CACHE BOOL "providing own LAPACK lib")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/BLAS") 
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/LAPACK")
   set(LAPACK_LIBRARIES LAPACK)
 endif()
 
+MESSAGE("Looking for PYTHON...")
+find_package (Python COMPONENTS Interpreter Development)
 if(PYTHON_FOUND)
   message(STATUS "Python_FOUND:${Python_FOUND}")
   message(STATUS "Python_VERSION:${Python_VERSION}")
@@ -313,6 +273,9 @@ else()
   message(STATUS "PYTHON NOT FOUND")
 endif()
 
+
+MESSAGE("Looking for MPI...")
+find_package(MPI)
 
 if(MPI_FOUND)
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
@@ -376,6 +339,8 @@ else()
   message(STATUS "MPI was NOT found.")
 endif()
 
+MESSAGE("Looking for MKL...")
+find_package(MKL)
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
   set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
@@ -388,8 +353,8 @@ else()
   message(STATUS "MKL NOT found .. user to provide -DSCALAPACK_LIBRARIES=")
 
   #SCALAPACK
-  MESSAGE(STATUS "Looking for SCALAPACK...")
-  find_package(SCALAPACK QUIET)
+  MESSAGE("Looking for SCALAPACK...")
+  find_package(SCALAPACK)
   if(SCALAPACK_FOUND)
     MESSAGE(STATUS "SCALAPACK Found")
     message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
@@ -412,10 +377,8 @@ target_link_libraries(OPS_Numerics INTERFACE
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})
 
-#
-# OpenSees OBJECT LIBRARIES
-#
-
+# --- OpenSees OBJECT LIBRARIES
+MESSAGE("==== Add OpenSees Object Libraries")
 add_library(OPS_Matrix             OBJECT)
 add_library(OPS_Actor              OBJECT)
 add_library(OPS_ObjectBroker       OBJECT)
@@ -443,10 +406,8 @@ add_library(OPS_INTERPRETER        OBJECT)
 
 include_directories(${TCL_INCLUDE_PATH})
 
-#
-# Optional Extensions
-#
-
+# --- Optional Extensions
+MESSAGE("==== Add OpenSees Optional Extensions")
 add_library(OPS_Paraview           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Renderer           OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Graphics           OBJECT EXCLUDE_FROM_ALL)
@@ -454,20 +415,16 @@ add_library(OPS_Graphics_Default   OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_Graphics_GL        OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
 
-#
-# Tcl Interpreter Library & special include and link directives
-#
-
+# --- Tcl Interpreter Library & special include and link directives
+MESSAGE("==== Add OpenSees Tcl Interpreter Library")
 add_library(OPS_InterpTcl          STATIC)
 
 target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
 target_include_directories(OPS_InterpTcl PUBLIC ${TCL_INCLUDE_PATH})
 target_link_libraries(OPS_InterpTcl PRIVATE ${TCL_LIBRARIES})
 
-#
-# OpenSees G3 Library - a slimmed down OpenSees
-#
-
+# --- OpenSees G3 Library - a slimmed down OpenSees
+MESSAGE("==== Add OpenSees G3 Library")
 add_library(G3) 
 
 target_link_libraries(G3
@@ -492,10 +449,8 @@ target_link_libraries(G3
     OPS_INTERPRETER
 )
 
-#
-# OpenSees Libray
-#
-
+# --- OpenSees Libray
+MESSAGE("==== Add OpenSees Library")
 add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
 target_link_libraries(OpenSeesLIB
@@ -532,20 +487,11 @@ target_link_libraries(OpenSeesLIB
 )
 
 
-# ########################################################################
-#
-# EXECUTABLES
-#
-# ########################################################################
-
+# --- EXECUTABLES
 # Adding EXCLUDE_FROM_ALL prevents these from being made by default.
-
-#
-# OpenSees Tcl Interpreter
-#
-
-
-
+MESSAGE("==== Add OpenSees Executables")
+# --- OpenSees Tcl Interpreter
+MESSAGE(STATUS "Add OpenSees Tcl Interpreter")
 add_executable(OpenSees EXCLUDE_FROM_ALL 
   ${OPS_SRC_DIR}/tcl/tclAppInit.cpp
   ${OPS_SRC_DIR}/tcl/tclMain.cpp
@@ -568,10 +514,8 @@ target_link_libraries(OpenSees
 )
 
 
-#
-# OpenSeesSP Tcl Parallel Interpreter
-#
-
+# --- OpenSeesSP Tcl Parallel Interpreter
+MESSAGE(STATUS "Add OpenSeesSP Tcl Parallel Interpreter")
 
 if(MPI_FOUND)
 
@@ -629,11 +573,8 @@ if(MPI_FOUND)
     
 endif()
 
-
-#
-# OpenSeesMP Tcl MPI Interpreter
-#
-
+# --- OpenSeesMP Tcl MPI Interpreter
+MESSAGE(STATUS "Add OpenSeesMP Tcl MPI Interpreter")
 if(MPI_FOUND)
 
     add_executable(OpenSeesMP EXCLUDE_FROM_ALL 
@@ -692,10 +633,8 @@ if(MPI_FOUND)
 endif()
 
 
-#
-# OpenSeesPy Module
-#
-
+# --- OpenSeesPy Module
+MESSAGE(STATUS "Add OpenSeesPy Module")
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
     ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
@@ -715,10 +654,8 @@ target_link_libraries(OpenSeesPy
 )
 
 
-#
-# INSTALL
-#
-
+# --- INSTALL
+MESSAGE("==== Configure OpenSees Installation")
 install (TARGETS OpenSees DESTINATION bin)
 
 # Set selected executable to be built by default
@@ -726,22 +663,6 @@ set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
-
-
-
-
-#==============================================================================
-#                            Configure targets
-#
-#==============================================================================
-
-#target_link_libraries(OPS_Numerics     INTERFACE ${OPS_Numlib_List})
-#message("Numlibs: ${OPS_Numlib_List}")
-#target_link_libraries(OPS_Element      PRIVATE ${OPS_Element_List})
-#target_link_libraries(OPS_ObjectBroker PRIVATE ${OPS_Element_List})
-#target_link_libraries(OPS_InterpTcl    PRIVATE ${OPS_Element_List})
-
-
 
 #==============================================================================
 #                            Apply Options
@@ -825,3 +746,6 @@ endif()
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
 endif()
+
+
+MESSAGE("==== CMake Build Configuration for OpenSees Framework ... COMPLETE")
