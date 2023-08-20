@@ -109,6 +109,7 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 MESSAGE("==== Search for Dependencies")
 #include(OpenSeesFunctions)
 find_package(TCL REQUIRED )
+set(TCL_INCLUDE_PATH ${TCL_INCLUDE_PATH} ${TCL_INCLUDE_DIRS})
 find_package(HDF5 REQUIRED)
 
 
