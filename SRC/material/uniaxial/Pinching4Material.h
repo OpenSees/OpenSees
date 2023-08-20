@@ -105,10 +105,7 @@ private:
 		Vector envlpPosStress; Vector envlpPosStrain; 
 		Vector envlpNegStress; Vector envlpNegStrain;
 
-		int tagMat;  // material tag
-
 	// Damage parameters
-
 	double gammaK1; double gammaK2; double gammaK3; double gammaK4; double gammaKLimit;
 	double gammaD1; double gammaD2; double gammaD3; double gammaD4; double gammaDLimit;
 	double gammaF1; double gammaF2; double gammaF3; double gammaF4; double gammaFLimit;
