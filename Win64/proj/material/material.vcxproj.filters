@@ -580,6 +580,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\SimplifiedJ2.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ASDConcrete3DMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\TclModelBuilderNDMaterialCommand.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -653,6 +656,9 @@
       <Filter>nD\wrappers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicMaterial.cpp">
+      <Filter>nD\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\Series3DMaterial.cpp">
       <Filter>nD\wrappers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.cpp">
@@ -1466,6 +1472,30 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConcreteZBH_smoothed.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FlagShapeMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Hertzdamp.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\JankowskiImpact.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscoelasticGap.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GMG_CyclicReinforcedConcrete.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TDConcreteNL.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PenaltyMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Ratchet.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1906,6 +1936,9 @@
     <ClInclude Include="..\..\..\SRC\material\nD\SimplifiedJ2.h">
       <Filter>nD</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\ASDConcrete3DMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\WrapperNDMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
@@ -1973,6 +2006,9 @@
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicMaterial.h">
+      <Filter>nD\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\Series3DMaterial.h">
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.h">
@@ -2700,6 +2736,9 @@
       <Filter>nD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HystereticSMMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteNL.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>

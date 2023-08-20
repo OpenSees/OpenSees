@@ -84,12 +84,86 @@ void *OPS_ElasticBeam2d(const ID &info) {
         return 0;
     }
 
+    // Read optional arguments first
+    int numOptionalArgs = 0;
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      std::string type = OPS_GetString();
+      if (type == "-alpha") {
+	numOptionalArgs++;
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
+	  if (OPS_GetDoubleInput(&numData, &alpha) < 0) {
+	    opserr << "WARNING: failed to get alpha" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;
+	}
+      }
+      else if (type == "-depth") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;
+	  if (OPS_GetDoubleInput(&numData, &depth) < 0) {
+	    opserr << "WARNING: failed to get depth" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  
+	}
+      }
+      else if (type == "-release" || type == "-releasez") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
+	  if (OPS_GetIntInput(&numData, &release) < 0) {
+	    opserr << "WARNING: failed to get release" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  
+	}
+      }
+      else if (type == "-mass") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
+	  if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+	    opserr << "WARNING: failed to get mass" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  	  
+	}
+      }
+      else if (type == "-cMass") {
+	numOptionalArgs++;	
+	cMass = 1;
+      }
+      else if (type == "-damp") {
+	numOptionalArgs++;	
+	if(OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
+	  if (OPS_GetIntInput(&numData,&dampingTag) < 0)
+	    return 0;
+	  numOptionalArgs++;	  
+	  theDamping = OPS_getDamping(dampingTag);
+	  if(theDamping == 0) {
+	    opserr << "ElasticBeam2d - damping not found" << endln;
+	    return 0;
+	  }
+	}
+      }      
+    }
+
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);
+    }
+    numArgs = numArgs - numOptionalArgs;
+
     /*!
 2. for regular elements, which are not in a mesh,
 to get element tag and node tags
     */
     if (info.Size() == 0) {
-        if (OPS_GetNumRemainingInputArgs() < 5) {
+        if (numArgs < 5) {
             opserr << "insufficient "
                       "arguments:eleTag,iNode,jNode,<A,E,Iz>or<"
                       "sectionTag>,transfTag\n";
@@ -102,14 +176,14 @@ to get element tag and node tags
             opserr << "WARNING failed to read integers\n";
             return 0;
         }
+	numArgs -= numData;
     }
-
     /*!
 3. for regular elements and those in a mesh
 to get element data
     */
     if (info.Size() == 0 || info(0) == 1) {
-        if (OPS_GetNumRemainingInputArgs() > 3) {
+        if (numArgs > 3) {
             // Read A, E, Iz
             numData = 3;
             if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
@@ -125,59 +199,16 @@ to get element data
             }
             section = true;
         }
-        if (OPS_GetNumRemainingInputArgs() < 1) {
+
+	numArgs -= numData;
+	
+        if (numArgs < 1) {
           opserr << "WARNING: transfTag is needed\n";
         }
         numData = 1;
         if (OPS_GetIntInput(&numData, &transfTag) < 0) {
             opserr << "WARNING transfTag is not integer\n";
             return 0;
-        }
-
-        // options
-        while (OPS_GetNumRemainingInputArgs() > 0) {
-            std::string type = OPS_GetString();
-            if (type == "-alpha") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &alpha) < 0) {
-                        opserr << "WARNING: failed to get alpha";
-                        return 0;
-                    }
-                }
-            } else if (type == "-depth") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &depth) < 0) {
-                        opserr << "WARNING: failed to get depth";
-                        return 0;
-                    }
-                }
-            } else if (type == "-release" || type == "-releasez") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetIntInput(&numData, &release) < 0) {
-                        opserr << "WARNING: failed to get release";
-                        return 0;
-                    }
-                }
-
-            } else if (type == "-mass") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
-                        opserr << "WARNING: failed to get mass";
-                        return 0;
-                    }
-                }
-            } else if (type == "-cMass") {
-                cMass = 1;
-	          } else if (type == "-damp") {
-	              if(OPS_GetNumRemainingInputArgs() > 0) {
-                    if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
-	          	      theDamping = OPS_getDamping(dampingTag);
-                    if(theDamping == 0) {
-	                      opserr<<"damping not found\n";
-	                      return 0;
-                    }
-	              }
-            }
         }
     }
 
@@ -416,24 +447,34 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
 ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
 			     CrdTransf &coordTransf, double Alpha, double depth, double r, int cm, int rel,
                  Damping *damping)
-  :Element(tag,ELE_TAG_ElasticBeam2d), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
+  :Element(tag,ELE_TAG_ElasticBeam2d), A(0.0), E(1.0), I(0.0),
+   alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
   theDamping(0)
 {
-  E = 1.0;
-  rho = r;
-  cMass = cm;
+  // Try to find E in the section
+  const char *argv[1] = {"E"};
+  int argc = 1;
+  Parameter param;
+  int ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    E = param.getValue();
 
+  if (E == 0.0) {
+    opserr << "ElasticBeam2d::ElasticBeam2d - E from section is zero, using E = 1" << endln;
+    E = 1.0;
+  }
+  
   const Matrix &sectTangent = section.getInitialTangent();
   const ID &sectCode = section.getType();
   for (int i=0; i<sectCode.Size(); i++) {
     int code = sectCode(i);
     switch(code) {
     case SECTION_RESPONSE_P:
-      A = sectTangent(i,i);
+      A = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MZ:
-      I = sectTangent(i,i);
+      I = sectTangent(i,i)/E;
       break;
     default:
       break;

@@ -493,6 +493,9 @@ EnvelopeNodeRecorder::~EnvelopeNodeRecorder()
       delete theTimeSeries[i];
     delete [] theTimeSeries;
   }
+
+  if (timeSeriesValues != 0)
+    delete [] timeSeriesValues;  
 }
 
 int 

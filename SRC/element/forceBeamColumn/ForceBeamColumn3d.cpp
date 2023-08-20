@@ -115,8 +115,8 @@ void* OPS_ForceBeamColumn3d()
     }
 
     // options
-    double mass = 0.0, tol=1e-12;
-    int maxIter = 10;
+    double mass = 0.0, tol=1e-12, subFac=10.0;
+    int maxIter = 10, numSub = 4;
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
@@ -128,6 +128,17 @@ void* OPS_ForceBeamColumn3d()
 		}
 		if(OPS_GetDoubleInput(&numData,&tol) < 0) {
 		    opserr << "WARNING invalid tol\n";
+		    return 0;
+		}
+	    }
+	} else if(strcmp(type,"-subdivide") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&numSub) < 0) {
+		    opserr << "WARNING invalid numSubdivide\n";
+		    return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&subFac) < 0) {
+		    opserr << "WARNING invalid subdivideFactor\n";
 		    return 0;
 		}
 	    }
@@ -172,7 +183,7 @@ void* OPS_ForceBeamColumn3d()
     }
 
     Element *theEle =  new ForceBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac);
     delete [] sections;
     return theEle;
 }
@@ -180,8 +191,8 @@ void* OPS_ForceBeamColumn3d()
 void *OPS_ForceBeamColumn3d(const ID &info) {
     // data needed
     int iData[5];
-    double mass = 0.0, tol = 1e-12;
-    int maxIter = 10;
+    double mass = 0.0, tol = 1e-12, subFac=10.0;
+    int maxIter = 10, numSub = 4;
     int numData;
 
     int ndm = OPS_GetNDM();
@@ -232,7 +243,19 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
                         return 0;
                     }
                 }
-            } else if (strcmp(type, "-mass") == 0) {
+            } else if(strcmp(type,"-subdivide") == 0) {
+	      if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&numSub) < 0) {
+		  opserr << "WARNING invalid numSubdivide\n";
+		  return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&subFac) < 0) {
+		  opserr << "WARNING invalid subdivideFactor\n";
+		  return 0;
+		}
+	      }
+	    }
+	    else if (strcmp(type, "-mass") == 0) {
                 if (OPS_GetNumRemainingInputArgs() > 0) {
                     if (OPS_GetDoubleInput(&numData, &mass) < 0) {
                         opserr << "WARNING invalid mass\n";
@@ -253,12 +276,14 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
 
         // save the data for a mesh
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(5);
+        mdata.resize(7);
         mdata(0) = iData[3];
         mdata(1) = iData[4];
         mdata(2) = mass;
         mdata(3) = tol;
         mdata(4) = maxIter;
+	mdata(5) = numSub;
+	mdata(6) = subFac;	
         return &meshdata;
     }
 
@@ -282,6 +307,8 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
         mass = mdata(2);
         tol = mdata(3);
         maxIter = mdata(4);
+	numSub = mdata(5);
+	subFac = mdata(6);
     }
 
     // 5: create element
@@ -318,7 +345,7 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
 
     Element *theEle = new ForceBeamColumn3d(
         iData[0], iData[1], iData[2], secTags.Size(), sections, *bi,
-        *theTransf, mass, maxIter, tol);
+        *theTransf, mass, maxIter, tol, numSub, subFac);
     delete[] sections;
     return theEle;
 }
@@ -334,7 +361,7 @@ ForceBeamColumn3d::ForceBeamColumn3d():
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0), Ssr(0), vscommit(0),
   numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(12),
-  Ki(0), isTorsion(false), parameterID(0),
+  Ki(0), isTorsion(false), maxSubdivisions(1), subdivideFactor(1.0), parameterID(0),
   theDamping(0)
 {
   load.Zero();
@@ -351,6 +378,7 @@ ForceBeamColumn3d::ForceBeamColumn3d (int tag, int nodeI, int nodeJ,
 				      BeamIntegration &bi,
 				      CrdTransf &coordTransf, double massDensPerUnitLength,
 				      int maxNumIters, double tolerance,
+				      int maxNumSub, double subFac,
 				      Damping *damping):
   Element(tag,ELE_TAG_ForceBeamColumn3d), connectedExternalNodes(2),
   beamIntegr(0), numSections(0), sections(0), crdTransf(0),
@@ -360,9 +388,14 @@ ForceBeamColumn3d::ForceBeamColumn3d (int tag, int nodeI, int nodeJ,
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0),Ssr(0), vscommit(0),
   numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(12),
-  Ki(0), isTorsion(false), parameterID(0),
+  Ki(0), isTorsion(false), maxSubdivisions(maxNumSub), subdivideFactor(subFac), parameterID(0),
   theDamping(0)
 {
+  if (maxSubdivisions < 1)
+    maxSubdivisions = 1;
+  if (subdivideFactor < 1.0)
+    subdivideFactor = 1.0;
+  
   load.Zero();
   
   theNodes[0] = 0;
@@ -934,10 +967,11 @@ void
     dvToDo = dv;
     dvTrial = dvToDo;
 
-    static double factor = 10;
+    //static double factor = 10;
+    double factor = subdivideFactor;
     double dW0 = 0.0;
 
-    maxSubdivisions = 10;
+    //maxSubdivisions = 10;
 
     // fmk - modification to get compatible ele forces and deformations 
     //   for a change in deformation dV we try first a newton iteration, if
@@ -983,28 +1017,6 @@ void
 	    f.Zero();
 	    vr.Zero();
 
-	    if (beamIntegr->addElasticFlexibility(L, f) < 0) {
-	      vr(0) += f(0,0)*SeTrial(0);
-	      vr(1) += f(1,1)*SeTrial(1) + f(1,2)*SeTrial(2);
-	      vr(2) += f(2,1)*SeTrial(1) + f(2,2)*SeTrial(2);
-	      vr(3) += f(3,3)*SeTrial(3) + f(3,4)*SeTrial(4);
-	      vr(4) += f(4,3)*SeTrial(3) + f(4,4)*SeTrial(4);
-	      vr(5) += f(5,5)*SeTrial(5);
-	    }
-
-        double v0[5];
-        v0[0] = v0[1] = v0[2] = v0[3] = v0[4] = 0.0;
-
-        for (int ie = 0; ie < numEleLoads; ie++)
-            beamIntegr->addElasticDeformations(eleLoads[ie], eleLoadFactors[ie], L, v0);
-        
-        // Add effects of element loads
-	vr(0) += v0[0];
-	vr(1) += v0[1];
-	vr(2) += v0[2];
-	vr(3) += v0[3];
-	vr(4) += v0[4];
-	
 	for (i=0; i<numSections; i++) {
 	  
 	  int order      = sections[i]->getOrder();
@@ -1893,7 +1905,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     int i, j , k;
     int loc = 0;
 
-    static ID idData(13);  
+    static ID idData(15);  
     idData(0) = this->getTag();
     idData(1) = connectedExternalNodes(0);
     idData(2) = connectedExternalNodes(1);
@@ -1901,7 +1913,8 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     idData(4) = maxIters;
     idData(5) = initialFlag;
     idData(6) = (isTorsion) ? 1 : 0;
-
+    idData(13) = maxSubdivisions;
+    
     idData(7) = crdTransf->getClassTag();
     int crdTransfDbTag  = crdTransf->getDbTag();
     if (crdTransfDbTag  == 0) {
@@ -1995,13 +2008,14 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
        secDefSize   += size;
     }
 
-    Vector dData(1+1+NEBD+NEBD*NEBD+secDefSize + 4); 
+    Vector dData(1+1+1+NEBD+NEBD*NEBD+secDefSize + 4); 
     loc = 0;
 
     // place double variables into Vector
     dData(loc++) = rho;
     dData(loc++) = tol;
-
+    dData(loc++) = subdivideFactor;
+  
     // put  distrLoadCommit into the Vector
     //  for (i=0; i<NL; i++) 
     //dData(loc++) = distrLoadcommit(i);
@@ -2050,7 +2064,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     int dbTag = this->getDbTag();
     int i,j,k;
 
-    static ID idData(13); // one bigger than needed 
+    static ID idData(15); // one bigger than needed 
 
     if (theChannel.recvID(dbTag, commitTag, idData) < 0)  {
       opserr << "ForceBeamColumn3d::recvSelf() - failed to recv ID data\n";
@@ -2064,7 +2078,8 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     maxIters = idData(4);
     initialFlag = idData(5);
     isTorsion = (idData(6) == 1) ? true : false;
-
+    maxSubdivisions = idData(13);
+    
     int crdTransfClassTag = idData(7);
     int crdTransfDbTag = idData(8);
 
@@ -2278,7 +2293,8 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
     // place double variables into Vector
     rho = dData(loc++);
     tol = dData(loc++);
-
+    subdivideFactor = dData(loc++);
+  
     // put  distrLoadCommit into the Vector
     //for (i=0; i<NL; i++) 
     // distrLoad(i) = dData(loc++);
@@ -2358,9 +2374,6 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
 
     double L = crdTransf->getInitialLength();
     double oneOverL  = 1.0/L;  
-
-    // Flexibility from elastic interior
-    beamIntegr->addElasticFlexibility(L, fe);
 
     double xi[maxNumSections];
     beamIntegr->getSectionLocations(numSections, L, xi);
@@ -3451,9 +3464,6 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
       }
     }
 
-    d2z += beamIntegr->getTangentDriftI(L, LIz, Se(1), Se(2));
-    d2y += beamIntegr->getTangentDriftI(L, LIy, Se(3), Se(4), true);
-
     for (i = numSections-1; i >= 0; i--) {
       double x = pts[i]*L;
       const ID &type = sections[i]->getType();
@@ -3475,9 +3485,6 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 	d3y += (wts[i]*L)*kappa*b;
       }
     }
-
-    d3z += beamIntegr->getTangentDriftJ(L, LIz, Se(1), Se(2));
-    d3y += beamIntegr->getTangentDriftJ(L, LIy, Se(3), Se(4), true);
 
     static Vector d(4);
     d(0) = d2z;
@@ -4216,9 +4223,6 @@ ForceBeamColumn3d::computedqdh(int gradNumber)
   static Matrix dfedh(6,6);
   dfedh.Zero();
 
-  if (beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh) < 0)
-    dvdh.addMatrixVector(1.0, dfedh, Se, -1.0);
-  
   //opserr << "dfedh: " << dfedh << endln;
 
   static Vector dqdh(6);
@@ -4241,8 +4245,6 @@ ForceBeamColumn3d::computedfedh(int gradNumber)
 
   double dLdh = crdTransf->getdLdh();
   double d1oLdh = crdTransf->getd1overLdh();
-
-  beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh);
 
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);

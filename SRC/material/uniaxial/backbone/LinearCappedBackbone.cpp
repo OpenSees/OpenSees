@@ -35,6 +35,49 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
+#include <elementAPI.h>
+
+void *
+OPS_LinearCappedBackbone(void)
+{
+  HystereticBackbone *theBackbone = 0;
+
+  if (OPS_GetNumRemainingInputArgs() < 5) {
+    opserr << "Invalid number of args, want: hystereticBackbone LinearCapped tag? bbTag? eCap? E? sRes?" << endln;
+    return 0;
+  }
+
+  int iData[2];
+  double dData[3];
+  
+  int numData = 2;
+  if (OPS_GetIntInput(&numData, iData) != 0) {
+    opserr << "WARNING invalid tags for hystereticBackbone LinearCapped" << endln;
+    return 0;
+  }
+  numData = 3;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "WARNING invalid values for hystereticBackbone LinearCapped" << endln;
+    return 0;
+  }  
+
+  HystereticBackbone *bb = OPS_getHystereticBackbone(iData[1]);
+  if (bb == 0) {
+    opserr << "WARNING backbone does not exist" << endln;
+    opserr << "backbone: " << iData[1] << endln;
+    opserr << "hystereticBackbone Capped: " << iData[0] << endln;
+    return 0;
+  }
+
+  theBackbone = new LinearCappedBackbone(iData[0], *bb, dData[0], dData[1], dData[2]);
+  if (theBackbone == 0) {
+    opserr << "WARNING could not create LinearCappedBackbone\n";
+    return 0;
+  }
+
+  return theBackbone;  
+}
+
 LinearCappedBackbone::LinearCappedBackbone(int tag, HystereticBackbone &backbone,
 					   double def, double slope, double res):
   HystereticBackbone(tag,BACKBONE_TAG_LinearCapped),
@@ -93,9 +136,13 @@ LinearCappedBackbone::getEnergy (double strain)
 {
   if (strain < eCap)
     return theBackbone->getEnergy(strain);
-  else
+  else if (strain < eRes)
     return theBackbone->getEnergy(eCap) +
       0.5*(sCap + this->getStress(strain))*(strain-eCap);
+  else
+    return theBackbone->getEnergy(eCap) +
+      0.5*(sCap + sRes)*(eRes - eCap) +
+      sRes*(strain-eRes);
 }
 
 double

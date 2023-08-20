@@ -20,6 +20,7 @@
                                                                        
 // Created: M. Chiaramonte,  P. Arduino,  P.Mackenzie-Helnwein, UW, 03.29.2011
 // Modified: Alborz Ghofrani, UW, 2011
+// Modified: Amin Pakzad, UW, 2023
 //
 // Description: This file contains the implementation of the Quad4FiberOverlay class
 
@@ -43,6 +44,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stdio.h> 
+
 
 Matrix Quad4FiberOverlay::FiberK(8,8);
 Vector Quad4FiberOverlay::P(8);
@@ -609,7 +611,85 @@ int
 Quad4FiberOverlay::recvSelf(int commitTag, Channel &theChannel,
                                                 FEM_ObjectBroker &theBroker)
 {
-	/////////NEEDS TO BE ADDED//////////
+	int res;
+	int dataTag = this->getDbTag();
+	Vector data(18);
+	res = theChannel.recvVector(dataTag, commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING Quad4FiberOverlay::recvSelf() - failed to receive Vector\n";
+		return -1;
+	}
+	int eleTag = (int)data(0);
+	this->setTag(eleTag);
+	iStartNode = (int)data(1);
+	iEndNode   = (int)data(2);
+	jStartNode = (int)data(3);
+	jEndNode   = (int)data(4);
+	int matClassTag = (int)data(5);
+	int matDbTag = (int)data(6);
+	Af = data(7);
+	nFi[0] = data(8);
+	nFi[1] = data(9);
+	nFj[0] = data(10);
+	nFj[1] = data(11);
+	beta1 = data(12);
+	beta2 = data(13);
+	Qfi[0] = data(14);
+	Qfi[1] = data(15);
+	Qfj[0] = data(16);
+	Qfj[1] = data(17);
+
+	
+	res = theChannel.recvID(dataTag, commitTag, externalNodes);
+	if (res < 0) {
+		opserr << "WARNING Quad4FiberOverlay::recvSelf() - failed to receive ID\n";
+		return -2;
+	}
+	//Set up integration parameters 
+	A.Zero();
+	AA.Zero();
+	A = nFj - nFi;
+	A.Normalize();
+	AA(0) = A(0) * A(0);
+	AA(1) = A(1) * A(1);
+	AA(2) = A(1) * A(0);
+
+	//Set up integration parameters 
+	pts[0] = 0.5 * (nFi(0) + nFj(0));
+	pts[1] = 0.5 * (nFi(1) + nFj(1));
+	wts = 2.0;
+
+	// finally, Quad4FiberOverlay creates a material object of the correct type, sets its
+    // database tag, and asks this new object to receive itself
+	int matClass = (int)data(5);
+	int matDb = (int)data(6);
+
+	// check if material object exists and that it is the right type
+	if ((theMaterial == 0) || (theMaterial->getClassTag() != matClass)) {
+
+		// if old one, delete it
+		if (theMaterial != 0)
+			delete theMaterial;
+
+		// create new material object
+		UniaxialMaterial* theMatCopy = theBroker.getNewUniaxialMaterial(matClass);
+		theMaterial = theMatCopy;
+
+		if (theMaterial == 0) {
+			opserr << "WARNING Quad4FiberOverlay::recvSelf() - " << this->getTag()
+				<< " failed to get a blank Material of type " << matClass << endln;
+			return -3;
+		}
+	}
+
+	// NOTE: we set the dbTag before we receive the material
+	theMaterial->setDbTag(matDb);
+	res = theMaterial->recvSelf(commitTag, theChannel, theBroker);
+	if (res < 0) {
+		opserr << "WARNING Quad4FiberOverlay::recvSelf() - " << this->getTag() << " failed to receive its Material\n";
+		return -3;
+	}
+
 	return 0;
 }
 
@@ -617,6 +697,66 @@ Quad4FiberOverlay::recvSelf(int commitTag, Channel &theChannel,
 int
 Quad4FiberOverlay::sendSelf(int commitTag, Channel &theChannel)
 {
-	/////////NEEDS TO BE ADDED//////////
+	int res;
+	int dataTag = this->getDbTag();
+	int eleTag = this->getTag();
+	int matClassTag = theMaterial->getClassTag();
+	int matDbTag = theMaterial->getDbTag();
+	if (matDbTag == 0) {
+		matDbTag = theChannel.getDbTag();
+		if (matDbTag != 0) {
+			theMaterial->setDbTag(matDbTag);
+		}
+	}
+	Vector data(18);
+	data(0)  = eleTag;
+	data(1)  = iStartNode;
+	data(2)  = iEndNode;
+	data(3)  = jStartNode;
+	data(4)  = jEndNode;
+	data(5)  = matClassTag;
+	// NOTE: we have to ensure that the material has a database tag if we are sending to a database channel
+	if (matDbTag == 0) {
+		matDbTag = theChannel.getDbTag();
+		if (matDbTag != 0)
+			theMaterial->setDbTag(matDbTag);
+	}
+	data(6) = matDbTag;
+	data(7)  = Af;
+	data(8)  = nFi[0];
+	data(9)  = nFi[1];
+	data(10) = nFj[0];
+	data(11) = nFj[1];
+	data(12) = beta1;
+	data(13) = beta2;
+	data(14) = Qfi[0];
+	data(15) = Qfi[1];
+	data(16) = Qfj[0];
+	data(17) = Qfj[1];
+	
+	
+
+	res = theChannel.sendVector(dataTag, commitTag, data);
+	if (res < 0) {
+		opserr << "WARNING Quad4FiberOverlay::sendSelf() - failed to send Vector\n";
+		return -1;
+	}
+	ID IDdata(4);
+	IDdata(0) = externalNodes(0);
+	IDdata(1) = externalNodes(1);
+	IDdata(2) = externalNodes(2);
+	IDdata(3) = externalNodes(3);
+
+	res = theChannel.sendID(dataTag, commitTag, IDdata);
+	if (res < 0) {
+		opserr << "WARNING Quad4FiberOverlay::sendSelf() - failed to send ID\n";
+		return -2;
+	}
+
+	res = theMaterial->sendSelf(commitTag, theChannel);
+	if (res < 0) {
+		opserr << "WARNING Quad4FiberOverlay::sendSelf() - failed to send the Material\n";
+		return -3;
+	}
 	return 0;
 }

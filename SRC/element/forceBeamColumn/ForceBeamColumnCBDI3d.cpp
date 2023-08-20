@@ -910,29 +910,6 @@ ForceBeamColumnCBDI3d::update()
     f.Zero();
     vr.Zero();
     
-    if (beamIntegr->addElasticFlexibility(L, f) < 0) {
-      vr(0) += f(0,0)*SeTrial(0);
-      vr(1) += f(1,1)*SeTrial(1) + f(1,2)*SeTrial(2);
-      vr(2) += f(2,1)*SeTrial(1) + f(2,2)*SeTrial(2);
-      vr(3) += f(3,3)*SeTrial(3) + f(3,4)*SeTrial(4);
-      vr(4) += f(4,3)*SeTrial(3) + f(4,4)*SeTrial(4);
-      vr(5) += f(5,5)*SeTrial(5);
-    }
-    
-    double v0[5];
-    v0[0] = 0.0; v0[1] = 0.0; v0[2] = 0.0;
-    v0[3] = 0.0; v0[4] = 0.0;
-    
-    for (int ie = 0; ie < numEleLoads; ie++) 
-      beamIntegr->addElasticDeformations(eleLoads[ie], eleLoadFactors[ie], L, v0);
-    
-    // Add effects of element loads
-    vr(0) += v0[0];
-    vr(1) += v0[1];
-    vr(2) += v0[2];
-    vr(3) += v0[3];
-    vr(4) += v0[4];
-    
     bool isGamma  = false;
     bool isGammaz = false;    
     
@@ -2333,9 +2310,6 @@ ForceBeamColumnCBDI3d::getInitialFlexibility(Matrix &fe)
   double L = crdTransf->getInitialLength();
   double oneOverL  = 1.0/L;  
   
-  // Flexibility from elastic interior
-  beamIntegr->addElasticFlexibility(L, fe);
-  
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
   
@@ -3702,8 +3676,6 @@ ForceBeamColumnCBDI3d::getResponse(int responseID, Information &eleInfo)
       d2 += (wts[i]*L)*kappa*b;
     }
     
-    d2 += beamIntegr->getTangentDriftI(L, LI, Se(1), Se(2));
-    
     for (i = numSections-1; i >= 0; i--) {
       double x = pts[i]*L;
       if (x < LI)
@@ -3718,8 +3690,6 @@ ForceBeamColumnCBDI3d::getResponse(int responseID, Information &eleInfo)
       d3 += (wts[i]*L)*kappa*b;
     }
     
-    d3 += beamIntegr->getTangentDriftJ(L, LI, Se(1), Se(2));
-
     static Vector d(2);
     d(0) = d2;
     d(1) = d3;
@@ -4544,9 +4514,6 @@ ForceBeamColumnCBDI3d::computedqdh(int gradNumber)
   static Matrix dfedh(6,6);
   dfedh.Zero();
 
-  if (beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh) < 0)
-    dvdh.addMatrixVector(1.0, dfedh, Se, -1.0);
-  
   //opserr << "dfedh: " << dfedh << endln;
 
   static Vector dqdh(3);
@@ -4569,8 +4536,6 @@ ForceBeamColumnCBDI3d::computedfedh(int gradNumber)
 
   double dLdh = crdTransf->getdLdh();
   double d1oLdh = crdTransf->getd1overLdh();
-
-  beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh);
 
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);

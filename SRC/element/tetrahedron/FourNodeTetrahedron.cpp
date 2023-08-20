@@ -198,7 +198,7 @@ const double  FourNodeTetrahedron::sg[] = { 0.25 } ;
 const double  FourNodeTetrahedron::wg[] = { 0.166666666666666667 } ;
 
   
-static Matrix B(NumStressComponents,NumDOFsPerNode) ;
+Matrix FourNodeTetrahedron::B(NumStressComponents,NumDOFsPerNode) ;
 
 //null constructor
 FourNodeTetrahedron::FourNodeTetrahedron( ) 
@@ -1314,7 +1314,7 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
         resid( jj + p ) += residJ(p)  ;
         if (applyLoad == 0)
         {
-          // resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
+          resid( jj + p ) -= dvol[i]*b[p]*shp[3][j];
         }
         else
         {
@@ -1901,7 +1901,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     else if (parameterID == 1414)
     {
       int new_do_update = info.theDouble;
-      if (do_update == 0 & new_do_update == 1)
+      if (do_update == 0 && new_do_update == 1)
       {
         do_update = 1;
         Domain * mydomain = this->getDomain();

@@ -76,9 +76,9 @@ int OPS_BgMesh() {
     if (OPS_GetNumRemainingInputArgs() < 2 * ndm + 1) {
         opserr << "WARNING: basicsize? lower? upper? <-tol tol? "
                   "-wave wavefilename? numl? locs? -numsub numsub? "
-                  "-dispon? "
+                  "-dispon? -recordRange range? "
                   "-structure sid? ?numnodes? structuralNodes? "
-                  "-alphaS sid? alphaS? ";
+                  "-alphaS alphaS? ";
         if (ndm == 2) {
             opserr << "-contact kdoverAd? thk? mu? beta? Dc? alpha? "
                       "E? rho?>\n";
@@ -171,6 +171,32 @@ int OPS_BgMesh() {
                 bgmesh.setLocs(locs);
             }
 
+        } else if (strcmp(opt, "-recordRange") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need recordRange\n";
+                return -1;
+            }
+            double range = -1.0;
+            num = 1;
+            if (OPS_GetDoubleInput(&num, &range) < 0) {
+                opserr << "WARNING: failed to read range\n";
+                return -1;
+            }
+            bgmesh.setRecordRange(range);
+
+        } else if (strcmp(opt, "-numave") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need numave\n";
+                return -1;
+            }
+            int numave = 2;
+            num = 1;
+            if (OPS_GetIntInput(&num, &numave) < 0) {
+                opserr << "WARNING: failed to read numave\n";
+                return -1;
+            }
+            bgmesh.setNumAve(numave);
+
         } else if (strcmp(opt, "-numsub") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING: need numsub\n";
@@ -248,17 +274,11 @@ int OPS_BgMesh() {
             }
 
         } else if (strcmp(opt, "-alphaS") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 2) {
-                opserr << "WARNING: need sid alphaS\n";
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: need alphaS\n";
                 return -1;
             }
             num = 1;
-            int sid;
-            if (OPS_GetIntInput(&num, &sid) < 0) {
-                opserr << "WARNING: failed to get sid\n";
-                return -1;
-            }
-
             double alpha = 0.0;
             if (OPS_GetDoubleInput(&num, &alpha) < 0) {
                 opserr << "WARNING: failed to get alphaS\n";
@@ -269,7 +289,7 @@ int OPS_BgMesh() {
             } else if (alpha > 1) {
                 alpha = 1.0;
             }
-            bgmesh.setAlphaS(sid, alpha);
+            bgmesh.setAlphaS(alpha);
 
         } else if (strcmp(opt, "-dispOn") == 0) {
             bgmesh.setDispOn(true);
@@ -296,13 +316,14 @@ BackgroundMesh::BackgroundMesh()
       numsub(4),
       recorders(),
       locs(),
+      recordRange(-1.0),
       currentTime(0.0),
       theFile(),
       structuralNodes(),
       contactData(),
       contactEles(),
       dispon(true),
-      alphaS() {}
+      alphaS(0.0) {}
 
 BackgroundMesh::~BackgroundMesh() {
     for (int i = 0; i < (int)recorders.size(); ++i) {
@@ -420,6 +441,48 @@ void BackgroundMesh::getCorners(const VInt& index, int num,
                     indices[counter][2] = k;
                     ++counter;
                 }
+            }
+        }
+    }
+}
+
+// get corners to the left and right, to the bottom and top
+// 2D: x - index - x
+// 3D: x -    x   - x
+//     x - index  - x
+//     x -    x   - x
+void BackgroundMesh::getCorners(const VInt& index, int num, int dim,
+                                VVInt& indices) const {
+    int ndm = OPS_GetNDM();
+    int counter = 0;
+
+    if (ndm == 2) {
+        indices.resize(2 * num + 1);
+        int dim2 = dim + 1;
+        if (dim2 >= ndm) {
+            dim2 -= ndm;
+        }
+        for (int j = -num; j <= num; ++j) {
+            indices[counter] = index;
+            indices[counter][dim2] += j;
+            ++counter;
+        }
+    } else if (ndm == 3) {
+        indices.resize((2 * num + 1) * (2 * num + 1));
+        int dim2 = dim + 1;
+        if (dim2 >= ndm) {
+            dim2 -= ndm;
+        }
+        int dim3 = dim + 2;
+        if (dim3 >= ndm) {
+            dim3 -= ndm;
+        }
+        for (int j = -num; j <= num; ++j) {
+            for (int k = -num; k <= num; ++k) {
+                indices[counter] = index;
+                indices[counter][dim2] += j;
+                indices[counter][dim3] += k;
+                ++counter;
             }
         }
     }
@@ -691,7 +754,7 @@ void BackgroundMesh::clearAll() {
     }
     contactEles.clear();
     dispon = true;
-    alphaS.clear();
+    alphaS = 0.0;
 }
 
 int BackgroundMesh::clearBackground() {
@@ -1264,7 +1327,7 @@ int BackgroundMesh::gridNodes() {
             double q = normVDouble(dist) / (bsize * numave);
 
             // weight for the particle
-            double w = QuinticKernel(q, bsize, ndm);
+            double w = QuinticKernel(q, bsize * numave, ndm);
 
             // check velocity
             const VDouble& pvel = pts[i]->getVel();
@@ -2905,120 +2968,119 @@ int BackgroundMesh::record(bool init) {
     }
     theFile << timestamp << " ";
 
+    // record range
+    int numRange = 1;
+    double range = bsize;
+    if (recordRange > 0) {
+        numRange = (int)ceil(recordRange / bsize);
+        range = recordRange;
+    }
+
     // record wave height and velocity
     for (int i = 0; i < (int)locs.size(); i += ndm) {
-        // lower index
+        // particles in range
         VDouble crds(ndm);
         for (int j = 0; j < ndm; ++j) {
             crds[j] = locs[i + j];
         }
 
         VInt index;
-        this->lowerIndex(crds, index);
+        lowerIndex(crds, index);
 
-        // shape function
-        VDouble N;
-        double hh = bsize;
-        if (ndm == 2) {
-            getNForRect(index[0] * bsize, index[1] * bsize, hh, hh,
-                        crds[0], crds[1], N);
-        } else if (ndm == 3) {
-            getNForRect(index[0] * bsize, index[1] * bsize,
-                        index[2] * bsize, hh, hh, hh, crds[0],
-                        crds[1], crds[2], N);
-        }
+        VInt minind = index, maxind = index;
+        minind -= numRange;
+        maxind += numRange + 1;
+
+        VParticle pts;
+        gatherParticles(minind, maxind, pts);
 
         // velocity
         VDouble vel(ndm);
+        double wt = 0.0;
 
-        // get corners
-        VVInt indices;
-        getCorners(index, 1, indices);
-        for (int k = 0; k < (int)indices.size(); ++k) {
-            // get crds
-            getCrds(indices[k], crds);
-
-            // check bnode
-            std::map<VInt, BNode>::iterator bit =
-                bnodes.find(indices[k]);
-            if (bit == bnodes.end()) continue;
-
-            // get bnode
-            BNode& bnode = bit->second;
-            auto& vn = bnode.getVel();
-            if (vn.empty()) {
+        // get information
+        for (int j = 0; j < (int)pts.size(); ++j) {
+            // get particle
+            if (pts[j] == 0) {
                 continue;
             }
 
-            // get vel
-            for (int j = 0; j < ndm; ++j) {
-                vel[j] += N[k] * vn[0][j];
+            // particle coordinates
+            const VDouble& pcrds = pts[j]->getCrds();
+
+            // distance from particle to current location
+            VDouble dist = pcrds;
+            dist -= crds;
+            double distvalue = normVDouble(dist);
+            if (distvalue > range) {
+                // too far
+                continue;
             }
+            double q = distvalue / (bsize * numRange);
+
+            // weight for the particle
+            double w = QuinticKernel(q, bsize * numRange, ndm);
+
+            // check velocity
+            const VDouble& pvel = pts[j]->getVel();
+
+            // add velocity
+            for (int k = 0; k < ndm; k++) {
+                vel[k] += w * pvel[k];
+            }
+
+            // add weights
+            wt += w;
+        }
+
+        // get velocity
+        if (wt > 0) {
+            vel /= wt;
         }
 
         // wave heights in all directions
         // xmin, xmax, ymin, ymax, <zmin, zmax>
         VDouble heights(2 * ndm);
 
-        for (int i = 0; i < ndm; ++i) {
-            bool find = false;
-            // min
-            heights[2 * i] = 0.0;
-            for (int j = lower[i]; j <= upper[i]; ++j) {
+        for (int k = 0; k < ndm; ++k) {
+            // for different dimensions
+            bool first = true;
+            for (int j = lower[k]; j <= upper[k]; ++j) {
+                // dimension k from low to up
                 VInt ind = index;
-                ind[i] = j;
-                auto it = bcells.find(ind);
-                if (it != bcells.end()) {
-                    const auto& particles = it->second.getPts();
-                    if (!particles.empty()) {
-                        for (const auto* p : particles) {
-                            if (p != 0) {
-                                const auto& pcrds = p->getCrds();
-                                if (!find ||
-                                    pcrds[i] < heights[2 * i]) {
-                                    if (pcrds[i] > j * bsize) {
-                                        heights[2 * i] = pcrds[i];
-                                        find = true;
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-                if (find) {
-                    break;
-                }
-            }
+                ind[k] = j;
 
-            // max
-            find = false;
-            for (int j = upper[i]; j >= lower[i]; --j) {
-                VInt ind = index;
-                ind[i] = j;
-                auto it = bcells.find(ind);
-                if (it != bcells.end()) {
-                    const auto& particles = it->second.getPts();
-                    if (!particles.empty()) {
+                // get corners
+                VVInt indices;
+                getCorners(ind, numRange, k, indices);
+
+                // min and max
+                double& min = heights[2 * k];
+                double& max = heights[2 * k + 1];
+
+                // loop all particles
+                for (const auto& indi : indices) {
+                    auto it = bcells.find(indi);
+                    if (it != bcells.end()) {
+                        const auto& particles = it->second.getPts();
                         for (const auto* p : particles) {
                             if (p != 0) {
                                 const auto& pcrds = p->getCrds();
-                                if (!find ||
-                                    pcrds[i] > heights[2 * i + 1]) {
-                                    if (pcrds[i] > j * bsize) {
-                                        heights[2 * i + 1] = pcrds[i];
-                                    } else {
-                                        std::cout
-                                            << "particle crds not "
-                                               "in cell\n";
+                                if (first) {
+                                    min = pcrds[k];
+                                    max = pcrds[k];
+                                    first = false;
+                                } else {
+                                    if (pcrds[k] < min) {
+                                        min = pcrds[k];
                                     }
-                                    find = true;
+                                    if (pcrds[k] > max) {
+                                        max = pcrds[k];
+                                    }
                                 }
                             }
                         }
                     }
-                }
-                if (find) {
-                    break;
                 }
             }
         }
@@ -3166,7 +3228,7 @@ int BackgroundMesh::convectParticle(Particle* pt, VInt index,
             }
 
             // get corner coordinates, types, and velocities
-            // pressures, alphas for structural damping
+            // pressures for structural damping
             ndtags.assign(indices.size(), VInt());
             crds.assign(indices.size(), VDouble());
             types.assign(indices.size(), BACKGROUND_FIXED);
@@ -3290,84 +3352,27 @@ int BackgroundMesh::interpolate(
 
         // interpolate
         if (types[j] == BACKGROUND_FLUID) {
-            // check surrounding nodes
+
+            // check surrounding cells
             VInt ind = index[j];
             VVInt indices;
             ind -= 1;
-            getCorners(ind, 2, indices);
-
-            VDouble svel(ndm);
-            double alphas = 0.0;
-            int num_svel = 0, num_sid = 0;
-            for (auto& indi : indices) {
-                auto it = bnodes.find(indi);
-                int size = 0;
-                if (it != bnodes.end()) {
-                    size = it->second.size();
-                }
-                for (int i = 0; i < size; ++i) {
-                    auto& v = it->second.getVel();
-                    svel += v[i];
-                    ++num_svel;
-
-                    auto& sid = it->second.getSid();
-                    auto it_alpha = alphaS.find(sid[i]);
-                    if (it_alpha != alphaS.end()) {
-                        alphas += it_alpha->second;
-                        ++num_sid;
-                    }
-                }
-            }
-            if (num_svel > 0) {
-                svel /= num_svel;
-            }
-            if (num_sid > 0) {
-                alphas /= num_sid;
-            }
-
-            // check surrounding cells
             getCorners(ind, 1, indices);
-            VVInt sindices;
+            bool closeToStructure = false;
             for (int k = 0; k < (int)indices.size(); ++k) {
                 auto it = bcells.find(indices[k]);
                 if (it != bcells.end() &&
                     it->second.getType() == BACKGROUND_STRUCTURE) {
-                    sindices.push_back(indices[k]);
-                }
-            }
-            VInt num_equal(ndm);
-            for (int k = 0; k < ndm; ++k) {
-                for (int m = 0; m < (int)sindices.size(); ++m) {
-                    int num = 0;
-                    for (int n = 0; n < (int)sindices.size(); ++n) {
-                        if (sindices[m][k] == sindices[n][k]) {
-                            num += 1;
-                        }
-                    }
-                    if (num_equal[k] < num) {
-                        num_equal[k] = num;
-                    }
+                        closeToStructure = true;
+                        break;
                 }
             }
 
             // interpolate
             for (int k = 0; k < ndm; ++k) {
-                bool fixk = (ndm == 2 && num_equal[k] >= 2) ||
-                            (ndm == 3 && num_equal[k] >= 4);
-                if (num_svel > 0 && fixk && fabs(svel[k]) < tol) {
-                    // k is fixed structure
-                    pvel[k] += N[j] * svel[k];
-                } else if (num_svel > 0 &&
-                           fabs(svel[k]) > fabs(vels[j][k])) {
-                    // k is faster structure
-                    pvel[k] += N[j] * svel[k];
-                } else if (num_svel > 0 &&
-                           fabs(svel[k]) < fabs(vels[j][k])) {
-                    // k is slower structure
-                    pvel[k] += N[j] * (alphas * svel[k] +
-                                       (1.0 - alphas) * vels[j][k]);
+                if (closeToStructure) {
+                    pvel[k] += N[j] * (1 - alphaS) * vels[j][k];
                 } else {
-                    // all others
                     pvel[k] += N[j] * vels[j][k];
                 }
                 if (pt->isUpdated() == false) {

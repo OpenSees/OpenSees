@@ -130,6 +130,7 @@ extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
+extern void *OPS_TripleFrictionPendulumX(void);
 extern void *OPS_Truss2(void);
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
@@ -146,7 +147,8 @@ extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);       // Kristijan Kolozvari
 extern void *OPS_SFI_MVLEM(void);   // Kristijan Kolozvari
 extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
-extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
+extern void* OPS_SFI_MVLEM_3D(void);// Kristijan Kolozvari
+extern void *OPS_E_SFI(void);   	// C. N. Lopez
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
@@ -166,6 +168,7 @@ extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
+extern void *OPS_TenNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
 extern void *OPS_ASDAbsorbingBoundary2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ASDAbsorbingBoundary3D(void); // Massimo Petracca (ASDEA)
@@ -734,6 +737,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if (strcmp(argv[1], "TripleFrictionPendulumX") == 0) {
+  
+  void* theEle = OPS_TripleFrictionPendulumX();
+  if (theEle != 0)
+      theElement = (Element*)theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+	  
   } else if (strcmp(argv[1],"HDR") == 0) {
     
     void *theEle = OPS_HDR();
@@ -819,6 +832,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
   else if (strcmp(argv[1], "SFI_MVLEM_3D") == 0) {    // Kristijan Kolozvari
 
     void* theEle = OPS_SFI_MVLEM_3D();
+    if (theEle != 0)
+        theElement = (Element*)theEle;
+    else {
+        opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+        return TCL_ERROR;
+    }
+  }
+  
+  else if (strcmp(argv[1], "E_SFI") == 0) {    // C. N. Lopez
+
+    void* theEle = OPS_E_SFI();
     if (theEle != 0)
         theElement = (Element*)theEle;
     else {
@@ -1334,6 +1358,20 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
 
   }
+  else if (strcmp(argv[1], "TenNodeTetrahedron") == 0) {
+      void *theEle = OPS_TenNodeTetrahedron();
+      if (theEle != 0) 
+      {
+        theElement = (Element*)theEle;
+      } 
+      else 
+      {
+        opserr<<"tclelementcommand -- unable to create element of type : "
+            <<argv[1]<<endln;
+        return TCL_ERROR;
+      }
+
+  }
   
   else if (strcmp(argv[1],"ZeroLengthVG_HG") == 0) {
       Element *theEle = (Element*) OPS_ZeroLengthVG_HG();
@@ -1597,7 +1635,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
       }
   }
-  
+  else if (strcmp(argv[1],"beamWithHinges") == 0) {
+    void *theEle = OPS_BeamWithHinges();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;    
+    }
+  }
+	
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {
@@ -1642,14 +1689,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addForceBeamColumn(clientData, interp, argc, argv,
 						    theTclDomain, theTclBuilder);
     return result;
-  } else if (strcmp(argv[1],"beamWithHinges") == 0) {
-    void *theEle = OPS_BeamWithHinges();
-    if (theEle != 0) 
-      theElement = (Element *)theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;    
-    }
   } else if ((strcmp(argv[1],"quad") == 0) || (strcmp(argv[1],"stdQuad") == 0)) {
     int result = TclModelBuilder_addFourNodeQuad(clientData, interp, argc, argv,
 						 theTclDomain, theTclBuilder);
