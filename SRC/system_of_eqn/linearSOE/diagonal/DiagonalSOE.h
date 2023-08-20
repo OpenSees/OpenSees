@@ -42,8 +42,8 @@ class DiagonalSolver;
 class DiagonalSOE : public LinearSOE
 {
   public:
-    DiagonalSOE(DiagonalSolver &theSolver);
-    DiagonalSOE(int N, DiagonalSolver &theSolver);
+  DiagonalSOE(DiagonalSolver &theSolver, bool lumpDiag = false);
+  DiagonalSOE(int N, DiagonalSolver &theSolver, bool lumpDiag = false);
 
     ~DiagonalSOE();
 
@@ -76,6 +76,7 @@ class DiagonalSOE : public LinearSOE
   protected:
     
   private:
+  bool lumpDiagonal;
     int size;
     double *A, *B, *X;
     Vector *vectX;

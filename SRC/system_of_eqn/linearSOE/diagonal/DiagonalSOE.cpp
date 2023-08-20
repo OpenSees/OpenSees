@@ -41,16 +41,16 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
-DiagonalSOE::DiagonalSOE(DiagonalSolver &the_Solver)
-:LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE),
+DiagonalSOE::DiagonalSOE(DiagonalSolver &the_Solver, bool ld)
+  :LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE), lumpDiagonal(ld),
  size(0), A(0), B(0), X(0), vectX(0), vectB(0), isAfactored(false)
 {
     the_Solver.setLinearSOE(*this);
 }
 
 
-DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver)
-:LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE),
+DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver, bool ld)
+  :LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE), lumpDiagonal(ld),
  size(0), A(0), B(0), X(0), vectX(0), vectB(0), isAfactored(false)
 {
   if (size > 0) {
@@ -176,10 +176,10 @@ DiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
 {
   // check for a quick return 
   if (fact == 0.0)  return 0;
-  
+
+  int idSize = id.Size();      
 #ifdef _G3DEBUG
   // check that m and id are of similar size
-  int idSize = id.Size();    
   if (idSize != m.noRows() && idSize != m.noCols()) {
     opserr << "FullGenLinSOE::addA()	- Matrix and ID not of similar sizes\n";
     return -1;
@@ -187,22 +187,43 @@ DiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
 #endif
 
   if (fact == 1.0) { // do not need to multiply if fact == 1.0
-    for (int i=0; i<id.Size(); i++) {
+    for (int i=0; i<idSize; i++) {
       int pos = id(i);
-      if (pos <size && pos >= 0)
+      if (pos <size && pos >= 0) {
 	A[pos] += m(i,i);
+	if (lumpDiagonal) {
+	  for (int j = 0; j < i; j++)
+	    A[pos] += m(j,i);
+	  for (int j = i+1; j < idSize; j++)
+	    A[pos] += m(j,i);
+	}
+      }
     }
   } else if (fact == -1.0) { // do not need to multiply if fact == -1.0
-    for (int i=0; i<id.Size(); i++) {
+    for (int i=0; i<idSize; i++) {
       int pos = id(i);
-      if (pos <size && pos >= 0)
+      if (pos <size && pos >= 0) {
 	A[pos] -= m(i,i);
+	if (lumpDiagonal) {
+	  for (int j = 0; j < i; j++)
+	    A[pos] -= m(j,i);
+	  for (int j = i+1; j < idSize; j++)
+	    A[pos] -= m(j,i);
+	}
+      }
     }
   } else {
-    for (int i=0; i<id.Size(); i++) {
+    for (int i=0; i<idSize; i++) {
       int pos = id(i);
-      if (pos <size && pos >= 0)
+      if (pos <size && pos >= 0) {
 	A[pos] += m(i,i) * fact;
+	if (lumpDiagonal) {
+	  for (int j = 0; j < i; j++)
+	    A[pos] += m(j,i) * fact;
+	  for (int j = i+1; j < idSize; j++)
+	    A[pos] += m(j,i) * fact;
+	}
+      }
     }
   }	
 
