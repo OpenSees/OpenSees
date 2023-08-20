@@ -69,6 +69,7 @@ class PathSeries : public TimeSeries
     double getDuration ();
     double getPeakFactor ();
     double getTimeIncr (double pseudoTime) {return pathTimeIncr;}
+    double getStartTime() ;
     
     // methods for output
     int sendSelf(int commitTag, Channel &theChannel);

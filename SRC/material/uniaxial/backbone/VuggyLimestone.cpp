@@ -134,8 +134,6 @@ double VuggyLimestone::getStress(double strain) {
   return signStrain * stress;
 }
 
-double VuggyLimestone::getEnergy(double strain) { return 0.0; }
-
 double VuggyLimestone::getYieldStrain(void) { return 0.0; }
 
 HystereticBackbone *VuggyLimestone::getCopy(void) {

@@ -134,8 +134,7 @@ void *OPS_Series3DMaterial(void)
 	// utility for parsing
 	static std::vector<char> my_buffer(1024);
 	auto get_string_input = []() -> std::string {
-		OPS_GetStringFromAll(my_buffer.data(), static_cast<int>(my_buffer.size()));
-		return my_buffer.data();
+		return OPS_GetStringFromAll(my_buffer.data(), static_cast<int>(my_buffer.size()));
 	};
 
 	// convert string to int
@@ -363,6 +362,7 @@ Series3DMaterial::Series3DMaterial(
 			"Make sure the materials are properly defined.\n";
 		exit(-1);
 	}
+	m_tangent = m_initial_tangent;
 }
 
 Series3DMaterial::Series3DMaterial()

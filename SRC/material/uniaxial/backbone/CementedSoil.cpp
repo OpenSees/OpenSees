@@ -233,8 +233,6 @@ double CementedSoil::getStress(double strain) {
   return signStrain * stress;
 }
 
-double CementedSoil::getEnergy(double strain) { return 0.0; }
-
 double CementedSoil::getYieldStrain(void) { return 0.0; }
 
 HystereticBackbone *CementedSoil::getCopy(void) {

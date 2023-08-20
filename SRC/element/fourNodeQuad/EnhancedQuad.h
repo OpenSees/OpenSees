@@ -95,6 +95,11 @@ class EnhancedQuad : public Element {
 			  OPS_Stream &s);
 
     int getResponse(int responseID, Information &eleInformation);
+
+    // public methods for material stage update
+	int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+
     int sendSelf (int commitTag, Channel &theChannel);
     int recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		  &theBroker);
