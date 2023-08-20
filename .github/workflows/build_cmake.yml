@@ -36,7 +36,7 @@ jobs:
         mkdir build
         conan install . --build missing
         cd build
-        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="/cmake/cmake/conan_provider.cmake"
+        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="./cmake/cmake/conan_provider.cmake"
         cmake --build . -j 8
 
         #- name: Verification
@@ -45,7 +45,7 @@ jobs:
     - name: Build OpenSeesPy
       run: |
         cd ./build
-        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="/cmake/cmake/conan_provider.cmake"
+        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="./cmake/cmake/conan_provider.cmake"
         make -j 4
         make OpenSeesPy
         mkdir fake_folder
