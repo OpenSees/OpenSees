@@ -1,8 +1,8 @@
 name: CMake Build
 
 env:
-  CMAKE_VERSION: 3.20.1
-  BUILD_TYPE: Debug
+  CMAKE_VERSION: 3.27.3
+  BUILD_TYPE: Release
 
 on:
   push:
@@ -24,19 +24,20 @@ jobs:
         python-version: "3.11"
         
     - name: Install conan
-      run: python3 -m pip install conan==1.60.0
+      run: python3 -m pip install conan==2.0.9
 
     - name: Detect Conan Defaults
       run: |
         conan --version
+        conan profile detect
 
     - name: Build
       run: |
         mkdir build
+        conan install . --build missing
         cd build
-        conan install .. --build missing
-        cmake ..
-        cmake --build . -j8
+        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="../cmake/cmake/conan_provider.cmake"
+        cmake --build . -j 8
 
         #- name: Verification
         #  run: |
@@ -44,7 +45,7 @@ jobs:
     - name: Build OpenSeesPy
       run: |
         cd ./build
-        cmake ..
+        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="../cmake/cmake/conan_provider.cmake"
         make -j 4
         make OpenSeesPy
         mkdir fake_folder
