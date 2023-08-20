@@ -31,23 +31,28 @@ jobs:
         conan --version
         conan profile detect
 
-    - name: Build
+    - name: Build OpenSees
       run: |
         mkdir build
         conan install . --build missing
         cd build
         cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="./cmake/cmake/conan_provider.cmake"
-        cmake --build . -j 8
-
+        cmake --build . --target OpenSees -j 8
+      
+    - name: Build OpenSeesSP
+      run: |
+        cmake --build . --target OpenSeesSP -j 8
+      
+    - name: Build OpenSeesMP
+      run: |
+        cmake --build . --target OpenSeesSP -j 8
+        
         #- name: Verification
         #  run: |
         #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
     - name: Build OpenSeesPy
       run: |
-        cd ./build
-        cmake .. -DCMAKE_PROJECT_TOP_LEVEL_INCLUDES="./cmake/cmake/conan_provider.cmake"
-        make -j 4
-        make OpenSeesPy
+        cmake --build . --target OpenSeesPy -j 8
         mkdir fake_folder
     - name: Rename OpenSeesPy
       run: |
