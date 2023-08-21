@@ -190,7 +190,7 @@ int ElasticMultiLinear::setTrialStrain(double strain, double strainRate)
     trialStress = sig1 + trialTangent*(trialStrain-eps1) + eta*trialStrainRate;
     if (fabs(trialStress) < trialTangent*DBL_EPSILON)
         trialStress = 0.0;
-    opserr << trialTangent << endln;
+
     return 0;
 }
 
