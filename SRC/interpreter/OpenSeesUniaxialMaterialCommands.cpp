@@ -257,6 +257,7 @@ void* OPS_TDConcrete(void);
 void* OPS_TDConcreteNL(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
+void* OPS_CreepMaterial(void);
 
 void* OPS_CoulombDamperMaterial();
 void* OPS_GMG_CyclicReinforcedConcrete();
@@ -599,6 +600,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10", &OPS_TDConcreteMC10));
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("CreepMaterial", &OPS_CreepMaterial));  
   uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
