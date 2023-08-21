@@ -45,6 +45,7 @@ OBJS       = UniaxialMaterial.o \
 	Concrete07.o \
 	ResilienceMaterialHR.o \
 	RambergOsgoodSteel.o \
+	Ratchet.o \
 	Steel01.o \
         HystereticMaterial.o \
 	HystereticSMMaterial.o \

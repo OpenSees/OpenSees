@@ -734,7 +734,7 @@ PM4Sand::setParameter(const char **argv, int argc, Parameter &param)
 	if (theMaterialTag == this->getTag()) {
 
 		if (strcmp(argv[0], "updateMaterialStage") == 0) {     // enforce elastic/elastoplastic response
-			opserr << this->getTag() << " update Material Stage\n";
+			//opserr << this->getTag() << " update Material Stage\n";
 			return param.addObject(1, this);
 		}
 		else if (strcmp(argv[0], "materialState") == 0) {     // enforce elastic/elastoplastic response
