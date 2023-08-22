@@ -43,7 +43,7 @@
 
 DiagonalSOE::DiagonalSOE(DiagonalSolver &the_Solver)
 :LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE),
- size(0), A(0), B(0), X(0), vectX(0), vectB(0), isAfactored(false)
+ size(0), A(0), B(0), X(0), vectX(0), vectB(0), matA(0), isAfactored(false)
 {
     the_Solver.setLinearSOE(*this);
 }
@@ -51,7 +51,7 @@ DiagonalSOE::DiagonalSOE(DiagonalSolver &the_Solver)
 
 DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver)
 :LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE),
- size(0), A(0), B(0), X(0), vectX(0), vectB(0), isAfactored(false)
+ size(0), A(0), B(0), X(0), vectX(0), vectB(0), matA(0), isAfactored(false)
 {
   if (size > 0) {
     size = N;
@@ -70,8 +70,9 @@ DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver)
     
     vectX = new Vector(X,size);
     vectB = new Vector(B,size);
+    matA = new Matrix(A,size,1);
     
-    if (vectB == 0 || vectX == 0) {
+    if (vectB == 0 || vectX == 0 || matA == 0) {
       opserr << "ERROR DiagonalSOE::DiagonalSOE :";
       opserr << " ran out of memory for size: " << size << endln;
       if (A != 0) delete [] A;
@@ -96,7 +97,8 @@ DiagonalSOE::~DiagonalSOE()
   if (B != 0) delete [] B;
   if (X != 0) delete [] X;
   if (vectX != 0) delete vectX;    
-  if (vectB != 0) delete vectB;    
+  if (vectB != 0) delete vectB;
+  if (matA  != 0) delete matA;
 }
 
 
@@ -138,10 +140,12 @@ DiagonalSOE::setSize(Graph &theGraph)
   if (size != oldSize && size != 0) {
     if (vectX != 0) delete vectX; vectX = 0;
     if (vectB != 0) delete vectB; vectB = 0;
+    if (matA  != 0) delete matA;  matA = 0;
     vectX = new Vector(X,size);
     vectB = new Vector(B,size);
+    matA  = new Matrix(A,size,1);
     
-    if (vectB == 0 || vectX == 0) {
+    if (vectB == 0 || vectX == 0 || matA == 0) {
       opserr << "ERROR DiagonalSOE::setSize() - ";
       opserr << " ran out of memory for size: " << size << endln;
       if (A != 0) delete [] A;
@@ -338,6 +342,16 @@ DiagonalSOE::getB(void)
     exit(-1);
   }        
   return *vectB;
+}
+
+const Matrix *
+DiagonalSOE::getA(void)
+{
+  if (matA == 0) {
+    opserr << "FATAL DiagonalSOE::getA - matA == 0";
+    exit(-1);
+  }        
+  return matA;
 }
 
 double 

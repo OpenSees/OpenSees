@@ -63,6 +63,7 @@ class DiagonalSOE : public LinearSOE
 
     const Vector &getX(void);
     const Vector &getB(void);
+  const Matrix *getA(void);
     double normRHS(void);
 
     int setDiagonalSolver(DiagonalSolver &newSolver);    
@@ -80,6 +81,7 @@ class DiagonalSOE : public LinearSOE
     double *A, *B, *X;
     Vector *vectX;
     Vector *vectB;
+  Matrix *matA;
     bool isAfactored;
 };
 
