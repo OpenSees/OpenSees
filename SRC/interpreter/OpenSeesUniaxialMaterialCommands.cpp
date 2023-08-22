@@ -915,7 +915,15 @@ int OPS_LimitCurve() {
   LimitCurve* theCurve = 0;
 
   if (strcmp(type, "Axial") == 0) {
-    opserr << "WARNING to be implemented ...\n";
+    // opserr << "WARNING to be implemented ...\n";
+    void* curve = OPS_AxialCurve();
+    if (curve != 0) {
+      theCurve = (LimitCurve*)curve;
+    } else {
+      return -1;
+    }
+    return -1;
+
     return -1;
 
   } else if (strcmp(type, "RotationShearCurve") == 0) {
