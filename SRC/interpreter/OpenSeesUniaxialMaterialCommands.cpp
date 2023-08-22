@@ -897,6 +897,7 @@ int OPS_getDampTangent() {
 void* OPS_RotationShearCurve();
 void* OPS_ThreePointCurve();
 void* OPS_ShearCurve();
+void* OPS_AxialCurve();
 
 int OPS_LimitCurve() {
   // Make sure there is a minimum number of arguments
