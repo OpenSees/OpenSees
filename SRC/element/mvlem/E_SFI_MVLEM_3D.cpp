@@ -21,7 +21,9 @@
 //    1........2 |-> x
 //
 // Reference:
-// Kristijan Kolozvari, Carlos N. López, Leonardo M. Massone (2023), “Efficient Three-dimensional Shear-flexure Interaction Model for Reinforced Concrete Walls”, Engineering Structures
+// Kristijan Kolozvari, Carlos N. López, Leonardo M. Massone (2023), “Efficient Three-dimensional Shear-flexure Interaction Model for Reinforced Concrete Walls”, Engineering Structures, Vol. 294, 116700, https://doi.org/10.1016/j.engstruct.2023.116700.
+//
+// User documentation available at: https://kkolozvari.github.io/E-SFI-MVLEM-3D/
 //
 // Source: /usr/local/cvs/OpenSees/SRC/element/mvlem/E_SFI_MVLEM_3D.cpp
 //
