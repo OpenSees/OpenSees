@@ -261,40 +261,55 @@ int ElasticMultiLinear::sendSelf(int cTag, Channel &theChannel)
     data(5) = eta;
     
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
-    res += theChannel.sendVector(this->getDbTag(), cTag, strainPoints);
-    res += theChannel.sendVector(this->getDbTag(), cTag, stressPoints);
     if (res < 0) 
-        opserr << "ElasticMultiLinear::sendSelf() - failed to send data.\n";
+      opserr << "ElasticMultiLinear::sendSelf() - failed to send data" << endln;
+
+ 
+    Vector pointData(2*numDataPoints + 1); // +1 so no conflict with data(6) when N=3
+    for (int i = 0; i < numDataPoints; i++) {
+      pointData(i)               = strainPoints(i);
+      pointData(i+numDataPoints) = stressPoints(i);
+    }
+    
+    res = theChannel.sendVector(this->getDbTag(), cTag, pointData);
+    if (res < 0) 
+      opserr << "ElasticMultiLinear::sendSelf() - failed to send point data" << endln;
     
     return res;
 }
 
 
 int ElasticMultiLinear::recvSelf(int cTag, Channel &theChannel, 
-    FEM_ObjectBroker &theBroker)
+				 FEM_ObjectBroker &theBroker)
 {
     int res = 0;
     static Vector data(6);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) 
-        opserr << "ElasticMultiLinear::recvSelf() - failed to recv data.\n";
+      opserr << "ElasticMultiLinear::recvSelf() - failed to recv data" << endln;
     else {
-        this->setTag((int)data(0));
-        trialIDmin    = (int)data(1);
-        trialIDmax    = (int)data(2);
-        numDataPoints = (int)data(3);
-        initTangent   = data(4);
-        eta           = data(5);
-        
-        // receive the strain and stress arrays
-        strainPoints.resize(numDataPoints);
-        stressPoints.resize(numDataPoints);
-        res += theChannel.recvVector(this->getDbTag(), cTag, strainPoints);
-        res += theChannel.recvVector(this->getDbTag(), cTag, stressPoints);
-        if (res < 0) 
-            opserr << "ElasticMultiLinear::recvSelf() - failed to recv arrays.\n";
+      this->setTag((int)data(0));
+      trialIDmin    = (int)data(1);
+      trialIDmax    = (int)data(2);
+      numDataPoints = (int)data(3);
+      initTangent   = data(4);
+      eta           = data(5);
     }
 
+    // receive the strain and stress arrays
+    Vector pointData(2*numDataPoints + 1);
+    res = theChannel.recvVector(this->getDbTag(), cTag, pointData);
+    if (res < 0)
+      opserr << "ElasticMultiLinear::recvSelf() - failed to recv point data" << endln;
+    else {
+      strainPoints.resize(numDataPoints);
+      stressPoints.resize(numDataPoints);
+      for (int i = 0; i < numDataPoints; i++) {
+	strainPoints(i) = pointData(i);
+	stressPoints(i) = pointData(i+numDataPoints);
+      }
+    }
+    
     return res;
 }
 
