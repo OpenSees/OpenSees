@@ -67,6 +67,7 @@ class CreepMaterial : public UniaxialMaterial
 {
 public:
   CreepMaterial(int tag, double _fc, double _fcu, double _epscu, double _ft, double _Ec, double _beta, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast);
+  CreepMaterial(int tag, UniaxialMaterial &matl, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast);
   
   CreepMaterial(void);
   

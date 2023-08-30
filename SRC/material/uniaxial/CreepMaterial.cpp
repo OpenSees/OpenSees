@@ -126,6 +126,47 @@ OPS_CreepMaterial() {
     //Return new material:
     return theMaterial;
   }
+  if (numArgs == 9) {
+    //CreepMaterial(int tag, double _fc, double _epsc0, double _fcu,
+    //double _epscu, double _tcr, double _ft, double _Ets, double _Ec, double _age, double _epsshu)
+    double dData[14];
+    
+    //Collect material tag:
+    numData = 1;
+    if (OPS_GetIntInput(&numData, &iData) != 0) {
+      opserr << "WARNING: invalid uniaxialMaterial CreepMaterial tag\n";
+      return 0;
+    }
+
+    int wrappedMatl;
+    if (OPS_GetIntInput(&numData, &wrappedMatl) != 0) {
+      opserr << "WARNING: invalid uniaxialMaterial CreepMaterial wrapped material tag\n";
+      return 0;
+    }
+
+    UniaxialMaterial *matl = OPS_getUniaxialMaterial(wrappedMatl);
+    if (matl == 0) {
+      opserr << "WARNING: CreepMaterial - unable to find material with tag " << wrappedMatl << endln;
+      return 0;
+    }
+    
+    //Collect input parameters:
+    numData = 8;
+    if (OPS_GetDoubleInput(&numData, &dData[6]) != 0) {
+      opserr << "WARNING: invalid material property definition\n";
+      return 0;
+    }
+    
+    //Create a new materiadouble
+    theMaterial = new CreepMaterial(iData,*matl,dData[6],dData[7],dData[8],dData[9],dData[10],dData[11],dData[12],dData[13]);
+    if (theMaterial == 0) {
+      opserr << "WARNING: could not create uniaxialMaterial of type CreepMaterial \n";
+      return 0;
+    }
+    
+    //Return new material:
+    return theMaterial;
+  }  
   
   return 0;
 }
@@ -174,6 +215,50 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
 
   //wrappedMaterial = new Concrete02IS(0,Ec,fc,0.5*fc/Ec,fcu,epscu);
   wrappedMaterial = new ElasticMaterial(0,Ec);
+}
+
+CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast): 
+  UniaxialMaterial(tag, MAT_TAG_CreepMaterial), wrappedMaterial(0),
+  age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
+{
+  ecminP = 0.0;
+  deptP = 0.0;
+  
+  sigCr = fabs(sigCr);
+  eP = Ec; //Added by AMK
+  epsP = 0.0;
+  sigP = 0.0;
+  eps = 0.0;
+  sig = 0.0;
+  e = Ec; //Added by AMK
+  Et = Ec;
+  count = 0; //Added by AMK
+  epsInit = 0.0; //Added by AMK
+  sigInit = 0.0; //Added by AMK
+  eps_total = 0.0; //Added by AMK
+  epsP_total = 0.0; //Added by AMK
+  
+  eps_m = 0.0; //Added by AMK
+  eps_cr = 0.0; //Added by AMK
+  eps_sh = 0.0;
+  epsP_cr = 0.0; //Added by AMK
+  epsP_sh = 0.0; 
+  epsP_m = 0.0; //Added by AMK
+  
+  t_load = -1.0; //Added by AMK
+  crack_flag = 0;
+  iter = 0;
+  
+  //Change inputs into the proper sign convention:
+  fc = -1.0*fabs(fc); 
+  epsshu = -1.0*fabs(epsshu);
+  epscru = 1.0*fabs(epscru);
+
+  wrappedMaterial = matl.getCopy();
+  if (wrappedMaterial == 0) {
+    opserr << "CreepMaterial::CreepMaterial - failed to get copy of material" << endln;
+    exit(-1);
+  }  
 }
 
 CreepMaterial::CreepMaterial(void):
