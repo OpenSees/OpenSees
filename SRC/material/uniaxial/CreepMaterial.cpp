@@ -126,7 +126,7 @@ OPS_CreepMaterial() {
     //Return new material:
     return theMaterial;
   }
-  if (numArgs == 9) {
+  if (numArgs == 10) {
     //CreepMaterial(int tag, double _fc, double _epsc0, double _fcu,
     //double _epscu, double _tcr, double _ft, double _Ets, double _Ec, double _age, double _epsshu)
     double dData[14];
@@ -539,7 +539,7 @@ CreepMaterial::commitState(void)
   if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
     double s = fabs(eps_m/fc)*Ec;
     s = 0.5*fabs(fc/Ec);
-    opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
+    //opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
   }
   
   //Cracking flags:
