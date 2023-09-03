@@ -254,8 +254,6 @@ OPS_HystereticSMMaterial(void)
         opserr << "WARNING invalid tag for uniaxialMaterial HystereticSM" << endln;
         return 0;
     }
-    opserr << " forceLimitStates " << forceLimitStates[0] << endln;
-    opserr << " defoLimitStates " << defoLimitStates[0] << endln;
 
 
     if (numArgs > 1) {
@@ -302,7 +300,6 @@ OPS_HystereticSMMaterial(void)
 
 
 
-
     if (numArgs != 1 || nposEnv < 4 || nposEnv >14 || nnegEnv > 14 || npinchArray > 2 || ndamageArray > 2 || nposEnv == 1 || nposEnv == 3 || nposEnv == 5 || nposEnv == 7 || nposEnv == 9 || nposEnv == 11 || nposEnv == 13 || nnegEnv == 1 || nnegEnv == 3 || nnegEnv == 5 || nnegEnv == 7 || nnegEnv == 9 || nnegEnv == 11 || nnegEnv == 13) {
         /*opserr << "numargs0 HystereticSM " << numargs0 << endln;
         opserr << "numOptionalArgs HystereticSM " << numOptionalArgs << endln;
@@ -326,8 +323,8 @@ OPS_HystereticSMMaterial(void)
     Vector thepinchArray(&pinchArray[0], (int)pinchArray.size());
     Vector thedamageArray(&damageArray[0], (int)damageArray.size());
     Vector thedegEnvArray(&degEnvArray[0], (int)degEnvArray.size());
-    Vector theLSdefo(&defoLimitStates[0], (int)defoLimitStates.size());
     Vector theLSforce(&forceLimitStates[0], (int)forceLimitStates.size());
+    Vector theLSdefo(&defoLimitStates[0], (int)defoLimitStates.size());
 
     double tmp = 0;
     if (YXorder == -1) {
@@ -342,10 +339,6 @@ OPS_HystereticSMMaterial(void)
             thenegEnv[i + 1] = tmp;
         }
     }
-    opserr << "defoLimitStates: a  " << defoLimitStates[0] << endln;
-    opserr << "forceLimitStates: a " << forceLimitStates[0] << endln;
-    opserr << "defoLimitStates: b  " << theLSdefo[0] << endln;
-    opserr << "forceLimitStates: b " << theLSforce[0] << endln;
 
     if (printInput == 1) {
         opserr << "\n" << " --  user-requested HystereticSM-material input --\n";
@@ -2175,11 +2168,11 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
     // user-defined limit states DCR
     // force
     else if (strcmp(argv[0], "forceLimitStates") == 0) {
-        return new MaterialResponse(this, 97, Vector(nDefoLimitStates));
+        return new MaterialResponse(this, 97, Vector(nForceLimitStates));
     }
 
     else if (strcmp(argv[0], "forceLimitStatesDCR") == 0) {
-        return new MaterialResponse(this, 971, Vector(7));
+        return new MaterialResponse(this, 971, Vector(nForceLimitStates));
     }
 
     else if (strcmp(argv[0], "AllData") == 0) {
@@ -2290,9 +2283,7 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     // defo
     // input values
     else if (responseID == 96) {
-        
         return matInfo.setVector(defoLimitStates);
-        //return matInfo.setVector(theLSdefo);
     }
     // current step
     else if (responseID == 961) {
@@ -2335,14 +2326,12 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     // force
     // input values
     else if (responseID == 97) {
-    
         return matInfo.setVector(forceLimitStates);
-        //return matInfo.setVector(theLSforce);
     }
     // current step
     else if (responseID == 971) {
-        static Vector data(nDefoLimitStates);
-        for (int i = 0; i < nDefoLimitStates; i++) {
+        static Vector data(nForceLimitStates);
+        for (int i = 0; i < nForceLimitStates; i++) {
             data(i) = this->Cstress / forceLimitStates[i];
         }
         return matInfo.setVector(data);
