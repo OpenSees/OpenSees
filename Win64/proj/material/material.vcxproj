@@ -364,12 +364,14 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PD1.c" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ParallelMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PathIndependentMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PenaltyMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Pinching4Material.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Ratchet.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ReinforcingSteel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceLow.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.cpp" />

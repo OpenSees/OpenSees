@@ -825,6 +825,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
 	$(FE)/material/uniaxial/MinMaxMaterial.o \
+	$(FE)/material/uniaxial/PenaltyMaterial.o \
 	$(FE)/material/uniaxial/TensionOnlyMaterial.o \
 	$(FE)/material/uniaxial/SimpleFractureMaterial.o \
 	$(FE)/material/uniaxial/InitStrainMaterial.o \
@@ -855,6 +856,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/Ratchet.o \
 	$(FE)/material/uniaxial/GMG_CyclicReinforcedConcrete.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
@@ -1303,6 +1305,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/RectangularSeries.o \
 	$(FE)/domain/pattern/ConstantSeries.o \
 	$(FE)/domain/pattern/TrigSeries.o \
+	$(FE)/domain/pattern/RampSeries.o \
 	$(FE)/domain/pattern/PathSeries.o \
 	$(FE)/domain/pattern/PeerMotion.o \
 	$(FE)/domain/pattern/PeerNGAMotion.o \

@@ -101,6 +101,7 @@
 #define TSERIES_TAG_PeerMotion       11
 #define TSERIES_TAG_PeerNGAMotion       12
 #define TSERIES_TAG_PathTimeSeriesThermal  13  //L.Jiang [ SIF ]
+#define TSERIES_TAG_RampSeries  14  //CDM
 
 #define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2

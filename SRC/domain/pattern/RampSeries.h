@@ -17,57 +17,49 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.3 $
-// $Date: 2010-02-04 00:34:29 $
-// $Source: /usr/local/cvs/OpenSees/SRC/domain/pattern/LinearSeries.h,v $
-                                                                        
-                                                                        
-#ifndef LinearSeries_h
-#define LinearSeries_h
 
-// Written: fmk 
-// Created: 07/99
-// Revision: A
-//
-// Purpose: This file contains the class definition for LinearSeries.
-// LinearSeries is a concrete class. A LinearSeries object provides
-// a linear time series. the factor is given by the pseudoTime and 
-// a constant factor provided in the constructor.
-//
-// What: "@(#) LinearSeries.h, revA"
+// Written: Codi McKee (Texas A&M University)
+// Created: 07/2023
+
+#ifndef RampSeries_h
+#define RampSeries_h
 
 #include <TimeSeries.h>
 
-class LinearSeries : public TimeSeries
+class RampSeries : public TimeSeries
 {
-  public:
-    LinearSeries(int tag =0, double cFactor =1.0);
+public:
+    // constructors
+    RampSeries(int tag, double tStart, double tRamp, double offsetFact, double smoothFact, double cFactor);
 
-    ~LinearSeries();
+    RampSeries();
 
-    TimeSeries *getCopy(void);
+    // destructor
+    ~RampSeries();
+
+    TimeSeries *getCopy(); 
 
     // method to get load factor
     double getFactor(double pseudoTime);
-
-    // None of the following functions should be invoked on this type
-    // of object
-    double getDuration () {return 0.0;} // dummy function
-    double getPeakFactor () {return cFactor;} // dummy function
-    double getTimeIncr (double pseudoTime) {return 1.0;} // dummy function
-    double getStartTime() { return 0.0; } // dummy function
+    double getDuration () {return tStart+tRamp;}
+    double getPeakFactor () {return cFactor;}
+    double getTimeIncr (double pseudoTime) {return tStart + tRamp;}
+    double getStartTime() { return tStart; }
     // methods for output    
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);
+        FEM_ObjectBroker &theBroker);
 
-    void Print(OPS_Stream &s, int flag =0);    
-    
-  protected:
-	
-  private:
-    double cFactor;  // factor = pseudoTime * cFactor
+    void Print(OPS_Stream &s, int flag = 0);
+
+protected:
+
+private:
+    double tStart{};      // start time of time series (sec)
+    double tRamp{};       // Duration of ramp (sec)
+    double smoothFact{};  // Smoothing factor
+    double offsetFact{};  // Offset amount
+    double cFactor{};     // amplitude of sig series
 };
 
 #endif

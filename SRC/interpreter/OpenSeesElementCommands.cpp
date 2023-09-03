@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <ShellMITC4.h>
+#include <ShellDKGQ.h>
 #include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
 #include <TenNodeTetrahedron.h>
@@ -872,7 +873,8 @@ int OPS_doBlock2D()
 	cArg = 7;
 
 	
-    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
+    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 ||
+	       strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr<<"WARNING: want - secTag\n";
 	    return -1;
@@ -1111,6 +1113,25 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new ShellNLDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);
+
+	    } else if (strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
+
+		if (numEleNodes != 4) {
+		    opserr<<"WARNING ShellDKGQ element only needs four nodes\n";
+		    return -1;
+		}
+		SectionForceDeformation *sec = OPS_getSectionForceDeformation(secTag);
+
+		if (sec == 0) {
+		    opserr << "WARNING:  section " << secTag << " not found\n";
+		    return -1;
+		}
+
+		int nd1 = nodeTags(0) + idata[2];
+		int nd2 = nodeTags(1) + idata[2];
+		int nd3 = nodeTags(2) + idata[2];
+		int nd4 = nodeTags(3) + idata[2];
+		theEle = new ShellDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);		
 
 		
 			
