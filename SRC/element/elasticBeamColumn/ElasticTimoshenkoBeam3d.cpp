@@ -68,70 +68,111 @@ void *OPS_ElasticTimoshenkoBeam3d()
         return theElement;
     }
     
-    if (numRemainingArgs < 11)  {
-        opserr << "ERROR not enough args provided, want: element ElasticTimoshenkoBeam3d $tag $iNode $jNode $E $G $A $Jx $Iy $Iz $Avy $Avz $transTag <-mass $m> <-cMass> \n";
+    int iData[3];
+    double dData[8];
+    int transfTag;
+    double mass = 0.0;
+    int cMass = 0;
+    int geomNonlinear = 0;
+    bool section = false;
+    int sectionTag = -1;
+    int numData = 0;
+
+    int ndm = OPS_GetNDM();
+    int ndf = OPS_GetNDF();
+    if (ndm != 3 || ndf != 6) {
+        opserr << "ndm must be 3 and ndf must be 6\n";
         return 0;
     }
+
+    // Read optional arguments first
+    int numOptionalArgs = 0;
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      std::string type = OPS_GetString();
+      if (type == "-mass") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;	  
+	  if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+	    opserr << "WARNING: failed to get mass" << endln;
+	    return 0;
+	  }
+	  numOptionalArgs++;	  	  
+	}
+      }
+      else if (type == "-cMass") {
+	numOptionalArgs++;	
+	cMass = 1;
+      }
+      else if (type == "-geomNonlinear") {
+	numOptionalArgs++;	
+	geomNonlinear = 1;
+      }      
+    }
+
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);
+    }
+    numArgs = numArgs - numOptionalArgs;
+
     
-    int numData;
-    int iData[6];     // tag, iNode, jNode, transTag, cMass, geomNL
-    double dData[9];  // E, G, A, Jx, Iy, Iz, Avy, Avz, mass
-    
-    iData[4] = 0;     // cMass
-    dData[8] = 0.0;   // mass per unit length
-    iData[5] = 0;     // Geometric linear
-    
+    if (numArgs != 12 && numArgs != 5)  {
+        opserr << "ERROR not enough args provided, want: element ElasticTimoshenkoBeam3d $tag $iNode $jNode <$E $G $A $J $Iz $Iy $Avy $Avz>or<$sectionTag> $transTag <-mass $m> <-cMass> \n";
+        return 0;
+    }
+
+    // Read element tag, node I, and node J
     numData = 3;
     if (OPS_GetIntInput(&numData, iData) != 0)  {
         opserr << "WARNING invalid element data (tag, iNode, jNode) element ElasticTimoshenkoBeam3d.\n";
         return 0;
     }
-    
-    numData = 8;
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {
-        opserr << "WARNING error reading element data (E, G, A, Jx, Iy, Iz, Avy, Avz) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
+
+    // Read either E,A,I, etc. or section tag
+    if (numArgs == 12) {
+      numData = 8;
+      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+        opserr << "WARNING error reading element data (E, G, A, J, Iz, Iy, Avy, Avz) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
         return 0;
+      }
     }
-    
+    else {
+      numData = 1;
+      if (OPS_GetIntInput(&numData, &sectionTag) != 0) {
+        opserr << "WARNING error reading section tag, ElasticTimoshenkoBeam3d " << iData[0] << endln;
+        return 0;
+      }
+      section = true;
+    }
+
+    // Read transformation tag
     numData = 1;
-    if (OPS_GetIntInput(&numData, &iData[3]) != 0)  {
+    if (OPS_GetIntInput(&numData, &transfTag) != 0)  {
         opserr << "WARNING invalid element data (transTag) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
         return 0;
     }
     
-    CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
+    CrdTransf *theTrans = OPS_getCrdTransf(transfTag);
     if (theTrans == 0)  {
         opserr << "WARNING transformation object not found for ElasticTimoshenkoBeam3d " << iData[0] << endln;
         return 0;
     }
-    
-    numRemainingArgs = OPS_GetNumRemainingInputArgs();
-    while (numRemainingArgs > 0)  {
-      const char *argvLoc = OPS_GetString();
-        numData = 1;
-        
-        if ((strcmp(argvLoc, "-mass") == 0) || (strcmp(argvLoc, "mass") == 0) ||
-            (strcmp(argvLoc, "-rho") == 0) || (strcmp(argvLoc, "rho") == 0))  {
-            if (OPS_GetDoubleInput(&numData, &dData[8]) != 0)  {
-                opserr << "WARNING error reading element data (mass) element ElasticTimoshenkoBeam3d " << iData[0] << endln;
-                return 0;
-            }
-        }
-        if ((strcmp(argvLoc, "-lMass") == 0) || (strcmp(argvLoc, "lMass") == 0))  {
-            iData[4] = 0;  // lumped mass matrix (default)
-        }
-        if ((strcmp(argvLoc, "-cMass") == 0) || (strcmp(argvLoc, "cMass") == 0))  {
-            iData[4] = 1;  // consistent mass matrix
-        }
-        if ((strcmp(argvLoc, "-geomNonlinear") == 0) || (strcmp(argvLoc, "geomNonlinear") == 0))  {
-            iData[5] = 1;  // geometric nonlinearity within the element
-        }		
-        numRemainingArgs = OPS_GetNumRemainingInputArgs();      
+
+    if (section) {
+      SectionForceDeformation *theSection = OPS_getSectionForceDeformation(sectionTag);
+      if (theSection == 0) {
+	opserr << "section with tag " << sectionTag << " not found" << endln;
+	return 0;
+      }
+      theElement = new ElasticTimoshenkoBeam3d(iData[0], iData[1], iData[2],
+					       *theSection,
+					       *theTrans, mass, cMass, geomNonlinear);
     }
-    
-    theElement = new ElasticTimoshenkoBeam3d(iData[0], iData[1], iData[2],
-					     dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
-					     dData[7], *theTrans, dData[8], iData[4], iData[5]);
+    else
+      theElement = new ElasticTimoshenkoBeam3d(iData[0], iData[1], iData[2],
+					       dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7],
+					       *theTrans, mass, cMass, geomNonlinear);
     
     return theElement;
 }

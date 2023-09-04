@@ -208,7 +208,7 @@ TPB1D::TPB1D(int tag,
   
   double gapyield = 50*W;
 
-  UniaxialMaterial **theMaterials = new UniaxialMaterial *[10];
+  UniaxialMaterial *theMaterials[10];
   
   int damage = 0;
   double eta = 0.0;
@@ -245,6 +245,9 @@ TPB1D::TPB1D(int tag,
   
   //  uniaxialMaterial Parallel 100 11 12 13 14 15 16 17 18 19 20;
   theMaterial = new ParallelMaterial(1, 10, theMaterials);
+
+  for (int i = 0; i < 10; i++)
+	  delete theMaterials[i];
 }
 
 
