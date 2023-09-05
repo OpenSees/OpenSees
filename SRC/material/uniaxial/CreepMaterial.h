@@ -132,7 +132,7 @@ private:
   double epssha; // shrinkage parameter
   double epscra; // concrete creep exponent parameter
   double epscru; // ultimate concrete creep
-  double sigCr; // stress that creep curve is based on
+  //double sigCr; // stress that creep curve is based on
   double beta;
   double epscrd;
   double tcast;

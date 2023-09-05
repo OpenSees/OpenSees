@@ -178,10 +178,13 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
   UniaxialMaterial(tag, MAT_TAG_CreepMaterial), wrappedMaterial(0),
   fc(_fc), fcu(_fcu), epscu(_epscu), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
 {
+  wrappedMaterial = new Concrete02IS(0,Ec,fc,2*fc/Ec,fcu,epscu);
+  //wrappedMaterial = new ElasticMaterial(0,Ec);
+
   ecminP = 0.0;
   deptP = 0.0;
   
-  sigCr = fabs(sigCr);
+  //sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -212,19 +215,25 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
   fc = -1.0*fabs(fc); 
   epsshu = -1.0*fabs(epsshu);
   epscru = 1.0*fabs(epscru);
-
-  //wrappedMaterial = new Concrete02IS(0,Ec,fc,0.5*fc/Ec,fcu,epscu);
-  wrappedMaterial = new ElasticMaterial(0,Ec);
 }
 
 CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast): 
   UniaxialMaterial(tag, MAT_TAG_CreepMaterial), wrappedMaterial(0),
   age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
 {
+  wrappedMaterial = matl.getCopy();
+  if (wrappedMaterial == 0) {
+    opserr << "CreepMaterial::CreepMaterial - failed to get copy of material" << endln;
+    exit(-1);
+  }  
+
+  // Set initial tangent
+  Ec = wrappedMaterial->getInitialTangent();
+  
   ecminP = 0.0;
   deptP = 0.0;
   
-  sigCr = fabs(sigCr);
+  //sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -253,12 +262,6 @@ CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, doubl
   fc = -1.0*fabs(fc); 
   epsshu = -1.0*fabs(epsshu);
   epscru = 1.0*fabs(epscru);
-
-  wrappedMaterial = matl.getCopy();
-  if (wrappedMaterial == 0) {
-    opserr << "CreepMaterial::CreepMaterial - failed to get copy of material" << endln;
-    exit(-1);
-  }  
 }
 
 CreepMaterial::CreepMaterial(void):
@@ -276,7 +279,7 @@ CreepMaterial::~CreepMaterial(void)
 UniaxialMaterial*
 CreepMaterial::getCopy(void)
 {
-  CreepMaterial *theCopy = new CreepMaterial(this->getTag(), fc, fcu, epscu, ft, Ec, beta, age, epsshu, epssha, tcr, epscru, epscra, epscrd, tcast); 
+  CreepMaterial *theCopy = new CreepMaterial(this->getTag(), *wrappedMaterial, age, epsshu, epssha, tcr, epscru, epscra, epscrd, tcast); 
   
   return theCopy;
 }
