@@ -297,6 +297,11 @@
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
+#include "PML/PML2D_3.h"
+#include "PML/PML2D_5.h"
+#include "PML/PML2D_12.h"
+#include "PML/PML2DVISCOUS.h"
+
 
 #include "UP-ucsd/Nine_Four_Node_QuadUP.h"
 #include "UP-ucsd/BrickUP.h"
@@ -880,6 +885,18 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 	case ELE_TAG_PML3D:
 	  return new PML3D();
 
+	case ELE_TAG_PML2D_3:
+	  return new PML2D_3(); // Amin Pakzad
+	
+	case ELE_TAG_PML2D_5:
+	  return new PML2D_5(); // Amin Pakzad
+
+	case ELE_TAG_PML2D_12:
+	  return new PML2D_12(); // Amin Pakzad
+
+	case ELE_TAG_PML2DVISCOUS:
+	  return new PML2DVISCOUS(); // Amin Pakzad
+	
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
