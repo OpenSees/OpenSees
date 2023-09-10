@@ -44,7 +44,7 @@
 #include <elementAPI.h>
 
 void* OPS_ShearCurve()
-{
+{   opserr << "Warning : Check units requirement in ShearCurve.h : fc to be entered in ps. Source code:https://github.com/L-iqra/OpenSees-source/edit/master/SRC/material/uniaxial/limitState/limitCurve/ShearCurve.h"
     if (OPS_GetNumRemainingInputArgs() < 12) {
 	opserr << "WARNING insufficient arguments\n";
 	//	    printCommand(argc,argv); // Commented out by Terje
