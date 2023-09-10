@@ -57,6 +57,7 @@ static int shearCurveCount = 0;
 void *
 OPS_RotationShearCurve(void)
 {
+  opserr << "WARNING RotationShearCurve regarding units of input parameters \n-- Check for units in line 482 of this code --\n double Vc = 0.8*Ag*(6*sqrt(fc*1000)/Mratio*sqrt(1+Nu/(6*sqrt(fc*1000)*Ag)))/1000; //(kips)\n Source Code Link -- https://github.com/L-iqra/OpenSees-source/edit/master/SRC/material/uniaxial/limitState/limitCurve/RotationShearCurve.cpp";
   if (shearCurveCount == 0) {
     //opserr << "RotationShearCurve limit curve - Written by MRL UT Austin Copyright 2012 -  Use at your Own Peril \n";
     shearCurveCount++;
