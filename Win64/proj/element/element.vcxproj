@@ -246,6 +246,7 @@
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp" />
@@ -547,6 +548,7 @@
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h" />
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h" />

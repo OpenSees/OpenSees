@@ -849,6 +849,7 @@
 #define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
 #define ELE_TAG_E_SFI        			257 // C. N. Lopez
 #define ELE_TAG_TripleFrictionPendulumX               258
+#define ELE_TAG_E_SFI_MVLEM_3D	          259 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
 #define ELE_TAG_PML2D_3                   259
 #define ELE_TAG_PML2D_5                   260

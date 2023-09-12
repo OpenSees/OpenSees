@@ -105,6 +105,7 @@ void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
 void* OPS_MVLEM_3D();
 void* OPS_SFI_MVLEM_3D();
+void* OPS_E_SFI_MVLEM_3D();
 void* OPS_E_SFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
@@ -703,6 +704,7 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM_3D));
 	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));    
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));

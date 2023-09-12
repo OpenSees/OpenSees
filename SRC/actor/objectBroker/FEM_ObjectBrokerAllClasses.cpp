@@ -336,6 +336,7 @@
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
 #include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM_3D.h"	// Kristijan Kolozvari
+#include "mvlem/E_SFI_MVLEM_3D.h"	// Kristijan Kolozvari
 #include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
@@ -959,6 +960,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_SFI_MVLEM_3D:		// Kristijan Kolozvari
 		return new SFI_MVLEM_3D();	// Kristijan Kolozvari
+
+	case ELE_TAG_E_SFI_MVLEM_3D:		// Kristijan Kolozvari
+		return new E_SFI_MVLEM_3D();	// Kristijan Kolozvari
 		
 	case ELE_TAG_E_SFI:			// C. N. Lopez
 		return new E_SFI();		// C. N. Lopez	
