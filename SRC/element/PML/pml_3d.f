@@ -43,16 +43,16 @@ c     2   DU(MLVARX,*),V(NDOFEL),A(NDOFEL),TIME(2),PARAMS(*),
 c     3   JDLTYP(MDLOAD,*),ADLMAG(MDLOAD,*),DDLMAG(MDLOAD,*),
 c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
 
-      SUBROUTINE PML_3D(MMTRX,CMTRX,KMTRX,NDF,
+      SUBROUTINE PML_3D(MMTRX,CMTRX,KMTRX,GMTRX, NDF,
      1     PROPS,NPROPS,COORDS,MCRD,NNODE)
 
 
-      REAL *8 MMTRX,CMTRX,KMTRX,PROPS,COORDS,PARAMS
+      REAL *8 MMTRX,CMTRX,KMTRX,GMTRX,PROPS,COORDS,PARAMS
       
       INTEGER *4 NDF,NRHS,NPROPS,MCRD,NNODE
 
       DIMENSION MMTRX(NDF,NDF),CMTRX(NDF,NDF),KMTRX(NDF,NDF),PROPS(*),
-     1   COORDS(MCRD,NNODE)
+     1   COORDS(MCRD,NNODE),GMTRX(NDF,NDF)
 
     !
     !       Variables that must be computed in this routine
@@ -658,35 +658,29 @@ c      write(6,*)
           G_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
      1                                      -N_d(1:NNODE*6,1:NNODE*6)
 
-      endif 
-      
-      MMATRX(1:72,1:72) = M_PML
-      
-      CMATRX(1:72,1:72) = C_PML
-      do i = 73, NDF
-          CMATRX(i,i) = 1.d0
-      enddo
-      
-      KMATRX(1:72,1:72) = K_PML
-      KMATRX(1:72,73:NDF) = G_PML
-      do i = 73, NDF
-          KMATRX(i,i-72) = -1.d0
-      enddo
-                     
+      endif     
 
         do i = 1,8
           do j = 1,8
-            KMTRX((i-1)*18+1:i*18,(j-1)*18+1:j*18) = 
-     1                        KMATRX(i:NDF-8+i:8,j:NDF-8+j:8)
+            MMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+     1                        M_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
 
-            MMTRX((i-1)*18+1:i*18,(j-1)*18+1:j*18) = 
-     1                        MMATRX(i:NDF-8+i:8,j:NDF-8+j:8)
+            CMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+     1                        C_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
 
-            CMTRX((i-1)*18+1:i*18,(j-1)*18+1:j*18) = 
-     1                        CMATRX(i:NDF-8+i:8,j:NDF-8+j:8)
+            KMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+     1                        K_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
 
+            GMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+     1                        G_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
           end do
         end do
+        ! ! set MMTRX equal to M_PML
+        ! MMTRX(1:NNODE*9,1:NNODE*9) = M_PML(1:NNODE*9,1:NNODE*9)
+        ! CMTRX(1:NNODE*9,1:NNODE*9) = C_PML(1:NNODE*9,1:NNODE*9)
+        ! KMTRX(1:NNODE*9,1:NNODE*9) = K_PML(1:NNODE*9,1:NNODE*9)
+        ! GMTRX(1:NNODE*9,1:NNODE*9) = G_PML(1:NNODE*9,1:NNODE*9)
+
       
       return
 

@@ -947,6 +947,18 @@
     <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
       <Filter>PML</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
+      <Filter>PML</Filter>  
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_12.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
@@ -1694,6 +1706,18 @@
       <Filter>PML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_3.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
+      <Filter>PML</Filter>
+    </ClInclude>    
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h">
       <Filter>PML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">

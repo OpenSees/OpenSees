@@ -244,6 +244,13 @@ void *OPS_ASDAbsorbingBoundary3D(void);
 void* OPS_MasonPan12(void);
 void* OPS_MasonPan3D(void);
 void* OPS_BeamGT(void);
+void* OPS_PML2D(void);
+void* OPS_PML2D_3(void);
+void* OPS_PML2D_5(void);
+void* OPS_PML2D_12(void);
+void* OPS_PML2DVISCOUS(void);
+void* OPS_PML3D(void);
+
 
 namespace {
 
@@ -558,6 +565,15 @@ namespace {
       return OPS_DispBeamColumn3dID();
     }
   }
+  static void* OPS_PML() {
+	int ndm = OPS_GetNDM();
+	if (ndm == 2) {
+	  return OPS_PML2D();
+	}
+	else {
+	  return OPS_PML3D();
+	}
+  }
 
     static int setUpFunctions(void)
     {
@@ -757,6 +773,11 @@ namespace {
 	functionMap.insert(std::make_pair("InertiaTruss", &OPS_InertiaTrussElement));
 	functionMap.insert(std::make_pair("ASDAbsorbingBoundary2D", &OPS_ASDAbsorbingBoundary2D));
 	functionMap.insert(std::make_pair("ASDAbsorbingBoundary3D", &OPS_ASDAbsorbingBoundary3D));
+	functionMap.insert(std::make_pair("PML", &OPS_PML));
+	functionMap.insert(std::make_pair("PML2D_3", &OPS_PML2D_3));
+	functionMap.insert(std::make_pair("PML2D_5", &OPS_PML2D_5));
+	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
+	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
 	return 0;
     }
 }

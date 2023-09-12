@@ -850,7 +850,10 @@
 #define ELE_TAG_E_SFI        			257 // C. N. Lopez
 #define ELE_TAG_TripleFrictionPendulumX               258
 #define ELE_TAG_ExternalElement           99990
-
+#define ELE_TAG_PML2D_3                   259
+#define ELE_TAG_PML2D_5                   260
+#define ELE_TAG_PML2D_12                  261
+#define ELE_TAG_PML2DVISCOUS              262
 
 
 #define FRN_TAG_Coulomb            1

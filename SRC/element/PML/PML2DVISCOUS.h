@@ -21,14 +21,14 @@
 
 // Written by: Amin Pakzad, Pedro Arduino (parduino@uw.edu)
 //
-// Eight node PML3D element .. a c++ wrapper to fortran routine 
+// Eight node PML2DVISCOUS element .. a c++ wrapper to fortran routine 
 // provided by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
 //
-// University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2020
+// University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2023
 
 
-#ifndef PML3D_H
-#define PML3D_H
+#ifndef PML2DVISCOUS_H
+#define PML2DVISCOUS_H
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -40,17 +40,17 @@
 #include <Element.h>
 #include <Node.h>
 
-#define PML3D_NUM_DOF 72
-#define PML3D_NUM_PROPS 12
-#define PML3D_NUM_NODES 8
+#define PML2DVISCOUS_NUM_DOF 20
+#define PML2DVISCOUS_NUM_PROPS 11
+#define PML2DVISCOUS_NUM_NODES 4
 
 #ifdef _WIN32
 
-#define pml3d_	      PML_3D
+#define pml2d_	      PML_2D
 
-extern "C" void  pml3d_(double* mMatrix,
+extern "C" void  pml2d_(double* kMatrix,
 	double* cMatrix,
-	double* kMatrix,
+	double* mMatrix,
 	double* gMatrix,
 	int* NDOFEL,
 	double* PROPS,
@@ -61,11 +61,11 @@ extern "C" void  pml3d_(double* mMatrix,
 
 #else
 
-#define pml3d_	      pml_3d_
+#define pml2d_	      pml_2d_
 
-extern "C" void  pml3d_(double* mMatrix,
+extern "C" void  pml2d_(double* kMatrix,
 	double* cMatrix,
-	double* kMatrix,
+	double* mMatrix,
 	double* gMatrix,
 	int* NDOFEL,
 	double* PROPS,
@@ -76,14 +76,14 @@ extern "C" void  pml3d_(double* mMatrix,
 
 #endif
 
-class PML3D : public Element {
+class PML2DVISCOUS : public Element {
 
 public:
 
-	PML3D();                                                                         //null constructor
-	PML3D(int tag, int* nodeTags, double* newmarks, double* dData);                  // full constructor
-	virtual ~PML3D();                                                                //destructor
-	const char* getClassType(void) const { return "PML3D"; };                        //return class type
+	PML2DVISCOUS();                                                                         //null constructor
+	PML2DVISCOUS(int tag, int* nodeTags, double* newmarks, double* dData);                  // full constructor
+	virtual ~PML2DVISCOUS();                                                                //destructor
+	const char* getClassType(void) const { return "PML2DVISCOUS"; };                        //return class type
 	void setDomain(Domain* theDomain);                                               // set domain
 	int getNumExternalNodes() const; 	   						                     // get number of external nodes
 	const ID& getExternalNodes(); 								                     // get external nodes
@@ -113,14 +113,14 @@ public:
 private:
 
 	Domain* Domainptr;                              // pointer to the domain
-	double props[PML3D_NUM_PROPS];                  // material properties
+	double props[PML2DVISCOUS_NUM_PROPS];                  // material properties
 	ID connectedExternalNodes;  					//eight node numbers
-	Node* nodePointers[PML3D_NUM_NODES];    	    //pointers to eight nodes
-	double K[PML3D_NUM_DOF * PML3D_NUM_DOF];        // stiffness matrix
-	double C[PML3D_NUM_DOF * PML3D_NUM_DOF];        // damping matrix
-	double M[PML3D_NUM_DOF * PML3D_NUM_DOF];        // mass matrix
-    double G[PML3D_NUM_DOF * PML3D_NUM_DOF];        // G matrix
-	double Keff[PML3D_NUM_DOF * PML3D_NUM_DOF];     // effective stiffness matrix
+	Node* nodePointers[PML2DVISCOUS_NUM_NODES];    	    //pointers to eight nodes
+	double K[PML2DVISCOUS_NUM_DOF * PML2DVISCOUS_NUM_DOF];        // stiffness matrix
+	double C[PML2DVISCOUS_NUM_DOF * PML2DVISCOUS_NUM_DOF];        // damping matrix
+	double M[PML2DVISCOUS_NUM_DOF * PML2DVISCOUS_NUM_DOF];        // mass matrix
+    double G[PML2DVISCOUS_NUM_DOF * PML2DVISCOUS_NUM_DOF];        // G matrix
+	double Keff[PML2DVISCOUS_NUM_DOF * PML2DVISCOUS_NUM_DOF];     // effective stiffness matrix
 	static double eta;                              // Newmark parameters: eta
 	static double beta; 					  	    // Newmark parameters: beta
 	static double gamma; 					  	// Newmark parameters: gamma
@@ -133,6 +133,8 @@ private:
 	static double dt; 								// time step
 	int updateflag; 								// update flag
 	int update_dt;                                  // flag for updating dt
+	double alpharayleigh; 						    // rayleigh damping parameter
+	double betarayleigh; 							// rayleigh damping parameter
 	static int eleCount; 						    // element count
 	// int innertag; 								// inner tag
 	// static int numberOfElements; 			    // number of elements
