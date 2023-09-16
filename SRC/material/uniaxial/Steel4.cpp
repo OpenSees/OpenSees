@@ -923,14 +923,14 @@ int Steel4::sendSelf(int commitTag, Channel &theChannel) {
   }
   
   // Send the size vector
-  res = theChannel.sendVector(this->getDbTag(), commitTag, dataCycl);
+  int res = theChannel.sendVector(this->getDbTag(), commitTag, dataCycl);
   if (res < 0) {
     opserr << "Pinching4Material::sendSelf() - failed to send data\n";
     return res;
   }
 
   // Send the data vector
-  int res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+  res = theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
     opserr << "Pinching4Material::sendSelf() - failed to send data\n";
     return res;
