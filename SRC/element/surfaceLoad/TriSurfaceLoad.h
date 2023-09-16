@@ -34,15 +34,6 @@
 #include <NDMaterial.h>
 #include <ID.h>
 
-// number of nodes per element
-#define SL_NUM_NODE 3
-// d.o.f. per node
-#define SL_NUM_NDF  3
-// degrees of freedom per element
-#define SL_NUM_DOF  9
-// displacement degrees of freedom per element
-#define SL_NUM_DDOF  3
-
 class Domain;
 class Node;
 class Channel;
@@ -97,6 +88,11 @@ class TriSurfaceLoad : public Element
     
   private:
 
+  enum {SL_NUM_NODE = 3}; // number of nodes per element
+  enum {SL_NUM_NDF = 3}; // d.o.f. per node
+  enum {SL_NUM_DOF = 9}; // degrees of freedom per element
+  enum {SL_NUM_DDOF = 9}; // displacement degrees of freedom per element
+  
     // method to update base vectors g1 & g2
     int UpdateBase(double Xi, double Eta);
 
