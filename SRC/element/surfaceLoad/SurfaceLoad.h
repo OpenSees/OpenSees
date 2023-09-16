@@ -97,9 +97,9 @@ class SurfaceLoad : public Element
     int UpdateBase(double Xi, double Eta);
 
     ID  myExternalNodes;      // contains the tags of the end nodes
-    Matrix tangentStiffness;  // Tangent Stiffness matrix
-    Vector internalForces;    // vector of Internal Forces
-    Vector theVector;         // vector to return the residual
+    static Matrix tangentStiffness;  // Tangent Stiffness matrix
+    static Vector internalForces;    // vector of Internal Forces
+    static Vector theVector;         // vector to return the residual
 
     double my_pressure;       // pressure applied to surface of element
 
