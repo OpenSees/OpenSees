@@ -100,7 +100,7 @@ class TriSurfaceLoad : public Element
     static Matrix tangentStiffness;  // Tangent Stiffness matrix
     static Matrix mass;  // mass matrix
     static Matrix damp;  // damping matrix
-    Vector internalForces;    // vector of Internal Forces
+    static Vector internalForces;    // vector of Internal Forces
 
     double my_pressure;       // pressure applied to surface of element
     double rhoH;              // A density per unit area to compute a mass matrix (lumped)
