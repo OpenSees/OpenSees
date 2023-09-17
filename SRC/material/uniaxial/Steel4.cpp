@@ -35,6 +35,7 @@
 #include <Channel.h>
 #include <elementAPI.h>
 #include <math.h>
+#include <ID.h>
 
 void*
 OPS_Steel4(void)
@@ -807,7 +808,7 @@ int Steel4::sendSelf(int commitTag, Channel &theChannel) {
 
   // Instantiate a Vector to store the number of previous half-cycles
   // So that `recvSelf` can determine the size of the data vector to receive
-  static Vector dataCycl(1);
+  static ID dataCycl(1);
   dataCycl(0) = numPrevHalfCycles;
 
   // Fill the data Vector with class attributes.
@@ -923,7 +924,7 @@ int Steel4::sendSelf(int commitTag, Channel &theChannel) {
   }
   
   // Send the size vector
-  int res = theChannel.sendVector(this->getDbTag(), commitTag, dataCycl);
+  int res = theChannel.sendID(this->getDbTag(), commitTag, dataCycl);
   if (res < 0) {
     opserr << "Pinching4Material::sendSelf() - failed to send data\n";
     return res;
@@ -943,9 +944,9 @@ int Steel4::recvSelf(int commitTag, Channel &theChannel,
                      FEM_ObjectBroker &theBroker) {
 
   // First retrieve the size vector to determine the size of the data vector
-  static Vector dataCycl(1);
+  static ID dataCycl(1);
   
-  int res = theChannel.recvVector(this->getDbTag(), commitTag, dataCycl);
+  int res = theChannel.recvID(this->getDbTag(), commitTag, dataCycl);
   if (res < 0) {
     opserr << "Pinching4Material::recvSelf() - failed to receive data\n";
     return res;
