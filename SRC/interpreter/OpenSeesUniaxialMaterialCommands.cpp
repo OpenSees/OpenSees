@@ -936,7 +936,7 @@ int OPS_LimitCurve() {
     }
 
   } else if (strcmp(type, "ThreePoint") == 0) {
-    void* curve = OPS_RotationShearCurve();
+    void* curve = OPS_ThreePointCurve();
     if (curve != 0) {
       theCurve = (LimitCurve*)curve;
     } else {
