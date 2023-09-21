@@ -664,7 +664,7 @@ FiberSection2dThermal::getCopy(void)
 
   theCopy->numFibers = numFibers;
 
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theCopy->theMaterials == 0) {
@@ -679,6 +679,13 @@ FiberSection2dThermal::getCopy(void)
       exit(-1);
     }
 
+    theCopy->Fiber_Tangent = new double [numFibers];
+    theCopy->Fiber_ElongP = new double [numFibers];
+    if (theCopy->Fiber_Tangent == 0 || theCopy->Fiber_ElongP == 0) {
+      opserr << "FiberSection2dThermal::getCopy -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+    
     for (int i = 0; i < numFibers; i++) {
       theCopy->matData[i*2] = matData[i*2];
       theCopy->matData[i*2+1] = matData[i*2+1];
@@ -688,6 +695,8 @@ FiberSection2dThermal::getCopy(void)
 	opserr <<"FiberSection2dThermal::getCopy -- failed to get copy of a Material";
 	exit(-1);
       }
+      theCopy->Fiber_Tangent[i] = Fiber_Tangent[i];
+      theCopy->Fiber_ElongP[i] = Fiber_ElongP[i];
     }
     //retrieve temperatures
 	//theCopy->theTemperatures = theTemperatures->getCopy();
@@ -703,6 +712,7 @@ FiberSection2dThermal::getCopy(void)
   theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
+  theCopy->sT = sT;
 
   theCopy->kData[0] = kData[0];
   theCopy->kData[1] = kData[1];

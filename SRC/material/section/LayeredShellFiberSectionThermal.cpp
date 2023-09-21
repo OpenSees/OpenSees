@@ -226,6 +226,14 @@ SectionForceDeformation  *LayeredShellFiberSectionThermal::getCopy( )
 					  theFibers ) ; //make the copy
     delete [] thickness;
   }
+
+  clone->sT = sT;
+  clone->countnGauss = countnGauss;
+  clone->AverageThermalForceP = AverageThermalForceP;
+  clone->AverageThermalMomentP = AverageThermalMomentP;
+  for (int i = 0; i < nLayers; i++)
+    clone->ThermalElongation[i] = ThermalElongation[i];
+  
   return clone ;
 }
 

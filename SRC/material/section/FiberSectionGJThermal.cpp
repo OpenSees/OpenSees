@@ -546,20 +546,26 @@ FiberSectionGJThermal::getCopy(void)
 
   theCopy->numFibers = numFibers;
 
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theCopy->theMaterials == 0) {
-      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate Material pointers\n";
+      opserr << "FiberSectionGJThermal::getCopy -- failed to allocate Material pointers\n";
       exit(-1);
     }
 
     theCopy->matData = new double [numFibers*3];
 
     if (theCopy->matData == 0) {
-      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate double array for material data\n";
+      opserr << "FiberSectionGJThermal::getCopy -- failed to allocate double array for material data\n";
       exit(-1);
     }
+    theCopy->Fiber_ElongP = new double [numFibers];
+    if (theCopy->Fiber_ElongP == 0) {
+      opserr << "FiberSectionGJThermal::getCopy -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+    
     for (int i = 0; i < numFibers; i++) {
       theCopy->matData[i*3] = matData[i*3];
       theCopy->matData[i*3+1] = matData[i*3+1];
@@ -570,6 +576,7 @@ FiberSectionGJThermal::getCopy(void)
 	opserr << "FiberSectionGJThermal::getCopy -- failed to get copy of a Material\n";
 	exit(-1);
       }
+      theCopy->Fiber_ElongP[i] = Fiber_ElongP[i];
     }
   }
 
@@ -586,7 +593,8 @@ FiberSectionGJThermal::getCopy(void)
   theCopy->sData[2] = sData[2];
 
   theCopy->GJ = GJ;
-
+  theCopy->sT = sT;
+  
   return theCopy;
 }
 

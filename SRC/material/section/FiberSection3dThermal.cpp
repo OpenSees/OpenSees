@@ -577,7 +577,7 @@ FiberSection3dThermal::getCopy(void)
 
   theCopy->numFibers = numFibers;
 
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theCopy->theMaterials == 0) {
@@ -588,10 +588,16 @@ FiberSection3dThermal::getCopy(void)
     theCopy->matData = new double [numFibers*3];
 
     if (theCopy->matData == 0) {
-      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for material data\n";
+      opserr << "FiberSection3dThermal::getCopy -- failed to allocate double array for material data\n";
       exit(-1);
     }
 
+    theCopy->Fiber_T = new double [numFibers];
+    theCopy->Fiber_TMax = new double [numFibers];
+    if (theCopy->Fiber_TMax == 0 || theCopy->Fiber_TMax) {
+      opserr << "FiberSection3dThermal::getCopy -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }        
 
     for (int i = 0; i < numFibers; i++) {
       theCopy->matData[i*3] = matData[i*3];
@@ -603,6 +609,9 @@ FiberSection3dThermal::getCopy(void)
 	opserr << "FiberSection3dThermal::getCopy -- failed to get copy of a Material\n";
 	exit(-1);
       }
+
+      theCopy->Fiber_T[i] = Fiber_T[i];
+      theCopy->Fiber_TMax[i] = Fiber_TMax[i];
     }
   }
 
@@ -621,7 +630,8 @@ FiberSection3dThermal::getCopy(void)
   theCopy->sData[0] = sData[0];
   theCopy->sData[1] = sData[1];
   theCopy->sData[2] = sData[2];
-
+  theCopy->sT = sT;
+  
   return theCopy;
 }
 

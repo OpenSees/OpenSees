@@ -151,9 +151,8 @@ strainResultant(8), sT(2)
 //destructor
 MembranePlateFiberSectionThermal::~MembranePlateFiberSectionThermal( ) 
 { 
-  int i ;
-  for ( i = 0; i < 5; i++ )
-     delete theFibers[i] ;
+  for (int i = 0; i < 5; i++ )
+    delete theFibers[i];
 } 
 
 
@@ -166,6 +165,12 @@ SectionForceDeformation  *MembranePlateFiberSectionThermal::getCopy( )
   clone = new MembranePlateFiberSectionThermal( this->getTag(), 
                                          this->h,
                                          *theFibers[0] ) ; //make the copy
+  clone->sT = sT;
+  clone->countnGauss = countnGauss;
+  clone->ThermalGradientShink = ThermalGradientShink;
+  for (int i = 0; i < 5; i++)
+    clone->ThermalElongation[i] = ThermalElongation[i];
+  
   return clone ;
 }
 
