@@ -430,25 +430,7 @@ setTrialSectionDeformation( const Vector &strainResultant_from_element)
 
       strain(4) =  root56*strainResultant(7) ;
     
-	#ifdef _SDEBUG
-	  if (strainResultant(8) ==111&&i==0){
-	  opserr<<"LayeredShellSection z : "<<z<< "strain  "<<strain<<endln;
-	  strain(5)=1110;
-	  }
-	  else 
-		strain(5)=1115;
-	#endif
-
-//#ifdef _DEBUG
-//opserr<<" Layer"<< i <<endln;
-//#endif
       success += theFibers[i]->setTrialStrain( strain ) ;
-	  #ifdef _SDEBUG
-	  if (strainResultant(8) ==111&&i==0){
-	  opserr<<"LayeredShellSection z : "<<z<<"stress  "<<theFibers[i]->getStress()<<endln;
-	  opserr<<" tangent "<<theFibers[i]->getTangent()<<endln;
-		  }
-	#endif
      
   } //end for i
 
@@ -730,7 +712,7 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
 //print out data
 void  LayeredShellFiberSectionThermal::Print( OPS_Stream &s, int flag )
 {
-  s << "LayeredShellFiber Section tag: " << this->getTag() << endln ; 
+  s << "LayeredShellFiberThermal Section tag: " << this->getTag() << endln ; 
   s << "Total thickness h = " << h << endln ;
 
   for (int i = 0; i < nLayers; i++) {

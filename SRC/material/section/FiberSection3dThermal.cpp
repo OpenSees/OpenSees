@@ -289,7 +289,7 @@ FiberSection3dThermal::addFiber(Fiber &newFiber)
   theMaterials[numFibers] = theMat->getCopy();
 
   if (theMaterials[numFibers] == 0) {
-    opserr << "FiberSection3d::addFiber -- failed to get copy of a Material\n";
+    opserr << "FiberSection3dThermal::addFiber -- failed to get copy of a Material\n";
     return -1;
   }
 
@@ -1181,7 +1181,7 @@ FiberSection3dThermal::getStressResultantSensitivity(int gradIndex, bool conditi
 const Matrix &
 FiberSection3dThermal::getSectionTangentSensitivity(int gradIndex)
 {
-  static Matrix something(2,2);
+  static Matrix something(3,3);
 
   something.Zero();
 

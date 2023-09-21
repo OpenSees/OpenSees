@@ -733,7 +733,7 @@ MembranePlateFiberSectionThermal::recvSelf(int commitTag, Channel &theChannel, F
       theFibers[i]->setDbTag(matDbTag);
       res += theFibers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	opserr << "MembranePlateFiber::recvSelf() - material " << i << "failed to recv itself\n";
+	opserr << "MembranePlateFiberSectionThermal::recvSelf() - material " << i << "failed to recv itself\n";
 	  
 	return res;
       }

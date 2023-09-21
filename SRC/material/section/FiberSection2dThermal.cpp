@@ -51,7 +51,7 @@ void* OPS_FiberSection2dThermal()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {
-	opserr<<"insufficient arguments for FiberSection2d\n";
+	opserr<<"insufficient arguments for FiberSection2dThermal\n";
 	return 0;
     }
 
@@ -1023,7 +1023,7 @@ FiberSection2dThermal::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection2dThermal::Print(OPS_Stream &s, int flag)
 {
-  s << "\nFiberSection2dTemperature, tag: " << this->getTag() << endln;
+  s << "\nFiberSection2dThermal, tag: " << this->getTag() << endln;
   s << "\tSection code: " << code;
   s << "\tNumber of Fibers: " << numFibers << endln;
   s << "\tCentroid: " << yBar << endln;
