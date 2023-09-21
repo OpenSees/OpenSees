@@ -150,7 +150,7 @@ const double  LayeredShellFiberSectionThermal::root56 = 1 ; //shear correction
 //null constructor
 LayeredShellFiberSectionThermal::LayeredShellFiberSectionThermal( ) : 
 SectionForceDeformation( 0, SEC_TAG_LayeredShellFiberSectionThermal ), 
-strainResultant(8), nLayers(0),countnGauss(0),AverageThermalMomentP(0), AverageThermalForceP(0),sT(0), ThermalElongation(0)
+strainResultant(8), nLayers(0),countnGauss(0),AverageThermalMomentP(0), AverageThermalForceP(0),sT(2), ThermalElongation(0)
 {
 
 }
@@ -162,7 +162,7 @@ LayeredShellFiberSectionThermal::LayeredShellFiberSectionThermal(
                                    double *thickness, 
                                    NDMaterial **fibers ) :
 SectionForceDeformation( tag, SEC_TAG_LayeredShellFiberSectionThermal ),
-strainResultant(8), countnGauss(0), AverageThermalMomentP(0), AverageThermalForceP(0),sT(0), ThermalElongation(0)
+strainResultant(8), countnGauss(0), AverageThermalMomentP(0), AverageThermalForceP(0),sT(2), ThermalElongation(0)
 {
   this->nLayers = iLayers;
   sg = new double[iLayers];
@@ -189,26 +189,24 @@ strainResultant(8), countnGauss(0), AverageThermalMomentP(0), AverageThermalForc
     currLoc = currLoc + thickness[i];
 	ThermalElongation[i] =0.0;  //Added  by LMJ
   }
-
-  sT =new Vector(2);
-  sT->Zero();
-
 }
 
 //destructor
 LayeredShellFiberSectionThermal::~LayeredShellFiberSectionThermal( ) 
 { 
-  int i ;
   if (sg != 0) delete sg;
-if (wg != 0) delete wg;
+  if (wg != 0) delete wg;
   if (theFibers != 0)
   {
-    for ( i = 0; i < nLayers; i++ )
+    for (int i = 0; i < nLayers; i++ )
     {
       if (theFibers[i] != 0) delete theFibers[i] ;
     }
     delete [] theFibers;
   }
+
+  if (ThermalElongation != 0)
+    delete [] ThermalElongation;
 } 
 
 //make a clone of this material
@@ -500,12 +498,15 @@ LayeredShellFiberSectionThermal::getTemperatureStress(const Vector& dataMixed)
 	averageThermalMoment+= yi*thickness*elongation*tangent;
 	}
 
-      (*sT)(0) = averageThermalForce - AverageThermalForceP;
+      sT(0) = averageThermalForce - AverageThermalForceP;
 
-      (*sT)(1) = averageThermalMoment - AverageThermalMomentP;
+      sT(1) = averageThermalMoment - AverageThermalMomentP;
 	  AverageThermalForceP = averageThermalForce;
 	  AverageThermalMomentP = averageThermalMoment;
-      return *sT;
+
+	  delete [] ThermalTangent;
+	  
+      return sT;
 
 }
 
