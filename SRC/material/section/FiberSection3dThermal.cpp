@@ -52,7 +52,7 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, b
   SectionForceDeformation(tag, SEC_TAG_FiberSection3dThermal),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
-  e(3), eCommit(3), s(0), ks(0), sT(0), Fiber_T(0), Fiber_TMax(0),
+  e(3), eCommit(3), s(0), ks(0), sT(3), Fiber_T(0), Fiber_TMax(0),
   parameterID(0), SHVs(0)
 {
   if (numFibers > 0) {
@@ -130,11 +130,6 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, b
   parameterID = 0;
   SHVs=0;
   // AddingSensitivity:END //////////////////////////////////////
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
 }
 
 FiberSection3dThermal::FiberSection3dThermal(int tag, int num, bool compCentroid):
@@ -142,7 +137,7 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, bool compCentroid
   numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
   e(3), eCommit(3), s(0), ks(0),
-  sT(0), Fiber_T(0), Fiber_TMax(0),
+  sT(3), Fiber_T(0), Fiber_TMax(0),
   parameterID(0), SHVs(0)
 {
   if(sizeFibers > 0) {
@@ -200,11 +195,6 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, bool compCentroid
   parameterID = 0;
   SHVs=0;
   // AddingSensitivity:END //////////////////////////////////////
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
@@ -213,7 +203,7 @@ FiberSection3dThermal::FiberSection3dThermal():
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0), yBar(0.0), zBar(0.0), computeCentroid(true),
   e(3), eCommit(3), s(0), ks(0),
-  sT(0), Fiber_T(0), Fiber_TMax(0),
+  sT(3), Fiber_T(0), Fiber_TMax(0),
   parameterID(0), SHVs(0)
 {
   s = new Vector(sData, 3);
@@ -234,12 +224,6 @@ FiberSection3dThermal::FiberSection3dThermal():
   parameterID = 0;
   SHVs=0;
   // AddingSensitivity:END //////////////////////////////////////
-
-    //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
 }
 
 int
@@ -345,8 +329,7 @@ FiberSection3dThermal::~FiberSection3dThermal()
 
   if (ks != 0)
     delete ks;
-  if (sT != 0)
-    delete sT;
+
   //if (TemperatureTangent != 0)
     //delete [] TemperatureTangent;
 
@@ -511,10 +494,7 @@ FiberSection3dThermal::getStressResultant(void)
 const Vector&
 FiberSection3dThermal::getTemperatureStress(const Vector& dataMixed)
 {
-
-   sTData[0]=0;
-   sTData[1]=0;
-   sTData[2]=0;
+  sT.Zero();
 
   //JJadd, 12/2010, updata yBar = Ai*Ei*yi/(Ai*E*)  start
   double ThermalTangent[1000];
@@ -575,15 +555,15 @@ FiberSection3dThermal::getTemperatureStress(const Vector& dataMixed)
   double FiberForce;
   for (int i = 0; i < numFibers; i++) {
 	  FiberForce = ThermalTangent[i]*matData[3*i+2]*ThermalElong[i];
-      sTData[0] += FiberForce;
-      sTData[1] += FiberForce*(matData[3*i] - yBar);
-	  sTData[2] += FiberForce*(matData[3*i+1] - zBar);
+	  sT(0) += FiberForce;
+	  sT(1) += FiberForce*(matData[3*i] - yBar);
+	  sT(2) += FiberForce*(matData[3*i+1] - zBar);
   }
   //double ThermalMoment;
   //ThermalMoment = abs(sTData[1]);
  // sTData[1] = ThermalMoment;
 
-  return *sT;
+  return sT;
 }
 //JJadd--12.2010---to get section force due to thermal load----end-----
 
