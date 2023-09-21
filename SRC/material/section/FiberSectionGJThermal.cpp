@@ -44,8 +44,6 @@
 #include <math.h>
 
 ID FiberSectionGJThermal::code(4);
-Vector FiberSectionGJThermal::s(4);
-Matrix FiberSectionGJThermal::ks(4,4);
 
 // constructors:
 FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, double gj):
@@ -111,8 +109,9 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, d
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
+  sData[3] = 0.0;
 
-  for (int i=0; i<6; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
@@ -157,14 +156,15 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, double gj):
     }
   }
   
-  s = new Vector(sData, 3);
-  ks = new Matrix(kData, 3, 3);
+  s = new Vector(sData, 4);
+  ks = new Matrix(kData, 4, 4);
   
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
+  sData[3] = 0.0;
 
-  for (int i=0; i<6; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
@@ -183,8 +183,9 @@ FiberSectionGJThermal::FiberSectionGJThermal():
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
+  sData[3] = 0.0;
 
-  for (int i=0; i<6; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
@@ -294,16 +295,17 @@ FiberSectionGJThermal::setTrialSectionDeformation (const Vector &deforms)
   int res = 0;
   e = deforms;
 
-  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0;
-  kData[3] = 0.0; kData[4] = 0.0; kData[5] = 0.0;
-
-  sData[0] = 0.0; sData[1] = 0.0; sData[2] = 0.0;
+  for (int i = 0; i < 4; i++)
+    sData[i] = 0.0;
+  for (int i = 0; i < 16; i++)
+    kData[i] = 0.0;
 
   int loc = 0;
 
   double d0 = deforms(0);
   double d1 = deforms(1);
   double d2 = deforms(2);
+  double d3 = deforms(3);
 
   for (int i = 0; i < numFibers; i++) {
     UniaxialMaterial *theMat = theMaterials[i];
@@ -346,10 +348,10 @@ FiberSectionGJThermal::setTrialSectionDeformation (const Vector &deforms)
     kData[1] += vas1;
     kData[2] += vas2;
 
-    kData[3] += vas1 * yi;
-    kData[4] += vas1as2;
+    kData[5] += vas1 * yi;
+    kData[6] += vas1as2;
 
-    kData[5] += vas2 * zi;
+    kData[10] += vas2 * zi;
 	//if (FiberTemperature> 450)
 		//opserr << "Trial strain: " << strain << "   tangent: " << tangent << "   Tstress: " << stress << "Thelong: " << ThermalElongation <<"added s"<< sData[0]<< endln;
 
@@ -358,14 +360,24 @@ FiberSectionGJThermal::setTrialSectionDeformation (const Vector &deforms)
     sData[1] += fs0 * yi;
     sData[2] += fs0 * zi;
   }
+
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  sData[3] = GJ*d3;
+  kData[15] = GJ;
+  
   return res;
 }
 
 const Matrix&
 FiberSectionGJThermal::getInitialTangent(void)
 {
-  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0;
-  kData[3] = 0.0; kData[4] = 0.0; kData[5] = 0.0;
+  static double kInitialData[16];
+  static Matrix kInitial(kInitialData, 4, 4);
+  
+  kInitial.Zero();  
 
   int loc = 0;
 
@@ -382,26 +394,23 @@ FiberSectionGJThermal::getInitialTangent(void)
     double vas2 = z*value;
     double vas1as2 = vas1*z;
 
-    kData[0] += value;
-    kData[1] += vas1;
-    kData[2] += vas2;
+    kInitialData[0] += value;
+    kInitialData[1] += vas1;
+    kInitialData[2] += vas2;
 
-    kData[3] += vas1 * y;
-    kData[4] += vas1as2;
+    kInitialData[5] += vas1 * y;
+    kInitialData[6] += vas1as2;
 
-    kData[5] += vas2 * z;
+    kInitialData[10] += vas2 * z;
   }
 
-  ks(0,0) = kData[0];
-  ks(0,1) = ks(1,0) = kData[1];
-  ks(0,2) = ks(2,0) = kData[2];
-  ks(1,1) = kData[3];
-  ks(1,2) = ks(2,1) = kData[4];
-  ks(2,2) = kData[5];
+  kInitialData[4] = kInitialData[1];
+  kInitialData[8] = kInitialData[2];
+  kInitialData[9] = kInitialData[6];
 
-  ks(3,3) = GJ;
+  kInitial(3,3) = GJ;
 
-  return ks;
+  return kInitial;
 }
 
 const Vector&
@@ -413,30 +422,13 @@ FiberSectionGJThermal::getSectionDeformation(void)
 const Matrix&
 FiberSectionGJThermal::getSectionTangent(void)
 {
-  ks(0,0) = kData[0];
-  ks(0,1) = ks(1,0) = kData[1];
-  ks(0,2) = ks(2,0) = kData[2];
-  ks(1,1) = kData[3];
-  ks(1,2) = ks(2,1) = kData[4];
-  ks(2,2) = kData[5];
-
-  ks(3,3) = GJ;
-
-  return ks;
+  return *ks;
 }
 
 const Vector&
 FiberSectionGJThermal::getStressResultant(void)
 {
-  s(0) = sData[0];
-  s(1) = sData[1];
-  s(2) = sData[2];
-double rot;
-rot= e(3);
-
-  s(3) = GJ*e(3);
-
-  return s;
+  return *s;
 }
 //JJadd--12.2010---to get section force due to thermal load----start-----
 //---Liming modified the following block---
@@ -585,12 +577,13 @@ FiberSectionGJThermal::getCopy(void)
   theCopy->yBar = yBar;
   theCopy->zBar = zBar;
 
-  for (int i=0; i<6; i++)
+  for (int i=0; i<16; i++)
     theCopy->kData[i] = kData[i];
 
   theCopy->sData[0] = sData[0];
   theCopy->sData[1] = sData[1];
   theCopy->sData[2] = sData[2];
+  theCopy->sData[3] = sData[3];
 
   theCopy->GJ = GJ;
   theCopy->sT = sT;
@@ -631,10 +624,11 @@ FiberSectionGJThermal::revertToLastCommit(void)
   // Last committed section deformations
   e = eCommit;
 
-  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0;
-  kData[3] = 0.0; kData[4] = 0.0; kData[5] = 0.0;
-
-  sData[0] = 0.0; sData[1] = 0.0; sData[2] = 0.0;
+  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
+  kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
+  kData[8] = 0.0; 
+  kData[15] = 0.0;
+  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; sData[3] = 0.0;
 
   int loc = 0;
 
@@ -659,10 +653,10 @@ FiberSectionGJThermal::revertToLastCommit(void)
     kData[1] += vas1;
     kData[2] += vas2;
 
-    kData[3] += vas1 * y;
-    kData[4] += vas1as2;
+    kData[5] += vas1 * y;
+    kData[6] += vas1as2;
 
-    kData[5] += vas2 * z;
+    kData[10] += vas2 * z;
 
     double fs0 = stress * A;
     sData[0] += fs0;
@@ -670,6 +664,13 @@ FiberSectionGJThermal::revertToLastCommit(void)
     sData[2] += fs0 * z;
   }
 
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  kData[15] = GJ;
+  sData[3] = GJ*e(3);
+  
   return err;
 }
 
@@ -679,11 +680,12 @@ FiberSectionGJThermal::revertToStart(void)
   // revert the fibers to start
   int err = 0;
 
-  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0;
-  kData[3] = 0.0; kData[4] = 0.0; kData[5] = 0.0;
-
-  sData[0] = 0.0; sData[1] = 0.0; sData[2] = 0.0;
-
+  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
+  kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
+  kData[8] = 0.0;
+  kData[15] = 0.0; 
+  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; sData[3] = 0.0;
+  
   int loc = 0;
 
   for (int i = 0; i < numFibers; i++) {
@@ -707,10 +709,10 @@ FiberSectionGJThermal::revertToStart(void)
     kData[1] += vas1;
     kData[2] += vas2;
 
-    kData[3] += vas1 * y;
-    kData[4] += vas1as2;
+    kData[5] += vas1 * y;
+    kData[6] += vas1as2;
 
-    kData[5] += vas2 * z;
+    kData[10] += vas2 * z;
 
     double fs0 = stress * A;
     sData[0] += fs0;
@@ -718,6 +720,13 @@ FiberSectionGJThermal::revertToStart(void)
     sData[2] += fs0 * z;
   }
 
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  kData[15] = GJ;
+  sData[3] = GJ*e(3);
+  
   return err;
 }
 

@@ -90,8 +90,8 @@ class FiberSectionGJThermal : public SectionForceDeformation
     int numFibers, sizeFibers;                   // number of fibers in the section
   UniaxialMaterial **theMaterials; // array of pointers to materials
   double *matData;               // data for the materials [yloc and area]
-  double kData[6];               // data for ks matrix
-  double sData[3];               // data for s vector
+  double kData[16];               // data for ks matrix
+  double sData[4];               // data for s vector
 
     double QzBar, QyBar, ABar;
   double yBar;       // Section centroid
@@ -101,8 +101,8 @@ class FiberSectionGJThermal : public SectionForceDeformation
   Vector eCommit;    // committed section deformations
 
   static ID code;
-  static Vector s;         // section resisting forces
-  static Matrix ks;        // section stiffness
+  Vector *s;         // section resisting forces
+  Matrix *ks;        // section stiffness
 
   double GJ;
 
