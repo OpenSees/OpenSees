@@ -106,8 +106,7 @@ class FiberSectionGJThermal : public SectionForceDeformation
 
   double GJ;
 
-  double   sTData[3];               //JZ data for s vector 
-	Vector *sT;  // JZ  section resisting forces, caused by the temperature
+	Vector sT;  // JZ  section resisting forces, caused by the temperature
 	Vector dataMixed;
 	double *Fiber_ElongP;
 	Vector AverageThermalElong;

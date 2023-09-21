@@ -52,9 +52,9 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, d
   SectionForceDeformation(tag, SEC_TAG_FiberSectionGJThermal),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),dataMixed(25),
   QzBar(0.0), QyBar(0.0), ABar(0.0),
-  yBar(0.0), zBar(0.0), e(4), eCommit(4), GJ(gj),AverageThermalElong(3)
+  yBar(0.0), zBar(0.0), e(4), eCommit(4), GJ(gj),sT(3), Fiber_ElongP(0), AverageThermalElong(3)
 {
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -68,6 +68,14 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, d
       opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate double array for material data\n";
       exit(-1);
     }
+
+    Fiber_ElongP = new double [numFibers];
+
+    if (Fiber_ElongP == 0) {
+      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+    
     double Qz = 0.0;
     double Qy = 0.0;
     double A  = 0.0;
@@ -92,6 +100,8 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, d
 	opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to get copy of a Material\n";
 	exit(-1);
       }
+
+      Fiber_ElongP[i] = 0;      
     }
 
     yBar = -QzBar/ABar;
@@ -109,26 +119,47 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, Fiber **fibers, d
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
   code(3) = SECTION_RESPONSE_T;
-
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
-  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-  Fiber_ElongP = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_ElongP[i] = 0;
-   }
-  dataMixed.Zero();
 }
 
 FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, double gj):
   SectionForceDeformation(tag, SEC_TAG_FiberSectionGJThermal),
-  numFibers(0), sizeFibers(num), theMaterials(0), matData(0),dataMixed(25),
+  numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0),
-  yBar(0.0), zBar(0.0), e(4), eCommit(4), GJ(gj),AverageThermalElong(3)
+  yBar(0.0), zBar(0.0), e(4), eCommit(4), GJ(gj), dataMixed(25), sT(3), Fiber_ElongP(0), AverageThermalElong(3)
 {
+  if(sizeFibers > 0) {
+    theMaterials = new UniaxialMaterial *[sizeFibers];
+    
+    if (theMaterials == 0) {
+      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate Material pointers\n";
+      exit(-1);
+    }
+    
+    matData = new double [sizeFibers*3];
+    
+    if (matData == 0) {
+      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate double array for material data\n";
+      exit(-1);
+    }
+
+    Fiber_ElongP = new double [numFibers];
+    if (Fiber_ElongP == 0) {
+      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+    
+    for (int i = 0; i < sizeFibers; i++) {
+      matData[i*3] = 0.0;
+      matData[i*3+1] = 0.0;
+      matData[i*3+2] = 0.0;
+      theMaterials[i] = 0;
+      Fiber_ElongP[i] = 0.0;
+    }
+  }
+  
+  s = new Vector(sData, 3);
+  ks = new Matrix(kData, 3, 3);
+  
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
@@ -140,26 +171,14 @@ FiberSectionGJThermal::FiberSectionGJThermal(int tag, int num, double gj):
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
   code(3) = SECTION_RESPONSE_T;
-
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
-  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-  Fiber_ElongP = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_ElongP[i] = 0;
-   }
-  dataMixed.Zero();
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
 FiberSectionGJThermal::FiberSectionGJThermal():
   SectionForceDeformation(0, SEC_TAG_FiberSectionGJThermal),
-  numFibers(0), sizeFibers(0), theMaterials(0), matData(0),dataMixed(25),
+  numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0),
-  yBar(0.0), zBar(0.0), e(4), eCommit(4), GJ(1.0),AverageThermalElong(3)
+  yBar(0.0), zBar(0.0), e(4), eCommit(4), GJ(1.0),dataMixed(25),sT(3), Fiber_ElongP(0), AverageThermalElong(3)
 {
   sData[0] = 0.0;
   sData[1] = 0.0;
@@ -172,19 +191,6 @@ FiberSectionGJThermal::FiberSectionGJThermal():
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
   code(3) = SECTION_RESPONSE_T;
-
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
-  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-  Fiber_ElongP = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_ElongP[i] = 0;
-   }
-   dataMixed.Zero();
-
 }
 
 int
@@ -195,8 +201,9 @@ FiberSectionGJThermal::addFiber(Fiber &newFiber)
       int newSize = 2*sizeFibers;
       UniaxialMaterial **newArray = new UniaxialMaterial *[newSize];
       double *newMatData = new double [3 * newSize];
-
-      if (newArray == 0 || newMatData == 0) {
+      double *newFiberElongP = new double [newSize];
+      
+      if (newArray == 0 || newMatData == 0 || newFiberElongP == 0) {
 	  opserr << "FiberSection3d::addFiber -- failed to allocate Fiber pointers\n";
 	  exit(-1);
       }
@@ -207,6 +214,7 @@ FiberSectionGJThermal::addFiber(Fiber &newFiber)
 	  newMatData[3*i] = matData[3*i];
 	  newMatData[3*i+1] = matData[3*i+1];
 	  newMatData[3*i+2] = matData[3*i+2];
+	  newFiberElongP[i] = Fiber_ElongP[i];
       }
 
       // initialize new memory
@@ -215,17 +223,21 @@ FiberSectionGJThermal::addFiber(Fiber &newFiber)
 	  newMatData[3*i] = 0.0;
 	  newMatData[3*i+1] = 0.0;
 	  newMatData[3*i+2] = 0.0;
+	  newFiberElongP[i] = 0.0;
       }
       sizeFibers = newSize;
 
       // set new memory
-      if (theMaterials != 0) {
+      if (theMaterials != 0)
 	  delete [] theMaterials;
-	  delete [] matData;
-      }
+      if (matData != 0)
+	delete [] matData;
+      if (Fiber_ElongP != 0)
+	delete [] Fiber_ElongP;
 
       theMaterials = newArray;
       matData = newMatData;
+      Fiber_ElongP = newFiberElongP;
   }
 
   // set the new pointers
@@ -273,7 +285,7 @@ FiberSectionGJThermal::~FiberSectionGJThermal()
     delete [] matData;
 
   if(Fiber_ElongP != 0 )
-	  delete [] Fiber_ElongP;
+    delete [] Fiber_ElongP;
 }
 
 int
@@ -492,7 +504,7 @@ FiberSectionGJThermal::getTemperatureStress(const Vector& DataMixed)
   double ThermalMoment2 =0;
   double SectionMomofArea2 =0;
  //Liming add this for calculating average Thermal Elongation
-  sTData [0]=0;sTData[1]=0; sTData[2]=0;
+  sT.Zero();
   for (int i = 0; i < numFibers; i++) {
 	  FiberForce = ThermalTangent[i]*matData[3*i+2]*DeltaThermalElong[i];
 	  SectionArea +=matData[3*i+2];
@@ -503,18 +515,19 @@ FiberSectionGJThermal::getTemperatureStress(const Vector& DataMixed)
 	  ThermalMoment1 += Fiber_ElongP[i]*matData[3*i+2]*(matData[3*i] - yBar);
 	  ThermalMoment2 += Fiber_ElongP[i]*matData[3*i+2]*(matData[3*i+1] - zBar);
 
-      sTData[0] += FiberForce;
-      sTData[1] += FiberForce*(matData[3*i] - yBar);
-	  sTData[2] += FiberForce*(matData[3*i+1] - zBar);
+	  sT(0) += FiberForce;
+	  sT(1) += FiberForce*(matData[3*i] - yBar);
+	  sT(2) += FiberForce*(matData[3*i+1] - zBar);
   }
   AverageThermalElong(0) = ThermalForce/SectionArea;
  AverageThermalElong(1) = ThermalMoment1/SectionMomofArea1;
   AverageThermalElong(2) = ThermalMoment2/SectionMomofArea2;
-  double ThermalMoment;
-  ThermalMoment = abs(sTData[1]);
-  sTData[1] = ThermalMoment;
+  //double ThermalMoment;
+  //ThermalMoment = abs(sTData[1]);
+  //sTData[1] = ThermalMoment;
+  sT(1) = abs(sT(1));
 
-  return *sT;
+  return sT;
 }
 
 const Vector&
@@ -533,20 +546,26 @@ FiberSectionGJThermal::getCopy(void)
 
   theCopy->numFibers = numFibers;
 
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theCopy->theMaterials == 0) {
-      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate Material pointers\n";
+      opserr << "FiberSectionGJThermal::getCopy -- failed to allocate Material pointers\n";
       exit(-1);
     }
 
     theCopy->matData = new double [numFibers*3];
 
     if (theCopy->matData == 0) {
-      opserr << "FiberSectionGJThermal::FiberSectionGJThermal -- failed to allocate double array for material data\n";
+      opserr << "FiberSectionGJThermal::getCopy -- failed to allocate double array for material data\n";
       exit(-1);
     }
+    theCopy->Fiber_ElongP = new double [numFibers];
+    if (theCopy->Fiber_ElongP == 0) {
+      opserr << "FiberSectionGJThermal::getCopy -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+    
     for (int i = 0; i < numFibers; i++) {
       theCopy->matData[i*3] = matData[i*3];
       theCopy->matData[i*3+1] = matData[i*3+1];
@@ -557,6 +576,7 @@ FiberSectionGJThermal::getCopy(void)
 	opserr << "FiberSectionGJThermal::getCopy -- failed to get copy of a Material\n";
 	exit(-1);
       }
+      theCopy->Fiber_ElongP[i] = Fiber_ElongP[i];
     }
   }
 
@@ -573,7 +593,8 @@ FiberSectionGJThermal::getCopy(void)
   theCopy->sData[2] = sData[2];
 
   theCopy->GJ = GJ;
-
+  theCopy->sT = sT;
+  
   return theCopy;
 }
 
