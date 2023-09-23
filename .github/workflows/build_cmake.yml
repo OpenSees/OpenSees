@@ -43,6 +43,9 @@ jobs:
             cd ..\..
             pip install conan==1.59.0
       - name: Build
+        env:
+          path:
+            c:\program files (x86)\intel\oneapi\compiler\
         shell: pwsh
         run: |
           & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
@@ -53,7 +56,7 @@ jobs:
           cmake ..
           cmake --build . --config Release --target OpenSees
           cmake --build . --config Release --target OpenSeesPy
-          mv ./bin/OpenSeesPy.dylib ./bin/opensees.pyd
+          mv ./bin/OpenSeesPy.dll ./bin/opensees.pyd
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
