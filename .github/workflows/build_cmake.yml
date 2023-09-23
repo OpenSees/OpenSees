@@ -85,8 +85,6 @@ jobs:
           cmake ..
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          make OpenSees  -j8
-          make OpenSeesPy - j8
           mv ./OpenSeesPy.dylib ./opensees.so
       - name: Verification OpenSeesPySP
         run: |
@@ -107,26 +105,32 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           vsversion: 2019
-          # Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2022.2.0.252_offline.exe -OutFile base_installer.exe
-          # Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.173_offline.exe -OutFile hpc_installer.exe
-      - name: Download Intel oneAPI
-        shell: pwsh
-        run: |
-          Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2023.2.0.49396_offline.exe -OutFile base_installer.exe
-          Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.49441_offline.exe -OutFile hpc_installer.exe
-          ./base_installer.exe --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
-          ./hpc_installer.exe --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
-      - name: Install Intel oneAPI
-        shell: pwsh
-        run: |
-          ls "C:\Program Files (x86)\Intel\oneAPI"
-          ls "C:\Program Files (x86)\Intel\oneAPI\Installer"
-          & "C:\Program Files (x86)\Intel\oneAPI\Installer\installer.exe" --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
-          & 'C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\bin\intel64\ifort.exe' /QV
+      - uses: awvwgk/setup-fortran@v1
+        id: setup-fortran
+        with:
+          compiler: intel-classic
+          version: "2021.10"
+      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2022.2.0.252_offline.exe -OutFile base_installer.exe
+      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.173_offline.exe -OutFile hpc_installer.exe
+      # - name: Download Intel oneAPI
+      #   shell: pwsh
+      #   run: |
+      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2023.2.0.49396_offline.exe -OutFile base_installer.exe
+      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.49441_offline.exe -OutFile hpc_installer.exe
+      #     ./base_installer.exe --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
+      #     ./hpc_installer.exe --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
+      # - name: Install Intel oneAPI
+      #   shell: pwsh
+      #   run: |
+      #     ls "C:\Program Files (x86)\Intel\oneAPI"
+      #     ls "C:\Program Files (x86)\Intel\oneAPI\Installer"
+      #     & "C:\Program Files (x86)\Intel\oneAPI\Installer\installer.exe" --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
+      #     & 'C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\bin\intel64\ifort.exe' /QV
+      #       & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+      # & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
-            & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
             git clone https://github.com/OpenSees/mumps.git
             cd mumps
             mkdir -p build
@@ -138,7 +142,6 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
           cd D:\a\OpenSees\OpenSees
           mkdir build
           cd build
@@ -147,15 +150,11 @@ jobs:
           cmake --build . --config Release --target OpenSees
           cmake --build . --config Release --target OpenSeesPy
           mv ./bin/OpenSeesPy.dylib ./bin/opensees.pyd
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\redist\intel64_win\compiler\libifcoremd.dll" ./
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\redist\intel64_win\compiler\libiomp5md.dll" ./
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\redist\intel64_win\compiler\libmmd.dll" ./
-          cp ~\appdata\local\programs\python\python39.dll ./
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
           cd ./EXAMPLES/ExamplePython/
-          export PYTHONPATH="../../build/bin/"
+          $env:PYTHONPATH = "../../build/bin/"
           python -c "import sys; print(sys.path)"
           python example_variable_analysis.py
 
