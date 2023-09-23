@@ -6,6 +6,8 @@ env:
 
 on:
   push:
+    branches: [master]
+
   pull_request:
     branches: [master]
 
@@ -65,7 +67,7 @@ jobs:
     name: Mac Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v4
@@ -91,7 +93,6 @@ jobs:
           export PYTHONPATH="../../build/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
-# -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES=/usr/local/Cellar/scalapack/2.2.0_1/lib/libscalapack.dylib
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
     #  build-win32:
