@@ -26,7 +26,7 @@ jobs:
       #     version: 2021.10.0
       - name: Clone Setup-Fortran
         run: |
-          git clone https://github.com/awvwgk/setup-fortran
+          git clone https://github.com/z-ichinohe/setup-fortran
       - name: Setup Fortran
         id: setup-fortran
         uses: ./setup-fortran
