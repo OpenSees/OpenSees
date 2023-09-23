@@ -84,7 +84,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake ..
+          cmake .. -DMUMPS_DIR=$PWD/../../mumps/build
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
           make OpenSees  -j8
@@ -96,6 +96,7 @@ jobs:
           export PYTHONPATH="../../build/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
+# -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES=/usr/local/Cellar/scalapack/2.2.0_1/lib/libscalapack.dylib
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
     #  build-win32:
