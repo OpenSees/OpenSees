@@ -967,7 +967,6 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         cPosKp = data(111);
         cPosKpc = data(112);
     // 3 State Variables
-        // cU = data(113);
         cUi = data(114);
         cFi = data(115);
     // 2 Stiffness
