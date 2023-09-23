@@ -6,7 +6,7 @@ on:
 jobs:
   build-win:
     name: Win Build
-    runs-on: windows-2022
+    runs-on: windows-2019
     steps:
       - uses: actions/checkout@v3
         with:
@@ -28,9 +28,6 @@ jobs:
       #   with:
       #     compiler: intel-classic
       #     version: 2021.10.0
-      - uses: microsoft/setup-msbuild@v1.1
-        with:
-          vs-version: 2019
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           vsversion: 2019
