@@ -2,6 +2,7 @@ name: CMake Build
 
 on:
   push:
+  workflow_dispatch:
 
 jobs:
   build-win:
