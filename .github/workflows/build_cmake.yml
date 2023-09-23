@@ -31,8 +31,8 @@ jobs:
         id: setup-fortran
         uses: ./setup-fortran
         with:
-          compiler: intel-classic
-          version: "2021.10"
+          compiler: intel
+          version: 2022.2.0
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
@@ -48,10 +48,11 @@ jobs:
         shell: pwsh
         run: |
           & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+          ifort /QV
           cd D:\a\OpenSees\OpenSees
           mkdir build
           cd build
-          conan install .. --build missing --settings compiler.runtime="MT"
+          conan install .. --build missing
           cmake ..
           cmake --build . --config Release --target OpenSees
           cmake --build . --config Release --target OpenSeesPy
