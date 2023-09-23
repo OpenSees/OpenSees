@@ -104,27 +104,25 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           vsversion: 2019
-      - uses: awvwgk/setup-fortran@v1
-        with:
-          compiler: intel-classic
-          version: "2021.10.0"
-      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2022.2.0.252_offline.exe -OutFile base_installer.exe
-      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.173_offline.exe -OutFile hpc_installer.exe
-      # - name: Download Intel oneAPI
-      #   shell: pwsh
-      #   run: |
-      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2023.2.0.49396_offline.exe -OutFile base_installer.exe
-      #     Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.49441_offline.exe -OutFile hpc_installer.exe
-      #     ./base_installer.exe --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
-      #     ./hpc_installer.exe --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
-      # - name: Install Intel oneAPI
-      #   shell: pwsh
-      #   run: |
-      #     ls "C:\Program Files (x86)\Intel\oneAPI"
-      #     ls "C:\Program Files (x86)\Intel\oneAPI\Installer"
-      #     & "C:\Program Files (x86)\Intel\oneAPI\Installer\installer.exe" --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
-      #     & 'C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\bin\intel64\ifort.exe' /QV
-      #       & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+      # - uses: awvwgk/setup-fortran@v1
+      #   with:
+      #     compiler: intel-classic
+      #     version: "2021.10.0"
+      - name: Download Intel oneAPI
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2022.2.0.252_offline.exe -OutFile base_installer.exe
+          Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.173_offline.exe -OutFile hpc_installer.exe
+          ./base_installer.exe --silent
+          ./hpc_installer.exe --silent
+      - name: Install Intel oneAPI
+        shell: pwsh
+        run: |
+          ls "C:\Program Files (x86)\Intel\oneAPI"
+          ls "C:\Program Files (x86)\Intel\oneAPI\Installer"
+          & "C:\Program Files (x86)\Intel\oneAPI\Installer\installer.exe" --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components default
+          & 'C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\bin\intel64\ifort.exe' /QV
+          & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
       # & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
       - name: Install MUMPS and CONAN
         shell: pwsh
