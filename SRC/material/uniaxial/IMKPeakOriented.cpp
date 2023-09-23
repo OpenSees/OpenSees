@@ -117,9 +117,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     //state determination algorithm: defines the current force and tangent stiffness
     const double Ui_1 = Ui;
     const double Fi_1 = Fi;
-    Ui = strain;
-    // U = strain; //set trial displacement
-    // Ui = U;
+    Ui = strain; //set trial displacement
     const double dU = Ui - Ui_1;    // Incremental deformation at current step
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -448,7 +446,6 @@ int IMKPeakOriented::commitState(void)
     cNegKp = negKp;
     cNegKpc = negKpc;
 // 3 State
-    cU = U;
     cUi = Ui;
     cFi = Fi;
 // 2 Stiffness
@@ -494,7 +491,6 @@ int IMKPeakOriented::revertToLastCommit(void)
     negKp = cNegKp;
     negKpc = cNegKpc;
 // 3 State Variables
-    U = cU;
     Ui = cUi;
     Fi = cFi;
 // 2 Stiffness
@@ -556,7 +552,6 @@ int IMKPeakOriented::revertToStart(void)
     negKpc = cNegKpc = -negKpc_0;
     negUres = cNegUres = (negFres - negFcap) / negKpc + negUcap;
 // 3 State Values
-    U = cU = 0;
     Ui = cUi = 0;
     Fi = cFi = 0;
 // 2 Stiffness
@@ -608,7 +603,6 @@ IMKPeakOriented::getCopy(void)
     theCopy->negKp = negKp;
     theCopy->negKpc = negKpc;
 // 3 State Values
-    theCopy->U = U;
     theCopy->Ui = Ui;
     theCopy->Fi = Fi;
 // 2 Stiffness
@@ -647,7 +641,6 @@ IMKPeakOriented::getCopy(void)
     theCopy->cNegKp = cNegKp;
     theCopy->cNegKpc = cNegKpc;
 // 3 State
-    theCopy->cU = cU;
     theCopy->cUi = cUi;
     theCopy->cFi = cFi;
 // 2 Stiffness
@@ -722,7 +715,7 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(51) = posKp;
     data(62) = posKpc;
 // 3 State Variables 63-65
-    data(63) = U;
+    // data(63) = U;
     data(64) = Ui;
     data(65) = Fi;
 // 2 Stiffness 66 67
@@ -761,7 +754,6 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(111) = cPosKp;
     data(112) = cPosKpc;
 // 3 State Variables 113-115
-    data(113) = cU;
     data(114) = cUi;
     data(115) = cFi;
 // 2 Stiffness 116 117
@@ -858,7 +850,6 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         posKp = data(61);
         posKpc = data(62);
     // 3 State Variables
-        U = data(63);
         Ui = data(64);
         Fi = data(65);
     // 2 Stiffness
@@ -897,7 +888,7 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         cPosKp = data(111);
         cPosKpc = data(112);
     // 3 State Variables
-        cU = data(113);
+        // cU = data(113);
         cUi = data(114);
         cFi = data(115);
     // 2 Stiffness

@@ -119,7 +119,6 @@ private:
     double  negKp,          cNegKp;
     double  negKpc,         cNegKpc;
 // 3 State Variables
-    double  U,              cU;
     double  Ui,             cUi;
     double  Fi,             cFi;
 // 3 Stiffness

@@ -124,7 +124,6 @@ private:
     double  Fpinch,         cFpinch;
     double  Upinch,         cUpinch;
 // 3 State Variables
-    double  U,              cU;
     double  Ui,             cUi;
     double  Fi,             cFi;
 // 3 Stiffness
