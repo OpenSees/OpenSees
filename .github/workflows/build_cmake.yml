@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          vsversion: 2019
+          vsversion: 16
 # At this time, latest awvwgk/setup-fortran works well, but it's not released to github actions.
 # Until the next release, the source will be directly fetched and used.
       # - uses: awvwgk/setup-fortran@v1.1
@@ -36,14 +36,14 @@ jobs:
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
-            git clone https://github.com/OpenSees/mumps.git
-            cd mumps
-            mkdir -p build
-            cd build
-            cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
-            cmake --build . --config Release --parallel 4
-            cd ..\..
             pip install conan==1.59.0
+            # git clone https://github.com/OpenSees/mumps.git
+            # cd mumps
+            # mkdir -p build
+            # cd build
+            # cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
+            # cmake --build . --config Release --parallel 4
+            # cd ..\..
       - name: Build
         shell: pwsh
         run: |
@@ -52,10 +52,10 @@ jobs:
           cd D:\a\OpenSees\OpenSees
           mkdir build
           cd build
-          conan install .. --build missing
+          conan install .. --build missing --compiler="Visual Studio" --compiler.runtime="MT" compiler.version=16
           cmake ..
-          cmake --build . --config Release --target OpenSees
-          cmake --build . --config Release --target OpenSeesPy
+          cmake --build . --config Release --target OpenSees -j8
+          cmake --build . --config Release --target OpenSeesPy -j8
           mv ./bin/OpenSeesPy.dll ./bin/opensees.pyd
       - name: Verification OpenSeesPySP
         shell: pwsh
