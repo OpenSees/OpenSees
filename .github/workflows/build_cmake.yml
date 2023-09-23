@@ -7,10 +7,6 @@ env:
 on:
   workflow_dispatch:
   push:
-    paths: 
-      .github/workflows/build_cmake.yml
-    branches: [master]
-
   pull_request:
     branches: [master]
 
