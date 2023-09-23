@@ -715,7 +715,6 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(51) = posKp;
     data(62) = posKpc;
 // 3 State Variables 63-65
-    // data(63) = U;
     data(64) = Ui;
     data(65) = Fi;
 // 2 Stiffness 66 67
