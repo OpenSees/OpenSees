@@ -5,9 +5,9 @@ env:
   BUILD_TYPE: Debug
 
 on:
+  workflow_dispatch:
   push:
-    paths: |
-      "build_cmake.yml"
+    branches: [master]
 
   pull_request:
     branches: [master]
