@@ -61,36 +61,6 @@ jobs:
 #        - name: Verification OpenSeesPyMP
 #          run: |
 #            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
-  build-mac:
-    name: Mac Build
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
-      - uses: actions/setup-python@v4
-        with:
-          python-version: "3.11"
-      - name: Install Library
-        run: |
-         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
-         brew install hdf5
-         brew install open-mpi
-         brew install scalapack
-      - name: Build
-        run: |
-          mkdir build
-          cd build
-          cmake ..
-          cmake --build . --target OpenSees -j8
-          cmake --build . --target OpenSeesPy -j8
-          mv ./OpenSeesPy.dylib ./opensees.so
-      - name: Verification OpenSeesPySP
-        run: |
-          cd ./EXAMPLES/ExamplePython/
-          export PYTHONPATH="../../build/"
-          python3 -c "import sys; print(sys.path)"
-          python3 example_variable_analysis.py
   build-win:
     name: Win Build
     runs-on: windows-2019
@@ -139,25 +109,3 @@ jobs:
           $env:PYTHONPATH = "../../build/bin/"
           python -c "import sys; print(sys.path)"
           python example_variable_analysis.py
-
-# Not building on Windows until we can figure out how to use Fortran
-# with Github Actions
-    #  build-win32:
-    #    name: Build on Windows
-    #    runs-on: [windows-latest]
-    #    steps:
-    #    - name: Checkout sources
-    #      uses: actions/checkout@v2
-    #      with: {ref: cmake-build}
-    #
-    #    - name: Install Conan
-    #      uses: turtlebrowser/get-conan@main
-    #
-    #    - name: Build
-    #      run: |
-    #        mkdir build
-    #        cd build
-    #        cmake ..
-    #        cmake --build . --target OpenSeesTcl -j5
-
-
