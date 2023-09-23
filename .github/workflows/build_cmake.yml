@@ -16,7 +16,7 @@ jobs:
           python-version: "3.11"
       - uses: ilammy/msvc-dev-cmd@v1
         with:
-          vsversion: 16
+          vsversion: 2019
 # At this time, latest awvwgk/setup-fortran works well, but it's not released to github actions.
 # Until the next release, the source will be directly fetched and used.
       # - uses: awvwgk/setup-fortran@v1.1
