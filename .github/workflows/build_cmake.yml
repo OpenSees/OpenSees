@@ -84,8 +84,6 @@ jobs:
           cmake .. -DMUMPS_DIR=$PWD/../../mumps/build
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          make OpenSees  -j8
-          make OpenSeesPy - j8
           mv ./OpenSeesPy.dylib ./opensees.so
       - name: Verification OpenSeesPySP
         run: |
