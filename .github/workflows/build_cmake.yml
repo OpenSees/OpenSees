@@ -93,7 +93,7 @@ jobs:
           python3 example_variable_analysis.py
   build-win:
     name: Win Build
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v3
         with:
@@ -101,14 +101,14 @@ jobs:
       - uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          vsversion: 2019
       - uses: awvwgk/setup-fortran@v1
         id: setup-fortan
         with:
           compiler: intel-classic
           version: "2021.10.0"
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          vsversion: 2019
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
