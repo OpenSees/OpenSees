@@ -6,9 +6,6 @@ env:
 
 on:
   push:
-    paths: |
-      "build_cmake.yml"
-
   pull_request:
     branches: [master]
 
