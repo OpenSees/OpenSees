@@ -17,7 +17,7 @@ jobs:
     name: Ubuntu bundled build
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
     - uses: actions/setup-python@v4
       with:
         python-version: "3.11"
@@ -68,7 +68,7 @@ jobs:
     name: Mac Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v4
@@ -96,6 +96,70 @@ jobs:
           export PYTHONPATH="../../build/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
+  build-win:
+    name: Win Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          vsversion: 2019
+      - name: Download Intel oneAPI
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18674/w_BaseKit_p_2022.2.0.252_offline.exe -OutFile base_installer.exe
+          Invoke-WebRequest -Uri https://registrationcenter-download.intel.com/akdlm/IRC_NAS/18680/w_HPCKit_p_2022.2.0.173_offline.exe -OutFile hpc_installer.exe
+          ./base_installer.exe --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
+          ./hpc_installer.exe --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
+      - name: Install Intel oneAPI
+        shell: pwsh
+        run: |
+          ls "C:\Program Files (x86)\Intel\oneAPI"
+          ls "C:\Program Files (x86)\Intel\oneAPI\Installer"
+          & "C:\Program Files (x86)\Intel\oneAPI\Installer\installer.exe" --silent --eula accept -p NEED_VS2019_INTEGRATION=1 --components all
+          & 'C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\bin\intel64\ifort.exe' /QV
+      - name: Install MUMPS and CONAN
+        shell: pwsh
+        run: |
+            & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+            git clone https://github.com/OpenSees/mumps.git
+            cd mumps
+            mkdir -p build
+            cd build
+            cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
+            cmake --build . --config Release --parallel 4
+            cd ..\..
+            pip install conan==1.59.0
+      - name: Build
+        shell: pwsh
+        run: |
+          & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+          cd D:\a\OpenSees\OpenSees
+          mkdir build
+          cd build
+          conan install .. --build missing --settings compiler.runtime="MT"
+          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
+          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
+          cmake --build . --config Release --target OpenSees
+          cmake --build . --config Release --target OpenSeesPy
+          mv ./bin/OpenSeesPy.dylib ./bin/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\redist\intel64_win\compiler\libifcoremd.dll" ./
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\redist\intel64_win\compiler\libiomp5md.dll" ./
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2022.1.0\windows\redist\intel64_win\compiler\libmmd.dll" ./
+          cp ~\appdata\local\programs\python\python39.dll ./
+      - name: Verification OpenSeesPySP
+        shell: pwsh
+        run: |
+          cd ./EXAMPLES/ExamplePython/
+          export PYTHONPATH="../../build/bin/"
+          python -c "import sys; print(sys.path)"
+          python example_variable_analysis.py
+
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
     #  build-win32:
