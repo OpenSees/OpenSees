@@ -1,66 +1,9 @@
 name: CMake Build
 
-env:
-  CMAKE_VERSION: 3.20.1
-  BUILD_TYPE: Debug
-
 on:
   push:
-  pull_request:
-    branches: [master]
 
 jobs:
-  build-ubuntu:
-    name: Ubuntu bundled build
-    runs-on: ubuntu-latest
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-python@v4
-      with:
-        python-version: "3.11"
-
-    - name: Install conan
-      run: python3 -m pip install conan==1.60.0
-
-    - name: Detect Conan Defaults
-      run: |
-        conan --version
-
-    - name: Build
-      run: |
-        mkdir build
-        cd build
-        conan install .. --build missing
-        cmake ..
-        cmake --build . -j8
-
-        #- name: Verification
-        #  run: |
-        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
-    - name: Build OpenSeesPy
-      run: |
-        cd ./build
-        cmake ..
-        make -j 4
-        make OpenSeesPy
-        mkdir fake_folder
-    - name: Rename OpenSeesPy
-      run: |
-        cd ./build
-        mv lib/OpenSeesPy.so lib/opensees.so
-
-# Simple sanity test
-    - name: Verification OpenSeesPySP
-      run: |
-        cd ./build
-        cd ../EXAMPLES/ExamplePython/
-        export PYTHONPATH="../../build/lib/"
-        python -c "import sys; print(sys.path)"
-        python example_variable_analysis.py
-#        # Simple MP sanity test
-#        - name: Verification OpenSeesPyMP
-#          run: |
-#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
   build-win:
     name: Win Build
     runs-on: windows-2022
@@ -79,8 +22,7 @@ jobs:
           version: "2021.10.0"
         run: |
           git clone https://github.com/awvwgk/setup-fortran
-          cd setup-fortran
-          setup-fortran.sh
+          bash setup-fortran/setup-fortran.sh
       # - uses: awvwgk/setup-fortran@v1.1
       #   id: setup-fortan
       #   with:
