@@ -67,11 +67,11 @@ jobs:
     name: Mac Build
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - uses: actions/setup-python@v4
-        with: 
+        with:
           python-version: "3.11"
       - name: Install Library
         run: |
@@ -83,9 +83,9 @@ jobs:
         run: |
           mkdir build
           cd build
-          cmake .. -DMUMPS_DIR=$PWD/../../mumps/build -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES=/usr/local/Cellar/scalapack/2.2.0_1/lib/libscalapack.dylib
-          cmake --build . --config Release --target OpenSees
-          cmake --build . --config Release --target OpenSeesPy
+          cmake .. -DMUMPS_DIR=$PWD/../../mumps/build
+          cmake --build . --target OpenSees -j8
+          cmake --build . --target OpenSeesPy -j8
           mv ./OpenSeesPy.dylib ./opensees.so
       - name: Verification OpenSeesPySP
         run: |
