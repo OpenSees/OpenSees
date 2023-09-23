@@ -69,8 +69,7 @@ OPS_IMKPinching()
 
 
     // Parsing was successful, allocate the material
-    theMaterial = new IMKPinching(iData[0],
-        dData[0],
+    theMaterial = new IMKPinching(iData[0], dData[0],
         dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
         dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
         dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20],
@@ -131,13 +130,13 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     } else if (dU == 0) {   // When deformation doesn't change from the last
         Fi = Fi_1;
     } else {
-        double betaS=0, betaC=0, betaK=0, betaA=0;
-        bool FailS=false, FailC=false, FailK=false, FailA=false;
+        double betaS = 0, betaC = 0, betaK = 0, betaA = 0;
+        bool FailS = false, FailC = false, FailK = false, FailA = false;
         const bool onBackbone = (Branch > 1);
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN REVERSAL /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if ( (onBackbone && Fi_1*dU < 0) || (onBackbone && Fi_1==0 && Ui_1*dU <= 0) ) {
+        if ( (onBackbone && Fi_1 * dU < 0) || (onBackbone && Fi_1 == 0 && Ui_1 * dU <= 0) ) {
             Branch = 1;
     /////////////////////////// UPDATE PEAK POINTS ////////////////////////////////////////////
             if ( Fi_1 > 0 ){
@@ -160,7 +159,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
             const double  EiK = engAcml - engDspt - 0.5 * (Fi_1 / Kunload) * Fi_1;
             betaK = pow( (EiK / (engRefK - EpjK)), c_K );
             FailK = (betaK > 1);
-            betaK = betaK < 0 ? 0 : (betaK >1 ? 1 : betaK);
+            betaK = betaK < 0 ? 0 : (betaK > 1 ? 1 : betaK);
             Kunload *= (1 - betaK);
         }
         Fi = Fi_1 + Kunload * dU;
@@ -385,9 +384,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
         if (Branch == 0) {
-            Fi = Ke*Ui;
+            Fi = Ke * Ui;
         } else if (Branch == 1) {
-            Fi = Fi_1 + Kunload*dU;
+            Fi = Fi_1 + Kunload * dU;
     // Positive
         } else if (Branch == 2) {
             Fi = Fpinch + Kreload * (Ui - Upinch);
@@ -632,7 +631,6 @@ int IMKPinching::revertToStart(void)
 // 2 Pinching
     Fpinch = cFpinch = 0.0;
     Upinch = cUpinch = 0.0;
-    //cout << " revertToStart:" << endln; //<< " U=" << U << " Ui=" << Ui << " TanK=" << Kreload << endln;
     return 0;
 }
 

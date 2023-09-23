@@ -69,8 +69,7 @@ OPS_IMKPeakOriented()
 
 
     // Parsing was successful, allocate the material
-    theMaterial = new IMKPeakOriented(iData[0],
-        dData[0],
+    theMaterial = new IMKPeakOriented(iData[0], dData[0],
         dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
         dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
         dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20],
@@ -118,8 +117,9 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     //state determination algorithm: defines the current force and tangent stiffness
     const double Ui_1 = Ui;
     const double Fi_1 = Fi;
-    U = strain; //set trial displacement
-    Ui = U;
+    Ui = strain;
+    // U = strain; //set trial displacement
+    // Ui = U;
     const double dU = Ui - Ui_1;    // Incremental deformation at current step
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +167,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN NEW EXCURSION /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if (Branch == 1 && Fi_1*Fi <= 0.0) {
+        if (Branch == 1 && Fi_1 * Fi <= 0.0) {
     /////////////////// UPDATE BACKBONE CURVE /////////////////////////////////////////////////
             const double Ei = max(0.0, engAcml - engDspt);
             betaS = pow((Ei / (engRefS - engAcml)), c_S);
@@ -219,9 +219,9 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
                 negUglobal *= (1 + betaA * D_neg); // Accelerated Reloading Stiffness
                 negUy = negFy / Ke;
             // Capping Point
-                const double FyProj = negFy - negKp*negUy;
+                const double FyProj = negFy - negKp * negUy;
                 negUcap = negKp <= negKpc ? 0 : (FcapProj - FyProj) / (negKp - negKpc);
-                negFcap = FyProj + negKp*negUcap;
+                negFcap = FyProj + negKp * negUcap;
             // When a part of backbone is beneath the residual strength
             // Global Peak on the Updated Backbone
                 if (negUy < negUglobal) {           // Elastic Branch
@@ -366,12 +366,12 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     // CHECK FOR FAILURE
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        const bool	FailPp = ( posFglobal == 0 );
-        const bool	FailPn = ( negFglobal == 0 );
-        const bool	FailDp = ( dU > 0 && Ui >=  posUu_0 );
-        const bool	FailDn = ( dU < 0 && Ui <= -negUu_0 );
-        const bool	FailRp = ( Branch == 7 && Fi <= 0);
-        const bool	FailRn = ( Branch == 17 && Fi >= 0);
+        const bool FailPp = ( posFglobal == 0 );
+        const bool FailPn = ( negFglobal == 0 );
+        const bool FailDp = ( dU > 0 && Ui >=  posUu_0 );
+        const bool FailDn = ( dU < 0 && Ui <= -negUu_0 );
+        const bool FailRp = ( Branch == 7 && Fi <= 0);
+        const bool FailRn = ( Branch == 17 && Fi >= 0);
         if (FailS || FailC || FailA || FailK || FailPp || FailPn || FailRp || FailRn || FailDp || FailDn) {
             Fi = 0;
             Failure_Flag = true;
@@ -381,7 +381,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
         KgetTangent = (Fi - Fi_1) / dU;
     }
-    if (KgetTangent==0) {
+    if (KgetTangent == 0) {
         KgetTangent = 1e-6;
     }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,7 +413,7 @@ double IMKPeakOriented::getInitialTangent(void)
 double IMKPeakOriented::getStrain(void)
 {
     //cout << " getStrain" << endln;
-    return (U);
+    return (Ui);
 }
 
 int IMKPeakOriented::commitState(void)
@@ -567,7 +567,7 @@ int IMKPeakOriented::revertToStart(void)
     engAcml = cEngAcml = 0.0;
     engDspt = cEngDspt = 0.0;
 // 2 Flag
-    Failure_Flag= cFailure_Flag = false;
+    Failure_Flag = cFailure_Flag = false;
     Branch = cBranch = 0;
     return 0;
 }
