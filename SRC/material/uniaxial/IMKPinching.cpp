@@ -69,8 +69,7 @@ OPS_IMKPinching()
 
 
     // Parsing was successful, allocate the material
-    theMaterial = new IMKPinching(iData[0],
-        dData[0],
+    theMaterial = new IMKPinching(iData[0], dData[0],
         dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
         dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
         dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20],
@@ -118,8 +117,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     //state determination algorithm: defines the current force and tangent stiffness
     const double Ui_1 = Ui;
     const double Fi_1 = Fi;
-    U = strain; //set trial displacement
-    Ui = U;
+    Ui = strain; //set trial displacement
     const double dU = Ui - Ui_1;    // Incremental deformation at current step
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -131,13 +129,13 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     } else if (dU == 0) {   // When deformation doesn't change from the last
         Fi = Fi_1;
     } else {
-        double betaS=0, betaC=0, betaK=0, betaA=0;
-        bool FailS=false, FailC=false, FailK=false, FailA=false;
+        double betaS = 0, betaC = 0, betaK = 0, betaA = 0;
+        bool FailS = false, FailC = false, FailK = false, FailA = false;
         const bool onBackbone = (Branch > 1);
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN REVERSAL /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if ( (onBackbone && Fi_1*dU < 0) || (onBackbone && Fi_1==0 && Ui_1*dU <= 0) ) {
+        if ( (onBackbone && Fi_1 * dU < 0) || (onBackbone && Fi_1 == 0 && Ui_1 * dU <= 0) ) {
             Branch = 1;
     /////////////////////////// UPDATE PEAK POINTS ////////////////////////////////////////////
             if ( Fi_1 > 0 ){
@@ -160,7 +158,7 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
             const double  EiK = engAcml - engDspt - 0.5 * (Fi_1 / Kunload) * Fi_1;
             betaK = pow( (EiK / (engRefK - EpjK)), c_K );
             FailK = (betaK > 1);
-            betaK = betaK < 0 ? 0 : (betaK >1 ? 1 : betaK);
+            betaK = betaK < 0 ? 0 : (betaK > 1 ? 1 : betaK);
             Kunload *= (1 - betaK);
         }
         Fi = Fi_1 + Kunload * dU;
@@ -385,9 +383,9 @@ int IMKPinching::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
         if (Branch == 0) {
-            Fi = Ke*Ui;
+            Fi = Ke * Ui;
         } else if (Branch == 1) {
-            Fi = Fi_1 + Kunload*dU;
+            Fi = Fi_1 + Kunload * dU;
     // Positive
         } else if (Branch == 2) {
             Fi = Fpinch + Kreload * (Ui - Upinch);
@@ -467,7 +465,7 @@ double IMKPinching::getInitialTangent(void)
 double IMKPinching::getStrain(void)
 {
     //cout << " getStrain" << endln;
-    return (U);
+    return (Ui);
 }
 
 int IMKPinching::commitState(void)
@@ -505,7 +503,6 @@ int IMKPinching::commitState(void)
     cFpinch = Fpinch;
     cUpinch = Upinch;
 // 3 State
-    cU = U;
     cUi = Ui;
     cFi = Fi;
 // 2 Stiffness
@@ -554,7 +551,6 @@ int IMKPinching::revertToLastCommit(void)
     Fpinch = cFpinch;
     Upinch = cUpinch;
 // 3 State Variables
-    U = cU;
     Ui = cUi;
     Fi = cFi;
 // 2 Stiffness
@@ -616,7 +612,6 @@ int IMKPinching::revertToStart(void)
     negKpc = cNegKpc = -negKpc_0;
     negUres = cNegUres = (negFres - negFcap) / negKpc + negUcap;
 // 3 State Values
-    U = cU = 0;
     Ui = cUi = 0;
     Fi = cFi = 0;
 // 2 Stiffness
@@ -632,7 +627,6 @@ int IMKPinching::revertToStart(void)
 // 2 Pinching
     Fpinch = cFpinch = 0.0;
     Upinch = cUpinch = 0.0;
-    //cout << " revertToStart:" << endln; //<< " U=" << U << " Ui=" << Ui << " TanK=" << Kreload << endln;
     return 0;
 }
 
@@ -672,7 +666,6 @@ IMKPinching::getCopy(void)
     theCopy->negKp = negKp;
     theCopy->negKpc = negKpc;
 // 3 State Values
-    theCopy->U = U;
     theCopy->Ui = Ui;
     theCopy->Fi = Fi;
 // 2 Stiffness
@@ -711,7 +704,6 @@ IMKPinching::getCopy(void)
     theCopy->cNegKp = cNegKp;
     theCopy->cNegKpc = cNegKpc;
 // 3 State
-    theCopy->cU = cU;
     theCopy->cUi = cUi;
     theCopy->cFi = cFi;
 // 2 Stiffness
@@ -791,7 +783,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
     data(51) = posKp;
     data(62) = posKpc;
 // 3 State Variables 63-65
-    data(63) = U;
+    // data(63) = U;
     data(64) = Ui;
     data(65) = Fi;
 // 2 Stiffness 66 67
@@ -833,7 +825,6 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
     data(111) = cPosKp;
     data(112) = cPosKpc;
 // 3 State Variables 113-115
-    data(113) = cU;
     data(114) = cUi;
     data(115) = cFi;
 // 2 Stiffness 116 117
@@ -935,7 +926,6 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         posKp = data(61);
         posKpc = data(62);
     // 3 State Variables
-        U = data(63);
         Ui = data(64);
         Fi = data(65);
     // 2 Stiffness
@@ -977,7 +967,6 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         cPosKp = data(111);
         cPosKpc = data(112);
     // 3 State Variables
-        cU = data(113);
         cUi = data(114);
         cFi = data(115);
     // 2 Stiffness

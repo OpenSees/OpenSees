@@ -69,8 +69,7 @@ OPS_IMKPeakOriented()
 
 
     // Parsing was successful, allocate the material
-    theMaterial = new IMKPeakOriented(iData[0],
-        dData[0],
+    theMaterial = new IMKPeakOriented(iData[0], dData[0],
         dData[1], dData[2], dData[3], dData[4], dData[5], dData[6],
         dData[7], dData[8], dData[9], dData[10], dData[11], dData[12],
         dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20],
@@ -118,8 +117,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     //state determination algorithm: defines the current force and tangent stiffness
     const double Ui_1 = Ui;
     const double Fi_1 = Fi;
-    U = strain; //set trial displacement
-    Ui = U;
+    Ui = strain; //set trial displacement
     const double dU = Ui - Ui_1;    // Incremental deformation at current step
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -167,7 +165,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     ///////////////////////////////////////////////////////////////////////////////////////////
     /////////////////// WHEN NEW EXCURSION /////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        if (Branch == 1 && Fi_1*Fi <= 0.0) {
+        if (Branch == 1 && Fi_1 * Fi <= 0.0) {
     /////////////////// UPDATE BACKBONE CURVE /////////////////////////////////////////////////
             const double Ei = max(0.0, engAcml - engDspt);
             betaS = pow((Ei / (engRefS - engAcml)), c_S);
@@ -219,9 +217,9 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
                 negUglobal *= (1 + betaA * D_neg); // Accelerated Reloading Stiffness
                 negUy = negFy / Ke;
             // Capping Point
-                const double FyProj = negFy - negKp*negUy;
+                const double FyProj = negFy - negKp * negUy;
                 negUcap = negKp <= negKpc ? 0 : (FcapProj - FyProj) / (negKp - negKpc);
-                negFcap = FyProj + negKp*negUcap;
+                negFcap = FyProj + negKp * negUcap;
             // When a part of backbone is beneath the residual strength
             // Global Peak on the Updated Backbone
                 if (negUy < negUglobal) {           // Elastic Branch
@@ -366,12 +364,12 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
     // CHECK FOR FAILURE
     ///////////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////////
-        const bool	FailPp = ( posFglobal == 0 );
-        const bool	FailPn = ( negFglobal == 0 );
-        const bool	FailDp = ( dU > 0 && Ui >=  posUu_0 );
-        const bool	FailDn = ( dU < 0 && Ui <= -negUu_0 );
-        const bool	FailRp = ( Branch == 7 && Fi <= 0);
-        const bool	FailRn = ( Branch == 17 && Fi >= 0);
+        const bool FailPp = ( posFglobal == 0 );
+        const bool FailPn = ( negFglobal == 0 );
+        const bool FailDp = ( dU > 0 && Ui >=  posUu_0 );
+        const bool FailDn = ( dU < 0 && Ui <= -negUu_0 );
+        const bool FailRp = ( Branch == 7 && Fi <= 0);
+        const bool FailRn = ( Branch == 17 && Fi >= 0);
         if (FailS || FailC || FailA || FailK || FailPp || FailPn || FailRp || FailRn || FailDp || FailDn) {
             Fi = 0;
             Failure_Flag = true;
@@ -381,7 +379,7 @@ int IMKPeakOriented::setTrialStrain(double strain, double strainRate)
 
         KgetTangent = (Fi - Fi_1) / dU;
     }
-    if (KgetTangent==0) {
+    if (KgetTangent == 0) {
         KgetTangent = 1e-6;
     }
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -413,7 +411,7 @@ double IMKPeakOriented::getInitialTangent(void)
 double IMKPeakOriented::getStrain(void)
 {
     //cout << " getStrain" << endln;
-    return (U);
+    return (Ui);
 }
 
 int IMKPeakOriented::commitState(void)
@@ -448,7 +446,6 @@ int IMKPeakOriented::commitState(void)
     cNegKp = negKp;
     cNegKpc = negKpc;
 // 3 State
-    cU = U;
     cUi = Ui;
     cFi = Fi;
 // 2 Stiffness
@@ -494,7 +491,6 @@ int IMKPeakOriented::revertToLastCommit(void)
     negKp = cNegKp;
     negKpc = cNegKpc;
 // 3 State Variables
-    U = cU;
     Ui = cUi;
     Fi = cFi;
 // 2 Stiffness
@@ -556,7 +552,6 @@ int IMKPeakOriented::revertToStart(void)
     negKpc = cNegKpc = -negKpc_0;
     negUres = cNegUres = (negFres - negFcap) / negKpc + negUcap;
 // 3 State Values
-    U = cU = 0;
     Ui = cUi = 0;
     Fi = cFi = 0;
 // 2 Stiffness
@@ -567,7 +562,7 @@ int IMKPeakOriented::revertToStart(void)
     engAcml = cEngAcml = 0.0;
     engDspt = cEngDspt = 0.0;
 // 2 Flag
-    Failure_Flag= cFailure_Flag = false;
+    Failure_Flag = cFailure_Flag = false;
     Branch = cBranch = 0;
     return 0;
 }
@@ -608,7 +603,6 @@ IMKPeakOriented::getCopy(void)
     theCopy->negKp = negKp;
     theCopy->negKpc = negKpc;
 // 3 State Values
-    theCopy->U = U;
     theCopy->Ui = Ui;
     theCopy->Fi = Fi;
 // 2 Stiffness
@@ -647,7 +641,6 @@ IMKPeakOriented::getCopy(void)
     theCopy->cNegKp = cNegKp;
     theCopy->cNegKpc = cNegKpc;
 // 3 State
-    theCopy->cU = cU;
     theCopy->cUi = cUi;
     theCopy->cFi = cFi;
 // 2 Stiffness
@@ -722,7 +715,7 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(51) = posKp;
     data(62) = posKpc;
 // 3 State Variables 63-65
-    data(63) = U;
+    // data(63) = U;
     data(64) = Ui;
     data(65) = Fi;
 // 2 Stiffness 66 67
@@ -761,7 +754,6 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(111) = cPosKp;
     data(112) = cPosKpc;
 // 3 State Variables 113-115
-    data(113) = cU;
     data(114) = cUi;
     data(115) = cFi;
 // 2 Stiffness 116 117
@@ -858,7 +850,6 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         posKp = data(61);
         posKpc = data(62);
     // 3 State Variables
-        U = data(63);
         Ui = data(64);
         Fi = data(65);
     // 2 Stiffness
@@ -897,7 +888,6 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         cPosKp = data(111);
         cPosKpc = data(112);
     // 3 State Variables
-        cU = data(113);
         cUi = data(114);
         cFi = data(115);
     // 2 Stiffness
