@@ -367,7 +367,6 @@ int OPS_send();
 int OPS_recv();
 int OPS_Bcast();
 int OPS_sdfResponse();
-int OPS_sdfResponseTS();
 int OPS_getNumThreads();
 int OPS_setNumThreads();
 int OPS_setStartNodeTag();
