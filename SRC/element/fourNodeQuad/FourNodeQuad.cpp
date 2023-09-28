@@ -776,7 +776,10 @@ FourNodeQuad::addInertiaLoadToUnbalance(const Vector &accel)
   static double rhoi[4];
   double sum = 0.0;
   for (i = 0; i < 4; i++) {
-    rhoi[i] = theMaterial[i]->getRho();
+    if (rho == 0)
+      rhoi[i] = theMaterial[i]->getRho();
+    else
+      rhoi[i] = rho;
     sum += rhoi[i];
   }
   
@@ -883,7 +886,10 @@ FourNodeQuad::getResistingForceIncInertia()
 	static double rhoi[4];
 	double sum = 0.0;
 	for (i = 0; i < 4; i++) {
-	  rhoi[i] = theMaterial[i]->getRho();
+	  if (rho == 0)
+	    rhoi[i] = theMaterial[i]->getRho();
+	  else
+	    rhoi[i] = rho;
 	  sum += rhoi[i];
 	}
 

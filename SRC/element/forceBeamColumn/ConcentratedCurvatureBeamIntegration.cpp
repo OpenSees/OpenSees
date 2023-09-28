@@ -40,8 +40,8 @@
 
 void* OPS_ConcentratedCurvatureBeamIntegration(int& integrationTag, ID& secTags)
 {
-    if(OPS_GetNumRemainingInputArgs() < 4) {
-	opserr<<"insufficient arguments:integrationTag,secTagI,secTagJ,secTagE\n";
+    if(OPS_GetNumRemainingInputArgs() < 6) {
+	opserr<<"insufficient arguments:integrationTag,secTagI,LpI,secTagJ,LpJ,secTagE\n";
 	return 0;
     }
 
@@ -49,7 +49,7 @@ void* OPS_ConcentratedCurvatureBeamIntegration(int& integrationTag, ID& secTags)
     int iData[4];
     double dData[2];
     int numData = 2;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {    // why the 0th index and not 1?
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {    
 	opserr << "WARNING: failed to get tag and secTagI\n";
 	return 0;
     }

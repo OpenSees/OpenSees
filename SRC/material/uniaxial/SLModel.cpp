@@ -19,14 +19,16 @@ OPS_SLModel()
   // print out some KUDO's
   if (numSLModel == 0) {
     numSLModel++;
-    opserr << "SLModel version 2019.2\n";
+    //opserr << "SLModel version 2019.2\n";
+	opserr << "SLModel version 2023.03\n";
   }
 
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
   int    iData[1];
-  double dData[3];
+  /*double dData[3];*/
+  double dData[16];
   int numData = 1;
 
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -34,14 +36,17 @@ OPS_SLModel()
     return 0;
   }
 
-  numData = 3;
+  /*numData = 3;*/
+  numData = 16;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "Invalid Args want: uniaxialMaterial SLModel tag? Dt?, sgm_ini?, OP_Material?";
+    //opserr << "Invalid Args want: uniaxialMaterial SLModel tag? Dt?, sgm_ini?, OP_Material?";
+	  opserr << "Invalid Args want: uniaxialMaterial SLModel tag? Dt?, E?, sigmaY0?, C?, gamma?, Qinf?, b?, sigmaC?, epsiC?, Ed1?, Ed2?,sigmaDM, aSigma?, aE?, lambda1Degrad?,cDegrad?";
     return 0;	
   }
 
   // create a new material
-  theMaterial = new SLModel(iData[0], dData[0], dData[1], dData[2]);     
+  /*theMaterial = new SLModel(iData[0], dData[0], dData[1], dData[2]);*/   
+  theMaterial = new SLModel(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15]);
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type SLModel\n";
@@ -54,14 +59,19 @@ OPS_SLModel()
 
 
 //MAT_TAG_SLModel or 0
-SLModel::SLModel(int tag, double Dt_temp, double sgm_ini_temp, double OP_Material_temp)
-:UniaxialMaterial(tag, MAT_TAG_SLModel), Dt(Dt_temp), sgm_ini(sgm_ini_temp), OP_Material(OP_Material_temp)
+//SLModel::SLModel(int tag, double Dt_temp, double sgm_ini_temp, double OP_Material_temp)
+//:UniaxialMaterial(tag, MAT_TAG_SLModel), Dt(Dt_temp), sgm_ini(sgm_ini_temp), OP_Material(OP_Material_temp)
+SLModel::SLModel(int tag, double Dt, double E, double sgm_ini, double c, double gamma, double q, double beta, double sigmaC, double epsiC, double Ed1, double Ed2, double sigmaDM,
+	double aSigma, double aE, double lambda1Degrad, double cDegrad)
+	:UniaxialMaterial(tag, MAT_TAG_SLModel), Dt(Dt), E(E), sgm_ini(sgm_ini), c(c), gamma(gamma), q(q), beta(beta), sigmaC(sigmaC), epsiC(epsiC), Ed1(Ed1),
+	Ed2(Ed2), sigmaDM(sigmaDM), aSigma(aSigma), aE(aE), lambda1Degrad(lambda1Degrad), cDegrad(cDegrad)
 {
 	this->revertToStart();
 }
 
 SLModel::SLModel()
-:UniaxialMaterial(0, MAT_TAG_SLModel), Dt(0.0), sgm_ini(0.0), OP_Material(0.0)
+:UniaxialMaterial(0, MAT_TAG_SLModel), Dt(0.0), E(0.0), sgm_ini(0.0), c(0.0), gamma(0.0), q(0.0), beta(0.0), sigmaC(0.0), epsiC(0.0), Ed1(0.0),Ed2(0.0), sigmaDM(0.0),
+aSigma(0.0), aE(0.0), lambda1Degrad(0.0), cDegrad(0.0)
 {
 	 this->revertToStart();
 }
@@ -678,96 +688,127 @@ SLModel::revertToStart(void)
 	// Initialize state variables
 	status = C_status = 1;
 	
-	E = C_E = 200000.0;
+	//E = C_E = 200000.0;
+	C_E = E;
 	
 	Dteq = C_Dteq = (Dt)*sqrt(sgm_ini/E);
 	
 	
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-	if (OP_Material == 10) {
-		//*** BCP ***
-		q = C_q = 68.0956;
-		beta = C_beta = 14.072;
-		c = C_c = 4200.0;
-		gamma = C_gamma = 19.0;
-		
-		CapYieldStressM = C_CapYieldStressM = 1.2345*pow(Dteq,-0.564);
-		CapYieldStrainM = C_CapYieldStrainM = 8.3096*pow(Dteq,-3.156);
-		Ed1EM = C_Ed1EM = -0.0267*pow(Dteq,1.5213)*0.8;//**********************************************************************************************************************************************************
-		Ed2EM = C_Ed2EM = -0.0034*pow(Dteq,0.8134)*0.8;//**********************************************************************************************************************************************************
-		DetCapStressM = C_DetCapStressM = 0.6225*pow(Dteq,0.0888);
-		
-		ay = C_ay = 1.6465*pow(Dteq/sqrt(sgm_ini/E),-1.136);
-		au = C_au = 5.5813*pow(Dteq/sqrt(sgm_ini/E),-1.732);
-		
-		Lambda1 = C_Lambda1 = 31.237*pow(Dt,-1.127);
-		c1 = C_c1 = 1.0;
-		
-		Lambda2 = C_Lambda2 = Lambda1*3.0; //**********************************************************************************************************************************************************
-		c2 = C_c2 = 1.0;
-		
-		Lambda3 = C_Lambda3 = Lambda1*3.0; //**********************************************************************************************************************************************************
-		//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
-		c3 = C_c3 = 1.0;
+	//if (OP_Material == 10) {
+	//	//*** BCP ***
+	//	q = C_q = 68.0956;
+	//	beta = C_beta = 14.072;
+	//	c = C_c = 4200.0;
+	//	gamma = C_gamma = 19.0;
+	//	
+	//	CapYieldStressM = C_CapYieldStressM = 1.2345*pow(Dteq,-0.564);
+	//	CapYieldStrainM = C_CapYieldStrainM = 8.3096*pow(Dteq,-3.156);
+	//	Ed1EM = C_Ed1EM = -0.0267*pow(Dteq,1.5213)*0.8;//**********************************************************************************************************************************************************
+	//	Ed2EM = C_Ed2EM = -0.0034*pow(Dteq,0.8134)*0.8;//**********************************************************************************************************************************************************
+	//	DetCapStressM = C_DetCapStressM = 0.6225*pow(Dteq,0.0888);
+	//	
+	//	ay = C_ay = 1.6465*pow(Dteq/sqrt(sgm_ini/E),-1.136);
+	//	au = C_au = 5.5813*pow(Dteq/sqrt(sgm_ini/E),-1.732);
+	//	
+	//	Lambda1 = C_Lambda1 = 31.237*pow(Dt,-1.127);
+	//	c1 = C_c1 = 1.0;
+	//	
+	//	Lambda2 = C_Lambda2 = Lambda1*3.0; //**********************************************************************************************************************************************************
+	//	c2 = C_c2 = 1.0;
+	//	
+	//	Lambda3 = C_Lambda3 = Lambda1*3.0; //**********************************************************************************************************************************************************
+	//	//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
+	//	c3 = C_c3 = 1.0;
+	//
+	//} else if (OP_Material == 11) {
+	//	//*** HYP ***
+	//	q = C_q = 68.1;
+	//	beta = C_beta = 14.1;
+	//	c = C_c = 2100.0;
+	//	gamma = C_gamma = 11.0;
+	//	
+	//	CapYieldStressM = C_CapYieldStressM = 1.157*pow(Dteq,-0.36);
+	//	CapYieldStrainM = C_CapYieldStrainM = 8.3096*pow(Dteq,-3.156);
+	//	Ed1EM = C_Ed1EM = -0.027*pow(Dteq,2.0)*0.8;//**********************************************************************************************************************************************************
+	//	Ed2EM = C_Ed2EM = -0.0034*pow(Dteq,0.8134)*0.8;//**********************************************************************************************************************************************************
+	//	DetCapStressM = C_DetCapStressM = 0.575*pow(Dteq,-0.03);
+	//	
+	//	ay = C_ay = 2.355*pow(Dteq/sqrt(sgm_ini/E),-1.204)*1.0;
+	//	au = C_au = 5.2672*pow(Dteq/sqrt(sgm_ini/E),-1.683);
+	//	
+	//	Lambda1 = C_Lambda1 = 31.237*pow(Dt,-1.127);
+	//	c1 = C_c1 = 1.0;
+	//	
+	//	Lambda2 = C_Lambda2 = Lambda1*3.0; //**********************************************************************************************************************************************************
+	//	c2 = C_c2 = 1.0;
+	//	
+	//	Lambda3 = C_Lambda3 = Lambda1*3.0; //**********************************************************************************************************************************************************
+	//	//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
+	//	c3 = C_c3 = 1.0;
+	//
+	//
+	//} else if (OP_Material == 12) {
+	//	//*** BCR ***
+	//	q = C_q = 22.4;
+	//	beta = C_beta = 7.2;
+	//	c = C_c = 2500.0;
+	//	gamma = C_gamma = 19.0;
+	//	
+	//	//CapYieldStressM = C_CapYieldStressM = 1.114*pow(Dteq,-0.314);//**********************************************************************************************************************************************************
+	//	CapYieldStressM = C_CapYieldStressM = 1.125*pow(Dteq,-0.27);//**********************************************************************************************************************************************************
+	//	CapYieldStrainM = C_CapYieldStrainM = 6.720*pow(Dteq,-3.09);
+	//	//Ed1EM = C_Ed1EM = -0.015*pow(Dteq,1.5);//**********************************************************************************************************************************************************
+	//	Ed1EM = C_Ed1EM = -0.0133*pow(Dteq,2.0)*1.0;//**********************************************************************************************************************************************************
+	//	Ed2EM = C_Ed2EM = -0.003*pow(Dteq,1.221)*0.8;//**********************************************************************************************************************************************************
+	//	DetCapStressM = C_DetCapStressM = 0.614*pow(Dteq,-0.041);
+	//	
+	//	ay = C_ay = 24.0*pow(Dteq/sqrt(sgm_ini/E),-1.8);
+	//	au = C_au = 5.4522*pow(Dteq/sqrt(sgm_ini/E),-1.653)*1.0;
+	//	
+	//	Lambda1 = C_Lambda1 = 17.72*pow(Dt,-0.989)*1.0;
+	//	c1 = C_c1 = 1.0;
+	//	
+	//	Lambda2 = C_Lambda2 = Lambda1*3.0; //**********************************************************************************************************************************************************
+	//	c2 = C_c2 = 1.0;
+	//	
+	//	Lambda3 = C_Lambda3 = Lambda1*3.0; //**********************************************************************************************************************************************************
+	//	//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
+	//	c3 = C_c3 = 1.0;
+	//	
+	//} else {
+	//	std::cout << "*********************** Material ID " << OP_Material << " is not prepared. **************************\n";
+	//}
 	
-	} else if (OP_Material == 11) {
-		//*** HYP ***
-		q = C_q = 68.1;
-		beta = C_beta = 14.1;
-		c = C_c = 2100.0;
-		gamma = C_gamma = 11.0;
-		
-		CapYieldStressM = C_CapYieldStressM = 1.157*pow(Dteq,-0.36);
-		CapYieldStrainM = C_CapYieldStrainM = 8.3096*pow(Dteq,-3.156);
-		Ed1EM = C_Ed1EM = -0.027*pow(Dteq,2.0)*0.8;//**********************************************************************************************************************************************************
-		Ed2EM = C_Ed2EM = -0.0034*pow(Dteq,0.8134)*0.8;//**********************************************************************************************************************************************************
-		DetCapStressM = C_DetCapStressM = 0.575*pow(Dteq,-0.03);
-		
-		ay = C_ay = 2.355*pow(Dteq/sqrt(sgm_ini/E),-1.204)*1.0;
-		au = C_au = 5.2672*pow(Dteq/sqrt(sgm_ini/E),-1.683);
-		
-		Lambda1 = C_Lambda1 = 31.237*pow(Dt,-1.127);
-		c1 = C_c1 = 1.0;
-		
-		Lambda2 = C_Lambda2 = Lambda1*3.0; //**********************************************************************************************************************************************************
-		c2 = C_c2 = 1.0;
-		
-		Lambda3 = C_Lambda3 = Lambda1*3.0; //**********************************************************************************************************************************************************
-		//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
-		c3 = C_c3 = 1.0;
-	
-	
-	} else if (OP_Material == 12) {
-		//*** BCR ***
-		q = C_q = 22.4;
-		beta = C_beta = 7.2;
-		c = C_c = 2500.0;
-		gamma = C_gamma = 19.0;
-		
-		//CapYieldStressM = C_CapYieldStressM = 1.114*pow(Dteq,-0.314);//**********************************************************************************************************************************************************
-		CapYieldStressM = C_CapYieldStressM = 1.125*pow(Dteq,-0.27);//**********************************************************************************************************************************************************
-		CapYieldStrainM = C_CapYieldStrainM = 6.720*pow(Dteq,-3.09);
-		//Ed1EM = C_Ed1EM = -0.015*pow(Dteq,1.5);//**********************************************************************************************************************************************************
-		Ed1EM = C_Ed1EM = -0.0133*pow(Dteq,2.0)*1.0;//**********************************************************************************************************************************************************
-		Ed2EM = C_Ed2EM = -0.003*pow(Dteq,1.221)*0.8;//**********************************************************************************************************************************************************
-		DetCapStressM = C_DetCapStressM = 0.614*pow(Dteq,-0.041);
-		
-		ay = C_ay = 24.0*pow(Dteq/sqrt(sgm_ini/E),-1.8);
-		au = C_au = 5.4522*pow(Dteq/sqrt(sgm_ini/E),-1.653)*1.0;
-		
-		Lambda1 = C_Lambda1 = 17.72*pow(Dt,-0.989)*1.0;
-		c1 = C_c1 = 1.0;
-		
-		Lambda2 = C_Lambda2 = Lambda1*3.0; //**********************************************************************************************************************************************************
-		c2 = C_c2 = 1.0;
-		
-		Lambda3 = C_Lambda3 = Lambda1*3.0; //**********************************************************************************************************************************************************
-		//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
-		c3 = C_c3 = 1.0;
-		
-	} else {
-		std::cout << "*********************** Material ID " << OP_Material << " is not prepared. **************************\n";
-	}
+	C_q = q;
+	C_beta = beta;
+	C_c = c;
+	C_gamma = gamma;
+
+	sigmaCDivSigmaY = sigmaC / sgm_ini;
+	epsiCDivEpsiY = epsiC / (sgm_ini / E);
+	Ed1DivE = Ed1 / E;
+	Ed2DivE = Ed2 / E;
+	sigmaDMDivSigmaC = sigmaDM / sigmaC;
+
+	CapYieldStressM = sigmaCDivSigmaY;
+	CapYieldStrainM = epsiCDivEpsiY;
+	Ed1EM = C_Ed1EM = Ed1DivE;//**********************************************************************************************************************************************************
+	Ed2EM = C_Ed2EM = Ed2DivE;//**********************************************************************************************************************************************************
+	DetCapStressM = C_DetCapStressM = sigmaDMDivSigmaC;
+
+	ay = C_ay = aSigma;
+	au = C_au = aE;
+
+	Lambda1 = C_Lambda1 = lambda1Degrad;
+	c1 = C_c1 = cDegrad;
+
+	Lambda2 = C_Lambda2 = Lambda1 * 3.0; //**********************************************************************************************************************************************************
+	c2 = C_c2 = cDegrad;
+
+	Lambda3 = C_Lambda3 = Lambda1 * 3.0; //**********************************************************************************************************************************************************
+	//Lambda3 = C_Lambda3 = Lambda1*1000.0; //**********************************************************************************************************************************************************
+	c3 = C_c3 = cDegrad;
 	////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	p_teps = C_p_teps = 0.0;
@@ -877,7 +918,7 @@ SLModel::revertToStart(void)
 UniaxialMaterial *
 SLModel::getCopy(void)
 {
-	SLModel *theCopy = new SLModel(this->getTag(), Dt, sgm_ini, OP_Material);
+	SLModel *theCopy = new SLModel(this->getTag(), Dt, E, sgm_ini, c, gamma, q, beta, sigmaCDivSigmaY, epsiCDivEpsiY, Ed1DivE, Ed2DivE, sigmaDMDivSigmaC, aSigma, aE, lambda1Degrad, cDegrad);
 
 	//Fixed Model parameters: need to change according to material properties
 	theCopy -> status = status;
@@ -1071,12 +1112,13 @@ SLModel::sendSelf(int cTag, Channel &theChannel)
 	static Vector data(182);
 	data(0) = this->getTag();
 	
-	// constraint variables
+	// constaint variables
 	data(1) = Dt;
 	data(2) = sgm_ini;
-	data(3) = OP_Material;
+	//data(3) = OP_Material;
+	data(3) = 0.;
 	
-	// constraint variables
+	// constaint variables
 	data(4) = E;
 	data(5) = Dteq;
 	data(6) = q;
@@ -1168,7 +1210,7 @@ SLModel::sendSelf(int cTag, Channel &theChannel)
 	data(90) = DeltaE;
 	data(91) = Tangent;
 	
-	// constraint variables
+	// constaint variables
 	data(92) = C_E;
 	data(93) = C_Dteq;
 	data(94) = C_q;
@@ -1282,12 +1324,12 @@ SLModel::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   	
   	this->setTag(data(0));
 	
-	// constraint variables
+	// constaint variables
 	 Dt= data(1);;
 	 sgm_ini = data(2);;
-	 OP_Material = data(3);
+	 //OP_Material = data(3);
 	
-	// constraint variables
+	// constaint variables
 	 E = data(4);
 	 Dteq = data(5);
 	 q = data(6);
@@ -1379,7 +1421,7 @@ SLModel::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	 DeltaE = data(90);
 	 Tangent = data(91);
 	
-	// constraint variables
+	// constaint variables
 	 C_E = data(92);
 	 C_Dteq = data(93);
 	 C_q = data(94);
@@ -1487,7 +1529,7 @@ SLModel::Print(OPS_Stream &s, int flag)
 	s << "SLModel tag: " << this->getTag() << endln;
 	s << "  Dt: " << Dt << endln; 
 	s << "  sgm_ini: " << sgm_ini << endln;
-	s << "  OP_Material: " << OP_Material << endln;
+	//s << "  OP_Material: " << OP_Material << endln;
 }
 
 

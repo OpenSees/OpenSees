@@ -283,8 +283,8 @@ RCSectionIntegration::setParameter(const char **argv, int argc,
     return param.addObject(1, this);
   }
   if (strcmp(argv[0],"b") == 0) {
-    return param.addObject(2, this);
     param.setValue(b);
+    return param.addObject(2, this);
   }
   if (strcmp(argv[0],"Atop") == 0) {
     param.setValue(Atop);

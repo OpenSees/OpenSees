@@ -41,16 +41,12 @@
 #include <NodeIter.h>
 #include <FileStream.h>
 
+#ifdef _PARALLEL_PROCESSING
+#include <PartitionedDomain.h>
+#endif
 
 static int num_EmbeddedBeamInterfaceL = 0;
 static const double m_Pi = 3.141592653589793;
-
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-extern PartitionedDomain theDomain;
-#else
-extern Domain theDomain;
-#endif
 
 void *
 OPS_EmbeddedBeamInterfaceL(void)
@@ -60,7 +56,6 @@ OPS_EmbeddedBeamInterfaceL(void)
         opserr << "EmbeddedBeamInterfaceL element - Written: A.Ghofrani, D.Turello, P.Arduino, U.Washington\n";
     }
 
-    
     Element *theElement = 0;
 
     int numArgs = OPS_GetNumRemainingInputArgs();
@@ -89,36 +84,38 @@ OPS_EmbeddedBeamInterfaceL(void)
 }
 
 
-EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) : Element(tag, ELE_TAG_EmbeddedBeamInterfaceL)
+EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag) :
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  crdTransf(0)
 {
 
 }
 
-EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
-					       std::vector <int> beamTag,
-					       std::vector <int> solidTag,
-					       int crdTransfTag,
-					       std::vector <double>  beamRho,
-					       std::vector <double>  beamTheta,
-					       std::vector <double>  solidXi,
-					       std::vector <double>  solidEta,
-					       std::vector <double>  solidZeta,
-					       double radius,
-					       std::vector <double> area,
-					       std::vector <double> length,
-					       Domain *theDomainPtr,
-					       bool writeConnectivity,
-					       const char * connectivityFN)
-
-: Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag, std::vector <int> beamTag, std::vector <int> solidTag, int crdTransfTag,
+    std::vector <double>  beamRho, std::vector <double>  beamTheta, std::vector <double>  solidXi, std::vector <double>  solidEta,
+    std::vector <double>  solidZeta, double radius, std::vector <double> area, std::vector <double> length, bool writeConnectivity,
+    const char * connectivityFN):
+  Element(tag, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
   m_beam_radius(radius), mQa(3, 3), mQb(3, 3), mQc(3, 3),
-  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8)
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8), crdTransf(0)
 {
+  
+    // get domain to access element tags and their nodes
+  Domain &theDomain = *(OPS_GetDomain());
+        
+    if (num_EmbeddedBeamInterfaceL == 0) {
+        num_EmbeddedBeamInterfaceL++;
+        opserr << "EmbeddedBeamInterfaceL element - Written: A.Ghofrani, D.Turello, P.Arduino, U.Washington\n";
+    }
+
     m_numEmbeddedPoints = solidTag.size();
-    theSolidTags  = new int[m_numEmbeddedPoints];
+    // theSolidTags  = new int[m_numEmbeddedPoints];
     solidNodeTags = new int[8 * m_numEmbeddedPoints];
     theBeamTags   = new int[m_numEmbeddedPoints];
     beamNodeTags  = new int[2 * m_numEmbeddedPoints];
+    memoryallocated  = true;
     m_beam_rho = m_beam_theta = m_solid_xi = m_solid_eta = m_solid_zeta = m_area = m_beamLength = Vector(m_numEmbeddedPoints);
 
     std::set <int> uniqueSolidNodeTags;
@@ -127,7 +124,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
     Element *theElement;
     for (int ii = 0; ii < m_numEmbeddedPoints; ii++)
     {
-        theSolidTags[ii]    = solidTag[ii];
+        // theSolidTags[ii]    = solidTag[ii];
         theBeamTags[ii]     = beamTag[ii];
         m_solid_xi(ii)      = solidXi[ii];
         m_solid_eta(ii)     = solidEta[ii];
@@ -137,9 +134,9 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
         m_area(ii)          = area[ii];
         m_beamLength(ii)    = length[ii];
 
-        theElement = theDomainPtr->getElement(solidTag[ii]);
+        theElement = theDomain.getElement(solidTag[ii]);
         if (ii == 0)
-	  m_numSolidDOF = theElement->getNodePtrs()[0]->getNumberDOF();
+            m_numSolidDOF = theElement->getNodePtrs()[0]->getNumberDOF();
         // opserr << "Point " << ii +1 << " : element " << solidTag[ii] << " at (" << solidXi[ii] << "," << solidEta[ii] << "," << solidZeta[ii] << ") , beam: " << beamTag << " at (" << beamRho[ii] << "," << beamTheta[ii] << ")" << endln;
         for (int jj = 0; jj < 8; jj++)
         {
@@ -147,7 +144,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
             solidNodeTags[ii * 8 + jj] = theElement->getNodePtrs()[jj]->getTag();
         }
         uniqueBeamTags.insert(beamTag[ii]);
-        theElement = theDomainPtr->getElement(beamTag[ii]);
+        theElement = theDomain.getElement(beamTag[ii]);
         // opserr << "Point " << ii +1 << " : element " << solidTag[ii] << " at (" << solidXi[ii] << "," << solidEta[ii] << "," << solidZeta[ii] << ") , beam: " << beamTag << " at (" << beamRho[ii] << "," << beamTheta[ii] << ")" << endln;
         for (int jj = 0; jj < 2; jj++)
         {
@@ -167,7 +164,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
     m_beamInitDisp  = Vector(m_numBeamNodes * 6);
 
     // create the Lagrange multiplier nodes
-    NodeIter& theNodeIter = theDomainPtr->getNodes();
+    NodeIter& theNodeIter = theDomain.getNodes();
     Node * theNode = theNodeIter();
     int maxTag = theNode->getTag();
     while ((theNode = theNodeIter()) != 0)
@@ -175,12 +172,13 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
             maxTag = theNode->getTag();
 
     for (int ii = 0; ii < m_numBeamNodes; ii++)
-        theDomainPtr->addNode(new Node(maxTag + ii + 1, 6, 0.0, 0.0, 0.0));
+        theDomain.addNode(new Node(maxTag + ii + 1, 6, 0.0, 0.0, 0.0));
 
 
 
     externalNodes = ID(EBIL_numNodes);
     theNodes = new Node*[EBIL_numNodes];
+    theNodesStatus = true;
 
     int count = 0;
     for (std::set <int>::iterator it = uniqueSolidNodeTags.begin(); it != uniqueSolidNodeTags.end(); ++it)
@@ -188,12 +186,12 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
         m_solidNodeMap[*it] = count;
         externalNodes(count) = *it;
 
-        theNodes[count] = theDomainPtr->getNode(*it);
+        // theNodes[count] = theDomain.getNode(*it);
 
-        Vector tempDisp = theNodes[count]->getDisp();
-        m_solidInitDisp(count * 3 + 0) = tempDisp(0);
-        m_solidInitDisp(count * 3 + 1) = tempDisp(1);
-        m_solidInitDisp(count * 3 + 2) = tempDisp(2);
+        // Vector tempDisp = theNodes[count]->getDisp();
+        // m_solidInitDisp(count * 3 + 0) = tempDisp(0);
+        // m_solidInitDisp(count * 3 + 1) = tempDisp(1);
+        // m_solidInitDisp(count * 3 + 2) = tempDisp(2);
 
         count++;
     }
@@ -204,15 +202,15 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
         m_beamNodeMap[*it] = count - curCount;
         externalNodes(count) = *it;
 
-        theNodes[count] = theDomainPtr->getNode(*it);
+        // theNodes[count] = theDomain.getNode(*it);
 
-        Vector tempDisp = theNodes[count]->getDisp();
-        m_beamInitDisp((count - curCount) * 6 + 0) = tempDisp(0);
-        m_beamInitDisp((count - curCount) * 6 + 1) = tempDisp(1);
-        m_beamInitDisp((count - curCount) * 6 + 2) = tempDisp(2);
-        m_beamInitDisp((count - curCount) * 6 + 3) = tempDisp(3);
-        m_beamInitDisp((count - curCount) * 6 + 4) = tempDisp(4);
-        m_beamInitDisp((count - curCount) * 6 + 5) = tempDisp(5);
+        // Vector tempDisp = theNodes[count]->getDisp();
+        // m_beamInitDisp((count - curCount) * 6 + 0) = tempDisp(0);
+        // m_beamInitDisp((count - curCount) * 6 + 1) = tempDisp(1);
+        // m_beamInitDisp((count - curCount) * 6 + 2) = tempDisp(2);
+        // m_beamInitDisp((count - curCount) * 6 + 3) = tempDisp(3);
+        // m_beamInitDisp((count - curCount) * 6 + 4) = tempDisp(4);
+        // m_beamInitDisp((count - curCount) * 6 + 5) = tempDisp(5);
 
         count++;
     }
@@ -222,7 +220,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
         int lagNodeTag = maxTag + ii + 1;
         externalNodes(count) = lagNodeTag;
 
-        theNodes[count] = theDomainPtr->getNode(lagNodeTag);
+        // theNodes[count] = theDomain.getNode(lagNodeTag);
         count++;
     }
 
@@ -233,7 +231,7 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
 
 
     // get the coordinate transformation object
-    crdTransf = OPS_GetCrdTransf(crdTransfTag)->getCopy3d();
+    crdTransf = OPS_getCrdTransf(crdTransfTag)->getCopy3d();
 
     if (writeConnectivity)
     {
@@ -258,14 +256,31 @@ EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL(int tag,
 }
 
 EmbeddedBeamInterfaceL::EmbeddedBeamInterfaceL()
-    : Element(0, ELE_TAG_EmbeddedBeamInterfaceL)
+    :
+  Element(0, ELE_TAG_EmbeddedBeamInterfaceL),
+  theSolidTags(0), solidNodeTags(0), theBeamTags(0), beamNodeTags(0), theNodes(0),
+  m_beam_radius(0), mQa(3, 3), mQb(3, 3), mQc(3, 3),
+  mBphi(3, 12), mBu(3, 12), mHf(3, 12), m_Ns(8), crdTransf(0)
 {
-
+    // mInitialize = false;
+    theNodes = new Node*[2];
 }
 
 EmbeddedBeamInterfaceL::~EmbeddedBeamInterfaceL()
 {
+  if (theSolidTags != 0)
+    delete [] theSolidTags;
+  if (solidNodeTags != 0)
+    delete [] solidNodeTags;
+  if (theBeamTags != 0)
+    delete [] theBeamTags;
+  if (beamNodeTags != 0)
+    delete [] beamNodeTags;
 
+  if (crdTransf != 0)
+    delete crdTransf;
+  if (theNodes != 0)
+    delete [] theNodes;
 }
 
 int
@@ -344,6 +359,232 @@ EmbeddedBeamInterfaceL::getResistingForce(void)
 int
 EmbeddedBeamInterfaceL::sendSelf(int commitTag, Channel &theChannel)
 {
+    // opserr << "==================== sendlsef =======================\n";
+    int res = 0;
+    static ID idData(9);
+    idData.Zero();
+    idData(0) = this->getTag(); 
+    idData(1) = m_numEmbeddedPoints;
+    idData(2) = m_numSolidDOF;
+    idData(3) = m_numSolidNodes;
+    idData(4) = m_numBeamNodes;  
+    idData(5) = EBIL_numNodes;  
+    idData(6) = EBIL_numDOF; 
+    idData(7) = crdTransf->getClassTag();
+    int crdTransfDbTag  = crdTransf->getDbTag();
+    if (crdTransfDbTag  == 0) {
+        crdTransfDbTag = theChannel.getDbTag();
+    if (crdTransfDbTag  != 0) 
+        crdTransf->setDbTag(crdTransfDbTag);
+    }
+    idData(8) = crdTransfDbTag;
+    
+    // opserr <<"eleTag             :"<<this->getTag()      <<" "<<idData(0)<<"\n"; 
+    // opserr <<"m_numEmbeddedPoints:"<<m_numEmbeddedPoints <<" "<<idData(1)<<"\n"; 
+    // opserr <<"m_numSolidDOF      :"<<m_numSolidDOF       <<" "<<idData(2)<<"\n"; 
+    // opserr <<"m_numSolidNodes    :"<<m_numSolidNodes     <<" "<<idData(3)<<"\n"; 
+    // opserr <<"m_numBeamNodes     :"<<m_numBeamNodes      <<" "<<idData(4)<<"\n"; 
+    // opserr <<"EBIL_numNodes      :"<<EBIL_numNodes       <<" "<<idData(5)<<"\n"; 
+    // opserr <<"EBIL_numDOF        :"<<EBIL_numDOF         <<" "<<idData(6)<<"\n"; 
+    // opserr <<"crdTransfClassTag  :"<<crdTransf->getClassTag()  <<"\n" ;
+    // opserr <<"crdTransfDbTag     :"<<crdTransf->getDbTag()     <<"\n" ;
+    
+
+    res = theChannel.sendID(this->getDbTag(), commitTag, idData);
+    if (res < 0) {
+        opserr << "EmbeddedBeamInterfaceL::sendSelf -- could not send ID\n";
+        return res;
+    }
+
+    
+
+    
+    int sizeofvector = (18*m_numEmbeddedPoints)+(6*m_numBeamNodes) + EBIL_numNodes + 1;
+    static Vector data(sizeofvector);
+
+
+    int index = 0;
+    for (int i =0; i<8*m_numEmbeddedPoints;i++) {  
+        data(index++) = solidNodeTags[i];
+        // opserr << solidNodeTags[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = theBeamTags[i];
+        // opserr << theBeamTags[i] << " ";
+    }
+
+    for (int i =0; i<2*m_numEmbeddedPoints;i++) {  
+        data(index++) = beamNodeTags[i];
+        // opserr << beamNodeTags[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_beam_rho[i];
+        // opserr << m_beam_rho[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_beam_theta[i];
+        // opserr << m_beam_theta[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_solid_xi[i];
+        // opserr << m_solid_xi[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_solid_eta[i];
+        // opserr << m_solid_eta[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_solid_zeta[i];
+        // opserr << m_solid_zeta[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_area[i];
+        // opserr << m_area[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        data(index++) = m_beamLength[i];
+        // opserr << m_area[i] << " ";
+    }
+
+    for (int i =0; i<6*m_numBeamNodes;i++) {  
+        data(index++) = m_Lambda[i];
+        // opserr << m_Lambda[i] << " ";
+    }
+    
+    for (int i =0; i<EBIL_numNodes;i++) {
+        data(index++) = externalNodes[i];
+        // opserr << externalNodes[i] << " ";
+    }
+    data(index++) = m_beam_radius;
+
+    // opserr << "==================solidtags=====================\n";
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {
+    //     data(index++) = theSolidTags[i];
+    //     opserr << theSolidTags[i] << " ";
+    // }
+
+
+    // for (int i =0; i<EBIL_numNodes;i++) {  
+    //     if (i<=m_numSolidNodes) {
+
+    //         opserr << "solid: " << externalNodes[i]<< " "<< m_solidNodeMap[externalNodes[i]]<< " \n";
+    //     } else {
+    //         opserr << "beam:  " << externalNodes[i]<< " "<< m_beamNodeMap[externalNodes[i]] << " \n";
+    //     }
+    // }
+    
+
+    // int arrSize = sizeof(theNodes)/sizeof(theNodes[0]);
+    // opserr << "theNodes size is equal to: " << arrSize<< "\n"; 
+
+
+
+
+
+
+
+    res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+    if (res < 0) {
+        opserr << "WARNING EmbeddedBeamInterfaceL::sendSelf() - " << this->getTag() << " failed to send Vector\n";
+        return res;
+    }
+
+    // send the coordinate transformation
+    if (crdTransf->sendSelf(commitTag, theChannel) < 0) {
+        opserr << "EmbeddedBeamInterfaceL::sendSelf() - failed to send crdTranf\n";
+        return -1;
+    }
+
+
+    // for (int i =0; i<8;i++) {  
+    //     idData(index) = solidNodeTags[i];
+    //     index++;
+    //     opserr << solidNodeTags[i] << " ";
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = theBeamTags[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<2*m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = beamNodeTags[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_beam_rho[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_beam_theta[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_solid_xi[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_solid_eta[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_solid_zeta[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_area[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {  
+    //     data(index+i) = m_beamLength[i];
+    //     index++;
+    // }
+
+    // for (int i =0; i<6*m_numBeamNodes;i++) {  
+        // data(index+i) = m_Lambda[i];
+    //     index++;
+    // }
+
+    
+    // opserr << "yes\n";
+
+
+    // // EmbeddedBeamInterfaceL then sends the tags of its nodes
+    // res = theChannel.sendID(dataTag, commitTag, externalNodes);
+    // if (res < 0) {
+    // opserr << "WARNING EmbeddedBeamInterfaceL::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    //     return res;
+    // }
+
+    // int dbTag = crdTransf->getDbTag();
+    // if (dbTag == 0) {
+    //   dbTag = theChannel.getDbTag();
+    //   if (dbTag != 0)
+	// crdTransf->setDbTag(dbTag);
+    // }
+
+    // // Ask the CoordTransf to send itself
+    // res = crdTransf->sendSelf(commitTag, theChannel);
+    // if (res < 0) {
+    //   opserr << "EmbeddedBeamInterfaceL::sendSelf -- could not send CoordTransf\n";
+    //   return res;
+    // }
+
     return 0;
 }
 
@@ -351,6 +592,192 @@ int
 EmbeddedBeamInterfaceL::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
     &theBroker)
 {
+    int res = 0;
+    static ID idData(9);
+    res = theChannel.recvID(this->getDbTag(), commitTag, idData);
+    if (res < 0) {
+        opserr << "EmbeddedBeamInterfaceL::recvSelf -- could not recv ID\n";
+        return res;
+    }
+
+    this->setTag((int)idData(0)); 
+    m_numEmbeddedPoints = idData(1); 
+    m_numSolidDOF       = idData(2); 
+    m_numSolidNodes     = idData(3);
+    m_numBeamNodes      = idData(4);  
+    EBIL_numNodes       = idData(5);  
+    EBIL_numDOF         = idData(6);  
+    int crdTransfClassTag = idData(7);
+    int crdTransfDbTag    = idData(8);    
+    // opserr <<"eleTag             :"<<idData(0)          <<"\n";  
+    // opserr <<"m_numEmbeddedPoints:"<<m_numEmbeddedPoints<<"\n" ; 
+    // opserr <<"m_numSolidDOF      :"<<m_numSolidDOF      <<"\n" ; 
+    // opserr <<"m_numSolidNodes    :"<<m_numSolidNodes    <<"\n" ; 
+    // opserr <<"m_numBeamNodes     :"<<m_numBeamNodes     <<"\n" ; 
+    // opserr <<"EBIL_numNodes      :"<<EBIL_numNodes      <<"\n" ; 
+    // opserr <<"EBIL_numDOF        :"<<EBIL_numDOF        <<"\n" ; 
+    // opserr <<"crdTransfClassTag  :"<<crdTransfClassTag  <<"\n" ;
+    // opserr <<"crdTransfDbTag     :"<<crdTransfDbTag     <<"\n" ;
+
+
+
+    int sizeofvector = (18*m_numEmbeddedPoints)+(6*m_numBeamNodes) + EBIL_numNodes+1;
+    static Vector data(sizeofvector);
+
+    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
+    if (res < 0) {
+      opserr << "WARNING EmbeddedBeamInterfaceL::recvSelf() - failed to receive Vector\n";
+      return res;
+    }
+    
+    // for (int i =0; i<8*m_numEmbeddedPoints;i++) {  
+    //     opserr << data(i) << " ";  
+    // }
+    // opserr << "yes it is working\n";
+
+
+
+    if (!memoryallocated) {
+        // theSolidTags  = new int[m_numEmbeddedPoints];
+        solidNodeTags = new int[8 * m_numEmbeddedPoints];
+        theBeamTags   = new int[m_numEmbeddedPoints];
+        beamNodeTags  = new int[2 * m_numEmbeddedPoints];
+        memoryallocated = true;
+        m_beam_rho = m_beam_theta = m_solid_xi = m_solid_eta = m_solid_zeta = m_area = m_beamLength = Vector(m_numEmbeddedPoints);
+        m_Lambda        = Vector(6 * m_numBeamNodes);
+        m_solidInitDisp = Vector(m_numSolidNodes * 3);
+        m_beamInitDisp  = Vector(m_numBeamNodes * 6);
+        m_InterfaceForces = Vector(EBIL_numDOF);
+        m_InterfaceStiffness = Matrix(EBIL_numDOF, EBIL_numDOF);
+        mA = Matrix(3 * m_numSolidNodes, 6 * m_numBeamNodes);
+        mB = Matrix(6 * m_numBeamNodes,  6 * m_numBeamNodes);
+        
+        
+        // theNodes = new Node*[EBIL_numNodes];
+    }
+
+
+    int index = 0;
+    for (int i =0; i<8*m_numEmbeddedPoints;i++) {  
+        solidNodeTags[i] = (int)data(index++);
+        // opserr << solidNodeTags[i] << " ";  
+    }
+    
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        theBeamTags[i] = (int)data(index++);
+        // opserr << theBeamTags[i] << " ";
+    }
+
+
+    for (int i =0; i<2*m_numEmbeddedPoints;i++) {  
+        beamNodeTags[i] = (int)data(index++);
+        // opserr << beamNodeTags[i] << " ";
+    }
+
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_beam_rho[i] = data(index++);
+        // opserr << m_beam_rho[i] << " ";
+    }
+
+        for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_beam_theta[i]= data(index++);
+        // opserr << m_beam_theta[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_solid_xi[i] = data(index++);
+        // opserr << m_solid_xi[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_solid_eta[i] = data(index++);
+        // opserr << m_solid_eta[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_solid_zeta[i] = data(index++);
+        // opserr << m_solid_zeta[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_area[i] = data(index++);
+        // opserr << m_area[i] << " ";
+    }
+
+    for (int i =0; i<m_numEmbeddedPoints;i++) {  
+        m_beamLength[i] = data(index++);
+        // opserr << m_beamLength[i] << " ";
+    }
+
+    
+    for (int i =0; i<6*m_numBeamNodes;i++) {  
+        m_Lambda[i] = data(index++);
+        // opserr << m_Lambda[i] << " ";
+    }
+
+
+    // allocating externalNodes, m_solidNodeMap and m_beamNodeMap
+    if (externalNodes.Size() != EBIL_numNodes) {
+        // opserr << "size of externalNodes " << externalNodes.Size() <<"\n";
+        externalNodes.resize(EBIL_numNodes);
+        // opserr << "size of externalNodes " << externalNodes.Size() <<"\n";
+    }
+    for (int i =0; i<EBIL_numNodes;i++) {  
+        externalNodes[i] = data(index++);
+        // opserr << externalNodes[i] << " ";
+        if (i<m_numSolidNodes) 
+            m_solidNodeMap[externalNodes[i]] = i;
+        if ((i>=m_numSolidNodes) && (i<(m_numSolidNodes+m_numBeamNodes)))
+            m_beamNodeMap[externalNodes[i]] = i-m_numSolidNodes;  
+    }
+    
+    m_beam_radius = data(index++);
+
+    // opserr << "==================solidtags=====================\n";
+    // for (int i =0; i<m_numEmbeddedPoints;i++) {
+    //     theSolidTags[i] = (int)data(index++);
+    //     opserr << theSolidTags[i] << " ";
+    // }
+
+
+
+    // create a new crdTransf object if one needed
+    if (crdTransf == 0 || (crdTransf->getClassTag() != crdTransfClassTag)) {
+        if (crdTransf != 0) {
+	        delete crdTransf;
+        }
+        crdTransf = theBroker.getNewCrdTransf(crdTransfClassTag);
+        if (crdTransf == 0) {
+	        opserr << "EmbeddedBeamInterfaceL::recvSelf() - " <<
+	        "failed to obtain a CrdTrans object with classTag" <<
+	        crdTransfClassTag << endln;
+	        return -2;	  
+        }
+    }
+    crdTransf->setDbTag(crdTransfDbTag);
+    res = crdTransf->recvSelf(commitTag, theChannel, theBroker);
+    // invoke recvSelf on the crdTransf object
+    if ( res < 0) {
+        opserr << "EmbeddedBeamInterfaceL::sendSelf() - failed to recv CrdTranf\n";
+        return -3;
+    } 
+
+
+
+    // for (int i =0; i<EBIL_numNodes;i++) {  
+    //     if (i<=m_numSolidNodes) {
+    //         opserr << "solid: " << externalNodes[i]<< " "<< m_solidNodeMap[externalNodes[i]]<< " \n";
+    //     } else {
+    //         opserr << "beam:  " << externalNodes[i]<< " "<< m_beamNodeMap[externalNodes[i]] << " \n";
+    //     }
+    // }
+
+
+    // int arrSize = sizeof(theNodes)/sizeof(theNodes[0]);
+    // opserr << "theNodes size is equal to: " << arrSize<< "\n"; 
+
+
     return 0;
 }
 
@@ -480,8 +907,20 @@ EmbeddedBeamInterfaceL::updateParameter(int parameterID, Information &info)
 }
 
 void
-EmbeddedBeamInterfaceL::setDomain(Domain *theDomainPtr)
+EmbeddedBeamInterfaceL::setDomain(Domain *theDomain)
 {
+    for (int i = 0; i<EBIL_numNodes;i++) {
+        if(!theNodesStatus) {
+            delete [] theNodes;
+            theNodes = new Node*[EBIL_numNodes];
+            theNodesStatus = true;
+            // opserr << "NEW MEMORY ALLOCATED to theNodes pointer";
+        }
+        theNodes[i] = theDomain->getNode(externalNodes(i));
+        // opserr << theNodes[i]->getNumberDOF() << "\n";
+    }
+
+
     for (int ii = 0; ii < m_numSolidNodes + 2 * m_numBeamNodes; ii++)
     {
         if (theNodes[ii] == 0)
@@ -490,7 +929,7 @@ EmbeddedBeamInterfaceL::setDomain(Domain *theDomainPtr)
             return;
         }
         if (!((theNodes[ii]->getNumberDOF() == 3) || (theNodes[ii]->getNumberDOF() == 4)) && (ii < m_numSolidNodes))
-        {
+        {   
             opserr << "Solid node " << externalNodes(ii) << " has to have 3 or 4 degrees of freedom." << endln;
             return;
         }
@@ -502,19 +941,17 @@ EmbeddedBeamInterfaceL::setDomain(Domain *theDomainPtr)
     }
     
     // initialize the transformation
-    if (crdTransf->initialize(theDomainPtr->getNode(beamNodeTags[0]), theDomainPtr->getNode(beamNodeTags[1])))
+    if (crdTransf->initialize(theDomain->getNode(beamNodeTags[0]), theDomain->getNode(beamNodeTags[1])))
     {
         opserr << "EmbeddedBeamInterfaceL::setDomain(): Error initializing coordinate transformation";
         return;
     }
-    
     m_beam_length = crdTransf->getInitialLength();
     if (m_beam_length < 1.0e-12) {
         opserr << "FATAL ERROR EmbeddedBeamInterfaceL (tag: " << this->getTag() << ") : "
             << "Beam element has zero length." << endln;
         return;
     }
-    
     Vector initXAxis(3);
     Vector initYAxis(3);
     Vector initZAxis(3);
@@ -600,7 +1037,6 @@ EmbeddedBeamInterfaceL::setDomain(Domain *theDomainPtr)
         tempFile2  << mB;*/
 
     }
-
     m_InterfaceStiffness.Zero();
 
     int II;
@@ -619,7 +1055,7 @@ EmbeddedBeamInterfaceL::setDomain(Domain *theDomainPtr)
             m_InterfaceStiffness(m_numSolidDOF * m_numSolidNodes + 6 * m_numBeamNodes + jj, m_numSolidDOF * m_numSolidNodes + ii) = -mB(ii, jj);
         }
 
-    this->DomainComponent::setDomain(theDomainPtr);
+    this->DomainComponent::setDomain(theDomain);
     return;
 }
 
@@ -681,7 +1117,7 @@ int EmbeddedBeamInterfaceL::updateShapeFuncs(double xi, double eta, double zeta,
     m_Hb4 = 0.125 * L * (-1.0 - rho + rho2 + rho3);
 
     m_Nb1 = 0.5 * (1 - rho);
-    m_Nb2 = 0.5 * (1 + rho);
+    m_Nb2 = 0.5 * (1 + rho); 
 
     m_dH1 = 1.5 * (-1.0 + rho2);
     m_dH3 = 1.5 * (1.0 - rho2);

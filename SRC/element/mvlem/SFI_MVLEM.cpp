@@ -964,7 +964,7 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 			s.tag("ResponseType","Fy_j");
 			s.tag("ResponseType","Mz_j");
 			
-			return theResponse = new ElementResponse(this, 1, Vector(6));
+			theResponse = new ElementResponse(this, 1, Vector(6));
 
 	}  
 
@@ -973,7 +973,7 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		
 			s.tag("ResponseType","Dsh");
 		
-		return theResponse = new ElementResponse(this, 2, 0.0);
+		theResponse = new ElementResponse(this, 2, 0.0);
 
 	} 
 	
@@ -982,7 +982,7 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		
 			s.tag("ResponseType","fi");
 		
-		return theResponse = new ElementResponse(this, 3, 0.0);
+		theResponse = new ElementResponse(this, 3, 0.0);
 	}
 
 	// Material output
@@ -1001,13 +1001,13 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("Material");
 		s.attr("number",matNum);
 		
-		return theResponse = theMaterial[matNum-1]->setResponse(&argv[argc-1], argc-2, s);
+		theResponse = theMaterial[matNum-1]->setResponse(&argv[argc-1], argc-2, s);
 
     }
 
 	s.endTag();
 	
-	return 0;
+	return theResponse;
 }
 
 // Obtain element responses

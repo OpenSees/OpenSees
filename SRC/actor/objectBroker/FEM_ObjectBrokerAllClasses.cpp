@@ -110,6 +110,7 @@
 
 #include "DowelType.h"
 #include "DuctileFracture.h" // Kuanshi Zhong
+#include <GMG_CyclicReinforcedConcrete.h>      // Rasool Ghorbani
 
 //PY springs: RWBoulanger and BJeremic
 #include "PY/PySimple1.h"
@@ -143,6 +144,7 @@
 #include "Hertzdamp.h"
 #include "JankowskiImpact.h"
 #include "ViscoelasticGap.h"
+#include "Pinching4Material.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -152,6 +154,7 @@
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
 #include "SectionAggregator.h"
+#include "ParallelSection.h"
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
@@ -288,9 +291,17 @@
 #include "UWelements/BeamEndContact3D.h"
 #include "UWelements/BeamEndContact3Dp.h"
 #include "UWelements/QuadBeamEmbedContact.h"
+#include "UWelements/Quad4FiberOverlay.h"
+#include "UWelements/Brick8FiberOverlay.h"
+#include "EmbeddedBeamInterfaceL.h"
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
+#include "PML/PML2D_3.h"
+#include "PML/PML2D_5.h"
+#include "PML/PML2D_12.h"
+#include "PML/PML2DVISCOUS.h"
+
 
 #include "UP-ucsd/Nine_Four_Node_QuadUP.h"
 #include "UP-ucsd/BrickUP.h"
@@ -324,7 +335,9 @@
 #include "mvlem/MVLEM.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
 #include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
-#include "mvlem/SFI_MVLEM_3D.h"		// Kristijan Kolozvari
+#include "mvlem/SFI_MVLEM_3D.h"	// Kristijan Kolozvari
+#include "mvlem/E_SFI_MVLEM_3D.h"	// Kristijan Kolozvari
+#include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
@@ -343,6 +356,7 @@
 #include "frictionBearing/SingleFPSimple2d.h"
 #include "frictionBearing/SingleFPSimple3d.h"
 #include "frictionBearing/TripleFrictionPendulum.h"
+#include "frictionBearing/TripleFrictionPendulumX.h"
 
 #include "PFEMElement/PFEMElement2D.h"
 #include "RockingBC/RockingBC.h"
@@ -857,12 +871,33 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
 
+    case ELE_TAG_Quad4FiberOverlay:
+      return new Quad4FiberOverlay(); //Amin Pakzad
+	
+	case ELE_TAG_Brick8FiberOverlay:
+      return new Brick8FiberOverlay(); //Amin Pakzad
+
+	case ELE_TAG_EmbeddedBeamInterfaceL:
+	  return new EmbeddedBeamInterfaceL(); //Amin Pakzad
+	
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
 	case ELE_TAG_PML3D:
 	  return new PML3D();
 
+	case ELE_TAG_PML2D_3:
+	  return new PML2D_3(); // Amin Pakzad
+	
+	case ELE_TAG_PML2D_5:
+	  return new PML2D_5(); // Amin Pakzad
+
+	case ELE_TAG_PML2D_12:
+	  return new PML2D_12(); // Amin Pakzad
+
+	case ELE_TAG_PML2DVISCOUS:
+	  return new PML2DVISCOUS(); // Amin Pakzad
+	
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -925,6 +960,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_SFI_MVLEM_3D:		// Kristijan Kolozvari
 		return new SFI_MVLEM_3D();	// Kristijan Kolozvari
+
+	case ELE_TAG_E_SFI_MVLEM_3D:		// Kristijan Kolozvari
+		return new E_SFI_MVLEM_3D();	// Kristijan Kolozvari
+		
+	case ELE_TAG_E_SFI:			// C. N. Lopez
+		return new E_SFI();		// C. N. Lopez	
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
@@ -989,6 +1030,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_TripleFrictionPendulum:
       return new TripleFrictionPendulum();
 
+    case ELE_TAG_TripleFrictionPendulumX:
+      return new TripleFrictionPendulumX();
+		    
     case ELE_TAG_PFEMElement2D:
       return new PFEMElement2D();
 
@@ -1547,6 +1591,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_DuctileFracture:
 		return new DuctileFracture();
 
+	case MAT_TAG_GMG_CyclicReinforcedConcrete:
+		return new GMG_CyclicReinforcedConcrete();
+
+	case MAT_TAG_Pinching4:
+		return new Pinching4Material();
+
 
 	default:
 
@@ -1593,6 +1643,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_Aggregator:
 	     return new SectionAggregator();
+
+	case SEC_TAG_Parallel:
+	     return new ParallelSection();	     
 
 	     //case SEC_TAG_Fiber:
 	     //return new FiberSection();
