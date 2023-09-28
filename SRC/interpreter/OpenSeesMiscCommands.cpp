@@ -1956,7 +1956,7 @@ int OPS_sdfResponse()
     double up = uresidual; double up0 = up;
     int i = 0;
     double ft, u=0, du, v, a, fs, zs, ftrial, kT, kTeff, dg, phat, R, R0, accel;
-    double time = 0.0;
+    double time = accelSeries->getStartTime();
     double Tend = accelSeries->getDuration();
     while (time < Tend) {
 
