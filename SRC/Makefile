@@ -1356,6 +1356,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/analysis/TransientDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/SubstructuringAnalysis.o \
 	$(FE)/analysis/analysis/ResponseSpectrumAnalysis.o \
+	$(FE)/analysis/analysis/SDFAnalysis.o \
 	$(FE)/analysis/algorithm/SolutionAlgorithm.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/EquiSolnAlgo.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Linear.o \
