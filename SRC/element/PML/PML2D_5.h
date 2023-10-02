@@ -19,16 +19,14 @@
 ** ****************************************************************** */
 
 
-// Written by: Amin Pakzad, Pedro Arduino (parduino@uw.edu)
+// Written by: Amin Pakzad, Pedro Arduino (parduino@uw.edu) and Adriano Trono
 //
-// Eight node PML3D element .. a c++ wrapper to fortran routine 
-// provided by Wenyang Zhang (zwyll@ucla.edu), University of California, Los Angeles
-//
-// University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2020
+// Four node PML2D_5 element Derivation based on the Adriano Torino PhD thesis
 
 
-#ifndef PML3D_H
-#define PML3D_H
+
+#ifndef PML2D_5_H
+#define PML2D_5_H
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -40,50 +38,19 @@
 #include <Element.h>
 #include <Node.h>
 
-#define PML3D_NUM_DOF 72
-#define PML3D_NUM_PROPS 12
-#define PML3D_NUM_NODES 8
+#define PML2D_5_NUM_DOF   13
+#define PML2D_5_NUM_NODES 5
+#define PML2D_5_NUM_PROPS 8
 
-#ifdef _WIN32
-
-#define pml3d_	      PML_3D
-
-extern "C" void  pml3d_(double* mMatrix,
-	double* cMatrix,
-	double* kMatrix,
-	double* gMatrix,
-	int* NDOFEL,
-	double* PROPS,
-	int* NPROPS,
-	double* COORDS,
-	int* MCRD,
-	int* NNODE);
-
-#else
-
-#define pml3d_	      pml_3d_
-
-extern "C" void  pml3d_(double* mMatrix,
-	double* cMatrix,
-	double* kMatrix,
-	double* gMatrix,
-	int* NDOFEL,
-	double* PROPS,
-	int* NPROPS,
-	double* COORDS,
-	int* MCRD,
-	int* NNODE);
-
-#endif
-
-class PML3D : public Element {
+class PML2D_5 : public Element {
 
 public:
-
-	PML3D();                                                                         //null constructor
-	PML3D(int tag, int* nodeTags, double* newmarks, double* dData);                  // full constructor
-	virtual ~PML3D();                                                                //destructor
-	const char* getClassType(void) const { return "PML3D"; };                        //return class type
+	PML2D_5();                                                                       //null constructor
+	PML2D_5(int tag, int* nodeTags, double E, double nu,
+	double rho, double pmlthicknessx, double pmlthicknessy, double Halfwidth, 
+	double Depth, double r0, double R, double Vc);
+	virtual ~PML2D_5();                                                              //destructor
+	const char* getClassType(void) const { return "PML2D_5"; };                      //return class type
 	void setDomain(Domain* theDomain);                                               // set domain
 	int getNumExternalNodes() const; 	   						                     // get number of external nodes
 	const ID& getExternalNodes(); 								                     // get external nodes
@@ -109,33 +76,34 @@ public:
 	int setParameter(const char** argv, int argc, Parameter& param);
 	int updateParameter(int parameterID, Information& info);                         // update parameter
 	int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
+	void ComputeK(double* K,double* XYelement, double beta_0_x, double beta_0_y, double L_PML_x,
+                                double L_PML_y, double xi, double yj, double rho, double E, double nu);
+	void ComputeM(double* M,double* XYelement, double alpha_0_x, double alpha_0_y, double L_PML_x,
+                                double L_PML_y, double xi, double yj, double rho, double E, double nu);
+	void ComputeC(double* C,double* XYelement, double alpha_0_x, double alpha_0_y,
+							  double beta_0_x, double beta_0_y, double L_PML_x,double L_PML_y, 
+								double xi, double yj, double rho, double E, double nu);
 
 private:
-
-	Domain* Domainptr;                              // pointer to the domain
-	double props[PML3D_NUM_PROPS];                  // material properties
-	ID connectedExternalNodes;  					//eight node numbers
-	Node* nodePointers[PML3D_NUM_NODES];    	    //pointers to eight nodes
-	double K[PML3D_NUM_DOF * PML3D_NUM_DOF];        // stiffness matrix
-	double C[PML3D_NUM_DOF * PML3D_NUM_DOF];        // damping matrix
-	double M[PML3D_NUM_DOF * PML3D_NUM_DOF];        // mass matrix
-    double G[PML3D_NUM_DOF * PML3D_NUM_DOF];        // G matrix
-	double Keff[PML3D_NUM_DOF * PML3D_NUM_DOF];     // effective stiffness matrix
-	static double eta;                              // Newmark parameters: eta
-	static double beta; 					  	    // Newmark parameters: beta
-	static double gamma; 					  	// Newmark parameters: gamma
+	double E;                
+	double nu;				
+	double rho;		     	
+	double pmlthicknessx;    
+	double pmlthicknessy;    
+	double Halfwidth;	    
+	double Depth;
+	double r0;
+	double R;
+	double Vc;		    
+	ID connectedExternalNodes;  					//five node numbers
+	Node* nodePointers[PML2D_5_NUM_NODES];    	    //pointers to five nodes
+	double K[PML2D_5_NUM_DOF * PML2D_5_NUM_DOF];        // stiffness matrix
+	double C[PML2D_5_NUM_DOF * PML2D_5_NUM_DOF];        // damping matrix
+	double M[PML2D_5_NUM_DOF * PML2D_5_NUM_DOF];        // mass matrix
 	static Matrix tangent;                          // tangent matrix
 	static Vector resid; 						    // residual vector
-	static Matrix mass;						        // mass matrix
-	static Matrix damping;	 					    // damping matrix
-	Vector ubart; 				                    // ubar at time t 
-	Vector ubar; 				                    // ubar at time t+dt
-	static double dt; 								// time step
-	int updateflag; 								// update flag
-	int update_dt;                                  // flag for updating dt
-	static int eleCount; 						    // element count
-	// int innertag; 								// inner tag
-	// static int numberOfElements; 			    // number of elements
+	static int eleCount;                            // element count
+
 };
 
 #endif

@@ -1235,7 +1235,7 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       zSearch = zLocs[0];
       dy = ySearch-yCoord;
       dz = zSearch-zCoord;
-      closestDist = sqrt(dy*dy + dz*dz);
+      closestDist = dy*dy + dz*dz;
       key = 0;
       for (int j = 1; j < numFibers; j++) {
 	//ySearch = matData[3*j];
@@ -1244,7 +1244,7 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 	zSearch = zLocs[j];	    	    	  
 	dy = ySearch-yCoord;
 	dz = zSearch-zCoord;
-	distance = sqrt(dy*dy + dz*dz);
+	distance = dy*dy + dz*dz;
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;

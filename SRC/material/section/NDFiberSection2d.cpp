@@ -1180,7 +1180,7 @@ NDFiberSection2d::setResponse(const char **argv, int argc,
       //ySearch = matData[0];
       ySearch = fiberLocs[0];      
       dy = ySearch-yCoord;
-      closestDist = fabs(dy);
+      closestDist = dy*dy;
       key = 0;
       for (int j = 1; j < numFibers; j++) {
 	//ySearch = matData[2*j];
