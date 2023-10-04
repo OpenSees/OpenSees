@@ -12,6 +12,7 @@ target_sources(OPS_Analysis
       DomainUser.cpp 
       EigenAnalysis.cpp
       ResponseSpectrumAnalysis.cpp
+      SDFAnalysis.cpp
       StaticAnalysis.cpp 
       StaticDomainDecompositionAnalysis.cpp 
       SubstructuringAnalysis.cpp    
