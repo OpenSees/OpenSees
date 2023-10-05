@@ -1,6 +1,8 @@
-# Dockerfile to build OpenSees
+# Dockerfile to build OpenSees, OpenSeesSP and OpenSeesMP
 #   .. utilizes ubuntu:20.04 LTS as base
-#   .. it will build sequential version and place in /usr/local/bin
+#   .. it will build all applications and place in /usr/local/bin
+#   .. it will also install openmpi
+#         .. to run OpenSeesSP and OpenSeesMP use mpiexec, e.g. mpiexec -n 2 OpenSeesSP example.tcl
 
 # written: fmk
 
@@ -29,7 +31,7 @@ RUN cp /etc/apt/sources.list /etc/apt/sources.list~ \
     && cd build \
     && cmake .. -Darith=d \
     && cmake --build . \
-    && cd .. \
+    && cd ../.. \
     && git clone https://github.com/OpenSees/OpenSees.git \
     && cd OpenSees \
     && mkdir build \
@@ -39,7 +41,7 @@ RUN cp /etc/apt/sources.list /etc/apt/sources.list~ \
     && cmake --build . --config Release --target OpenSees \
     && cmake --build . --config Release --target OpenSeesSP \
     && cmake --build . --config Release --target OpenSeesMP \        
-    && cp -r ./bin/* /usr/local/bin \
+    && cp ./bin/* /usr/local/bin \
     && cp -r ./lib/tcl8.6 /usr/local/lib \
     && cd ../.. \
     && rm -fr OpenSees \
