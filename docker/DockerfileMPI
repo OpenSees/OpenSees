@@ -35,7 +35,7 @@ RUN cp /etc/apt/sources.list /etc/apt/sources.list~ \
     && mkdir build \
     && cd build \
     && conan install .. --build missing \
-    && cmake .. -DMUMPS_DIR=$PWD/../../mumps/build -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES="/usr/lib/x86_64-linux-gnu/libscalapack-openmpi.so.2.1"
+    && cmake .. -DMUMPS_DIR=$PWD/../../mumps/build -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES="/usr/lib/x86_64-linux-gnu/libscalapack-openmpi.so.2.1" \
     && cmake --build . --config Release --target OpenSees \
     && cmake --build . --config Release --target OpenSeesSP \
     && cmake --build . --config Release --target OpenSeesMP \        
