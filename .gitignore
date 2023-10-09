@@ -81,7 +81,6 @@ SRC/interpreter/tclInterpreter
 SRC/interpreter/openseespy
 SRC/interpreter/openseestcl
 filip
-PML
 CPlaneStrain.h
 CPlaneStress.h
 CPlaneStress2d.h
@@ -90,6 +89,5 @@ Concrete.h
 forumat.for
 build
 bin
-CMakeListsmy.txt
 __pycache__
 *.dat

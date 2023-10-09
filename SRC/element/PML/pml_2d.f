@@ -29,17 +29,18 @@ c     Damp_beta = PROPS(11)
 !=========================== ABAQUS format user element subroutine ===================
       
 
-      SUBROUTINE PML_2D(KMATRX,CMATRX,MMATRX,NDOFEL,
+      SUBROUTINE PML_2D(KMATRX,CMATRX,MMATRX,GMATRX,NDOFEL,
      1     PROPS,NPROPS,COORDS,MCRD,NNODE)
 
-      DOUBLE PRECISION PROPS,COORDS,KMATRX,CMATRX,MMATRX
+      DOUBLE PRECISION PROPS,COORDS,KMATRX,CMATRX,MMATRX,GMATRX
       INTEGER NDOFEL,NPROPS,MCRD,NNODE
 
     !
     !
     !
       DIMENSION KMATRX(NDOFEL,NDOFEL),CMATRX(NDOFEL,NDOFEL),
-     1   MMATRX(NDOFEL,NDOFEL),PROPS(*),COORDS(MCRD,NNODE)
+     1   MMATRX(NDOFEL,NDOFEL),PROPS(*),COORDS(MCRD,NNODE),
+     2   GMATRX(NDOFEL,NDOFEL)
 
     !
     !       Variables that must be computed in this routine
@@ -95,7 +96,7 @@ c     Damp_beta = PROPS(11)
 c      double precision  ::  MMATRX(NDOFEL,NDOFEL)             ! Element mass matrix
 c      double precision  ::  KMATRX(NDOFEL,NDOFEL)             ! Element stiffness matrix
 c      double precision  ::  CMATRX(NDOFEL,NDOFEL)             ! Element damping matrix
-      double precision  ::  GMATRX(NDOFEL,NDOFEL)             ! Element G matrix
+c      double precision  ::  GMATRX(NDOFEL,NDOFEL)             ! Element G matrix
       double precision  ::  rho                               ! Density of the material
 
       double precision  ::  PML_L,afp,PML_Rcoef               ! Parameters of PML
@@ -405,7 +406,8 @@ c         DVDU = GAMMA/(BETA*DTIME)
           M_PML(NNODE*2+1:NNODE*5,NNODE*2+1:NNODE*5) = 
      1                                      -N_a(1:NNODE*3,1:NNODE*3)
 
-          C_PML(1:NNODE*2,1:NNODE*2) = M_b(1:NNODE*2,1:NNODE*2)
+          C_PML(1:NNODE*2,1:NNODE*2) = C_RD(1:NNODE*2,1:NNODE*2) + 
+     1                             M_b(1:NNODE*2,1:NNODE*2)
           
           C_PML(1:NNODE*2,NNODE*2+1:NNODE*5) = A_eu(1:NNODE*2,1:NNODE*3)
           C_PML(NNODE*2+1:NNODE*5,1:NNODE*2) = 
@@ -421,29 +423,35 @@ c         DVDU = GAMMA/(BETA*DTIME)
           K_PML(NNODE*2+1:NNODE*5,NNODE*2+1:NNODE*5) = 
      1                                      -N_c(1:NNODE*3,1:NNODE*3)
 
-
-        else
+          else
 
           M_PML(1:NNODE*2,1:NNODE*2) = M_a(1:NNODE*2,1:NNODE*2)
+          M_PML(1:NNODE*2,NNODE*2+1:NNODE*5) = 
+     1                            A_eu(1:NNODE*2,1:NNODE*3)*Damp_beta
           M_PML(NNODE*2+1:NNODE*5,NNODE*2+1:NNODE*5) = 
      1                                      -N_a(1:NNODE*3,1:NNODE*3)
 
-          C_PML(1:NNODE*2,1:NNODE*2) = M_b(1:NNODE*2,1:NNODE*2)
+          C_PML(1:NNODE*2,1:NNODE*2) = M_b(1:NNODE*2,1:NNODE*2) + 
+     1                   M_a(1:NNODE*2,1:NNODE*2)*Damp_alpha     
           C_PML(1:NNODE*2,NNODE*2+1:NNODE*5) = A_eu(1:NNODE*2,1:NNODE*3)
+     1       + A_pu(1:NNODE*2,1:NNODE*3)*Damp_beta     
           C_PML(NNODE*2+1:NNODE*5,1:NNODE*2) = 
      1                         transpose(A_eu(1:NNODE*2,1:NNODE*3))
           C_PML(NNODE*2+1:NNODE*5,NNODE*2+1:NNODE*5) = 
      1                                      -N_b(1:NNODE*3,1:NNODE*3)
 
-          K_PML(1:NNODE*2,1:NNODE*2) = M_c(1:NNODE*2,1:NNODE*2)
+          K_PML(1:NNODE*2,1:NNODE*2) = M_c(1:NNODE*2,1:NNODE*2) + 
+     1                   M_b(1:NNODE*2,1:NNODE*2)*Damp_alpha
           K_PML(1:NNODE*2,NNODE*2+1:NNODE*5) = A_pu(1:NNODE*2,1:NNODE*3)
           K_PML(NNODE*2+1:NNODE*5,1:NNODE*2) = 
      1                         transpose(A_pu(1:NNODE*2,1:NNODE*3))
           K_PML(NNODE*2+1:NNODE*5,NNODE*2+1:NNODE*5) = 
      1                                      -N_c(1:NNODE*3,1:NNODE*3)
+          
+          G_PML(1:NNODE*2,1:NNODE*2)=M_c(1:NNODE*2,1:NNODE*2)*Damp_alpha
 
 
-        endif 
+          endif 
 
         do i = 1,4
           do j = 1,4
@@ -466,9 +474,6 @@ c         DVDU = GAMMA/(BETA*DTIME)
 !        CMATRX = C_PML
 !        KMATRX = K_PML
 
-        CMATRX(1:NDOFEL,1:NDOFEL) = CMATRX(1:NDOFEL,1:NDOFEL) + 
-     1    Damp_alpha*MMATRX(1:NDOFEL,1:NDOFEL) + 
-     2    Damp_beta*KMATRX(1:NDOFEL,1:NDOFEL)
 
 !      write(6,*) 'K11= ', KMATRX(1,1)
 !      write(6,*) 'C11= ', CMATRX(1,1)

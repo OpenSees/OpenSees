@@ -33,6 +33,7 @@ OBJS       = SectionForceDeformation.o \
 	LayeredShellFiberSectionThermal.o \
 	FiberSection3dThermal.o \
 	MembranePlateFiberSectionThermal.o \
+	FiberSectionGJThermal.o \
 	CreepSection.o
 
 all:         $(OBJS)

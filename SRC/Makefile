@@ -655,6 +655,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
 	$(FE)/element/mvlem/MVLEM_3D.o \
 	$(FE)/element/mvlem/SFI_MVLEM_3D.o \
+	$(FE)/element/mvlem/E_SFI_MVLEM_3D.o \
 	$(FE)/element/mvlem/E_SFI.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
@@ -670,9 +671,13 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
 	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
 	$(FE)/element/PML/pml_3d.o \
-        $(FE)/element/PML/PML3D.o \
-        $(FE)/element/PML/pml_2d.o \
-        $(FE)/element/PML/PML2D.o \
+    $(FE)/element/PML/PML3D.o \
+    $(FE)/element/PML/pml_2d.o \
+    $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML2D_3.o \
+	$(FE)/element/PML/PML2D_5.o \
+	$(FE)/element/PML/PML2D_12.o \
+	$(FE)/element/PML/PML2DVISCOUS.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
@@ -943,10 +948,14 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
-       $(FE)/element/PML/pml_3d.o \
-       $(FE)/element/PML/PML3D.o \
-       $(FE)/element/PML/pml_2d.o \
-       $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/pml_3d.o \
+    $(FE)/element/PML/PML3D.o \
+    $(FE)/element/PML/pml_2d.o \
+    $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML2D_3.o \
+	$(FE)/element/PML/PML2D_5.o \
+	$(FE)/element/PML/PML2D_12.o \
+	$(FE)/element/PML/PML2DVISCOUS.o \
 	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
@@ -1349,6 +1358,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/analysis/TransientDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/SubstructuringAnalysis.o \
 	$(FE)/analysis/analysis/ResponseSpectrumAnalysis.o \
+	$(FE)/analysis/analysis/SDFAnalysis.o \
 	$(FE)/analysis/algorithm/SolutionAlgorithm.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/EquiSolnAlgo.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Linear.o \

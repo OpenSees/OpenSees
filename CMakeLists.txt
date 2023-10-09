@@ -34,11 +34,21 @@ include(OpenSeesFunctions)
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
+#
+# for ubuntu this has to be before the Compiler SPECIFIC stuff below .. go figure!
+#
+
+find_package(MPI)
+
+
+
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
 #
 # Compiler SPECIFIC
 #
+
+
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
@@ -347,16 +357,20 @@ endif()
 
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
-  set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  if (NOT DEFINED SCALAPACK_LIBRARIES)
+     set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  endif()
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set (MKL_LPATH ${MKL_ROOT}/lib/intel64)
     set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_ilp64.lib;${MKL_LPATH}/mkl_intel_ilp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_ilp64.lib")
   endif() 
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")     
+
 else()
   message(STATUS "MKL NOT found .. user to provide -DSCALAPACK_LIBRARIES=")
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
+
 endif()
+
+message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
   
 #get_cmake_property(_variableNames VARIABLES)
 #list (SORT _variableNames)

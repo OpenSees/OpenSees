@@ -489,6 +489,8 @@ IncrementalIntegrator::setupModal(const Vector *modalDampingValues)
       Vector v2(mEigenVectorI,numDOF);
       this->doMv(v1, v2);    
     }
+    if (eigenVectors != 0)
+      delete [] eigenVectors;
     eigenVectors = eigenVectors2;
   }
 
