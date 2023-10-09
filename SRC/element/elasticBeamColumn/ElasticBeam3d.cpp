@@ -1584,7 +1584,19 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","T");
     
     theResponse = new ElementResponse(this, 4, Vector(6));
-
+  }
+  // basic stiffness -
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","Mz_2");
+    output.tag("ResponseType","My_1");
+    output.tag("ResponseType","My_2");
+    output.tag("ResponseType","T");    
+    
+    theResponse =  new ElementResponse(this, 19, Matrix(6,6));
+    
   // global damping forces
   } else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
 
@@ -1678,6 +1690,7 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   static Vector Res(12);
   Res = this->getResistingForce();
   static Vector s(6);
+  static Matrix kb(6,6);
   
   switch (responseID) {
   case 1: // stiffness
@@ -1738,6 +1751,29 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
     return eleInfo.setVector(s);
   }
 
+  case 19: // basic stiffness
+    kb.Zero();
+    kb(0,0) = E*A/L;
+    kb(5,5) = G*Jx/L;
+    if (releasez == 0) {
+      kb(1,1) = kb(2,2) = 4*E*Iz/L;
+      kb(1,2) = kb(2,1) = 2*E*Iz/L;
+    }
+    if (releasez == 1)
+      kb(2,2) = 3*E*Iz/L;
+    if (releasez == 2)
+      kb(1,1) = 3*E*Iz/L;
+    
+    if (releasey == 0) {
+      kb(3,3) = kb(4,4) = 4*E*Iy/L;
+      kb(3,4) = kb(4,3) = 2*E*Iy/L;
+    }
+    if (releasey == 1)
+      kb(4,4) = 3*E*Iy/L;
+    if (releasey == 2)
+      kb(3,3) = 3*E*Iy/L;        
+    return eleInfo.setMatrix(kb);
+    
   case 21: // global damping forces
     return eleInfo.setVector(this->getDampingForce());
     

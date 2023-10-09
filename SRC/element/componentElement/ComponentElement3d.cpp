@@ -1382,7 +1382,19 @@ ComponentElement3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 4, Vector(3));
     
   
-  } else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
+  }
+  // basic stiffness
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","Mz_2");
+    output.tag("ResponseType","My_1");
+    output.tag("ResponseType","My_2");
+    output.tag("ResponseType","T");
+    
+    theResponse = new ElementResponse(this, 19, Matrix(6,6));
+  }
+  else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
 
     output.tag("ResponseType","end1_Defo");
     output.tag("ResponseType","end1_Force");
@@ -1416,7 +1428,8 @@ ComponentElement3d::getResponse (int responseID, Information &eleInfo)
   this->getResistingForce();
   static Vector vect4(4);
   static Vector vect2(2);
-
+  static Matrix kb(6,6);
+  
   switch (responseID) {
   case 1: // stiffness
     return eleInfo.setMatrix(this->getTangentStiff());
@@ -1464,7 +1477,19 @@ ComponentElement3d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect2);
 
-
+  case 19:
+    kb.Zero();
+    kb(0,0) = EAoverL;
+    kb(5,5) = GJoverL;
+    kb(1,1) = kzTrial(0,0);
+    kb(2,2) = kzTrial(1,1);
+    kb(1,2) = kzTrial(0,1);
+    kb(2,1) = kzTrial(1,0);
+    kb(3,3) = kyTrial(0,0);
+    kb(4,4) = kyTrial(1,1);
+    kb(3,4) = kyTrial(0,1);
+    kb(4,3) = kyTrial(1,0);    
+    return eleInfo.setMatrix(kb);
 
   default:
     return -1;
