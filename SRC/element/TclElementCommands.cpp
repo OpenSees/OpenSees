@@ -145,7 +145,7 @@ extern void *OPS_LeadRubberX(void);
 extern void *OPS_ElastomericX(void);
 extern void *OPS_N4BiaxialTruss(void);
 extern void *OPS_AC3D8HexWithSensitivity(void);
-extern void *OPS_ASID8QuadWithSensitivity(void);
+extern void *OPS_ASI3D8QuadWithSensitivity(void);
 extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);       // Kristijan Kolozvari
@@ -1253,7 +1253,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "ASI3D8") == 0) {
     
-    void *theEle = OPS_ASID8QuadWithSensitivity();
+    void *theEle = OPS_ASI3D8QuadWithSensitivity();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
