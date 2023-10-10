@@ -34,11 +34,21 @@ include(OpenSeesFunctions)
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
+#
+# for ubuntu this has to be before the Compiler SPECIFIC stuff below .. go figure!
+#
+
+find_package(MPI)
+
+
+
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
 #
 # Compiler SPECIFIC
 #
+
+
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
