@@ -136,6 +136,7 @@ void* OPS_Truss2();
 void* OPS_CorotTruss2();
 void* OPS_AC3D8HexWithSensitivity();
 void* OPS_AV3D4QuadWithSensitivity();
+void* OPS_ASI3D8QuadWithSensitivity();
 void* OPS_ElastomericBearingBoucWenMod3d();
 void* OPS_VS3D4WuadWithSensitivity();
 void* OPS_PFEMElement2DBubble(const ID& info);
@@ -652,6 +653,7 @@ namespace {
 	functionMap.insert(std::make_pair("elastomericBearingBoucWenMod", &OPS_ElastomericBearingBoucWenMod3d));
 	functionMap.insert(std::make_pair("AV3D4", &OPS_AV3D4QuadWithSensitivity));
 	functionMap.insert(std::make_pair("AC3D8", &OPS_AC3D8HexWithSensitivity));
+	functionMap.insert(std::make_pair("ASI3D8", &OPS_ASI3D8QuadWithSensitivity));
 	functionMap.insert(std::make_pair("CorotTruss2", &OPS_CorotTruss2));
 	functionMap.insert(std::make_pair("Truss2", &OPS_Truss2));
 	functionMap.insert(std::make_pair("QuadBeamEmbedContact", &OPS_QuadBeamEmbedContact));
