@@ -1102,7 +1102,25 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 4, Vector(3));
     
   
-  } else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
+  }
+  // basic deformation
+  else if (strcmp(argv[0],"basicDeformation") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M_1");
+    output.tag("ResponseType","M_2");
+    
+    theResponse = new ElementResponse(this, 8, Vector(3));
+  }
+  // basic stiffness
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M_1");
+    output.tag("ResponseType","M_2");
+    
+    theResponse = new ElementResponse(this, 19, Matrix(3,3));
+  }  
+  
+  else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
 
     output.tag("ResponseType","end1_Defo");
     output.tag("ResponseType","end1_Force");
@@ -1136,7 +1154,8 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
   this->getResistingForce();
   static Vector vect4(4);
   static Vector vect2(2);
-
+  static Matrix kb(3,3);
+  
   switch (responseID) {
   case 1: // stiffness
     return eleInfo.setMatrix(this->getTangentStiff());
@@ -1175,7 +1194,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect4);
 
-  case 6: // basic forces
+  case 6: // hinge tangent
     if (end1Hinge != 0) {
       vect2(0) = end1Hinge->getTangent();
     }
@@ -1184,7 +1203,17 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect2);
 
-
+  case 8:
+    return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
+    
+  case 19:
+    kb.Zero();
+    kb(0,0) = EAoverL;
+    kb(1,1) = kTrial(0,0);
+    kb(2,2) = kTrial(1,1);
+    kb(1,2) = kTrial(0,1);
+    kb(2,1) = kTrial(1,0);
+    return eleInfo.setMatrix(kb);
 
   default:
     return -1;
