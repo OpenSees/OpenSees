@@ -91,6 +91,16 @@ IMKBilin::IMKBilin(int tag, double p_Ke,
     negUp_0(p_negUp_0), negUpc_0(p_negUpc_0), negUu_0(p_negUu_0), negFy_0(p_negFy_0), negFcapFy_0(p_negFcapFy_0), negFresFy_0(p_negFresFy_0),
     LAMBDA_S(p_LAMBDA_S), LAMBDA_C(p_LAMBDA_C), LAMBDA_K(p_LAMBDA_K), c_S(p_c_S), c_C(p_c_C), c_K(p_c_K), D_pos(p_D_pos), D_neg(p_D_neg)
 {
+    // Make sure these are all positive 
+    if (negUp_0 < 0)
+       negUp_0 = -negUp_0;
+    if (negUpc_0 < 0)
+       negUpc_0 = -negUpc_0;
+    if (negUu_0 < 0)
+       negUu_0 = -negUu_0;
+    if (negFy_0 < 0)
+       negFy_0 = -negFy_0;
+
     this->revertToStart();
 }
 
