@@ -37,7 +37,7 @@
 class PenaltyMaterial : public UniaxialMaterial
 {
   public:
-    PenaltyMaterial(int tag, UniaxialMaterial &material, double penalty); 
+  PenaltyMaterial(int tag, UniaxialMaterial &material, double penalty, bool addSig); 
     PenaltyMaterial();
     ~PenaltyMaterial();
     
@@ -83,6 +83,7 @@ class PenaltyMaterial : public UniaxialMaterial
     UniaxialMaterial *theMaterial;
 
     double penalty;
+  bool addStress;
 
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;

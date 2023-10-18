@@ -275,20 +275,22 @@ Inerter::Inerter(int tag, int dim, int Nd1, int Nd2,
 	  opserr << "Making the value positive " << Mratio(i) << endln;
 	}
       }
-      if (Mratio(0)+Mratio(1) > 1.0)  {
+      double sumRatio = Mratio(0)+Mratio(1);
+      if (sumRatio > 1.0)  {
 	opserr << "Inerter::Inerter() - "
 	       << "incorrect P-Delta moment ratios:\nrMy1 + rMy2 = "
-	       << Mratio(0)+Mratio(1) << " > 1.0\n";
-	Mratio(0) = Mratio(0)/(Mratio(0)+Mratio(1));
-	Mratio(1) = Mratio(1)/(Mratio(0)+Mratio(1));	    
+	       << sumRatio << " > 1.0\n";
+	Mratio(0) = Mratio(0)/sumRatio;
+	Mratio(1) = Mratio(1)/sumRatio;
 	opserr << "Scaling ratios down to " << Mratio(0) << " and " << Mratio(1) << endln;
       }
-      if (Mratio(2)+Mratio(3) > 1.0)  {
+      sumRatio = Mratio(2)+Mratio(3);
+      if (sumRatio > 1.0)  {
 	opserr << "Inerter::Inerter() - "
 	       << "incorrect P-Delta moment ratios:\nrMz1 + rMz2 = "
-	       << Mratio(2)+Mratio(3) << " > 1.0\n";
-	Mratio(2) = Mratio(2)/(Mratio(2)+Mratio(3));
-	Mratio(3) = Mratio(3)/(Mratio(2)+Mratio(3));	    
+	       << sumRatio << " > 1.0\n";
+	Mratio(2) = Mratio(2)/sumRatio;
+	Mratio(3) = Mratio(3)/sumRatio;
 	opserr << "Scaling ratios down to " << Mratio(2) << " and " << Mratio(3) << endln;	    
       }
     }

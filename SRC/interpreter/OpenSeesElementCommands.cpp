@@ -56,6 +56,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Brick.h>
 #include <BbarBrick.h>
 #include <ShellMITC4.h>
+#include <ShellDKGQ.h>
 #include <ShellNLDKGQ.h>
 #include <FourNodeTetrahedron.h>
 #include <TenNodeTetrahedron.h>
@@ -96,6 +97,7 @@ void* OPS_PileToe3D();
 void* OPS_TFP_Bearing();
 void* OPS_FPBearingPTV();
 void* OPS_TripleFrictionPendulum();
+void* OPS_TripleFrictionPendulumX();
 void* OPS_HDR();
 void* OPS_LeadRubberX();
 void* OPS_ElastomericX();
@@ -103,6 +105,7 @@ void* OPS_MVLEM();
 void* OPS_SFI_MVLEM();
 void* OPS_MVLEM_3D();
 void* OPS_SFI_MVLEM_3D();
+void* OPS_E_SFI_MVLEM_3D();
 void* OPS_E_SFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
@@ -133,6 +136,7 @@ void* OPS_Truss2();
 void* OPS_CorotTruss2();
 void* OPS_AC3D8HexWithSensitivity();
 void* OPS_AV3D4QuadWithSensitivity();
+void* OPS_ASI3D8QuadWithSensitivity();
 void* OPS_ElastomericBearingBoucWenMod3d();
 void* OPS_VS3D4WuadWithSensitivity();
 void* OPS_PFEMElement2DBubble(const ID& info);
@@ -242,6 +246,13 @@ void *OPS_ASDAbsorbingBoundary3D(void);
 void* OPS_MasonPan12(void);
 void* OPS_MasonPan3D(void);
 void* OPS_BeamGT(void);
+void* OPS_PML2D(void);
+void* OPS_PML2D_3(void);
+void* OPS_PML2D_5(void);
+void* OPS_PML2D_12(void);
+void* OPS_PML2DVISCOUS(void);
+void* OPS_PML3D(void);
+
 
 namespace {
 
@@ -556,6 +567,15 @@ namespace {
       return OPS_DispBeamColumn3dID();
     }
   }
+  static void* OPS_PML() {
+	int ndm = OPS_GetNDM();
+	if (ndm == 2) {
+	  return OPS_PML2D();
+	}
+	else {
+	  return OPS_PML3D();
+	}
+  }
 
     static int setUpFunctions(void)
     {
@@ -633,6 +653,7 @@ namespace {
 	functionMap.insert(std::make_pair("elastomericBearingBoucWenMod", &OPS_ElastomericBearingBoucWenMod3d));
 	functionMap.insert(std::make_pair("AV3D4", &OPS_AV3D4QuadWithSensitivity));
 	functionMap.insert(std::make_pair("AC3D8", &OPS_AC3D8HexWithSensitivity));
+	functionMap.insert(std::make_pair("ASI3D8", &OPS_ASI3D8QuadWithSensitivity));
 	functionMap.insert(std::make_pair("CorotTruss2", &OPS_CorotTruss2));
 	functionMap.insert(std::make_pair("Truss2", &OPS_Truss2));
 	functionMap.insert(std::make_pair("QuadBeamEmbedContact", &OPS_QuadBeamEmbedContact));
@@ -677,6 +698,7 @@ namespace {
 	functionMap.insert(std::make_pair("TFP", &OPS_TFP_Bearing));
 	functionMap.insert(std::make_pair("FPBearingPTV", &OPS_FPBearingPTV));
 	functionMap.insert(std::make_pair("TripleFrictionPendulum", &OPS_TripleFrictionPendulum));
+	functionMap.insert(std::make_pair("TripleFrictionPendulumX", &OPS_TripleFrictionPendulumX));
 	functionMap.insert(std::make_pair("HDR", &OPS_HDR));
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
@@ -684,6 +706,7 @@ namespace {
 	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM_3D));
 	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));    
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
@@ -754,6 +777,11 @@ namespace {
 	functionMap.insert(std::make_pair("InertiaTruss", &OPS_InertiaTrussElement));
 	functionMap.insert(std::make_pair("ASDAbsorbingBoundary2D", &OPS_ASDAbsorbingBoundary2D));
 	functionMap.insert(std::make_pair("ASDAbsorbingBoundary3D", &OPS_ASDAbsorbingBoundary3D));
+	functionMap.insert(std::make_pair("PML", &OPS_PML));
+	functionMap.insert(std::make_pair("PML2D_3", &OPS_PML2D_3));
+	functionMap.insert(std::make_pair("PML2D_5", &OPS_PML2D_5));
+	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
+	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
 	return 0;
     }
 }
@@ -870,7 +898,8 @@ int OPS_doBlock2D()
 	cArg = 7;
 
 	
-    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0) {
+    } else if (strcmp(type, "ShellNLDKGQ") == 0 || strcmp(type, "shellNLDKGQ") == 0 ||
+	       strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
 	if (OPS_GetNumRemainingInputArgs() < 1) {
 	    opserr<<"WARNING: want - secTag\n";
 	    return -1;
@@ -1109,6 +1138,25 @@ int OPS_doBlock2D()
 		int nd3 = nodeTags(2) + idata[2];
 		int nd4 = nodeTags(3) + idata[2];
 		theEle = new ShellNLDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);
+
+	    } else if (strcmp(type, "ShellDKGQ") == 0 || strcmp(type, "shellDKGQ") == 0) {
+
+		if (numEleNodes != 4) {
+		    opserr<<"WARNING ShellDKGQ element only needs four nodes\n";
+		    return -1;
+		}
+		SectionForceDeformation *sec = OPS_getSectionForceDeformation(secTag);
+
+		if (sec == 0) {
+		    opserr << "WARNING:  section " << secTag << " not found\n";
+		    return -1;
+		}
+
+		int nd1 = nodeTags(0) + idata[2];
+		int nd2 = nodeTags(1) + idata[2];
+		int nd3 = nodeTags(2) + idata[2];
+		int nd4 = nodeTags(3) + idata[2];
+		theEle = new ShellDKGQ(eleID,nd1,nd2,nd3,nd4,*sec);		
 
 		
 			
