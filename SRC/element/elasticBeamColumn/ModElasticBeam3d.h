@@ -26,11 +26,11 @@
 // Written: fmk 11/95
 // Revised:
 //
-// Purpose: This file contains the class definition for ElasticBeam3d.
-// ElasticBeam3d is a plane frame member.
+// Purpose: This file contains the class definition for ModElasticBeam3d.
+// ModElasticBeam3d is a plane frame member.
 
-#ifndef ElasticBeam3d_h
-#define ElasticBeam3d_h
+#ifndef ModElasticBeam3d_h
+#define ModElasticBeam3d_h
 
 #include <Element.h>
 #include <Node.h>
@@ -45,25 +45,25 @@ class Response;
 class Renderer;
 class SectionForceDeformation;
 
-class ElasticBeam3d : public Element
+class ModElasticBeam3d : public Element
 {
   public:
-    ElasticBeam3d();        
-    ElasticBeam3d(int tag, double A, double E, double G, 
+    ModElasticBeam3d();        
+    ModElasticBeam3d(int tag, double A, double E, double G, 
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,
           double rho = 0.0, int cMass = 0,
 		  int releasez = 0, int releasey = 0,
 		      Damping *theDamping = 0);
 
-    ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
+    ModElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
 		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
 		  int releasez = 0, int releasey = 0,
 		  Damping *theDamping = 0);
 
-    ~ElasticBeam3d();
+    ~ModElasticBeam3d();
 
-    const char *getClassType(void) const {return "ElasticBeam3d";};
+    const char *getClassType(void) const {return "ModElasticBeam3d";};
 
     int getNumExternalNodes(void) const;
     const ID &getExternalNodes(void);
