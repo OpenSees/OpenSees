@@ -272,6 +272,7 @@
 #include "componentElement/ComponentElement2d.h"
 #include "componentElement/ComponentElement3d.h"
 #include "elasticBeamColumn/ModElasticBeam2d.h"			//SAJalali
+#include "elasticBeamColumn/ModElasticBeam3d.h"
 #include "elasticBeamColumn/ElasticTimoshenkoBeam2d.h"
 #include "elasticBeamColumn/ElasticTimoshenkoBeam3d.h"
 #include "forceBeamColumn/ForceBeamColumn2d.h"
@@ -783,6 +784,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 	  //SAJalali
 	case ELE_TAG_ModElasticBeam2d:
 		return new ModElasticBeam2d();
+
+	case ELE_TAG_ModElasticBeam3d:
+		return new ModElasticBeam3d();
 
 	case ELE_TAG_ElasticBeam3d:
       return new ElasticBeam3d();
