@@ -40,7 +40,6 @@
 class Channel;
 class Information;
 class CrdTransf;
-class Damping;
 class Response;
 class Renderer;
 class SectionForceDeformation;

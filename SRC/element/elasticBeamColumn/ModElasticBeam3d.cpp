@@ -38,7 +38,6 @@
 #include <FEM_ObjectBroker.h>
 
 #include <CrdTransf.h>
-#include <Damping.h>
 #include <Information.h>
 #include <Parameter.h>
 #include <ElementResponse.h>
