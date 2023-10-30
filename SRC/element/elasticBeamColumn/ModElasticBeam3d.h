@@ -47,15 +47,11 @@ class SectionForceDeformation;
 class ModElasticBeam3d : public Element
 {
   public:
-    ModElasticBeam3d();        
+    ModElasticBeam3d();
     ModElasticBeam3d(int tag, double A, double E, double G, 
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,
           double rho = 0.0, int cMass = 0);
-
-    ModElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
-		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0);
-
     ~ModElasticBeam3d();
 
     const char *getClassType(void) const {return "ModElasticBeam3d";};
