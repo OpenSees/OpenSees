@@ -47,7 +47,10 @@ class ModElasticBeam3d : public Element {
 public:
   ModElasticBeam3d();
   ModElasticBeam3d(int tag, double A, double E, double G, double Jx, double Iy,
-                   double Iz, int Nd1, int Nd2, CrdTransf &theTransf,
+                   double Iz,
+				   double k11y, double k33y, double k44y,
+				   double k11z, double k33z, double k44z,
+                   int Nd1, int Nd2, CrdTransf &theTransf,
                    double rho = 0.0, int cMass = 0);
   ~ModElasticBeam3d();
 
@@ -90,7 +93,7 @@ public:
   int updateParameter(int parameterID, Information &info);
 
 private:
-  double A, E, G, Jx, Iy, Iz;
+  double A, E, G, Jx, Iy, Iz, K11y, K33y, K44y, K11z, K33z, K44z;
 
   double rho;
   int cMass;
