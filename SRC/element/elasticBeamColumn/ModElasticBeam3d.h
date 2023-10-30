@@ -52,12 +52,10 @@ class ModElasticBeam3d : public Element
     ModElasticBeam3d(int tag, double A, double E, double G, 
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,
-          double rho = 0.0, int cMass = 0,
-		  Damping *theDamping = 0);
+          double rho = 0.0, int cMass = 0);
 
     ModElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
-		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
-		  Damping *theDamping = 0);
+		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0);
 
     ~ModElasticBeam3d();
 
@@ -69,7 +67,6 @@ class ModElasticBeam3d : public Element
 
     int getNumDOF(void);
     void setDomain(Domain *theDomain);
-    int setDamping(Domain *theDomain, Damping *theDamping);
     
     int commitState(void);
     int revertToLastCommit(void);        
@@ -85,7 +82,6 @@ class ModElasticBeam3d : public Element
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     const Vector &getResistingForce(void);
-    const Vector &getDampingForce(void);
     const Vector &getResistingForceIncInertia(void);            
     
     int sendSelf(int commitTag, Channel &theChannel);
@@ -125,7 +121,6 @@ class ModElasticBeam3d : public Element
 
     CrdTransf *theCoordTransf;
 
-    Damping *theDamping;
 };
 
 #endif
