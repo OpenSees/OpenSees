@@ -53,12 +53,10 @@ class ModElasticBeam3d : public Element
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,
           double rho = 0.0, int cMass = 0,
-		  int releasez = 0, int releasey = 0,
-		      Damping *theDamping = 0);
+		  Damping *theDamping = 0);
 
     ModElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
 		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
-		  int releasez = 0, int releasey = 0,
 		  Damping *theDamping = 0);
 
     ~ModElasticBeam3d();
@@ -108,9 +106,6 @@ class ModElasticBeam3d : public Element
     double rho;
     int cMass;
 
-    int releasez; // moment release for bending about z-axis 0=none, 1=I, 2=J, 3=I,J
-    int releasey; // same for y-axis
-    
     static Matrix K;
     static Vector P;
     Vector Q;

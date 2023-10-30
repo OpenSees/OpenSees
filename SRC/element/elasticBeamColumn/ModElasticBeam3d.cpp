@@ -64,8 +64,6 @@ void* OPS_ModElasticBeam3d(void)
     int dampingTag = 0;
     Damping *theDamping = 0;
     int cMass = 0;
-    int releasez = 0;
-    int releasey = 0;
     int numData = 1;
     int numOptionalArgs = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
@@ -81,26 +79,6 @@ void* OPS_ModElasticBeam3d(void)
 	} else if (theType == "-cMass") {
 	  numOptionalArgs++;
 	  cMass = 1;
-	} else if (theType == "-releasez") {
-	  numOptionalArgs++;	  
-	  if (OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;	    
-	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
-	      opserr << "WARNING: failed to get releasez";
-	      return 0;
-	    }
-	    numOptionalArgs++;	    
-	  }
-	} else if (theType == "-releasey") {
-	  numOptionalArgs++;	  
-	  if (OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;
-	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
-	      opserr << "WARNING: failed to get releasey";
-	      return 0;
-	    }
-	    numOptionalArgs++;
-	  }
 	} else if(theType == "-damp"){
 	  numOptionalArgs++;	  
 	  if(OPS_GetNumRemainingInputArgs() > 0) {
@@ -170,10 +148,10 @@ void* OPS_ModElasticBeam3d(void)
     }
     
     if (theSection != 0) {
-      return new ModElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
+      return new ModElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,theDamping); 
     } else {
 	return new ModElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
-				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping);
+				 data[5],iData[1],iData[2],*theTrans, mass,cMass,theDamping);
     }
 }
 
@@ -184,8 +162,6 @@ void *OPS_ModElasticBeam3d(const ID &info) {
     int transfTag;
     double mass = 0.0;
     int cMass = 0;
-    int releasez = 0;
-    int releasey = 0;
     int numData = 1;
 
     int ndm = OPS_GetNDM();
@@ -246,20 +222,6 @@ void *OPS_ModElasticBeam3d(const ID &info) {
                 }
             } else if (theType == "-cMass") {
                 cMass = 1;
-            } else if (theType == "-releasez") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetIntInput(&numData, &releasez) < 0) {
-                        opserr << "WARNING: failed to get releasez";
-                        return 0;
-                    }
-                }
-            } else if (theType == "-releasey") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetIntInput(&numData, &releasey) < 0) {
-                        opserr << "WARNING: failed to get releasey";
-                        return 0;
-                    }
-                }
             }
         }
     }
@@ -272,7 +234,7 @@ void *OPS_ModElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(11);
+        mdata.resize(9);
         mdata(0) = data[0];
         mdata(1) = data[1];
         mdata(2) = data[2];
@@ -281,9 +243,7 @@ void *OPS_ModElasticBeam3d(const ID &info) {
         mdata(5) = data[5];
         mdata(6) = mass;
         mdata(7) = cMass;
-        mdata(8) = releasez;
-        mdata(9) = releasey;
-        mdata(10) = transfTag;
+        mdata(8) = transfTag;
         return &meshdata;
     }
 
@@ -296,7 +256,7 @@ void *OPS_ModElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 11) return 0;
+        if (mdata.Size() < 9) return 0;
         data[0] = mdata(0);
         data[1] = mdata(1);
         data[2] = mdata(2);
@@ -305,9 +265,7 @@ void *OPS_ModElasticBeam3d(const ID &info) {
         data[5] = mdata(5);
         mass = mdata(6);
         cMass = (int)mdata(7);
-        releasez = (int)mdata(8);
-        releasey = (int)mdata(9);
-        transfTag = (int)mdata(10);
+        transfTag = (int)mdata(8);
 
         iData[0] = info(2);
         iData[1] = info(3);
@@ -323,14 +281,12 @@ void *OPS_ModElasticBeam3d(const ID &info) {
 
     return new ModElasticBeam3d(iData[0], data[0], data[1], data[2],
                              data[3], data[4], data[5], iData[1],
-                             iData[2], *theTrans, mass, cMass,
-                             releasez, releasey);
+                             iData[2], *theTrans, mass, cMass);
 }
 
 ModElasticBeam3d::ModElasticBeam3d()
   :Element(0,ELE_TAG_ModElasticBeam3d), 
    A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
-   releasez(0), releasey(0),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0),
    theDamping(0)
@@ -355,11 +311,9 @@ ModElasticBeam3d::ModElasticBeam3d()
 
 ModElasticBeam3d::ModElasticBeam3d(int tag, double a, double e, double g, 
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
-			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
-			     Damping *damping)
+			     CrdTransf &coordTransf, double r, int cm, Damping *damping)
   :Element(tag,ELE_TAG_ModElasticBeam3d), 
    A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
-   releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
@@ -373,12 +327,6 @@ ModElasticBeam3d::ModElasticBeam3d(int tag, double a, double e, double g,
     exit(-1);
   }
 
-  // Make no release if input not 0, 1, 2, or 3
-  if (releasez < 0 || releasez > 3)
-    releasez = 0;
-  if (releasey < 0 || releasey > 3)
-    releasey = 0;  
-  
   if (damping)
   {
     theDamping =(*damping).getCopy();
@@ -408,11 +356,10 @@ ModElasticBeam3d::ModElasticBeam3d(int tag, double a, double e, double g,
 }
 
 ModElasticBeam3d::ModElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
-			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
-			     Damping *damping)
+			     CrdTransf &coordTransf, double r, int cm, Damping *damping)
   :Element(tag,ELE_TAG_ModElasticBeam3d), 
       A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0),
-   rho(r), cMass(cm), releasez(relz), releasey(rely),
+   rho(r), cMass(cm),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
@@ -477,12 +424,6 @@ ModElasticBeam3d::ModElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeform
     exit(-1);
   }
 
-  // Make no release if input not 0, 1, 2, or 3
-  if (releasez < 0 || releasez > 3)
-    releasez = 0;
-  if (releasey < 0 || releasey > 3)
-    releasey = 0;
-  
   if (damping)
   {
     theDamping =(*damping).getCopy();
@@ -674,55 +615,20 @@ ModElasticBeam3d::getTangentStiff(void)
   kb.Zero();
   kb(0,0) = EAoverL;
   kb(5,5) = GJoverL;
-  if (releasez == 0) {
-    double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
-    double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-    q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
-    q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
-    kb(1,1) = kb(2,2) = EIzoverL4;
-    kb(2,1) = kb(1,2) = EIzoverL2;
-  }
-  if (releasez == 1) { // release I
-    q(1) = 0.0;
-    double EIoverL3 = 3.0*Iz*EoverL;
-    q(2) = EIoverL3*v(2);
-    kb(2,2) = EIoverL3;
-  }
-  if (releasez == 2) { // release J
-    q(2) = 0.0;
-    double EIoverL3 = 3.0*Iz*EoverL;
-    q(1) = EIoverL3*v(1);
-    kb(1,1) = EIoverL3;
-  }
-  if (releasez == 3) { // release I and J
-    q(1) = 0.0;
-    q(2) = 0.0;
-  }
 
-  if (releasey == 0) {
-    double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
-    double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
-    q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
-    kb(3,3) = kb(4,4) = EIyoverL4;
-    kb(4,3) = kb(3,4) = EIyoverL2;
-  }
-  if (releasey == 1) { // release I
-    q(3) = 0.0;
-    double EIoverL3 = 3.0*Iy*EoverL;
-    q(4) = EIoverL3*v(4);
-    kb(4,4) = EIoverL3;
-  }
-  if (releasey == 2) { // release J
-    q(4) = 0.0;
-    double EIoverL3 = 3.0*Iy*EoverL;
-    q(3) = EIoverL3*v(3);
-    kb(3,3) = EIoverL3;
-  }
-  if (releasey == 3) { // release I and J
-    q(3) = 0.0;
-    q(4) = 0.0;
-  }
+  double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
+  double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+  q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
+  q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
+  kb(1,1) = kb(2,2) = EIzoverL4;
+  kb(2,1) = kb(1,2) = EIzoverL2;
+
+  double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
+  double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+  q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
+  q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
+  kb(3,3) = kb(4,4) = EIyoverL4;
+  kb(4,3) = kb(3,4) = EIyoverL2;
   
   q(0) += q0[0];
   q(1) += q0[1];
@@ -750,31 +656,16 @@ ModElasticBeam3d::getInitialStiff(void)
   kb.Zero();
   kb(0,0) = EAoverL;
   kb(5,5) = GJoverL;
-  if (releasez == 0) {
-    double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
-    double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-    kb(1,1) = kb(2,2) = EIzoverL4;
-    kb(2,1) = kb(1,2) = EIzoverL2;
-  }
-  if (releasez == 1) { // release I
-    kb(2,2) = 3.0*Iz*EoverL;
-  }
-  if (releasez == 2) { // release J
-    kb(1,1) = 3.0*Iz*EoverL;
-  }
 
-  if (releasey == 0) {
-    double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
-    double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    kb(3,3) = kb(4,4) = EIyoverL4;
-    kb(4,3) = kb(3,4) = EIyoverL2;
-  }
-  if (releasey == 1) { // release I
-    kb(4,4) = 3.0*Iy*EoverL;
-  }
-  if (releasey == 2) { // release J
-    kb(3,3) = 3.0*Iy*EoverL;
-  }
+  double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
+  double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+  kb(1,1) = kb(2,2) = EIzoverL4;
+  kb(2,1) = kb(1,2) = EIzoverL2;
+
+  double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
+  double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+  kb(3,3) = kb(4,4) = EIyoverL4;
+  kb(4,3) = kb(3,4) = EIyoverL2;
 
   if(theDamping) kb *= theDamping->getStiffnessMultiplier();  
 
@@ -888,27 +779,10 @@ ModElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    if (releasez == 0) {
-      q0[1] -= Mz;
-      q0[2] += Mz;
-    }
-    if (releasez == 1) {
-      q0[2] += wy*L*L/8;
-    }
-    if (releasez == 2) {
-      q0[1] -= wy*L*L/8;
-    }
-    
-    if (releasey == 0) {
-      q0[3] += My;
-      q0[4] -= My;
-    }
-    if (releasey == 1) {
-      q0[4] -= wz*L*L/8;
-    }
-    if (releasey == 2) {
-      q0[3] += wz*L*L/8;
-    }
+    q0[1] -= Mz;
+    q0[2] += Mz;
+    q0[3] += My;
+    q0[4] -= My;
     
   }
   else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
@@ -1103,43 +977,15 @@ ModElasticBeam3d::getResistingForce()
   q(0) = EAoverL*v(0);
   q(5) = GJoverL*v(5);
 
-  if (releasez == 0) {
-    double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
-    double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-    q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
-    q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
-  }
-  if (releasez == 1) {
-    q(1) = 0.0;
-    q(2) = 3.0*Iz*EoverL*v(2);
-  }
-  if (releasez == 2) {
-    q(1) = 3.0*Iz*EoverL*v(1);
-    q(2) = 0.0;
-  }
-  if (releasez == 3) {
-    q(1) = 0.0;
-    q(2) = 0.0;
-  }
+  double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
+  double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+  q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
+  q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
   
-  if (releasey == 0) {
-    double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
-    double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
-    q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
-  }
-  if (releasey == 1) {
-    q(3) = 0.0;
-    q(4) = 3.0*Iy*EoverL*v(4);
-  }
-  if (releasey == 2) {
-    q(3) = 3.0*Iy*EoverL*v(3);
-    q(4) = 0.0;
-  }
-  if (releasey == 3) {
-    q(3) = 0.0;
-    q(4) = 0.0;
-  }  
+  double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
+  double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+  q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
+  q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
   
   q(0) += q0[0];
   q(1) += q0[1];
@@ -1204,20 +1050,18 @@ ModElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
     data(14) = betaK;
     data(15) = betaK0;
     data(16) = betaKc;
-    data(17) = releasez;
-    data(18) = releasey;    
 
-    data(19) = 0;
-    data(20) = 0;
+    data(17) = 0;
+    data(18) = 0;
     if (theDamping) {
-      data(19) = theDamping->getClassTag();
+      data(17) = theDamping->getClassTag();
       int dbTag = theDamping->getDbTag();
       if (dbTag == 0) {
         dbTag = theChannel.getDbTag();
         if (dbTag != 0)
 	        theDamping->setDbTag(dbTag);
 	    }
-      data(20) = dbTag;
+      data(18) = dbTag;
     }
     
     // Send the data vector
@@ -1274,8 +1118,6 @@ ModElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
   betaK = data(14);
   betaK0 = data(15);
   betaKc = data(16);
-  releasez = (int)data(17);
-  releasey = (int)data(18);
   
   // Check if the CoordTransf is null; if so, get a new one
   int crdTag = (int)data(11);
@@ -1307,7 +1149,7 @@ ModElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
   }
 
   // Check if the Damping is null; if so, get a new one
-  int dmpTag = (int)data(19);
+  int dmpTag = (int)data(17);
   if (dmpTag) {
     if (theDamping == 0) {
       theDamping = theBroker.getNewDamping(dmpTag);
@@ -1329,7 +1171,7 @@ ModElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
     }
   
     // Now, receive the Damping
-    theDamping->setDbTag((int)data(20));
+    theDamping->setDbTag((int)data(18));
     res += theDamping->recvSelf(cTag, theChannel, theBroker);
     if (res < 0) {
       opserr << "ModElasticBeam3d::recvSelf -- could not receive Damping\n";
@@ -1440,8 +1282,6 @@ ModElasticBeam3d::Print(OPS_Stream &s, int flag)
 		s << "\tConnected Nodes: " << connectedExternalNodes;
 		s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
 		s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
-		s << "\trelease about z:  " << releasez << endln;
-		s << "\trelease about y:  " << releasey << endln;		
 		double N, Mz1, Mz2, Vy, My1, My2, Vz, T;
 		double L = theCoordTransf->getInitialLength();
 		double oneOverL = 1.0 / L;
@@ -1473,8 +1313,6 @@ ModElasticBeam3d::Print(OPS_Stream &s, int flag)
 		s << "\"Iy\": " << Iy << ", ";
 		s << "\"Iz\": " << Iz << ", ";
 		s << "\"massperlength\": " << rho << ", ";
-		s << "\"releasez\": "<< releasez << ", ";
-		s << "\"releasey\": "<< releasey << ", ";		
 		s << "\"crdTransformation\": \"" << theCoordTransf->getTag() << "\"}";
 	}
 }
@@ -1755,23 +1593,11 @@ ModElasticBeam3d::getResponse (int responseID, Information &eleInfo)
     kb.Zero();
     kb(0,0) = E*A/L;
     kb(5,5) = G*Jx/L;
-    if (releasez == 0) {
-      kb(1,1) = kb(2,2) = 4*E*Iz/L;
-      kb(1,2) = kb(2,1) = 2*E*Iz/L;
-    }
-    if (releasez == 1)
-      kb(2,2) = 3*E*Iz/L;
-    if (releasez == 2)
-      kb(1,1) = 3*E*Iz/L;
+    kb(1,1) = kb(2,2) = 4*E*Iz/L;
+    kb(1,2) = kb(2,1) = 2*E*Iz/L;
     
-    if (releasey == 0) {
-      kb(3,3) = kb(4,4) = 4*E*Iy/L;
-      kb(3,4) = kb(4,3) = 2*E*Iy/L;
-    }
-    if (releasey == 1)
-      kb(4,4) = 3*E*Iy/L;
-    if (releasey == 2)
-      kb(3,3) = 3*E*Iy/L;        
+    kb(3,3) = kb(4,4) = 4*E*Iy/L;
+    kb(3,4) = kb(4,3) = 2*E*Iy/L;
     return eleInfo.setMatrix(kb);
     
   case 21: // global damping forces
@@ -1859,15 +1685,6 @@ ModElasticBeam3d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(Jx);
     return param.addObject(6, this);
   }
-  // moment release
-  if (strcmp(argv[0],"releasez") == 0) {
-    param.setValue(releasez);
-    return param.addObject(7, this);
-  }
-  if (strcmp(argv[0],"releasey") == 0) {
-    param.setValue(releasey);
-    return param.addObject(8, this);
-  }  
   
   return -1;
 }
@@ -1896,16 +1713,6 @@ ModElasticBeam3d::updateParameter (int parameterID, Information &info)
 	case 6:
 		Jx = info.theDouble;
 		return 0;
-	case 7:
-	  releasez = (int)info.theDouble;
-	  if (releasez < 0 || releasez > 3)
-	    releasez = 0;
-	  return 0;
-	case 8:
-	  releasey = (int)info.theDouble;
-	  if (releasey < 0 || releasey > 3)
-	    releasey = 0;
-	  return 0;			  
 	default:
 		return -1;
 	}
