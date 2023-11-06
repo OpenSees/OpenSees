@@ -40,6 +40,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <cfloat>
+#include <MaterialResponse.h>
 
 #include <OPS_Globals.h>
 
@@ -1975,6 +1976,37 @@ Bilin::Print(OPS_Stream &s, int flag)
         s << "\"PDNeg\": " << PDNeg << ", ";
         s << "\"nFactor\": " << nFactor << "}";
     }
+}
+
+Response *Bilin::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
+{
+  // See if the response is one of the defaults
+  Response *theResponse = UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+  if (theResponse != 0)
+    return theResponse;
+
+  if (strcmp(argv[0], "RSE") == 0)
+  {
+    theOutput.tag("ResponseType", "RSE");
+    theResponse = new MaterialResponse(this, 101, CRSE);
+  }
+
+  theOutput.endTag();
+  return theResponse;
+}
+
+int Bilin::getResponse(int responseID, Information &matInformation)
+{
+  if (responseID == 101)
+  {
+    matInformation.setDouble(CRSE);
+  }
+  else
+  {
+    return UniaxialMaterial::getResponse(responseID, matInformation);
+  }
+  return 0;
 }
 
 //my functions
