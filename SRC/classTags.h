@@ -101,6 +101,7 @@
 #define TSERIES_TAG_PeerMotion       11
 #define TSERIES_TAG_PeerNGAMotion       12
 #define TSERIES_TAG_PathTimeSeriesThermal  13  //L.Jiang [ SIF ]
+#define TSERIES_TAG_RampSeries  14  //CDM
 
 #define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2
@@ -632,7 +633,7 @@
 #define ELE_TAG_ZeroLengthContactNTS2D	24
 #define ELE_TAG_ZeroLengthInterface2D	25
 #define ELE_TAG_CoupledZeroLength	26
-#define ELE_TAG_BiaxialZeroLength	260
+#define ELE_TAG_BiaxialZeroLength	2626
 #define ELE_TAG_ZeroLengthRocking       27
 #define ELE_TAG_NLBeamColumn2d	        28
 #define ELE_TAG_NLBeamColumn3d	        29
@@ -849,8 +850,12 @@
 #define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
 #define ELE_TAG_E_SFI        			257 // C. N. Lopez
 #define ELE_TAG_TripleFrictionPendulumX               258
+#define ELE_TAG_E_SFI_MVLEM_3D	          259259 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
-
+#define ELE_TAG_PML2D_3                   259
+#define ELE_TAG_PML2D_5                   260
+#define ELE_TAG_PML2D_12                  261
+#define ELE_TAG_PML2DVISCOUS              262
 
 
 #define FRN_TAG_Coulomb            1

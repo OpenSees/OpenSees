@@ -144,6 +144,7 @@
 #include "Hertzdamp.h"
 #include "JankowskiImpact.h"
 #include "ViscoelasticGap.h"
+#include "Pinching4Material.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -296,6 +297,11 @@
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
+#include "PML/PML2D_3.h"
+#include "PML/PML2D_5.h"
+#include "PML/PML2D_12.h"
+#include "PML/PML2DVISCOUS.h"
+
 
 #include "UP-ucsd/Nine_Four_Node_QuadUP.h"
 #include "UP-ucsd/BrickUP.h"
@@ -331,6 +337,7 @@
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
 #include "mvlem/MVLEM_3D.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM_3D.h"	// Kristijan Kolozvari
+#include "mvlem/E_SFI_MVLEM_3D.h"	// Kristijan Kolozvari
 #include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
@@ -880,6 +887,18 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 	case ELE_TAG_PML3D:
 	  return new PML3D();
 
+	case ELE_TAG_PML2D_3:
+	  return new PML2D_3(); // Amin Pakzad
+	
+	case ELE_TAG_PML2D_5:
+	  return new PML2D_5(); // Amin Pakzad
+
+	case ELE_TAG_PML2D_12:
+	  return new PML2D_12(); // Amin Pakzad
+
+	case ELE_TAG_PML2DVISCOUS:
+	  return new PML2DVISCOUS(); // Amin Pakzad
+	
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
       
@@ -945,6 +964,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_SFI_MVLEM_3D:		// Kristijan Kolozvari
 		return new SFI_MVLEM_3D();	// Kristijan Kolozvari
+
+	case ELE_TAG_E_SFI_MVLEM_3D:		// Kristijan Kolozvari
+		return new E_SFI_MVLEM_3D();	// Kristijan Kolozvari
 		
 	case ELE_TAG_E_SFI:			// C. N. Lopez
 		return new E_SFI();		// C. N. Lopez	
@@ -1575,6 +1597,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_GMG_CyclicReinforcedConcrete:
 		return new GMG_CyclicReinforcedConcrete();
+
+	case MAT_TAG_Pinching4:
+		return new Pinching4Material();
 
 
 	default:

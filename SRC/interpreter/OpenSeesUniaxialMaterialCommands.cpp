@@ -270,6 +270,8 @@ void *OPS_Trilinwp(void);
 void *OPS_Trilinwp2(void);
 void *OPS_Masonryt(void);
 
+void* OPS_Ratchet(void); // Yi Xiao
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -613,6 +615,7 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Masonryt", &OPS_Masonryt));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
+  uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
   
   return 0;
 }
@@ -894,6 +897,7 @@ int OPS_getDampTangent() {
 void* OPS_RotationShearCurve();
 void* OPS_ThreePointCurve();
 void* OPS_ShearCurve();
+void* OPS_AxialCurve();
 
 int OPS_LimitCurve() {
   // Make sure there is a minimum number of arguments
@@ -912,7 +916,15 @@ int OPS_LimitCurve() {
   LimitCurve* theCurve = 0;
 
   if (strcmp(type, "Axial") == 0) {
-    opserr << "WARNING to be implemented ...\n";
+    // opserr << "WARNING to be implemented ...\n";
+    void* curve = OPS_AxialCurve();
+    if (curve != 0) {
+      theCurve = (LimitCurve*)curve;
+    } else {
+      return -1;
+    }
+    return -1;
+
     return -1;
 
   } else if (strcmp(type, "RotationShearCurve") == 0) {
@@ -924,7 +936,7 @@ int OPS_LimitCurve() {
     }
 
   } else if (strcmp(type, "ThreePoint") == 0) {
-    void* curve = OPS_RotationShearCurve();
+    void* curve = OPS_ThreePointCurve();
     if (curve != 0) {
       theCurve = (LimitCurve*)curve;
     } else {

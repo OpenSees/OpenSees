@@ -200,6 +200,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\DirectIntegrationAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\DomainDecompositionAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\PFEMAnalysis.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\SDFAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\StaticAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\TransientAnalysis.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\analysis\VariableTimeStepDirectIntegrationAnalysis.cpp" />
