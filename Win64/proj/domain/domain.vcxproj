@@ -28,22 +28,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -220,6 +220,7 @@
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomParamIter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomSP_Iter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\PathTimeSeriesThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\SimpsonTimeSeriesIntegrator.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\subdomain\Subdomain.cpp" />
@@ -321,6 +322,7 @@
     <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomParamIter.h" />
     <ClInclude Include="..\..\..\SRC\domain\domain\single\SingleDomSP_Iter.h" />
     <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRM.h" />
+    <ClInclude Include="..\..\..\SRC\domain\pattern\MPAccSeries.h" />
     <ClInclude Include="..\..\..\SRC\domain\pattern\PathTimeSeriesThermal.h" />
     <ClInclude Include="..\..\..\SRC\domain\pattern\SimpsonTimeSeriesIntegrator.h" />
     <ClInclude Include="..\..\..\SRC\domain\subdomain\Subdomain.h" />
