@@ -91,3 +91,4 @@ build
 bin
 __pycache__
 *.dat
+.python-version
