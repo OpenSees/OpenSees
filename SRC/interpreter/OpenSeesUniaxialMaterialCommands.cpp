@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <StrengthDegradation.h>
 #include <UniaxialMaterial.h>
 #include <UnloadingRule.h>
+#include <PipeMaterial.h>
 #include <elementAPI.h>
 
 #include <map>
@@ -272,6 +273,7 @@ void *OPS_Trilinwp2(void);
 void *OPS_Masonryt(void);
 
 void* OPS_Ratchet(void); // Yi Xiao
+void *OPS_PipeMaterial();
 
 namespace {
 
@@ -619,6 +621,7 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
+  uniaxialMaterialsMap.insert(std::make_pair("PipeMaterial", &OPS_PipeMaterial));
   
   return 0;
 }
