@@ -57,6 +57,7 @@
 //#include <FiberSectionGJThermal.h>
 #include <MembranePlateFiberSectionThermal.h>
 #include <LayeredShellFiberSectionThermal.h>
+#include <PipeSection.h>
 
 void* OPS_ElasticSection2d();
 void* OPS_ElasticSection3d();
@@ -101,6 +102,7 @@ void* OPS_RCTunnelSection();
 void* OPS_UniaxialSection();
 void* OPS_RCTBeamSection2d();
 void* OPS_RCTBeamSectionUniMat2d();
+void* OPS_PipeSection();
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
@@ -333,6 +335,7 @@ namespace {
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
 	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
+	functionMap.insert(std::make_pair("Pipe", &OPS_PipeSection));
 
 	return 0;
     }
