@@ -27,14 +27,11 @@
 #ifndef DruckerPrager_PF_H
 #define DruckerPrager_PF_H
 
-#include "../../../ltensor/LTensor.h"
 #include "../PlasticFlowBase.h"
-
-// Defines indices i,j,k,l,m,n,p,q,r,s and the kronecker_delta.
 #include "../ASDPlasticMaterialGlobals.h"
-#include "../EvolvingVariable.h"
-#include <cmath>
 
+#include <cmath>
+#include <typeinfo>
 
 
 template<class AlphaHardeningType, class KHardeningType>
@@ -42,267 +39,42 @@ class DruckerPrager_PF : public PlasticFlowBase<DruckerPrager_PF<AlphaHardeningT
 {
 public:
 
-    typedef EvolvingVariable<VoigtVector, AlphaHardeningType> AlphaType;
-    typedef EvolvingVariable<double, KHardeningType> KType;
+    static constexpr const char* NAME = "DruckerPrager_PF";
 
 
-    // PlasticFlowBase<DruckerPrager_PF<HardeningType>>::PlasticFlowBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-    DruckerPrager_PF( AlphaType &alpha_in, KType &k_in):
-        PlasticFlowBase<DruckerPrager_PF<AlphaHardeningType , KHardeningType >>::PlasticFlowBase(), // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
-                alpha_(alpha_in), k_(k_in)
+    DruckerPrager_PF( ):
+        PlasticFlowBase<DruckerPrager_PF<AlphaHardeningType, KHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
+                { }
+
+    PLASTIC_FLOW_DIRECTION
     {
-        // std::cout << "k_in = " << &k_in << std::endl;
-    }
+        double p = -sigma.meanStress();
+        auto s = sigma.deviator();
+        
+        auto alpha = GET_TRIAL_INTERNAL_VARIABLE(AlphaHardeningType);
+        auto k = GET_TRIAL_INTERNAL_VARIABLE(KHardeningType);
 
+        auto r = s / p;
 
-    const VoigtVector& operator()(const VoigtVector &depsilon, const VoigtVector& sigma)
-    {
-        using namespace ASDPlasticMaterialGlobals;
-        //Identical to derivative of DruckerPrager_YF wrt sigma (a.k.a nij)
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        const double &k = k_.getVariableConstReference();
+        double den = (SQRT_2_over_3 * k).value();
+        auto n = (r - alpha) / den;
+        double nr = n.dot(r);
+        result = n - nr * kronecker_delta() / 3;
 
-        // cout << "     --> PF alpha = " << alpha << endl;
-        // cout << "     --> PF k     = " << k << endl;
-
-
-        //Zero these tensors
-        s *= 0;
-        result *= 0;
-
-        double p;
-
-        sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-        p = -p;
-
-        // cout << "     --> PF p     = " << p << endl;
-        // cout << "     --> PF s     = " << s << endl;
-
-
-        double den = sqrt((s(i, j) - p * alpha(i, j)) * (s(i, j) - p * alpha(i, j)));
-        // cout << "     --> PF den     = " << den << endl;
-
-        result(i, j) =
-            (
-                (s(i, j) - p * alpha(i, j)) + alpha(m, n) * kronecker_delta(i, j) * (s(m, n) - p * alpha(m, n)) / 3.0
-            )
-            / den;
-        result(i, j) += SQRT_2_over_27 * k * kronecker_delta(i, j);
-
-        // VoigtVector bshit(3, 3, 0.0);
-        // bshit(i, j) = SQRT_2_over_27 * k * kronecker_delta(i, j);
-
-        // cout << "     --> PF result     = " << result << endl;
-        // cout << "     --> PF bshit     = " << bshit << endl;
         return result;
     }
 
-    VoigtMatrix const& dm_over_dsigma(VoigtVector const& sigma)
-    {
-        static VoigtVector s(3, 3, 0.0);
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        // const double &k = k_.getVariableConstReference();
-        double p = 0.0;
-        sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-        p = -p;
-        static VoigtVector s_minus_p_alpha(3, 3, 0.0);
-        s_minus_p_alpha(i, j) = s(i, j) - p * alpha(i, j);
-        double s_minus_p_alpha_square = s_minus_p_alpha(i, j) * s_minus_p_alpha(i, j) ;
-
-        // // ======================================================================
-        // //  Backup . LTensor does not accept this. So change to the naive for-loop.
-        // // ======================================================================
-        // dm__dsigma(i,j,m,n) =
-        //     (
-        //         (kronecker_delta(m,i)*kronecker_delta(n,j) - 1./3.0 * kronecker_delta(m,n) * kronecker_delta(i,j)
-        //             + 1./3.0 * kronecker_delta(m,n)*alpha(i,j) ) + 1./3.0 * alpha(p,q)*kronecker_delta(i,j) *
-        //         (kronecker_delta(m,p)*kronecker_delta(n,q) - 1.0/3.0*kronecker_delta(m,n)*kronecker_delta(p,q)
-        //             + 1./3.0 * kronecker_delta(m,n)*alpha(p,q) )
-        //     ) * pow(s_minus_p_alpha_square, -0.5)  -
-        //     (
-        //          (s(i,j)-p*alpha(i,j) + 1./3.0 *alpha(p,q) * kronecker_delta(i,j) * (s(p,q) - p*alpha(p,q))) *
-        //          (kronecker_delta(m,r)*kronecker_delta(n,s) - 1./3.0*kronecker_delta(m,n)*kronecker_delta(r,s)
-        //             +1./3.0 * kronecker_delta(m,n) * alpha(r,s)) *
-        //          (s(r,s)-p*alpha(r,s))
-        //     ) * pow(s_minus_p_alpha_square, -1.5);
-        // // ======================================================================
-        // =========================================
-        // The minimal failed example
-        // Possible reasons: i,j,m,n are free indices but ?...
-        // =========================================
-        // test(i,j,m,n)=kronecker_delta(i,m) * kronecker_delta(j,n) - 1.0/3.0 * kronecker_delta(i,j) * kronecker_delta(m,n) ;
-        // =========================================
-        // This also failed:
-        // test(i,j,m,n)=IdentityTensor4(i,m,j,n) - 1.0/3.0 * IdentityTensor4(i,j,m,n) ;
-        // =========================================
-
-
-        // =========================================
-        // the naive for-loop:
-        // =========================================
-        // pre-computation for the dummy indices.
-        double alpha_square = alpha(i, j) * alpha(i, j);
-        double alpha_volume = alpha(i, i);
-        double alpha_times_s = alpha(i, j) * s(i, j);
-        // =========================================
-
-        static VoigtMatrix dm__dsigma(3, 3, 3, 3, 0.0);
-        dm__dsigma *= 0;
-        // Four free indices
-        for (int ig = 0; ig < 3; ++ig)
-            for (int jg = 0; jg < 3; ++jg)
-                for (int mg = 0; mg < 3; ++mg)
-                    for (int ng = 0; ng < 3; ++ng)
-                    {
-                        dm__dsigma(ig, jg, mg, ng) =
-                            (
-                                (
-                                    kronecker_delta(mg, ig) * kronecker_delta(ng, jg)
-                                    - 1. / 3.0 * kronecker_delta(mg, ng) * kronecker_delta(ig, jg)
-                                    + 1. / 3.0 * kronecker_delta(mg, ng) * alpha(ig, jg)
-                                )
-                                +
-                                1. / 3.0 * kronecker_delta(ig, jg) *
-                                (
-                                    alpha(mg, ng)
-                                    - 1. / 3.0 * kronecker_delta(mg, ng) * alpha_volume
-                                    + 1. / 3.0 * kronecker_delta(mg, ng) * alpha_square
-                                )
-                            ) * pow(s_minus_p_alpha_square, -0.5)
-                            -
-                            (
-                                (
-                                    s_minus_p_alpha(ig, jg)
-                                    + 1. / 3.0  * kronecker_delta(ig, jg) *
-                                    (
-                                        alpha_times_s - p * alpha_square
-                                    )
-                                )
-                                *
-                                (
-                                    s_minus_p_alpha(mg, ng)
-                                    - 1. / 3.0 * kronecker_delta(mg, ng) * (-p * alpha_volume)
-                                    + 1. / 3.0 * kronecker_delta(mg, ng) * (alpha_times_s - p * alpha_square)
-                                )
-                            ) * pow(s_minus_p_alpha_square, -1.5);
-                    }
-
-
-        return dm__dsigma;
-    }
-
-
-
-    VoigtVector const& dm_over_dq_start_h_star(VoigtVector const& depsilon, VoigtVector const& pf_m, const VoigtVector& stress){
-        static VoigtVector s(3, 3, 0.0);
-        const VoigtVector &alpha = alpha_.getVariableConstReference();
-        // const double &_k_ = k_.getVariableConstReference();
-        double p=0;
-        stress.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-        p=-p;
-
-        static VoigtMatrix IdentityTensor4(3,3,3,3, 0); //optimize this to global later.
-        IdentityTensor4(i,j,k,l)=kronecker_delta(i, j)*kronecker_delta(k,l);
-        // (1) isotropic hardening part. 
-        static VoigtVector dm_dk(3,3,0.0);
-        dm_dk(i,j) = SQRT_2_over_27 * kronecker_delta(i, j) ; 
-
-        // (2) kinematic hardening part: dm_dalpha
-        static VoigtMatrix dm_dalpha(3,3,3,3,0.0);
-        static VoigtVector s_minus_p_alpha(3,3,0.0);
-        s_minus_p_alpha(i,j) = s(i,j) - p * alpha(i,j);
-        double s_minus_p_alpha_square = s_minus_p_alpha(i,j) * s_minus_p_alpha(i,j) ; 
-        double alpha_times_s_minus_p_alpha = s_minus_p_alpha(i,j) * alpha(i,j);
-        for (int ig = 0; ig < 3; ++ig)
-            for (int jg = 0; jg < 3; ++jg)
-                for (int kg = 0; kg < 3; ++kg)
-                    for (int lg = 0; lg < 3; ++lg){
-                        dm_dalpha(ig,jg,kg,lg) = 
-                            (
-                                - p * IdentityTensor4(kg,ig,lg,jg) 
-                                + 1./3. * kronecker_delta(ig, jg) *  s_minus_p_alpha(kg,lg)  
-                                - 1./3. * p * kronecker_delta(ig, jg) *  alpha(kg,lg) 
-                            ) * pow(s_minus_p_alpha_square,-0.5) 
-                            -
-                            (
-                                (s_minus_p_alpha(ig,jg) + 1./3.*kronecker_delta(ig,jg) * alpha_times_s_minus_p_alpha)
-                                *(- p *  s_minus_p_alpha(kg,lg) )
-                                * pow(s_minus_p_alpha_square,-1.5)
-                            );
-                        }
-
-        static VoigtVector ret(3,3,0.0);
-        ret(i,j) = dm_dalpha(i,j,m,n) * alpha_.getDerivative(depsilon, pf_m, stress)(m,n);
-        ret(i,j) += dm_dk(i,j) * k_.getDerivative(depsilon, pf_m, stress) ;
-
-        return ret;
-    }
-
+    using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
+    using parameters_t = std::tuple<>;
 
 private:
 
-    AlphaType &alpha_;
-    KType &k_;
-
-    static VoigtVector s; //sigma deviator
     static VoigtVector result; //For returning VoigtVectors
-    // static VoigtMatrix dm__dsigma; //For returning dm_over_dsigma
-    // static VoigtMatrix dm__dalpha; //For returning dm_over_dsigma
 
 };
 
+
 template<class AlphaHardeningType, class KHardeningType>
-VoigtVector DruckerPrager_PF<AlphaHardeningType , KHardeningType >::s(3, 3, 0.0);
-template<class AlphaHardeningType, class KHardeningType>
-VoigtVector DruckerPrager_PF<AlphaHardeningType , KHardeningType >::result(3, 3, 0.0);
-// template<typename AlphaHardeningType, typename KHardeningType>
-// VoigtMatrix DruckerPrager_PF<AlphaHardeningType , KHardeningType >::dm__dsigma(3, 3, 3, 3, 0.0);
-// template<typename AlphaHardeningType, typename KHardeningType>
-// VoigtMatrix DruckerPrager_PF<AlphaHardeningType , KHardeningType >::dm__dalpha(3, 3, 3, 3, 0.0);
+VoigtVector DruckerPrager_PF<AlphaHardeningType, KHardeningType  >::result;
 
 #endif
-
-
-// ============================
-// legacy
-// should be removed later
-// ============================
-
-// VoigtMatrix const& dm_over_dalpha(VoigtVector const& sigma){
-//     static VoigtVector s(3, 3, 0.0);
-//     const VoigtVector &alpha = alpha_.getVariableConstReference();
-//     // const double &k = k_.getVariableConstReference();
-//     double p=0.0;
-//     sigma.compute_deviatoric_tensor(s, p); // here p is positive if in tension
-//     p=-p;
-//     static VoigtVector s_minus_palpha(3,3,0.0);
-//     s_minus_palpha(i,j) = s(i,j) - p*alpha(i,j);
-//     double s_minus_p_alpha_square = s_minus_palpha(i,j) * s_minus_palpha(i,j) ;
-//     static VoigtMatrix dm__dalpha(3,3,3,3,0.0);
-//     dm__dalpha*=0;
-//     for (int ig = 0; ig < 3; ++ig)
-//         for (int mg = 0; mg < 3; ++mg)
-//             for (int jg = 0; jg < 3; ++jg)
-//                 for (int ng = 0; ng < 3; ++ng)
-//                     for (int pg = 0; pg < 3; ++pg)
-//                         for (int qg = 0; qg < 3; ++qg)
-//                             for (int rg = 0; rg < 3; ++rg)
-//                                 for (int sg = 0; sg < 3; ++sg){
-//                                     dm__dalpha(ig,jg,mg,ng) +=
-//                                         (
-//                                             -p*kronecker_delta(mg,ig)*kronecker_delta(ng,jg) + 1./3.0 * kronecker_delta(mg,pg) * kronecker_delta(ig,jg)
-
-//                                         ) * pow(s_minus_p_alpha_square, -0.5)  ;
-//                                         // Not finished yet!
-//                                         // -
-//                                         // (
-//                                         //      (s(ig,jg)-p*alpha(ig,jg) + 1./3.0 *alpha(pg,qg) * kronecker_delta(ig,jg) * (s(pg,qg) - p*alpha(pg,qg))) *
-//                                         //      (kronecker_delta(mg,rg)*kronecker_delta(ng,sg) - 1./3.0*kronecker_delta(mg,ng)*kronecker_delta(rg,sg)
-//                                         //         +1./3.0 * kronecker_delta(mg,ng) * alpha(rg,sg)) *
-//                                         //      (s(rg,sg)-p*alpha(rg,sg))
-//                                         // ) * pow(s_minus_p_alpha_square, -1.5);
-//                                 }
-
-
-//     return dm__dalpha;
-// }

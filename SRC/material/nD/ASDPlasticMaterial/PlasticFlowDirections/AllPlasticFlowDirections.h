@@ -25,3 +25,4 @@
 // Fully general templated material class for plasticity modeling
 
 #include "VonMises_PF.h"
+#include "DruckerPrager_PF.h"
