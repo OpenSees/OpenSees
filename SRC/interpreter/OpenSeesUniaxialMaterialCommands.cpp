@@ -642,7 +642,7 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
-  uniaxialMaterialsMap.insert(std::make_pair("PipeMaterial", &OPS_PipeMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair("Pipe", &OPS_PipeMaterial));
   
   return 0;
 }

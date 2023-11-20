@@ -193,8 +193,7 @@ void *OPS_PipeMaterial(void) {
     int iData[2];
     int numData = 2;
     if (OPS_GetIntInput(&numData, iData) < 0) {
-        opserr << "WARNING invalid tag or nt for uniaxialMaterial "
-                  "Elastic\n";
+        opserr << "WARNING invalid tag or nt for pipe material\n";
         return 0;
     }
 
