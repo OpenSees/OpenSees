@@ -59,7 +59,7 @@
 // for debugging printing
 #include <fstream>
 
-#define ASDPlasticMaterial_MAXITER_BRENT 20
+#define ASDPlasticMaterial_MAXITER_BRENT 50
 #define TOLERANCE1 1e-6
 /*
 
@@ -433,20 +433,35 @@ public:
     // BET classes
     int commitState(void)
     {
+        // cout << "Committing!" << endl;
+
+        // cout <<  "CommitStress = " << CommitStress.transpose() << endl;
+        // cout <<  "CommitStrain = " << CommitStrain.transpose() << endl;
+        // cout <<  "TrialStress = " << TrialStress.transpose() << endl;
+        // cout <<  "TrialStrain = " << TrialStrain.transpose() << endl;
+
+        // cout << "Committed!" << endl;
 
         CommitStress = TrialStress;
         CommitStrain = TrialStrain;
         CommitPlastic_Strain = TrialPlastic_Strain;
 
+        // cout <<  "CommitStress = " << CommitStress.transpose() << endl;
+        // cout <<  "CommitStrain = " << CommitStrain.transpose() << endl;
+        // cout <<  "TrialStress = " << TrialStress.transpose() << endl;
+        // cout <<  "TrialStrain = " << TrialStrain.transpose() << endl;
+
+
         iv_storage.commit_all();
 
-        cout << "Committed!" << endl;
+        // cout << "Internal model info:";
+        // Print(cout);
+        // cout << "\n" << endl;
 
-        cout <<  "CommitStress = " << CommitStress.transpose() << endl;
-        cout <<  "CommitStrain = " << CommitStrain.transpose() << endl;
-
-        Print(cout);
-        cout << "\n" << endl;
+        if(first_step)
+        {
+            first_step=false;
+        }
 
         return 0;
     }
@@ -761,18 +776,19 @@ private:
         double enter_yf = yf(CommitStress, iv_storage, parameters_storage);
         double enter_p, enter_q, enter_theta;
         // std::tie(enter_p,enter_q,enter_theta) = getpqtheta(CommitStress);
-        enter_p = CommitStress.meanStress();
-        enter_q = CommitStress.stressDeviatorQ();
-        enter_theta = CommitStress.lodeAngle();
-        fprintf(stderr, "--------------------------------------------\n ");
-        fprintf(stderr, "--------------------------------------------\n ");
-        fprintf(stderr, "-----------start iteration step %d----------\n", 1 );
-        fprintf(stderr, "When Enter Euler Step\n");
-        fprintf(stderr, "yf start (:<0) = %16.8f \n" , enter_yf );
-        fprintf(stderr, "    enter_p    = %16.8f \n"  , enter_p );
-        fprintf(stderr, "    enter_q    = %16.8f \n"  , enter_q );
-        fprintf(stderr, "enter_theta    = %16.8f \n"  , enter_theta );
+        // enter_p = CommitStress.meanStress();
+        // enter_q = CommitStress.stressDeviatorQ();
+        // enter_theta = CommitStress.lodeAngle();
+        // fprintf(stderr, "--------------------------------------------\n ");
+        // fprintf(stderr, "--------------------------------------------\n ");
+        // fprintf(stderr, "-----------start iteration step %d----------\n", 1 );
+        // fprintf(stderr, "When Enter Euler Step\n");
+        // fprintf(stderr, "yf start (:<0) = %16.8f \n" , enter_yf );
+        // fprintf(stderr, "    enter_p    = %16.8f \n"  , enter_p );
+        // fprintf(stderr, "    enter_q    = %16.8f \n"  , enter_q );
+        // fprintf(stderr, "enter_theta    = %16.8f \n"  , enter_theta );
         // ----------------------------------------------------------------
+        // printTensor(" --> CommitStress = " , CommitStress);
 
         int errorcode = -1;
 
@@ -781,7 +797,9 @@ private:
         depsilon = strain_incr;
 
         const VoigtVector& sigma = CommitStress;
+        // const VoigtVector& sigma = this->getCommittedStressTensor();
         const VoigtVector& epsilon = CommitStrain;
+        // const VoigtVector& epsilon = this->getCommittedStrainTensor();
 
         // internal_variables.revert();
         iv_storage.revert_all();
@@ -797,6 +815,7 @@ private:
 
         dsigma = Eelastic * depsilon;
 
+
         // printTensor4("E = ", Eelastic);
 
         TrialStress = sigma + dsigma;
@@ -805,11 +824,16 @@ private:
 
         double yf_val_start = yf(sigma, iv_storage, parameters_storage);
         double yf_val_end = yf(TrialStress, iv_storage, parameters_storage);
-        fprintf(stderr, "  - yf_val_start (:<0) = %16.8f \n" , yf_val_start );
-        fprintf(stderr, "  - yf_val_end   (:<0) = %16.8f \n" , yf_val_end );
+        // fprintf(stderr, "  - yf_val_start (:<0) = %16.8f \n" , yf_val_start );
+        // fprintf(stderr, "  - yf_val_end   (:<0) = %16.8f \n" , yf_val_end );
 
+        // VoigtVector start_stress = this->getCommittedStressTensor();
         VoigtVector start_stress = CommitStress;
         VoigtVector end_stress = TrialStress;
+
+        // printTensor("start_stress" , start_stress);
+        // printTensor("end_stress" , end_stress);
+
 
         intersection_stress = start_stress;
 
@@ -824,11 +848,20 @@ private:
             if (yf_val_start < 0)
             {
                 double intersection_factor = zbrentstress( start_stress, end_stress, 0.0, 1.0, TOLERANCE1 );
+
+                intersection_factor = intersection_factor < 0 ? 0 : intersection_factor;
+                intersection_factor = intersection_factor > 1 ? 1 : intersection_factor;
+
                 intersection_stress = start_stress * (1 - intersection_factor) + end_stress * intersection_factor;
                 intersection_strain = epsilon  + depsilon * intersection_factor;
                 depsilon_elpl = (1 - intersection_factor) * depsilon;
+
+                // cout << "intersection_factor = " << intersection_factor << endl;
+
+
             }
 
+            // printTensor(" --> intersection_stress" , intersection_stress);
             TrialStress = intersection_stress;
 
             Eelastic = et(intersection_stress, parameters_storage);
@@ -857,7 +890,13 @@ private:
             }
             double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
             dLambda /= den;
-            cout << "CEP - dLambda = " << dLambda << " > 0\n";
+            // cout << "CEP - xi_star_h_star = " << xi_star_h_star << " > 0\n";
+            // cout << "CEP - dLambda = " << dLambda << " > 0\n";
+            // cout << "CEP - Eelastic = " << Eelastic << " \n";
+            // cout << "CEP - m = " << m.transpose() << " \n";
+            // cout << "CEP - intersection_stress = " << intersection_stress.transpose() << " \n";
+            // cout << "CEP - TrialStress = " << TrialStress.transpose() << " \n";
+            // cout << "CEP - dLambda * Eelastic * m = " << (dLambda * Eelastic * m).transpose() << " \n";
 
             if (dLambda <= 0)
             {
@@ -2553,118 +2592,242 @@ private:
 private:
     // Routine used by yield_surface_cross to find the stresstensor at cross point
     //================================================================================
+    // double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const {
+    //     using namespace ASDPlasticMaterialGlobals;
+
+    //     // Constants
+    //     const double EPS_MULTIPLE = 2.0;
+    //     const double TOL_MULTIPLE = 0.5;
+    //     const double EPS = numeric_limits<double>::epsilon();
+
+    //     // Lambda functions
+    //     auto calculateSigma = [](const VoigtVector & start_stress, const VoigtVector & end_stress, double multiplier) {
+    //         return start_stress * (1 - multiplier) + end_stress * multiplier;
+    //     };
+
+    //     auto calculateYf = [this](const VoigtVector & sigma) {
+    //         return yf(sigma, iv_storage, parameters_storage);
+    //     };
+
+    //     // Rest of the function
+    //     double a = x1;
+    //     double b = x2;
+    //     double c = 0.0;
+    //     double d = 0.0;
+    //     double e = 0.0;
+    //     double fc = 0.0;
+    //     double p = 0.0;
+    //     double q = 0.0;
+    //     double r = 0.0;
+    //     double s = 0.0;
+    //     double tol1 = 0.0;
+    //     double xm = 0.0;
+
+    //     VoigtVector sigma_a = calculateSigma(start_stress, end_stress, a);
+    //     VoigtVector sigma_b = calculateSigma(start_stress, end_stress, b);
+
+    //     double fa = calculateYf(sigma_a);
+    //     double fb = calculateYf(sigma_b);
+
+    //     if ( (fb * fa) > 0.0) {
+    //         throw std::runtime_error("Root must be bracketed in ZBRENTstress");
+    //     }
+
+    //     fc = fb;
+
+    //     for ( int iter = 1; iter <= ASDPlasticMaterial_MAXITER_BRENT; iter++ ) {
+    //         if ( (fb * fc) > 0.0) {
+    //             c = a;
+    //             fc = fa;
+    //             e = d = b - a;
+    //         }
+
+    //         if ( fabs(fc) < fabs(fb) ) {
+    //             std::swap(a, b);
+    //             std::swap(c, a);
+    //             std::swap(fa, fb);
+    //             std::swap(fc, fa);
+    //         }
+
+    //         tol1 = EPS_MULTIPLE * EPS * fabs(b) + TOL_MULTIPLE * tol;
+    //         xm = 0.5 * (c - b);
+
+    //         if ( fabs(xm) <= tol1 || fb == 0.0 ) {
+    //             return b;
+    //         }
+
+    //         if ( fabs(e) >= tol1 && fabs(fa) > fabs(fb) ) {
+    //             s = fb / fa;
+
+    //             if (a == c) {
+    //                 p = 2.0 * xm * s;
+    //                 q = 1.0 - s;
+    //             } else {
+    //                 q = fa / fc;
+    //                 r = fb / fc;
+    //                 p = s * ( 2.0 * xm * q * (q - r) - (b - a) * (r - 1.0) );
+    //                 q = (q - 1.0) * (r - 1.0) * (s - 1.0);
+    //             }
+
+    //             if (p > 0.0) {
+    //                 q = -q;
+    //             }
+
+    //             p = fabs(p);
+    //             double min1 = 3.0 * xm * q - fabs(tol1 * q);
+    //             double min2 = fabs(e * q);
+
+    //             if (2.0 * p < std::min(min1, min2)) {
+    //                 e = d;
+    //                 d = p / q;
+    //             } else {
+    //                 d = xm;
+    //                 e = d;
+    //             }
+    //         } else {
+    //             d = xm;
+    //             e = d;
+    //         }
+
+    //         a = b;
+    //         fa = fb;
+
+    //         if (fabs(d) > tol1) {
+    //             b += d;
+    //         } else {
+    //             b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
+    //         }
+
+    //         sigma_b = calculateSigma(start_stress, end_stress, b);
+    //         fb = calculateYf(sigma_b);
+    //     }
+
+    //     throw std::runtime_error("Maximum iterations reached without convergence in ZBRENTstress");
+    // }
+
+    //More robust brent
     double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const {
-        using namespace ASDPlasticMaterialGlobals;
+    using namespace ASDPlasticMaterialGlobals;
 
-        // Constants
-        const double EPS_MULTIPLE = 2.0;
-        const double TOL_MULTIPLE = 0.5;
-        const double EPS = numeric_limits<double>::epsilon();
+    // Constants
+    const double MAX_BRACKET_EXPANSION = 100.0; // Maximum factor to expand the bracket
+    const double BRACKET_EXPANSION_FACTOR = 1.6; // Factor to expand the bracket each iteration
+    const double EPS_MULTIPLE = 2.0;
+    const double TOL_MULTIPLE = 0.5;
+    const double EPS = std::numeric_limits<double>::epsilon();
 
-        // Lambda functions
-        auto calculateSigma = [](const VoigtVector & start_stress, const VoigtVector & end_stress, double multiplier) {
-            return start_stress * (1 - multiplier) + end_stress * multiplier;
-        };
+    // Lambda functions
+    auto calculateSigma = [](const VoigtVector & start, const VoigtVector & end, double multiplier) {
+        return start * (1 - multiplier) + end * multiplier;
+    };
 
-        auto calculateYf = [this](const VoigtVector & sigma) {
-            return yf(sigma, iv_storage, parameters_storage);
-        };
+    auto calculateYf = [this](const VoigtVector & sigma) {
+        return yf(sigma, iv_storage, parameters_storage);
+    };
 
-        // Rest of the function
-        double a = x1;
-        double b = x2;
-        double c = 0.0;
-        double d = 0.0;
-        double e = 0.0;
-        double fc = 0.0;
-        double p = 0.0;
-        double q = 0.0;
-        double r = 0.0;
-        double s = 0.0;
-        double tol1 = 0.0;
-        double xm = 0.0;
+    // Bracket Adjustment: Expand the bracket if necessary
+    double a = x1;
+    double b = x2;
+    double c = x2;
+    double d, e = 0.0;
+    double fa = calculateYf(calculateSigma(start_stress, end_stress, a));
+    double fb = calculateYf(calculateSigma(start_stress, end_stress, b));
+    double fc = fb;
 
-        VoigtVector sigma_a = calculateSigma(start_stress, end_stress, a);
-        VoigtVector sigma_b = calculateSigma(start_stress, end_stress, b);
 
-        double fa = calculateYf(sigma_a);
-        double fb = calculateYf(sigma_b);
+    for (double factor = 1.0; factor <= MAX_BRACKET_EXPANSION; factor *= BRACKET_EXPANSION_FACTOR) {
+        if ((fb * fa) <= 0.0) {
+            break; // Valid bracket found
+        }
+        if (std::abs(fa) < std::abs(fb)) {
+            a -= (b - a) * factor;
+            fa = calculateYf(calculateSigma(start_stress, end_stress, a));
+        } else {
+            b += (b - a) * factor;
+            fb = calculateYf(calculateSigma(start_stress, end_stress, b));
+        }
+    }
 
-        if ( (fb * fa) > 0.0) {
-            throw std::runtime_error("Root must be bracketed in ZBRENTstress");
+    // Brent's Method Implementation
+    if ((fb * fa) > 0.0) {
+        throw std::runtime_error("Unable to find a valid bracket in zbrentstress");
+    }
+
+    for (int iter = 1; iter <= ASDPlasticMaterial_MAXITER_BRENT; iter++) {
+        if ((fb * fc) > 0.0) {
+            c = a;   // Rename a, b, c and adjust bounding interval d
+            fc = fa;
+            e = d = b - a;
         }
 
-        fc = fb;
+        if (std::abs(fc) < std::abs(fb)) {
+            a = b;
+            b = c;
+            c = a;
+            fa = fb;
+            fb = fc;
+            fc = fa;
+        }
 
-        for ( int iter = 1; iter <= ASDPlasticMaterial_MAXITER_BRENT; iter++ ) {
-            if ( (fb * fc) > 0.0) {
-                c = a;
-                fc = fa;
-                e = d = b - a;
+        double tol1 = EPS_MULTIPLE * EPS * std::abs(b) + TOL_MULTIPLE * tol;
+        double xm = 0.5 * (c - b);
+
+        if (std::abs(xm) <= tol1 || fb == 0.0) {
+            return b;  // Convergence
+        }
+
+        if (std::abs(e) >= tol1 && std::abs(fa) > std::abs(fb)) {
+            // Attempt inverse quadratic interpolation
+            double s = fb / fa;
+            double p, q;
+            if (a == c) {
+                p = 2.0 * xm * s;
+                q = 1.0 - s;
+            } else {
+                q = fa / fc;
+                double r = fb / fc;
+                p = s * (2.0 * xm * q * (q - r) - (b - a) * (r - 1.0));
+                q = (q - 1.0) * (r - 1.0) * (s - 1.0);
             }
 
-            if ( fabs(fc) < fabs(fb) ) {
-                std::swap(a, b);
-                std::swap(c, a);
-                std::swap(fa, fb);
-                std::swap(fc, fa);
-            }
+            if (p > 0.0) q = -q;
+            p = std::abs(p);
+            double min1 = 3.0 * xm * q - std::abs(tol1 * q);
+            double min2 = std::abs(e * q);
 
-            tol1 = EPS_MULTIPLE * EPS * fabs(b) + TOL_MULTIPLE * tol;
-            xm = 0.5 * (c - b);
-
-            if ( fabs(xm) <= tol1 || fb == 0.0 ) {
-                return b;
-            }
-
-            if ( fabs(e) >= tol1 && fabs(fa) > fabs(fb) ) {
-                s = fb / fa;
-
-                if (a == c) {
-                    p = 2.0 * xm * s;
-                    q = 1.0 - s;
-                } else {
-                    q = fa / fc;
-                    r = fb / fc;
-                    p = s * ( 2.0 * xm * q * (q - r) - (b - a) * (r - 1.0) );
-                    q = (q - 1.0) * (r - 1.0) * (s - 1.0);
-                }
-
-                if (p > 0.0) {
-                    q = -q;
-                }
-
-                p = fabs(p);
-                double min1 = 3.0 * xm * q - fabs(tol1 * q);
-                double min2 = fabs(e * q);
-
-                if (2.0 * p < std::min(min1, min2)) {
-                    e = d;
-                    d = p / q;
-                } else {
-                    d = xm;
-                    e = d;
-                }
+            if (2.0 * p < std::min(min1, min2)) {
+                e = d;
+                d = p / q;
             } else {
                 d = xm;
                 e = d;
             }
-
-            a = b;
-            fa = fb;
-
-            if (fabs(d) > tol1) {
-                b += d;
-            } else {
-                b += (xm > 0.0 ? fabs(tol1) : -fabs(tol1));
-            }
-
-            sigma_b = calculateSigma(start_stress, end_stress, b);
-            fb = calculateYf(sigma_b);
+        } else {
+            d = xm;  // Bounds decreasing too slowly, use bisection
+            e = d;
         }
 
-        throw std::runtime_error("Maximum iterations reached without convergence in ZBRENTstress");
+        a = b;
+        fa = fb;
+
+        if (std::abs(d) > tol1) {
+            b += d;
+        } else {
+            b += (xm > 0.0 ? std::abs(tol1) : -std::abs(tol1));
+        }
+
+        fb = calculateYf(calculateSigma(start_stress, end_stress, b));
+
+        // Check for NaN (Not a Number) values
+        if (std::isnan(fb)) {
+            throw std::runtime_error("zbrentstress: NaN encountered in function evaluation.");
+        }
     }
+
+    throw std::runtime_error("Maximum iterations reached without convergence in zbrentstress");
+}
+
+
 
 
     // double Max_abs_Component(VoigtVector const& matrix3by3)

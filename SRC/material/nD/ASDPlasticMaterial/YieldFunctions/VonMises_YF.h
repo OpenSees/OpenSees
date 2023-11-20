@@ -57,6 +57,7 @@ public:
         auto k = GET_TRIAL_INTERNAL_VARIABLE(KHardeningType);
 
         double tmp = (s - alpha).dot(s - alpha);
+        tmp = tmp > 0 ? tmp : 0;
         return std::sqrt( tmp ) - SQRT_2_over_3 * k.value() ;  // This one assumes p positive in tension
     }
 
