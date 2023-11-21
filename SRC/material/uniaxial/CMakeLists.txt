@@ -98,6 +98,7 @@ target_sources(OPS_Material
       ConcreteZBH_smoothed.cpp 
       ConfinedConcrete01.cpp
       ContinuumUniaxial.cpp
+      CreepMaterial.cpp
       CubicSpline.cpp
       DamperMaterial.cpp
       DegradingPinchedBW.cpp
@@ -220,6 +221,7 @@ target_sources(OPS_Material
       ConcreteZBH_smoothed.h
       ConfinedConcrete01.h
       ContinuumUniaxial.h
+      CreepMaterial.h
       CubicSpline.h
       DamperMaterial.h
       DegradingPinchedBW.h
