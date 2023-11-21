@@ -189,7 +189,7 @@ void populate_ASDPlasticMaterial(T* instance)
     });
 
     // Default integration options
-    int method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+    int method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
     double f_relative_tol = 1e-6; 
     double stress_relative_tol = 1e-6; 
     int n_max_iterations = 100;
@@ -296,8 +296,8 @@ void populate_ASDPlasticMaterial(T* instance)
                     else
                     {
                         cout << "WARNING! Unrecognised ASDPlasticMaterial_Constitutive_Integration_Method name " << method_name << endl;
-                        cout << "Defaulting to Forward_Euler" << endl;
-                        method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+                        cout << "Defaulting to Runge_Kutta_45_Error_Control" << endl;
+                        method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
                     }
                     cout << "   Setting integration method = " << method_name << " method_int = " << method << endl;
                     

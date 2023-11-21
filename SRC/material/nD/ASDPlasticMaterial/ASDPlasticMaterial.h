@@ -517,79 +517,7 @@ public:
     int sendSelf(int commitTag, Channel &theChannel)
     {
         cerr << "ASDPlasticMaterial::sendSelf - not implemented!!!\n" ;
-        // int pos = 0;
-        // static Vector data(1 + 9 * 6 + 4); // rho and all the DTensors2 get packed into one vector
 
-        // // double rho;
-        // data(pos++) = rho;
-        // // VoigtVector TrialStrain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         data(pos++) = TrialStrain(i, j);
-        //     }
-        // // VoigtVector TrialStress;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         data(pos++) = TrialStress(i, j);
-        //     }
-        // // VoigtVector TrialPlastic_Strain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         data(pos++) = TrialPlastic_Strain(i, j);
-        //     }
-        // // VoigtVector CommitStress;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         data(pos++) = CommitStress(i, j);
-        //     }
-        // // VoigtVector CommitStrain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         data(pos++) = CommitStrain(i, j);
-        //     }
-        // // VoigtVector CommitPlastic_Strain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         data(pos++) = CommitPlastic_Strain(i, j);
-        //     }
-
-        // data(pos++)  = NDMaterial::f_relative_tol        ;
-        // data(pos++)  = NDMaterial::stress_relative_tol   ;
-        // data(pos++)  = NDMaterial::n_max_iterations      ;
-        // data(pos++)  = (double) NDMaterial::constitutive_integration_method ;
-
-
-
-
-
-        // // cout << "Sending data" << endl;
-        // if (theChannel.sendVector(0, commitTag, data) != 0)
-        // {
-        //     cerr << "ASDPlasticMaterial::sendSelf() - Failed sending data" << endl;
-        //     return -1;
-        // }
-
-        // // cout << "Sending elasticity" << endl;
-        // // ElasticityType    et;
-        // if (et.sendSelf(commitTag, theChannel) != 0)
-        // {
-        //     cerr << "ASDPlasticMaterial::sendSelf() - Failed sending elasticity data" << endl;
-        //     return -1;
-        // }
-
-        // // cout << "Sending variables" << endl;
-        // // MaterialInternalVariablesType internal_variables;
-        // if (internal_variables.sendSelf(commitTag, theChannel) != 0)
-        // {
-        //     cerr << "ASDPlasticMaterial::sendSelf() - Failed sending internal variables data" << endl;
-        //     return -1;
-        // }
 
         return 0;
     }
@@ -597,75 +525,7 @@ public:
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
         cerr << "ASDPlasticMaterial::recvSelf - not implemented!!!\n" ;
-        // // cout << "Receiving data" << endl;
-        // static Vector data(1 + 9 * 6 + 4); // rho and all the DTensors2 get packed into one vector
-        // if (theChannel.receiveVector(0, commitTag, data) != 0)
-        // {
-        //     cerr << "ASDPlasticMaterial::recvSelf() - Failed receiving data" << endl;
-        //     return -1;
-        // }
-
-        // int pos = 0;
-        // // double rho;
-        // rho = data(pos++);
-        // // VoigtVector TrialStrain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         TrialStrain(i, j) = data(pos++);
-        //     }
-        // // VoigtVector TrialStress;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         TrialStress(i, j) = data(pos++);
-        //     }
-        // // VoigtVector TrialPlastic_Strain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         TrialPlastic_Strain(i, j) = data(pos++);
-        //     }
-        // // VoigtVector CommitStress;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         CommitStress(i, j) = data(pos++);
-        //     }
-        // // VoigtVector CommitStrain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         CommitStrain(i, j) = data(pos++);
-        //     }
-        // // VoigtVector CommitPlastic_Strain;
-        // for (int i = 0; i < 3; i++)
-        //     for (int j = 0; j < 3; j++)
-        //     {
-        //         CommitPlastic_Strain(i, j) = data(pos++);
-        //     }
-
-        // NDMaterial::f_relative_tol         = data(pos++) ;
-        // NDMaterial::stress_relative_tol    = data(pos++) ;
-        // NDMaterial::n_max_iterations       = data(pos++) ;
-        // NDMaterial::constitutive_integration_method       = (ASDPlasticMaterial_Constitutive_Integration_Method) data(pos++) ;
-
-
-
-        // // cout << "Receiving elasticity" << endl;
-        // // ElasticityType    et;
-        // if (et.recvSelf(commitTag, theChannel, theBroker) != 0)
-        // {
-        //     cerr << "ASDPlasticMaterial::recvSelf() - Failed receiving elasticity data" << endl;
-        //     return -1;
-        // }
-        // // cout << "Receiving variables" << endl;
-        // // MaterialInternalVariablesType internal_variables;
-        // if (internal_variables.recvSelf(commitTag, theChannel, theBroker) != 0)
-        // {
-        //     cerr << "ASDPlasticMaterial::recvSelf() - Failed receiving internal variables data" << endl;
-        //     return -1;
-        // }
+   
 
         return 0;
     }
@@ -812,25 +672,8 @@ private:
     int Forward_Euler(const VoigtVector &strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;
-        // ----------------------------------------------------------------
-        // Print p, q, theta for debug--------------------------------------
-        // ----------------------------------------------------------------
-        double enter_yf = yf(CommitStress, iv_storage, parameters_storage);
-        double enter_p, enter_q, enter_theta;
-        // std::tie(enter_p,enter_q,enter_theta) = getpqtheta(CommitStress);
-        // enter_p = CommitStress.meanStress();
-        // enter_q = CommitStress.stressDeviatorQ();
-        // enter_theta = CommitStress.lodeAngle();
-        // fprintf(stderr, "--------------------------------------------\n ");
-        // fprintf(stderr, "--------------------------------------------\n ");
-        // fprintf(stderr, "-----------start iteration step %d----------\n", 1 );
-        // fprintf(stderr, "When Enter Euler Step\n");
-        // fprintf(stderr, "yf start (:<0) = %16.8f \n" , enter_yf );
-        // fprintf(stderr, "    enter_p    = %16.8f \n"  , enter_p );
-        // fprintf(stderr, "    enter_q    = %16.8f \n"  , enter_q );
-        // fprintf(stderr, "enter_theta    = %16.8f \n"  , enter_theta );
-        // ----------------------------------------------------------------
-        // printTensor(" --> CommitStress = " , CommitStress);
+
+
 
         int errorcode = -1;
 
@@ -839,14 +682,9 @@ private:
         depsilon = strain_incr;
 
         const VoigtVector& sigma = CommitStress;
-        // const VoigtVector& sigma = this->getCommittedStressTensor();
         const VoigtVector& epsilon = CommitStrain;
-        // const VoigtVector& epsilon = this->getCommittedStrainTensor();
 
-        // internal_variables.revert();
         iv_storage.revert_all();
-        // internal_variables.commit_tmp();
-        // internal_variables.commit_all();
 
         dsigma *= 0;
         intersection_stress *= 0;
@@ -857,25 +695,15 @@ private:
 
         dsigma = Eelastic * depsilon;
 
-
-        // printTensor4("E = ", Eelastic);
-
         TrialStress = sigma + dsigma;
         TrialStrain = CommitStrain + depsilon;
         TrialPlastic_Strain = CommitPlastic_Strain;
 
         double yf_val_start = yf(sigma, iv_storage, parameters_storage);
         double yf_val_end = yf(TrialStress, iv_storage, parameters_storage);
-        // fprintf(stderr, "  - yf_val_start (:<0) = %16.8f \n" , yf_val_start );
-        // fprintf(stderr, "  - yf_val_end   (:<0) = %16.8f \n" , yf_val_end );
 
-        // VoigtVector start_stress = this->getCommittedStressTensor();
         VoigtVector start_stress = CommitStress;
         VoigtVector end_stress = TrialStress;
-
-        // printTensor("start_stress" , start_stress);
-        // printTensor("end_stress" , end_stress);
-
 
         intersection_stress = start_stress;
 
@@ -897,13 +725,8 @@ private:
                 intersection_stress = start_stress * (1 - intersection_factor) + end_stress * intersection_factor;
                 intersection_strain = epsilon  + depsilon * intersection_factor;
                 depsilon_elpl = (1 - intersection_factor) * depsilon;
-
-                // cout << "intersection_factor = " << intersection_factor << endl;
-
-
             }
 
-            // printTensor(" --> intersection_stress" , intersection_stress);
             TrialStress = intersection_stress;
 
             Eelastic = et(intersection_stress, parameters_storage);
@@ -930,15 +753,9 @@ private:
                 printTensor("depsilon_elpl", depsilon_elpl);
                 return -1;
             }
+
             double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
             dLambda /= den;
-            // cout << "CEP - xi_star_h_star = " << xi_star_h_star << " > 0\n";
-            // cout << "CEP - dLambda = " << dLambda << " > 0\n";
-            // cout << "CEP - Eelastic = " << Eelastic << " \n";
-            // cout << "CEP - m = " << m.transpose() << " \n";
-            // cout << "CEP - intersection_stress = " << intersection_stress.transpose() << " \n";
-            // cout << "CEP - TrialStress = " << TrialStress.transpose() << " \n";
-            // cout << "CEP - dLambda * Eelastic * m = " << (dLambda * Eelastic * m).transpose() << " \n";
 
             if (dLambda <= 0)
             {
@@ -948,7 +765,6 @@ private:
                 cout << "xi_star_h_star = " << xi_star_h_star << endl;
                 cout << "den = " << den << endl;
                 printTensor("depsilon_elpl", depsilon_elpl);
-                // return -1;
             }
 
             // Update the trial plastic strain.
@@ -1001,10 +817,8 @@ private:
             // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
             // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
             // ============================================================================================
-            // if(with_return2yield_surface){
             if (INT_OPT_return_to_yield_surface[this->getTag()])
             {
-                cout << "RETVRN!" << endl;
                 // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
                 // Make surface the internal variables are already updated. And then, return to the yield surface.
                 double yf_val_after_corrector = yf(TrialStress, iv_storage, parameters_storage);
@@ -1024,7 +838,6 @@ private:
             }
             else
             {
-                cout << "progressivism" << endl;
             }
             // ============================================================================================
             // ============================================================================================
@@ -1072,30 +885,42 @@ private:
     std::pair<double, VoigtVector> CalculateLambdaM(
         const VoigtVector &thisSigma, 
         const VoigtVector &depsilon_elpl, 
-        const parameters_storage_t &parameters_storage, 
+        const parameters_storage_t &this_parameters_storage, 
         const iv_storage_t &this_iv_storage)
     {
-        VoigtMatrix Eelastic = et(thisSigma, parameters_storage);
-        const VoigtVector& n = yf.df_dsigma_ij(thisSigma, this_iv_storage, parameters_storage);
-        VoigtVector m = pf(depsilon_elpl, thisSigma, this_iv_storage, parameters_storage);
-        double xi_star_h_star = yf.xi_star_h_star(depsilon_elpl, m, thisSigma, this_iv_storage, parameters_storage);
+        VoigtMatrix Eelastic = et(thisSigma, this_parameters_storage);
+        const VoigtVector& n = yf.df_dsigma_ij(thisSigma, this_iv_storage, this_parameters_storage);
+        VoigtVector m = pf(depsilon_elpl, thisSigma, this_iv_storage, this_parameters_storage);
+        double xi_star_h_star = yf.xi_star_h_star(depsilon_elpl, m, thisSigma, this_iv_storage, this_parameters_storage);
 
         double den = n.transpose() * Eelastic * m - xi_star_h_star;
         double dLambda = (den != 0) ? (n.transpose() * Eelastic * depsilon_elpl).value() / den : 0;
+
+        if (dLambda != dLambda)
+        {
+            cout << "CalculateLambdaM error" << endl;
+            cout << "thisSigma = " << thisSigma.transpose() << endl;
+            cout << "depsilon_elpl = " << depsilon_elpl.transpose() << endl;
+            cout << "n = " << n.transpose() << endl;
+            cout << "m = " << m.transpose() << endl;
+            cout << "xi_star_h_star = " << xi_star_h_star << endl;
+            cout << "den = " << den << endl;
+            cout << "Eelastic = " << Eelastic << endl;
+
+            cout << "IVSTORAGE" << endln;
+            this_iv_storage.print_components();
+
+            cout << "PARAMSTORAGE" << endln;
+            this_parameters_storage.print_components();
+        }
+
 
         return std::make_pair(dLambda, m);
     }
 
     int Runge_Kutta_45_Error_Control(const VoigtVector &strain_incr)
     {
-        cout << "Running Runge_Kutta_45_Error_Control" << endl;
-        using namespace ASDPlasticMaterialGlobals;
-        // ----------------------------------------------------------------
-        // Print p, q, theta for debug--------------------------------------
-        // ----------------------------------------------------------------
-        double enter_yf = yf(CommitStress, iv_storage, parameters_storage);
-        double enter_p, enter_q, enter_theta;
-
+        cout << "Runge_Kutta_45_Error_Control" << endl;
 
         int errorcode = -1;
 
@@ -1103,8 +928,6 @@ private:
         depsilon *= 0;
         depsilon = strain_incr;
 
-        const VoigtVector& sigma = CommitStress;
-        const VoigtVector& epsilon = CommitStrain;
 
         iv_storage.revert_all();
 
@@ -1113,17 +936,17 @@ private:
         intersection_stress *= 0;
         intersection_strain *= 0;
 
-        VoigtMatrix Eelastic = et(sigma, parameters_storage);
+        VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
         Stiffness = Eelastic;
 
         dsigma = Eelastic * depsilon;
 
 
-        TrialStress = sigma + dsigma;
+        TrialStress = CommitStress + dsigma;
         TrialStrain = CommitStrain + depsilon;
         TrialPlastic_Strain = CommitPlastic_Strain;
 
-        double yf_val_start = yf(sigma, iv_storage, parameters_storage);
+        double yf_val_start = yf(CommitStress, iv_storage, parameters_storage);
         double yf_val_end = yf(TrialStress, iv_storage, parameters_storage);
 
         VoigtVector start_stress = CommitStress;
@@ -1147,43 +970,226 @@ private:
                 intersection_factor = intersection_factor > 1 ? 1 : intersection_factor;
 
                 intersection_stress = start_stress * (1 - intersection_factor) + end_stress * intersection_factor;
-                intersection_strain = epsilon  + depsilon * intersection_factor;
+                intersection_strain = CommitStrain  + depsilon * intersection_factor;
                 depsilon_elpl = (1 - intersection_factor) * depsilon;
             }
 
             TrialStress = intersection_stress;
-            double T = 0.0, dT = 1.0, dT_min = 1e-3, TolE = 1e-4;
-
-            VoigtVector thisSigma = TrialStress;
-            VoigtVector thisEpsilonPl;
+            double T = 0.0, dT = 1.0, dT_min = 1e-3, TolE = this->INT_OPT_stress_relative_tol[this->getTag()];
 
 
+            VoigtVector next_Sigma = TrialStress;
+            iv_storage_t next_iv_storage = iv_storage;
+            VoigtVector next_EpsilonPl = CommitPlastic_Strain;
 
-            VoigtVector dSigma1;
-            VoigtVector dEpsilonPl1;
-            iv_storage_t iv_storage1;
+            VoigtVector prev_Sigma = TrialStress;
+            VoigtVector prev_EpsilonPl = CommitPlastic_Strain;
+            iv_storage_t prev_iv_storage = iv_storage;
 
-            iv_storage1 = iv_storage;
+            VoigtVector dSigma, dSigma1, dSigma2, dSigma3, dSigma4, dSigma5, dSigma6;
+            VoigtVector dEpsilonPl, dEpsilonPl1, dEpsilonPl2, dEpsilonPl3, dEpsilonPl4, dEpsilonPl5, dEpsilonPl6;
+            iv_storage_t iv_storage1 = iv_storage;
+            iv_storage_t iv_storage2 = iv_storage;
+            iv_storage_t iv_storage3 = iv_storage;
+            iv_storage_t iv_storage4 = iv_storage;
+            iv_storage_t iv_storage5 = iv_storage;
 
 
-            double dLambda;
-            VoigtVector m;
-            VoigtVector dSigma;
-
-            std::tie(dLambda, m) = CalculateLambdaM(intersection_stress, depsilon_elpl, parameters_storage, iv_storage);
-            dSigma  = Eelastic * (depsilon_elpl - dLambda * m);
-            
-            //Update stress and internal variables
-            TrialStress += dSigma;
-            TrialPlastic_Strain += dLambda * m;
-            iv_storage.apply([&m, &dLambda, this](auto & internal_variable)
+            int niter = 0;
+            double maxStepError = 0;
+            while (T < 1.0)
             {
-                auto h = internal_variable.hardening_function(depsilon_elpl, m, intersection_stress, parameters_storage);
-                internal_variable.trial_value += dLambda * h;
-            });
+                niter ++;
+
+                VoigtVector dEPS = dT * depsilon_elpl;
+                VoigtVector m;
+                double dLambda;
+
+                //Delta 1
+                std::tie(dLambda, m) = CalculateLambdaM(prev_Sigma, dEPS, parameters_storage, prev_iv_storage);
+                dSigma1  = Eelastic * (dEPS - dLambda * m);
+                dEpsilonPl1 = dLambda * m;
+                iv_storage1.apply([&m, &dLambda, &prev_Sigma, &dEPS, this](auto & iv1)
+                {
+                    auto h = iv1.hardening_function(dEPS, m, prev_Sigma, parameters_storage);
+                    iv1.trial_value = iv1.committed_value + 0.5 * dLambda * h;
+                });
+                next_Sigma =  prev_Sigma + 0.5*dSigma1;
+
+                //Delta 2
+                std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage1);
+                dSigma2  = Eelastic * (dEPS - dLambda * m);
+                dEpsilonPl2 = dLambda * m;
+                iv_storage2.apply([&m, &dLambda, &next_Sigma, &dEPS, &iv_storage1, this](auto & iv2)
+                {
+                    using VT1 = std::decay_t<decltype(iv2)>;
+                    const VT1 &iv1 = iv_storage1.template get<VT1>();
+                    auto DH1 = iv1.trial_value - iv1.committed_value;
+                    
+                    auto h2 = iv2.hardening_function(dEPS, m, next_Sigma, parameters_storage);
+                    auto DH2 = dLambda * h2;
+                    
+                    iv2.trial_value = iv2.committed_value + 0.25*(DH1 + DH2);
+                });
+                next_Sigma =  prev_Sigma + 0.25*(dSigma1+dSigma2);
+
+                //Delta 3
+                std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage2);
+                dSigma3  = Eelastic * (dEPS - dLambda * m);
+                dEpsilonPl3 = dLambda * m;
+                iv_storage3.apply([&m, &dLambda, &next_Sigma, &dEPS, &iv_storage1, &iv_storage2, this](auto & iv3)
+                {
+                    using VT = std::decay_t<decltype(iv3)>;
+                    const VT &iv1 = iv_storage1.template get<VT>();
+                    auto DH1 = iv1.trial_value - iv1.committed_value;
+                    const VT &iv2 = iv_storage2.template get<VT>();
+                    auto DH2 = iv2.trial_value - iv2.committed_value;
+
+                    auto h3 = iv3.hardening_function(dEPS, m, next_Sigma, parameters_storage);
+                    auto DH3 = dLambda * h3;
+                    
+                    iv3.trial_value = iv3.committed_value +  -DH2 + 2*DH3;
+                });
+                next_Sigma =  prev_Sigma - dSigma2 + 2*dSigma3;
+
+                //Delta 4
+                std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage3);
+                dSigma4  = Eelastic * (dEPS - dLambda * m);
+                dEpsilonPl4 = dLambda * m;
+                iv_storage4.apply([&m, &dLambda, &next_Sigma, &dEPS, &iv_storage1, &iv_storage2, &iv_storage3, this](auto & iv4)
+                {
+                    using VT = std::decay_t<decltype(iv4)>;
+                    const VT &iv1 = iv_storage1.template get<VT>();
+                    auto DH1 = iv1.trial_value - iv1.committed_value;
+                    const VT &iv2 = iv_storage2.template get<VT>();
+                    auto DH2 = iv2.trial_value - iv2.committed_value;
+                    const VT &iv3 = iv_storage3.template get<VT>();
+                    auto DH3 = iv3.trial_value - iv3.committed_value;
+
+                    auto h4 = iv4.hardening_function(dEPS, m, next_Sigma, parameters_storage);
+                    auto DH4 = dLambda * h4;
+                    
+                    iv4.trial_value = iv4.committed_value +  (7*DH1 + 10*DH2 + DH4) / 27;
+                });
+                next_Sigma =  prev_Sigma + (7 * dSigma1 + 10 * dSigma2 + dSigma4) / 27;
+
+                //Delta 5
+                std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage4);
+                dSigma5  = Eelastic * (dEPS - dLambda * m);
+                dEpsilonPl5 = dLambda * m;
+                iv_storage5.apply([&m, &dLambda, &next_Sigma, &dEPS, &iv_storage1, &iv_storage2, &iv_storage3, &iv_storage4, this](auto & iv5)
+                {
+                    using VT = std::decay_t<decltype(iv5)>;
+                    const VT &iv1 = iv_storage1.template get<VT>();
+                    auto DH1 = iv1.trial_value - iv1.committed_value;
+                    const VT &iv2 = iv_storage2.template get<VT>();
+                    auto DH2 = iv2.trial_value - iv2.committed_value;
+                    const VT &iv3 = iv_storage3.template get<VT>();
+                    auto DH3 = iv3.trial_value - iv3.committed_value;
+                    const VT &iv4 = iv_storage4.template get<VT>();
+                    auto DH4 = iv4.trial_value - iv4.committed_value;
+
+                    auto h5 = iv5.hardening_function(dEPS, m, next_Sigma, parameters_storage);
+                    auto DH5 = dLambda * h5;
+                    
+                    iv5.trial_value = iv5.committed_value +  (28 * DH1 - 125 * DH2 + 546 * DH3 + 54 * DH4 - 378 * DH5) / 625;
+                });
+                next_Sigma =  prev_Sigma + (28 * dSigma1 - 125 * dSigma2 + 546 * dSigma3 + 54 * dSigma4 - 378 * dSigma5) / 625;
+
+                //Delta 6 - The final predictor
+                std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage5);
+                dSigma6  = Eelastic * (dEPS - dLambda * m);
+                dEpsilonPl6 = dLambda * m;
+                next_iv_storage.apply([&m, &dLambda, &next_Sigma, &dEPS, &iv_storage1, &iv_storage2, &iv_storage3, &iv_storage4, &iv_storage5, this](auto & niv)
+                {
+                    using VT = std::decay_t<decltype(niv)>;
+                    const VT &iv1 = iv_storage1.template get<VT>();
+                    auto DH1 = iv1.trial_value - iv1.committed_value;
+                    const VT &iv2 = iv_storage2.template get<VT>();
+                    auto DH2 = iv2.trial_value - iv2.committed_value;
+                    const VT &iv3 = iv_storage3.template get<VT>();
+                    auto DH3 = iv3.trial_value - iv3.committed_value;
+                    const VT &iv4 = iv_storage4.template get<VT>();
+                    auto DH4 = iv4.trial_value - iv4.committed_value;
+                    const VT &iv5 = iv_storage5.template get<VT>();
+                    auto DH5 = iv5.trial_value - iv5.committed_value;
+
+                    auto h6 = niv.hardening_function(dEPS, m, next_Sigma, parameters_storage);
+                    auto DH6 = dLambda * h6;
+                    
+                    niv.trial_value = niv.committed_value +  ( DH1 +  4* DH3 + DH4) / 6;
+                });
+                dSigma =  (dSigma1 + 4 * dSigma3 + dSigma4) / 6;
+                dEpsilonPl =  (dEpsilonPl1 + 4 * dEpsilonPl3 + dEpsilonPl4) / 6;
+                next_Sigma =  prev_Sigma + dSigma;
+                next_EpsilonPl = prev_EpsilonPl + dEpsilonPl;
+
+
+                if (dSigma != dSigma)
+                {
+                    cout << "ASDPlasticMaterial::Runge_Kutta_45_Error_Control Integration error" << endl;
+                    cout << "T = " << T << endl;
+                    cout << "dT = " << dT << endl;
+                    cout << "dSigma1 = " << dSigma1.transpose() << endl;
+                    cout << "dSigma2 = " << dSigma2.transpose() << endl;
+                    cout << "dSigma3 = " << dSigma3.transpose() << endl;
+                    cout << "dSigma4 = " << dSigma4.transpose() << endl;
+                    cout << "dSigma5 = " << dSigma5.transpose() << endl;
+                    cout << "dSigma6 = " << dSigma6.transpose() << endl;
+                    cout << "m = " << m.transpose() << endl;
+                    cout << "dEpsilonPl = " << dEpsilonPl.transpose() << endl;
+                    cout << "TrialStress = " << TrialStress.transpose() << endl;
+                    cout << "dEPS = " << dEPS.transpose() << endl;
+                    exit(-1);
+                }
 
 
 
+
+                //Stress norm and stress error
+                double stressNorm = next_Sigma.norm();
+                double curStepError1 = (-42 * dSigma1 - 224 * dSigma3 - 21 * dSigma4 + 162 * dSigma5 + 125 * dSigma6).norm() / 336;
+                if (stressNorm >= 0.5) { curStepError1 /= (2 * stressNorm); }
+                //Internal variables norm and internal variables error (TODO)
+                
+                double curStepError = curStepError1; //fmax(curStepError1, curStepError2);
+
+                //Check convergence and adjust integration timestep
+                if (curStepError > TolE)
+                {
+                    double q = fmax(0.8 * pow(TolE / curStepError, 0.2), 0.1);
+
+                    if (dT == dT_min) {
+
+                        prev_Sigma = next_Sigma;
+                        prev_EpsilonPl = next_EpsilonPl;
+                        prev_iv_storage = next_iv_storage;
+
+                        T += dT;
+                    }
+                    dT = fmax(q * dT, dT_min);
+                }
+                else {
+
+                    prev_Sigma = next_Sigma;
+                    prev_EpsilonPl = next_EpsilonPl;
+                    prev_iv_storage = next_iv_storage;
+
+                    double q = fmin(0.8 * pow(TolE / curStepError, 0.2), 2.0);
+                    T += dT;
+                    dT = fmax(q * dT, dT_min);
+                    dT = fmin(dT, 1 - T);
+
+                    maxStepError = max(maxStepError, curStepError);
+                }
+
+            }
+
+            TrialStress = next_Sigma;
+            TrialPlastic_Strain = next_EpsilonPl;
+            iv_storage = next_iv_storage;
+
+            cout << "ASDPlasticMaterial::Runge_Kutta_45_Error_Control niter = " << niter << " maxStepError = " << maxStepError << " TolE = " << TolE << endl;;
 
             // ============================================================================================
             // Add the additional step: returning to the yield surface.
@@ -1199,7 +1205,7 @@ private:
                 const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
                 // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
                 // double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
-                double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+                double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress, iv_storage, parameters_storage);
                 double dLambda_after_corrector = yf_val_after_corrector / (
                                      n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
                                  );
@@ -1215,7 +1221,7 @@ private:
             double norm_trial_stress = TrialStress.transpose() * TrialStress;
             if (norm_trial_stress != norm_trial_stress) //check for nan
             {
-                cout << "Numeric error!\n";
+                cout << "ASDPlasticMaterial::Runge_Kutta_45_Error_Control  Numeric error!\n";
                 printTensor("TrialStress = " , TrialStress);
                 printTensor("CommitStress = " , CommitStress);
                 printTensor("depsilon = " , depsilon);
@@ -1227,10 +1233,11 @@ private:
                 cout << "yf_val_end = " << yf_val_end << endl;
                 printTensor("n = " , yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage) );
                 printTensor("m = " , pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage) );
-                cout << "xi_star_h_star  = " << yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage) << endl;
-                cout << "dLambda = " << dLambda << endl;
+                cout << "xi_star_h_star  = " << yf.xi_star_h_star( depsilon_elpl, pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage),  TrialStress, iv_storage, parameters_storage) << endl;
 
                 errorcode = -1;
+
+                exit(-1);
             }
 
             Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
