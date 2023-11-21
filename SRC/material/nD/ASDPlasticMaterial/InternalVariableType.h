@@ -28,6 +28,15 @@ struct InternalVariableType {
         return HardeningType::f(trial_value, depsilon, m, sigma, parameters);
     }
 
+    // Assignment operator
+    InternalVariableType& operator=(const InternalVariableType& other) {
+        if (this != &other) { // Check for self-assignment
+            trial_value = other.trial_value;
+            committed_value = other.committed_value;
+        }
+        return *this;
+    }
+
     using parameters_t = typename HardeningType::parameters_t;
 
 

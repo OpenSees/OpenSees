@@ -217,6 +217,14 @@ public:
         return var.trial_value;
     }
 
+    // Assignment operator
+    utuple_storage& operator=(const utuple_storage& other) {
+        if (this != &other) {
+            assign_from_other<0>(other.data);
+        }
+        return *this;
+    }
+
 private:
 
     // Implementations for print_components
@@ -334,7 +342,17 @@ private:
         return "";
     }
 
+    // Helper template function for assignment
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    void assign_from_other(const tuple_t& other) {
+        std::get<I>(data) = std::get<I>(other);
+        assign_from_other<I + 1>(other);
+    }
 
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    void assign_from_other(const tuple_t&) {
+        // Base case, do nothing.
+    }
 };  //end utuple_storage
 
 
