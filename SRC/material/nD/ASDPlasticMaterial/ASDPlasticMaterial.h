@@ -491,22 +491,24 @@ public:
     NDMaterial *getCopy(void)
     {
         cerr << "ASDPlasticMaterial::getCopy - not implemented!!!\n" ;
-        // ASDPlasticMaterial< ElasticityType,
-        //                     YieldFunctionType,
-        //                     PlasticFlowType,
-        //                     MaterialInternalVariablesType,
-        //                     thisClassTag,
-        //                     T > * newmaterial = new T( this->getTag(), rho, this->getPressure(), yf, et, pf, internal_variables);
-        // newmaterial->internal_variables.setVars(this->internal_variables);
-        // newmaterial->TrialStrain = (this->TrialStrain);
-        // newmaterial->TrialStress = (this->TrialStress);
-        // newmaterial->TrialPlastic_Strain = (this->TrialPlastic_Strain);
-        // newmaterial->CommitStress = (this->CommitStress);
-        // newmaterial->CommitStrain = (this->CommitStrain);
-        // newmaterial->CommitPlastic_Strain = (this->CommitPlastic_Strain);
-        // newmaterial->Stiffness = (this->Stiffness);
-        // return newmaterial;
-        return NULL;
+
+        ASDPlasticMaterial <ElasticityType,
+                    YieldFunctionType,
+                    PlasticFlowType,
+                    thisClassTag> *newmaterial = new ASDPlasticMaterial<ElasticityType,
+                    YieldFunctionType,
+                    PlasticFlowType,
+                    thisClassTag>;
+        newmaterial->TrialStrain = this->TrialStrain;
+        newmaterial->TrialStress = this->TrialStress;
+        newmaterial->TrialPlastic_Strain = this->TrialPlastic_Strain;
+        newmaterial->CommitStress = this->CommitStress;
+        newmaterial->CommitStrain = this->CommitStrain;
+        newmaterial->CommitPlastic_Strain = this->CommitPlastic_Strain;
+        newmaterial->iv_storage = this->iv_storage;
+        newmaterial->parameters_storage = this->parameters_storage;
+
+        return newmaterial;
     }
 
     // NDMaterial *getCopy(const char *code);
