@@ -101,7 +101,6 @@ void* OPS_RCTunnelSection();
 void* OPS_UniaxialSection();
 void* OPS_RCTBeamSection2d();
 void* OPS_RCTBeamSectionUniMat2d();
-void* OPS_CreepSection();
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
@@ -334,7 +333,6 @@ namespace {
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
 	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
-	functionMap.insert(std::make_pair("Creep", &OPS_CreepSection));	
 
 	return 0;
     }
