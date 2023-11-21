@@ -55,6 +55,7 @@
 // for print p, q, theta
 #include <tuple>
 #include <utility> // For std::pair
+#include <map> // For std::pair
 
 #include "std_tuple_concat.h"
 
@@ -301,7 +302,7 @@ public:
         }
         // ==========================================
 
-        switch (this->constitutive_integration_method)
+        switch (INT_OPT_constitutive_integration_method[this->getTag()])
         {
         case ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set :
             exitflag = -1;
@@ -721,7 +722,7 @@ public:
         TrialStress = stress;
     }
 
-    bool set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations)
+    bool set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations, int return_to_yield_surface)
     {
         if ( method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set
                 || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler
@@ -736,13 +737,20 @@ public:
                 || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda_Subincrement
                 || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Full_Backward_Euler)
         {
-            ASDPlasticMaterial::constitutive_integration_method = (ASDPlasticMaterial_Constitutive_Integration_Method) method ;
-            ASDPlasticMaterial::f_relative_tol = f_relative_tol ;
-            ASDPlasticMaterial::stress_relative_tol = stress_relative_tol ;
-            ASDPlasticMaterial::n_max_iterations = n_max_iterations ;
+            int tag = this->getTag();
+            INT_OPT_constitutive_integration_method[tag] = (ASDPlasticMaterial_Constitutive_Integration_Method) method ;
+            INT_OPT_f_relative_tol[tag] = f_relative_tol ;
+            INT_OPT_stress_relative_tol[tag] = stress_relative_tol ;
+            INT_OPT_n_max_iterations[tag] = n_max_iterations ;
+            INT_OPT_return_to_yield_surface[tag] = return_to_yield_surface ;
 
-            cout << "Setting set_constitutive_integration_method = " << method << endl;
-
+            cout << "set_constitutive_integration_method:" << endl;
+            cout << "   method = " << method << endl;
+            cout << "   f_relative_tol = " << f_relative_tol << endl;
+            cout << "   stress_relative_tol = " << stress_relative_tol << endl;
+            cout << "   n_max_iterations = " << n_max_iterations << endl;
+            cout << "   return_to_yield_surface = " << return_to_yield_surface << endl;
+ 
             return true;
         }
         else
@@ -992,8 +1000,9 @@ private:
             // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
             // ============================================================================================
             // if(with_return2yield_surface){
-            if (true)
+            if (INT_OPT_return_to_yield_surface[this->getTag()])
             {
+                cout << "RETVRN!" << endl;
                 // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
                 // Make surface the internal variables are already updated. And then, return to the yield surface.
                 double yf_val_after_corrector = yf(TrialStress, iv_storage, parameters_storage);
@@ -1010,6 +1019,10 @@ private:
 
                 double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
                 // Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
+            }
+            else
+            {
+                cout << "progressivism" << endl;
             }
             // ============================================================================================
             // ============================================================================================
@@ -1151,25 +1164,6 @@ private:
             iv_storage1 = iv_storage;
 
 
-
-
-
-            // Eelastic = et(thisSigma, parameters_storage);
-            // const VoigtVector& n = yf.df_dsigma_ij(thisSigma, this_iv_storage, parameters_storage);
-            // const VoigtVector& m = pf(depsilon_elpl, thisSigma, this_iv_storage, parameters_storage);
-            // double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  thisSigma, this_iv_storage, parameters_storage);
-            // double den = n.transpose() * Eelastic * m - xi_star_h_star;
-            // double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
-            // dLambda /= den;
-
-            // //Update state
-            // dEpsilonPl1 = dLambda * m;
-            // dSigma1  = Eelastic * (depsilon_elpl - dLambda * m);
-            // iv_storage.apply([&m, &dLambda, this](auto & internal_variable)
-            // {
-            //     auto h = internal_variable.hardening_function(depsilon_elpl, m, intersection_stress, parameters_storage);
-            //     internal_variable.trial_value += dLambda * h;
-            // });
             double dLambda;
             VoigtVector m;
             VoigtVector dSigma;
@@ -1194,7 +1188,7 @@ private:
             // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
             // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
             // ============================================================================================
-            if (true)
+            if (INT_OPT_return_to_yield_surface[this->getTag()])
             {
                 // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
                 // Make surface the internal variables are already updated. And then, return to the yield surface.
@@ -2877,10 +2871,11 @@ protected:
 
 protected:
     
-    static ASDPlasticMaterial_Constitutive_Integration_Method constitutive_integration_method;     //
-    static double f_relative_tol;
-    static double stress_relative_tol;
-    static int n_max_iterations;
+    static std::map<int, ASDPlasticMaterial_Constitutive_Integration_Method> INT_OPT_constitutive_integration_method;     //
+    static std::map<int, double> INT_OPT_f_relative_tol;
+    static std::map<int, double> INT_OPT_stress_relative_tol;
+    static std::map<int, int> INT_OPT_n_max_iterations;
+    static std::map<int, int> INT_OPT_return_to_yield_surface;
 
     bool first_step;
 
@@ -2896,14 +2891,18 @@ protected:
 // ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set;
 // template < class E, class Y, class P, int tag, class T >
 // ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+
+
 template < class E, class Y, class P, int tag>
-ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag>::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+std::map<int, ASDPlasticMaterial_Constitutive_Integration_Method> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_constitutive_integration_method;
 template < class E, class Y, class P, int tag>
-double ASDPlasticMaterial< E,  Y,  P,  tag>::f_relative_tol = 0;
+std::map<int, double> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_f_relative_tol;
 template < class E, class Y, class P, int tag>
-double ASDPlasticMaterial< E,  Y,  P,  tag>::stress_relative_tol = 0;
+std::map<int, double> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_stress_relative_tol;
 template < class E, class Y, class P, int tag>
-int ASDPlasticMaterial< E,  Y,  P,  tag>::n_max_iterations = 0;
+std::map<int, int> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_n_max_iterations;
+template < class E, class Y, class P, int tag>
+std::map<int, int> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_return_to_yield_surface;
 
 // template < class E, class Y, class P, int tag, class T >
 // VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::dsigma;

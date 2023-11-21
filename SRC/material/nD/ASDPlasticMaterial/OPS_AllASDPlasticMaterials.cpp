@@ -193,6 +193,7 @@ void populate_ASDPlasticMaterial(T* instance)
     double f_relative_tol = 1e-6; 
     double stress_relative_tol = 1e-6; 
     int n_max_iterations = 100;
+    int return_to_yield_surface = 1;
 
     // Loop over input arguments
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -278,6 +279,12 @@ void populate_ASDPlasticMaterial(T* instance)
                     OPS_GetInt(&get_one_value, &n_max_iterations);
                     cout << "   Setting n_max_iterations = " << n_max_iterations << endl;
                 }
+                
+                if (std::strcmp(param_name, "return_to_yield_surface") == 0)
+                {
+                    OPS_GetInt(&get_one_value, &return_to_yield_surface);
+                    cout << "   Setting return_to_yield_surface = " << return_to_yield_surface << endl;
+                }
 
                 if (std::strcmp(param_name, "method") == 0)
                 {
@@ -300,5 +307,5 @@ void populate_ASDPlasticMaterial(T* instance)
         }
     }
 
-    instance->set_constitutive_integration_method(method, f_relative_tol, stress_relative_tol, n_max_iterations);
+    instance->set_constitutive_integration_method(method, f_relative_tol, stress_relative_tol, n_max_iterations, return_to_yield_surface);
 }
