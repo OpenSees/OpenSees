@@ -601,7 +601,7 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
   uniaxialMaterialsMap.insert(
-      std::make_pair("CreepMaterial", &OPS_CreepMaterial));  
+      std::make_pair("Creep", &OPS_CreepMaterial));  
   uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
