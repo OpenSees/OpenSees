@@ -113,4 +113,8 @@ private:
 template <class AlphaHardeningType,  class KHardeningType>
 VoigtVector DruckerPrager_YF<AlphaHardeningType, KHardeningType>::result;
 
+//Declares this YF as featuring an apex
+template<class AlphaHardeningType, class KHardeningType>
+struct yf_has_apex<DruckerPrager_YF<AlphaHardeningType, KHardeningType>> : std::true_type {};
+
 #endif

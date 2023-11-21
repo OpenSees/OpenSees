@@ -28,10 +28,17 @@
 #define YieldFunctionBase_H
 
 #include "EigenAPI.h"
-// #include "EvolvingVariable.h"
 #include <Channel.h>
-// #include "utuple_storage.h"
-// #include "std_tuple_concat.h"
+#include <type_traits>
+
+
+// Trait for enabling special algorithms in YF that have apexes
+
+// Base template assuming no apex member exists
+template <typename T>
+struct yf_has_apex : std::false_type {};
+
+
 
 // Helper template to check if a class has a parameters_t type alias
 template <typename T, typename = void>
