@@ -26,3 +26,4 @@
 
 #include "VonMises_PF.h"
 #include "DruckerPrager_PF.h"
+#include "ConstantDilatancy_PF.h"

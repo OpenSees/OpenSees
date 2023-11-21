@@ -13,6 +13,7 @@ YF = [
 PF = [
     "VonMises_PF",
     "DruckerPrager_PF",
+    "ConstantDilatancy_PF"
 ]
 
 IV_YF = [
@@ -32,6 +33,8 @@ IV_PF = {
     "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
     ]
 }
+
+IV_PF["ConstantDilatancy_PF"] = IV_PF["VonMises_PF"]
 
 
 
