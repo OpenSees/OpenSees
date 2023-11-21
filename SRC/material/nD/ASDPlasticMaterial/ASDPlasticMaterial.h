@@ -54,6 +54,8 @@
 
 // for print p, q, theta
 #include <tuple>
+#include <utility> // For std::pair
+
 #include "std_tuple_concat.h"
 
 // for debugging printing
@@ -329,9 +331,9 @@ public:
         // case ASDPlasticMaterial_Constitutive_Integration_Method::Modified_Euler_Error_Control :
         //     exitflag = this->Modified_Euler_Error_Control(strain_increment);
         //     break;
-        // case ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control :
-        //     // exitflag = this->Runge_Kutta_45_Error_Control(strain_increment);;
-        //     break;
+        case ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control :
+            exitflag = this->Runge_Kutta_45_Error_Control(strain_increment);;
+            break;
         default:
             cerr << "ASDPlasticMaterial::setTrialStrainIncr - Integration method not available!\n" ;
             exitflag = -1;
@@ -719,6 +721,37 @@ public:
         TrialStress = stress;
     }
 
+    bool set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations)
+    {
+        if ( method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler_Crisfield
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Multistep_Forward_Euler
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Multistep_Forward_Euler_Crisfield
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Modified_Euler_Error_Control
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler_Subincrement
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda_Subincrement
+                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Full_Backward_Euler)
+        {
+            ASDPlasticMaterial::constitutive_integration_method = (ASDPlasticMaterial_Constitutive_Integration_Method) method ;
+            ASDPlasticMaterial::f_relative_tol = f_relative_tol ;
+            ASDPlasticMaterial::stress_relative_tol = stress_relative_tol ;
+            ASDPlasticMaterial::n_max_iterations = n_max_iterations ;
+
+            cout << "Setting set_constitutive_integration_method = " << method << endl;
+
+            return true;
+        }
+        else
+        {
+            cerr << "ASDPlasticMaterial::set_constitutive_integration_method - Unknown constitutive_integration_method\n";
+            return false;
+        }
+    }
+
 protected:
 
     void setTrialPlastic_Strain(const VoigtVector& strain)
@@ -766,7 +799,6 @@ protected:
 private:
 
 
-    // int Forward_Euler(const VoigtVector &strain_incr, bool const& with`_return2yield_surface)
     int Forward_Euler(const VoigtVector &strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;
@@ -920,10 +952,8 @@ private:
             });
 
 
-
-            // vonMises does NOT enter this part.
-            // DruckerPrager requries this part.
-            // if (yf.hasCorner() && yf.in_Apex(TrialStress))
+            // Deal with the APEX if needed
+            // if constexpr (yf_has_apex<YieldFunctionType>::value) {
             // {
             //     static VoigtVector small_stress(3, 3, 0.0);
             //     small_stress *= 0;
@@ -1019,215 +1049,196 @@ private:
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = -1;
 
-        // static VoigtVector depsilon(3, 3, 0);
-        // depsilon *= 0;
-        // depsilon(i, j) = strain_incr(i, j);
+       
 
-        // const VoigtVector& sigma = CommitStress;
-        // const VoigtVector& epsilon = CommitStrain;
-        // internal_variables.revert();
-        // internal_variables.commit_tmp();
+        return errorcode;
+    }
 
-        // dsigma *= 0;//Zero-out the stress increment tensor
-        // intersection_stress *= 0;
-        // intersection_strain *= 0;
+    std::pair<double, VoigtVector> CalculateLambdaM(
+        const VoigtVector &thisSigma, 
+        const VoigtVector &depsilon_elpl, 
+        const parameters_storage_t &parameters_storage, 
+        const iv_storage_t &this_iv_storage)
+    {
+        VoigtMatrix Eelastic = et(thisSigma, parameters_storage);
+        const VoigtVector& n = yf.df_dsigma_ij(thisSigma, this_iv_storage, parameters_storage);
+        VoigtVector m = pf(depsilon_elpl, thisSigma, this_iv_storage, parameters_storage);
+        double xi_star_h_star = yf.xi_star_h_star(depsilon_elpl, m, thisSigma, this_iv_storage, parameters_storage);
 
-        // VoigtMatrix& Eelastic = et(sigma);
-        // Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
+        double den = n.transpose() * Eelastic * m - xi_star_h_star;
+        double dLambda = (den != 0) ? (n.transpose() * Eelastic * depsilon_elpl).value() / den : 0;
 
-        // dsigma(i, j) += Eelastic(i, j, k, l) * depsilon(k, l);
+        return std::make_pair(dLambda, m);
+    }
 
-        // TrialStress(i, j) = sigma(i, j) + dsigma(i, j);
-        // TrialStrain(i, j) = CommitStrain(i, j) + depsilon(i, j);
-        // TrialPlastic_Strain(i, j) = CommitPlastic_Strain(i, j);
-
-        // double yf_val_start = yf(sigma);
-        // double yf_val_end = yf(TrialStress);
-
-        // VoigtVector& start_stress = CommitStress;
-        // VoigtVector& end_stress = TrialStress;
-
-        // intersection_stress(i, j) = start_stress(i, j);
-
-
-        // if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
-        // {
-        //     VoigtMatrix& Eelastic = et(TrialStress);
-        //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
-        // }
-        // else  //Plasticity
-        // {
-        //     depsilon_elpl(i, j) = depsilon(i, j);
-        //     if (yf_val_start < 0)
-        //     {
-        //         double intersection_factor = zbrentstress( start_stress, end_stress, 0.0, 1.0, TOLERANCE1 );
-        //         // cout << " intersection_factor = " << intersection_factor << endl;
-        //         intersection_stress(i, j) = start_stress(i, j) * (1 - intersection_factor) + end_stress(i, j) * intersection_factor;
-        //         intersection_strain(i, j) = epsilon(i, j)  + depsilon(i, j) * intersection_factor;
-        //         depsilon_elpl(i, j) = (1 - intersection_factor) * depsilon(i, j);
-        //     }
-
-        //     TrialStress(i, j) = intersection_stress(i, j);
+    int Runge_Kutta_45_Error_Control(const VoigtVector &strain_incr)
+    {
+        cout << "Running Runge_Kutta_45_Error_Control" << endl;
+        using namespace ASDPlasticMaterialGlobals;
+        // ----------------------------------------------------------------
+        // Print p, q, theta for debug--------------------------------------
+        // ----------------------------------------------------------------
+        double enter_yf = yf(CommitStress, iv_storage, parameters_storage);
+        double enter_p, enter_q, enter_theta;
 
 
-        //     int Nsubsteps = this-> n_max_iterations;
-        //     static VoigtVector sub_depsilon_elpl(3, 3, 0);
+        int errorcode = -1;
 
-        //     sub_depsilon_elpl *= 0;
-        //     sub_depsilon_elpl(i, j) = depsilon_elpl(i, j) / Nsubsteps;
+        static VoigtVector depsilon;
+        depsilon *= 0;
+        depsilon = strain_incr;
 
-        //     // ====================================
-        //     // Initialize the stiffness to be zero.
-        //     // In multiStep, this entire stiffness should be the average of the substep
-        //     // stiffness to match the real stiffness in one global step.
-        //     Stiffness *= 0;
-        //     // ====================================
-        //     for (int iteration = 0; iteration < Nsubsteps; iteration++)
-        //     {
-        //         internal_variables.revert_tmp();
-        //         Eelastic = et(TrialStress);
+        const VoigtVector& sigma = CommitStress;
+        const VoigtVector& epsilon = CommitStrain;
 
-        //         //Compute normal to YF (n) and Plastic Flow direction (m) at the starting point.
-        //         // Now TrialStress is at the starting point.
-        //         const VoigtVector& n = yf.df_dsigma_ij(TrialStress);
-        //         const VoigtVector& m = pf(sub_depsilon_elpl, TrialStress);
-
-        //         double xi_star_h_star = yf.xi_star_h_star( sub_depsilon_elpl, m,  TrialStress);
-        //         double den = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
-
-        //         //Compute the plastic multiplier
-        //         // if (abs(den) < MACHINE_EPSILON)
-        //         // {
-        //         //     cout << "CEP - den = 0\n";
-        //         //     printTensor("m", m);
-        //         //     printTensor("n", n);
-        //         //     cout << "xi_star_h_star" << xi_star_h_star << endl;
-        //         //     cout << "den" << den << endl;
-        //         //     printTensor("sub_depsilon_elpl", sub_depsilon_elpl);
-        //         //     return -1;
-        //         // }
-        //         double dLambda =  n(i, j) * Eelastic(i, j, k, l) * sub_depsilon_elpl(k, l);
-        //         dLambda /= den;
-
-        //         // Add the elastic predictor.
-        //         TrialStress(i, j)  += Eelastic(i, j, k, l) * sub_depsilon_elpl(k, l) ;
+        iv_storage.revert_all();
 
 
-        //         static VoigtMatrix Stiffness_substep(3, 3, 3, 3, 0.0);
-        //         Stiffness_substep *= 0;
-        //         // vonMises does NOT enter this part.
-        //         // DruckerPrager requries this part.
-        //         if (yf.hasCorner() && yf.in_Apex(TrialStress))
-        //         {
-        //             static VoigtVector small_stress(3, 3, 0.0);
-        //             small_stress *= 0;
-        //             // The small value 50*Pa refers to the lowest confinement test:
-        //             // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
-        //             double DP_k = yf.get_k();
-        //             double DP_p = 50 ;
-        //             // To make it on the yield surface, the q is equal to k*p.
-        //             double DP_q = DP_k * DP_p ;
-        //             // Assume the triaxial conditions sigma_2 = sigma_3.
-        //             small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
-        //             small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
-        //             small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
+        dsigma *= 0;
+        intersection_stress *= 0;
+        intersection_strain *= 0;
 
-        //             static VoigtVector Predictor_Stress(3, 3, 0.0);
-        //             Predictor_Stress(i, j) = TrialStress(i, j);
-        //             // (1) Update the trial stress
-        //             TrialStress(i, j) = small_stress(i, j);
+        VoigtMatrix Eelastic = et(sigma, parameters_storage);
+        Stiffness = Eelastic;
 
-        //             // (2) Update the trial plastic strain
-        //             const VoigtVector& n = yf.df_dsigma_ij(small_stress);
-        //             const VoigtVector& m = pf(depsilon, small_stress);
-        //             const double xi_star_h_star = yf.xi_star_h_star( depsilon, m,  small_stress);
-        //             double denominator = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
-        //             double dLambda = yf(Predictor_Stress) / denominator;
-        //             TrialPlastic_Strain(i, j) += dLambda * m(i, j);
+        dsigma = Eelastic * depsilon;
 
-        //             // (3) Update the internal variables
-        //             internal_variables.evolve(dLambda, depsilon, m, TrialStress);
-        //             internal_variables.commit_tmp();
 
-        //             // (4) Update the stiffness
-        //             static VoigtVector dstress(3, 3, 0.0);
-        //             dstress(i, j) = small_stress(i, j) - sigma(i, j);
-        //             static VoigtVector depsilon_Inv(3, 3, 0.0);
-        //             depsilon_Inv = depsilon.Inv();
-        //             Stiffness_substep(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
+        TrialStress = sigma + dsigma;
+        TrialStrain = CommitStrain + depsilon;
+        TrialPlastic_Strain = CommitPlastic_Strain;
 
-        //             // Go to the next sub-step directly:
-        //             continue;
-        //         }
+        double yf_val_start = yf(sigma, iv_storage, parameters_storage);
+        double yf_val_end = yf(TrialStress, iv_storage, parameters_storage);
 
-        //         // Update the trial plastic strain.
-        //         TrialPlastic_Strain(i, j) += dLambda * m(i, j);
-        //         // Update the internal variables
-        //         internal_variables.evolve(dLambda, sub_depsilon_elpl, m, TrialStress);
-        //         internal_variables.commit_tmp();
+        VoigtVector start_stress = CommitStress;
+        VoigtVector end_stress = TrialStress;
 
-        //         //Correct the trial stress
-        //         TrialStress(i, j) = TrialStress(i, j) - dLambda * Eelastic(i, j, k, l) * m(k, l);
-        //         Stiffness_substep(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m(p, q)) * (n(r, s) * Eelastic(r, s, k, l) ) / den;
-        //         Stiffness(i, j, k, l) += Stiffness_substep(i, j, k, l) / Nsubsteps;
+        intersection_stress = start_stress;
 
-        //         // // ===========================================================
-        //         // // According to Crisfield(1996) Page 172. Section 6.6.4.
-        //         // // The stiffness for the entire step should be the average of the substeps'
-        //         // // stiffness
-        //         // // ===========================================================
-        //         // if(!with_return2yield_surface){
-        //         //     Stiffness_substep(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m(p, q)) * (n(r, s) * Eelastic(r, s, k, l) ) / den;
-        //         //     Stiffness(i, j, k, l) += Stiffness_substep(i, j, k, l)/Nsubsteps;
-        //         // }else{
-        //         //     // ==============================================================
-        //         //     // Add the additional step: returning to the yield surface.
-        //         //     // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
-        //         //     // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated again
-        //         //     // to the yield surface.
-        //         //     // In addition, each substep will have this behavior of returning to yield surface.
-        //         //     // ==============================================================
-        //         //     // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
-        //         //     // Make surface the internal variables are already updated. And then, return to the yield surface.
-        //         //     double yf_val_after_corrector = yf(TrialStress);
-        //         //     const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress);
-        //         //     const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress);
-        //         //     // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
-        //         //     double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
-        //         //     double dLambda_after_corrector = yf_val_after_corrector / (
-        //         //         n_after_corrector(i,j)*Eelastic(i,j,k,l)*m_after_corrector(k,l) - xi_star_h_star_after_corrector
-        //         //         );
-        //         //     TrialStress(i, j) = TrialStress(i, j) - dLambda_after_corrector * Eelastic(i, j, k, l) * m_after_corrector(k, l);
-        //         //     TrialPlastic_Strain(i, j) += dLambda_after_corrector * m_after_corrector(i, j);
+        if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
+        {
+            VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
+            Stiffness = Eelastic;
+        }
+        else  //Plasticity
+        {
+            depsilon_elpl = depsilon;
+            if (yf_val_start < 0)
+            {
+                double intersection_factor = zbrentstress( start_stress, end_stress, 0.0, 1.0, TOLERANCE1 );
 
-        //         // double den_after_corrector = n_after_corrector(p, q) * Eelastic(p, q, r, s) * m_after_corrector(r, s) - xi_star_h_star_after_corrector;
-        //         // Stiffness_substep(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
-        //         // Stiffness(i, j, k, l) += Stiffness_substep(i, j, k, l)/Nsubsteps;
-        //         // }
-        //         // // ===================================================================
+                intersection_factor = intersection_factor < 0 ? 0 : intersection_factor;
+                intersection_factor = intersection_factor > 1 ? 1 : intersection_factor;
 
-        //         double norm_trial_stress = TrialStress(i, j) * TrialStress(i, j);
-        //         if (norm_trial_stress != norm_trial_stress )//denf <= 0 ) //check for nan
-        //         {
-        //             cout << "Numeric error!\n";
-        //             printTensor("TrialStress = " , TrialStress);
-        //             printTensor("CommitStress = " , CommitStress);
-        //             printTensor("depsilon = " , depsilon);
-        //             printTensor("intersection_stress = " , intersection_stress);
-        //             printTensor4("Eelastic = " , Eelastic);
-        //             printTensor4("Stiffness = " , Stiffness);
-        //             cout << "yf_val_start = " << yf_val_start << endl;
-        //             cout << "yf_val_end = " << yf_val_end << endl;
-        //             printTensor("n = " , n );
-        //             printTensor("m = " , m );
-        //             cout << "xi_star_h_star  = " << xi_star_h_star << endl;
-        //             cout << "den = " << den << endl;
-        //             cout << "dLambda = " << dLambda << endl;
+                intersection_stress = start_stress * (1 - intersection_factor) + end_stress * intersection_factor;
+                intersection_strain = epsilon  + depsilon * intersection_factor;
+                depsilon_elpl = (1 - intersection_factor) * depsilon;
+            }
 
-        //             errorcode = -1;
-        //         }
-        //     }
-        // } // end plasticity
+            TrialStress = intersection_stress;
+            double T = 0.0, dT = 1.0, dT_min = 1e-3, TolE = 1e-4;
+
+            VoigtVector thisSigma = TrialStress;
+            VoigtVector thisEpsilonPl;
+
+
+
+            VoigtVector dSigma1;
+            VoigtVector dEpsilonPl1;
+            iv_storage_t iv_storage1;
+
+            iv_storage1 = iv_storage;
+
+
+
+
+
+            // Eelastic = et(thisSigma, parameters_storage);
+            // const VoigtVector& n = yf.df_dsigma_ij(thisSigma, this_iv_storage, parameters_storage);
+            // const VoigtVector& m = pf(depsilon_elpl, thisSigma, this_iv_storage, parameters_storage);
+            // double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  thisSigma, this_iv_storage, parameters_storage);
+            // double den = n.transpose() * Eelastic * m - xi_star_h_star;
+            // double dLambda =  n.transpose() * Eelastic * depsilon_elpl;
+            // dLambda /= den;
+
+            // //Update state
+            // dEpsilonPl1 = dLambda * m;
+            // dSigma1  = Eelastic * (depsilon_elpl - dLambda * m);
+            // iv_storage.apply([&m, &dLambda, this](auto & internal_variable)
+            // {
+            //     auto h = internal_variable.hardening_function(depsilon_elpl, m, intersection_stress, parameters_storage);
+            //     internal_variable.trial_value += dLambda * h;
+            // });
+            double dLambda;
+            VoigtVector m;
+            VoigtVector dSigma;
+
+            std::tie(dLambda, m) = CalculateLambdaM(intersection_stress, depsilon_elpl, parameters_storage, iv_storage);
+            dSigma  = Eelastic * (depsilon_elpl - dLambda * m);
+            
+            //Update stress and internal variables
+            TrialStress += dSigma;
+            TrialPlastic_Strain += dLambda * m;
+            iv_storage.apply([&m, &dLambda, this](auto & internal_variable)
+            {
+                auto h = internal_variable.hardening_function(depsilon_elpl, m, intersection_stress, parameters_storage);
+                internal_variable.trial_value += dLambda * h;
+            });
+
+
+
+
+            // ============================================================================================
+            // Add the additional step: returning to the yield surface.
+            // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
+            // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
+            // ============================================================================================
+            if (true)
+            {
+                // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
+                // Make surface the internal variables are already updated. And then, return to the yield surface.
+                double yf_val_after_corrector = yf(TrialStress, iv_storage, parameters_storage);
+                const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
+                const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
+                // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
+                // double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
+                double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+                double dLambda_after_corrector = yf_val_after_corrector / (
+                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
+                                 );
+                TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
+                TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
+
+                double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
+                // Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
+            }
+            // ============================================================================================
+            // ============================================================================================
+
+            double norm_trial_stress = TrialStress.transpose() * TrialStress;
+            if (norm_trial_stress != norm_trial_stress) //check for nan
+            {
+                cout << "Numeric error!\n";
+                printTensor("TrialStress = " , TrialStress);
+                printTensor("CommitStress = " , CommitStress);
+                printTensor("depsilon = " , depsilon);
+                printTensor("dsigma   = " , dsigma);
+                printTensor("intersection_stress = " , intersection_stress);
+                printTensor4("Eelastic = " , Eelastic);
+                printTensor4("Stiffness = " , Stiffness);
+                cout << "yf_val_start = " << yf_val_start << endl;
+                cout << "yf_val_end = " << yf_val_end << endl;
+                printTensor("n = " , yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage) );
+                printTensor("m = " , pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage) );
+                cout << "xi_star_h_star  = " << yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage) << endl;
+                cout << "dLambda = " << dLambda << endl;
+
+                errorcode = -1;
+            }
+
+            Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
+        }
 
         return errorcode;
     }
@@ -2707,126 +2718,127 @@ private:
     // }
 
     //More robust brent
-    double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const {
-    using namespace ASDPlasticMaterialGlobals;
+    double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const 
+    {
+        using namespace ASDPlasticMaterialGlobals;
 
-    // Constants
-    const double MAX_BRACKET_EXPANSION = 100.0; // Maximum factor to expand the bracket
-    const double BRACKET_EXPANSION_FACTOR = 1.6; // Factor to expand the bracket each iteration
-    const double EPS_MULTIPLE = 2.0;
-    const double TOL_MULTIPLE = 0.5;
-    const double EPS = std::numeric_limits<double>::epsilon();
+        // Constants
+        const double MAX_BRACKET_EXPANSION = 100.0; // Maximum factor to expand the bracket
+        const double BRACKET_EXPANSION_FACTOR = 1.6; // Factor to expand the bracket each iteration
+        const double EPS_MULTIPLE = 2.0;
+        const double TOL_MULTIPLE = 0.5;
+        const double EPS = std::numeric_limits<double>::epsilon();
 
-    // Lambda functions
-    auto calculateSigma = [](const VoigtVector & start, const VoigtVector & end, double multiplier) {
-        return start * (1 - multiplier) + end * multiplier;
-    };
+        // Lambda functions
+        auto calculateSigma = [](const VoigtVector & start, const VoigtVector & end, double multiplier) {
+            return start * (1 - multiplier) + end * multiplier;
+        };
 
-    auto calculateYf = [this](const VoigtVector & sigma) {
-        return yf(sigma, iv_storage, parameters_storage);
-    };
+        auto calculateYf = [this](const VoigtVector & sigma) {
+            return yf(sigma, iv_storage, parameters_storage);
+        };
 
-    // Bracket Adjustment: Expand the bracket if necessary
-    double a = x1;
-    double b = x2;
-    double c = x2;
-    double d, e = 0.0;
-    double fa = calculateYf(calculateSigma(start_stress, end_stress, a));
-    double fb = calculateYf(calculateSigma(start_stress, end_stress, b));
-    double fc = fb;
+        // Bracket Adjustment: Expand the bracket if necessary
+        double a = x1;
+        double b = x2;
+        double c = x2;
+        double d, e = 0.0;
+        double fa = calculateYf(calculateSigma(start_stress, end_stress, a));
+        double fb = calculateYf(calculateSigma(start_stress, end_stress, b));
+        double fc = fb;
 
 
-    for (double factor = 1.0; factor <= MAX_BRACKET_EXPANSION; factor *= BRACKET_EXPANSION_FACTOR) {
-        if ((fb * fa) <= 0.0) {
-            break; // Valid bracket found
-        }
-        if (std::abs(fa) < std::abs(fb)) {
-            a -= (b - a) * factor;
-            fa = calculateYf(calculateSigma(start_stress, end_stress, a));
-        } else {
-            b += (b - a) * factor;
-            fb = calculateYf(calculateSigma(start_stress, end_stress, b));
-        }
-    }
-
-    // Brent's Method Implementation
-    if ((fb * fa) > 0.0) {
-        throw std::runtime_error("Unable to find a valid bracket in zbrentstress");
-    }
-
-    for (int iter = 1; iter <= ASDPlasticMaterial_MAXITER_BRENT; iter++) {
-        if ((fb * fc) > 0.0) {
-            c = a;   // Rename a, b, c and adjust bounding interval d
-            fc = fa;
-            e = d = b - a;
+        for (double factor = 1.0; factor <= MAX_BRACKET_EXPANSION; factor *= BRACKET_EXPANSION_FACTOR) {
+            if ((fb * fa) <= 0.0) {
+                break; // Valid bracket found
+            }
+            if (std::abs(fa) < std::abs(fb)) {
+                a -= (b - a) * factor;
+                fa = calculateYf(calculateSigma(start_stress, end_stress, a));
+            } else {
+                b += (b - a) * factor;
+                fb = calculateYf(calculateSigma(start_stress, end_stress, b));
+            }
         }
 
-        if (std::abs(fc) < std::abs(fb)) {
+        // Brent's Method Implementation
+        if ((fb * fa) > 0.0) {
+            throw std::runtime_error("Unable to find a valid bracket in zbrentstress");
+        }
+
+        for (int iter = 1; iter <= ASDPlasticMaterial_MAXITER_BRENT; iter++) {
+            if ((fb * fc) > 0.0) {
+                c = a;   // Rename a, b, c and adjust bounding interval d
+                fc = fa;
+                e = d = b - a;
+            }
+
+            if (std::abs(fc) < std::abs(fb)) {
+                a = b;
+                b = c;
+                c = a;
+                fa = fb;
+                fb = fc;
+                fc = fa;
+            }
+
+            double tol1 = EPS_MULTIPLE * EPS * std::abs(b) + TOL_MULTIPLE * tol;
+            double xm = 0.5 * (c - b);
+
+            if (std::abs(xm) <= tol1 || fb == 0.0) {
+                return b;  // Convergence
+            }
+
+            if (std::abs(e) >= tol1 && std::abs(fa) > std::abs(fb)) {
+                // Attempt inverse quadratic interpolation
+                double s = fb / fa;
+                double p, q;
+                if (a == c) {
+                    p = 2.0 * xm * s;
+                    q = 1.0 - s;
+                } else {
+                    q = fa / fc;
+                    double r = fb / fc;
+                    p = s * (2.0 * xm * q * (q - r) - (b - a) * (r - 1.0));
+                    q = (q - 1.0) * (r - 1.0) * (s - 1.0);
+                }
+
+                if (p > 0.0) q = -q;
+                p = std::abs(p);
+                double min1 = 3.0 * xm * q - std::abs(tol1 * q);
+                double min2 = std::abs(e * q);
+
+                if (2.0 * p < std::min(min1, min2)) {
+                    e = d;
+                    d = p / q;
+                } else {
+                    d = xm;
+                    e = d;
+                }
+            } else {
+                d = xm;  // Bounds decreasing too slowly, use bisection
+                e = d;
+            }
+
             a = b;
-            b = c;
-            c = a;
             fa = fb;
-            fb = fc;
-            fc = fa;
-        }
 
-        double tol1 = EPS_MULTIPLE * EPS * std::abs(b) + TOL_MULTIPLE * tol;
-        double xm = 0.5 * (c - b);
-
-        if (std::abs(xm) <= tol1 || fb == 0.0) {
-            return b;  // Convergence
-        }
-
-        if (std::abs(e) >= tol1 && std::abs(fa) > std::abs(fb)) {
-            // Attempt inverse quadratic interpolation
-            double s = fb / fa;
-            double p, q;
-            if (a == c) {
-                p = 2.0 * xm * s;
-                q = 1.0 - s;
+            if (std::abs(d) > tol1) {
+                b += d;
             } else {
-                q = fa / fc;
-                double r = fb / fc;
-                p = s * (2.0 * xm * q * (q - r) - (b - a) * (r - 1.0));
-                q = (q - 1.0) * (r - 1.0) * (s - 1.0);
+                b += (xm > 0.0 ? std::abs(tol1) : -std::abs(tol1));
             }
 
-            if (p > 0.0) q = -q;
-            p = std::abs(p);
-            double min1 = 3.0 * xm * q - std::abs(tol1 * q);
-            double min2 = std::abs(e * q);
+            fb = calculateYf(calculateSigma(start_stress, end_stress, b));
 
-            if (2.0 * p < std::min(min1, min2)) {
-                e = d;
-                d = p / q;
-            } else {
-                d = xm;
-                e = d;
+            // Check for NaN (Not a Number) values
+            if (std::isnan(fb)) {
+                throw std::runtime_error("zbrentstress: NaN encountered in function evaluation.");
             }
-        } else {
-            d = xm;  // Bounds decreasing too slowly, use bisection
-            e = d;
         }
 
-        a = b;
-        fa = fb;
-
-        if (std::abs(d) > tol1) {
-            b += d;
-        } else {
-            b += (xm > 0.0 ? std::abs(tol1) : -std::abs(tol1));
-        }
-
-        fb = calculateYf(calculateSigma(start_stress, end_stress, b));
-
-        // Check for NaN (Not a Number) values
-        if (std::isnan(fb)) {
-            throw std::runtime_error("zbrentstress: NaN encountered in function evaluation.");
-        }
+        throw std::runtime_error("Maximum iterations reached without convergence in zbrentstress");
     }
-
-    throw std::runtime_error("Maximum iterations reached without convergence in zbrentstress");
-}
 
 
 
@@ -2842,6 +2854,7 @@ private:
     //             }
     //     return ret;
     // }
+
 
 protected:
 
@@ -2861,38 +2874,8 @@ protected:
     iv_storage_t iv_storage;
     parameters_storage_t parameters_storage;
 
+
 protected:
-    bool set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations)
-    {
-        if ( method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler_Crisfield
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Multistep_Forward_Euler
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Multistep_Forward_Euler_Crisfield
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Modified_Euler_Error_Control
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler_Subincrement
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Backward_Euler_ddlambda_Subincrement
-                || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Full_Backward_Euler)
-        {
-            ASDPlasticMaterial::constitutive_integration_method = (ASDPlasticMaterial_Constitutive_Integration_Method) method ;
-            ASDPlasticMaterial::f_relative_tol = f_relative_tol ;
-            ASDPlasticMaterial::stress_relative_tol = stress_relative_tol ;
-            ASDPlasticMaterial::n_max_iterations = n_max_iterations ;
-
-            cout << "Setting set_constitutive_integration_method = " << method << endl;
-
-            return true;
-        }
-        else
-        {
-            cerr << "ASDPlasticMaterial::set_constitutive_integration_method - Unknown constitutive_integration_method\n";
-            return false;
-        }
-    }
-
     
     static ASDPlasticMaterial_Constitutive_Integration_Method constitutive_integration_method;     //
     static double f_relative_tol;
@@ -2915,6 +2898,12 @@ protected:
 // ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
 template < class E, class Y, class P, int tag>
 ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag>::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+template < class E, class Y, class P, int tag>
+double ASDPlasticMaterial< E,  Y,  P,  tag>::f_relative_tol = 0;
+template < class E, class Y, class P, int tag>
+double ASDPlasticMaterial< E,  Y,  P,  tag>::stress_relative_tol = 0;
+template < class E, class Y, class P, int tag>
+int ASDPlasticMaterial< E,  Y,  P,  tag>::n_max_iterations = 0;
 
 // template < class E, class Y, class P, int tag, class T >
 // VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::dsigma;

@@ -188,6 +188,12 @@ void populate_ASDPlasticMaterial(T* instance)
         std::cout << "   "  <<  name << std::endl;
     });
 
+    // Default integration options
+    int method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+    double f_relative_tol = 1e-6; 
+    double stress_relative_tol = 1e-6; 
+    int n_max_iterations = 100;
+
     // Loop over input arguments
     while (OPS_GetNumRemainingInputArgs() > 0) {
 
@@ -205,6 +211,7 @@ void populate_ASDPlasticMaterial(T* instance)
 
                 if (std::strcmp(iv_name, "End_Internal_Variables") == 0)
                 {
+                    cout << "\n\n Done reading internal variables from input\n";
                     break;
                 }
 
@@ -231,6 +238,7 @@ void populate_ASDPlasticMaterial(T* instance)
                 const char *param_name = OPS_GetString();
                 if (std::strcmp(param_name, "End_Model_Parameters") == 0)
                 {
+                    cout << "\n\n Done reading parameters from input\n";
                     break;
                 }
 
@@ -239,5 +247,58 @@ void populate_ASDPlasticMaterial(T* instance)
                 instance->setParameterByName(param_name, param_value);
             }
         }
+
+
+        // set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations)
+        if (std::strcmp(cmd, "Begin_Integration_Options") == 0)
+        {
+            cout << "\n\nReading Integration Options\n";
+            while (OPS_GetNumRemainingInputArgs() > 0) {
+                const char *param_name = OPS_GetString();
+                if (std::strcmp(param_name, "End_Integration_Options") == 0)
+                {
+                    cout << "\n\nDone reading Integration Options\n";
+                    break;
+                }
+
+                if (std::strcmp(param_name, "f_relative_tol") == 0)
+                {
+                    OPS_GetDouble(&get_one_value, &f_relative_tol);
+                    cout << "   Setting f_relative_tol = " << f_relative_tol << endl;
+                }
+
+                if (std::strcmp(param_name, "stress_relative_tol") == 0)
+                {
+                    OPS_GetDouble(&get_one_value, &stress_relative_tol);
+                    cout << "   Setting stress_relative_tol = " << stress_relative_tol << endl;
+                }
+
+                if (std::strcmp(param_name, "n_max_iterations") == 0)
+                {
+                    OPS_GetInt(&get_one_value, &n_max_iterations);
+                    cout << "   Setting n_max_iterations = " << n_max_iterations << endl;
+                }
+
+                if (std::strcmp(param_name, "method") == 0)
+                {
+                    const char *method_name = OPS_GetString();
+                    if (std::strcmp(method_name, "Forward_Euler") == 0)
+                        method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+                    else if (std::strcmp(method_name, "Runge_Kutta_45_Error_Control") == 0)
+                        method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
+                    else
+                    {
+                        cout << "WARNING! Unrecognised ASDPlasticMaterial_Constitutive_Integration_Method name " << method_name << endl;
+                        cout << "Defaulting to Forward_Euler" << endl;
+                        method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
+                    }
+                    cout << "   Setting integration method = " << method_name << " method_int = " << method << endl;
+                    
+                }
+
+            }
+        }
     }
+
+    instance->set_constitutive_integration_method(method, f_relative_tol, stress_relative_tol, n_max_iterations);
 }
