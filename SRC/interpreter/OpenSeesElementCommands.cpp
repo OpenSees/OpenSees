@@ -783,6 +783,7 @@ namespace {
 	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
 	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
 	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
+	functionMap.insert(std::make_pair("pipe", &OPS_PipeElement));
 	return 0;
     }
 }
