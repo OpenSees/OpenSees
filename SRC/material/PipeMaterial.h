@@ -81,6 +81,7 @@ class PipeMaterial : public UniaxialMaterial {
         PipeMaterial *mat = new PipeMaterial(this->getTag());
         mat->points = this->points;
         mat->parameterID = this->parameterID;
+        return mat;
     }
 
     int sendSelf(int commitTag, Channel &theChannel) { return 0; }

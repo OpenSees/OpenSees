@@ -822,6 +822,7 @@ namespace {
 	functionMap.insert(std::make_pair("shellMITC4Thermal", &OPS_ShellMITC4Thermal));
 	functionMap.insert(std::make_pair("ShellMITC4Thermal", &OPS_ShellMITC4Thermal));
 	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
+	functionMap.insert(std::make_pair("pipe", &OPS_PipeElement));
 	return 0;
     }
 }

@@ -297,7 +297,7 @@ class Pipe : public Element {
 void *OPS_PipeElement() {
     // 7722 - 7747
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 7) {
+    if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: element pipe "
                   "tag? nd1? nd2? matTag? secTag? transfTag? "
                   "<To? p?>\n";
