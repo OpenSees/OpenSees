@@ -25,6 +25,7 @@
 #define Pipe_h
 
 #include <CrdTransf.h>
+#include <Domain.h>
 #include <Element.h>
 #include <Matrix.h>
 #include <Node.h>
@@ -44,6 +45,9 @@ class Pipe : public Element {
     UniaxialMaterial *theMat;
     SectionForceDeformation *theSect;
 
+    Matrix K;
+    Vector P;
+
     double T0;        // stress free temperature
     double pressure;  // internal pressure
 
@@ -55,6 +59,8 @@ class Pipe : public Element {
           theCoordTransf(0),
           theMat(0),
           theSect(0),
+          K(),
+          P(),
           T0(0.0),
           pressure(0.0) {}
     Pipe(int tag, int nd1, int nd2, CrdTransf &coordTransf,
@@ -66,6 +72,8 @@ class Pipe : public Element {
           theCoordTransf(0),
           theMat(0),
           theSect(0),
+          K(),
+          P(),
           T0(t0),
           pressure(pre) {
         // nodes
@@ -126,71 +134,164 @@ class Pipe : public Element {
     }
     Node **getNodePtrs(void) { return &theNodes[0]; }
 
-    int getNumDOF(void);
-    void setDomain(Domain *theDomain);
-    int setDamping(Domain *theDomain, Damping *theDamping);
+    int getNumDOF(void) {
+        int ndm = OPS_GetNDM();
+        if (ndm == 2) {
+            return 6;
+        } else if (ndm == 3) {
+            return 12;
+        }
+        return 0;
+    }
 
-    int commitState(void);
-    int revertToLastCommit(void);
-    int revertToStart(void);
+    void setDomain(Domain *theDomain) {
+        // check domain
+        if (theDomain == 0) {
+            opserr << "Pipe::setDomain -- Domain is null\n";
+            exit(-1);
+        }
 
-    int update(void);
-    const Matrix &getTangentStiff(void);
-    const Matrix &getInitialStiff(void);
-    const Matrix &getMass(void);
+        // get nodes
+        theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
+        theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
 
-    void zeroLoad(void);
-    int addLoad(ElementalLoad *theLoad, double loadFactor);
-    int addInertiaLoadToUnbalance(const Vector &accel);
+        if (theNodes[0] == 0) {
+            opserr << "Pipe::setDomain  tag: " << this->getTag()
+                   << " -- Node 1: " << connectedExternalNodes(0)
+                   << " does not exist\n";
+            exit(-1);
+        }
 
-    const Vector &getResistingForce(void);
-    const Vector &getDampingForce(void);
-    const Vector &getResistingForceIncInertia(void);
+        if (theNodes[1] == 0) {
+            opserr << "Pipe::setDomain  tag: " << this->getTag()
+                   << " -- Node 2: " << connectedExternalNodes(1)
+                   << " does not exist\n";
+            exit(-1);
+        }
 
-    int sendSelf(int commitTag, Channel &theChannel);
+        // check dofs
+        int dofNd1 = theNodes[0]->getNumberDOF();
+        int dofNd2 = theNodes[1]->getNumberDOF();
+
+        if (dofNd1 != getNumDOF() / 2) {
+            opserr << "Pipe::setDomain  tag: " << this->getTag()
+                   << " -- Node 1: " << connectedExternalNodes(0)
+                   << " has incorrect number of DOF\n";
+            exit(-1);
+        }
+
+        if (dofNd2 != getNumDOF() / 2) {
+            opserr << "Pipe::setDomain  tag: " << this->getTag()
+                   << " -- Node 2: " << connectedExternalNodes(1)
+                   << " has incorrect number of DOF\n";
+            exit(-1);
+        }
+
+        // set domain
+        this->DomainComponent::setDomain(theDomain);
+
+        // set crdTransf
+        if (theCoordTransf->initialize(theNodes[0], theNodes[1]) !=
+            0) {
+            opserr << "Pipe::setDomain  tag: " << this->getTag()
+                   << " -- Error initializing coordinate "
+                      "transformation\n";
+            exit(-1);
+        }
+        double L = theCoordTransf->getInitialLength();
+        if (L == 0.0) {
+            opserr << "Pipe::setDomain  tag: " << this->getTag()
+                   << " -- Element has zero length\n";
+            exit(-1);
+        }
+    }
+
+    int commitState(void) {
+        int retVal = 0;
+        // call element commitState to do any base class stuff
+        if ((retVal = this->Element::commitState()) != 0) {
+            opserr << "Pipe::commitState () - failed in "
+                      "base class";
+        }
+        retVal += theCoordTransf->commitState();
+        retVal += theMat->commitState();
+        retVal += theSect->commitState();
+
+        K.resize(getNumDOF(), getNumDOF());
+        K.Zero();
+
+        P.resize(getNumDOF());
+        P.Zero();
+
+        return retVal;
+    }
+
+    int revertToLastCommit(void) {
+        int retVal = 0;
+        retVal += theCoordTransf->revertToLastCommit();
+        retVal += theMat->revertToLastCommit();
+        retVal += theSect->revertToLastCommit();
+        return retVal;
+    }
+
+    int revertToStart(void) {
+        int retVal = 0;
+        retVal += theCoordTransf->revertToStart();
+        retVal += theMat->revertToStart();
+        retVal += theSect->revertToStart();
+        return retVal;
+    }
+
+    int update(void) {
+        int retVal = 0;
+        retVal += theCoordTransf->update();
+
+        // maybe: material setTrialStrain
+        // maybe: section setTrialSectionDeformation
+        return retVal;
+    }
+
+    const Matrix &getTangentStiff(void) { return K; }
+    const Matrix &getInitialStiff(void) { return K; }
+    const Matrix &getMass(void) { return K; }
+
+    void zeroLoad(void) { P.Zero(); }
+
+    int addLoad(ElementalLoad *theLoad, double loadFactor) {
+        return 0;
+    }
+
+    int addInertiaLoadToUnbalance(const Vector &accel) { return 0; }
+
+    const Vector &getResistingForce(void) { return P; }
+    const Vector &getDampingForce(void) { return P; }
+    const Vector &getResistingForceIncInertia(void) { return P; }
+
+    int sendSelf(int commitTag, Channel &theChannel) { return 0; }
     int recvSelf(int commitTag, Channel &theChannel,
-                 FEM_ObjectBroker &theBroker);
+                 FEM_ObjectBroker &theBroker) {
+        return 0;
+    }
 
-    void Print(OPS_Stream &s, int flag = 0);
+    void Print(OPS_Stream &s, int flag = 0) {}
     int displaySelf(Renderer &theViewer, int displayMode, float fact,
-                    const char **modes = 0, int numModes = 0);
+                    const char **modes = 0, int numModes = 0) {
+        return 0;
+    }
 
-    Response *setResponse(const char **argv, int argc, OPS_Stream &s);
-    int getResponse(int responseID, Information &info);
+    Response *setResponse(const char **argv, int argc,
+                          OPS_Stream &s) {
+        return 0;
+    }
 
-    int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter(int parameterID, Information &info);
+    int getResponse(int responseID, Information &info) { return 0; }
 
-   private:
-    double A, E, G, Jx, Iy, Iz;
-
-    double rho;
-    int cMass;
-
-    int releasez;  // moment release for bending about z-axis 0=none,
-                   // 1=I, 2=J, 3=I,J
-    int releasey;  // same for y-axis
-
-    static Matrix K;
-    static Vector P;
-    Vector Q;
-
-    static Matrix kb;
-    Vector q;
-    double q0[5];  // Fixed end forces in basic system (no torsion)
-    double p0[5];  // Reactions in basic system (no torsion)
-
-    double wx;
-    double wy;
-    double wz;
-
-    Node *theNodes[2];
-
-    ID connectedExternalNodes;
-
-    CrdTransf *theCoordTransf;
-
-    Damping *theDamping;
+    int setParameter(const char **argv, int argc, Parameter &param) {
+        return -1;
+    }
+    int updateParameter(int parameterID, Information &info) {
+        return -1;
+    }
 };
 
 void *OPS_PipeElement() {
