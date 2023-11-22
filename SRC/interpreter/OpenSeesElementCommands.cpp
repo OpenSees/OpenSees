@@ -69,8 +69,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TrapezoidalBeamIntegration.h>
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
-
-// no 'beamWithHinges', 'flBrick'
+#include <Pipe.h>
 
 void* OPS_ZeroLengthND();
 void* OPS_ZeroLengthSection();
@@ -252,6 +251,7 @@ void* OPS_PML2D_5(void);
 void* OPS_PML2D_12(void);
 void* OPS_PML2DVISCOUS(void);
 void* OPS_PML3D(void);
+void* OPS_PipeElement();
 
 
 namespace {
@@ -782,6 +782,7 @@ namespace {
 	functionMap.insert(std::make_pair("PML2D_5", &OPS_PML2D_5));
 	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
 	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
+	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
 	return 0;
     }
 }
