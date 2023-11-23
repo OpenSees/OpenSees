@@ -45,7 +45,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "DL_Interpreter.h"
 #include <UniaxialMaterial.h>
 #include <Domain.h>
-#include <NonDomainObjectStorage.h>
 #include <ReliabilityDomain.h>
 #include <StaticAnalysis.h>
 #include <DirectIntegrationAnalysis.h>
@@ -75,7 +74,6 @@ public:
 
     DL_Interpreter* getInterpreter();
     Domain* getDomain();
-    NonDomainObjectStorage* getNonDomainStorage();
     ReliabilityDomain* getReliabilityDomain();
     AnalysisModel** getAnalysisModel();
 
@@ -165,7 +163,6 @@ private:
 
     DL_Interpreter* interpreter;
     Domain* theDomain;
-    NonDomainObjectStorage* nonDomainStorage;
     int ndf, ndm;
 
     LinearSOE* theSOE;
