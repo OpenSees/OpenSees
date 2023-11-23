@@ -144,7 +144,7 @@ bool setMPIDSOEFlag = false;
 static OpenSeesCommands* cmds = 0;
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
-    :interpreter(interp), theDomain(0), nonDomainStorage(0),
+    :interpreter(interp), theDomain(0), 
      ndf(0), ndm(0),
      theSOE(0), theEigenSOE(0), theNumberer(0), theHandler(0),
      theStaticIntegrator(0), theTransientIntegrator(0),
@@ -178,8 +178,6 @@ OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
 
     theDomain = new Domain;
 
-    nonDomainStorage = new NonDomainObjectStorage;
-
     reliability = new OpenSeesReliabilityCommands(theDomain);
 }
 
@@ -187,7 +185,6 @@ OpenSeesCommands::~OpenSeesCommands()
 {
     if (reliability != 0) delete reliability;
     if (theDomain != 0) delete theDomain;
-    if (nonDomainStorage != 0) delete nonDomainStorage;
     if (theDatabase != 0) delete theDatabase;
     cmds = 0;
 
@@ -215,12 +212,6 @@ Domain*
 OpenSeesCommands::getDomain()
 {
     return theDomain;
-}
-
-NonDomainObjectStorage*
-OpenSeesCommands::getNonDomainStorage()
-{
-    return nonDomainStorage;
 }
 
 ReliabilityDomain*
@@ -943,11 +934,6 @@ OpenSeesCommands::wipe()
 	theDomain->clearAll();
     }
 
-    // wipe non domain storage
-    if (nonDomainStorage != 0) {
-        nonDomainStorage->clear();
-    }
-
     // wipe all meshes
     OPS_clearAllMesh();
     OPS_getBgMesh().clearAll();
@@ -1166,12 +1152,6 @@ Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
     return cmds->getDomain();
-}
-
-NonDomainObjectStorage* OPS_GetNonDomainObjectStorage()
-{
-    if (cmds == 0) return 0;
-    return cmds->getNonDomainStorage();
 }
 
 ReliabilityDomain* OPS_GetReliabilityDomain(void) {

@@ -176,7 +176,6 @@ class ConvergenceTest;
 #define OPS_GetTest ops_gettest_
 #define OPS_builtModel ops_builtmodel_
 #define OPS_GetDomain ops_getdomain_
-#define OPS_GetNonDomainObjectStorage ops_getnondomainobjectstorage_
 
 #include <OPS_Globals.h>
 #include <vector>
@@ -239,7 +238,6 @@ class CrdTransf;
 class FrictionModel;
 class LimitCurve;
 class Domain;
-class NonDomainObjectStorage;
 class FE_Datastore;
 
 extern UniaxialMaterial* OPS_GetUniaxialMaterial(int matTag);
@@ -249,7 +247,6 @@ extern CrdTransf* OPS_GetCrdTransf(int crdTag);
 extern FrictionModel* OPS_GetFrictionModel(int frnTag);
 extern LimitCurve* OPS_GetLimitCurve(int LimCrvTag);
 extern Domain* OPS_GetDomain(void);
-extern NonDomainObjectStorage* OPS_GetNonDomainObjectStorage();
 
 extern FE_Datastore* OPS_GetFEDatastore();
 extern "C" const char* OPS_GetInterpPWD();
