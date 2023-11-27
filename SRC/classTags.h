@@ -250,6 +250,7 @@
 #define MAT_TAG_TDConcreteMC10NL 227
 #define MAT_TAG_CoulombDamperMaterial 228
 #define MAT_TAG_FlagShapeMaterial 229
+#define MAT_TAG_CreepMaterial 230
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -350,7 +351,7 @@
 #define SEC_TAG_LayeredShellFiberSectionThermal 35     //L.Jiang[SIF]
 #define SEC_TAG_BiaxialHysteretic 36
 #define SEC_TAG_ElasticTube3d 37
-
+#define SEC_TAG_CreepSection 38
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
