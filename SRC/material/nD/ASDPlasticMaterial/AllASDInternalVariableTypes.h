@@ -37,3 +37,7 @@ struct VonMisesRadiusName { static constexpr const char* name = "VonMisesRadius"
 template <class HardeningType>
 using VonMisesRadius = InternalVariableType<VoigtScalar, HardeningType, VonMisesRadiusName>;
 
+struct ScalarInternalVariableName { static constexpr const char* name = "ScalarInternalVariable";};
+template <class HardeningType>
+using ScalarInternalVariable = InternalVariableType<VoigtScalar, HardeningType, ScalarInternalVariableName>;
+

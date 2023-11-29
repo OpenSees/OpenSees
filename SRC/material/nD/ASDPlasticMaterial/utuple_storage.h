@@ -196,6 +196,12 @@ public:
         return getInternalVariableNamesTuple(data);
     }
 
+    //Get an IV by name
+    template<typename... Ts>
+    const auto& getInternalVariableByName(const char* name) const {
+        return getInternalVariableByNameImpl<0>(data, name);
+    }
+
     //To set an internal variable by name
     int getInternalVariableSizeByName(const char* name)  const {
         return getInternalVariableSizeByName_impl<0>(name);
@@ -267,6 +273,23 @@ private:
     template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
     void setParameterByName_impl(const char* name, double value)  {
         // Base case, do nothing.
+    }
+
+    // Implementations for getInternalVariableByNameImpl
+    template <std::size_t I = 0, typename... Tp>
+    typename std::enable_if<I < sizeof...(Tp), const typename std::tuple_element<I, std::tuple<Tp...>>::type&>::type
+    getInternalVariableByNameImpl(const std::tuple<Tp...>& tuple, const char* name) const {
+        const auto& variable = std::get<I>(tuple);
+        if (strcmp(variable.getName(), name) == 0) {
+            return variable;
+        }
+        return getInternalVariableByNameImpl<I + 1>(tuple, name);
+    }
+
+    template <std::size_t I = 0, typename... Tp>
+    typename std::enable_if<I == sizeof...(Tp), const typename std::tuple_element<0, std::tuple<Tp...>>::type&>::type
+    getInternalVariableByNameImpl(const std::tuple<Tp...>&, const char*) const {
+        throw std::runtime_error("Variable not found");
     }
 
 

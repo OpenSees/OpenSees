@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+
 // Original implementation: José Abell (UANDES), Massimo Petracca (ASDEA)
 //
 // ASDPlasticMaterial
@@ -27,9 +27,8 @@
 #ifndef DuncanChang_EL_H
 #define DuncanChang_EL_H
 
-#include "../../../ltensor/LTensor.h"
-#include "../EvolvingVariable.h"
 #include "../ElasticityBase.h"
+#include "../AllASDModelParameterTypes.h"
 
 #include <iostream>
 
@@ -37,24 +36,60 @@
 class DuncanChang_EL : public ElasticityBase<DuncanChang_EL> // CRTP on ElasticityBase
 {
 public:
-    DuncanChang_EL(double K_in, double pa_in, double n_in, double nu_in, double sigma3_max_in);
 
-    VoigtMatrix& operator()(const VoigtVector& stress); //See note on base class
+    static constexpr const char* NAME = "DuncanChang_EL";
 
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
+    DuncanChang_EL(): ElasticityBase<DuncanChang_EL>::ElasticityBase()  // Note the full-qualification of ElasticityBase through the scope resolution operator (::)
+    {
+
+    }
+
+    ELASTICITY_MATRIX
+    {
+
+        double Eref = GET_PARAMETER_VALUE(ReferenceYoungsModulus);
+        double nu = GET_PARAMETER_VALUE(PoissonsRatio);
+        double pa = GET_PARAMETER_VALUE(ReferencePressure);
+        double sigma3_max = GET_PARAMETER_VALUE(DuncanChang_MaxSigma3);
+        double n = GET_PARAMETER_VALUE(DuncanChang_n);
+
+
+        double p = -stress.meanStress();
+        double q = stress.stressDeviatorQ();
+        double theta = stress.lodeAngle();
+
+        double sigma3 = -p + (2 * q) / 3 * cos(theta * M_PI / 180 + (2 * M_PI) / 3);
+
+        if (sigma3 > sigma3_max)
+        {
+            sigma3 = sigma3_max;
+        }
+
+        double E = Eref * pa * pow(abs(sigma3) / pa, n);
+        double lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
+        double mu = E / ( 2.0 * ( 1.0 + nu ) );
+
+        Ee *= 0; //Zero it. It may have values from another instance with different parameters;
+
+        Ee(0, 0) = Ee(1, 1) = Ee(2, 2) = 2*mu + lambda;
+        Ee(0, 1) = Ee(1, 0) = Ee(0, 2) = Ee(2, 0) = Ee(1, 2) = Ee(2, 1) = lambda;
+        Ee(3, 3) = mu;
+        Ee(4, 4) = mu;
+        Ee(5, 5) = mu;
+
+        return Ee;
+    }
+
+    using parameters_t = std::tuple<ReferenceYoungsModulus,PoissonsRatio,ReferencePressure,DuncanChang_MaxSigma3,DuncanChang_n>;
 
 private:
 
-    double K;
-    double pa;
-    double n;
-    double nu;
-    double sigma3_max;
     static VoigtMatrix Ee;  //Provides class-wide storage, which avoids mallocs and allows const returning a const & to this object.
 
 };
 
-
+VoigtMatrix DuncanChang_EL::Ee;
 
 #endif
+
+

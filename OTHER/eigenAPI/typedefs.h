@@ -241,11 +241,16 @@ public:
 		double s2 = principal_stresses(1);
 		double s3 = principal_stresses(2);
 
-		double lode_angle = std::atan(
-		                        std::sqrt(3) * (s1 - s3) / (2 * (s2 - s3) - (s1 - s3))
-		                    );
-
-		return lode_angle;
+		double num = std::sqrt(3) * (s1 - s3) ;
+		double den = 2 * (s2 - s3) - (s1 - s3);
+		if (abs(den) < 1e-20 )
+		{
+			return 0;
+		}
+		else
+		{
+			return std::atan( num / den );
+		}
 	}
 
 };

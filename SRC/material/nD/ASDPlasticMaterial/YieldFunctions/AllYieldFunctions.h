@@ -26,3 +26,4 @@
 
 #include "VonMises_YF.h"
 #include "DruckerPrager_YF.h"
+#include "RoundedMohrCoulomb_YF.h"

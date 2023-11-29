@@ -34,10 +34,10 @@
 #include <G3Globals.h>
 #include <iostream>
 #include <Channel.h>
-#include <limits>
+#include <Information.h>
+#include <MaterialResponse.h>
 
 #include "ASDPlasticMaterialTraits.h"
-#include <type_traits>
 
 #include "ASDPlasticMaterialGlobals.h"
 
@@ -56,6 +56,8 @@
 #include <tuple>
 #include <utility> // For std::pair
 #include <map> // For std::pair
+#include <limits>
+#include <type_traits>
 
 #include "std_tuple_concat.h"
 
@@ -112,7 +114,7 @@ template <
     class ElasticityType,
     class YieldFunctionType,
     class PlasticFlowType,
-    int thisClassTag>
+    int thisClassTag >
 class ASDPlasticMaterial : public NDMaterial
 {
 
@@ -184,7 +186,7 @@ public:
         return iv_storage.getInternalVariableSizeByName(iv_name);
     }
 
-    auto setInternalVariableByName(const char * iv_name, int iv_size, double* iv_values) 
+    auto setInternalVariableByName(const char * iv_name, int iv_size, double* iv_values)
     {
         cout << "  --->  Setting " << iv_name << " = ";
         for (int i = 0; i < iv_size; ++i)
@@ -205,7 +207,7 @@ public:
         return parameters_storage.getParameterNames();
     }
 
-    auto setParameterByName(const char * param_name, double param_value) 
+    auto setParameterByName(const char * param_name, double param_value)
     {
         cout << "  --->  Setting " << param_name << " = " << param_value << endl;
         return parameters_storage.setParameterByName(param_name, param_value);
@@ -237,7 +239,7 @@ public:
     std::string getPFName() const {return PlasticFlowType::NAME;}
     std::string getELName() const {return ElasticityType::NAME;}
     std::string getIVName() const {return iv_storage.getVariableNamesAndHardeningLaws();}
- 
+
 
     //==================================================================================================
     //  Set Trial strain and trial strain increment
@@ -259,9 +261,9 @@ public:
             TrialStress(2) = p0;
             CommitStress(0) = p0;
             CommitStress(1) = p0;
-            CommitStress(2) = p0;     
+            CommitStress(2) = p0;
         }
-        
+
 
         TrialStrain = VoigtVector::fromStrain(v);
         return setTrialStrainIncr( TrialStrain - CommitStrain );
@@ -396,6 +398,13 @@ public:
         return result;
     }
 
+    const Vector &getPstrain(void)
+    {
+        static Vector result(6);
+        TrialPlastic_Strain.toStress(result);
+        return result;
+    }
+
     const VoigtVector &getStressTensor( void )
     {
         return TrialStress;
@@ -461,9 +470,9 @@ public:
         // Print(cout);
         // cout << "\n" << endl;
 
-        if(first_step)
+        if (first_step)
         {
-            first_step=false;
+            first_step = false;
         }
 
         return 0;
@@ -493,12 +502,12 @@ public:
         cerr << "ASDPlasticMaterial::getCopy - not implemented!!!\n" ;
 
         ASDPlasticMaterial <ElasticityType,
-                    YieldFunctionType,
-                    PlasticFlowType,
-                    thisClassTag> *newmaterial = new ASDPlasticMaterial<ElasticityType,
-                    YieldFunctionType,
-                    PlasticFlowType,
-                    thisClassTag>;
+                           YieldFunctionType,
+                           PlasticFlowType,
+                           thisClassTag> *newmaterial = new ASDPlasticMaterial<ElasticityType,
+        YieldFunctionType,
+        PlasticFlowType,
+        thisClassTag>;
         newmaterial->TrialStrain = this->TrialStrain;
         newmaterial->TrialStress = this->TrialStress;
         newmaterial->TrialPlastic_Strain = this->TrialPlastic_Strain;
@@ -509,6 +518,102 @@ public:
         newmaterial->parameters_storage = this->parameters_storage;
 
         return newmaterial;
+    }
+
+    Response *setResponse (const char **argv, int argc,
+                           OPS_Stream &s)
+    {
+
+        static Vector return_vector(6);
+
+        if (strcmp(argv[0], "stress") == 0 || strcmp(argv[0], "stresses") == 0)
+            return new MaterialResponse(this, 1, this->getStress());
+        else if (strcmp(argv[0], "strain") == 0 || strcmp(argv[0], "strains") == 0)
+            return new MaterialResponse(this, 2, this->getStrain());
+        else if (strcmp(argv[0], "pstrain") == 0 || strcmp(argv[0], "pstrains") == 0)
+            return new MaterialResponse(this, 3, this->getPstrain());
+        else
+        {
+            const char *iv_name = argv[0];
+
+            int iv_size = this->getInternalVariableSizeByName(iv_name);
+
+            return_vector.resize(iv_size);
+
+
+            // int pos = 0;
+            // auto parameter_names = this->getParameterNames();
+            // for_each_in_tuple(parameter_names, [&pos, &iv_name](auto & name)
+            // {
+            //     // std::cout << "   "  <<  name << std::endl;
+            //     if (std::strcmp(name.c_str, iv_name) == 0)
+            //     {
+            //         break;
+            //     }
+            //     pos ++;
+
+            // });
+
+            // return new MaterialResponse(this, 1000 + pos, return_vector);
+            return 0;
+        }
+
+        return 0;
+    }
+
+
+    int getResponse (int responseID, Information &matInformation)
+    {
+        // opserr << "responseID = " << responseID << endln;
+        // switch (responseID) {
+        // case -1:
+        //     return -1;
+        // case 1:
+        //     if (matInformation.theVector != 0)
+        //         *(matInformation.theVector) = getStress();
+        //     return 0;
+        // case 2:
+        //     if (matInformation.theVector != 0)
+        //         *(matInformation.theVector) = getStrain();
+        //     return 0;
+        // case 3:
+        //     if (matInformation.theVector != 0)
+        //         *(matInformation.theVector) = getPstrain();
+        //     return 0;
+        // }
+
+        static Vector return_vector(6);
+
+
+        if (matInformation.theVector == 0)
+            return 0;
+
+        if (responseID == -1)
+        {
+            return -1;
+        }
+        else if (responseID == 1)
+        {
+            *(matInformation.theVector) = getStress();
+        } 
+        else if (responseID == 2)
+            *(matInformation.theVector) = getStrain();
+        else if (responseID == 3)
+            *(matInformation.theVector) = getPstrain();
+        else if (responseID >= 1000)
+        {
+            int pos = responseID - 1000;
+
+            int find_pos = 0;
+            auto parameter_names = this->getParameterNames();
+            for_each_in_tuple(parameter_names, [](auto & name)
+            {
+                std::cout << "   "  <<  name << std::endl;
+            });
+        }
+
+
+        return 0;
     }
 
     // NDMaterial *getCopy(const char *code);
@@ -525,12 +630,12 @@ public:
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     {
         cerr << "ASDPlasticMaterial::recvSelf - not implemented!!!\n" ;
-   
+
 
         return 0;
     }
 
-    void Print(OPS_Stream& s, int flag=0) {
+    void Print(OPS_Stream& s, int flag = 0) {
         s << "ASDPlasticMaterial" << endln;
         s << "  Yield Function          : " << yf.NAME << endln;
         s << "  Plastic flow direction  : " << pf.NAME << endln;
@@ -612,7 +717,7 @@ public:
             cout << "   stress_relative_tol = " << stress_relative_tol << endl;
             cout << "   n_max_iterations = " << n_max_iterations << endl;
             cout << "   return_to_yield_surface = " << return_to_yield_surface << endl;
- 
+
             return true;
         }
         else
@@ -828,8 +933,8 @@ private:
                 // double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
                 double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
                 double dLambda_after_corrector = yf_val_after_corrector / (
-                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
-                                 );
+                                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
+                                                 );
                 TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
                 TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
 
@@ -877,15 +982,15 @@ private:
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = -1;
 
-       
+
 
         return errorcode;
     }
 
     std::pair<double, VoigtVector> CalculateLambdaM(
-        const VoigtVector &thisSigma, 
-        const VoigtVector &depsilon_elpl, 
-        const parameters_storage_t &this_parameters_storage, 
+        const VoigtVector &thisSigma,
+        const VoigtVector &depsilon_elpl,
+        const parameters_storage_t &this_parameters_storage,
         const iv_storage_t &this_iv_storage)
     {
         VoigtMatrix Eelastic = et(thisSigma, this_parameters_storage);
@@ -899,6 +1004,7 @@ private:
         if (dLambda != dLambda)
         {
             cout << "CalculateLambdaM error" << endl;
+            cout << "yf = " << yf(thisSigma, this_iv_storage, this_parameters_storage) << endl;
             cout << "thisSigma = " << thisSigma.transpose() << endl;
             cout << "depsilon_elpl = " << depsilon_elpl.transpose() << endl;
             cout << "n = " << n.transpose() << endl;
@@ -920,7 +1026,7 @@ private:
 
     int Runge_Kutta_45_Error_Control(const VoigtVector &strain_incr)
     {
-        cout << "Runge_Kutta_45_Error_Control" << endl;
+        // cout << "Runge_Kutta_45_Error_Control" << endl;
 
         int errorcode = -1;
 
@@ -1014,7 +1120,7 @@ private:
                     auto h = iv1.hardening_function(dEPS, m, prev_Sigma, parameters_storage);
                     iv1.trial_value = iv1.committed_value + 0.5 * dLambda * h;
                 });
-                next_Sigma =  prev_Sigma + 0.5*dSigma1;
+                next_Sigma =  prev_Sigma + 0.5 * dSigma1;
 
                 //Delta 2
                 std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage1);
@@ -1025,13 +1131,13 @@ private:
                     using VT1 = std::decay_t<decltype(iv2)>;
                     const VT1 &iv1 = iv_storage1.template get<VT1>();
                     auto DH1 = iv1.trial_value - iv1.committed_value;
-                    
+
                     auto h2 = iv2.hardening_function(dEPS, m, next_Sigma, parameters_storage);
                     auto DH2 = dLambda * h2;
-                    
-                    iv2.trial_value = iv2.committed_value + 0.25*(DH1 + DH2);
+
+                    iv2.trial_value = iv2.committed_value + 0.25 * (DH1 + DH2);
                 });
-                next_Sigma =  prev_Sigma + 0.25*(dSigma1+dSigma2);
+                next_Sigma =  prev_Sigma + 0.25 * (dSigma1 + dSigma2);
 
                 //Delta 3
                 std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage2);
@@ -1047,10 +1153,10 @@ private:
 
                     auto h3 = iv3.hardening_function(dEPS, m, next_Sigma, parameters_storage);
                     auto DH3 = dLambda * h3;
-                    
-                    iv3.trial_value = iv3.committed_value +  -DH2 + 2*DH3;
+
+                    iv3.trial_value = iv3.committed_value +  -DH2 + 2 * DH3;
                 });
-                next_Sigma =  prev_Sigma - dSigma2 + 2*dSigma3;
+                next_Sigma =  prev_Sigma - dSigma2 + 2 * dSigma3;
 
                 //Delta 4
                 std::tie(dLambda, m) = CalculateLambdaM(next_Sigma, dEPS, parameters_storage, iv_storage3);
@@ -1068,8 +1174,8 @@ private:
 
                     auto h4 = iv4.hardening_function(dEPS, m, next_Sigma, parameters_storage);
                     auto DH4 = dLambda * h4;
-                    
-                    iv4.trial_value = iv4.committed_value +  (7*DH1 + 10*DH2 + DH4) / 27;
+
+                    iv4.trial_value = iv4.committed_value +  (7 * DH1 + 10 * DH2 + DH4) / 27;
                 });
                 next_Sigma =  prev_Sigma + (7 * dSigma1 + 10 * dSigma2 + dSigma4) / 27;
 
@@ -1091,7 +1197,7 @@ private:
 
                     auto h5 = iv5.hardening_function(dEPS, m, next_Sigma, parameters_storage);
                     auto DH5 = dLambda * h5;
-                    
+
                     iv5.trial_value = iv5.committed_value +  (28 * DH1 - 125 * DH2 + 546 * DH3 + 54 * DH4 - 378 * DH5) / 625;
                 });
                 next_Sigma =  prev_Sigma + (28 * dSigma1 - 125 * dSigma2 + 546 * dSigma3 + 54 * dSigma4 - 378 * dSigma5) / 625;
@@ -1116,8 +1222,8 @@ private:
 
                     auto h6 = niv.hardening_function(dEPS, m, next_Sigma, parameters_storage);
                     auto DH6 = dLambda * h6;
-                    
-                    niv.trial_value = niv.committed_value +  ( DH1 +  4* DH3 + DH4) / 6;
+
+                    niv.trial_value = niv.committed_value +  ( DH1 +  4 * DH3 + DH4) / 6;
                 });
                 dSigma =  (dSigma1 + 4 * dSigma3 + dSigma4) / 6;
                 dEpsilonPl =  (dEpsilonPl1 + 4 * dEpsilonPl3 + dEpsilonPl4) / 6;
@@ -1151,7 +1257,7 @@ private:
                 double curStepError1 = (-42 * dSigma1 - 224 * dSigma3 - 21 * dSigma4 + 162 * dSigma5 + 125 * dSigma6).norm() / 336;
                 if (stressNorm >= 0.5) { curStepError1 /= (2 * stressNorm); }
                 //Internal variables norm and internal variables error (TODO)
-                
+
                 double curStepError = curStepError1; //fmax(curStepError1, curStepError2);
 
                 //Check convergence and adjust integration timestep
@@ -1207,8 +1313,8 @@ private:
                 // double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
                 double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress, iv_storage, parameters_storage);
                 double dLambda_after_corrector = yf_val_after_corrector / (
-                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
-                                 );
+                                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
+                                                 );
                 TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
                 TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
 
@@ -2721,7 +2827,7 @@ private:
     // }
 
     //More robust brent
-    double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const 
+    double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const
     {
         using namespace ASDPlasticMaterialGlobals;
 
@@ -2879,7 +2985,7 @@ protected:
 
 
 protected:
-    
+
     static std::map<int, ASDPlasticMaterial_Constitutive_Integration_Method> INT_OPT_constitutive_integration_method;     //
     static std::map<int, double> INT_OPT_f_relative_tol;
     static std::map<int, double> INT_OPT_stress_relative_tol;

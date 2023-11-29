@@ -25,3 +25,4 @@
 // Fully general templated material class for plasticity modeling
 
 #include "LinearIsotropic3D_EL.h"
+#include "DuncanChang_EL.h"

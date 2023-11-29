@@ -33,11 +33,46 @@
 template <typename T>
 void populate_ASDPlasticMaterial(T* instance);
 
-NDMaterial*  ASDPlasticMaterialFactory(int tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type);
+typedef std::tuple<std::string, std::string, std::string, std::string> model_spec_t;
+
+
+NDMaterial*  ASDPlasticMaterialFactory(int tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type, std::list<model_spec_t> &available_models);
 
 
 template<typename EL, typename YF, typename PF>
-NDMaterial* createASDPlasticMaterial(int instance_tag, const char* yf_type, const char* pf_type, const char* el_type, const char* iv_type, std::list<NDMaterial*> &instance_pointers);
+NDMaterial* createASDPlasticMaterial(int instance_tag, const char* yf_type, const char* pf_type, const char* el_type, const char* iv_type, std::list<NDMaterial*> &instance_pointers, std::list<model_spec_t> &available_models);
+
+
+void print_usage(void)
+{
+    opserr <<
+       "nDMaterial ASDPlasticMaterial Error: Few arguments \n"
+       "\n"
+       "SYNTAX:\n"
+       "nDMaterial ASDPlasticMaterial $tag \\ \n"
+       "    YF_type \\ \n"
+       "    PF_type \\ \n"
+       "    EL_type \\ \n"
+       "    IV_type \\ \n"
+       "Begin_Internal_Variables \\ \n"
+       "    IV1 (initial value(s)) \\ \n"
+       "    IV2 (initial value(s)) \\ \n"
+       "    ....\n"
+       "End_Internal_Variables \\ \n"
+       "Begin_Model_Parameters \\ \n"
+       "    PARAM1 (value) \\\n"
+       "    PARAM2 (value) \\\n"
+       "    ....\n"
+       "End_Model_Parameters \\ \n"
+       "Begin_Integration_Options \\ \n"
+       "    f_relative_tol (double value)\\ \n"
+       "    stress_relative_tol (double value)\\ \n"
+       "    n_max_iterations (int value)\\ \n"
+       "    return_to_yield_surface (0 or 1)\\ \n"
+       "    method (string) : Forward_Euler | Runge_Kutta_45_Error_Control\\ \n"
+       "End_Integration_Options \\ \n"
+       "\n";
+}
 
 void *OPS_AllASDPlasticMaterials(void)
 {
@@ -50,19 +85,9 @@ void *OPS_AllASDPlasticMaterials(void)
 
     // check arguments
     int numArgs = OPS_GetNumRemainingInputArgs();
-    if (numArgs < 1) {
-        opserr <<
-               "nDMaterial ASDPlasticMaterial Error: Few arguments (< 3).\n"
-               "nDMaterial ASDPlasticMaterial $tag "
-               "-yf $YF_type <YF params> "
-               "-pf $PF_type <PF params> "
-               "-el $EL_type <EL params> "
-               "-ev $EV_NUM $EV_type <EV params> "
-               " .... repeat for all required EV's"
-               "<-rho $rho> "
-               "<-integrator $INTEGRATOR_TYPE> "
-               // "<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
-               "\n";
+        opserr << "numArgs = " << numArgs << endln;
+    if (numArgs < 2) {
+        print_usage();
         return nullptr;
     }
 
@@ -76,13 +101,16 @@ void *OPS_AllASDPlasticMaterials(void)
     }
 
 
-    const char *yf_type = OPS_GetString();
-    const char *pf_type = OPS_GetString();
-    const char *el_type = OPS_GetString();
-    const char *iv_type = OPS_GetString();
+    const char *yf_type = nullptr;
+    const char *pf_type = nullptr;
+    const char *el_type = nullptr;
+    const char *iv_type = nullptr;
 
-
-    // auto instance = TheAvailableProtos[std::make_tuple(yf_type,pf_type,el_type,iv_type)];
+    // Now use conditional checks based on numArgs to assign values
+    yf_type = numArgs >= 2 ? OPS_GetString() : " X ";
+    pf_type = numArgs >= 3 ? OPS_GetString() : " X ";
+    el_type = numArgs >= 4 ? OPS_GetString() : " X ";
+    iv_type = numArgs >= 5 ? OPS_GetString() : " X ";
 
 
     cout << "Searching for instance with:\n";
@@ -93,16 +121,73 @@ void *OPS_AllASDPlasticMaterials(void)
     cout << "el_type = " << el_type << "\n";
     cout << "iv_type = " << iv_type << "\n";
 
-    NDMaterial* instance = ASDPlasticMaterialFactory(tag, yf_type,pf_type,el_type,iv_type);
+    std::list<model_spec_t> available_models;
+
+    NDMaterial* instance = ASDPlasticMaterialFactory(tag, yf_type, pf_type, el_type, iv_type, available_models);
 
     if(instance==nullptr)
     {
+
+        bool matches_yf = false;
+        bool matches_pf = false;
+        bool matches_el = false;
+
+
+        for(model_spec_t &model : available_models)
+        {
+            std::string model_yf_type = std::get<0>(model);
+            std::string model_pf_type = std::get<1>(model);
+            std::string model_el_type = std::get<2>(model);
+            // std::string model_iv_type = std::get<3>(model);
+            if (std::strcmp(yf_type, model_yf_type.c_str())==0)
+                matches_yf = true;
+            if (std::strcmp(pf_type, model_pf_type.c_str())==0)
+                matches_pf = true;
+            if (std::strcmp(el_type, model_el_type.c_str())==0)
+                matches_el = true;
+        }
+
+        cout << endl;
+        print_usage();
+        cout << endl;
+
         cout << "ASDPlasticMaterial -- Material not found for input specification:\n";
-        cout << "yf_type = " << yf_type << "\n";
-        cout << "pf_type = " << pf_type << "\n";
-        cout << "el_type = " << el_type << "\n";
-        cout << "iv_type = " << iv_type << "\n";
+        cout << "yf_type = " << yf_type << (matches_yf ? " :) " : " ") <<"\n";
+        cout << "pf_type = " << pf_type << (matches_pf ? " :) " : " ") <<"\n";
+        cout << "el_type = " << el_type << (matches_el ? " :) " : " ") <<"\n";
+        cout << "iv_type = " << iv_type  <<"\n";
+
+        int nmodels = 0;
+
+        cout << "\nSIMILAR AVAILABLE MODELS:\n\n";
+        for(model_spec_t &model : available_models)
+        {
+            bool print_this_model = false;
+            std::string model_yf_type = std::get<0>(model);
+            std::string model_pf_type = std::get<1>(model);
+            std::string model_el_type = std::get<2>(model);
+            std::string model_iv_type = std::get<3>(model);
+
+            if(matches_yf && std::strcmp(yf_type, model_yf_type.c_str())==0)
+                print_this_model = true;
+            if(matches_pf && std::strcmp(pf_type, model_pf_type.c_str())==0)
+                print_this_model = true;
+            if(matches_el && std::strcmp(el_type, model_el_type.c_str())==0)
+                print_this_model = true;
+
+            if(print_this_model)
+            {
+                cout << "yf_type = " << std::get<0>(model) << "\n";
+                cout << "pf_type = " << std::get<1>(model) << "\n";
+                cout << "el_type = " << std::get<2>(model) << "\n";
+                cout << "iv_type = " << std::get<3>(model) << "\n\n";
+
+                nmodels++;
+            }
+        }
+        cout << "\nTotal: " << nmodels << " models. \n\n";
     }
+
 
     return instance;
 
@@ -110,7 +195,7 @@ void *OPS_AllASDPlasticMaterials(void)
 
 
 
-NDMaterial*  ASDPlasticMaterialFactory(int instance_tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type)
+NDMaterial*  ASDPlasticMaterialFactory(int instance_tag, const char * yf_type, const char * pf_type, const char * el_type, const char * iv_type, std::list<model_spec_t> &available_models)
 {
 
     std::list<NDMaterial*> instance_pointers;
@@ -137,8 +222,17 @@ NDMaterial*  ASDPlasticMaterialFactory(int instance_tag, const char * yf_type, c
 
 template<typename EL, typename YF, typename PF>
 NDMaterial* createASDPlasticMaterial(int instance_tag, 
-        const char* yf_type, const char* pf_type, const char* el_type, const char* iv_type, std::list<NDMaterial*> &instance_pointers) {
+        const char* yf_type, const char* pf_type, const char* el_type, const char* iv_type, std::list<NDMaterial*> &instance_pointers, std::list<model_spec_t> &available_models) {
     auto instance = new ASDPlasticMaterial<EL, YF, PF, ND_TAG_ASDPlasticMaterial>(instance_tag);
+
+
+    available_models.push_back(std::make_tuple(
+        instance->getYFName(),
+        instance->getPFName(),
+        instance->getELName(),
+        instance->getIVName())
+    );
+
     if(
         std::strcmp(yf_type,instance->getYFName().c_str())==0 &&
         std::strcmp(pf_type,instance->getPFName().c_str())==0 &&
