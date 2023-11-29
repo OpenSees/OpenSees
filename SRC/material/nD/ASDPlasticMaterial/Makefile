@@ -1,6 +1,6 @@
 include ../../../../Makefile.def
 
-OBJS       = OPS_AllASDPlasticMaterials.cpp
+OBJS       = OPS_AllASDPlasticMaterials.o
 
 all:    $(OBJS)
 
