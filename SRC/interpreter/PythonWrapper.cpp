@@ -1168,6 +1168,30 @@ static PyObject *Py_ops_setNodeDisp(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_getNodeTemperature(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getNodeTemperature() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_setNodeTemperature(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setNodeTemperature() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeAccel(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -3027,6 +3051,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeUnbalance", &Py_ops_nodeUnbalance);
     addCommand("nodeDisp", &Py_ops_nodeDisp);
     addCommand("setNodeDisp", &Py_ops_setNodeDisp);
+    addCommand("setNodeTemperature", &Py_ops_setNodeTemperature);
+    addCommand("getNodeTemperature", &Py_ops_getNodeTemperature);
     addCommand("nodeVel", &Py_ops_nodeVel);
     addCommand("setNodeVel", &Py_ops_setNodeVel);
     addCommand("nodeAccel", &Py_ops_nodeAccel);

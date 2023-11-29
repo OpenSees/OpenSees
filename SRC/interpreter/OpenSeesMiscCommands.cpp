@@ -549,6 +549,85 @@ int OPS_setNodeDisp()
     return 0;
 }
 
+int OPS_setNodeTemperature()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr
+            << "WARNING want - setNodeTemperature nodeTag? value?\n";
+        return -1;
+    }
+
+    int tag;
+    double value = 0.0;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING setNodeTemperature could not read tag? \n";
+        return -1;
+    }
+
+    Domain *theDomain = OPS_GetDomain();
+    if (theDomain == 0) {
+        opserr << "WARNING: domain is not defined\n";
+        return -1;
+    }
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+        opserr << "WARNING setNodeTemperature -- node with tag "
+               << tag << " not found\n";
+        return -1;
+    }
+
+    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+        opserr << "WARNING setNodeTemperature could not read "
+                  "temperature? \n";
+        return -1;
+    }
+
+    theNode->setTemp(value);
+
+    return 0;
+}
+
+int OPS_getNodeTemperature() {
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING want - getNodeTemperature nodeTag?\n";
+        return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING getNodeTemperature could not read tag? \n";
+        return -1;
+    }
+
+    Domain *theDomain = OPS_GetDomain();
+    if (theDomain == 0) {
+        opserr << "WARNING: domain is not defined\n";
+        return -1;
+    }
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+        opserr << "WARNING getNodeTemperature -- node with tag "
+               << tag << " not found\n";
+        return -1;
+    }
+
+    double value = theNode->getTemp();
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+        opserr << "WARNING: failed to set nodal temperature\n";
+        return -1;
+    }
+
+    return 0;
+}
+
 int OPS_setNodeVel()
 {
     // make sure at least one other argument to contain type of system
