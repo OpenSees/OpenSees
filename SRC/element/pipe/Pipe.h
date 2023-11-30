@@ -38,6 +38,7 @@
 
 // straight pipe element
 class Pipe : public Element {
+    // Line: 7763 - 7922
    private:
     std::vector<Node *> theNodes;
     ID connectedExternalNodes;
@@ -295,7 +296,7 @@ class Pipe : public Element {
 };
 
 void *OPS_PipeElement() {
-    // 7722 - 7747
+    // line: 7722 - 7747
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: element pipe "
