@@ -499,7 +499,6 @@ public:
 
     NDMaterial *getCopy(void)
     {
-        cerr << "ASDPlasticMaterial::getCopy - not implemented!!!\n" ;
 
         ASDPlasticMaterial <ElasticityType,
                            YieldFunctionType,
@@ -520,8 +519,42 @@ public:
         return newmaterial;
     }
 
+    else if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
+        SAniSandMS3D *clone;
+        clone = new SAniSandMS3D(this->getTag(), m_G0, m_nu, m_e_init, m_Mc, m_c, m_lambda_c,
+                                 m_e0, m_ksi, m_P_atm, m_m, m_h0, m_ch, m_nb, m_A0, m_nd, m_zeta, m_mu0,
+                                 m_beta, massDen,
+                                 mScheme, mTangType, mJacoType, mTolF, mTolR);
+        return clone;
+    }
+
+    NDMaterial *getCopy(const char *type) {
+        if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
+            ASDPlasticMaterial <ElasticityType,
+                               YieldFunctionType,
+                               PlasticFlowType,
+                               thisClassTag> *newmaterial = new ASDPlasticMaterial<ElasticityType,
+            YieldFunctionType,
+            PlasticFlowType,
+            thisClassTag>;
+            newmaterial->TrialStrain = this->TrialStrain;
+            newmaterial->TrialStress = this->TrialStress;
+            newmaterial->TrialPlastic_Strain = this->TrialPlastic_Strain;
+            newmaterial->CommitStress = this->CommitStress;
+            newmaterial->CommitStrain = this->CommitStrain;
+            newmaterial->CommitPlastic_Strain = this->CommitPlastic_Strain;
+            newmaterial->iv_storage = this->iv_storage;
+            newmaterial->parameters_storage = this->parameters_storage;
+        } else
+        {
+            cout << "ASDPlasticMaterial::getCopy(const char *type) - Only 3D is currently supported. Use 3D elements!" << endl; 
+            return 0;
+        }
+    }
+
+
     Response *setResponse (const char **argv, int argc,
-                           OPS_Stream &s)
+                           OPS_Stream & s)
     {
 
         static Vector return_vector(6);
@@ -562,7 +595,7 @@ public:
     }
 
 
-    int getResponse (int responseID, Information &matInformation)
+    int getResponse (int responseID, Information & matInformation)
     {
         // opserr << "responseID = " << responseID << endln;
         // switch (responseID) {
@@ -595,7 +628,7 @@ public:
         else if (responseID == 1)
         {
             *(matInformation.theVector) = getStress();
-        } 
+        }
         else if (responseID == 2)
             *(matInformation.theVector) = getStrain();
         else if (responseID == 3)
@@ -619,7 +652,7 @@ public:
     // NDMaterial *getCopy(const char *code);
     const char *getType(void) const {return "ThreeDimensional";}
 
-    int sendSelf(int commitTag, Channel &theChannel)
+    int sendSelf(int commitTag, Channel & theChannel)
     {
         cerr << "ASDPlasticMaterial::sendSelf - not implemented!!!\n" ;
 
@@ -627,7 +660,7 @@ public:
         return 0;
     }
 
-    int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+    int recvSelf(int commitTag, Channel & theChannel, FEM_ObjectBroker & theBroker)
     {
         cerr << "ASDPlasticMaterial::recvSelf - not implemented!!!\n" ;
 
@@ -635,7 +668,7 @@ public:
         return 0;
     }
 
-    void Print(OPS_Stream& s, int flag = 0) {
+    void Print(OPS_Stream & s, int flag = 0) {
         s << "ASDPlasticMaterial" << endln;
         s << "  Yield Function          : " << yf.NAME << endln;
         s << "  Plastic flow direction  : " << pf.NAME << endln;
@@ -646,7 +679,7 @@ public:
         parameters_storage.print_components();
     }
 
-    void Print(ostream &s, int flag = 0)
+    void Print(ostream & s, int flag = 0)
     {
         using namespace ASDPlasticMaterialGlobals;
 
@@ -683,7 +716,7 @@ public:
         return size;
     }
 
-    void setTrialStress(const VoigtVector& stress)
+    void setTrialStress(const VoigtVector & stress)
     {
         using namespace ASDPlasticMaterialGlobals;
         TrialStress = stress;
@@ -729,38 +762,38 @@ public:
 
 protected:
 
-    void setTrialPlastic_Strain(const VoigtVector& strain)
+    void setTrialPlastic_Strain(const VoigtVector & strain)
     {
         using namespace ASDPlasticMaterialGlobals;
         TrialPlastic_Strain = strain;
     }
 
-    void setCommitStress(const VoigtVector& stress)
+    void setCommitStress(const VoigtVector & stress)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitStress = stress;
     }
 
-    void setCommitStrain(const VoigtVector& strain)
+    void setCommitStrain(const VoigtVector & strain)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitStrain = strain;
     }
 
-    void setCommitPlastic_Strain(const VoigtVector& strain)
+    void setCommitPlastic_Strain(const VoigtVector & strain)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitPlastic_Strain = strain;
     }
 
-    void setStiffness(const VoigtMatrix& stiff)
+    void setStiffness(const VoigtMatrix & stiff)
     {
         using namespace ASDPlasticMaterialGlobals;
         Stiffness = stiff;
     }
 
 
-    void setStressTensor(VoigtVector &stress)
+    void setStressTensor(VoigtVector & stress)
     {
         using namespace ASDPlasticMaterialGlobals;
         CommitStress = stress;
@@ -774,7 +807,7 @@ protected:
 private:
 
 
-    int Forward_Euler(const VoigtVector &strain_incr)
+    int Forward_Euler(const VoigtVector & strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;
 
@@ -977,7 +1010,7 @@ private:
 
 
     // int Forward_Euler_Subincrement(const VoigtVector &strain_incr, bool const& with_return2yield_surface)
-    int Forward_Euler_Subincrement(const VoigtVector &strain_incr)
+    int Forward_Euler_Subincrement(const VoigtVector & strain_incr)
     {
         using namespace ASDPlasticMaterialGlobals;
         int errorcode = -1;
@@ -988,8 +1021,8 @@ private:
     }
 
     std::pair<double, VoigtVector> CalculateLambdaM(
-        const VoigtVector &thisSigma,
-        const VoigtVector &depsilon_elpl,
+        const VoigtVector & thisSigma,
+        const VoigtVector & depsilon_elpl,
         const parameters_storage_t &this_parameters_storage,
         const iv_storage_t &this_iv_storage)
     {
@@ -1024,7 +1057,7 @@ private:
         return std::make_pair(dLambda, m);
     }
 
-    int Runge_Kutta_45_Error_Control(const VoigtVector &strain_incr)
+    int Runge_Kutta_45_Error_Control(const VoigtVector & strain_incr)
     {
         // cout << "Runge_Kutta_45_Error_Control" << endl;
 
@@ -2827,7 +2860,7 @@ private:
     // }
 
     //More robust brent
-    double zbrentstress(const VoigtVector& start_stress, const VoigtVector& end_stress, double x1, double x2, double tol) const
+    double zbrentstress(const VoigtVector & start_stress, const VoigtVector & end_stress, double x1, double x2, double tol) const
     {
         using namespace ASDPlasticMaterialGlobals;
 
