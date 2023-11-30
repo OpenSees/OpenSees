@@ -519,14 +519,6 @@ public:
         return newmaterial;
     }
 
-    else if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
-        SAniSandMS3D *clone;
-        clone = new SAniSandMS3D(this->getTag(), m_G0, m_nu, m_e_init, m_Mc, m_c, m_lambda_c,
-                                 m_e0, m_ksi, m_P_atm, m_m, m_h0, m_ch, m_nb, m_A0, m_nd, m_zeta, m_mu0,
-                                 m_beta, massDen,
-                                 mScheme, mTangType, mJacoType, mTolF, mTolR);
-        return clone;
-    }
 
     NDMaterial *getCopy(const char *type) {
         if (strcmp(type, "ThreeDimensional") == 0 || strcmp(type, "3D") == 0) {
@@ -545,11 +537,13 @@ public:
             newmaterial->CommitPlastic_Strain = this->CommitPlastic_Strain;
             newmaterial->iv_storage = this->iv_storage;
             newmaterial->parameters_storage = this->parameters_storage;
+
+            return newmaterial;
         } else
         {
             cout << "ASDPlasticMaterial::getCopy(const char *type) - Only 3D is currently supported. Use 3D elements!" << endl; 
-            return 0;
         }
+        return 0;
     }
 
 
