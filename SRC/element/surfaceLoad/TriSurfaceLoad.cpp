@@ -48,6 +48,8 @@ double TriSurfaceLoad::GsPts[1][1];
 Matrix TriSurfaceLoad::tangentStiffness(SL_NUM_DOF, SL_NUM_DOF);
 Matrix TriSurfaceLoad::mass(SL_NUM_DOF, SL_NUM_DOF);
 Matrix TriSurfaceLoad::damp(SL_NUM_DOF, SL_NUM_DOF);
+Vector TriSurfaceLoad::internalForces(SL_NUM_DOF);
+
 #include <elementAPI.h>
 static int num_TriSurfaceLoad = 0;
 
@@ -107,7 +109,6 @@ OPS_TriSurfaceLoad(void)
 TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressure,  double rhoH_)
  :Element(tag,ELE_TAG_TriSurfaceLoad),     
    myExternalNodes(SL_NUM_NODE),
-   internalForces(SL_NUM_DOF),
    g1(SL_NUM_NDF), 
    g2(SL_NUM_NDF),
    myNhat(SL_NUM_NDF), 
@@ -133,7 +134,6 @@ TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressu
 TriSurfaceLoad::TriSurfaceLoad()
   :Element(0,ELE_TAG_TriSurfaceLoad),     
    	myExternalNodes(SL_NUM_NODE),
-   	internalForces(SL_NUM_DOF),
    	g1(SL_NUM_NDF), 
    	g2(SL_NUM_NDF),
    	myNhat(SL_NUM_NDF), 
@@ -370,11 +370,6 @@ TriSurfaceLoad::sendSelf(int commitTag, Channel &theChannel)
     return -2;
   }
 
-  res = theChannel.sendVector(dataTag, commitTag, internalForces);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send internalForces\n";
-    return -2;
-  }
   res = theChannel.sendVector(dataTag, commitTag, g1);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send g1\n";
@@ -445,11 +440,6 @@ TriSurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
     return -2;
   }
 
-  res = theChannel.recvVector(dataTag, commitTag, internalForces);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive internalForces\n";
-    return -2;
-  }
   res = theChannel.recvVector(dataTag, commitTag, g1);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive g1\n";

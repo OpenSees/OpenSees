@@ -19,7 +19,7 @@
 ** ****************************************************************** */
 
 
-// Written by: Amin Pakzad, Pedro Arduino (parduino@uw.edu)
+// Written by: Amin Pakzad, Pedro Arduino (parduino@uw.edu) and Adriano Trono
 //
 // Four node PML2D_5 element Derivation based on the Adriano Torino PhD thesis
 

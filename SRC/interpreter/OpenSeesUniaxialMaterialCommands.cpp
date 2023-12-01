@@ -257,6 +257,7 @@ void* OPS_TDConcrete(void);
 void* OPS_TDConcreteNL(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
+void* OPS_CreepMaterial(void);
 
 void* OPS_CoulombDamperMaterial();
 void* OPS_GMG_CyclicReinforcedConcrete();
@@ -600,6 +601,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
   uniaxialMaterialsMap.insert(
+      std::make_pair("Creep", &OPS_CreepMaterial));  
+  uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
 	  "GMG_CyclicReinforcedConcrete", &OPS_GMG_CyclicReinforcedConcrete));
@@ -936,7 +939,7 @@ int OPS_LimitCurve() {
     }
 
   } else if (strcmp(type, "ThreePoint") == 0) {
-    void* curve = OPS_RotationShearCurve();
+    void* curve = OPS_ThreePointCurve();
     if (curve != 0) {
       theCurve = (LimitCurve*)curve;
     } else {
