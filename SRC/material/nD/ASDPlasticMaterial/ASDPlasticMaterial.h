@@ -435,6 +435,35 @@ public:
         return CommitPlastic_Strain;
     }
 
+    const Matrix& getTangent()
+    {
+        static Matrix return_matrix(6,6);
+
+        VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
+        Stiffness = Eelastic;
+
+        copyToMatrixReference(this->Stiffness, return_matrix);
+
+        return return_matrix;
+    }
+
+
+    const Matrix& getInitialTangent()
+    {
+        static Matrix return_matrix(6,6);
+        
+        // if (first_step)
+        // {
+            VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
+            Stiffness = Eelastic;
+        // }
+
+        // this->Stiffness.toMatrix(return_matrix);
+        copyToMatrixReference(this->Stiffness, return_matrix);
+
+        return return_matrix;
+    }
+
 
 
 //==================================================================================================
@@ -506,7 +535,7 @@ public:
                            thisClassTag> *newmaterial = new ASDPlasticMaterial<ElasticityType,
         YieldFunctionType,
         PlasticFlowType,
-        thisClassTag>;
+        thisClassTag>(this->getTag());
         newmaterial->TrialStrain = this->TrialStrain;
         newmaterial->TrialStress = this->TrialStress;
         newmaterial->TrialPlastic_Strain = this->TrialPlastic_Strain;
@@ -528,7 +557,7 @@ public:
                                thisClassTag> *newmaterial = new ASDPlasticMaterial<ElasticityType,
             YieldFunctionType,
             PlasticFlowType,
-            thisClassTag>;
+            thisClassTag>(this->getTag());
             newmaterial->TrialStrain = this->TrialStrain;
             newmaterial->TrialStress = this->TrialStress;
             newmaterial->TrialPlastic_Strain = this->TrialPlastic_Strain;
@@ -2878,7 +2907,8 @@ private:
         double a = x1;
         double b = x2;
         double c = x2;
-        double d, e = 0.0;
+        double d = 0;
+        double e = 0.0;
         double fa = calculateYf(calculateSigma(start_stress, end_stress, a));
         double fb = calculateYf(calculateSigma(start_stress, end_stress, b));
         double fc = fb;
