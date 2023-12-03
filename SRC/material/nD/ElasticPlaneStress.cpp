@@ -211,8 +211,14 @@ const Vector& ElasticPlaneStress :: getStrain( )
 const Vector& ElasticPlaneStress :: getStress( ) 
 {
 
-  stress_vec = this->getTangent() * strain_vec;
+  //stress_vec = this->getTangent() * strain_vec;
+  double den = 1 - nu*nu;
+  double G = E / (2*(1+nu));
 
+  stress_vec(0) = E/den*(strain_vec(0) + nu*strain_vec(1));
+  stress_vec(1) = E/den*(strain_vec(1) + nu*strain_vec(0));
+  stress_vec(2) = G*strain_vec(2);
+  
   return stress_vec ;
 }
 
@@ -228,7 +234,7 @@ const Matrix& ElasticPlaneStress :: getTangent( )
   // 
        
   double den = 1 - nu*nu;
-  double G = E / (2*(1-nu));
+  double G = E / (2*(1+nu));
 
   tangent_matrix(0,0) = E / den ;
   tangent_matrix(1,1) = E / den ;
