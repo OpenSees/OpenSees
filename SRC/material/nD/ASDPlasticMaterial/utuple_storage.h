@@ -207,6 +207,11 @@ public:
         return getInternalVariableSizeByName_impl<0>(name);
     }
 
+    // Public function to get the index of an internal variable by name
+    int getInternalVariableIndexByName(const char* name) const {
+        return getInternalVariableIndexByNameImpl<0>(data, name);
+    }
+
     //To set an internal variable by name
     void setInternalVariableByName(const char* name, int size, double *values)  {
         setInternalVariableByName_impl<0>(name, size, values);
@@ -292,14 +297,32 @@ private:
         throw std::runtime_error("Variable not found");
     }
 
+    // Implementations for getInternalVariableIndexByNameImpl
+    template <std::size_t I = 0, typename... Tp>
+    typename std::enable_if<I < sizeof...(Tp), int>::type
+    getInternalVariableIndexByNameImpl(const std::tuple<Tp...>& tuple, const char* name) const {
+        const auto& variable = std::get<I>(tuple);
+        if (strcmp(variable.getName(), name) == 0) {
+            return static_cast<int>(I);
+        }
+        return getInternalVariableIndexByNameImpl<I + 1>(tuple, name);
+    }
+
+    template <std::size_t I = 0, typename... Tp>
+    typename std::enable_if<I == sizeof...(Tp), int>::type
+    getInternalVariableIndexByNameImpl(const std::tuple<Tp...>&, const char*) const {
+        return -1; // Return -1 if the variable is not found
+    }
+
+
+
 
     // Implementations for setInternalVariableByName
     template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
     int getInternalVariableSizeByName_impl(const char* name) const {
         using current_type = typename std::tuple_element<I, tuple_t>::type;
 
-        auto current_name =std::get<I>(data).getName();
-
+        auto current_name = std::get<I>(data).getName();
 
         if (std::strcmp(current_name, name) == 0) {
             return std::get<I>(data).size();
@@ -316,7 +339,9 @@ private:
         return -1;
     }
 
-        // Implementations for setInternalVariableByName
+
+
+    // Implementations for setInternalVariableByName
     template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
     void setInternalVariableByName_impl(const char* name, int size, double * values)  {
         using current_type = typename std::tuple_element<I, tuple_t>::type;

@@ -186,6 +186,11 @@ public:
         return iv_storage.getInternalVariableSizeByName(iv_name);
     }
 
+    int getInternalVariableIndexByName(const char * iv_name) const
+    {
+        return iv_storage.getInternalVariableIndexByName(iv_name);
+    }
+
     auto setInternalVariableByName(const char * iv_name, int iv_size, double* iv_values)
     {
         cout << "  --->  Setting " << iv_name << " = ";
@@ -437,7 +442,7 @@ public:
 
     const Matrix& getTangent()
     {
-        static Matrix return_matrix(6,6);
+        static Matrix return_matrix(6, 6);
 
         VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
         Stiffness = Eelastic;
@@ -450,12 +455,12 @@ public:
 
     const Matrix& getInitialTangent()
     {
-        static Matrix return_matrix(6,6);
-        
+        static Matrix return_matrix(6, 6);
+
         // if (first_step)
         // {
-            VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
-            Stiffness = Eelastic;
+        VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
+        Stiffness = Eelastic;
         // }
 
         // this->Stiffness.toMatrix(return_matrix);
@@ -570,7 +575,7 @@ public:
             return newmaterial;
         } else
         {
-            cout << "ASDPlasticMaterial::getCopy(const char *type) - Only 3D is currently supported. Use 3D elements!" << endl; 
+            cout << "ASDPlasticMaterial::getCopy(const char *type) - Only 3D is currently supported. Use 3D elements!" << endl;
         }
         return 0;
     }
@@ -593,25 +598,10 @@ public:
             const char *iv_name = argv[0];
 
             int iv_size = this->getInternalVariableSizeByName(iv_name);
+            int pos = this->getInternalVariableIndexByName(iv_name);
 
             return_vector.resize(iv_size);
-
-
-            // int pos = 0;
-            // auto parameter_names = this->getParameterNames();
-            // for_each_in_tuple(parameter_names, [&pos, &iv_name](auto & name)
-            // {
-            //     // std::cout << "   "  <<  name << std::endl;
-            //     if (std::strcmp(name.c_str, iv_name) == 0)
-            //     {
-            //         break;
-            //     }
-            //     pos ++;
-
-            // });
-
-            // return new MaterialResponse(this, 1000 + pos, return_vector);
-            return 0;
+            return new MaterialResponse(this, 1000 + pos, return_vector);
         }
 
         return 0;
@@ -620,23 +610,6 @@ public:
 
     int getResponse (int responseID, Information & matInformation)
     {
-        // opserr << "responseID = " << responseID << endln;
-        // switch (responseID) {
-        // case -1:
-        //     return -1;
-        // case 1:
-        //     if (matInformation.theVector != 0)
-        //         *(matInformation.theVector) = getStress();
-        //     return 0;
-        // case 2:
-        //     if (matInformation.theVector != 0)
-        //         *(matInformation.theVector) = getStrain();
-        //     return 0;
-        // case 3:
-        //     if (matInformation.theVector != 0)
-        //         *(matInformation.theVector) = getPstrain();
-        //     return 0;
-        // }
 
         static Vector return_vector(6);
 
@@ -661,11 +634,46 @@ public:
             int pos = responseID - 1000;
 
             int find_pos = 0;
-            auto parameter_names = this->getParameterNames();
-            for_each_in_tuple(parameter_names, [](auto & name)
+
+            iv_storage.apply([&pos, &find_pos, this, matInformation](auto & internal_variable)
             {
-                std::cout << "   "  <<  name << std::endl;
+                if (pos == find_pos)
+                {
+                    auto iv = internal_variable.trial_value;
+                    int iv_size = iv.size();
+                    return_vector.resize(iv_size);
+                    for (int i = 0; i < iv_size; ++i)
+                    {
+                        return_vector(i) = iv(i);
+                    }
+                    *(matInformation.theVector) = return_vector;
+                }
+                else
+                {
+                    find_pos ++;
+                }
             });
+            // auto parameter_names = this->getParameterNames();
+            // for_each_in_tuple(parameter_names, [&find_pos, &pos, this](auto & name)
+            // {
+            //     if (pos == find_pos)
+            //     {
+            //         int iv_size = this->getInternalVariableSizeByName(name);
+            //         return_vector.resize(iv_size);
+
+            //         auto iv = iv_storage.getInternalVariableByName(name);
+
+            //         for (int i = 0; i < iv_size; ++i)
+            //         {
+            //             return_vector(i) = iv.trial_value(i);
+            //         }
+            //     }
+            //     else
+            //     {
+            //         find_pos -= -1;
+            //     }
+            // });
+
         }
 
 
