@@ -163,6 +163,8 @@ public:
         CommitStress *= 0;
         TrialStrain *= 0;
         CommitStrain *= 0;
+        TrialPlastic_Strain *= 0;
+        CommitPlastic_Strain *= 0;
 
         first_step = true;
     }
@@ -600,8 +602,7 @@ public:
             int iv_size = this->getInternalVariableSizeByName(iv_name);
             int pos = this->getInternalVariableIndexByName(iv_name);
 
-            return_vector.resize(iv_size);
-            return new MaterialResponse(this, 1000 + pos, return_vector);
+            return new MaterialResponse(this, 1000 + pos, Vector(iv_size));
         }
 
         return 0;
@@ -612,7 +613,6 @@ public:
     {
 
         static Vector return_vector(6);
-
 
         if (matInformation.theVector == 0)
             return 0;
@@ -634,8 +634,17 @@ public:
             int pos = responseID - 1000;
 
             int find_pos = 0;
-
-            iv_storage.apply([&pos, &find_pos, this, matInformation](auto & internal_variable)
+            
+            // The capture of return_vector which is declared static above triggers
+            // the following warning in g++ 11.4.0
+            // warning: capture of variable ‘return_vector’ with non-automatic storage duration
+            //
+            // Explanation:
+            //   Because usually the lambda functions are used for threaded applications
+            //   this warning is there to help with race conditions on the return_vector
+            //   in this case the warning is benign because opensees is not threaded
+            //   at this level. 
+            iv_storage.apply([&pos, &find_pos, &return_vector, this, matInformation](auto & internal_variable)
             {
                 if (pos == find_pos)
                 {
@@ -648,32 +657,8 @@ public:
                     }
                     *(matInformation.theVector) = return_vector;
                 }
-                else
-                {
-                    find_pos ++;
-                }
+                find_pos ++;
             });
-            // auto parameter_names = this->getParameterNames();
-            // for_each_in_tuple(parameter_names, [&find_pos, &pos, this](auto & name)
-            // {
-            //     if (pos == find_pos)
-            //     {
-            //         int iv_size = this->getInternalVariableSizeByName(name);
-            //         return_vector.resize(iv_size);
-
-            //         auto iv = iv_storage.getInternalVariableByName(name);
-
-            //         for (int i = 0; i < iv_size; ++i)
-            //         {
-            //             return_vector(i) = iv.trial_value(i);
-            //         }
-            //     }
-            //     else
-            //     {
-            //         find_pos -= -1;
-            //     }
-            // });
-
         }
 
 
