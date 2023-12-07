@@ -412,6 +412,44 @@ public:
         return result;
     }
 
+    const Vector &getInternalVariableByPos(int pos)
+    {
+        static Vector return_vector(6);
+        int find_pos = 0;
+        
+        // Note by J. Abell on Wed 06 Dec 2023 11:44:24
+        //
+        // The lambda capture of return_vector which is declared static above triggers
+        // the following warning in g++ 11.4.0
+        //
+        // warning: capture of variable ‘return_vector’ with non-automatic storage duration
+        //
+        // Explanation:
+        //   Because usually the lambda functions are used for threaded applications
+        //   this warning is there to help with race conditions on the return_vector.
+        //   In this case the warning is benign because opensees is not threaded
+        //   at this level. 
+        //   We want to keep the static allocation of return_vector to avoid
+        //   many calls to malloc (new) every time this function is called
+        //   for performance reasons, so we have to live with the warning.
+        iv_storage.apply([&pos, &find_pos, &return_vector, this](auto & internal_variable)
+        {
+            if (pos == find_pos)
+            {
+                auto &iv = internal_variable.trial_value;
+                int iv_size = iv.size();
+                return_vector.resize(iv_size);
+                for (int i = 0; i < iv_size; ++i)
+                {
+                    return_vector(i) = iv(i);
+                }
+            }
+            find_pos ++;
+        });
+
+        return return_vector;
+    }
+
     const VoigtVector &getStressTensor( void )
     {
         return TrialStress;
@@ -612,7 +650,6 @@ public:
     int getResponse (int responseID, Information & matInformation)
     {
 
-        static Vector return_vector(6);
 
         if (matInformation.theVector == 0)
             return 0;
@@ -632,35 +669,8 @@ public:
         else if (responseID >= 1000)
         {
             int pos = responseID - 1000;
-
-            int find_pos = 0;
-            
-            // The capture of return_vector which is declared static above triggers
-            // the following warning in g++ 11.4.0
-            // warning: capture of variable ‘return_vector’ with non-automatic storage duration
-            //
-            // Explanation:
-            //   Because usually the lambda functions are used for threaded applications
-            //   this warning is there to help with race conditions on the return_vector
-            //   in this case the warning is benign because opensees is not threaded
-            //   at this level. 
-            iv_storage.apply([&pos, &find_pos, &return_vector, this, matInformation](auto & internal_variable)
-            {
-                if (pos == find_pos)
-                {
-                    auto iv = internal_variable.trial_value;
-                    int iv_size = iv.size();
-                    return_vector.resize(iv_size);
-                    for (int i = 0; i < iv_size; ++i)
-                    {
-                        return_vector(i) = iv(i);
-                    }
-                    *(matInformation.theVector) = return_vector;
-                }
-                find_pos ++;
-            });
+            *(matInformation.theVector) = getInternalVariableByPos(pos);
         }
-
 
         return 0;
     }
@@ -1344,7 +1354,7 @@ private:
             TrialPlastic_Strain = next_EpsilonPl;
             iv_storage = next_iv_storage;
 
-            cout << "ASDPlasticMaterial::Runge_Kutta_45_Error_Control niter = " << niter << " maxStepError = " << maxStepError << " TolE = " << TolE << endl;;
+            // cout << "ASDPlasticMaterial::Runge_Kutta_45_Error_Control niter = " << niter << " maxStepError = " << maxStepError << " TolE = " << TolE << endl;;
 
             // ============================================================================================
             // Add the additional step: returning to the yield surface.
