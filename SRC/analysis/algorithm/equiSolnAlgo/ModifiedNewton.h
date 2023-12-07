@@ -48,8 +48,8 @@ class ConvergenceTest;
 class ModifiedNewton: public EquiSolnAlgo
 {
   public:
-  ModifiedNewton(int tangent, double iFactor = 0.0, double cFactor = 1.0);
-  ModifiedNewton(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 1.0);
+  ModifiedNewton(int tangent, double iFactor = 0.0, double cFactor = 1.0, int factorOnce_ = 0);
+  ModifiedNewton(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 1.0, int factorOnce_ = 0);
   ~ModifiedNewton();
 
     int solveCurrentStep(void);    
@@ -69,6 +69,7 @@ class ModifiedNewton: public EquiSolnAlgo
 
     double iFactor;
     double cFactor;
+    int factorOnce;
 };
 
 #endif

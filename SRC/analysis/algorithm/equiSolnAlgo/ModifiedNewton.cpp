@@ -54,6 +54,7 @@ void* OPS_ModifiedNewton()
     int formTangent = CURRENT_TANGENT;
     double iFactor = 0;
     double cFactor = 1;
+    double factorOnce = 0;
 
     if (OPS_GetNumRemainingInputArgs() > 0) {
       const char* type = OPS_GetString();
@@ -61,6 +62,9 @@ void* OPS_ModifiedNewton()
 	formTangent = CURRENT_SECANT;
       } else if (strcmp(type,"-initial") == 0) {
 	formTangent = INITIAL_TANGENT;
+      } else if (strcmp(type,"-initialFactorOnce") == 0) {
+    formTangent = INITIAL_TANGENT;
+    factorOnce = 1;
       } else if(strcmp(type,"-hall")==0 || strcmp(type,"-Hall")==0) {
 	formTangent = HALL_TANGENT;
 	iFactor = 0.1;
@@ -78,22 +82,22 @@ void* OPS_ModifiedNewton()
       }
     }
     
-    return new ModifiedNewton(formTangent, iFactor, cFactor);
+    return new ModifiedNewton(formTangent, iFactor, cFactor, factorOnce);
 
 }
 
 // Constructor
-ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact)
+ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact, int factorOnce_)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact), factorOnce(factorOnce_)
 {
   
 }
 
 
-ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact)
+ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact, int factorOnce_)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact), factorOnce(factorOnce_)
 {
 
 }
@@ -132,11 +136,16 @@ ModifiedNewton::solveCurrentStep(void)
     }	
 
     SOLUTION_ALGORITHM_tangentFlag = tangent;
-    if (theIncIntegratorr->formTangent(tangent, iFactor, cFactor) < 0){
-	opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
-	opserr << "the Integrator failed in formTangent()\n";
-	return -1;
-    }		    
+    if (factorOnce != 2) {
+        if (theIncIntegratorr->formTangent(tangent, iFactor, cFactor) < 0){
+        opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
+        opserr << "the Integrator failed in formTangent()\n";
+        return -1;
+        }   
+        if (factorOnce == 1)
+            factorOnce = 2;
+    }
+	    
 
     // set itself as the ConvergenceTest objects EquiSolnAlgo
     theTest->setEquiSolnAlgo(*this);
