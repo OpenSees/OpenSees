@@ -1027,6 +1027,10 @@ private:
 
                 errorcode = -1;
             }
+            else
+            {
+                errorcode = 0;
+            }
 
         }
 
@@ -1408,7 +1412,7 @@ private:
             Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
         }
 
-        return errorcode;
+        return 0;
     }
 
     // int Backward_Euler(const VoigtVector &strain_incr, bool debugrun = false, int NSteps = 1)
