@@ -484,8 +484,11 @@ public:
     {
         static Matrix return_matrix(6, 6);
 
-        VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
-        Stiffness = Eelastic;
+        if(INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Elastic)
+        {
+            VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
+            Stiffness = Eelastic;
+        }
 
         copyToMatrixReference(this->Stiffness, return_matrix);
 
@@ -748,7 +751,7 @@ public:
         TrialStress = stress;
     }
 
-    bool set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations, int return_to_yield_surface)
+    bool set_constitutive_integration_method(int method, int tangent, double f_relative_tol, double stress_relative_tol, int n_max_iterations, int return_to_yield_surface)
     {
         if ( method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set
                 || method == (int) ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler
@@ -765,6 +768,7 @@ public:
         {
             int tag = this->getTag();
             INT_OPT_constitutive_integration_method[tag] = (ASDPlasticMaterial_Constitutive_Integration_Method) method ;
+            INT_OPT_tangent_operator_type[tag] = (ASDPlasticMaterial_Tangent_Operator_Type) tangent ;
             INT_OPT_f_relative_tol[tag] = f_relative_tol ;
             INT_OPT_stress_relative_tol[tag] = stress_relative_tol ;
             INT_OPT_n_max_iterations[tag] = n_max_iterations ;
@@ -1383,6 +1387,19 @@ private:
 
                 double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
                 // Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
+
+                if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Elastic)
+                {
+                    VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
+                    this->Stiffness = Eelastic;
+                }
+                if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Continuum)
+                {
+                    VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
+                    VoigtMatrix Econtinuum = Eelastic - Eelastic*m_after_corrector*(n_after_corrector.transpose()*Eelastic) / den_after_corrector;
+                    this->Stiffness = Econtinuum; 
+                }
+
             }
             // ============================================================================================
             // ============================================================================================
@@ -3014,21 +3031,6 @@ private:
     }
 
 
-
-
-    // double Max_abs_Component(VoigtVector const& matrix3by3)
-    // {
-    //     double ret = 0.0;
-    //     for (int i = 0; i < 3; ++i)
-    //         for (int j = 0; j < 3; ++j)
-    //             if (ret < abs(matrix3by3(i, j)))
-    //             {
-    //                 ret = abs(matrix3by3(i, j));
-    //             }
-    //     return ret;
-    // }
-
-
 protected:
 
     VoigtVector TrialStrain;
@@ -3051,6 +3053,7 @@ protected:
 protected:
 
     static std::map<int, ASDPlasticMaterial_Constitutive_Integration_Method> INT_OPT_constitutive_integration_method;     //
+    static std::map<int, ASDPlasticMaterial_Tangent_Operator_Type> INT_OPT_tangent_operator_type;     //
     static std::map<int, double> INT_OPT_f_relative_tol;
     static std::map<int, double> INT_OPT_stress_relative_tol;
     static std::map<int, int> INT_OPT_n_max_iterations;
@@ -3067,13 +3070,10 @@ protected:
 
 };
 
-// ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  M,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Not_Set;
-// template < class E, class Y, class P, int tag, class T >
-// ASDPlasticMaterial_Constitutive_Integration_Method ASDPlasticMaterial< E,  Y,  P,  tag,  T >::constitutive_integration_method = ASDPlasticMaterial_Constitutive_Integration_Method::Forward_Euler;
-
-
 template < class E, class Y, class P, int tag>
 std::map<int, ASDPlasticMaterial_Constitutive_Integration_Method> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_constitutive_integration_method;
+template < class E, class Y, class P, int tag>
+std::map<int, ASDPlasticMaterial_Tangent_Operator_Type> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_tangent_operator_type;
 template < class E, class Y, class P, int tag>
 std::map<int, double> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_f_relative_tol;
 template < class E, class Y, class P, int tag>
@@ -3083,24 +3083,19 @@ std::map<int, int> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_n_max_iteration
 template < class E, class Y, class P, int tag>
 std::map<int, int> ASDPlasticMaterial< E,  Y,  P,  tag>::INT_OPT_return_to_yield_surface;
 
-// template < class E, class Y, class P, int tag, class T >
-// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::dsigma;
+
 template < class E, class Y, class P, int tag>
 VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag>::dsigma;
-// template < class E, class Y, class P, int tag, class T >
-// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::depsilon_elpl;  //Used to compute the yield surface intersection.
+
 template < class E, class Y, class P, int tag>
 VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag>::depsilon_elpl;  //Used to compute the yield surface intersection.
-// template < class E, class Y, class P, int tag, class T >
-// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_stress;  //Used to compute the yield surface intersection.
+
 template < class E, class Y, class P, int tag>
 VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag >::intersection_stress;  //Used to compute the yield surface intersection.
-// template < class E, class Y, class P, int tag, class T >
-// VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag,  T >::intersection_strain;  //Used to compute the yield surface intersection.
+
 template < class E, class Y, class P, int tag>
 VoigtVector ASDPlasticMaterial< E,  Y,  P,  tag>::intersection_strain;  //Used to compute the yield surface intersection.
-// template < class E, class Y, class P, int tag, class T >
-// VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  tag,  T >::Stiffness;  //Used to compute the yield surface intersection.
+
 template < class E, class Y, class P, int tag>
 VoigtMatrix ASDPlasticMaterial< E,  Y,  P,  tag>::Stiffness;  //Used to compute the yield surface intersection.
 

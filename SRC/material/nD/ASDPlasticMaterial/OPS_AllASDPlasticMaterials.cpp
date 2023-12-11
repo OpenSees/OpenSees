@@ -284,6 +284,7 @@ void populate_ASDPlasticMaterial(T* instance)
 
     // Default integration options
     int method = (int) ASDPlasticMaterial_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
+    int tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Elastic;
     double f_relative_tol = 1e-6; 
     double stress_relative_tol = 1e-6; 
     int n_max_iterations = 100;
@@ -380,7 +381,7 @@ void populate_ASDPlasticMaterial(T* instance)
                     cout << "   Setting return_to_yield_surface = " << return_to_yield_surface << endl;
                 }
 
-                if (std::strcmp(param_name, "method") == 0)
+                if (std::strcmp(param_name, "integration_method") == 0)
                 {
                     const char *method_name = OPS_GetString();
                     if (std::strcmp(method_name, "Forward_Euler") == 0)
@@ -397,9 +398,26 @@ void populate_ASDPlasticMaterial(T* instance)
                     
                 }
 
+                if (std::strcmp(param_name, "tangent_type") == 0)
+                {
+                    const char *tangent_type_name = OPS_GetString();
+                    if (std::strcmp(tangent_type_name, "Elastic") == 0)
+                        tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Elastic;
+                    else if (std::strcmp(tangent_type_name, "Continuum") == 0)
+                        tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Continuum;
+                    else
+                    {
+                        cout << "WARNING! Unrecognised ASDPlasticMaterial_Tangent_Operator_Type name " << tangent_type_name << endl;
+                        cout << "Defaulting to Elastic" << endl;
+                        tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Elastic;
+                    }
+                    cout << "   Setting tangent type = " << tangent_type_name << " tangent int = " << tangent << endl;
+                    
+                }
+
             }
         }
     }
 
-    instance->set_constitutive_integration_method(method, f_relative_tol, stress_relative_tol, n_max_iterations, return_to_yield_surface);
+    instance->set_constitutive_integration_method(method, tangent, f_relative_tol, stress_relative_tol, n_max_iterations, return_to_yield_surface);
 }

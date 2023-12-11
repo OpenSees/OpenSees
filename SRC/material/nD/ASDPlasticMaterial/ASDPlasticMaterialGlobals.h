@@ -46,59 +46,59 @@ constexpr double MACHINE_EPSILON = std::numeric_limits<double>::epsilon();
 
 enum struct ASDPlasticMaterial_Constitutive_Integration_Method : int
 {
-	Not_Set,
-	Forward_Euler,
-	Forward_Euler_Crisfield,
-	Multistep_Forward_Euler,
-	Multistep_Forward_Euler_Crisfield,
-	Modified_Euler_Error_Control,
-	Runge_Kutta_45_Error_Control,
-	Backward_Euler,
-	Full_Backward_Euler,
-	Forward_Euler_Subincrement,
-	Backward_Euler_ddlambda,
-	Backward_Euler_ddlambda_Subincrement
+    Not_Set,
+    Forward_Euler,
+    Forward_Euler_Crisfield,
+    Multistep_Forward_Euler,
+    Multistep_Forward_Euler_Crisfield,
+    Modified_Euler_Error_Control,
+    Runge_Kutta_45_Error_Control,
+    Backward_Euler,
+    Full_Backward_Euler,
+    Forward_Euler_Subincrement,
+    Backward_Euler_ddlambda,
+    Backward_Euler_ddlambda_Subincrement
+};
+
+enum struct ASDPlasticMaterial_Tangent_Operator_Type : int
+{
+    Elastic,
+    Continuum,
+    Algorithmic,
+    Numerical_Algorithmic,
+
 };
 
 void printTensor(std::string const& name, VoigtVector const& v)
 {
-	// This is in good format but take 3 lines.
-	// stderr will print immediately, not like cout (may be reordered by CPU).
-	fprintf(stderr, "%s = \n", name.c_str());
-	fprintf(stderr, "[%16.8f \t %16.8f \t %16.8f \t %16.8f \t %16.8f \t %16.8f]\n",   v(0), v(1), v(2),   v(3), v(4), v(5));
+    // This is in good format but take 3 lines.
+    // stderr will print immediately, not like cout (may be reordered by CPU).
+    fprintf(stderr, "%s = \n", name.c_str());
+    fprintf(stderr, "[%16.8f \t %16.8f \t %16.8f \t %16.8f \t %16.8f \t %16.8f]\n",   v(0), v(1), v(2),   v(3), v(4), v(5));
 
 }
 
 void printTensor4(std::string const& name, VoigtMatrix const& v)
 {
-	std::cout << name << " = [ " ;
-	for (int ii = 0; ii < 6; ii++)
-	{
-		for (int jj = 0; jj < 6; jj++)
-		{
-			std::cout << v(ii, jj) << " ";
-		}
-		std::cout << std::endl;
-	}
-	std::cout << "]" << std::endl;
+    std::cout << name << " = [ " ;
+    for (int ii = 0; ii < 6; ii++)
+    {
+        for (int jj = 0; jj < 6; jj++)
+        {
+            std::cout << v(ii, jj) << " ";
+        }
+        std::cout << std::endl;
+    }
+    std::cout << "]" << std::endl;
 }
-
-// std::tuple<double, double, double> getpqtheta(const VoigtVector &mystress);
-// std::tuple<double, double, double> getI1J2J3(const VoigtVector &mystress);
-// bool inverse4thTensor(VoigtMatrix const& rhs, VoigtMatrix& ret);
-
-// void dJ2_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of second deviatoric stress invariant
-// void dJ3_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of third deviatoric stress invariant
-// void dq_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of deviatoric stress q
-// void dtheta_dsigma_ij(const VoigtVector& sigma, VoigtVector &result);   // Stress derivative of Lode angle
 
 
 // Macaulay Bracket < >  operator. (Integral of Heaviside function)
 inline double macaulay_bracket(double x)
 {
-	return x > 0 ? x : 0;
+    return x > 0 ? x : 0;
 }
-// static int Nsteps = 0 ;  // Removes warning
+
 }
 
 #endif
