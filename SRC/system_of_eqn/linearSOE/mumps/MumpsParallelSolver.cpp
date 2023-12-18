@@ -145,11 +145,41 @@ MumpsParallelSolver::initializeMumps()
     }
     
     int info = id.infog[0];
-    if (info != 0) {
+    int info2   = id.infog[1];
+    if (info != 0) {	
       opserr << "WARNING MumpsParallelSolver::setSize(void)- ";
       opserr << " Error " << info << " returned in substitution dmumps()\n";
-      return info;
+      switch(info) {
+      case -2:
+	opserr << "nz " << info2 << " out of range\n";
+	break;
+      case -5:
+	opserr << " out of memory allocation error\n";
+	break;
+      case -6:  
+	opserr << " cause: Matrix is Singular in Structure: check your model\n";
+	break;
+      case -7:
+	opserr << " out of memory allocation error\n";
+	break;
+      case -8:
+	opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+	break;
+      case -9:
+	opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+	break;
+      case -10:  
+	opserr << " cause: Matrix is Singular Numerically\n";
+	break;
+      case -13:
+	opserr << " out of memory wanted " << info2 << " (if < 0 mult absolute by 1 million)\n";
+	break;
+      default:
+	opserr << " mumps returned infog[0] and infog[1] error codes: " << info << " and " << info2;
     }
+
+    if (info < 0)
+      return info;
     
     needsSetSize = false;
     
@@ -218,34 +248,34 @@ MumpsParallelSolver::solveAfterInitialization(void)
   if (info != 0) {	
     opserr << "WARNING MumpsParallelSolver::solve(void)- ";
     opserr << " Error " << info << " returned in substitution dmumps()\n";
-	switch(info) {
-	  case -2:
-		opserr << "nz " << info2 << " out of range\n";
-	    break;
-	  case -5:
-		opserr << " out of memory allocation error\n";
-		break;
-      case -6:  
-		opserr << " cause: Matrix is Singular in Structure: check your model\n";
-		break;
-	  case -7:
-		opserr << " out of memory allocation error\n";
-		break;
-	  case -8:
-		opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
-		break;
-	  case -9:
-		opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
-		break;
-	  case -10:  
-		opserr << " cause: Matrix is Singular Numerically\n";
-		break;
-	  case -13:
-		  opserr << " out of memory wanted " << info2 << " (if < 0 mult absolute by 1 million)\n";
-		  break;
-	  default:
-		  ;
-	}
+    switch(info) {
+    case -2:
+      opserr << "nz " << info2 << " out of range\n";
+      break;
+    case -5:
+      opserr << " out of memory allocation error\n";
+      break;
+    case -6:  
+      opserr << " cause: Matrix is Singular in Structure: check your model\n";
+      break;
+    case -7:
+      opserr << " out of memory allocation error\n";
+      break;
+    case -8:
+      opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+      break;
+    case -9:
+      opserr << "Work array too small; use -ICNTL14 option, the default is -ICNTL 20 make 20 larger\n";
+      break;
+    case -10:  
+      opserr << " cause: Matrix is Singular Numerically\n";
+      break;
+    case -13:
+      opserr << " out of memory wanted " << info2 << " (if < 0 mult absolute by 1 million)\n";
+      break;
+    default:
+      opserr << " mumps returned infog[0] and infog[1] error codes: " << info << " and " << info2;
+    }
     return info;
   }
 
