@@ -170,7 +170,6 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
   }
 
   //
-  // fmk UNDOCUMENTED FEATURE - 
   // all to take similar command to nonlinearBeamColumn & dispBeamColumn 
   // 
 
@@ -193,86 +192,150 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       (strcmp(argv[6],"GaussQ") != 0) &&
       (strcmp(argv[6],"MidDistance") != 0)) {
 
-    int nIP, secTag;
 
-    if (Tcl_GetInt(interp, argv[5], &nIP) != TCL_OK) {
-      opserr << "WARNING invalid nIP\n";
-      opserr << argv[1] << " element: " << eleTag << endln;
-      return TCL_ERROR;
-    }
-
-    if (nIP <= 0) {
-      opserr << "WARNING invalid nIP - cannot be <= 0 \n";
-      opserr << argv[1] << " element: " << eleTag << endln;
-      return TCL_ERROR;
-    }
-
+    // see if OpenSeesPy format .. new format!
+    int locExtra = argc;
+    bool newCommandFormat = false; 
     int argi = 6;
-    SectionForceDeformation **sections = new SectionForceDeformation *[nIP];
+    
+    for (int i=5; i<argc; i++) {
+      if (argv[i][0] == '-') {
+	locExtra = i;
+	argi = i;
+	i = argc;
+      }
+    }
+    
+    if ((locExtra - 4) == 3) {
+      newCommandFormat = true;
+    } 
 
-    if (strcmp(argv[argi],"-sections") != 0)  {
+    BeamIntegration *beamIntegr = 0; 
+    int nIP, secTag; 
+    SectionForceDeformation **sections = 0;
 
-      if (argc - argi < 2) {
-	opserr << "WARNING insufficent number of arguments for element "
-	       << argv[1] << " with tag " << eleTag;
-	opserr << "\nThis is probably because beamIntegration is not yet functional with Tcl" << endln;
+
+    if (newCommandFormat == true) {
+
+      if (Tcl_GetInt(interp, argv[5], &transfTag) != TCL_OK) {
+	opserr << "WARNING invalid transfTag ";
+	opserr << argv[5] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+
+      int integrationTag = 0;
+      if (Tcl_GetInt(interp, argv[6], &integrationTag) != TCL_OK) {
+	opserr << "WARNING invalid integrationTag ";
+	opserr << argv[6] << " element: " << eleTag << endln;
 	return TCL_ERROR;
       }
       
-      if (Tcl_GetInt(interp, argv[argi], &secTag) != TCL_OK) {
-	opserr << "WARNING invalid secTag\n";
-	opserr << argv[1] << " element: " << eleTag << endln;
-	return TCL_ERROR;
-      } else 
-	argi++;
-   
-       SectionForceDeformation *theSection = theTclBuilder->getSection(secTag);
-      if (theSection == 0) {
-	opserr << "WARNING section not found\n";
-	opserr << "Section: " << secTag;
-	opserr << argv[1] << " element: " << eleTag << endln;
+      BeamIntegrationRule *theIntegrationRule = OPS_getBeamIntegrationRule(integrationTag);
+      if (theIntegrationRule != 0)
+	beamIntegr = theIntegrationRule->getBeamIntegration()->getCopy();
+      else {
+	opserr << "WARNING invalid no integration rule exists with tag ";
+	opserr << argv[6] << " element: " << eleTag << endln;
 	return TCL_ERROR;
       }
-    
-      if (Tcl_GetInt(interp, argv[argi], &transfTag) != TCL_OK) {
-	opserr << "WARNING invalid transfTag\n";
-	opserr << argv[1] << " element: " << eleTag << endln;
-	return TCL_ERROR;
-      } else
-	argi++;
 
-      for (int i = 0; i < nIP; i++)
-	sections[i] = theSection;
+      argi = locExtra;
 
+      const ID& secTags = theIntegrationRule->getSectionTags();
+      nIP = secTags.Size();
+      sections = new SectionForceDeformation *[nIP];
+      for(int i=0; i<secTags.Size(); i++) {
+	sections[i] = OPS_getSectionForceDeformation(secTags(i));
+	if(sections[i] == 0) {
+	  opserr<<"section "<<secTags(i)<<"not found\n";
+	  delete [] sections;
+	  return TCL_ERROR;
+	}
+      }
 
     } else {
       
-      argi++;
-      // get section tags
-      for (int i=0; i<nIP; i++) {
+      if (Tcl_GetInt(interp, argv[5], &nIP) != TCL_OK) {
+	opserr << "WARNING invalid nIP\n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+      
+      if (nIP <= 0) {
+	opserr << "WARNING invalid nIP - cannot be <= 0 \n";
+	opserr << argv[1] << " element: " << eleTag << endln;
+	return TCL_ERROR;
+      }
+
+      argi = 6;
+      sections = new SectionForceDeformation *[nIP];
+      
+      if (strcmp(argv[argi],"-sections") != 0)  {
+	
+	if (argc - argi < 2) {
+	  opserr << "WARNING insufficent number of arguments for element "
+		 << argv[1] << " with tag " << eleTag;
+	  opserr << "\nThis is probably because beamIntegration is not yet functional with Tcl" << endln;
+	  return TCL_ERROR;
+	}
+	
 	if (Tcl_GetInt(interp, argv[argi], &secTag) != TCL_OK) {
 	  opserr << "WARNING invalid secTag\n";
 	  opserr << argv[1] << " element: " << eleTag << endln;
 	  return TCL_ERROR;
 	} else 
 	  argi++;
+
 	
 	SectionForceDeformation *theSection = theTclBuilder->getSection(secTag);
+
 	if (theSection == 0) {
 	  opserr << "WARNING section not found\n";
 	  opserr << "Section: " << secTag;
 	  opserr << argv[1] << " element: " << eleTag << endln;
 	  return TCL_ERROR;
-	}      
-	sections[i] = theSection;  
-      }
+	}
+	
+	if (Tcl_GetInt(interp, argv[argi], &transfTag) != TCL_OK) {
+	  opserr << "WARNING invalid transfTag\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	} else
+	  argi++;
+	
+	for (int i = 0; i < nIP; i++) {
+	  sections[i] = theSection;
+	}
 
-      if (Tcl_GetInt(interp, argv[argi], &transfTag) != TCL_OK) {
-	opserr << "WARNING invalid transfTag\n";
-	opserr << argv[1] << " element: " << eleTag << endln;
-	return TCL_ERROR;
-      } else
+      } else {
+	
 	argi++;
+	// get section tags
+	for (int i=0; i<nIP; i++) {
+	  if (Tcl_GetInt(interp, argv[argi], &secTag) != TCL_OK) {
+	    opserr << "WARNING invalid secTag\n";
+	    opserr << argv[1] << " element: " << eleTag << endln;
+	    return TCL_ERROR;
+	  } else 
+	    argi++;
+	  
+	  SectionForceDeformation *theSection = theTclBuilder->getSection(secTag);
+	  if (theSection == 0) {
+	    opserr << "WARNING section not found\n";
+	    opserr << "Section: " << secTag;
+	    opserr << argv[1] << " element: " << eleTag << endln;
+	    return TCL_ERROR;
+	  }      
+	  sections[i] = theSection;  
+	}
+	
+	if (Tcl_GetInt(interp, argv[argi], &transfTag) != TCL_OK) {
+	  opserr << "WARNING invalid transfTag\n";
+	  opserr << argv[1] << " element: " << eleTag << endln;
+	  return TCL_ERROR;
+	} else
+	  argi++;
+      }
     }
       
     int numIter = 10;
@@ -281,7 +344,6 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     double subFac = 10.0;
     double mass = 0.0;
     int cMass = 0;
-    BeamIntegration *beamIntegr = 0;
 
     while (argi < argc) {
       if (strcmp(argv[argi],"-iter") == 0) {
@@ -475,14 +537,15 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     }
 
 
-  Tcl_Free((char *)argv);
+    Tcl_Free((char *)argv);
 
     return TCL_OK;
-  } 
 
-  
+    
+  }
+
   //
-  // otherwise use correct format of command as found in current documentation
+  // old format!!
   //
 
   if (Tcl_GetInt(interp, argv[5], &transfTag) != TCL_OK) {
