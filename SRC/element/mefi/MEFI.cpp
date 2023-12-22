@@ -31,6 +31,7 @@
 #include <ElementResponse.h>
 #include <ElementalLoad.h>
 #include <elementAPI.h>
+#include <math.h>
 
 void* OPS_MEFI() 
 {
