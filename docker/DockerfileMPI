@@ -1,0 +1,53 @@
+# Dockerfile to build OpenSees, OpenSeesSP and OpenSeesMP
+#   .. utilizes ubuntu:20.04 LTS as base
+#   .. it will build all applications and place in /usr/local/bin
+#   .. it will also install openmpi
+#         .. to run OpenSeesSP and OpenSeesMP use mpiexec, e.g. mpiexec -n 2 OpenSeesSP example.tcl
+
+# written: fmk
+
+FROM ubuntu:20.04
+
+SHELL ["/bin/bash", "-c"]
+
+WORKDIR /opensees
+
+RUN cp /etc/apt/sources.list /etc/apt/sources.list~ \
+    && sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list \
+    && apt-get update \
+    && DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get -y install tzdata git \
+    && apt-get install -y sudo \
+    && sudo apt-get install -y cmake gcc g++ gfortran liblapack-dev git python3-pip \
+    && sudo apt-get install -y openmpi-bin openmpi-common libopenmpi-dev libscalapack-openmpi-dev \
+    && pip3 install conan==1.60.1 \
+    && git clone --depth 1 --branch hdf5-1_12_2 https://github.com/HDFGroup/hdf5.git \
+    && cd hdf5 \
+    && ./configure --prefix=/usr/local/hdf5 \
+    && make \
+    && cd .. \
+    && git clone https://github.com/OpenSees/mumps.git \
+    && cd mumps \
+    && mkdir build \
+    && cd build \
+    && cmake .. -Darith=d \
+    && cmake --build . \
+    && cd ../.. \
+    && git clone https://github.com/OpenSees/OpenSees.git \
+    && cd OpenSees \
+    && mkdir build \
+    && cd build \
+    && conan install .. --build missing \
+    && cmake .. -DMUMPS_DIR=$PWD/../../mumps/build -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES="/usr/lib/x86_64-linux-gnu/libscalapack-openmpi.so.2.1" \
+    && cmake --build . --config Release --target OpenSees \
+    && cmake --build . --config Release --target OpenSeesSP \
+    && cmake --build . --config Release --target OpenSeesMP \        
+    && cp ./bin/* /usr/local/bin \
+    && cp -r ./lib/tcl8.6 /usr/local/lib \
+    && cd ../.. \
+    && rm -fr OpenSees \
+    && rm -fr hdf5 \
+    && rm -fr mumps
+
+  
+
+    

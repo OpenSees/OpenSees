@@ -37,6 +37,7 @@
 #include <ConstantSeries.h>
 #include <RectangularSeries.h>
 #include <TrigSeries.h>
+#include <RampSeries.h> // CDM
 #include <PulseSeries.h>
 #include <TriangleSeries.h>
 #include <PathTimeSeries.h>
@@ -44,6 +45,7 @@
 #include <PeerMotion.h>
 #include <PeerNGAMotion.h>
 #include <string.h>
+#include <MPAccSeries.h>   //Tang.S
 
 #ifdef _RELIABILITY
 #include <DiscretizedRandomProcessSeries.h>
@@ -72,10 +74,12 @@ extern void *OPS_ConstantSeries(void);
 extern void *OPS_LinearSeries(void);
 extern void *OPS_TriangleSeries(void);
 extern void *OPS_TrigSeries(void);
+extern void *OPS_RampSeries(void); // CDM
 extern void *OPS_RectangularSeries(void);
 extern void *OPS_PulseSeries(void);
 extern void *OPS_PeerMotion(void);
 extern void *OPS_PeerNGAMotion(void);
+extern void* OPS_MPAccSeries(void);   //Tang.S
 
 #include <elementAPI.h>
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
@@ -106,6 +110,12 @@ TclTimeSeriesCommand(ClientData clientData,
     void *theResult = OPS_TrigSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
+    //Tang.S
+  } else if ((strcmp(argv[0], "MPAcc") == 0) || (strcmp(argv[0], "MPAccSeries") == 0)) {
+
+      void* theResult = OPS_MPAccSeries();
+      if (theResult != 0)
+          theSeries = (TimeSeries*)theResult;
 
   }	
 
@@ -114,6 +124,14 @@ TclTimeSeriesCommand(ClientData clientData,
     void *theResult = OPS_LinearSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
+
+  }
+
+  else if ((strcmp(argv[0], "Ramp") == 0) || (strcmp(argv[0], "RampSeries") == 0)) { // CDM
+
+      void* theResult = OPS_RampSeries();
+      if (theResult != 0)
+          theSeries = (TimeSeries*)theResult;
 
   }
 
@@ -569,7 +587,7 @@ TclTimeSeriesCommand(ClientData clientData,
     opserr << endln;
     // type of load pattern type unknown
     opserr << "WARNING unknown Series type " << argv[0] << " - ";
-    opserr << " valid types: Linear, Rectangular, Path, Constant, Trig, Sine\n";
+    opserr << " valid types: Linear, Rectangular, Path, Constant, Trig, Sine, Ramp\n";
     return 0;
   }
 

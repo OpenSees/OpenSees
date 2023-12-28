@@ -312,10 +312,6 @@ void *OPS_FPBearingPTV()
 
   if (theEle == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
-	delete theMaterialA;
-	delete theMaterialB;
-	delete theMaterialC;
-	delete theMaterialD;
     return 0;
   }
  

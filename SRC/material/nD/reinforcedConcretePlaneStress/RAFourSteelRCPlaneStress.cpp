@@ -292,7 +292,9 @@ RAFourSteelRCPlaneStress::RAFourSteelRCPlaneStress (int      tag,
   argv[0] = "getPD";
   theResponses[6] = theMaterial[4]->setResponse(argv, 1, *theDummyStream);
   theResponses[7] = theMaterial[5]->setResponse(argv, 1, *theDummyStream);
-  
+
+  delete theDummyStream;
+	
   if ((theResponses[0] == 0) || (theResponses[1] == 0) ||
       (theResponses[2] == 0) || (theResponses[3] == 0) ||
       (theResponses[4] == 0) || (theResponses[5] == 0) ||
@@ -300,7 +302,7 @@ RAFourSteelRCPlaneStress::RAFourSteelRCPlaneStress (int      tag,
     opserr << " ReinforcedConcretePlaneStress::ReinforcedConcretePlaneStress - failed to set appropriate concrete material\n";
     exit(-1);
   }
-  
+
   // end FMK
 
   this->revertToStart();

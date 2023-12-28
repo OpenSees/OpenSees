@@ -114,7 +114,7 @@ const double  MembranePlateFiberSectionThermal::wg[] = { 0.1,
 //null constructor
 MembranePlateFiberSectionThermal::MembranePlateFiberSectionThermal( ) : 
 SectionForceDeformation( 0, SEC_TAG_MembranePlateFiberSectionThermal ), 
-strainResultant(8) 
+strainResultant(8), sT(2)
 { 
   for ( int i = 0; i < 5; i++ )
       theFibers[i] = 0 ;
@@ -129,7 +129,7 @@ MembranePlateFiberSectionThermal::MembranePlateFiberSectionThermal(
                                    double thickness, 
                                    NDMaterial &Afiber ) :
 SectionForceDeformation( tag, SEC_TAG_MembranePlateFiberSectionThermal ),
-strainResultant(8)
+strainResultant(8), sT(2)
 {
   this->h  = thickness ;
 
@@ -137,9 +137,6 @@ strainResultant(8)
   for ( i = 0; i < 5; i++ )
       theFibers[i] = Afiber.getCopy( "PlateFiberThermal" ) ;
  //J.Jiang add 
-   sT = new Vector(sTData,2);   
-   sTData[0] = 0.0;             
-   sTData[1] = 0.0;  
    ThermalElongation[0] = 0.0;
    ThermalElongation[1] = 0.0;
    ThermalElongation[2] = 0.0;
@@ -154,9 +151,8 @@ strainResultant(8)
 //destructor
 MembranePlateFiberSectionThermal::~MembranePlateFiberSectionThermal( ) 
 { 
-  int i ;
-  for ( i = 0; i < 5; i++ )
-     delete theFibers[i] ;
+  for (int i = 0; i < 5; i++ )
+    delete theFibers[i];
 } 
 
 
@@ -169,6 +165,12 @@ SectionForceDeformation  *MembranePlateFiberSectionThermal::getCopy( )
   clone = new MembranePlateFiberSectionThermal( this->getTag(), 
                                          this->h,
                                          *theFibers[0] ) ; //make the copy
+  clone->sT = sT;
+  clone->countnGauss = countnGauss;
+  clone->ThermalGradientShink = ThermalGradientShink;
+  for (int i = 0; i < 5; i++)
+    clone->ThermalElongation[i] = ThermalElongation[i];
+  
   return clone ;
 }
 
@@ -349,9 +351,6 @@ const Vector&  MembranePlateFiberSectionThermal::getStressResultant( )
       weight = ( 0.5*h ) * wg[i] ;
 
       stress = theFibers[i]->getStress( ) ;
-#ifdef _SDEBUG
-	  opserr<<"MembranePlateFiberSection:resultantstress "<<endln<<stress;
-#endif
   
       //membrane
       stressResultant(0)  +=  stress(0)*weight ;
@@ -464,12 +463,12 @@ MembranePlateFiberSectionThermal::getTemperatureStress(const Vector& dataMixed)
   //update yBar = Ai*Ei*yi/(Ai*E*) 
   //calculate centroid of section yBar for composite section,i.e. yBar is related to tangent E
   
-      sTData[0] = fabs(ThermalTangent[0])*h*12e-6*fabs(dataTempe[0]+dataTempe[16])/2;
+  sT(0) = fabs(ThermalTangent[0])*h*12e-6*fabs(dataTempe[0]+dataTempe[16])/2;
       //sTData[0] = fabs(ThermalTangent[0])*h*12e-6*fabs(dataTempe[0]);
       //sTData[1] = fabs(dataTempe[0]-dataTempe[16])/h*ThermalTangent[0]*h*h*h/12*12e-6;
 	  //J.Jiang second try to get Mt
-      sTData[1] = fabs(dataTempe[0]-dataTempe[16])*12e-6*fabs(ThermalTangent[0])*h*h/12/0.7;
-      return *sT;
+  sT(1) = fabs(dataTempe[0]-dataTempe[16])*12e-6*fabs(ThermalTangent[0])*h*h/12/0.7;
+      return sT;
 }
 
 //send back the tangent 
@@ -739,7 +738,7 @@ MembranePlateFiberSectionThermal::recvSelf(int commitTag, Channel &theChannel, F
       theFibers[i]->setDbTag(matDbTag);
       res += theFibers[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
-	opserr << "MembranePlateFiber::recvSelf() - material " << i << "failed to recv itself\n";
+	opserr << "MembranePlateFiberSectionThermal::recvSelf() - material " << i << "failed to recv itself\n";
 	  
 	return res;
       }

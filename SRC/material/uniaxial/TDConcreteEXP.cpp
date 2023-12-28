@@ -69,10 +69,8 @@
 #include <float.h>
 #include <Channel.h>
 #include <Information.h>
-#include <iostream> //Added by AMK for debugging
 #include <elementAPI.h> //Added by AMK to use methods for parsing data line;
 #include <Domain.h> //Added by AMK to get current Domain time;
-using namespace std; //Added by AMK for debugging
 #include <MaterialResponse.h>
 #include <Vector.h>
 
@@ -447,7 +445,8 @@ TDConcreteEXP::commitState(void)
 	epsP_m = eps_m;
     if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
         double s = fabs(eps_m/fc)*Ec;
-        cout<<"\n          Strain Compression Limit Exceeded: "<<s<<"fc'";
+	s = 0.5*fabs(fc/Ec);
+	opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
     }
 	
 	//Cracking flags:

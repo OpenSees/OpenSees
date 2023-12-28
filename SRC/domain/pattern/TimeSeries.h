@@ -54,6 +54,7 @@ class TimeSeries : public TaggedObject, public MovableObject
     // pure virtual functions
     virtual double getFactor (double pseudoTime) = 0;
     virtual double getDuration () = 0;
+    virtual double getStartTime() { return 0.0; }
     virtual double getPeakFactor () = 0;
 
     virtual double getTimeIncr (double pseudoTime) = 0;

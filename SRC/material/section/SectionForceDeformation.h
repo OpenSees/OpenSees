@@ -78,8 +78,7 @@ class SectionForceDeformation : public Material
   SectionForceDeformation ();
   virtual ~SectionForceDeformation ();
   
-  //virtual int setTrialSectionDeformation (const Vector&) = 0;
-  virtual int setTrialSectionDeformation (const Vector&) ; //the default valuoe 0 is removeed byJZ ,UoE 
+  virtual int setTrialSectionDeformation (const Vector&) = 0;
   virtual const Vector &getSectionDeformation (void) = 0;
   
   virtual const Vector &getStressResultant (void) = 0;

@@ -51,49 +51,51 @@
 
 void* OPS_ModifiedNewton()
 {
-    int formTangent = CURRENT_TANGENT;
-    double iFactor = 0;
-    double cFactor = 1;
+  int formTangent = CURRENT_TANGENT;
+  int factoronce = 0;
+  double iFactor = 0;
+  double cFactor = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* type = OPS_GetString();
-      if (strcmp(type,"-secant") == 0) {
-	formTangent = CURRENT_SECANT;
-      } else if (strcmp(type,"-initial") == 0) {
-	formTangent = INITIAL_TANGENT;
-      } else if(strcmp(type,"-hall")==0 || strcmp(type,"-Hall")==0) {
-	formTangent = HALL_TANGENT;
-	iFactor = 0.1;
-	cFactor = 0.9;
-	if (OPS_GetNumRemainingInputArgs() == 2) {
-	  double data[2];
-	  int numData = 2;
-	  if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
-	    opserr << "WARNING invalid data reading 2 hall factors\n";
-	    return 0;
-	  }
-	  iFactor = data[0];
-	  cFactor = data[1];
-	}
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    const char* type = OPS_GetString();
+    if (strcmp(type,"-secant") == 0) {
+      formTangent = CURRENT_SECANT;
+    } else if (strcmp(type,"-factoronce")==0 || strcmp(type,"-FactorOnce")==0)  {
+      factoronce = 1;
+    } else if (strcmp(type,"-initial") == 0) {
+      formTangent = INITIAL_TANGENT;
+    } else if(strcmp(type,"-hall")==0 || strcmp(type,"-Hall")==0) {
+      formTangent = HALL_TANGENT;
+      iFactor = 0.1;
+      cFactor = 0.9;
+      if (OPS_GetNumRemainingInputArgs() == 2) {
+        double data[2];
+        int numData = 2;
+        if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
+          opserr << "WARNING invalid data reading 2 hall factors\n";
+          return 0;
+        }
+        iFactor = data[0];
+        cFactor = data[1];
       }
     }
-    
-    return new ModifiedNewton(formTangent, iFactor, cFactor);
-
+  }
+  
+  return new ModifiedNewton(formTangent, iFactor, cFactor,factoronce);
 }
 
 // Constructor
-ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact)
+ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact, int factOnce)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact), factorOnce(factOnce)
 {
   
 }
 
 
-ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact)
+ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact, int factOnce)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
+ tangent(theTangentToUse), iFactor(iFact), cFactor(cFact), factorOnce(factOnce)
 {
 
 }
@@ -114,11 +116,10 @@ ModifiedNewton::solveCurrentStep(void)
     IncrementalIntegrator *theIncIntegratorr = this->getIncrementalIntegratorPtr();
     LinearSOE	        *theSOE = this->getLinearSOEptr();
 
-    if ((theAnalysisModel == 0) || (theIncIntegratorr == 0) || (theSOE == 0)
-	|| (theTest == 0)){
-	opserr << "WARNING ModifiedNewton::solveCurrentStep() - setLinks() has";
-	opserr << " not been called - or no ConvergenceTest has been set\n";
-	return -5;
+    if ((theAnalysisModel == 0) || (theIncIntegratorr == 0) || (theSOE == 0) || (theTest == 0)){
+      opserr << "WARNING ModifiedNewton::solveCurrentStep() - setLinks() has";
+      opserr << " not been called - or no ConvergenceTest has been set\n";
+      return -5;
     }	
 
     // we form the tangent
@@ -126,17 +127,22 @@ ModifiedNewton::solveCurrentStep(void)
     // timer1.start();
 
     if (theIncIntegratorr->formUnbalance() < 0) {
-	opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
-	opserr << "the Integrator failed in formUnbalance()\n";	
-	return -2;
+      opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
+      opserr << "the Integrator failed in formUnbalance()\n";	
+      return -2;
     }	
 
     SOLUTION_ALGORITHM_tangentFlag = tangent;
-    if (theIncIntegratorr->formTangent(tangent, iFactor, cFactor) < 0){
-	opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
-	opserr << "the Integrator failed in formTangent()\n";
-	return -1;
-    }		    
+    if (factorOnce!=2) {
+      if (theIncIntegratorr->formTangent(tangent, iFactor, cFactor) < 0){
+        opserr << "WARNING ModifiedNewton::solveCurrentStep() -";
+        opserr << "the Integrator failed in formTangent()\n";
+        return -1;
+      }	
+      if (factorOnce==1) {
+        factorOnce =2;
+      }
+    }	    
 
     // set itself as the ConvergenceTest objects EquiSolnAlgo
     theTest->setEquiSolnAlgo(*this);
@@ -184,6 +190,9 @@ ModifiedNewton::solveCurrentStep(void)
     if (result == -2) {
       opserr << "ModifiedNewton::solveCurrentStep() -";
       opserr << "the ConvergenceTest object failed in test()\n";
+      if (factorOnce ==2) {
+        factorOnce = 1;
+      }
       return -3;
     }
     return result;
@@ -192,10 +201,11 @@ ModifiedNewton::solveCurrentStep(void)
 int
 ModifiedNewton::sendSelf(int cTag, Channel &theChannel)
 {
-  static Vector data(3);
+  static Vector data(4);
   data(0) = tangent;
   data(1) = iFactor;
   data(2) = cFactor;
+  data(3) = factorOnce;
   return theChannel.sendVector(this->getDbTag(), cTag, data);
 }
 
@@ -204,11 +214,12 @@ ModifiedNewton::recvSelf(int cTag,
 			Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-  static Vector data(3);
+  static Vector data(4);
   theChannel.recvVector(this->getDbTag(), cTag, data);
   tangent = data(0);
   iFactor = data(1);
   cFactor = data(2);
+  factorOnce = data(3);
   return 0;
 }
 
