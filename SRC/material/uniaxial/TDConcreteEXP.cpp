@@ -519,7 +519,7 @@ TDConcreteEXP::revertToStart(void)
 int 
 TDConcreteEXP::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(11);
+  static Vector data(14);
   data(0) =ft;    
   data(1) =Ec; 
   data(2) =beta;   
@@ -531,6 +531,9 @@ TDConcreteEXP::sendSelf(int commitTag, Channel &theChannel)
   data(8) =epscra; 
   data(9) =epscrd;     
   data(10) = this->getTag();
+  data(11) = fc;
+  data(12) = tcast;
+  data(13) = count;
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteEXP::sendSelf() - failed to sendSelf\n";
@@ -544,7 +547,7 @@ TDConcreteEXP::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(11);
+  static Vector data(14);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteEXP::recvSelf() - failed to recvSelf\n";
@@ -562,7 +565,10 @@ TDConcreteEXP::recvSelf(int commitTag, Channel &theChannel,
   epscra = data(8); 
   epscrd = data(9);   
   this->setTag(data(10));
-
+  fc = data(11);
+  tcast = data(12);
+  count = (int)data(13);
+  
   e = eP;
   sig = sigP;
   eps = epsP;
