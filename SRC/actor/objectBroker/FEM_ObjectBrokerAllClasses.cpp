@@ -77,6 +77,8 @@
 #include "Steel02.h"
 #include "Steel2.h"
 #include "Steel4.h"
+#include "AxialSp.h"
+#include "AxialSpHD.h"
 #include "SteelFractureDI.h"
 #include "FatigueMaterial.h"
 #include "ReinforcingSteel.h"
@@ -1442,6 +1444,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
+	case MAT_TAG_AxialSp:
+	    return new AxialSp();
+
+	case MAT_TAG_AxialSpHD:
+	    return new AxialSpHD();
+	    
     case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
