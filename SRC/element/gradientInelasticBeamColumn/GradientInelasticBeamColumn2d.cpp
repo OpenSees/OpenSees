@@ -1239,7 +1239,7 @@ GradientInelasticBeamColumn2d::getSectionsTangentStiff(Matrix &tStiff)
 
 	for (int i = 0; i < numSections; i++) {
 		const Matrix &k_ms = sections[i]->getSectionTangent();
-		opserr << k_ms << endln;
+		//opserr << k_ms << endln;
 		this->assembleMatrix(tStiff, k_ms, (i * secOrder), ((i + 1) * secOrder - 1), (i * secOrder), ((i + 1) * secOrder - 1), 1.0);
 	}
 }
@@ -1322,8 +1322,8 @@ GradientInelasticBeamColumn2d::getBasicStiff(void)
 
 	this->getSectionsTangentStiff(K_ms);
 
-	opserr << K_ms << endln;
-	opserr << *B_Q << endln;
+	//opserr << K_ms << endln;
+	//opserr << *B_Q << endln;
 	
 	if (K_ms.Solve(*B_Q, K_ms_inv_BQ) < 0) {
 		opserr << "WARNING! GradientInelasticBeamColumn2d::getBasicStiff() - element: " << this->getTag() << " - could not invert K_ms\n";
@@ -1940,7 +1940,7 @@ GradientInelasticBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_
     }
   }
 
-  opserr << "recvSelf " << numSections << endln;
+  //opserr << "recvSelf " << numSections << endln;
   this->setSectionPointers();
   
   int totalSectionOrder = numSections*secOrder;
