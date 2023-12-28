@@ -72,6 +72,12 @@
 #include "Concrete06.h" 
 #include "Concrete07.h"
 #include "ConcretewBeta.h"
+#include "TDConcrete.h"
+#include "TDConcreteNL.h"
+#include "TDConcreteEXP.h"
+#include "TDConcreteMC10.h"
+#include "TDConcreteMC10NL.h"
+#include "CreepMaterial.h"
 #include "OriginCentered.h"
 #include "Steel01.h"
 #include "Steel02.h"
@@ -1414,6 +1420,24 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ConcretewBeta:  
 	     return new ConcretewBeta();
 
+    case MAT_TAG_CreepMaterial:
+      return new CreepMaterial();
+
+    case MAT_TAG_TDConcrete:
+      return new TDConcrete();
+
+    case MAT_TAG_TDConcreteNL:
+      return new TDConcreteNL();
+
+    case MAT_TAG_TDConcreteEXP:
+      return new TDConcreteEXP();
+
+    case MAT_TAG_TDConcreteMC10:
+      return new TDConcreteMC10();
+
+    case MAT_TAG_TDConcreteMC10NL:
+      return new TDConcreteMC10NL();
+      
 	case MAT_TAG_Steel01:  
 	     return new Steel01();
 
