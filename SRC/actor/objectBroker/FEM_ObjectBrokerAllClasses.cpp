@@ -68,6 +68,7 @@
 #include "ASD_SMA_3K.h"
 #include "Concrete01.h"
 #include "Concrete02.h"
+#include "Concrete02IS.h"
 #include "Concrete04.h"
 #include "Concrete06.h" 
 #include "Concrete07.h"
@@ -1407,6 +1408,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Concrete02:  
 	     return new Concrete02();
+
+	case MAT_TAG_Concrete02IS:  
+	     return new Concrete02IS();	     
 
 	case MAT_TAG_Concrete04:  
 	     return new Concrete04();
