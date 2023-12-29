@@ -66,6 +66,7 @@
 #include "ElasticPPMaterial.h"
 #include "ParallelMaterial.h"
 #include "DamperMaterial.h"
+#include "PenaltyMaterial.h"
 #include "ASD_SMA_3K.h"
 #include "Concrete01.h"
 #include "Concrete02.h"
@@ -1402,7 +1403,10 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	     return new ParallelMaterial();
 
     case MAT_TAG_DamperMaterial:
-      return new DamperMaterial();	     
+      return new DamperMaterial();
+
+    case MAT_TAG_Penalty:
+      return new PenaltyMaterial();
 
 	case MAT_TAG_ASD_SMA_3K:  
 	     return new ASD_SMA_3K();
