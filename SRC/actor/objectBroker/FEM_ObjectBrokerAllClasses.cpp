@@ -410,6 +410,7 @@
 #include "MidDistanceBeamIntegration.h"
 #include "CompositeSimpsonBeamIntegration.h"
 #include "SimpsonBeamIntegration.h"
+#include "ChebyshevBeamIntegration.h"
 
 #include "ConcentratedPlasticityBeamIntegration.h"
 #include "ConcentratedCurvatureBeamIntegration.h"
@@ -1290,7 +1291,10 @@ FEM_ObjectBrokerAllClasses::getNewBeamIntegration(int classTag)
     return new CompositeSimpsonBeamIntegration();
 
   case BEAM_INTEGRATION_TAG_Simpson:        
-    return new SimpsonBeamIntegration();    
+    return new SimpsonBeamIntegration();
+
+  case BEAM_INTEGRATION_TAG_Chebyshev:
+    return new ChebyshevBeamIntegration();
 
   case BEAM_INTEGRATION_TAG_ConcentratedPlasticity:
 	  return new ConcentratedPlasticityBeamIntegration();
