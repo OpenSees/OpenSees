@@ -71,6 +71,10 @@ class PipeSection : public SectionForceDeformation {
                 alphaV = dum2 / dum3;
             }
         }
+        Iz = Iy;
+        Jx = 2*Iy;
+        Ay = Ax/alphaV;
+        Az = Ay;
     }
     ~PipeSection(void) {}
 
