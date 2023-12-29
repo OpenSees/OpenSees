@@ -121,7 +121,7 @@ class PipeMaterial : public UniaxialMaterial {
     }
 
     int selectPoint(double T, PipeMaterialTemperaturePoint &pt) {
-        // line: 11371 - 11427
+        // line: 14148
 
         // only 1 point
         if (points.size() == 1) {
@@ -181,7 +181,7 @@ class PipeMaterial : public UniaxialMaterial {
 };
 
 void *OPS_PipeMaterial(void) {
-    // line: 7607 - 7643
+    // line: 9233
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: uniaxialMaterial Pipe "
