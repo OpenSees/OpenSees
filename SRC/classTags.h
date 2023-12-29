@@ -877,6 +877,7 @@
 #define BEAM_INTEGRATION_TAG_FixedLocation     8
 #define BEAM_INTEGRATION_TAG_LowOrder     9
 #define BEAM_INTEGRATION_TAG_MidDistance     40
+#define BEAM_INTEGRATION_TAG_Chebyshev     401
 
 #define BEAM_INTEGRATION_TAG_ConcentratedPlasticity     41
 #define BEAM_INTEGRATION_TAG_ConcentratedCurvature     42
