@@ -151,7 +151,7 @@ TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _eps
   ecmaxP = 0.0; //ntosic
   deptP = 0.0;
 
-	sigCr = fabs(sigCr); //ntosic: CHANGE?
+  //sigCr = fabs(sigCr); //ntosic: CHANGE?
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -183,13 +183,13 @@ TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _eps
 	
 	
 	//Change inputs into the proper sign convention: ntosic: changed
-		fc = -1.0*fabs(fc);
-        fcu = -1.0*fabs(fcu);
-        epscu = -1.0*fabs(epscu);		
-		epsba = -1.0*fabs(epsba);
-		epsda = -1.0*fabs(epsda);
-		phiba = 1.0*fabs(phiba);
-		phida = 1.0*fabs(phida);
+    fc = -fabs(fc);
+    fcu = -fabs(fcu);
+    epscu = -fabs(epscu);		
+    epsba = -fabs(epsba);
+    epsda = -fabs(epsda);
+    phiba = fabs(phiba);
+    phida = fabs(phida);
 }
 
 TDConcreteMC10NL::TDConcreteMC10NL(void):

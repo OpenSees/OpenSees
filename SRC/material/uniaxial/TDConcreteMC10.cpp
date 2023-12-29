@@ -181,11 +181,11 @@ TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, doub
 	
 	
 	//Change inputs into the proper sign convention: ntosic: changed
-		fc = -1.0*fabs(fc); 
-		epsba = -1.0*fabs(epsba);
-		epsda = -1.0*fabs(epsda);
-		phiba = 1.0*fabs(phiba);
-		phida = 1.0*fabs(phida);
+		fc = -fabs(fc); 
+		epsba = -fabs(epsba);
+		epsda = -fabs(epsda);
+		phiba = fabs(phiba);
+		phida = fabs(phida);
 }
 
 TDConcreteMC10::TDConcreteMC10(void):
