@@ -38,7 +38,7 @@
 
 // straight pipe element
 class Pipe : public Element {
-    // Line: 7763 - 7922
+    // Line: 9369
    private:
     std::vector<Node *> theNodes;
     ID connectedExternalNodes;
@@ -296,7 +296,9 @@ class Pipe : public Element {
 };
 
 void *OPS_PipeElement() {
-    // line: 7722 - 7747
+    // line: 9343
+    //               TAG  TP  I   J   MAT SEC TO   P  VECXZ     INC
+    // READ (5,1040) INEL,R1,INI,INJ,IMAT,ISP,TRI,PRI,X2,X3,X4,INC 
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: element pipe "
