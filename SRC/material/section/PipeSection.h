@@ -38,7 +38,7 @@ class FEM_ObjectBroker;
 class Information;
 
 class PipeSection : public SectionForceDeformation {
-    // line 8305 - 8339
+    // line 9939
    public:
     PipeSection(int tag, double d, double t, double a, double w,
                 double r)
@@ -160,7 +160,7 @@ class PipeSection : public SectionForceDeformation {
 };
 
 void *OPS_PipeSection(void) {
-    // line 7648 - 7669
+    // line 9270
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "Invalid #args,  want: section Pipe "
