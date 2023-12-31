@@ -338,6 +338,7 @@
 #define SEC_TAG_YieldSurface2D02                21
 #define SEC_TAG_YieldSurface2D01                22
 #define SEC_TAG_ElasticShear2d                  23
+#define SEC_TAG_ElasticBDShear2d 2376
 #define SEC_TAG_ElasticShear3d                  24
 #define SEC_TAG_FiberSection2dInt		25
 #define SEC_TAG_FiberSection2dThermal		26
