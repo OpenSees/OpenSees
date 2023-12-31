@@ -179,6 +179,7 @@
 #include "MembranePlateFiberSection.h"
 #include "DoubleMembranePlateFiberSection.h"
 #include "Bidirectional.h"
+#include "Elliptical2.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
 
 // NDMaterials
@@ -1753,6 +1754,8 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_Bidirectional:
 		return new Bidirectional();
+	case SEC_TAG_Elliptical2:
+		return new Elliptical2();
 
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewSection - ";
