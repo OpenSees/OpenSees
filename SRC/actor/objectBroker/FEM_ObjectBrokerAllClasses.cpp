@@ -181,6 +181,7 @@
 #include "DoubleMembranePlateFiberSection.h"
 #include "Bidirectional.h"
 #include "Elliptical2.h"
+#include "Isolator2spring.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
 
 // NDMaterials
@@ -1760,7 +1761,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 		return new Bidirectional();
 	case SEC_TAG_Elliptical2:
 		return new Elliptical2();
-
+    case SEC_TAG_Isolator2spring:
+      return new Isolator2spring();
+	
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewSection - ";
 	     opserr << " - no section type exists for class tag ";
