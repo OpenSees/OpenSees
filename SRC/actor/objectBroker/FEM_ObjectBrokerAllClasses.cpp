@@ -163,6 +163,7 @@
 #include "ElasticSection2d.h"
 #include "ElasticSection3d.h"
 #include "ElasticShearSection2d.h"
+#include "ElasticBDShearSection2d.h"
 #include "ElasticShearSection3d.h"
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
@@ -1700,6 +1701,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	     
     case SEC_TAG_ElasticShear2d:
 	     return new ElasticShearSection2d();
+
+    case SEC_TAG_ElasticBDShear2d:
+	     return new ElasticBDShearSection2d();
 	     
 	case SEC_TAG_ElasticShear3d:
 	     return new ElasticShearSection3d();	     
