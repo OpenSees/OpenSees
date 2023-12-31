@@ -189,6 +189,7 @@
 #include "ElasticIsotropicPlaneStress2D.h"
 #include "ElasticIsotropicPlateFiber.h"
 #include "ElasticIsotropicBeamFiber.h"
+#include "ElasticIsotropicBeamFiber2d.h"
 #include "ElasticIsotropicAxiSymm.h"
 #include "ElasticIsotropicThreeDimensional.h"
 #include "J2PlaneStrain.h"
@@ -1790,7 +1791,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     return new ElasticIsotropicPlateFiber();
 
   case ND_TAG_ElasticIsotropicBeamFiber:
-    return new ElasticIsotropicBeamFiber();    
+    return new ElasticIsotropicBeamFiber();
+
+  case ND_TAG_ElasticIsotropicBeamFiber2d:
+    return new ElasticIsotropicBeamFiber2d();
     
   case ND_TAG_ElasticIsotropicThreeDimensional:
     return new ElasticIsotropicThreeDimensional();
