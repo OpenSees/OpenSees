@@ -715,12 +715,12 @@ int Concrete01WithSITC::recvSelf (int commitTag, Channel& theChannel,
       Cstress = data(9);
       Ctangent = data(10);
 
-	  // variables added by WL
-	  data(11) = CmaxStrain;
-      data(12) = CslopeSITC;
-      data(13) = CendStrainSITC;
-      data(14) = Cindex;
-      data(15) = CsmallStrainIndex;
+      // variables added by WL
+      CmaxStrain = data(11);
+      CslopeSITC = data(12);
+      CendStrainSITC = data(13);
+      Cindex = data(14);
+      CsmallStrainIndex = data(15);
 
 
       // Set trial state variables
