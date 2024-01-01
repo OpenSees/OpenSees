@@ -826,6 +826,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Dodd_Restrepo.o \
 	$(FE)/material/uniaxial/DoddRestr.o \
 	$(FE)/material/uniaxial/STEELDR.o \
+	$(FE)/material/uniaxial/ContinuumUniaxial.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
 	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \

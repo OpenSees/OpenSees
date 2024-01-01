@@ -100,6 +100,7 @@
 #include "EPPGapMaterial.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
+#include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
 #include "BackboneMaterial.h"
 #include "SeriesMaterial.h"
@@ -1553,6 +1554,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ViscousDamper:
 		return new ViscousDamper();
+
+	case MAT_TAG_ContinuumUniaxial:
+		return new ContinuumUniaxial();
 
 	case MAT_TAG_PathIndependent:
 		return new PathIndependentMaterial();
