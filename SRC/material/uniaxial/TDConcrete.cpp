@@ -149,7 +149,7 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
   ecminP = 0.0;
   deptP = 0.0;
 
-	sigCr = fabs(sigCr);
+  //sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -177,9 +177,9 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
 	
 	
 	//Change inputs into the proper sign convention:
-		fc = -1.0*fabs(fc); 
-		epsshu = -1.0*fabs(epsshu);
-		epscru = 1.0*fabs(epscru); 
+		fc = -fabs(fc); 
+		epsshu = -fabs(epsshu);
+		epscru = fabs(epscru); 
 }
 
 TDConcrete::TDConcrete(void):
