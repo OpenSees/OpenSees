@@ -90,6 +90,8 @@ Vector ForceBeamColumn2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2d()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";
 	return 0;
@@ -146,6 +148,18 @@ void* OPS_ForceBeamColumn2d()
 		}
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -180,7 +194,7 @@ void* OPS_ForceBeamColumn2d()
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
@@ -192,6 +206,8 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     int numData;
     double mass = 0.0, tol=1e-12, subFac=10.0;
     int maxIter = 10, numSub = 4;
+    int dampingTag = 0;
+    Damping* theDamping = 0;
 
     // regular element, not in a mesh, get tags
     if (info.Size() == 0) {
@@ -263,6 +279,18 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 		    }
 		}
 	    }
+        //Tang.S
+        else if (strcmp(type, "-damp") == 0) {
+
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0) {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
 	}
     }
 
@@ -340,13 +368,16 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
 
 int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
+
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient arguments:transfTag,integrationTag\n";
 	return -1;
@@ -379,6 +410,18 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 		if(OPS_GetDoubleInput(&numData,&mass) < 0) return -1;
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -422,7 +465,7 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     eletags.resize(elenodes.Size()/2);
     for (int i=0; i<elenodes.Size()/2; i++) {
 	theEle = new ForceBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
-				       sections,*bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+				       sections,*bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
 	if (theEle == 0) {
 	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
