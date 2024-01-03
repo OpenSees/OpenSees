@@ -100,13 +100,14 @@ Isolator2spring::Isolator2spring
 
 Isolator2spring::Isolator2spring():
  SectionForceDeformation(0, SEC_TAG_Isolator2spring),
- tol(1.0e-12), k1(0.0), Fyo(0.0), kbo(0.0), kvo(0.0), h(0.0), Pe(0.0), po(0.0)
+ tol(1.0e-12), k1(0.0), Fyo(0.0), kbo(0.0), kvo(0.0), h(0.0), Pe(0.0), po(0.0),
+ x0(5), ks(3,3)
 {
 
         this->revertToStart();
 
-	pcr = sqrt(Pe*kbo*h);
-	H = k1*kbo/(k1 - kbo);
+	//pcr = sqrt(Pe*kbo*h);
+	//H = k1*kbo/(k1 - kbo);
 
 	code(0) = SECTION_RESPONSE_P;
 	code(1) = SECTION_RESPONSE_VY;

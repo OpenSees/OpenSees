@@ -52,6 +52,8 @@
 #include <Domain.h>
 #include <MaterialResponse.h>
 #include <Vector.h>
+#include <ID.h>
+#include <FEM_ObjectBroker.h>
 
 #include <Concrete02IS.h>
 #include <ElasticMaterial.h>
@@ -643,6 +645,29 @@ CreepMaterial::revertToStart(void)
 int 
 CreepMaterial::sendSelf(int commitTag, Channel &theChannel)
 {
+  int res = 0;
+
+  int dbTag = this->getDbTag();
+
+  static ID classTags(3);
+
+  classTags(0) = wrappedMaterial->getClassTag();
+
+  int matDbTag = wrappedMaterial->getDbTag();
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    if (matDbTag != 0)
+      wrappedMaterial->setDbTag(matDbTag);
+  }
+  classTags(1) = matDbTag;
+  classTags(2) = this->getTag();
+
+  res = theChannel.sendID(dbTag, commitTag, classTags);
+  if (res < 0) {
+    opserr << "CreepMaterial::sendSelf -- could not send ID" << endln;
+    return res;
+  }
+
   static Vector data(11);
   data(0) =ft;    
   data(1) =Ec; 
@@ -656,41 +681,90 @@ CreepMaterial::sendSelf(int commitTag, Channel &theChannel)
   data(9) =epscrd;     
   data(10) = this->getTag();
 
-  if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
-    opserr << "CreepMaterial::sendSelf() - failed to sendSelf\n";
-    return -1;
+  res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+  if (res < 0) {
+    opserr << "CreepMaterial::sendSelf - failed to send Vector" << endln;
+    return res;
   }
-  return 0;
+  
+  res = wrappedMaterial->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr << "CreepMaterial::sendSelf -- could not send UniaxialMaterial" << endln;
+    return res;
+  }
+	
+  return res;
 }
 
 int 
 CreepMaterial::recvSelf(int commitTag, Channel &theChannel, 
-	     FEM_ObjectBroker &theBroker)
+			FEM_ObjectBroker &theBroker)
 {
-  static Vector data(11);
+  int res = 0;
 
-  if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
+  static ID data(3);
+  int dbTag = this->getDbTag();
+
+  res = theChannel.recvID(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "CreepMaterial::recvSelf() - failed to receive data\n";
+    return res;
+  }
+
+  static Vector vdata(11);
+
+  if (theChannel.recvVector(this->getDbTag(), commitTag, vdata) < 0) {
     opserr << "CreepMaterial::recvSelf() - failed to recvSelf\n";
     return -1;
   }
   
-  ft = data(0);   
-  Ec = data(1);
-  beta = data(2);   
-  age = data(3); 
-  epsshu = data(4);   
-  epssha = data(5);    
-  tcr = data(6);   
-  epscru = data(7);
-  epscra = data(8); 
-  epscrd = data(9);   
-  this->setTag(data(10));
+  ft = vdata(0);   
+  Ec = vdata(1);
+  beta = vdata(2);   
+  age = vdata(3); 
+  epsshu = vdata(4);   
+  epssha = vdata(5);    
+  tcr = vdata(6);   
+  epscru = vdata(7);
+  epscra = vdata(8); 
+  epscrd = vdata(9);   
+  this->setTag(vdata(10));
 
   e = eP;
   sig = sigP;
   eps = epsP;
   
-  return 0;
+  
+  this->setTag(int(data(2)));
+  int matClassTag = data(0);
+  
+  // Check if material is null
+  if (wrappedMaterial == 0) {
+    wrappedMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
+    if (wrappedMaterial == 0) {
+      opserr << "CreepMaterial::recvSelf -- could not get a UniaxialMaterial" << endln;
+      return -1;
+    }
+  }
+
+  dbTag = data(1);
+  if (wrappedMaterial->getClassTag() != matClassTag) {
+    delete wrappedMaterial;
+    wrappedMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
+    if (wrappedMaterial == 0) {
+      opserr << "CreepMaterial::recvSelf -- could not get a UniaxialMaterial" << endln;
+      return -1;
+    }
+  }
+  
+  wrappedMaterial->setDbTag(dbTag);
+  res = wrappedMaterial->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr << "CreepMaterial::recvSelf -- count not receive Uniaxialmaterial" << endln;
+    return res;
+  }
+  
+  return res;
 }
 
 void 
