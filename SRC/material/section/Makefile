@@ -40,6 +40,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/material/section/fiber; $(MAKE);
 	@$(CD) $(FE)/material/section/yieldSurface; $(MAKE);
 	@$(CD) $(FE)/material/section/integration; $(MAKE);
+	@$(CD) $(FE)/material/section/ReinforcedConcreteLayerMembraneSection; $(MAKE);
 
 test: main.o
 	@$(LINKER) $(LINKFLAGS) main.o $(INTERPRETER_LIBS_MPI) \
@@ -62,5 +63,6 @@ wipe: spotless
 	@$(CD) $(FE)/material/section/fiber; $(MAKE) wipe;
 	@$(CD) $(FE)/material/section/yieldSurface; $(MAKE) wipe;
 	@$(CD) $(FE)/material/section/integration; $(MAKE) wipe;
+	@$(CD) $(FE)/material/section/ReinforcedConcreteLayerMembraneSection; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depends on it.
