@@ -57,7 +57,8 @@
 
 // uniaxial material model header files
 #include "ElasticBilin.h"
-#include "BoucWenMaterial.h"		//SAJalali
+#include "BoucWenMaterial.h"
+#include "BoucWenInfill.h"
 #include "SPSW02.h"			//SAJalali
 #include "ElasticMaterial.h"
 #include "ElasticMultiLinear.h"
@@ -71,6 +72,7 @@
 #include "TensionOnlyMaterial.h"
 #include "ASD_SMA_3K.h"
 #include "Concrete01.h"
+#include "Concrete01WithSITC.h"
 #include "Concrete02.h"
 #include "Concrete02IS.h"
 #include "Concrete04.h"
@@ -1394,7 +1396,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_SPSW02:
 		return new SPSW02(); // SAJalali
 	case MAT_TAG_BoucWen:
-		return new BoucWenMaterial(); // SAJalali
+		return new BoucWenMaterial();
+	case MAT_TAG_BoucWenInfill:
+		return new BoucWenInfill();		
 	case MAT_TAG_ElasticMaterial:
 	     return new ElasticMaterial();
 
@@ -1430,6 +1434,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
+
+	case MAT_TAG_Concrete01WithSITC:  
+	     return new Concrete01WithSITC();	     
 
 	case MAT_TAG_Concrete02:  
 	     return new Concrete02();
