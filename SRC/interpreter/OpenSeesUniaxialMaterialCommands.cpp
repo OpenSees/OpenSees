@@ -139,6 +139,7 @@ void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
 void* OPS_ElasticPowerFunc();
 void* OPS_MultiLinear();
+void* OPS_ContinuumUniaxialMaterial();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
 void* OPS_PathIndependentMaterial();
@@ -426,6 +427,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("ElasticPowerFunc", &OPS_ElasticPowerFunc));
   uniaxialMaterialsMap.insert(
       std::make_pair("MultiLinear", &OPS_MultiLinear));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "Continuum", &OPS_ContinuumUniaxialMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
       "InitStrainMaterial", &OPS_InitStrainMaterial));
   uniaxialMaterialsMap.insert(

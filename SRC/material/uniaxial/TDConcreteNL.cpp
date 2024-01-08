@@ -149,7 +149,7 @@ TDConcreteNL::TDConcreteNL(int tag, double _fc, double _fcu, double _epscu, doub
   ecminP = 0.0;
   deptP = 0.0;
 
-	sigCr = fabs(sigCr);
+  //sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -177,9 +177,9 @@ TDConcreteNL::TDConcreteNL(int tag, double _fc, double _fcu, double _epscu, doub
 	
 	
 	//Change inputs into the proper sign convention:
-		fc = -1.0*fabs(fc); 
-		epsshu = -1.0*fabs(epsshu);
-		epscru = 1.0*fabs(epscru); 
+		fc = -fabs(fc); 
+		epsshu = -fabs(epsshu);
+		epscru = fabs(epscru); 
 }
 
 TDConcreteNL::TDConcreteNL(void):
@@ -559,7 +559,7 @@ TDConcreteNL::revertToStart(void)
 int 
 TDConcreteNL::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(11);
+  static Vector data(16);
   data(0) =ft;    
   data(1) =Ec; 
   data(2) =beta;   
@@ -571,7 +571,12 @@ TDConcreteNL::sendSelf(int commitTag, Channel &theChannel)
   data(8) =epscra; 
   data(9) =epscrd;     
   data(10) = this->getTag();
-
+  data(11) = count;
+  data(12) = fc;
+  data(13) = fcu;
+  data(14) = epscu;
+  data(15) = tcast;
+  
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteNL::sendSelf() - failed to sendSelf\n";
     return -1;
@@ -584,7 +589,7 @@ TDConcreteNL::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(11);
+  static Vector data(16);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteNL::recvSelf() - failed to recvSelf\n";
@@ -601,8 +606,13 @@ TDConcreteNL::recvSelf(int commitTag, Channel &theChannel,
   epscru = data(7);
   epscra = data(8); 
   epscrd = data(9);   
-  this->setTag(data(10));
-
+  this->setTag((int)data(10));
+  count = (int)data(11);
+  fc = data(12);
+  fcu = data(13);
+  epscu = data(14);
+  tcast = data(15);
+  
   e = eP;
   sig = sigP;
   eps = epsP;
