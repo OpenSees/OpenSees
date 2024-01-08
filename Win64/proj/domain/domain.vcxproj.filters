@@ -333,6 +333,9 @@
     <ClCompile Include="..\..\..\SRC\domain\pattern\RampSeries.cpp">
       <Filter>timeSeries</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
