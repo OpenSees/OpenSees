@@ -596,6 +596,17 @@ static PyObject *Py_ops_geomTransf(PyObject *self, PyObject *args)
 
     return wrapper->getResults();
 }
+static PyObject* Py_ops_damping(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_Damping() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
 
 static PyObject *Py_ops_beamIntegration(PyObject *self, PyObject *args)
 {
@@ -2898,6 +2909,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("patch", &Py_ops_patch);
     addCommand("layer", &Py_ops_layer);
     addCommand("geomTransf", &Py_ops_geomTransf);
+    addCommand("damping", &Py_ops_damping);//Tang.S
     addCommand("beamIntegration", &Py_ops_beamIntegration);
     addCommand("loadConst", &Py_ops_loadConst);
     addCommand("eleLoad", &Py_ops_eleLoad);

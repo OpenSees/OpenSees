@@ -151,7 +151,7 @@ TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _eps
   ecmaxP = 0.0; //ntosic
   deptP = 0.0;
 
-	sigCr = fabs(sigCr); //ntosic: CHANGE?
+  //sigCr = fabs(sigCr); //ntosic: CHANGE?
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -183,13 +183,13 @@ TDConcreteMC10NL::TDConcreteMC10NL(int tag, double _fc, double _fcu, double _eps
 	
 	
 	//Change inputs into the proper sign convention: ntosic: changed
-		fc = -1.0*fabs(fc);
-        fcu = -1.0*fabs(fcu);
-        epscu = -1.0*fabs(epscu);		
-		epsba = -1.0*fabs(epsba);
-		epsda = -1.0*fabs(epsda);
-		phiba = 1.0*fabs(phiba);
-		phida = 1.0*fabs(phida);
+    fc = -fabs(fc);
+    fcu = -fabs(fcu);
+    epscu = -fabs(epscu);		
+    epsba = -fabs(epsba);
+    epsda = -fabs(epsda);
+    phiba = fabs(phiba);
+    phida = fabs(phida);
 }
 
 TDConcreteMC10NL::TDConcreteMC10NL(void):
@@ -637,7 +637,7 @@ TDConcreteMC10NL::revertToStart(void)
 int 
 TDConcreteMC10NL::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(24); //ntosic
+  static Vector data(26); //ntosic
   data(0) =fc;
   data(1) =fcu;
   data(2) = epscu;
@@ -662,6 +662,8 @@ TDConcreteMC10NL::sendSelf(int commitTag, Channel &theChannel)
   data(21) = sigP; //ntosic
   data(22) = eP; //ntosic
   data(23) = this->getTag();
+  data(24) = tcast;
+  data(25) = count;
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10NL::sendSelf() - failed to sendSelf\n";
@@ -675,7 +677,7 @@ TDConcreteMC10NL::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(24); //ntosic
+  static Vector data(26); //ntosic
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10NL::recvSelf() - failed to recvSelf\n";
@@ -706,7 +708,9 @@ TDConcreteMC10NL::recvSelf(int commitTag, Channel &theChannel,
   sigP = data(21); //ntosic
   eP = data(22); //ntosic
   this->setTag(data(23));
-
+  tcast = data(24);
+  count = (int)data(25);
+  
   e = eP;
   sig = sigP;
   eps = epsP;
