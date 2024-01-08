@@ -58,6 +58,7 @@
 #include <GroundMotion.h>
 #include <GroundMotionRecord.h>
 #include <TimeSeriesIntegrator.h>
+#include <MPAccSeries.h>   //Tang.S
 
 #include <FireLoadPattern.h>  //Added by UoE openSees Group
 
