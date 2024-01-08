@@ -858,7 +858,9 @@
 #define ELE_TAG_PML2D_5                   260
 #define ELE_TAG_PML2D_12                  261
 #define ELE_TAG_PML2DVISCOUS              262
-
+#define ELE_TAG_FSIFluidElement2D          263  // Massimo Petracca (ASDEA)
+#define ELE_TAG_FSIInterfaceElement2D      264  // Massimo Petracca (ASDEA)
+#define ELE_TAG_FSIFluidBoundaryElement2D  265  // Massimo Petracca (ASDEA)
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

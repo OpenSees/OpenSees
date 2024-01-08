@@ -666,6 +666,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary3D.o \
+	$(FE)/element/absorbentBoundaries/FSIFluidElement2D.o \
+	$(FE)/element/absorbentBoundaries/FSIInterfaceElement2D.o \
+	$(FE)/element/absorbentBoundaries/FSIFluidBoundaryElement2D.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceL.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
