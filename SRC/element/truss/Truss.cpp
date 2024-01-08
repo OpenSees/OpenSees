@@ -1271,8 +1271,7 @@ Truss::getResponse(int responseID, Information &eleInfo)
       return eleInfo.setMatrix(kVec);
       
     case 2000:
-        fVec(0) = A * L * theMaterial->getEnergy();
-        return eleInfo.setVector(fVec);
+        return eleInfo.setDouble(A * L * theMaterial->getEnergy());
 
     default:
       return 0;
