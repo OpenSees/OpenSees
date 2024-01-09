@@ -911,10 +911,11 @@ int OPS_MeshRegion()
 		return -1;
 	    }
 	    theDamping = OPS_getDamping(dampingTag);
-		if(theDamping == 0) {
-			opserr << "damping not found\n";
-			return -1;
+	    if(theDamping == 0) {
+		opserr << "damping not found\n";
+	    return -1;
 		}
+	}
     }
 
     MeshRegion *theRegion = theDomain->getRegion(tag);
