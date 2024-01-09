@@ -24,7 +24,6 @@
 #ifndef Pipe_h
 #define Pipe_h
 
-#include <CrdTransf.h>
 #include <Domain.h>
 #include <Element.h>
 #include <Matrix.h>
@@ -42,12 +41,12 @@ class Pipe : public Element {
    private:
     std::vector<Node *> theNodes;
     ID connectedExternalNodes;
-    CrdTransf *theCoordTransf;
     UniaxialMaterial *theMat;
     SectionForceDeformation *theSect;
 
     Matrix K;
     Vector P;
+    Vector localY;
 
     double T0;        // stress free temperature
     double pressure;  // internal pressure
@@ -57,44 +56,30 @@ class Pipe : public Element {
         : Element(0, ELE_TAG_Pipe),
           theNodes(2, 0),
           connectedExternalNodes(2),
-          theCoordTransf(0),
           theMat(0),
           theSect(0),
           K(),
           P(),
+          localY(3),
           T0(0.0),
           pressure(0.0) {}
-    Pipe(int tag, int nd1, int nd2, CrdTransf &coordTransf,
-         UniaxialMaterial &mat, SectionForceDeformation &sect,
-         double t0 = 0, double pre = 0)
+    Pipe(int tag, int nd1, int nd2, UniaxialMaterial &mat,
+         SectionForceDeformation &sect, double vecyx = 0,
+         double vecyy = 0, double vecyz = 0, double t0 = 0,
+         double pre = 0)
         : Element(tag, ELE_TAG_Pipe),
           theNodes(2),
           connectedExternalNodes(2),
-          theCoordTransf(0),
           theMat(0),
           theSect(0),
           K(),
           P(),
+          localY(3),
           T0(t0),
           pressure(pre) {
         // nodes
         connectedExternalNodes(0) = nd1;
         connectedExternalNodes(1) = nd2;
-
-        // transf tag
-        int ndm = OPS_GetNDM();
-        if (ndm == 2) {
-            theCoordTransf = coordTransf.getCopy2d();
-        } else if (ndm == 3) {
-            theCoordTransf = coordTransf.getCopy3d();
-        }
-
-        if (!theCoordTransf) {
-            opserr << "Pipe element -- failed to get "
-                      "copy of coordinate transformation"
-                   << coordTransf.getTag() << "\n";
-            exit(-1);
-        }
 
         // section
         theSect = sect.getCopy();
@@ -113,12 +98,14 @@ class Pipe : public Element {
                    << mat.getTag() << "\n";
             exit(-1);
         }
+
+        // local y
+        localY(0) = vecyx;
+        localY(1) = vecyy;
+        localY(2) = vecyz;
     }
 
     ~Pipe() {
-        if (theCoordTransf != 0) {
-            delete theCoordTransf;
-        }
         if (theMat != 0) {
             delete theMat;
         }
@@ -135,20 +122,18 @@ class Pipe : public Element {
     }
     Node **getNodePtrs(void) { return &theNodes[0]; }
 
-    int getNumDOF(void) {
-        int ndm = OPS_GetNDM();
-        if (ndm == 2) {
-            return 6;
-        } else if (ndm == 3) {
-            return 12;
-        }
-        return 0;
-    }
+    int getNumDOF(void) { return 12; }
 
     void setDomain(Domain *theDomain) {
         // check domain
         if (theDomain == 0) {
             opserr << "Pipe::setDomain -- Domain is null\n";
+            exit(-1);
+        }
+
+        int ndm = OPS_GetNDM();
+        if (ndm != 3) {
+            opserr << "WARNING: pipe element must be 3D\n";
             exit(-1);
         }
 
@@ -190,21 +175,6 @@ class Pipe : public Element {
 
         // set domain
         this->DomainComponent::setDomain(theDomain);
-
-        // set crdTransf
-        if (theCoordTransf->initialize(theNodes[0], theNodes[1]) !=
-            0) {
-            opserr << "Pipe::setDomain  tag: " << this->getTag()
-                   << " -- Error initializing coordinate "
-                      "transformation\n";
-            exit(-1);
-        }
-        double L = theCoordTransf->getInitialLength();
-        if (L == 0.0) {
-            opserr << "Pipe::setDomain  tag: " << this->getTag()
-                   << " -- Element has zero length\n";
-            exit(-1);
-        }
     }
 
     int commitState(void) {
@@ -214,7 +184,6 @@ class Pipe : public Element {
             opserr << "Pipe::commitState () - failed in "
                       "base class";
         }
-        retVal += theCoordTransf->commitState();
         retVal += theMat->commitState();
         retVal += theSect->commitState();
 
@@ -229,7 +198,6 @@ class Pipe : public Element {
 
     int revertToLastCommit(void) {
         int retVal = 0;
-        retVal += theCoordTransf->revertToLastCommit();
         retVal += theMat->revertToLastCommit();
         retVal += theSect->revertToLastCommit();
         return retVal;
@@ -237,7 +205,6 @@ class Pipe : public Element {
 
     int revertToStart(void) {
         int retVal = 0;
-        retVal += theCoordTransf->revertToStart();
         retVal += theMat->revertToStart();
         retVal += theSect->revertToStart();
         return retVal;
@@ -245,7 +212,6 @@ class Pipe : public Element {
 
     int update(void) {
         int retVal = 0;
-        retVal += theCoordTransf->update();
 
         // maybe: material setTrialStrain
         // maybe: section setTrialSectionDeformation
@@ -265,7 +231,6 @@ class Pipe : public Element {
     int addInertiaLoadToUnbalance(const Vector &accel) { return 0; }
 
     const Vector &getResistingForce(void) { return P; }
-    const Vector &getDampingForce(void) { return P; }
     const Vector &getResistingForceIncInertia(void) { return P; }
 
     int sendSelf(int commitTag, Channel &theChannel) { return 0; }
@@ -293,47 +258,116 @@ class Pipe : public Element {
     int updateParameter(int parameterID, Information &info) {
         return -1;
     }
+
+    // utility
+   private:
+
+    // default convention for local y-axis
+    void defaultLocalY(const Vector &localX, Vector &deLocalY) {
+        // default convention
+        double du2 = localX(0) * localX(0) + localX(2) * localX(2);
+        if (du2 <= 1e-12) {
+            // vertical member
+            deLocalY(0) = 0.0;
+            deLocalY(1) = 0.0;
+            deLocalY(2) = 1.0;
+        } else {
+            // non-vertical member
+            du2 = sqrt(du2);
+            deLocalY(0) = -localX(0) * localX(1) / du2;
+            deLocalY(1) = du2;
+            deLocalY(2) = -localX(2) * localX(1) / du2;
+        }
+    }
+
+    // computation of direction cosine array for the local axes of
+    // pipe tangent element
+    int tangdc(Matrix &dircos) {
+        // line 17296
+        int ndm = OPS_GetNDM();
+        dircos.resize(ndm, ndm);
+        dircos.Zero();
+
+        // local x-axis from node I to node J
+        const auto &crds1 = theNodes[0]->getCrds();
+        const auto &crds2 = theNodes[1]->getCrds();
+        Vector localX = crds2 - crds1;
+        double xln = localX.Norm();
+        if (xln <= 1e-8) {
+            opserr << "WARNING: element length < 1e-8\n";
+            return -1;
+        }
+        localX /= xln;
+
+        // local y-axis
+        if (localY.Norm() < 1e-8) {
+            // get default local y
+            defaultLocalY(localX, localY);
+        } else {
+            // direct user input of the local y-axis
+            localY.Normalize();
+
+            // test if input local y-axis is vertical to local x-axis
+            double dotxy = 0.0;
+            for (int i = 0; i < ndm; ++i) {
+                dotxy += localX(i) * localY(i);
+            }
+            if (fabs(dotxy) >= 1e-6) {
+                // get default local y
+                defaultLocalY(localX, localY);
+            }
+        }
+
+        // local z-axis
+        Vector localZ(ndm);
+        localZ(0) = localX(1) * localY(2) - localX(2) * localY(1);
+        localZ(1) = localX(2) * localY(0) - localX(0) * localY(2);
+        localZ(2) = localX(0) * localY(1) - localX(1) * localY(0);
+
+        // copy to the matrix
+        dircos.resize(ndm, ndm);
+        for (int i = 0; i < ndm; ++i) {
+            dircos(i, 0) = localX(i);
+            dircos(i, 1) = localY(i);
+            dircos(i, 2) = localZ(i);
+        }
+
+        return 0;
+    }
 };
 
 void *OPS_PipeElement() {
     // line: 9343
-    //               TAG  TP  I   J   MAT SEC TO   P  VECXZ     INC
-    // READ (5,1040) INEL,R1,INI,INJ,IMAT,ISP,TRI,PRI,X2,X3,X4,INC 
+    //               TAG  TP  I   J   MAT SEC TO   P  VECY     INC
+    // READ (5,1040) INEL,R1,INI,INJ,IMAT,ISP,TRI,PRI,X2,X3,X4,INC
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 6) {
+    if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "Invalid #args,  want: element pipe "
-                  "tag? nd1? nd2? matTag? secTag? transfTag? "
+                  "tag? nd1? nd2? matTag? secTag? <vecyx? vecyy? "
+                  "vecyz?> "
                   "<To? p?>\n";
         return 0;
     }
 
     // get tag
-    int iData[6];
-    int numData = 6;
+    int iData[5];
+    int numData = 5;
     if (OPS_GetIntInput(&numData, iData) < 0) {
         opserr << "WARNING invalid integer input for pipe element\n";
         return 0;
     }
 
     // get data
-    double data[2] = {0, 0};
+    double data[] = {0, 0, 0, 0, 0};
     numData = OPS_GetNumRemainingInputArgs();
-    if (numData > 2) {
-        numData = 2;
+    if (numData > 5) {
+        numData = 5;
     }
     if (numData > 0) {
         if (OPS_GetDoubleInput(&numData, data) < 0) {
             opserr << "WARNING: invalid data for pipe element\n";
             return 0;
         }
-    }
-
-    // check objects
-    auto *theTrans = OPS_getCrdTransf(iData[5]);
-    if (theTrans == 0) {
-        opserr << "WARNING: CrdTransf " << iData[5]
-               << " is not found\n";
-        return 0;
     }
 
     auto *theSect = OPS_getSectionForceDeformation(iData[4]);
@@ -350,8 +384,8 @@ void *OPS_PipeElement() {
         return 0;
     }
 
-    auto *ele = new Pipe(iData[0], iData[1], iData[2], *theTrans,
-                         *theMat, *theSect, data[0], data[1]);
+    auto *ele = new Pipe(iData[0], iData[1], iData[2], *theMat,
+                         *theSect, data[0], data[1]);
 
     return ele;
 }
