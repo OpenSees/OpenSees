@@ -55,6 +55,7 @@
 #include <TriMesh.h>
 #include <TetMesh.h>
 #include <BackgroundMesh.h>
+#include <Damping.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
