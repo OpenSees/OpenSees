@@ -26,6 +26,7 @@
 #include <FEM_ObjectBroker.h>
 #include <DummyStream.h>
 #include <elementAPI.h>
+#include <cmath>
 
 // Read input parameters and build the material
 void* OPS_SmearedSteelDoubleLayerT2DMaterial01()
