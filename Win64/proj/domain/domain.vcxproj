@@ -220,6 +220,7 @@
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomParamIter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomSP_Iter.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\PathTimeSeriesThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\RampSeries.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\pattern\SimpsonTimeSeriesIntegrator.cpp" />

@@ -77,6 +77,8 @@
 #include "Steel02.h"
 #include "Steel2.h"
 #include "Steel4.h"
+#include "AxialSp.h"
+#include "AxialSpHD.h"
 #include "SteelFractureDI.h"
 #include "FatigueMaterial.h"
 #include "ReinforcingSteel.h"
@@ -86,6 +88,7 @@
 #include "EPPGapMaterial.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
+#include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
 #include "BackboneMaterial.h"
 #include "SeriesMaterial.h"
@@ -587,6 +590,7 @@
 #include "ConstantSeries.h"
 #include "TrigSeries.h"
 #include "TriangleSeries.h"
+#include "MPAccSeries.h"   //Tang.S
 
 // time series integrators
 #include "TrapezoidalTimeSeriesIntegrator.h"
@@ -1441,6 +1445,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
 
+	case MAT_TAG_AxialSp:
+	    return new AxialSp();
+
+	case MAT_TAG_AxialSpHD:
+	    return new AxialSpHD();
+	    
     case MAT_TAG_TzLiq1:
 		return new TzLiq1();
 
@@ -1476,6 +1486,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ViscousDamper:
 		return new ViscousDamper();
+
+	case MAT_TAG_ContinuumUniaxial:
+		return new ContinuumUniaxial();
 
 	case MAT_TAG_PathIndependent:
 		return new PathIndependentMaterial();
@@ -2033,6 +2046,9 @@ FEM_ObjectBrokerAllClasses::getNewTimeSeries(int classTag)
 
         case TSERIES_TAG_TrigSeries:
 	  return new TrigSeries;
+	  //Tang.S
+		case TSERIES_TAG_MPAccSeries:
+	  return new MPAccSeries;
 
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrTimeSeries - ";
