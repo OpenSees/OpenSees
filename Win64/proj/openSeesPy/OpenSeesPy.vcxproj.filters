@@ -16,6 +16,9 @@
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesCrdTransfCommands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesDampingCommands.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\interpreter\OpenSeesElementCommands.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>

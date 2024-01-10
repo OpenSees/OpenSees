@@ -139,7 +139,7 @@ class TDConcreteMC10NL : public UniaxialMaterial //ntosic: changed name
 	double phibb; //ntosic
 	double phida; //ntosic
 	double phidb; //ntosic
-    double sigCr; // stress that creep curve is based on //ntosic: CHANGE?
+  //double sigCr; // stress that creep curve is based on //ntosic: CHANGE?
     double beta;
     double tcast;
 	double cem; //ntosic
