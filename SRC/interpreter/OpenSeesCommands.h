@@ -257,6 +257,7 @@ int OPS_Layer();
 
 /* OpenSeesCrdTransfCommands.cpp */
 int OPS_CrdTransf();
+int OPS_Damping();
 
 /* OpenSeesBeamIntegrationCommands.cpp */
 int OPS_BeamIntegration();
