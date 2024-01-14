@@ -77,13 +77,29 @@ class PipeSection : public SectionForceDeformation {
     const Matrix &getSectionFlexibilitySensitivity(int gradIndex);
     const Matrix &getInitialFlexibilitySensitivity(int gradIndex);
 
+    double DOUT() const { return dout; }
+    double WALL() const { return thk; }
+    double ALFAV() const { return alphaV; }
+    double WGT() const { return wgt; }
+    double RHO() const { return rho; }
+    double ROUT() const { return rout; }
+    double RIN() const { return rin; }
+    double AREA() const { return Ax; }
+    double XMI() const { return Iy; }
+
    protected:
    private:
-    double dout;
-    double thk;
-    double alphaV;
-    double wgt;
-    double rho;
+    double dout;    // SECTD 9508
+    double thk;     // WALL 9507
+    double alphaV;  // SHEAR 9500
+    double wgt;     //
+    double rho;     // SECTM 9509
+
+    // DOUT         =  OUTSIDE DIAMETER
+    // WALL         =  WALL THICKNESS
+    // ALFAV        =  SHAPE FACTOR FOR SHEAR DISTORTION
+    // AREA         =  CROSS SECTIONAL AREA
+    // XMI          =  SECTION PRINCIPAL MOMENT OF INERTIA
 
     Vector e;
     Matrix mat;
