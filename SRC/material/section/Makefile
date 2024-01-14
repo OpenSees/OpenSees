@@ -10,6 +10,7 @@ OBJS       = SectionForceDeformation.o \
 	GenericSection1d.o \
 	SectionAggregator.o \
 	ParallelSection.o \
+	PipeSection.o \
 	ElasticPlateSection.o \
 	ElasticMembranePlateSection.o \
 	MembranePlateFiberSection.o \
