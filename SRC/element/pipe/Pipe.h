@@ -51,9 +51,9 @@ class Pipe : public Element {
     double T0;        // stress free temperature
     double pressure;  // internal pressure
 
-    double currLN;    // line length 
-    double currTavg;  // average temperature 
-    Matrix currT;     // transformation matrix 
+    double currLN;    // line length
+    double currTavg;  // average temperature
+    Matrix currT;     // transformation matrix
 
    public:
     Pipe()
@@ -284,6 +284,8 @@ class Pipe : public Element {
         currTavg = Tavg;
         currT = T;
 
+        // compute stiffness
+
         return retVal;
     }
 
@@ -402,6 +404,38 @@ class Pipe : public Element {
         }
 
         return 0;
+    }
+
+    // computation of the element stiffness and load matrices
+    // for a tangent (straight) pipe element
+    int tangks(const PipeMaterialTemperaturePoint &Tpt) {
+        // 17395-17742
+
+        // set the factor for axial deformations
+        double axial = 1.0;
+
+        // set the factor for shear deformations (=0, neglect)
+        double xkap = theSect->ALFAV();
+        if (xkap > 99.99) {
+            xkap = 0.0;
+        }
+
+        // compute the material factors
+        double re = Tpt.E;
+        double xnu1 = Tpt.xnu + 1.0;
+
+        // compute section property constants
+        double ra = axial * currLN * re / theSect->AREA();
+        double rv = 2 * xkap * xnu1 * currLN * re / theSect->AREA();
+        double rt = xnu1 * currLN * re / theSect->XMI();
+        double rb = currLN * re / theSect->XMI();
+        double xl2 = currLN * currLN;
+
+        // form the node flexibility matrix at node J
+        // referenced to the local (x,y,z) coordinate system at node I
+        // x - direction: axial from node I to node J
+        // y - direction: transverse bending axis
+        // z - direction: transverse bending axis orthogonal to x and y
     }
 };
 
