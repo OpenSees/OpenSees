@@ -28,8 +28,8 @@
 #include <Element.h>
 #include <Matrix.h>
 #include <Node.h>
-#include <SectionForceDeformation.h>
-#include <UniaxialMaterial.h>
+#include <PipeMaterial.h>
+#include <PipeSection.h>
 #include <Vector.h>
 #include <elementAPI.h>
 
@@ -41,8 +41,8 @@ class Pipe : public Element {
    private:
     std::vector<Node *> theNodes;
     ID connectedExternalNodes;
-    UniaxialMaterial *theMat;
-    SectionForceDeformation *theSect;
+    PipeMaterial *theMat;
+    PipeSection *theSect;
 
     Matrix K;
     Vector P;
@@ -50,6 +50,10 @@ class Pipe : public Element {
 
     double T0;        // stress free temperature
     double pressure;  // internal pressure
+
+    double currLN;    // line length 
+    double currTavg;  // average temperature 
+    Matrix currT;     // transformation matrix 
 
    public:
     Pipe()
@@ -62,11 +66,13 @@ class Pipe : public Element {
           P(),
           localY(3),
           T0(0.0),
-          pressure(0.0) {}
-    Pipe(int tag, int nd1, int nd2, UniaxialMaterial &mat,
-         SectionForceDeformation &sect, double vecyx = 0,
-         double vecyy = 0, double vecyz = 0, double t0 = 0,
-         double pre = 0)
+          pressure(0.0),
+          currLN(0.0),
+          currTavg(0.0),
+          currT() {}
+    Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
+         PipeSection &sect, double vecyx = 0, double vecyy = 0,
+         double vecyz = 0, double t0 = 0, double pre = 0)
         : Element(tag, ELE_TAG_Pipe),
           theNodes(2),
           connectedExternalNodes(2),
@@ -76,13 +82,16 @@ class Pipe : public Element {
           P(),
           localY(3),
           T0(t0),
-          pressure(pre) {
+          pressure(pre),
+          currLN(0.0),
+          currTavg(0.0),
+          currT() {
         // nodes
         connectedExternalNodes(0) = nd1;
         connectedExternalNodes(1) = nd2;
 
         // section
-        theSect = sect.getCopy();
+        theSect = dynamic_cast<PipeSection *>(sect.getCopy());
         if (theSect == 0) {
             opserr << "Pipe element - failed to "
                       "get a copy of section "
@@ -91,7 +100,7 @@ class Pipe : public Element {
         }
 
         // material
-        theMat = mat.getCopy();
+        theMat = dynamic_cast<PipeMaterial *>(mat.getCopy());
         if (theMat == 0) {
             opserr << "Pipe element - failed to get a copy of "
                       "material with tag "
@@ -173,6 +182,16 @@ class Pipe : public Element {
             exit(-1);
         }
 
+        // set data
+        K.resize(getNumDOF(), getNumDOF());
+        K.Zero();
+        P.resize(getNumDOF());
+        P.Zero();
+        currT.resize(ndm, ndm);
+        currT.Zero();
+        currLN = 0;
+        currTavg = 0;
+
         // set domain
         this->DomainComponent::setDomain(theDomain);
     }
@@ -192,6 +211,12 @@ class Pipe : public Element {
 
         P.resize(getNumDOF());
         P.Zero();
+
+        int ndm = OPS_GetNDM();
+        currT.resize(ndm, ndm);
+        currT.Zero();
+        currLN = 0;
+        currTavg = 0;
 
         return retVal;
     }
@@ -213,8 +238,52 @@ class Pipe : public Element {
     int update(void) {
         int retVal = 0;
 
-        // maybe: material setTrialStrain
-        // maybe: section setTrialSectionDeformation
+        // line 9460
+        // transformation matrix
+        Matrix T;
+        retVal = tangdc(T);
+        if (retVal < 0) {
+            return retVal;
+        }
+
+        // line 9462-9466
+        // get average element temperature
+        double Ti = theNodes[0]->getTemp();
+        double Tj = theNodes[1]->getTemp();
+        double Tavg = 0.5 * (Ti + Tj);
+        auto Tpt = theMat->selectPoint(Tavg, retVal);
+        if (retVal < 0) {
+            return retVal;
+        }
+
+        // line 9474-9484
+        // test if new K is needed
+        const auto &crds1 = theNodes[0]->getCrds();
+        const auto &crds2 = theNodes[1]->getCrds();
+        auto localX = crds2 - crds1;
+        double xln = localX.Norm();
+        if (fabs(currLN - xln) + fabs(currTavg - Tavg) < 1e-6) {
+            // check transformation matrix
+            double du2 = 0.0;
+            double du3 = 0.0;
+            for (int i = 0; i < 2; ++i) {
+                for (int j = 0; j < 2; ++j) {
+                    du2 += fabs(currT(i, j) - T(i, j));
+                    du3 += fabs(T(i, j) * 1e-6);
+                }
+            }
+
+            if (du2 <= du3) {
+                // no change of the stiffness matrix
+                return retVal;
+            }
+        }
+
+        // update curr
+        currLN = xln;
+        currTavg = Tavg;
+        currT = T;
+
         return retVal;
     }
 
@@ -261,9 +330,9 @@ class Pipe : public Element {
 
     // utility
    private:
-
     // default convention for local y-axis
     void defaultLocalY(const Vector &localX, Vector &deLocalY) {
+        // line 17356-17378
         // default convention
         double du2 = localX(0) * localX(0) + localX(2) * localX(2);
         if (du2 <= 1e-12) {
@@ -283,7 +352,7 @@ class Pipe : public Element {
     // computation of direction cosine array for the local axes of
     // pipe tangent element
     int tangdc(Matrix &dircos) {
-        // line 17296
+        // line 17296-17387
         int ndm = OPS_GetNDM();
         dircos.resize(ndm, ndm);
         dircos.Zero();
@@ -291,7 +360,7 @@ class Pipe : public Element {
         // local x-axis from node I to node J
         const auto &crds1 = theNodes[0]->getCrds();
         const auto &crds2 = theNodes[1]->getCrds();
-        Vector localX = crds2 - crds1;
+        auto localX = crds2 - crds1;
         double xln = localX.Norm();
         if (xln <= 1e-8) {
             opserr << "WARNING: element length < 1e-8\n";
@@ -370,14 +439,16 @@ void *OPS_PipeElement() {
         }
     }
 
-    auto *theSect = OPS_getSectionForceDeformation(iData[4]);
+    auto *theSect = dynamic_cast<PipeSection *>(
+        OPS_getSectionForceDeformation(iData[4]));
     if (theSect == 0) {
         opserr << "WARNING: section " << iData[4]
                << " is not found\n";
         return 0;
     }
 
-    auto *theMat = OPS_getUniaxialMaterial(iData[3]);
+    auto *theMat = dynamic_cast<PipeMaterial *>(
+        OPS_getUniaxialMaterial(iData[3]));
     if (theMat == 0) {
         opserr << "WARNING: uniaxialMaterial " << iData[3]
                << " is not found\n";
