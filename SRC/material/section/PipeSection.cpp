@@ -97,7 +97,13 @@ PipeSection::PipeSection(int tag, double d, double t, double a,
     double rout2 = rout * rout;
     double rin2 = rin * rin;
     Ax = pi * (rout2 - rin2);
+    if (Ax <= 0) {
+        opserr << "WARNING: AREA <= 0\n";
+    }
     Iy = 0.25 * pi * (rout2 * rout2 - rin2 * rin2);
+    if (Iy <= 0) {
+        opserr << "WARNING: Iy <= 0\n";
+    }
     if (alphaV < 1e-8) {
         double dum2 = 4.0 * (rout2 * rout - rin2 * rin) / 3.0;
         double dum3 = (rout2 + rin2) * thk;
