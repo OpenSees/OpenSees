@@ -45,6 +45,7 @@ class Pipe : public Element {
     PipeMaterial *theMat;
     PipeSection *theSect;
 
+    Matrix M;
     Matrix K;
     Vector P;
     Vector localY;

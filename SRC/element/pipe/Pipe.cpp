@@ -88,6 +88,7 @@ Pipe::Pipe()
       connectedExternalNodes(2),
       theMat(0),
       theSect(0),
+      M(),
       K(),
       P(),
       localY(3),
@@ -105,6 +106,7 @@ Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       connectedExternalNodes(2),
       theMat(0),
       theSect(0),
+      M(),
       K(),
       P(),
       localY(3),
@@ -212,6 +214,8 @@ void Pipe::setDomain(Domain *theDomain) {
     }
 
     // set data
+    M.resize(getNumDOF(), getNumDOF());
+    M.Zero();
     K.resize(getNumDOF(), getNumDOF());
     K.Zero();
     P.resize(getNumDOF());
@@ -234,6 +238,9 @@ int Pipe::commitState(void) {
     }
     retVal += theMat->commitState();
     retVal += theSect->commitState();
+
+    M.resize(getNumDOF(), getNumDOF());
+    M.Zero();
 
     K.resize(getNumDOF(), getNumDOF());
     K.Zero();
@@ -313,14 +320,15 @@ int Pipe::update(void) {
     currTavg = Tavg;
     currT = T;
 
-    // compute stiffness
+    // compute matrices
+    // TODO: 9521
 
     return retVal;
 }
 
 const Matrix &Pipe::getTangentStiff(void) { return K; }
 const Matrix &Pipe::getInitialStiff(void) { return K; }
-const Matrix &Pipe::getMass(void) { return K; }
+const Matrix &Pipe::getMass(void) { return M; }
 
 void Pipe::zeroLoad(void) { P.Zero(); }
 
@@ -461,4 +469,226 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
     // x - direction: axial from node I to node J
     // y - direction: transverse bending axis
     // z - direction: transverse bending axis orthogonal to x and y
+    Matrix Flex(6, 6);
+
+    // axial for Temp matrix
+    Flex(0, 0) += ra;
+
+    // shear for flex matrix
+    Flex(1, 1) += rv;
+    Flex(2, 2) += rv;
+
+    // torsion for flex matrix
+    Flex(3, 3) += rt;
+
+    // bending for flex matrix
+    Flex(1, 1) += rb * xl2 / 3.0;
+    Flex(2, 2) += rb * xl2 / 3.0;
+    Flex(4, 4) += rb;
+    Flex(5, 5) += rb;
+    Flex(1, 5) += rb * currLN * 0.5;
+    Flex(2, 4) -= rb * currLN * 0.5;
+
+    // fill flex matrix
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            Flex(j, i) = Flex(i, j);
+        }
+    }
+
+    // form the node stiffness matrix by inverting Flex
+    Matrix invF(6, 6);
+    Flex.Invert(invF);
+
+    // compute the deflections/rotations (measured in
+    // the x,y,z system at node I) at node J to uniform loads
+    // in each of the x,y,z directions (at I).
+    // the uniform loads are direction invariant
+    // with position along the length, and node I
+    // is completely fixed while node J is free.
+
+    // free end deflections at node J due to
+    // 1. uniform load in x direction
+    // 2. uniform load in y direction
+    // 3. uniform load in z direction
+    // 4. uniform thermal expansion
+    // 5. internal pressure
+    Matrix B(6, 6);
+
+    // axial for B
+    ra *= 0.5 * currLN;
+    B(0, 0) += ra;
+
+    // shear for B
+    rv *= 0.5 * currLN;
+    B(1, 1) += rv;
+    B(2, 2) += rv;
+
+    // bending for B
+    rb *= xl2 / 6.0;
+    B(1, 1) += rb * currLN * 0.75;
+    B(2, 2) += rb * currLN * 0.75;
+    B(4, 2) -= rb;
+    B(5, 1) += rb;
+
+    // compute the free node deflections at end J due to a uniform
+    // thermal expansion
+    B(0, 3) = currLN * Tpt.alp;
+
+    // 17577: compute the free node deflections at end J due to
+    // pressure
+    double rm = (theSect->DOUT() - theSect->WALL()) * 0.5;
+    B(0, 4) = 0.5 * pressure * rm * re / theSect->WALL() *
+              (1.0 - 2.0 * Tpt.xnu) * currLN;
+
+    // 17585: set up the force transformation relating reactions at
+    // node I acting on the member end due to unit loads applied to
+    // the member end at node J
+
+    // force transformation relating reactions at node I
+    // due to unit loads at node J
+    Matrix H(6, 6);
+    for (int i = 0; i < 6; ++i) {
+        H(i, i) = -1.0;
+    }
+    H(5, 1) = -currLN;
+    H(4, 2) = currLN;
+
+    // 17601: form the upper triangular portion of the local element
+    // stiffness matrix for the tangent
+
+    // local stiffness matrix
+    K.resize(getNumDOF(), getNumDOF());
+    K.Zero();
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            // 17606
+            K(i + 6, j + 6) = invF(i, j);
+        }
+    }
+
+    for (int IR = 0; IR < 6; ++IR) {
+        for (int IC = 0; IC < 6; ++IC) {
+            // 17611
+            K(IR, IC + 6) = 0.0;
+
+            // 17612
+            for (int IN = 0; IN < 6; ++IN) {
+                // 17613
+                K(IR, IC + 6) += H(IR, IN) * invF(IN, IC);
+            }
+        }
+    }
+
+    for (int IR = 0; IR < 6; ++IR) {
+        for (int IC = IR; IC < 6; ++IC) {
+            // 17619
+            K(IR, IC) = 0.0;
+
+            // 17620
+            for (int IN = 0; IN < 6; ++IN) {
+                // 17621
+                K(IR, IC) += K(IR, IN + 6) * H(IC, IN);
+            }
+        }
+    }
+
+    // 17625: reflect for symmetry
+    for (int i = 0; i < getNumDOF(); ++i) {
+        for (int k = 0; k < getNumDOF(); ++k) {
+            K(k, i) = K(i, k);
+        }
+    }
+
+    // 17639: compute the restrained node forces
+    // acting on the nodes of the tangent due
+    // to the member loadings
+
+    // fixed end forces (acting on the nodes) due to
+    // 1. uniform load in x direction
+    // 2. uniform load in y direction
+    // 3. uniform load in z direction
+    // 4. uniform thermal expansion
+    // 5. internal pressure
+    Matrix FEF(12, 5);
+    for (int i = 0; i < 5; ++i) {
+        for (int j = 0; j < 12; ++j) {
+            for (int k = 0; k < 6; ++k) {
+                // 17646
+                FEF(j, i) -= K(j, k + 6) * B(k, i);
+            }
+        }
+    }
+
+    // 17650: for the distributed loads superimpose
+    // the cantilever reactions acting on the element at node I
+    double dum = 0.5 * xl2;
+    FEF(0, 0) -= currLN;
+    FEF(1, 1) -= currLN;
+    FEF(5, 1) -= dum;
+    FEF(2, 2) -= currLN;
+    FEF(4, 2) += dum;
+
+    // 17668: form the lumped mass matrix
+    dum = 0.5 * currLN * theSect->RHO();
+    M.resize(getNumDOF(), getNumDOF());
+    M.Zero();
+    for (int k = 0; k < 3; ++k) {
+        M(k, k) = dum;
+        M(k + 6, k + 6) = dum;
+    }
+
+    // 17678: compute the fixe-node corrections
+    // to the section stresses due to element loads.
+    // forces act on the segment between the point
+    // of evaluation and node I
+
+    // fixed-end force corrections to the member loads due to
+    // the five types of element loads
+    Matrix FEFC(18, 5);
+
+    // 1. at node I
+    for (int i = 0; i < 5; ++i) {
+        for (int k = 0; k < 6; ++k) {
+            // 17686
+            FEFC(k, i) = -FEF(k, i);
+
+            // 2. at node J
+            // 17690
+            FEFC(k + 6, i) = FEF(k + 6, i);
+        }
+    }
+
+    // 17699: form the transformation relating global
+    // displacements and member stress resultants at node I and J
+
+    // stress-displacement transformation relating
+    // the 12 global components of displacement to
+    // the 6 local components of member loads
+    // located at node I and at node J.
+    Matrix SA(18, 12);
+    for (int k1 = 1; k1 <= 10; k1 += 3) {
+        double fac = -1.0;
+        if (k1 > 4) {
+            fac = 1.0;
+        }
+        int nrs = k1 - 1;
+        for (int k2 = 1; k2 <= 10; k2 += 3) {
+            int ncs = k2 - 1;
+            for (int ir = 1; ir <= 3; ++ir) {
+                int nr = nrs + ir;
+                for (int ic = 1; ic <= 3; ++ic) {
+                    int nc = ncs + ic;
+                    SA(nr - 1, nc - 1) = 0.0;
+                    for (int IN = 1; IN <= 3; ++IN) {
+                        int n = ncs + IN;
+                        SA(nr - 1, nc - 1) += fac * K(nr - 1, n - 1) *
+                                              currT(ic - 1, IN - 1);
+                    }
+                }
+            }
+        }
+    }
+
+    return 0;
 }
