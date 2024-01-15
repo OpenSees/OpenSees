@@ -43,6 +43,8 @@ void* OPS_RCCircularSection()
     opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover? Nwedges? Nsteel? -GJ GJ <or> -torsion matTag\n";
     return 0;
   }
+
+  int ndm = OPS_GetNDM();
   
   int idata[8];
   double ddata[3];
@@ -249,7 +251,8 @@ RCCircularSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       yi[loc] = xbar*cos(angle);
-      zi[loc] = xbar*sin(angle);
+      if (zi != 0)
+	zi[loc] = xbar*sin(angle);
       //ofs << yi[loc] << ' ' << zi[loc] << endln;
       angle += twoTheta;
       loc++;
@@ -272,7 +275,8 @@ RCCircularSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       yi[loc] = xbar*cos(angle);
-      zi[loc] = xbar*sin(angle);
+      if (zi != 0)
+	zi[loc] = xbar*sin(angle);
       //ofs << yi[loc] << ' ' << zi[loc] << endln;
       angle += twoTheta;
       loc++;
@@ -288,7 +292,8 @@ RCCircularSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
   double angle = theta;
   for (int i = 0; i < Nsteel; i++) {
     yi[loc] = xbar*cos(angle);
-    zi[loc] = xbar*sin(angle);
+    if (zi != 0)
+      zi[loc] = xbar*sin(angle);
     //ofs << yi[loc] << ' ' << zi[loc] << endln;
     angle += twoTheta;
     loc++;
@@ -426,7 +431,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
   else {
     for (int i = 0; i < nFibers; i++) {
       dyidh[i] = 0.0;
-      dzidh[i] = 0.0;
+      if (dzidh != 0)
+	dzidh[i] = 0.0;
     }
     return;
   }
@@ -461,7 +467,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
-      dzidh[loc] = dxbardh*sin(angle);
+      if (dzidh != 0)
+	dzidh[loc] = dxbardh*sin(angle);
       angle += twoTheta;
       loc++;
     }
@@ -493,7 +500,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
-      dzidh[loc] = dxbardh*sin(angle);
+      if (dzidh != 0)
+	dzidh[loc] = dxbardh*sin(angle);
       angle += twoTheta;
       loc++;
     }
@@ -510,7 +518,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
   double angle = theta;
   for (int i = 0; i < Nsteel; i++) {
     dyidh[loc] = dxbardh*cos(angle);
-    dzidh[loc] = dxbardh*sin(angle);
+    if (dzidh != 0)
+      dzidh[loc] = dxbardh*sin(angle);
     angle += twoTheta;
     loc++;
   }

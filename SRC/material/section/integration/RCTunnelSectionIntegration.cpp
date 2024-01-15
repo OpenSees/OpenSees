@@ -236,7 +236,8 @@ RCTunnelSectionIntegration::getFiberLocations(int nFibers, double *yi, double *z
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       yi[loc] = xbar*cos(angle);
-      zi[loc] = xbar*sin(angle);
+      if (zi != 0)
+	zi[loc] = xbar*sin(angle);
       //ofs << yi[loc] << ' ' << zi[loc] << endln;
       angle += twoTheta;
       loc++;
@@ -252,7 +253,8 @@ RCTunnelSectionIntegration::getFiberLocations(int nFibers, double *yi, double *z
   double angle = theta;
   for (int i = 0; i < Nbarsinner; i++) {
     yi[loc] = xbar*cos(angle);
-    zi[loc] = xbar*sin(angle);
+    if (zi != 0)
+      zi[loc] = xbar*sin(angle);
     //ofs << yi[loc] << ' ' << zi[loc] << endln;
     angle += twoTheta;
     loc++;
@@ -265,7 +267,8 @@ RCTunnelSectionIntegration::getFiberLocations(int nFibers, double *yi, double *z
   angle = theta;
   for (int i = 0; i < Nbarsouter; i++) {
     yi[loc] = xbar*cos(angle);
-    zi[loc] = xbar*sin(angle);
+    if (zi != 0)
+      zi[loc] = xbar*sin(angle);
     //ofs << yi[loc] << ' ' << zi[loc] << endln;
     angle += twoTheta;
     loc++;
@@ -421,9 +424,11 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
   else if (parameterID == 6) // coverouter
     dcoverouterdh = 1.0;
   else {
-    for (int i = 0; i < nFibers; i++) {
+    for (int i = 0; i < nFibers; i++)
       dyidh[i] = 0.0;
-      dzidh[i] = 0.0;
+    if (dzidh != 0) {
+      for (int i = 0; i < nFibers; i++)      
+	dzidh[i] = 0.0;
     }
     return;
   }
@@ -460,7 +465,8 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
-      dzidh[loc] = dxbardh*sin(angle);
+      if (dzidh != 0)
+	dzidh[loc] = dxbardh*sin(angle);
       angle += twoTheta;
       loc++;
     }
@@ -477,7 +483,8 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
   double angle = theta;
   for (int i = 0; i < Nbarsinner; i++) {
     dyidh[loc] = dxbardh*cos(angle);
-    dzidh[loc] = dxbardh*sin(angle);
+    if (dzidh != 0)
+      dzidh[loc] = dxbardh*sin(angle);
     angle += twoTheta;
     loc++;
   }
@@ -489,7 +496,8 @@ RCTunnelSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double
   angle = theta;
   for (int i = 0; i < Nbarsouter; i++) {
     dyidh[loc] = dxbardh*cos(angle);
-    dzidh[loc] = dxbardh*sin(angle);
+    if (dzidh != 0)
+      dzidh[loc] = dxbardh*sin(angle);
     angle += twoTheta;
     loc++;
   }
