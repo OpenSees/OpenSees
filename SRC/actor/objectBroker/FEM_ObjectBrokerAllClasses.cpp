@@ -180,6 +180,7 @@
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
 #include "NDFiberSection2d.h"
+#include "NDFiberSectionWarping2d.h"
 #include "NDFiberSection3d.h"
 #include "FiberSectionAsym3d.h" //Xinlong Du
 #include "ElasticPlateSection.h"
@@ -1762,6 +1763,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_NDFiberSection2d:
 		return new NDFiberSection2d();
+
+	case SEC_TAG_NDFiberSectionWarping2d:
+		return new NDFiberSectionWarping2d();		
       
 	case SEC_TAG_NDFiberSection3d:
 		return new NDFiberSection3d();		
