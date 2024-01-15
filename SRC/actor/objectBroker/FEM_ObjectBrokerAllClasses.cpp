@@ -171,6 +171,7 @@
 #include "ElasticBDShearSection2d.h"
 #include "ElasticShearSection3d.h"
 #include "ElasticTubeSection3d.h"
+#include "ElasticWarpingShearSection2d.h"
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
 #include "SectionAggregator.h"
@@ -1735,6 +1736,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 	case SEC_TAG_ElasticTube3d:
 	     return new ElasticTubeSection3d();
 
+    case SEC_TAG_ElasticWarpingShear2d:
+      return new ElasticWarpingShearSection2d();
+	     
 	case SEC_TAG_Generic1d:
 	     return new GenericSection1d();
 	     
