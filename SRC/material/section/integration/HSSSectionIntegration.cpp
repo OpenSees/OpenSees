@@ -168,8 +168,8 @@ void* OPS_HSSSection()
       return 0;
     }
     
-    if (torsion == 0) {
-      opserr << "WARNING torsion not speified for FiberSection\n";
+    if (ndm == 2 && torsion == 0) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
       opserr << "\nHSS section: " << tag << endln;
       return 0;
     }
