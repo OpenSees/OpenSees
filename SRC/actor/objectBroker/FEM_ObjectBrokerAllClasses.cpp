@@ -179,6 +179,8 @@
 //#include "FiberSection.h"
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
+#include "FiberSection2dThermal.h"
+#include "FiberSection3dThermal.h"
 #include "NDFiberSection2d.h"
 #include "NDFiberSectionWarping2d.h"
 #include "NDFiberSection3d.h"
@@ -1760,6 +1762,12 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
       
 	case SEC_TAG_FiberSection3d:
 		return new FiberSection3d();
+
+	case SEC_TAG_FiberSection2dThermal:
+		return new FiberSection2dThermal();
+      
+	case SEC_TAG_FiberSection3dThermal:
+		return new FiberSection3dThermal();		
 
 	case SEC_TAG_NDFiberSection2d:
 		return new NDFiberSection2d();
