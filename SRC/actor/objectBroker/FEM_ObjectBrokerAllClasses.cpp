@@ -432,6 +432,7 @@
 #include "RCTunnelSectionIntegration.h"
 #include "TubeSectionIntegration.h"
 #include "WideFlangeSectionIntegration.h"
+#include "HSSSectionIntegration.h"
 
 // node header files
 #include "Node.h"
@@ -1363,7 +1364,10 @@ FEM_ObjectBrokerAllClasses::getNewSectionIntegration(int classTag)
 
   case SECTION_INTEGRATION_TAG_Tube:        
     return new TubeSectionIntegration();    
-    
+
+  case SECTION_INTEGRATION_TAG_HSS:        
+    return new HSSSectionIntegration();
+	  
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getSectionIntegration - ";
     opserr << " - no SectionIntegration type exists for class tag ";
