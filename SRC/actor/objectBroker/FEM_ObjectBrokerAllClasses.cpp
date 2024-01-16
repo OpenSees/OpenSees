@@ -203,6 +203,8 @@
 #include "ElasticIsotropicBeamFiber2d.h"
 #include "ElasticIsotropicAxiSymm.h"
 #include "ElasticIsotropicThreeDimensional.h"
+#include "ElasticOrthotropicThreeDimensional.h"
+#include "ElasticOrthotropicPlaneStress.h"
 #include "J2PlaneStrain.h"
 #include "J2PlaneStress.h"
 #include "J2PlateFiber.h"
@@ -210,6 +212,7 @@
 #include "J2BeamFiber3d.h"
 #include "J2AxiSymm.h"
 #include "J2ThreeDimensional.h"
+#include "SimplifiedJ2.h"
 #include "PlaneStrainMaterial.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
@@ -361,6 +364,7 @@
 #include "twoNodeLink/TwoNodeLink.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
+#include "FourNodeTetrahedron.h"
 
 #include "mvlem/MVLEM.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
@@ -919,7 +923,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_EmbeddedBeamInterfaceL:
 	  return new EmbeddedBeamInterfaceL(); //Amin Pakzad
-	
+
+    case ELE_TAG_FourNodeTetrahedron:
+      return new FourNodeTetrahedron();
+      
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
@@ -1842,6 +1849,12 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_ElasticIsotropicThreeDimensional:
     return new ElasticIsotropicThreeDimensional();
+
+  case ND_TAG_ElasticOrthotropicThreeDimensional:
+    return new ElasticOrthotropicThreeDimensional();
+
+  case ND_TAG_ElasticOrthotropicPlaneStress:
+    return new ElasticOrthotropicPlaneStress();    
 		  
   case ND_TAG_J2PlaneStrain:
     return new J2PlaneStrain();
@@ -1863,6 +1876,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_J2ThreeDimensional:
     return new J2ThreeDimensional();
+
+  case ND_TAG_SimplifiedJ2:
+    return new SimplifiedJ2();    
     
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
