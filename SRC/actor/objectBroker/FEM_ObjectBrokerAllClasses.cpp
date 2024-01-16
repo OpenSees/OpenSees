@@ -262,6 +262,7 @@
 #include "InitStressNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 #include "PlasticDamageConcrete3d.h"
+#include "ConcreteS.h"
 
 // Fibers
 #include "fiber/UniaxialFiber2d.h"
@@ -1906,8 +1907,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PlateFromPlaneStressMaterial:
     return new PlateFromPlaneStressMaterial();
 
-    //case ND_TAG_ConcreteS:
-    //    return new ConcreteS();
+  case ND_TAG_ConcreteS:
+    return new ConcreteS();
 
   case ND_TAG_PlaneStressUserMaterial:
     return new PlaneStressUserMaterial();
@@ -2014,7 +2015,7 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_PlasticDamageConcrete3d:
       return new PlasticDamageConcrete3d();
-    
+
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
     opserr << " - no NDMaterial type exists for class tag ";
