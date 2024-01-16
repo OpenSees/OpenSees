@@ -701,7 +701,7 @@ PlasticDamageConcrete3d::recvSelf(int commitTag, Channel &theChannel,
   static Vector data(43);  
   res = theChannel.recvVector(dbTag, commitTag, data);
   if (res < 0) {
-    opserr << "PlasticDamageConcrete3d::sendSelf -- could not receive Vector\n";
+    opserr << "PlasticDamageConcrete3d::recvSelf -- could not receive Vector\n";
     return res;
   }
 
@@ -731,7 +731,7 @@ PlasticDamageConcrete3d::recvSelf(int commitTag, Channel &theChannel,
   
   res = theChannel.recvMatrix(dbTag, commitTag, Ccommit);
   if (res < 0) {
-    opserr << "PlasticDamageConcrete3d::sendSelf -- could not receive Ccommit matrix\n";
+    opserr << "PlasticDamageConcrete3d::recvSelf -- could not receive Ccommit matrix\n";
     return res;
   }  
 
