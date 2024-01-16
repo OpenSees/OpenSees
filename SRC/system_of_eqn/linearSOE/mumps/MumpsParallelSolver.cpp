@@ -84,7 +84,7 @@ MumpsParallelSolver::initializeMumps()
       dmumps_c(&id); /* Terminate instance */
       init = false;
     } 
-
+    
     id.job = -1;
       
     id.par = 1; // host involved in calcs
@@ -96,7 +96,7 @@ MumpsParallelSolver::initializeMumps()
 #else
     id.comm_fortran = MPI_COMM_WORLD;
 #endif
-      
+    
     id.ICNTL(5) = 0; id.ICNTL(18) = 3;
     
     dmumps_c(&id);
@@ -105,7 +105,7 @@ MumpsParallelSolver::initializeMumps()
     MPI_Comm_size(MPI_COMM_WORLD, &np);
     
     init = true;
-
+    
     // parallel solver; distributed i/p matrix A
     id.ICNTL(5) = 0; id.ICNTL(18) = 3;
     
@@ -176,6 +176,7 @@ MumpsParallelSolver::initializeMumps()
 	break;
       default:
 	opserr << " mumps returned infog[0] and infog[1] error codes: " << info << " and " << info2;
+      }
     }
 
     if (info < 0)
