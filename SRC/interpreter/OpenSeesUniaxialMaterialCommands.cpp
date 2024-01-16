@@ -139,6 +139,7 @@ void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
 void* OPS_ElasticPowerFunc();
 void* OPS_MultiLinear();
+void* OPS_ContinuumUniaxialMaterial();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
 void* OPS_PathIndependentMaterial();
@@ -149,6 +150,7 @@ void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
+void* OPS_BoucWenOriginal();
 void* OPS_BoucWenInfill();
 void* OPS_BWBN();
 void* OPS_PySimple1();
@@ -427,6 +429,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("MultiLinear", &OPS_MultiLinear));
   uniaxialMaterialsMap.insert(std::make_pair(
+      "Continuum", &OPS_ContinuumUniaxialMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
       "InitStrainMaterial", &OPS_InitStrainMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("InitStrain", &OPS_InitStrainMaterial));
@@ -451,6 +455,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
   uniaxialMaterialsMap.insert(
+      std::make_pair("BoucWenOriginal", &OPS_BoucWenOriginal));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("BoucWenInfill", &OPS_BoucWenInfill));  
   uniaxialMaterialsMap.insert(
       std::make_pair("BWBN", &OPS_BWBN));
