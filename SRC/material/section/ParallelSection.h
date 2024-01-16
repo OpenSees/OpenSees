@@ -103,6 +103,8 @@ conditional);
 
     int order;
     ID     *theCode;     // Storage for section type information
+
+  void setUpCode(void);
    
     int otherDbTag;
 

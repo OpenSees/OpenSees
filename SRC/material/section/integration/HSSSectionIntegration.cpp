@@ -391,9 +391,11 @@ HSSSectionIntegration::activateParameter(int paramID)
 void
 HSSSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzidh)
 {
-  for (int i = 0; i < nFibers; i++) {
+  for (int i = 0; i < nFibers; i++)
     dyidh[i] = 0.0;
-    dzidh[i] = 0.0;
+  if (dzidh != 0) {
+    for (int i = 0; i < nFibers; i++)
+      dzidh[i] = 0.0;
   }
 
   if (parameterID < 1 || parameterID > 3)
