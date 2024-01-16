@@ -263,6 +263,7 @@
 #include "InitStressNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 #include "PlasticDamageConcrete3d.h"
+#include "PlasticDamageConcretePlaneStress.h"
 #include "ConcreteS.h"
 
 // Fibers
@@ -2019,6 +2020,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_PlasticDamageConcrete3d:
       return new PlasticDamageConcrete3d();
+
+  case ND_TAG_PlasticDamageConcretePlaneStress:
+      return new PlasticDamageConcretePlaneStress();
 
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
