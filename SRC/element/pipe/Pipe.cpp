@@ -321,7 +321,16 @@ int Pipe::update(void) {
     currT = T;
 
     // compute matrices
-    // TODO: 9521
+    Matrix Flex, invF, B, H, FEF, FEFC, SA;
+    retVal = tangks(Tpt, Flex, invF, B, H, FEF, FEFC, SA);
+    if (retVal < 0) {
+        return retVal;
+    }
+
+    // 9521
+    double NS = 12;
+    double delt = currTavg - T0;
+    double wgt = theSect->WGT();
 
     return retVal;
 }
@@ -441,7 +450,9 @@ int Pipe::tangdc(Matrix &dircos) {
 
 // computation of the element stiffness and load matrices
 // for a tangent (straight) pipe element
-int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
+int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt,
+                 Matrix &Flex, Matrix &invF, Matrix &B, Matrix &H,
+                 Matrix &FEF, Matrix &FEFC, Matrix &SA) {
     // 17395-17742
 
     // set the factor for axial deformations
@@ -469,7 +480,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
     // x - direction: axial from node I to node J
     // y - direction: transverse bending axis
     // z - direction: transverse bending axis orthogonal to x and y
-    Matrix Flex(6, 6);
+    Flex.resize(6, 6);
+    Flex.Zero();
 
     // axial for Temp matrix
     Flex(0, 0) += ra;
@@ -497,7 +509,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
     }
 
     // form the node stiffness matrix by inverting Flex
-    Matrix invF(6, 6);
+    invF.resize(6, 6);
+    invF.Zero();
     Flex.Invert(invF);
 
     // compute the deflections/rotations (measured in
@@ -513,7 +526,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
     // 3. uniform load in z direction
     // 4. uniform thermal expansion
     // 5. internal pressure
-    Matrix B(6, 6);
+    B.resize(6, 6);
+    B.Zero();
 
     // axial for B
     ra *= 0.5 * currLN;
@@ -547,7 +561,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
 
     // force transformation relating reactions at node I
     // due to unit loads at node J
-    Matrix H(6, 6);
+    H.resize(6, 6);
+    H.Zero();
     for (int i = 0; i < 6; ++i) {
         H(i, i) = -1.0;
     }
@@ -610,7 +625,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
     // 3. uniform load in z direction
     // 4. uniform thermal expansion
     // 5. internal pressure
-    Matrix FEF(12, 5);
+    FEF.resize(12, 5);
+    FEF.Zero();
     for (int i = 0; i < 5; ++i) {
         for (int j = 0; j < 12; ++j) {
             for (int k = 0; k < 6; ++k) {
@@ -645,7 +661,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
 
     // fixed-end force corrections to the member loads due to
     // the five types of element loads
-    Matrix FEFC(18, 5);
+    FEFC.resize(18, 5);
+    FEFC.Zero();
 
     // 1. at node I
     for (int i = 0; i < 5; ++i) {
@@ -666,7 +683,8 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
     // the 12 global components of displacement to
     // the 6 local components of member loads
     // located at node I and at node J.
-    Matrix SA(18, 12);
+    SA.resize(18, 12);
+    SA.Zero();
     for (int k1 = 1; k1 <= 10; k1 += 3) {
         double fac = -1.0;
         if (k1 > 4) {
@@ -692,3 +710,5 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt) {
 
     return 0;
 }
+
+int Pipe::localGlobal() { return 0; }

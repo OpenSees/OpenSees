@@ -36,6 +36,8 @@
 
 class Node;
 
+// TODO: bend element 9527
+
 // straight pipe element
 class Pipe : public Element {
     // Line: 9369
@@ -117,7 +119,12 @@ class Pipe : public Element {
 
     // computation of the element stiffness and load matrices
     // for a tangent (straight) pipe element
-    int tangks(const PipeMaterialTemperaturePoint &Tpt);
+    int tangks(const PipeMaterialTemperaturePoint &Tpt, Matrix &Flex,
+               Matrix &invF, Matrix &B, Matrix &H, Matrix &FEF,
+               Matrix &FEFC, Matrix &SA);
+
+    // transform the element stiffness matrix from local to global
+    int localGlobal();
 };
 
 #endif
