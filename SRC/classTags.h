@@ -383,6 +383,7 @@
 #define ND_TAG_Damage2p3D 			24
 #define ND_TAG_Damage2ppstress 			25
 #define ND_TAG_SimplifiedJ2                     26
+#define ND_TAG_PlaneStressSimplifiedJ2                     2626
 #define ND_TAG_CapPlasticity                    27
 #define ND_TAG_PlaneStressUserMaterial          28
 #define ND_TAG_PlateFromPlaneStressMaterial     29
