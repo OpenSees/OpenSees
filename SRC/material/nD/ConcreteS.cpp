@@ -336,7 +336,7 @@ ConcreteS::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0, cnt = 0;
 
-  static Vector data(16);
+  static Vector data(13);
 
   data(cnt++) = this->getTag();
   data(cnt++) = E;
@@ -350,8 +350,6 @@ ConcreteS::sendSelf(int commitTag, Channel &theChannel)
     data(cnt++) = strain0(i);
   for (int i = 0; i < 3; i++) 
     data(cnt++) = stress0(i);
-  for (int i = 0; i < 3; i++) 
-    data(cnt++) = cStrain0(i);  
 
    res = theChannel.sendVector(this->getDbTag(), commitTag, data);
    if (res < 0) 
@@ -365,7 +363,7 @@ ConcreteS::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
 {
   int res = 0, cnt = 0;
 
-  static Vector data(16);
+  static Vector data(13);
 
   res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -387,8 +385,6 @@ ConcreteS::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
     strain0(i) = data(cnt++);
   for (int i = 0; i < 3; i++)
     stress0(i) = data(cnt++);
-  for (int i = 0; i < 3; i++)
-    cStrain0(i) = data(cnt++);  
 
   return res;
 }
