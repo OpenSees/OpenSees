@@ -213,6 +213,7 @@
 #include "J2AxiSymm.h"
 #include "J2ThreeDimensional.h"
 #include "SimplifiedJ2.h"
+#include "PlaneStressSimplifiedJ2.h"
 #include "PlaneStrainMaterial.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
@@ -1880,7 +1881,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     return new J2ThreeDimensional();
 
   case ND_TAG_SimplifiedJ2:
-    return new SimplifiedJ2();    
+    return new SimplifiedJ2();
+
+  case ND_TAG_PlaneStressSimplifiedJ2:
+    return new PlaneStressSimplifiedJ2();
     
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
