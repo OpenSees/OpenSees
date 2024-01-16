@@ -85,7 +85,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
 						  double _Ap, 
 						  double _An, 
 						  double _Bn)
-   :NDMaterial(tag,100),
+   :NDMaterial(tag,ND_TAG_PlasticDamageConcretePlaneStress),
     E(_e), nu(_nu), ft(_ft), fc(_fc), beta(_beta), Ap(_Ap), An(_An), Bn(_Bn),
     Ce(3,3), Ce0(3,3),CeCommitted(3,3),
     stress(3),strain(3), Cstress(3), Cstrain(3)
@@ -136,7 +136,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
  }
 
  PlasticDamageConcretePlaneStress::PlasticDamageConcretePlaneStress()
-   :NDMaterial (0, 0),
+   :NDMaterial (0, ND_TAG_PlasticDamageConcretePlaneStress),
     stress(3),strain(3), Cstress(3), Cstrain(3)
  {
 
@@ -1115,13 +1115,13 @@ PlasticDamageConcretePlaneStress::getCopy (void)
 const char*
 PlasticDamageConcretePlaneStress::getType (void) const
 {
-  return "PlaneStress2d";
+  return "PlaneStress";
 }
 
 int
 PlasticDamageConcretePlaneStress::getOrder (void) const
 {
-  return 6;
+  return 3;
 }
 
 
