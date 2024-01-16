@@ -332,6 +332,14 @@ int Pipe::update(void) {
     double delt = currTavg - T0;
     double wgt = theSect->WGT();
 
+    // local to global for K
+    retVal = localGlobal();
+    if (retVal < 0) {
+        return retVal;
+    }
+
+    // TODO: 9682
+
     return retVal;
 }
 
@@ -711,4 +719,59 @@ int Pipe::tangks(const PipeMaterialTemperaturePoint &Tpt,
     return 0;
 }
 
-int Pipe::localGlobal() { return 0; }
+int Pipe::localGlobal() {
+    Matrix Q(3, 3), QQ(3, 3);
+
+    // 9643
+    for (int IR = 1; IR <= 10; IR += 3) {
+        int IRS = IR - 1;
+        for (int IC = IR; IC <= 10; IC += 3) {
+            int ICS = IC - 1;
+
+            // 9648
+            for (int I = 1; I <= 3; ++I) {
+                int II = IRS + I;
+                for (int J = 1; J <= 3; ++J) {
+                    int JJ = ICS + J;
+
+                    // 9652
+                    Q(I - 1, J - 1) = K(II - 1, JJ - 1);
+                }
+            }
+
+            // 9655
+            for (int I = 1; I <= 3; ++I) {
+                for (int J = 1; J <= 3; ++J) {
+                    QQ(I - 1, J - 1) = 0.0;
+                    for (int KN = 1; KN <= 3; ++KN) {
+                        // 9659
+                        QQ(I - 1, J - 1) +=
+                            Q(I - 1, KN - 1) * currT(J - 1, KN - 1);
+                    }
+                }
+            }
+
+            // 9663
+            for (int I = 1; I <= 3; ++I) {
+                int II = IRS + I;
+                for (int J = 1; J <= 3; ++J) {
+                    int JJ = ICS + J;
+                    K(II - 1, JJ - 1) = 0.0;
+                    for (int KN = 1; KN <= 3; ++KN) {
+                        // 9659
+                        K(II - 1, JJ - 1) +=
+                            currT(I - 1, KN - 1) * QQ(KN - 1, J - 1);
+                    }
+                }
+            }
+        }
+    }
+
+    // 9676
+    for (int I = 0; I < 12; ++I) {
+        for (int J = 0; J < 12; ++J) {
+            K(J, I) = K(I, J);
+        }
+    }
+    return 0;
+}
