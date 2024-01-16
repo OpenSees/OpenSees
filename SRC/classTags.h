@@ -402,6 +402,7 @@
 #define ND_TAG_MaterialCMM                        42
 #define ND_TAG_FSAM                               43
 #define ND_TAG_PlasticDamageConcrete3d            44
+#define ND_TAG_PlasticDamageConcretePlaneStress            4444
 #define ND_TAG_PlaneStressLayeredMaterial         45
 #define ND_TAG_PlaneStressRebarMaterial           46
 #define ND_TAG_Faria1998PlaneStrain               48
