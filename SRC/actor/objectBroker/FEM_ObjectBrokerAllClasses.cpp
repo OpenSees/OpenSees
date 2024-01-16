@@ -261,6 +261,7 @@
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
+#include "PlasticDamageConcrete3d.h"
 
 // Fibers
 #include "fiber/UniaxialFiber2d.h"
@@ -2010,6 +2011,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();
+
+  case ND_TAG_PlasticDamageConcrete3d:
+      return new PlasticDamageConcrete3d();
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
