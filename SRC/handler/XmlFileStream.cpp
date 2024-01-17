@@ -123,6 +123,13 @@ XmlFileStream::~XmlFileStream()
 
   if (xmlColumns != 0)
     delete xmlColumns;
+
+  if (tags != nullptr) {
+    for (int i=0; i<sizeTags; i++)
+      if (tags[i] != nullptr)
+        delete tags[i];
+    delete[] tags;
+  }
 }
 
 int 
