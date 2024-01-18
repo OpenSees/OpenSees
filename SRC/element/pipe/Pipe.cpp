@@ -35,7 +35,7 @@ void *OPS_PipeElement() {
         opserr << "Invalid #args,  want: element pipe "
                   "tag? nd1? nd2? matTag? secTag? <vecyx? vecyy? "
                   "vecyz?> "
-                  "<To? p?>\n";
+                  "<To? p? gDir?>\n";
         return 0;
     }
 
@@ -60,6 +60,16 @@ void *OPS_PipeElement() {
         }
     }
 
+    // get gravity direction
+    int gDir = -3;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        numData = 1;
+        if (OPS_GetIntInput(&numData, &gDir) < 0) {
+            opserr << "WARNING invalid gDir for pipe element\n";
+            return 0;
+        }
+    }
+
     auto *theSect = dynamic_cast<PipeSection *>(
         OPS_getSectionForceDeformation(iData[4]));
     if (theSect == 0) {
@@ -76,8 +86,9 @@ void *OPS_PipeElement() {
         return 0;
     }
 
-    auto *ele = new Pipe(iData[0], iData[1], iData[2], *theMat,
-                         *theSect, data[0], data[1]);
+    auto *ele =
+        new Pipe(iData[0], iData[1], iData[2], *theMat, *theSect,
+                 data[0], data[1], data[2], data[3], data[4], gDir);
 
     return ele;
 }
@@ -94,13 +105,14 @@ Pipe::Pipe()
       localY(3),
       T0(0.0),
       pressure(0.0),
+      gDir(-3),
       currLN(0.0),
       currTavg(0.0),
       currT() {}
 
 Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
            PipeSection &sect, double vecyx, double vecyy,
-           double vecyz, double t0, double pre)
+           double vecyz, double t0, double pre, int g)
     : Element(tag, ELE_TAG_Pipe),
       theNodes(2),
       connectedExternalNodes(2),
@@ -112,6 +124,7 @@ Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       localY(3),
       T0(t0),
       pressure(pre),
+      gDir(g),
       currLN(0.0),
       currTavg(0.0),
       currT() {
@@ -773,5 +786,19 @@ int Pipe::localGlobal() {
             K(J, I) = K(I, J);
         }
     }
+    return 0;
+}
+
+int Pipe::loading(Vector &FAC) {
+    // 9682
+    // 1 - x gravity
+    // 2 - y gravity
+    // 3 - z gravity
+    // 4 - thermal
+    // 5 - internal pressure
+
+    // form the participation factors from the five types of loading
+    
+
     return 0;
 }
