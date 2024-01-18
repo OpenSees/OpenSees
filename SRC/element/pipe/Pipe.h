@@ -54,6 +54,8 @@ class Pipe : public Element {
 
     double T0;        // stress free temperature
     double pressure;  // internal pressure
+    int gDir;  // direction of gravity 1-x, 2-y, 3-z, positive or
+               // negative
 
     double currLN;    // line length
     double currTavg;  // average temperature
@@ -63,7 +65,7 @@ class Pipe : public Element {
     Pipe();
     Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
          PipeSection &sect, double vecyx = 0, double vecyy = 0,
-         double vecyz = 0, double t0 = 0, double pre = 0);
+         double vecyz = 0, double t0 = 0, double pre = 0, int g=-3);
 
     ~Pipe();
 
@@ -125,6 +127,9 @@ class Pipe : public Element {
 
     // transform the element stiffness matrix from local to global
     int localGlobal();
+
+    // form the element matrices associated with 5 loading
+    int loading(Vector &FAC);
 };
 
 #endif
