@@ -37,13 +37,6 @@ class Channel;
 class UniaxialMaterial;
 class Response;
 
-// Type of dimension of element NxDy has dimension x=1,2,3 and
-// y=2,4,6,12 degrees-of-freedom for the element
-#ifndef ZeroLength_h
-    enum Etype { D1N2, D2N4, D2N6, D3N6, D3N12 };
-#endif
-
-
 class TwoNodeLink : public Element
 {
 public:
@@ -101,7 +94,10 @@ public:
     int setParameter(const char **argv, int argc, Parameter &param);
 
 private:
-    Etype elemType;
+  // Type of dimension of element NxDy has dimension x=1,2,3 and
+  // y=2,4,6,12 degrees-of-freedom for the element
+  enum Etype { D1N2, D2N4, D2N6, D3N6, D3N12 };
+  Etype elemType;
     
     // private methods
     void setUp();
