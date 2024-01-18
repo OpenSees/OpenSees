@@ -1084,7 +1084,7 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 
 	// Make one size bigger so not a multiple of 3, otherwise will conflict
 	// with classTags ID
-	static ID idData(9);
+	static ID idData(10);
 
 	idData(0) = this->getTag();
 	idData(1) = dimension;
@@ -1178,7 +1178,7 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
   // ZeroLength creates an ID, receives the ID and then sets the 
   // internal data with the data in the ID
 
-  static ID idData(9);
+  static ID idData(10);
 
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
