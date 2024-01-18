@@ -289,6 +289,7 @@
 #include "truss/InertiaTruss.h"
 #include "zeroLength/ZeroLength.h"
 #include "zeroLength/ZeroLengthSection.h"
+#include "zeroLength/CoupledZeroLength.h"
 #include "zeroLength/ZeroLengthContact2D.h"
 #include "zeroLength/ZeroLengthContact3D.h"
 #include "zeroLength/ZeroLengthContactNTS2D.h"
@@ -787,7 +788,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 		return new InertiaTruss();
       
     case ELE_TAG_ZeroLength:  
-      return new ZeroLength(); 	     
+      return new ZeroLength();
+
+    case ELE_TAG_CoupledZeroLength:
+      return new CoupledZeroLength();
       
     case ELE_TAG_ZeroLengthSection:  
       return new ZeroLengthSection(); 	     
