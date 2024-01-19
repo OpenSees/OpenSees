@@ -43,7 +43,7 @@ public:
     // constructors
     TwoNodeLink(int tag, int dimension, int Nd1, int Nd2,
         const ID &direction, UniaxialMaterial **theMaterials,
-        const Vector y = 0, const Vector x = 0,
+        const Vector &y, const Vector &x,
         const Vector Mratio = 0, const Vector shearDistI = 0,
         int addRayleigh = 0, double mass = 0.0);
     TwoNodeLink();

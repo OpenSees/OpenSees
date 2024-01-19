@@ -119,17 +119,28 @@ void* OPS_TwoNodeLink()
     
     // options
     Vector x(3);
+    Domain *theDomain = OPS_GetDomain();
+    Node *ndI = theDomain->getNode(idata[1]);
+    Node *ndJ = theDomain->getNode(idata[2]);
+    const Vector &end1Crd = ndI->getCrds();
+    const Vector &end2Crd = ndJ->getCrds();	
+    for (int i = 0; i < ndm; i++)
+      x(i) = end2Crd(i) - end1Crd(i);
+    
     Vector y(3);
-    x(0) = 1;
+    y(0) = 0;
     y(1) = 1;
+    y(2) = 0;
+    
     Vector Mratio, sDistI;
     int doRayleigh = 0;
     double mass = 0.0;
+    /*
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new TwoNodeLink(idata[0], ndm, idata[1], idata[2],
-            dirs, &mats[0]);
+			       dirs, &mats[0], y, x);
     }
-    
+    */
     while (OPS_GetNumRemainingInputArgs() > 0) {
         type = OPS_GetString();
         if (strcmp(type, "-orient") == 0) {
@@ -215,7 +226,7 @@ void* OPS_TwoNodeLink()
 // by each object and storing the tags of the end nodes.
 TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2, 
     const ID &direction, UniaxialMaterial **materials,
-    const Vector _y, const Vector _x, const Vector Mr,
+    const Vector &_y, const Vector &_x, const Vector Mr,
     const Vector sdI, int addRay, double m)
     : Element(tag, ELE_TAG_TwoNodeLink),
     numDIM(dim), numDOF(0), connectedExternalNodes(2),
@@ -371,7 +382,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
 TwoNodeLink::TwoNodeLink()
     : Element(0, ELE_TAG_TwoNodeLink),
     numDIM(0), numDOF(0), connectedExternalNodes(2),
-    theMaterials(0), numDIR(0), dir(0), trans(3,3), x(0), y(0),
+    theMaterials(0), numDIR(0), dir(0), trans(3,3), x(3), y(3),
     Mratio(0), shearDistI(0), addRayleigh(0), mass(0.0), L(0.0),
     onP0(false), ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
     theMatrix(0), theVector(0), theLoad(0)
@@ -1319,9 +1330,50 @@ void TwoNodeLink::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
-    Vector xp = end2Crd - end1Crd;
+    Vector xp(3);
+    for (int i = 0; i < numDIM; i++)
+      xp(i) = end2Crd(i) - end1Crd(i);
     L = xp.Norm();
+    xp /= L;
     
+    x /= x.Norm();
+
+    if (numDIM == 1) {
+      x(0) = 1; y(0) = 0;
+      x(1) = 0; y(1) = 1;
+      x(2) = 0; y(2) = 0;
+    }
+    if (numDIM == 2) {
+      if (L > DBL_EPSILON) {
+	if (x != xp) {
+	  opserr << "WARNING TwoNodeLink::setUp() - " 
+		 << "element: " << this->getTag() << endln
+		 << "ignoring nodes and using specified "
+		 << "local x vector to determine orientation\n";
+	}
+      }
+      else {
+	
+      }
+      y(0) = -x(1);
+      y(1) =  x(0);
+      y(2) =     0;      
+    }
+    if (numDIM == 3) {
+      if (L > DBL_EPSILON) {
+	if (x != xp) {
+	  opserr << "WARNING TwoNodeLink::setUp() - " 
+		 << "element: " << this->getTag() << endln
+		 << "ignoring nodes and using specified "
+		 << "local x vector to determine orientation\n";
+	}
+      }
+      else {
+	
+      }
+    }    
+
+    /*
     // setup x and y orientation vectors
     if (L > DBL_EPSILON)  {
         if (x.Size() == 0)  {
@@ -1362,7 +1414,7 @@ void TwoNodeLink::setUp()
             y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
         }
     }
-    
+    */
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
         opserr << "TwoNodeLink::setUp() - "
@@ -1370,7 +1422,7 @@ void TwoNodeLink::setUp()
             << "incorrect dimension of orientation vectors\n";
         exit(-1);
     }
-    
+
     // establish orientation of element for the transformation matrix
     // z = x cross yp
     static Vector z(3);
