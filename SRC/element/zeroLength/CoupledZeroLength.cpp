@@ -332,7 +332,7 @@ CoupledZeroLength::setDomain(Domain *theDomain)
 
     if (diffD != 0.0)
       d0 = new Vector(diffD);
-    
+
     if (diffV != 0)
       v0 = new Vector(diffV);
 }   	 
@@ -673,8 +673,23 @@ CoupledZeroLength::sendSelf(int commitTag, Channel &theChannel)
 	  return res;
 	}
 
+	static Vector data(4);
+	data(0) = fX;
+	data(1) = fY;
+	data(2) = dX;
+	data(3) = dY;	
+	res += theChannel.sendVector(dataTag, commitTag, data);
+	if (res < 0) {
+	  opserr << "CoupledZeroLength::sendSelf -- failed to send Vector data\n";
+	  return res;
+	}
+	
 	res += theMaterial->sendSelf(commitTag, theChannel);
-
+	if (res < 0) {
+	  opserr << "CoupledZeroLength::sendSelf - failed to send material" << endln;
+	  return res;
+	}
+	
 	return res;
 }
 
@@ -689,21 +704,24 @@ CoupledZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
   // internal data with the data in the ID
 
   static ID idData(10);
-
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "CoupledZeroLength::recvSelf -- failed to receive ID data\n";
-			    
     return res;
   }
 
-  res += theChannel.recvMatrix(dataTag, commitTag, transformation);
+  static Vector data(4);
+  res += theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
-    opserr << "CoupledZeroLength::recvSelf -- failed to receive transformation Matrix\n";
-			    
+    opserr << "CoupledZeroLength::recvSelf -- failed to receive Vector data" << endln;
     return res;
   }
+  fX = data(0);
+  fY = data(1);
+  dX = data(2);
+  dY = data(3);    
 
+  
   this->setTag(idData(0));
   dimension = idData(1);
   numDOF = idData(2);
