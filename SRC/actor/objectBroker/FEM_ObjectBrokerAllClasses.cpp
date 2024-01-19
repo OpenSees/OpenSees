@@ -360,6 +360,7 @@
 #include "dispBeamColumn/DispBeamColumn3dThermal.h"
 #include "shell/ShellMITC4.h"
 #include "shell/ShellMITC9.h"
+#include "shell/ShellANDeS.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ShellNLDKGQ.h" //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ShellDKGT.h"
@@ -981,6 +982,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_ShellMITC9:
       return new ShellMITC9();
+
+    case ELE_TAG_ShellANDeS:
+      return new ShellANDeS();
       
     case ELE_TAG_ShellDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
