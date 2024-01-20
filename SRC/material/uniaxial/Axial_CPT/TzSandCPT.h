@@ -3,33 +3,30 @@
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
+** This file contains the class implementation for TzSandCPT          **
+** material. This uniaxial material material represents the           **
+** shaft-load transfer curve (t-z spring) according to the new Unifi- **
+** ed CPT-based method for driven piles in sands. The formulation     ** 
+** incorporates the maximum skin friction and end-bearing CPT values  **
+** based on the new ISO-19901-4.                                      **
 **                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
 **                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+** Written:                                                           **
+**   Carlos Sastre Jurado (carlos.sastre.jurado@vub.be)               **
 **                                                                    **
+**                                                                    **
+** References:                                                        **
+**   - LEHANE, Barry M., et al. A new'unified'CPT-based axial pile    **
+**   capacity design method for driven piles in sand. In: 4th Inter-  **
+**   national Symposium on Frontiers in Offshore Geotechnics          **
+**   (postponed). 2020. p. 462-477.                                   **
+**   - LEHANE, B. M.; LI, Lin; BITTAR, E. J. Cone penetration         **
+**   test-based load-transfer formulations for driven piles in sand.  **
+**   Geotechnique Letters, 2020, 10.4: 568-574.                       **
 ** ****************************************************************** */
 
-// Written: csasj 
-// $Revision: 1.0 $
-// $Date: 26/07/2023 $
-//
-// Description: This file contains the class implementation for TzSandCPT material. 
-//              Calculates the load-transfer curves that can be used to represent 
-//				the axial load-displacement relationship between the pile and the 
-//				soil following the unified CPT method for sands (Lehane et al. 2020).
-//
-// References
-//				Lehane, B. M., Li, L., & Bittar, E. J. (2020). Cone penetration test-based load-transfer formulations for driven piles in sand. 
-//				Geotechnique Letters, 10(4), 568-574.
+// $Revision: 1.0    $
+// $Date: 19/01/2024 $
 
 #ifndef TzSandCPT_h
 #define TzSandCPT_h
@@ -37,15 +34,22 @@
 #include <UniaxialMaterial.h>
 #include <Matrix.h>
 
+// Default values (KN and m default units) as assumed in the formulation
+#define DCPT_DEFAULT  35.7e-3   // diameter of the standard CPT probe = 35.7mm
+#define PA_DEFAULT    100       // atmospheric pressure = 100kPa
+
 class TzSandCPT : public UniaxialMaterial
 {
 public:
 	// Full constructor 
-	TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz);
+	TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz, 
+	double dcpt= DCPT_DEFAULT, double pa= PA_DEFAULT);
 	// Null constructor
 	TzSandCPT();
 	// Destructor
 	~TzSandCPT();
+
+	const char *getClassType(void) const {return "TzSandCPT";};
 
 	// OpenSees methods 
 	int setTrialStrain(double newy, double yRate);
@@ -68,35 +72,39 @@ public:
 	void Print(OPS_Stream& s, int flag = 0);
 
 protected:
-	// Input parameters
-	double q_c;				    // cone resistance (kPa)
-	double sigma_vo_eff;		// vertical effective soil stress (kPa)
-	double diameter;			// pile outside diameter (m)
-	double wall_thickness;	    // pile wall thickness (m)
-	double h_dist;              // distance to the pile tip (m)
-	double delta_h;		        // local pile height (m)
 
 private:
-	// Function to calculate the ultimate shaft capacity for sands
-	void ultimate_capacity(double qc, double Sv, double D, double t, double h);
+	/***     Input parameters      ***/
+	double q_c;				    // cone resistance 
+	double sigma_vo_eff;		// vertical effective soil stress 
+	double diameter;			// pile outside diameter 
+	double wall_thickness;	    // pile wall thickness 
+	double h_dist;              // distance to the pile tip 
+	double delta_h;		        // local pile height 
+	double d_cpt;               // diameter of the standard CPT probe
+	double p_a;                 // atmospheric pressure
 
-	// t-z curve parameters
-	double tau_f;               // ultimate shaft friction (kPa)
-	double w_f;			        // ultimate settlement (m)
+	/***     Axial calculations    ***/
+	double tau_f;               // ultimate shaft friction 
+	double w_f;			        // peak settlement 
+	void ultimate_capacity(
+		double qc, double Sv, double D, double t, double h, 
+		double dcpt, double pa);
+
+	/*** CONVERGED State Variables ***/  
+	double cStrain;				// last ced strain
+	double cStress;				// last ced stress
+	double cTangent;			// last cted tangent
+
+	/*** TRIAL State Variables     ***/
+	double tStrain;				// current t strain
+	double tStress;				// current t stress
+	double tTangent;			// current t tangent
 
 	// Vectors to stock t-z curves 
 	Matrix data_c;              // compression
 	Matrix data_t;              // tension
 	int numSlope;               // number of points
 	int tSlope;
-
-	// Trial values
-	double tStrain;				// current t strain
-	double tStress;				// current t stress
-	double tTangent;			// current t tangent
-	// Commited values  
-	double cStrain;				// last ced strain
-	double cStress;				// last ced stress
-	double cTangent;			// last cted  tangent
 };
 #endif

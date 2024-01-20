@@ -3,31 +3,33 @@
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
+** This file contains the class implementation for TzSandCPT          **
+** material. This uniaxial material material represents the           **
+** shaft-load transfer curve (t-z spring) according to the new Unifi- **
+** ed CPT-based method for driven piles in sands. The formulation     **
+** incorporates the maximum skin friction and end-bearing CPT values  **
+** based on the new ISO-19901-4.                                      **
 **                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
 **                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+** Code written by:                                                   **
+**   Carlos Sastre Jurado (carlos.sastre.jurado@vub.be)               **
 **                                                                    **
+**                                                                    **
+** References:                                                        **
+**   - LEHANE, Barry M., et al. A new'unified'CPT-based axial pile    **
+**   capacity design method for driven piles in sand. In: 4th Inter-  **
+**   national Symposium on Frontiers in Offshore Geotechnics          **
+**   (postponed). 2020. p. 462-477.                                   **
+**   - LEHANE, B. M.; LI, Lin; BITTAR, E. J. Cone penetration         **
+**   test-based load-transfer formulations for driven piles in sand.  **
+**   Geotechnique Letters, 2020, 10.4: 568-574.                       **
 ** ****************************************************************** */
 
-// Written: csasj 
-// $Revision: 1.0 $
-// $Date: 26/07/2023 $
-//
-// Description: This file contains the class implementation for TzSandCPT material. 
-//              Calculates the load-transfer curves that can be used to represent 
-//				the axial load-displacement relationship between the pile and the 
-//				soil following the unified CPT method for sands (Lehane et al. 2020).
+// $Revision: 1.0    $
+// $Date: 19/01/2024 $
 
 #include <elementAPI.h>
+#include <OPS_Globals.h>
 #include "TzSandCPT.h" 
 
 #define _USE_MATH_DEFINES
@@ -41,39 +43,50 @@ using namespace std;
 void*
 OPS_TzSandCPT()
 {
-    // Checking the number of data 
+    // Pointer to a uniaxial material that will be returned
+    UniaxialMaterial *theMaterial = 0;
+
+    int    iData[1];
+    double dData[8];
+    int numData = 1;
+
+    // Checking tag material
+    if (OPS_GetIntInput(&numData, iData) < 0)
+    {
+        opserr << "WARNING invalid uniaxialMaterial TzSandCPT tag" << endln;
+        return 0;
+    }
+
+    // Checking number of arguments
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 6)
     {
         opserr << "WARNING insufficient arguments" << endln;
-        opserr << "Want: uniaxialMaterial TzSandCPT tag? qc? sigma? D? t? h? dz?" << endln;
+        opserr << "Want: uniaxialMaterial TzSandCPT"<< iData[0] << "qc? sigma? D? t? h? dz?" << endln;
         return 0;
     }
-
-    // parse the input line for the material parameters
-
-    int    iData[1];
-    int numData = 1;
-    if (OPS_GetIntInput(&numData, iData) < 0)
+            else if (numdata > 8)
     {
-        opserr << "WARNING invalid int inputs" << endln;
+        opserr << "WARNING number of arguments exceeded" << endln;
+        opserr << "Want: uniaxialMaterial TzSandCPT"<< iData[0] <<"qc? sigma? D? t? h? dz? dcpt? pa?"<< endln;
         return 0;
     }
 
-    double dData[6] = {0,0,0,0,0,0};
-    numData = OPS_GetNumRemainingInputArgs();
-    if (OPS_GetDoubleInput(&numData, dData) < 0)
+    // Checking passed arguments
+    if (numData == 6)
     {
-        opserr << "WARNING invalid double inputs" << endln;
-        return 0;
+        dData[6] = DCPT_DEFAULT;
+        dData[7] = PA_DEFAULT;
     }
-
-    // Creating the new material
-
-    // Pointer to a uniaxial material that will be returned
-    UniaxialMaterial* theMaterial = 0;
-    theMaterial = new TzSandCPT(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5]);
-
+    else if (numData == 7)
+    {
+        dData[7] = PA_DEFAULT;
+    }
+    
+    // Parsing was successful, allocate the material
+    theMaterial = new TzSandCPT(iData[0], 
+        dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
+        dData[6], dData[7]);
 
     if (theMaterial == 0)
     {
@@ -81,19 +94,20 @@ OPS_TzSandCPT()
         return 0;
     }
 
-    // return the material
     return theMaterial;
 }
 
 // Full constructor with data 
-TzSandCPT::TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz)
+TzSandCPT::TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz, double dcpt, double pa)
     :UniaxialMaterial(tag, 0),
     q_c(qc),
     sigma_vo_eff(Sv),
     diameter(D),
     wall_thickness(t),
     h_dist(h),
-    delta_h(dz)
+    delta_h(dz),
+    d_cpt(dcpt),
+    p_a(pa)
 {
     // Initialize all variables are needed for the material algorithm
     this->revertToStart();
@@ -108,7 +122,9 @@ TzSandCPT::TzSandCPT()
     diameter(0.0),
     wall_thickness(0.0),
     h_dist(0.0),
-    delta_h(0.0)
+    delta_h(0.0),
+    d_cpt(0.0),
+    p_a(0.0)    
 {
     // Initialize all variables are needed for the material algorithm
     this->revertToStart();
@@ -128,21 +144,21 @@ TzSandCPT::~TzSandCPT()
  * @returns 
  */
 
-void TzSandCPT::ultimate_capacity(double qc, double Sv, double D, double t, double h)
+void TzSandCPT::ultimate_capacity(double qc, double Sv, double D, double t, double h, 
+    double dcpt, double pa)
 {
     // To avoid numerical problems
-    if (Sv < 1e-6)
+    if (Sv < DBL_EPSILON)
     {
-        Sv = 1e-6;
+        Sv = 1e-9;
     }
-    if (qc < 1e-6)
+    if (qc < DBL_EPSILON)
     {
-        qc = 1e-6;
+        qc = 1e-9;
     }
     double diameter_in = D - 2 * t;  // Inner pile diameter (m)
-    double d_cpt = 35.7e-3;          // CPT diameter probe (m)
     // Plug length ratio
-    double plr = tanh(0.3 * sqrt(diameter_in / d_cpt));
+    double plr = tanh(0.3 * sqrt(diameter_in / dcpt));
     double a_re = 1 - plr * pow(diameter_in / D, 2);
     // Stationary radial effective stress (kPa)
     double dist;
@@ -153,14 +169,12 @@ void TzSandCPT::ultimate_capacity(double qc, double Sv, double D, double t, doub
         dist = 1;
     }
     double sigma_rc = qc / 44 * pow(a_re, 0.3) * pow(dist, -0.4);
-    // Increases in radial effective stress during pile loading (kPa)
-    double sigma_rd = qc / 10 * pow(qc / Sv, -0.33) * (d_cpt / D);
+    // Increases in radial effective stress during pile loading 
+    double sigma_rd = qc / 10 * pow(qc / Sv, -0.33) * (dcpt / D);
     // Ultimate interface friction(degrees)
     double delta_f = 29;  
-    // Ultimate shaft capacity (kPa)
+    // Ultimate shaft capacity
     tau_f = (sigma_rc + sigma_rd) * tan(delta_f * M_PI /180);
-    // atmospheric pressure (kPa)
-    double pa = 100; 
     // Peak settlement
     w_f = sqrt(qc) * pow(Sv, 0.25) * D / pow(pa, 0.75);
 
@@ -254,14 +268,80 @@ TzSandCPT::revertToLastCommit(void)
 int
 TzSandCPT::sendSelf(int cTag, Channel& theChannel)
 {
-    return -1;
+    static Vector data(15);
+    data(0) = this->getTag();
+
+    /***     Input parameters     ***/
+    data(1) = q_c;
+    data(2) = sigma_vo_eff;
+    data(3) = diameter;
+    data(4) = wall_thickness;
+    data(5) = h_dist;
+    data(6) = delta_h;
+    data(7) = d_cpt;
+    data(8) = p_a;
+
+    /***     Axial calculations    ***/
+    data(9) = tau_f;
+    data(10) = w_f;   
+
+    /*** CONVERGED State Variables ***/
+    data(11) = cStrain;
+    data(12) = cStress;
+    data(13) = cTangent;
+
+    /*** Curve parameters          ***/
+    data(14) = numSlope;
+
+     // Data is only sent after convergence
+    int dbTag = this->getDbTag();
+    if (theChannel.sendVector(dbTag, cTag, data) < 0) {
+        opserr << "TzSandCPT::sendSelf() - failed to send data" << endln;
+        return -1;
+    }
+
+    return 0;
 }
 
 int
 TzSandCPT::recvSelf(int cTag, Channel& theChannel,
     FEM_ObjectBroker& theBroker)
 {
-    return -1;
+    int dbTag = this->getDbTag();
+    static Vector data(15);
+
+    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) 
+    {
+        opserr << "TzSandCPT::recvSelf() - failed to receive data" << endln;
+        this->setTag(0);
+        return -1;
+    }
+
+    this->setTag(int(data(0)));
+
+    /***     Input parameters     ***/
+    q_c = data(1);
+    sigma_vo_eff = data(2);
+    diameter = data(3);
+    wall_thickness = data(4);
+    h_dist = data(5);
+    delta_h = data(6);
+    d_cpt = data(7);
+    p_a = data(8);
+
+    /***     Axial calculations    ***/
+    tau_f = data(9);
+    w_f = data(10);   
+
+    /*** CONVERGED State Variables ***/
+    cStrain = data(11);
+    cStress = data(12);
+    cTangent = data(13);
+    
+    /*** Curve parameters          ***/
+    numSlope = data(15);
+
+    return 0;
 }
 
 UniaxialMaterial*
@@ -276,16 +356,34 @@ TzSandCPT::getCopy(void)
 void
 TzSandCPT::Print(OPS_Stream& s, int flag)
 {
-    s << "TzSandCPT, tag: " << this->getTag() << endln;
-    s << "  qc (kPa) : " << q_c << endln;
-    s << "  Vertical effective soil stress (kPa): " << sigma_vo_eff << endln;
-    s << "  Pile diameter (m): " << diameter << endln;
-    s << "  Wall thickness (m): " << wall_thickness << endln;
-    s << "  Distance to pile toe (m): " << h_dist << endln;
-    s << "  Shaft capacity compression (kPa): " << tau_f << endln;
-    s << "  Peak displacement compression (m): " << w_f / 1250 << endln;
-    s << "  Shaft capacity tension (kPa): " << 0.75 * tau_f << endln;
-    s << "  Peak displacement tension (m): " << w_f / 625 << endln;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL)
+    {
+        s << "TzSandCPT, tag: " << this->getTag() << endln;
+        s << "  qc : " << q_c << endln;
+        s << "  vertical effective soil stress : " << sigma_vo_eff << endln;
+        s << "  pile diameter : " << diameter << endln;
+        s << "  wall thickness : " << wall_thickness << endln;
+        s << "  distance to pile toe : " << h_dist << endln;
+        s << "  shaft capacity compression : " << tau_f << endln;
+        s << "  peak settlement : " << w_f / 1250 << endln;
+        s << "  shaft capacity tension : " << 0.75 * tau_f << endln;
+        s << "  peak displacement tension : " << w_f / 625 << endln;
+    }
+    if (flag == OPS_PRINT_PRINTMODEL_JSON)
+    {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"TzSandCPT\", ";
+        s << "\"qc\": " << q_c << ", ";
+        s << "\"vertical effective soil stress\": " << sigma_vo_eff << ", ";
+        s << "\"pile diameter\": " << diameter << ", ";
+        s << "\"wall thickness\": " << wall_thickness << ", ";
+        s << "\"distance to pile toe\": " << h_dist << ", ";
+        s << "\"shaft capacity compression\": " << tau_f << ", ";
+        s << "\"peak settlement\": " << w_f / 1250 << ", ";
+        s << "\"shaft capacity tension\": " << 0.75 * tau_f << ", ";
+        s << "\"peak displacement tension\": " << w_f / 625 << ", ";
+    }
 }
 
 // Load transfer function initialize here
@@ -293,7 +391,7 @@ int
 TzSandCPT::revertToStart(void)
 {
     // -------- Ultimate shaft friction calculation --------
-    ultimate_capacity(q_c, sigma_vo_eff, diameter, wall_thickness, h_dist);
+    ultimate_capacity(q_c, sigma_vo_eff, diameter, wall_thickness, h_dist, d_cpt, p_a);
     //-------- Load transfer function --------
     // Points to discretize the curve
     double v_start = 0.125;  // same initial stifness than API
