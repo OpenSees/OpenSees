@@ -65,11 +65,11 @@ public:
 
 	UniaxialMaterial* getCopy(void);
 
-	int sendSelf(int commitTag, Channel& theChannel);
-	int recvSelf(int commitTag, Channel& theChannel,
+	int sendSelf(int cTag, Channel& theChannel);
+	int recvSelf(int cTag, Channel& theChannel,
 		FEM_ObjectBroker& theBroker);
 
-	void Print(OPS_Stream& s, int flag = 0);
+	void Print(OPS_Stream &s, int flag = 0);
 
 protected:
 

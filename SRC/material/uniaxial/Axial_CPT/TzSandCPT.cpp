@@ -58,21 +58,27 @@ OPS_TzSandCPT()
     }
 
     // Checking number of arguments
-    int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata < 6)
+    numData = OPS_GetNumRemainingInputArgs();
+    if (numData < 6)
     {
         opserr << "WARNING insufficient arguments" << endln;
-        opserr << "Want: uniaxialMaterial TzSandCPT"<< iData[0] << "qc? sigma? D? t? h? dz?" << endln;
+        opserr << "Want: uniaxialMaterial TzSandCPT "<< iData[0] << "qc? sigma? D? t? h? dz?" << endln;
         return 0;
     }
-            else if (numdata > 8)
+            else if (numData > 8)
     {
         opserr << "WARNING number of arguments exceeded" << endln;
-        opserr << "Want: uniaxialMaterial TzSandCPT"<< iData[0] <<"qc? sigma? D? t? h? dz? dcpt? pa?"<< endln;
+        opserr << "Want: uniaxialMaterial TzSandCPT "<< iData[0] <<"qc? sigma? D? t? h? dz? dcpt? pa?"<< endln;
         return 0;
     }
 
-    // Checking passed arguments
+    if (OPS_GetDoubleInput(&numData, dData) != 0) 
+    {
+        opserr << "Invalid #args, want: uniaxialMaterial TzSandCPT " << iData[0] << " qc? sigma? D? t? h? dz? dcpt? pa?" << endln;
+        return 0;
+    }
+
+    // Default variables
     if (numData == 6)
     {
         dData[6] = DCPT_DEFAULT;
@@ -82,7 +88,7 @@ OPS_TzSandCPT()
     {
         dData[7] = PA_DEFAULT;
     }
-    
+
     // Parsing was successful, allocate the material
     theMaterial = new TzSandCPT(iData[0], 
         dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
