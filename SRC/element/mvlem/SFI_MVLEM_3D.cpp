@@ -96,6 +96,12 @@ void* OPS_SFI_MVLEM_3D(void)
 	int* matTags = new int[m];
 
 	NDMaterial** theMaterials = new NDMaterial * [m];
+	for (int i = 0; i < m; i++) {
+		theThickness[i] = 0.0;
+		theWidth[i] = 0.0;
+		matTags[i] = 0;
+		theMaterials[i] = 0;
+	}
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 
