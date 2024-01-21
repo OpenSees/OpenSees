@@ -317,6 +317,7 @@
 #include "gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.h"
 #include "gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.h"
 #include "triangle/Tri31.h"
+#include "fourNodeQuad/SixNodeTri.h"
 
 #include "UWelements/SSPquad.h"
 #include "UWelements/SSPquadUP.h"
@@ -824,7 +825,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new FourNodeQuad(); 	     
       
     case ELE_TAG_Tri31:  
-      return new Tri31(); 	     
+      return new Tri31();
+
+    case ELE_TAG_SixNodeTri:  
+      return new SixNodeTri();      
       
     case ELE_TAG_ElasticBeam2d:
       return new ElasticBeam2d();
