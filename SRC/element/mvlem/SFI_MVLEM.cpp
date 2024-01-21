@@ -89,6 +89,8 @@ void *OPS_SFI_MVLEM(void)
   int *matTags = new int[m];
 
   NDMaterial **theMaterials = new NDMaterial* [m];
+  for (int i = 0; i < m; i++)
+    theMaterials[i] = 0;
 
   numArgs = OPS_GetNumRemainingInputArgs();
   while (numArgs >= (m+1)) {
