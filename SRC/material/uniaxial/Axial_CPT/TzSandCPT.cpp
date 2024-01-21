@@ -28,15 +28,20 @@
 // $Revision: 1.0    $
 // $Date: 19/01/2024 $
 
+#include "TzSandCPT.h" 
 #include <elementAPI.h>
 #include <OPS_Globals.h>
-#include "TzSandCPT.h" 
+
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <float.h>
+#include <Vector.h>
 #include <Matrix.h>
 #include <Channel.h>
-#include <vector>
+
+#include <string.h>
+
 using namespace std;
 
 // Interface function between the interpreter and the TzSandCPT class. 
@@ -272,82 +277,16 @@ TzSandCPT::revertToLastCommit(void)
 }
 
 int
-TzSandCPT::sendSelf(int cTag, Channel& theChannel)
+TzSandCPT::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(15);
-    data(0) = this->getTag();
-
-    /***     Input parameters     ***/
-    data(1) = q_c;
-    data(2) = sigma_vo_eff;
-    data(3) = diameter;
-    data(4) = wall_thickness;
-    data(5) = h_dist;
-    data(6) = delta_h;
-    data(7) = d_cpt;
-    data(8) = p_a;
-
-    /***     Axial calculations    ***/
-    data(9) = tau_f;
-    data(10) = w_f;   
-
-    /*** CONVERGED State Variables ***/
-    data(11) = cStrain;
-    data(12) = cStress;
-    data(13) = cTangent;
-
-    /*** Curve parameters          ***/
-    data(14) = numSlope;
-
-     // Data is only sent after convergence
-    int dbTag = this->getDbTag();
-    if (theChannel.sendVector(dbTag, cTag, data) < 0) {
-        opserr << "TzSandCPT::sendSelf() - failed to send data" << endln;
-        return -1;
-    }
-
-    return 0;
+    return -1;
 }
 
 int
-TzSandCPT::recvSelf(int cTag, Channel& theChannel,
+TzSandCPT::recvSelf(int cTag, Channel &theChannel,
     FEM_ObjectBroker& theBroker)
 {
-    int dbTag = this->getDbTag();
-    static Vector data(15);
-
-    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) 
-    {
-        opserr << "TzSandCPT::recvSelf() - failed to receive data" << endln;
-        this->setTag(0);
-        return -1;
-    }
-
-    this->setTag(int(data(0)));
-
-    /***     Input parameters     ***/
-    q_c = data(1);
-    sigma_vo_eff = data(2);
-    diameter = data(3);
-    wall_thickness = data(4);
-    h_dist = data(5);
-    delta_h = data(6);
-    d_cpt = data(7);
-    p_a = data(8);
-
-    /***     Axial calculations    ***/
-    tau_f = data(9);
-    w_f = data(10);   
-
-    /*** CONVERGED State Variables ***/
-    cStrain = data(11);
-    cStress = data(12);
-    cTangent = data(13);
-    
-    /*** Curve parameters          ***/
-    numSlope = data(15);
-
-    return 0;
+    return -1;
 }
 
 UniaxialMaterial*
@@ -362,34 +301,18 @@ TzSandCPT::getCopy(void)
 void
 TzSandCPT::Print(OPS_Stream& s, int flag)
 {
-    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL)
-    {
-        s << "TzSandCPT, tag: " << this->getTag() << endln;
-        s << "  qc : " << q_c << endln;
-        s << "  vertical effective soil stress : " << sigma_vo_eff << endln;
-        s << "  pile diameter : " << diameter << endln;
-        s << "  wall thickness : " << wall_thickness << endln;
-        s << "  distance to pile toe : " << h_dist << endln;
-        s << "  shaft capacity compression : " << tau_f << endln;
-        s << "  peak settlement : " << w_f / 1250 << endln;
-        s << "  shaft capacity tension : " << 0.75 * tau_f << endln;
-        s << "  peak displacement tension : " << w_f / 625 << endln;
-    }
-    if (flag == OPS_PRINT_PRINTMODEL_JSON)
-    {
-        s << "\t\t\t{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
-        s << "\"type\": \"TzSandCPT\", ";
-        s << "\"qc\": " << q_c << ", ";
-        s << "\"vertical effective soil stress\": " << sigma_vo_eff << ", ";
-        s << "\"pile diameter\": " << diameter << ", ";
-        s << "\"wall thickness\": " << wall_thickness << ", ";
-        s << "\"distance to pile toe\": " << h_dist << ", ";
-        s << "\"shaft capacity compression\": " << tau_f << ", ";
-        s << "\"peak settlement\": " << w_f / 1250 << ", ";
-        s << "\"shaft capacity tension\": " << 0.75 * tau_f << ", ";
-        s << "\"peak displacement tension\": " << w_f / 625 << ", ";
-    }
+    s << "TzSandCPT, tag: " << this->getTag() << endln;
+    s << "  qc : " << q_c << endln;
+    s << "  vertical effective soil stress : " << sigma_vo_eff << endln;
+    s << "  pile diameter : " << diameter << endln;
+    s << "  wall thickness : " << wall_thickness << endln;
+    s << "  distance to pile toe : " << h_dist << endln;
+    s << "  diameter CPT probe : " << d_cpt << endln;
+    s << "  atmospheric pressure : " << p_a << endln;
+    s << "  shaft capacity compression : " << tau_f << endln;
+    s << "  peak settlement : " << w_f / 1250 << endln;
+    s << "  shaft capacity tension : " << 0.75 * tau_f << endln;
+    s << "  peak displacement tension : " << w_f / 625 << endln;
 }
 
 // Load transfer function initialize here
