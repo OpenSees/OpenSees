@@ -69,10 +69,8 @@
 #include <float.h>
 #include <Channel.h>
 #include <Information.h>
-#include <iostream> //Added by AMK for debugging
 #include <elementAPI.h> //Added by AMK to use methods for parsing data line;
 #include <Domain.h> //Added by AMK to get current Domain time;
-using namespace std; //Added by AMK for debugging
 #include <MaterialResponse.h>
 #include <Vector.h>
 
@@ -151,7 +149,7 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
   ecminP = 0.0;
   deptP = 0.0;
 
-	sigCr = fabs(sigCr);
+  //sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -179,9 +177,9 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
 	
 	
 	//Change inputs into the proper sign convention:
-		fc = -1.0*fabs(fc); 
-		epsshu = -1.0*fabs(epsshu);
-		epscru = 1.0*fabs(epscru); 
+		fc = -fabs(fc); 
+		epsshu = -fabs(epsshu);
+		epscru = fabs(epscru); 
 }
 
 TDConcrete::TDConcrete(void):
@@ -318,7 +316,7 @@ TDConcrete::setTrialStrain(double trialStrain, double strainRate)
         		//	eps_cr = setCreepStrain(t,sig);
         		//}
         		//if (t < tcast) {
-        		//cout << "\nWARNING: TDConcrete loaded before tcast, creep and shrinkage not calculated";
+        		//opserr << "\nWARNING: TDConcrete loaded before tcast, creep and shrinkage not calculated" << endln;
         		//	eps_sh = epsP_sh;
         		//	eps_cr = epsP_cr;
         		//	eps_m = eps_total - eps_cr - eps_sh;
@@ -482,7 +480,8 @@ TDConcrete::commitState(void)
 	epsP_m = eps_m;
     if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
         double s = fabs(eps_m/fc)*Ec;
-        cout<<"\n          Strain Compression Limit Exceeded: "<<s<<"fc'";
+	s = 0.5*fabs(fc/Ec);
+	opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
     }
 	
 	//Cracking flags:
@@ -560,7 +559,7 @@ TDConcrete::revertToStart(void)
 int 
 TDConcrete::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(11);
+  static Vector data(14);
   data(0) =ft;    
   data(1) =Ec; 
   data(2) =beta;   
@@ -572,7 +571,10 @@ TDConcrete::sendSelf(int commitTag, Channel &theChannel)
   data(8) =epscra; 
   data(9) =epscrd;     
   data(10) = this->getTag();
-
+  data(11) = fc;
+  data(12) = tcast;
+  data(13) = count;
+  
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcrete::sendSelf() - failed to sendSelf\n";
     return -1;
@@ -585,7 +587,7 @@ TDConcrete::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(11);
+  static Vector data(14);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcrete::recvSelf() - failed to recvSelf\n";
@@ -603,7 +605,10 @@ TDConcrete::recvSelf(int commitTag, Channel &theChannel,
   epscra = data(8); 
   epscrd = data(9);   
   this->setTag(data(10));
-
+  fc = data(11);
+  tcast = data(12);
+  count = (int)data(13);
+  
   e = eP;
   sig = sigP;
   eps = epsP;

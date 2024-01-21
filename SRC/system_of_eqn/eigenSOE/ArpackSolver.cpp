@@ -342,8 +342,12 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     default:
       opserr << "unrecognised return value\n";
     }
-    
+
+    if (eigenvalues != 0) 
+      delete [] eigenvalues;
     eigenvalues = 0;
+    if (eigenvectors != 0)
+      delete [] eigenvectors;
     eigenvectors = 0;
     
     return info;

@@ -198,7 +198,7 @@ const double  FourNodeTetrahedron::sg[] = { 0.25 } ;
 const double  FourNodeTetrahedron::wg[] = { 0.166666666666666667 } ;
 
   
-static Matrix B(NumStressComponents,NumDOFsPerNode) ;
+Matrix FourNodeTetrahedron::B(NumStressComponents,NumDOFsPerNode) ;
 
 //null constructor
 FourNodeTetrahedron::FourNodeTetrahedron( ) 

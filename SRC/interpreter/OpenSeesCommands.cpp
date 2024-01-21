@@ -89,7 +89,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <KrylovAccelerator.h>
 #include <AcceleratedNewton.h>
 #include <RaphsonAccelerator.h>
+#include <SecantAccelerator1.h>
 #include <SecantAccelerator2.h>
+#include <SecantAccelerator3.h>
 #include <PeriodicAccelerator.h>
 #include <LineSearch.h>
 #include <InitialInterpolatedLineSearch.h>
@@ -1068,6 +1070,8 @@ int OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data
     DL_Interpreter* interp = cmds->getInterpreter();
     return interp->setDouble(data);
 }
+
+
 
 const char * OPS_GetString(void)
 {
@@ -2149,7 +2153,7 @@ int OPS_printA()
 
 	    const char* filename = OPS_GetString();
 	    if (outputFile.setFile(filename) != 0) {
-		opserr << "print <filename> .. - failed to open file: " << filename << endln;
+		opserr << "printA <filename> .. - failed to open file: " << filename << endln;
 		return -1;
 	    }
 	    output = &outputFile;
@@ -2231,7 +2235,7 @@ int OPS_printB()
 	    const char* filename = OPS_GetString();
 
 	    if (outputFile.setFile(filename) != 0) {
-		opserr << "print <filename> .. - failed to open file: " << filename << endln;
+		opserr << "printB <filename> .. - failed to open file: " << filename << endln;
 		return -1;
 	    }
 	    output = &outputFile;
@@ -2252,14 +2256,14 @@ int OPS_printB()
 	    if (size > 0) {
 		double &ptr = b(0);
 		if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
-		    opserr << "WARNING: printb - failed to set output\n";
+		    opserr << "WARNING: printB - failed to set output\n";
 		    return -1;
 		}
 	    } else {
             size = 0;
             double *ptr2 = 0;
             if (OPS_SetDoubleOutput(&size, ptr2, false) < 0) {
-                opserr << "WARNING: printA - failed to set output\n";
+                opserr << "WARNING: printB - failed to set output\n";
                 return -1;
             }
 	    }
@@ -2270,7 +2274,76 @@ int OPS_printB()
         int size = 0;
         double *ptr = 0;
         if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
-            opserr << "WARNING: printA - failed to set output\n";
+            opserr << "WARNING: printB - failed to set output\n";
+            return -1;
+        }
+    }
+
+    // close the output file
+    outputFile.close();
+
+    return 0;
+}
+
+int OPS_printX()
+{
+    if (cmds == 0) return 0;
+    FileStream outputFile;
+    OPS_Stream *output = &opserr;
+
+    LinearSOE* theSOE = cmds->getSOE();
+    //StaticIntegrator* theStaticIntegrator = cmds->getStaticIntegrator();
+    //TransientIntegrator* theTransientIntegrator = cmds->getTransientIntegrator();
+
+    bool ret = false;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* flag = OPS_GetString();
+
+	if ((strcmp(flag,"file") == 0) || (strcmp(flag,"-file") == 0)) {
+	    const char* filename = OPS_GetString();
+
+	    if (outputFile.setFile(filename) != 0) {
+		opserr << "printX <filename> .. - failed to open file: " << filename << endln;
+		return -1;
+	    }
+	    output = &outputFile;
+	} else if((strcmp(flag,"ret") == 0) || (strcmp(flag,"-ret") == 0)) {
+	    ret = true;
+	}
+    }
+    if (theSOE != 0) {
+      /*
+	if (theStaticIntegrator != 0) {
+	  theStaticIntegrator->formUnbalance();
+	} else if (theTransientIntegrator != 0) {
+	  theTransientIntegrator->formUnbalance();
+	}
+      */
+	Vector &x = const_cast<Vector&>(theSOE->getX());
+	if (ret) {
+	    int size = x.Size();
+	    if (size > 0) {
+		double &ptr = x(0);
+		if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
+		    opserr << "WARNING: printX - failed to set output\n";
+		    return -1;
+		}
+	    } else {
+            size = 0;
+            double *ptr2 = 0;
+            if (OPS_SetDoubleOutput(&size, ptr2, false) < 0) {
+                opserr << "WARNING: printX - failed to set output\n";
+                return -1;
+            }
+	    }
+	} else {
+	    *output << x;
+	}
+    } else {
+        int size = 0;
+        double *ptr = 0;
+        if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
+            opserr << "WARNING: printX - failed to set output\n";
             return -1;
         }
     }
@@ -2537,6 +2610,9 @@ void* OPS_SecantNewton()
     int incrementTangent = CURRENT_TANGENT;
     int iterateTangent = CURRENT_TANGENT;
     int maxDim = 3;
+    int numTerms = 2;
+    bool cutOut = false;
+    double R[2];
     while (OPS_GetNumRemainingInputArgs() > 0) {
 	const char* flag = OPS_GetString();
 
@@ -2566,12 +2642,26 @@ void* OPS_SecantNewton()
 	    }
 	} else if (strcmp(flag,"-maxDim") == 0 && OPS_GetNumRemainingInputArgs()>0) {
 
-	    maxDim = atoi(flag);
 	    int numdata = 1;
 	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
-		opserr<< "WARNING KrylovNewton failed to read maxDim\n";
+		opserr<< "WARNING SecantNewton failed to read maxDim\n";
 		return 0;
 	    }
+	} else if (strcmp(flag,"-numTerms") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+
+	    int numdata = 1;
+	    if (OPS_GetIntInput(&numdata, &numTerms) < 0) {
+		opserr<< "WARNING SecantNewton failed to read maxDim\n";
+		return 0;
+	    }
+	} else if ((strcmp(flag,"-cutOut") == 0 || strcmp(flag,"-cutout") == 0)
+		   && OPS_GetNumRemainingInputArgs() > 1) {
+	  int numdata = 2;
+	  if (OPS_GetDoubleInput(&numdata, R) < 0) {
+	    opserr << "WARNING SecantNewton failed to read cutOut values R1 and R2" << endln;
+	    return 0;
+	  }
+	  cutOut = true;
 	}
     }
 
@@ -2581,8 +2671,22 @@ void* OPS_SecantNewton()
       return 0;
     }
 
-    Accelerator *theAccel;
-    theAccel = new SecantAccelerator2(maxDim, iterateTangent);
+    Accelerator *theAccel = 0;
+    if (numTerms <= 1)
+      if (cutOut)
+	theAccel = new SecantAccelerator1(maxDim, iterateTangent, R[0], R[1]);
+      else
+	theAccel = new SecantAccelerator1(maxDim, iterateTangent);
+    if (numTerms >= 3)
+      if (cutOut)
+	theAccel = new SecantAccelerator3(maxDim, iterateTangent, R[0], R[1]);
+      else
+	theAccel = new SecantAccelerator3(maxDim, iterateTangent);
+    if (numTerms == 2)
+      if (cutOut)
+	theAccel = new SecantAccelerator2(maxDim, iterateTangent, R[0], R[1]);
+      else
+	theAccel = new SecantAccelerator2(maxDim, iterateTangent);            
 
     return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
 }
@@ -2909,10 +3013,14 @@ int OPS_modalDamping()
     }
 
     int numModes = OPS_GetNumRemainingInputArgs();
-    if (numModes != 1 && numModes != numEigen) {
-      opserr << "WARNING modalDamping - same #damping factors as modes must be specified\n";
-      opserr << "                     - same damping ratio will be applied to all modes\n";
+    if (numModes != 1 && numModes < numEigen) {
+      opserr << "WARNING modalDamping - fewer damping factors than modes were specified\n";
+      opserr << "                     - zero damping will be applied to un-specified modes" << endln;
     }
+    if (numModes > numEigen) {
+      opserr << "WARNING modalDamping - more damping factors than modes were specifed\n";
+      opserr << "                     - ignoring additional damping factors" << endln;
+    }    
 
     double factor;
     Vector modalDampingValues(numEigen);
@@ -2921,21 +3029,24 @@ int OPS_modalDamping()
     //
     // read in values and set factors
     //
-    if (numModes == numEigen) {
-      for (int i = 0; i < numEigen; i++) {
-	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	  opserr << "WARNING modalDamping - could not read factor for mode " << i+1 << endln;
-	  return -1;
-	}
-	modalDampingValues(i) = factor;
-      }
-    } else {
+    if (numModes == 1) {
       if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
 	opserr << "WARNING modalDamping - could not read factor for all modes \n";
 	return -1;
       }
       for (int i = 0; i < numEigen; i++)
 	modalDampingValues(i) = factor;
+    }
+    else {
+      for (int i = 0; i < numModes; i++) {
+	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	  opserr << "WARNING modalDamping - could not read factor for mode " << i+1 << endln;
+	  return -1;
+	}
+	modalDampingValues(i) = factor;
+      }
+      for (int i = numModes; i < numEigen; i++)
+	modalDampingValues(i) = 0.0;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -2950,7 +3061,7 @@ int OPS_modalDampingQ()
 {
     if (cmds == 0) return 0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
-	opserr << "WARNING modalDamping ?factor - not enough arguments to command\n";
+	opserr << "WARNING modalDampingQ ?factor - not enough arguments to command\n";
 	return -1;
     }
 
@@ -2958,20 +3069,45 @@ int OPS_modalDampingQ()
     EigenSOE* theEigenSOE = cmds->getEigenSOE();
 
     if (numEigen == 0 || theEigenSOE == 0) {
-	opserr << "WARNING modalDamping - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
+	opserr << "WARNING modalDampingQ - eigen command needs to be called first - NO MODAL DAMPING APPLIED\n ";
 	return -1;
     }
 
+    int numModes = OPS_GetNumRemainingInputArgs();
+    if (numModes != 1 && numModes < numEigen) {
+      opserr << "WARNING modalDampingQ - fewer damping factors than modes were specified\n";
+      opserr << "                      - zero damping will be applied to un-specified modes" << endln;
+    }
+    if (numModes > numEigen) {
+      opserr << "WARNING modalDampingQ - more damping factors than modes were specifed\n";
+      opserr << "                      - ignoring additional damping factors" << endln;
+    }
+    
     double factor;
-    int numdata = 1;
-    if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
-	opserr << "WARNING modalDamping - could not read factor for all modes \n";
-	return -1;
-    }
-
     Vector modalDampingValues(numEigen);
-    for (int i=0; i<numEigen; i++) {
+    int numdata = 1;
+
+    //
+    // read in values and set factors
+    //
+    if (numModes == 1) {
+      if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	opserr << "WARNING modalDampingQ - could not read factor for all modes \n";
+	return -1;
+      }
+      for (int i = 0; i < numEigen; i++)
 	modalDampingValues(i) = factor;
+    }
+    else {
+      for (int i = 0; i < numModes; i++) {
+	if (OPS_GetDoubleInput(&numdata, &factor) < 0) {
+	  opserr << "WARNING modalDampingQ - could not read factor for mode " << i+1 << endln;
+	  return -1;
+	}
+	modalDampingValues(i) = factor;
+      }
+      for (int i = numModes; i < numEigen; i++)
+	modalDampingValues(i) = 0.0;
     }
 
     Domain* theDomain = OPS_GetDomain();
@@ -3521,7 +3657,7 @@ void* OPS_MumpsSolver() {
     return theSOE;
 #endif
 #endif
-
+    return 0;
 }
 
 // Sensitivity:BEGIN /////////////////////////////////////////////

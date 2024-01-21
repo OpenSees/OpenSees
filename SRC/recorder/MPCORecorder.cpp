@@ -115,6 +115,12 @@ while opensees is writing data. Warning: this is a new feature in hdf5 version 1
 #include <limits>
 #include <stdint.h>
 
+// for parallel
+#ifdef _PARALLEL_PROCESSING
+extern bool OPS_PARTITIONED;
+#include <mpi.h>
+#endif // _PARALLEL_PROCESSING
+
 /*************************************************************************************
 
 macros
@@ -4437,14 +4443,40 @@ int MPCORecorder::record(int commitTag, double timeStamp)
 	/*
 	check domain changed and perform related initializations
 	*/
+	auto lambdaHasDomainChanged = [this]() -> int {
+		int new_stamp = m_data->info.domain->hasDomainChanged();
+#if defined(_PARALLEL_PROCESSING)
+		int pid = 0;
+		int np = 1;
+		MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+		MPI_Comm_size(MPI_COMM_WORLD, &np);
+		// quick return for 1 process
+		if (np == 1) {
+			return new_stamp;
+		}
+		// if the model has not been partitioned, the recorder is only on P0!
+		// return otherwise the MPI_Allreduce will hang...
+		if (pid == 0 && !OPS_PARTITIONED) {
+			return new_stamp;
+		}
+		// get the maximum domain change stamp from all processes
+		int new_stamp_max = 0;
+		if (MPI_Allreduce(&new_stamp, &new_stamp_max, 1, MPI_INT, MPI_MAX, MPI_COMM_WORLD) != MPI_SUCCESS) {
+			opserr << "MPCORecorder::lambdaHasDomainChanged() Warning: MPI_Reduce failed to get max domain changed stamp\n";
+			return new_stamp;
+		}
+		new_stamp = new_stamp_max;
+#endif // defined(_PARALLEL_PROCESSING)
+		return new_stamp;
+	};
 	bool rebuild_model = false;
 	if (!m_data->first_domain_changed_done) {
-		m_data->info.current_model_stage_id = m_data->info.domain->hasDomainChanged();
+		m_data->info.current_model_stage_id = lambdaHasDomainChanged();
 		m_data->first_domain_changed_done = true;
 		rebuild_model = true;
 	}
 	else {
-		int new_domain_stamp = m_data->info.domain->hasDomainChanged();
+		int new_domain_stamp = lambdaHasDomainChanged();
 		if (new_domain_stamp != m_data->info.current_model_stage_id) {
 			m_data->info.current_model_stage_id = new_domain_stamp;
 			rebuild_model = true;
@@ -5345,6 +5377,13 @@ int MPCORecorder::writeSections()
 							/*
 							error checks
 							*/
+							// this workouround can pass some of the following checks:
+							// Sometimes in OpenSees objects open the xml tags even if they will not provide responses...
+							// in this case it can happen that a section opens the tags before checking if it really has fibers (see SectioinAggreator for example)
+							if (trial_sec_id.size() != trial_fiberdata.size()) trial_sec_id.resize(trial_fiberdata.size());
+							if (trial_gp_id.size() != trial_fiberdata.size()) trial_gp_id.resize(trial_fiberdata.size());
+							if (trial_dummy_flag.size() != trial_fiberdata.size()) trial_dummy_flag.resize(trial_fiberdata.size());
+							// these are errors that should never happen. we exit if they happen
 							if ((trial_fiberdata.size() > 0) && (trial_fiberdata.size() != trial_sec_id.size())) {
 								// this should never happen!
 								opserr << "MPCORecorder FATAL Error: trial_fiberdata.size() != trial_sec_id.size()\n";

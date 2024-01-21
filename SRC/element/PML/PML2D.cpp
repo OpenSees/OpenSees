@@ -66,6 +66,10 @@ void* OPS_PML2D()
   }
   
   double dData[PML2D_NUM_PROPS]; num = PML2D_NUM_PROPS;
+  // make last two indicies zero 
+  dData[PML2D_NUM_PROPS-2] = 0.0;
+  dData[PML2D_NUM_PROPS-1] = 0.0;
+
   if (OPS_GetDoubleInput(&num,dData) < 0) {
     opserr<<"WARNING: invalid double data\n";
     return 0;
@@ -77,6 +81,7 @@ void* OPS_PML2D()
 //static data
 Matrix PML2D::tangent;
 Vector PML2D::resid(PML2D_NUM_DOF);
+int PML2D::eleCount = 0;
     
 //null constructor
 PML2D::PML2D( ) 
@@ -97,14 +102,16 @@ PML2D::PML2D(int tag,
   :Element(tag, ELE_TAG_PML2D),
    connectedExternalNodes(PML2D_NUM_NODES)
 {
+  eleCount++;
+  if (eleCount == 1) {
+    opserr << "Perfectly Matched Layer 2D (PML) element -  Written: W. Zhang, E. Taciroglu, L. Chen, P. Arduino, UCLA, UCLA, U.Washington, U.Washington\n ";
+  }
   for (int i=0; i<PML2D_NUM_NODES; i++) {
     connectedExternalNodes(i) = nodeTags[i];
     nodePointers[i] = 0;
   } 
   for (int i=0; i<PML2D_NUM_PROPS; i++)
     props[i] = eleData[i];
-  for (int i=0; i<PML2D_NUM_PROPS; i++)
-    opserr << props[i] << "\n";
 }
 
 //destructor 
@@ -144,10 +151,12 @@ void  PML2D::setDomain( Domain *theDomain )
   int NPROPS = PML2D_NUM_PROPS;
   int MCRD = 2; 
   int NNODE = PML2D_NUM_NODES;
+  double G[PML2D_NUM_DOF * PML2D_NUM_DOF];
 
   pml2d_(K, 
        C, 
-       M,   
+       M,  
+       G, 
        &NDOFEL, 
        props, 
        &NPROPS, 

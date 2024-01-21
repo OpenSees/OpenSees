@@ -749,9 +749,6 @@ ElasticForceBeamColumn2d::getInitialFlexibility(Matrix &fe)
   double L = crdTransf->getInitialLength();
   double oneOverL  = 1.0/L;  
   
-  // Flexibility from elastic interior
-  beamIntegr->addElasticFlexibility(L, fe);
-  
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
   

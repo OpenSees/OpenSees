@@ -46,9 +46,8 @@
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_MultiplierMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
@@ -57,7 +56,7 @@ OPS_MultiplierMaterial(void)
   int    iData[2];
 
   int argc = OPS_GetNumRemainingInputArgs();
-  if (argc < 2) {
+  if (argc < 3) {
     opserr << "WARNING insufficient args, uniaxialMaterial Multiplier $tag $otherTag $multiplier" << endln;
     return 0;
   }

@@ -47,6 +47,10 @@
 double SurfaceLoad :: oneOverRoot3 = 1.0/sqrt(3.0);
 double SurfaceLoad :: GsPts[4][2];
 
+Matrix SurfaceLoad::tangentStiffness(SL_NUM_DOF, SL_NUM_DOF);
+Vector SurfaceLoad::internalForces(SL_NUM_DOF);
+Vector SurfaceLoad::theVector(SL_NUM_DOF);
+
 #include <elementAPI.h>
 static int num_SurfaceLoad = 0;
 
@@ -96,8 +100,6 @@ OPS_SurfaceLoad(void)
 SurfaceLoad::SurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, int Nd4, double pressure)
  :Element(tag,ELE_TAG_SurfaceLoad),     
    myExternalNodes(SL_NUM_NODE),
-   tangentStiffness(SL_NUM_DOF, SL_NUM_DOF),
-   internalForces(SL_NUM_DOF),
    g1(SL_NUM_NDF), 
    g2(SL_NUM_NDF),
    myNhat(SL_NUM_NDF), 
@@ -131,8 +133,6 @@ SurfaceLoad::SurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, int Nd4, double pre
 SurfaceLoad::SurfaceLoad()
   :Element(0,ELE_TAG_SurfaceLoad),     
    	myExternalNodes(SL_NUM_NODE),
-   	tangentStiffness(SL_NUM_DOF, SL_NUM_DOF),
-   	internalForces(SL_NUM_DOF),
    	g1(SL_NUM_NDF), 
    	g2(SL_NUM_NDF),
    	myNhat(SL_NUM_NDF), 
@@ -354,16 +354,6 @@ SurfaceLoad::sendSelf(int commitTag, Channel &theChannel)
     return -2;
   }
 
-  res = theChannel.sendVector(dataTag, commitTag, internalForces);
-  if (res < 0) {
-    opserr <<"WARNING SurfaceLoad::sendSelf() - " << this->getTag() << " failed to send internalForces\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, theVector);
-  if (res < 0) {
-    opserr <<"WARNING SurfaceLoad::sendSelf() - " << this->getTag() << " failed to send theVector\n";
-    return -2;
-  }
   res = theChannel.sendVector(dataTag, commitTag, g1);
   if (res < 0) {
     opserr <<"WARNING SurfaceLoad::sendSelf() - " << this->getTag() << " failed to send g1\n";
@@ -438,16 +428,6 @@ SurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theB
     return -2;
   }
 
-  res = theChannel.recvVector(dataTag, commitTag, internalForces);
-  if (res < 0) {
-    opserr <<"WARNING SurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive internalForces\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, theVector);
-  if (res < 0) {
-    opserr <<"WARNING SurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive theVector\n";
-    return -2;
-  }
   res = theChannel.recvVector(dataTag, commitTag, g1);
   if (res < 0) {
     opserr <<"WARNING SurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive g1\n";

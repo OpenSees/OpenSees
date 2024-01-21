@@ -120,6 +120,8 @@ WeakRock::~WeakRock() {}
  * @return double
  */
 double WeakRock::getTangent(double strain) {
+  strain = fabs(strain);
+  
   double yA = pow(pur / (2 * pow(yrm, 0.25) * Kir), 1.333);
   double yu = 16.0 * yrm;
 
@@ -131,7 +133,7 @@ double WeakRock::getTangent(double strain) {
     return pur / (8 * yrm) * pow(strain / yrm, -0.75);
   }
 
-  return 0.001 * Kir;
+  return 0;
 }
 
 /**
@@ -141,21 +143,24 @@ double WeakRock::getTangent(double strain) {
  * @return double
  */
 double WeakRock::getStress(double strain) {
+  int signStrain = (strain > 0.0) ? 1 : -1;
+  strain = signStrain * strain;
+
   double yA = pow(pur / (2 * pow(yrm, 0.25) * Kir), 1.333);
   double yu = 16.0 * yrm;
 
+  double stress = 0.0;
+
   if (strain < yA) {
-    return Kir * strain;
+    stress = Kir * strain;
+  } else if (strain < yu) {
+    stress = pur * 0.5 * pow(strain / yrm, 0.25);
+  } else {
+    stress = pur;
   }
 
-  if (strain < yu) {
-    return pur / 2 * pow(strain / yrm, 0.25);
-  }
-
-  return pur;
+  return signStrain * stress;
 }
-
-double WeakRock::getEnergy(double strain) { return 0.0; }
 
 double WeakRock::getYieldStrain(void) { return 0.0; }
 

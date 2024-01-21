@@ -131,8 +131,7 @@ class MembranePlateFiberSectionThermal : public SectionForceDeformation{
 
     static ID array ; 
 
-	double   sTData[2];   //Data for section resisting force due to thermal load 
-	Vector  *sT;  //  Pointer to sTData
+	Vector  sT;  //  Pointer to sTData
 	double  ThermalElongation[5]; // Temperature dependent elasticity modulus
 	int countnGauss;
 	double ThermalGradientShink;

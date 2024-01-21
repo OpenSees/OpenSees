@@ -596,6 +596,17 @@ static PyObject *Py_ops_geomTransf(PyObject *self, PyObject *args)
 
     return wrapper->getResults();
 }
+static PyObject* Py_ops_damping(PyObject* self, PyObject* args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_Damping() < 0) {
+        opserr << (void*)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
 
 static PyObject *Py_ops_beamIntegration(PyObject *self, PyObject *args)
 {
@@ -970,6 +981,18 @@ static PyObject *Py_ops_printB(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_printB() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_printX(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_printX() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -2886,6 +2909,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("patch", &Py_ops_patch);
     addCommand("layer", &Py_ops_layer);
     addCommand("geomTransf", &Py_ops_geomTransf);
+    addCommand("damping", &Py_ops_damping);//Tang.S
     addCommand("beamIntegration", &Py_ops_beamIntegration);
     addCommand("loadConst", &Py_ops_loadConst);
     addCommand("eleLoad", &Py_ops_eleLoad);
@@ -2918,6 +2942,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("printModel", &Py_ops_print);
     addCommand("printA", &Py_ops_printA);
     addCommand("printB", &Py_ops_printB);
+    addCommand("printX", &Py_ops_printX);
     addCommand("printGID", &Py_ops_printGID);
     addCommand("testNorm", &Py_ops_getCTestNorms);
     addCommand("testNorms", &Py_ops_getCTestNorms);

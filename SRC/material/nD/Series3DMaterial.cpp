@@ -131,6 +131,12 @@ void *OPS_Series3DMaterial(void)
 	// info
 	const char* info = "nDMaterial Series3D $tag    $tag1 $tag2 ... $tagN   <-weights $w1 $w2 ... $wN> <-maxIter $maxIter> <-relTol $relTol> <-absTol $absTol> <-verbose>";
 
+	// utility for parsing
+	static std::vector<char> my_buffer(1024);
+	auto get_string_input = []() -> std::string {
+		return OPS_GetStringFromAll(my_buffer.data(), static_cast<int>(my_buffer.size()));
+	};
+
 	// convert string to int
 	auto to_int = [](const std::string& x, bool& ok) {
 		std::size_t pos;
@@ -184,7 +190,7 @@ void *OPS_Series3DMaterial(void)
 	bool verbose = false;
 	while (argc > 0) {
 		// read next word
-		std::string word = OPS_GetString();
+		std::string word = get_string_input();
 		++counter;
 		argc = OPS_GetNumRemainingInputArgs();
 		// check tag first
@@ -239,7 +245,7 @@ void *OPS_Series3DMaterial(void)
 				opserr << "nDMaterial Series3D Error: -maxIter keyword provided without a value.\n";
 				return nullptr;
 			}
-			word = OPS_GetString();
+			word = get_string_input();
 			++counter;
 			argc = OPS_GetNumRemainingInputArgs();
 			max_iter = std::abs(to_int(word, ok));
@@ -253,7 +259,7 @@ void *OPS_Series3DMaterial(void)
 				opserr << "nDMaterial Series3D Error: -relTol keyword provided without a value.\n";
 				return nullptr;
 			}
-			word = OPS_GetString();
+			word = get_string_input();
 			++counter;
 			argc = OPS_GetNumRemainingInputArgs();
 			rel_tol = std::abs(to_double(word, ok));
@@ -267,7 +273,7 @@ void *OPS_Series3DMaterial(void)
 				opserr << "nDMaterial Series3D Error: -absTol keyword provided without a value.\n";
 				return nullptr;
 			}
-			word = OPS_GetString();
+			word = get_string_input();
 			++counter;
 			argc = OPS_GetNumRemainingInputArgs();
 			abs_tol = std::abs(to_double(word, ok));
@@ -356,6 +362,7 @@ Series3DMaterial::Series3DMaterial(
 			"Make sure the materials are properly defined.\n";
 		exit(-1);
 	}
+	m_tangent = m_initial_tangent;
 }
 
 Series3DMaterial::Series3DMaterial()
@@ -806,6 +813,7 @@ int Series3DMaterial::getResponse(int responseID, Information& matInformation)
 			matInformation.theVector->Zero();
 			double wsum = 0.0;
 			for (std::size_t i = 0; i < m_materials.size(); ++i) {
+				if (wres->responses[i] == nullptr) continue;
 				if (wres->responses[i]->getResponse() < 0) continue;
 				const Vector& idata = wres->responses[i]->getInformation().getData();
 				if (idata.Size() == matInformation.theVector->Size()) {

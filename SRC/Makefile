@@ -161,7 +161,6 @@ TCL_COMMAND_LIBS = $(FE)/domain/pattern/TclPatternCommand.o \
 	$(FE)/element/brick/TclBrickCommand.o \
 	$(FE)/element/feap/TclFeapElementCommand.o \
 	$(FE)/material/nD/feap/TclFeapMaterialCommand.o \
-	$(FE)/element/beamWithHinges/TclBeamWithHingesBuilder.o \
 	$(FE)/element/frictionBearing/frictionModel/TclModelBuilderFrictionModelCommand.o \
 	$(FE)/element/PFEMElement/TclModelBuilder_addPFEMElement.o \
 	$(FE)/material/uniaxial/TclModelBuilderUniaxialMaterialCommand.o \
@@ -590,6 +589,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/elastomericBearing/ElastomericX.o \
 	$(FE)/element/frictionBearing/MultiFP2d.o \
 	$(FE)/element/frictionBearing/TripleFrictionPendulum.o \
+	$(FE)/element/frictionBearing/TripleFrictionPendulumX.o \
 	$(FE)/element/frictionBearing/TFP_Bearing.o \
 	$(FE)/element/frictionBearing/TFP_Bearing2d.o \
 	$(FE)/element/frictionBearing/TPB1D.o \
@@ -655,6 +655,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
 	$(FE)/element/mvlem/MVLEM_3D.o \
 	$(FE)/element/mvlem/SFI_MVLEM_3D.o \
+	$(FE)/element/mvlem/E_SFI_MVLEM_3D.o \
+	$(FE)/element/mvlem/E_SFI.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
@@ -669,9 +671,13 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
 	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
 	$(FE)/element/PML/pml_3d.o \
-        $(FE)/element/PML/PML3D.o \
-        $(FE)/element/PML/pml_2d.o \
-        $(FE)/element/PML/PML2D.o \
+    $(FE)/element/PML/PML3D.o \
+    $(FE)/element/PML/pml_2d.o \
+    $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML2D_3.o \
+	$(FE)/element/PML/PML2D_5.o \
+	$(FE)/element/PML/PML2D_12.o \
+	$(FE)/element/PML/PML2DVISCOUS.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
@@ -753,6 +759,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HardeningMaterial2.o \
 	$(FE)/material/uniaxial/ParallelMaterial.o \
 	$(FE)/material/uniaxial/SeriesMaterial.o \
+	$(FE)/material/uniaxial/FlagShapeMaterial.o \
 	$(FE)/material/uniaxial/Neoprene.o \
 	$(FE)/material/uniaxial/ASD_SMA_3K.o \
 	$(FE)/material/uniaxial/Concrete01.o \
@@ -819,10 +826,12 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Dodd_Restrepo.o \
 	$(FE)/material/uniaxial/DoddRestr.o \
 	$(FE)/material/uniaxial/STEELDR.o \
+	$(FE)/material/uniaxial/ContinuumUniaxial.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
 	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
 	$(FE)/material/uniaxial/MinMaxMaterial.o \
+	$(FE)/material/uniaxial/PenaltyMaterial.o \
 	$(FE)/material/uniaxial/TensionOnlyMaterial.o \
 	$(FE)/material/uniaxial/SimpleFractureMaterial.o \
 	$(FE)/material/uniaxial/InitStrainMaterial.o \
@@ -848,16 +857,22 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
         $(FE)/material/uniaxial/ConcreteZBH_smoothed.o \
 	$(FE)/material/uniaxial/HyperbolicGapMaterial.o \
 	$(FE)/material/uniaxial/ImpactMaterial.o \
+	$(FE)/material/uniaxial/Hertzdamp.o \
+	$(FE)/material/uniaxial/JankowskiImpact.o \
+	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/Ratchet.o \
+	$(FE)/material/uniaxial/GMG_CyclicReinforcedConcrete.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
 	$(FE)/material/uniaxial/SPSW02.o \
 	$(FE)/material/uniaxial/TDConcrete.o \
+	$(FE)/material/uniaxial/TDConcreteNL.o \
 	$(FE)/material/uniaxial/TDConcreteEXP.o \
 	$(FE)/material/uniaxial/TDConcreteMC10.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
-	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
+	$(FE)/material/uniaxial/CreepMaterial.o \
 	$(FE)/material/uniaxial/DegradingPinchedBW.o \
 	$(FE)/material/uniaxial/HystereticPoly.o \
 	$(FE)/material/uniaxial/HystereticSmooth.o \
@@ -880,6 +895,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/backbone/ReeseSandBackbone.o \
 	$(FE)/material/uniaxial/backbone/ManderBackbone.o \
 	$(FE)/material/uniaxial/backbone/RaynorBackbone.o \
+	$(FE)/material/uniaxial/backbone/CappedBackbone.o \
+	$(FE)/material/uniaxial/backbone/LinearCappedBackbone.o \
 	$(FE)/material/uniaxial/stiffness/StiffnessDegradation.o \
 	$(FE)/material/uniaxial/stiffness/ConstantStiffnessDegradation.o \
 	$(FE)/material/uniaxial/stiffness/DuctilityStiffnessDegradation.o \
@@ -932,10 +949,14 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
-       $(FE)/element/PML/pml_3d.o \
-       $(FE)/element/PML/PML3D.o \
-       $(FE)/element/PML/pml_2d.o \
-       $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/pml_3d.o \
+    $(FE)/element/PML/PML3D.o \
+    $(FE)/element/PML/pml_2d.o \
+    $(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML2D_3.o \
+	$(FE)/element/PML/PML2D_5.o \
+	$(FE)/element/PML/PML2D_12.o \
+	$(FE)/element/PML/PML2DVISCOUS.o \
 	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
@@ -1295,6 +1316,8 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/RectangularSeries.o \
 	$(FE)/domain/pattern/ConstantSeries.o \
 	$(FE)/domain/pattern/TrigSeries.o \
+	$(FE)/domain/pattern/MPAccSeries.o \
+	$(FE)/domain/pattern/RampSeries.o \
 	$(FE)/domain/pattern/PathSeries.o \
 	$(FE)/domain/pattern/PeerMotion.o \
 	$(FE)/domain/pattern/PeerNGAMotion.o \
@@ -1336,6 +1359,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/analysis/TransientDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/SubstructuringAnalysis.o \
 	$(FE)/analysis/analysis/ResponseSpectrumAnalysis.o \
+	$(FE)/analysis/analysis/SDFAnalysis.o \
 	$(FE)/analysis/algorithm/SolutionAlgorithm.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/EquiSolnAlgo.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Linear.o \

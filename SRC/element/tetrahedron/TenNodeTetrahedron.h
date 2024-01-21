@@ -45,14 +45,6 @@
 #include <Node.h>
 #include <NDMaterial.h>
 
-
-//Number of Gauss-points
-#define NumGaussPoints 4
-#define NumNodes 10
-#define NumDOFsPerNode 3
-#define NumStressComponents 6
-#define NumDOFsTotal NumNodes*NumDOFsPerNode
-
 class TenNodeTetrahedron : public Element {
 
 public :
@@ -142,6 +134,13 @@ public :
 
 private :
 
+  //Number of Gauss-points
+  enum {NumGaussPoints=4};
+  enum {NumNodes=10};
+  enum {NumDOFsPerNode=3};
+  enum {NumStressComponents=6};
+  enum {NumDOFsTotal=NumNodes*NumDOFsPerNode};
+  
     // Routine to compute shape functions and their derivatives. These get stored as follows. 
     // for node n:
     //   shp[0][n] --> dN_n / d x, 
@@ -179,7 +178,8 @@ private :
     static Vector resid ;
     static Matrix mass ;
     static Matrix damping ;
-
+  static Matrix B;
+  
     //quadrature data
     static const double root3 ;
     static const double one_over_root3 ;
@@ -212,7 +212,6 @@ private :
     Vector initDisp[NumNodes];
 
     int do_update;
-
 } ;
 
 #endif

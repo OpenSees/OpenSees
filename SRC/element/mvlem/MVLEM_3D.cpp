@@ -2814,7 +2814,7 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "globalMy_l");
 		s.tag("ResponseType", "globalMz_l");
 
-		return theResponse = new ElementResponse(this, 1, Vector(24));
+		theResponse = new ElementResponse(this, 1, Vector(24));
 
 	}
 
@@ -2847,7 +2847,7 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "localMy_l");
 		s.tag("ResponseType", "localMz_l");
 
-		return theResponse = new ElementResponse(this, 2, Vector(24));
+		theResponse = new ElementResponse(this, 2, Vector(24));
 
 	}
 
@@ -2856,7 +2856,7 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "fi");
 
-		return theResponse = new ElementResponse(this, 3, 0.0);
+		theResponse = new ElementResponse(this, 3, 0.0);
 	}
 
 	// Fiber strain

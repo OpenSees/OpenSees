@@ -105,7 +105,7 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
     //
 
     int constrainedDOFs = 3;
-    if (crdR.Size() == 2)
+    if (crdR.Size() == 2 && perpPlaneConstrained != 2)
       constrainedDOFs = 1;
 	
     // create the ID to identify the constrained dof 
@@ -155,6 +155,14 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	    if (deltaX != 0.0) {
 	      opserr << "RigidDiaphragm::RigidDiaphragm - constrained node " << ndC << " not in same X-plane as node " << nR << "\n";
 	    }
+	  }
+	  if (perpPlaneConstrained == 2) {
+	    id(0) = 0; id(1) = 1; id(2) = 2;
+	    double deltaX = crdC(0) - crdR(0);
+	    double deltaY = crdC(1) - crdR(1);	    
+	    // set up transformation matrix
+	    mat(0,2) = -deltaY;
+	    mat(1,2) = deltaX;	    
 	  }
 	}
 	else if ((nodeC->getNumberDOF() == 6) && (crdC.Size() == 3)){

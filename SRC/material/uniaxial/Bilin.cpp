@@ -40,6 +40,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <cfloat>
+#include <MaterialResponse.h>
 
 #include <OPS_Globals.h>
 
@@ -984,9 +985,11 @@ Bilin::setTrialStrain(double strain, double strainRate)
       // When we reach post capping slope goes to zero due to residual
       if(fyNeg>=KNeg*My_neg) { // If strength drops below residual
         fyNeg = KNeg*My_neg;
-        alphaNeg = 10^(-4);
+        //alphaNeg = 10^(-4); // This evaluates to -10 (bitwise XOR)
+	alphaNeg = 1.0e-4;
         fCapRefNeg = fyNeg;
-        capSlopeNeg = -pow(10.0,-6);
+        //capSlopeNeg = -pow(10.0,-6);
+	capSlopeNeg = -1.0e-6;
         flagstopdeg = 1;
       } else { //% Keep updating the post capping slope
 
@@ -999,7 +1002,8 @@ Bilin::setTrialStrain(double strain, double strainRate)
         capSlopeNeg = capSlopeNeg/(1+nFactor*(1-capSlopeNeg));  // Updated: Filipe Ribeiro and Andre Barbosa
         
 		if(capSlopeNeg >=0){
-          capSlopeNeg = -pow(10.0,-6);
+		  //capSlopeNeg = -pow(10.0,-6);
+		  capSlopeNeg = -1.0e-6;
         }
       }
      
@@ -1050,9 +1054,11 @@ Bilin::setTrialStrain(double strain, double strainRate)
       //   %If post capping slope goes to zero due to residual:
       if(fyPos <= KPos*My_pos) {  //% If yield Strength Pos drops below residual
         fyPos = KPos*My_pos;
-        alphaPos = pow(10.0,-4);
+        //alphaPos = pow(10.0,-4);
+        alphaPos = 1.0e-4;
         fCapRefPos = fyPos;
-        capSlope = -pow(10.0,-6);
+        //capSlope = -pow(10.0,-6);
+        capSlope = -1.0e-6;
         flagstopdeg = 1;              
       }  else { //% keep updating
 
@@ -1065,7 +1071,8 @@ Bilin::setTrialStrain(double strain, double strainRate)
         capSlope = capSlope/(1+nFactor*(1-capSlope));   // Updated: Filipe Ribeiro and Andre Barbosa
         
 		if(capSlope >=0) {
-          capSlope = -pow(10.0,-6);
+		  //capSlope = -pow(10.0,-6);
+		  capSlope = -1.0e-6;
         }
       }
       dyPos = fyPos/Ke;
@@ -1969,6 +1976,37 @@ Bilin::Print(OPS_Stream &s, int flag)
         s << "\"PDNeg\": " << PDNeg << ", ";
         s << "\"nFactor\": " << nFactor << "}";
     }
+}
+
+Response *Bilin::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
+{
+  // See if the response is one of the defaults
+  Response *theResponse = UniaxialMaterial::setResponse(argv, argc, theOutput);
+
+  if (theResponse != 0)
+    return theResponse;
+
+  if (strcmp(argv[0], "RSE") == 0)
+  {
+    theOutput.tag("ResponseType", "RSE");
+    theResponse = new MaterialResponse(this, 101, CRSE);
+  }
+
+  theOutput.endTag();
+  return theResponse;
+}
+
+int Bilin::getResponse(int responseID, Information &matInformation)
+{
+  if (responseID == 101)
+  {
+    matInformation.setDouble(CRSE);
+  }
+  else
+  {
+    return UniaxialMaterial::getResponse(responseID, matInformation);
+  }
+  return 0;
 }
 
 //my functions
