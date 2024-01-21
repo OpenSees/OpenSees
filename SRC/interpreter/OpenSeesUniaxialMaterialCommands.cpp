@@ -275,6 +275,8 @@ void *OPS_Masonryt(void);
 
 void* OPS_Ratchet(void); // Yi Xiao
 
+void* OPS_TzSandCPT(void);
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -625,7 +627,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
-  
+  uniaxialMaterialsMap.insert(std::make_pair("TzSandCPT", &OPS_TzSandCPT));
+
   return 0;
 }
 
