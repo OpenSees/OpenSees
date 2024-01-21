@@ -110,6 +110,11 @@ void* OPS_MVLEM_3D(void)
 	UniaxialMaterial** theMaterialsConcrete = new UniaxialMaterial * [m];
 	UniaxialMaterial** theMaterialsSteel = new UniaxialMaterial * [m];
 	UniaxialMaterial** theMaterialsShear = new UniaxialMaterial * [1];
+	for (int i = 0; i < m; i++) {
+		theMaterialsConcrete[i] = 0;
+		theMaterialsSteel[i] = 0;
+	}
+	theMaterialsShear[0] = 0;
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 	while (numArgs > 0) {
