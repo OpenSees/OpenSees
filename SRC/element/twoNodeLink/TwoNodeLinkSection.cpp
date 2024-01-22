@@ -513,6 +513,10 @@ int TwoNodeLinkSection::update()
     ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
     //ub = (Tlb*Tgl)*ug;
     //ubdot = (Tlb*Tgl)*ugdot;
+
+    // MHS hack
+    ub(0) /= L;
+    ub(1) /= L;
     
     errCode += theSection->setTrialSectionDeformation(ub);
     
@@ -528,8 +532,16 @@ const Matrix& TwoNodeLinkSection::getTangentStiff()
     int numDIR = theSection->getOrder();
     
     // get resisting force and stiffness
-    const Matrix &kb = theSection->getSectionTangent();
+    //const Matrix &kb = theSection->getSectionTangent();
     qb = theSection->getStressResultant();
+
+    // MHS hack
+    Matrix kb = theSection->getSectionTangent();
+    kb(0,0) /= L;
+    kb(1,1) /= L;
+    //kb(2,2) *= L;
+
+    //qb(2) *= L;
     
     // transform stiffness from basic to local system
     Matrix kl(numDOF,numDOF);
@@ -679,6 +691,9 @@ const Vector& TwoNodeLinkSection::getResistingForce()
     
     // get resisting force
     qb = theSection->getStressResultant();
+
+    // MHS hack
+    //qb(2) *= L;
     
     // determine resisting force in local system
     Vector ql(numDOF);
@@ -1217,7 +1232,7 @@ void TwoNodeLinkSection::setTranLocalBasic()
   // resize transformation matrix and zero it
   Tlb.resize(numDIR,numDOF);
   Tlb.Zero();
-  
+
   for (int i=0; i<numDIR; i++)  {
     int dirID = this->getDirID(type(i));
 
@@ -1270,7 +1285,7 @@ int TwoNodeLinkSection::getDirID(int sectionCode)
     dirID = 4;
     break;
   case SECTION_RESPONSE_MZ:
-    dirID = 5;
+    dirID = numDIM == 2 ? 2 : 5;
     break;
   default:
     break;
