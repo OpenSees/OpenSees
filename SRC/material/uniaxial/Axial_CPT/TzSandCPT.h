@@ -26,7 +26,7 @@
 ** ****************************************************************** */
 
 // $Revision: 1.0    $
-// $Date: 19/01/2024 $
+// $Date: 23/01/2024 $
 
 #ifndef TzSandCPT_h
 #define TzSandCPT_h
@@ -34,16 +34,14 @@
 #include <UniaxialMaterial.h>
 #include <Matrix.h>
 
-// Default values (KN and m default units) as assumed in the formulation
-#define DCPT_DEFAULT  35.7e-3   // diameter of the standard CPT probe = 35.7mm
-#define PA_DEFAULT    100       // atmospheric pressure = 100kPa
+#define IFA_DEFAULT   29.        // interface friction angle=29deg
 
 class TzSandCPT : public UniaxialMaterial
 {
 public:
 	// Full constructor 
 	TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz, 
-	double dcpt= DCPT_DEFAULT, double pa= PA_DEFAULT);
+	double dcpt, double pa, double d_f = IFA_DEFAULT);
 	// Null constructor
 	TzSandCPT();
 	// Destructor
@@ -81,15 +79,16 @@ private:
 	double wall_thickness;	    // pile wall thickness 
 	double h_dist;              // distance to the pile tip 
 	double delta_h;		        // local pile height 
-	double d_cpt;               // diameter of the standard CPT probe
+	double d_cpt;               // diameter of the standard CPT probe (35.7mm)
 	double p_a;                 // atmospheric pressure
+	double delta_f;             // interface friction angle (degrees)
 
 	/***     Axial calculations    ***/
 	double tau_f;               // ultimate shaft friction 
 	double w_f;			        // peak settlement 
 	void ultimate_capacity(
 		double qc, double Sv, double D, double t, double h, 
-		double dcpt, double pa);
+		double dcpt, double pa, double d_f);
 
 	/*** CONVERGED State Variables ***/  
 	double cStrain;				// last ced strain

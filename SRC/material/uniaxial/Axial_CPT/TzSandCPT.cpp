@@ -52,7 +52,7 @@ OPS_TzSandCPT()
     UniaxialMaterial *theMaterial = 0;
 
     int    iData[1];
-    double dData[8];
+    double dData[9];
     int numData = 1;
 
     // Checking tag material
@@ -64,40 +64,35 @@ OPS_TzSandCPT()
 
     // Checking number of arguments
     numData = OPS_GetNumRemainingInputArgs();
-    if (numData < 6)
+    if (numData < 8)
     {
         opserr << "WARNING insufficient arguments" << endln;
-        opserr << "Want: uniaxialMaterial TzSandCPT "<< iData[0] << "qc? sigma? D? t? h? dz?" << endln;
+        opserr << "Want: uniaxialMaterial TzSandCPT "<< iData[0] << "qc? sigma? D? t? h? dz? dcpt? pa?" << endln;
         return 0;
     }
-            else if (numData > 8)
+            else if (numData > 9)
     {
         opserr << "WARNING number of arguments exceeded" << endln;
-        opserr << "Want: uniaxialMaterial TzSandCPT "<< iData[0] <<"qc? sigma? D? t? h? dz? dcpt? pa?"<< endln;
+        opserr << "Want: uniaxialMaterial TzSandCPT "<< iData[0] <<"qc? sigma? D? t? h? dz? dcpt? pa? delta_f?"<< endln;
         return 0;
     }
 
     if (OPS_GetDoubleInput(&numData, dData) != 0) 
     {
-        opserr << "Invalid #args, want: uniaxialMaterial TzSandCPT " << iData[0] << " qc? sigma? D? t? h? dz? dcpt? pa?" << endln;
+        opserr << "Invalid #args, want: uniaxialMaterial TzSandCPT " << iData[0] << " qc? sigma? D? t? h? dz? dcpt? pa? delta_f?" << endln;
         return 0;
     }
 
     // Default variables
-    if (numData == 6)
+    if (numData == 8)
     {
-        dData[6] = DCPT_DEFAULT;
-        dData[7] = PA_DEFAULT;
-    }
-    else if (numData == 7)
-    {
-        dData[7] = PA_DEFAULT;
+        dData[8] = IFA_DEFAULT;
     }
 
     // Parsing was successful, allocate the material
     theMaterial = new TzSandCPT(iData[0], 
         dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], 
-        dData[6], dData[7]);
+        dData[6], dData[7], dData[8]);
 
     if (theMaterial == 0)
     {
@@ -109,7 +104,7 @@ OPS_TzSandCPT()
 }
 
 // Full constructor with data 
-TzSandCPT::TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz, double dcpt, double pa)
+TzSandCPT::TzSandCPT(int tag, double qc, double Sv, double D, double t, double h, double dz, double dcpt, double pa, double d_f)
     :UniaxialMaterial(tag, 0),
     q_c(qc),
     sigma_vo_eff(Sv),
@@ -118,7 +113,8 @@ TzSandCPT::TzSandCPT(int tag, double qc, double Sv, double D, double t, double h
     h_dist(h),
     delta_h(dz),
     d_cpt(dcpt),
-    p_a(pa)
+    p_a(pa), 
+    delta_f(d_f)
 {
     // Initialize all variables are needed for the material algorithm
     this->revertToStart();
@@ -135,7 +131,8 @@ TzSandCPT::TzSandCPT()
     h_dist(0.0),
     delta_h(0.0),
     d_cpt(0.0),
-    p_a(0.0)    
+    p_a(0.0),
+    delta_f(0.0)
 {
     // Initialize all variables are needed for the material algorithm
     this->revertToStart();
@@ -156,7 +153,7 @@ TzSandCPT::~TzSandCPT()
  */
 
 void TzSandCPT::ultimate_capacity(double qc, double Sv, double D, double t, double h, 
-    double dcpt, double pa)
+    double dcpt, double pa, double d_f)
 {
     // To avoid numerical problems
     if (Sv < DBL_EPSILON)
@@ -181,11 +178,9 @@ void TzSandCPT::ultimate_capacity(double qc, double Sv, double D, double t, doub
     }
     double sigma_rc = qc / 44 * pow(a_re, 0.3) * pow(dist, -0.4);
     // Increases in radial effective stress during pile loading 
-    double sigma_rd = qc / 10 * pow(qc / Sv, -0.33) * (dcpt / D);
-    // Ultimate interface friction(degrees)
-    double delta_f = 29;  
+    double sigma_rd = qc / 10 * pow(qc / Sv, -0.33) * (dcpt / D); 
     // Ultimate shaft capacity
-    tau_f = (sigma_rc + sigma_rd) * tan(delta_f * M_PI /180);
+    tau_f = (sigma_rc + sigma_rd) * tan(d_f * M_PI /180);
     // Peak settlement
     w_f = sqrt(qc) * pow(Sv, 0.25) * D / pow(pa, 0.75);
 
@@ -309,6 +304,7 @@ TzSandCPT::Print(OPS_Stream& s, int flag)
     s << "  distance to pile toe : " << h_dist << endln;
     s << "  diameter CPT probe : " << d_cpt << endln;
     s << "  atmospheric pressure : " << p_a << endln;
+    s << "  interface friction angle : " << delta_f << endln;
     s << "  shaft capacity compression : " << tau_f << endln;
     s << "  peak settlement : " << w_f / 1250 << endln;
     s << "  shaft capacity tension : " << 0.75 * tau_f << endln;
@@ -320,7 +316,7 @@ int
 TzSandCPT::revertToStart(void)
 {
     // -------- Ultimate shaft friction calculation --------
-    ultimate_capacity(q_c, sigma_vo_eff, diameter, wall_thickness, h_dist, d_cpt, p_a);
+    ultimate_capacity(q_c, sigma_vo_eff, diameter, wall_thickness, h_dist, d_cpt, p_a, delta_f);
     //-------- Load transfer function --------
     // Points to discretize the curve
     double v_start = 0.125;  // same initial stifness than API
