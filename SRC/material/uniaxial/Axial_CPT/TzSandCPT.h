@@ -12,7 +12,7 @@
 **                                                                    **
 **                                                                    **
 ** Written:                                                           **
-**   Carlos Sastre Jurado (carlos.sastre.jurado@vub.be)               **
+**   csasj  (carlos.sastre.jurado@vub.be)                             **
 **                                                                    **
 **                                                                    **
 ** References:                                                        **
