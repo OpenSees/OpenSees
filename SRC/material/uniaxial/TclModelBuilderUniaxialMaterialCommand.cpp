@@ -204,6 +204,7 @@ extern void *OPS_KikuchiAikenLRB(void);
 extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
 extern void* OPS_Ratchet(void); // Yi Xiao
 extern void* OPS_TzSandCPT(void); 
+extern void* OPS_QbSandCPT(void);
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -2125,6 +2126,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
 
+    }
+
+    if (strcmp(argv[1], "QbSandCPT") == 0) {
+        void* theMat = OPS_QbSandCPT();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
     }
 
       // Fedeas
