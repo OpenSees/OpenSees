@@ -42,6 +42,7 @@ loads hdf5 shared library at runtime. if uncommented, hdf5 will be linked static
 */
 #ifndef _HDF5
 #define MPCO_HDF5_LOADED_AT_RUNTIME
+#define H5_BUILT_AS_DYNAMIC_LIB
 #endif // !_HDF5 
 
 /* if hdf5 is loaded at runtime, this macro makes the process of loading hdf5 verbose */
@@ -1265,6 +1266,10 @@ namespace mpco {
 			ReactionMomentIncludingInertia,
 			RayleighForce,
 			RayleighMoment,
+			UnbalancedForce,
+			UnbalancedForceIncludingInertia,
+			UnbalancedMoment,
+			UnbalancedMomentIncludingInertia,
 			Pressure,
 			ModesOfVibration,
 			ModesOfVibrationRotational,
@@ -1797,6 +1802,113 @@ namespace mpco {
 			}
 		protected:
 			virtual int getReactionFlag()const { return 2; }
+		};
+
+		class ResultRecorderUnbalancedForce : public ResultRecorder
+		{
+		public:
+			ResultRecorderUnbalancedForce(const mpco::ProcessInfo& info)
+				: ResultRecorder(info)
+			{
+				std::stringstream ss_buffer;
+				ss_buffer << "MODEL_STAGE[" << info.current_model_stage_id << "]/RESULTS/ON_NODES/UNBALANCED_FORCE";
+				m_result_name = ss_buffer.str();
+				m_result_display_name = "Unbalanced Force";
+				m_num_components = 0;
+				if (m_ndim == 1) {
+					m_components_name = "Fx";
+					m_num_components = 1;
+					m_result_data_type = mpco::ResultDataType::Scalar;
+				}
+				else if (m_ndim == 2) {
+					m_components_name = "Fx,Fy";
+					m_num_components = 2;
+					m_result_data_type = mpco::ResultDataType::Vectorial;
+				}
+				else if (m_ndim == 3) {
+					m_components_name = "Fx,Fy,Fz";
+					m_num_components = 3;
+					m_result_data_type = mpco::ResultDataType::Vectorial;
+				}
+				m_dimension = "F";
+				m_description = "Nodal unbalanced force field";
+				m_result_type = mpco::ResultType::Generic;
+			}
+		protected:
+			virtual void bufferResponse(mpco::ProcessInfo& info, std::vector<Node*>& nodes, std::vector<double>& buffer)const {
+				for (size_t i = 0; i < nodes.size(); i++)
+					utils::misc::bufferNodeResponseVec3u(i, m_ndim, nodes[i]->getUnbalancedLoad(), buffer);
+			}
+		};
+
+		class ResultRecorderUnbalancedMoment : public ResultRecorder
+		{
+		public:
+			ResultRecorderUnbalancedMoment(const mpco::ProcessInfo& info)
+				: ResultRecorder(info)
+			{
+				std::stringstream ss_buffer;
+				ss_buffer << "MODEL_STAGE[" << info.current_model_stage_id << "]/RESULTS/ON_NODES/UNBALANCED_MOMENT";
+				m_result_name = ss_buffer.str();
+				m_result_display_name = "Unbalanced Moment";
+				m_num_components = 0;
+				if (m_ndim == 2) {
+					m_components_name = "Mz";
+					m_num_components = 1;
+					m_result_data_type = mpco::ResultDataType::Scalar;
+				}
+				else {
+					m_components_name = "Mx,My,Mz";
+					m_num_components = 3;
+					m_result_data_type = mpco::ResultDataType::Vectorial;
+				}
+				m_dimension = "F*L";
+				m_description = "Nodal unbalanced moment field";
+				m_result_type = mpco::ResultType::Generic;
+			}
+		protected:
+			virtual void bufferResponse(mpco::ProcessInfo& info, std::vector<Node*>& nodes, std::vector<double>& buffer)const {
+				for (size_t i = 0; i < nodes.size(); i++)
+					utils::misc::bufferNodeResponseVec3r(i, m_ndim, nodes[i]->getUnbalancedLoad(), buffer);
+			}
+		};
+
+		class ResultRecorderUnbalancedForceIncIntertia : public ResultRecorderUnbalancedForce
+		{
+		public:
+			ResultRecorderUnbalancedForceIncIntertia(const mpco::ProcessInfo& info)
+				: ResultRecorderUnbalancedForce(info)
+			{
+				std::stringstream ss_buffer;
+				ss_buffer << "MODEL_STAGE[" << info.current_model_stage_id << "]/RESULTS/ON_NODES/UNBALANCED_FORCE_INCLUDING_INERTIA";
+				m_result_name = ss_buffer.str();
+				m_result_display_name = "Unbalanced Force Including Inertia";
+				m_description = "Nodal unbalanced force field including inertia";
+			}
+		protected:
+			virtual void bufferResponse(mpco::ProcessInfo& info, std::vector<Node*>& nodes, std::vector<double>& buffer)const {
+				for (size_t i = 0; i < nodes.size(); i++)
+					utils::misc::bufferNodeResponseVec3u(i, m_ndim, nodes[i]->getUnbalancedLoadIncInertia(), buffer);
+			}
+		};
+
+		class ResultRecorderUnbalancedMomentIncIntertia : public ResultRecorderUnbalancedMoment
+		{
+		public:
+			ResultRecorderUnbalancedMomentIncIntertia(const mpco::ProcessInfo& info)
+				: ResultRecorderUnbalancedMoment(info)
+			{
+				std::stringstream ss_buffer;
+				ss_buffer << "MODEL_STAGE[" << info.current_model_stage_id << "]/RESULTS/ON_NODES/UNBALANCED_MOMENT_INCLUDING_INERTIA";
+				m_result_name = ss_buffer.str();
+				m_result_display_name = "Unbalanced Moment Including Inertia";
+				m_description = "Nodal unbalanced moment field including inertia";
+			}
+		protected:
+			virtual void bufferResponse(mpco::ProcessInfo& info, std::vector<Node*>& nodes, std::vector<double>& buffer)const {
+				for (size_t i = 0; i < nodes.size(); i++)
+					utils::misc::bufferNodeResponseVec3r(i, m_ndim, nodes[i]->getUnbalancedLoadIncInertia(), buffer);
+			}
 		};
 
 		class ResultRecorderVelocity : public ResultRecorder
@@ -5867,6 +5979,18 @@ int MPCORecorder::initNodeRecorders()
 		case mpco::NodalResultType::RayleighMoment:
 			m_data->nodal_recorders[rtype] = new mpco::node::ResultRecorderReactionMomentRayleigh(m_data->info);
 			break;
+		case mpco::NodalResultType::UnbalancedForce:
+			m_data->nodal_recorders[rtype] = new mpco::node::ResultRecorderUnbalancedForce(m_data->info);
+			break;
+		case mpco::NodalResultType::UnbalancedMoment:
+			m_data->nodal_recorders[rtype] = new mpco::node::ResultRecorderUnbalancedMoment(m_data->info);
+			break;
+		case mpco::NodalResultType::UnbalancedForceIncludingInertia:
+			m_data->nodal_recorders[rtype] = new mpco::node::ResultRecorderUnbalancedForceIncIntertia(m_data->info);
+			break;
+		case mpco::NodalResultType::UnbalancedMomentIncludingInertia:
+			m_data->nodal_recorders[rtype] = new mpco::node::ResultRecorderUnbalancedMomentIncIntertia(m_data->info);
+			break;
 		case mpco::NodalResultType::Velocity:
 			m_data->nodal_recorders[rtype] = new mpco::node::ResultRecorderVelocity(m_data->info);
 			break;
@@ -6616,6 +6740,14 @@ void* OPS_MPCORecorder()
 					nodal_results_requests.push_back(mpco::NodalResultType::RayleighForce);
 				else if (strcmp(data, "rayleighMoment") == 0)
 					nodal_results_requests.push_back(mpco::NodalResultType::RayleighMoment);
+				else if (strcmp(data, "unbalancedForce") == 0)
+					nodal_results_requests.push_back(mpco::NodalResultType::UnbalancedForce);
+				else if (strcmp(data, "unbalancedMoment") == 0)
+					nodal_results_requests.push_back(mpco::NodalResultType::UnbalancedMoment);
+				else if (strcmp(data, "unbalancedForceIncludingInertia") == 0)
+					nodal_results_requests.push_back(mpco::NodalResultType::UnbalancedForceIncludingInertia);
+				else if (strcmp(data, "unbalancedMomentIncludingInertia") == 0)
+					nodal_results_requests.push_back(mpco::NodalResultType::UnbalancedMomentIncludingInertia);
 				else if (strcmp(data, "pressure") == 0)
 					nodal_results_requests.push_back(mpco::NodalResultType::Pressure);
 				else if (strcmp(data, "modesOfVibration") == 0)
