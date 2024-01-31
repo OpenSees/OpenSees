@@ -234,14 +234,66 @@ QbSandCPT::revertToLastCommit(void)
 int
 QbSandCPT::sendSelf(int cTag, Channel& theChannel)
 {
-    return -1;
+    static Vector data(10);
+    data(0) = this->getTag();
+
+    /***     Input parameters     ***/
+    data(1) = q_p;
+    data(2) = diameter;
+    data(3) = wall_thickness;
+    data(4) = d_cpt;
+
+    /***     Axial calculations    ***/
+    data(5) = q_b01;
+
+    /*** CONVERGED State Variables ***/
+    data(6) = cStrain;
+    data(7) = cStress;
+    data(8) = cTangent;
+
+    /*** Curve parameters          ***/
+    data(9) = numSlope;
+
+    if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)
+        opserr << "QbSandCPT::sendSelf() - failed to send data" << endln;
+
+    return 0;
 }
 
 int
 QbSandCPT::recvSelf(int cTag, Channel& theChannel,
     FEM_ObjectBroker& theBroker)
 {
-    return -1;
+    int dbTag = this->getDbTag();
+    static Vector data(10);
+
+    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)
+    {
+        opserr << "QbSandCPT::recvSelf() - failed to receive data" << endln;
+        this->setTag(0);
+        return -1;
+    }
+
+    this->setTag(int(data(0)));
+
+    /***     Input parameters     ***/
+    q_p = data(1);
+    diameter = data(2);
+    wall_thickness = data(3);
+    d_cpt = data(4);
+
+    /***     Axial calculations    ***/
+    q_b01 = data(5);
+
+    /*** CONVERGED State Variables ***/
+    cStrain = data(6);
+    cStress = data(7);
+    cTangent = data(8);
+
+    /*** Curve parameters          ***/
+    numSlope = data(9);
+
+    return 0;
 }
 
 UniaxialMaterial*
