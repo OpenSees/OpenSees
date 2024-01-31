@@ -180,6 +180,7 @@ void* OPS_OriginCentered();
 void* OPS_HookGap();
 void* OPS_FRPConfinedConcrete02();
 void* OPS_pyUCLA();
+void* OPS_ElasticMaterialThermal();
 void* OPS_Steel01Thermal();
 void* OPS_Steel02Thermal();
 void* OPS_ConcretewBeta();
@@ -520,6 +521,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("PYUCLA", &OPS_pyUCLA));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticThermal", &OPS_ElasticMaterialThermal));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("Steel01Thermal", &OPS_Steel01Thermal));
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel02Thermal", &OPS_Steel02Thermal));
