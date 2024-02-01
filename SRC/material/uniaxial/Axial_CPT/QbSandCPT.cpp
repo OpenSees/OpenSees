@@ -25,17 +25,22 @@
 **   Geotechnique Letters, 2020, 10.4: 568-574.                       **
 ** ****************************************************************** */
 
-// $Revision: 1.0    $
-// $Date: 23/01/2024 $
+// $Revision: 1.1    $
+// $Date: 01/02/2024 $
 
 #include <elementAPI.h>
 #include "QbSandCPT.h" 
+#include <OPS_Globals.h>
 
 #define _USE_MATH_DEFINES
 #include <math.h>
+#include <float.h>
+#include <vector>
 #include <Matrix.h>
 #include <Channel.h>
-#include <vector>
+
+#include <string.h>
+
 using namespace std;
 
 // Interface function between the interpreter and the QbSandCPT class. 
