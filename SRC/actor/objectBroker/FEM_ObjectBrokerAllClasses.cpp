@@ -364,7 +364,7 @@
 #include "twoNodeLink/TwoNodeLink.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
-#include "FourNodeTetrahedron.h"
+#include "tetrahedron/FourNodeTetrahedron.h"
 
 #include "mvlem/MVLEM.h"		// Kristijan Kolozvari
 #include "mvlem/SFI_MVLEM.h"	// Kristijan Kolozvari
