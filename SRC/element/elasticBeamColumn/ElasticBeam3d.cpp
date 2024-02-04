@@ -353,8 +353,8 @@ ElasticBeam3d::ElasticBeam3d()
     theNodes[i] = 0;      
 }
 
-ElasticBeam3d::ElasticBeam3d(int classTag)
-  :Element(0, classTag), 
+ElasticBeam3d::ElasticBeam3d(int tag, int classTag)
+  :Element(tag, classTag), 
    A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
    releasez(0), releasey(0),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),

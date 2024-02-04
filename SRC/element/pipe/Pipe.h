@@ -42,6 +42,7 @@ class Pipe : public ElasticBeam3d {
     PipeMaterial *theMat;
     PipeSection *theSect;
 
+    double alp;       // thermal expansion coefficient
     double T0;        // stress free temperature
     double pressure;  // internal pressure
 
