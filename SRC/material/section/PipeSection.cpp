@@ -29,9 +29,9 @@ static double pi = 3.141592653589793;
 void *OPS_PipeSection(void) {
     // line 9270
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 4) {
+    if (OPS_GetNumRemainingInputArgs() < 3) {
         opserr << "Invalid #args, want: section Pipe "
-                  "tag? do? t? alphaV? <rho?>\n";
+                  "tag? do? t? <alphaV?> <rho?>\n";
         return 0;
     }
 
@@ -43,9 +43,12 @@ void *OPS_PipeSection(void) {
         return 0;
     }
 
-    // get data: do, t, alphaV
-    double data[3];
-    numData = 3;
+    // get data: do, t, alphaV, rho
+    double data[4] = {0, 0, 100, 0};
+    numData = OPS_GetNumRemainingInputArgs();
+    if (numData > 4) {
+        numData = 4;
+    }
     if (OPS_GetDoubleInput(&numData, data) < 0) {
         opserr << "WARNING: invalid data for pipe section\n";
         return 0;
@@ -59,17 +62,8 @@ void *OPS_PipeSection(void) {
         return 0;
     }
 
-    double rho = 0.0;
-    numData = 1;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-        if (OPS_GetDoubleInput(&numData, data) < 0) {
-            opserr << "WARNING: invalid rho for pipe section\n";
-            return 0;
-        }
-    }
-
     auto *sect =
-        new PipeSection(iData[0], data[0], data[1], data[2], rho);
+        new PipeSection(iData[0], data[0], data[1], data[2], data[3]);
 
     return sect;
 }
@@ -101,8 +95,8 @@ PipeSection::PipeSection(int tag, double d, double t, double a,
         double dum3 = (rout2 + rin2) * thk;
         if (dum3 < 1e-8) {
             opserr << "WARNING: (ro^2+ri^2) * t < 1e-8. AlphaV "
-                      "is set to -1.\n";
-            alphaV = -1.0;
+                      "is ignored.\n";
+            alphaV = 100.0;
         } else {
             alphaV = dum2 / dum3;
         }

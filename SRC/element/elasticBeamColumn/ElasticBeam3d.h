@@ -49,7 +49,7 @@ class ElasticBeam3d : public Element
 {
   public:
     ElasticBeam3d();        
-    ElasticBeam3d(int classTag);        
+    ElasticBeam3d(int tag, int classTag);        
     ElasticBeam3d(int tag, double A, double E, double G, 
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,

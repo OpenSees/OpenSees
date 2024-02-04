@@ -119,15 +119,17 @@ Pipe::Pipe()
     : ElasticBeam3d(),
       theMat(0),
       theSect(0),
+      alp(0.0),
       T0(0.0),
       pressure(0.0) {}
 
 Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
            PipeMaterial &mat, PipeSection &sect, double t0,
            double pre, int cm, int rz, int ry)
-    : ElasticBeam3d(ELE_TAG_Pipe),
+    : ElasticBeam3d(tag, ELE_TAG_Pipe),
       theMat(0),
       theSect(0),
+      alp(0.0),
       T0(t0),
       pressure(pre) {
     // nodes
@@ -270,6 +272,7 @@ int Pipe::updateMaterialData() {
     ElasticBeam3d::E = Tpt.E;
     double nu = Tpt.xnu;
     ElasticBeam3d::G = ElasticBeam3d::E / (2 * (1.0 + nu));
+    alp = Tpt.alp;
 
     return retVal;
 }
@@ -284,9 +287,20 @@ int Pipe::updateSectionData() {
 }
 
 void Pipe::zeroLoad(void) {
+    // update section data
+    if (updateSectionData() < 0) {
+        opserr << "Pipe::setDomain failed to update section data\n";
+        return;
+    }
+
+    // update material data
+    if (updateMaterialData() < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return;
+    }
+
     this->ElasticBeam3d::zeroLoad();
 
-    double alp = theSect->ALFAV();
     double temp = aveTemp();
     if (temp > 0) {
         ElasticBeam3d::q0[0] -= E * A * alp * temp;
