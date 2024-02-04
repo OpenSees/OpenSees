@@ -32,7 +32,7 @@ void *OPS_PipeElement() {
     if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: element pipe "
                   "tag? nd1? nd2? transfTag? pipeMatTag? pipeSecTag?"
-                  "<-T0 T0? -p p? -cMass? -releasey? -releasez?>\n";
+                  "<-T0 T0? -p p? -cMass? -releasey releasey? -releasez releasez?>\n";
         return 0;
     }
 
@@ -49,6 +49,7 @@ void *OPS_PipeElement() {
     int cMass = 0;
     int releasez = 0;
     int releasey = 0;
+    numData = 1;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char *theType = OPS_GetString();
         if (strcmp(theType, "-T0") == 0) {
@@ -120,6 +121,7 @@ Pipe::Pipe()
       theMat(0),
       theSect(0),
       alp(0.0),
+      nu(0.0),
       T0(0.0),
       pressure(0.0) {}
 
@@ -130,6 +132,7 @@ Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
       theMat(0),
       theSect(0),
       alp(0.0),
+      nu(0.0),
       T0(t0),
       pressure(pre) {
     // nodes
@@ -270,7 +273,7 @@ int Pipe::updateMaterialData() {
 
     // set ElasticBeam3d data
     ElasticBeam3d::E = Tpt.E;
-    double nu = Tpt.xnu;
+    nu = Tpt.xnu;
     ElasticBeam3d::G = ElasticBeam3d::E / (2 * (1.0 + nu));
     alp = Tpt.alp;
 
@@ -301,8 +304,18 @@ void Pipe::zeroLoad(void) {
 
     this->ElasticBeam3d::zeroLoad();
 
+    // due to thermal
     double temp = aveTemp();
     if (temp > 0) {
         ElasticBeam3d::q0[0] -= E * A * alp * temp;
+    }
+
+    // due to internal pressure
+    if (pressure != 0) {
+        double dout = theSect->DOUT();
+        double thk = theSect->WALL();
+
+        ElasticBeam3d::q0[0] -= 0.25 * pressure * (dout - thk) *
+                                (1. - 2 * nu) * A / thk;
     }
 }
