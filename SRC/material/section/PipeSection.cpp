@@ -29,9 +29,9 @@ static double pi = 3.141592653589793;
 void *OPS_PipeSection(void) {
     // line 9270
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "Invalid #args,  want: section Pipe "
-                  "tag? do? t? alphaV? w? <rho?>\n";
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+        opserr << "Invalid #args, want: section Pipe "
+                  "tag? do? t? alphaV? <rho?>\n";
         return 0;
     }
 
@@ -43,9 +43,9 @@ void *OPS_PipeSection(void) {
         return 0;
     }
 
-    // get data: do, t, alphaV, w
-    double data[4];
-    numData = 4;
+    // get data: do, t, alphaV
+    double data[3];
+    numData = 3;
     if (OPS_GetDoubleInput(&numData, data) < 0) {
         opserr << "WARNING: invalid data for pipe section\n";
         return 0;
@@ -58,10 +58,6 @@ void *OPS_PipeSection(void) {
         opserr << "WARNING: thickness is zero or negative\n";
         return 0;
     }
-    if (data[3] <= 0.0) {
-        opserr << "WARNING: weight is zero or negative\n";
-        return 0;
-    }
 
     double rho = 0.0;
     numData = 1;
@@ -72,26 +68,22 @@ void *OPS_PipeSection(void) {
         }
     }
 
-    auto *sect = new PipeSection(iData[0], data[0], data[1], data[2],
-                                 data[3], rho);
+    auto *sect =
+        new PipeSection(iData[0], data[0], data[1], data[2], rho);
 
     return sect;
 }
 
 PipeSection::PipeSection(int tag, double d, double t, double a,
-                         double w, double r)
+                         double r)
     : SectionForceDeformation(tag, SEC_TAG_PipeSection),
       dout(d),
       thk(t),
       alphaV(a),
-      wgt(w),
       rho(r),
       e(),
       mat(),
       code(2) {
-    if (rho <= 1e-12) {
-        rho = wgt / 386.4;
-    }
     rout = dout * 0.5;
     rin = rout - thk;
     double rout2 = rout * rout;
@@ -109,8 +101,8 @@ PipeSection::PipeSection(int tag, double d, double t, double a,
         double dum3 = (rout2 + rin2) * thk;
         if (dum3 < 1e-8) {
             opserr << "WARNING: (ro^2+ri^2) * t < 1e-8. AlphaV "
-                      "is set to 100.\n";
-            alphaV = 100.0;
+                      "is set to -1.\n";
+            alphaV = -1.0;
         } else {
             alphaV = dum2 / dum3;
         }
@@ -144,7 +136,7 @@ const Matrix &PipeSection::getInitialFlexibility(void) { return mat; }
 SectionForceDeformation *PipeSection::getCopy(void) {
     auto *theCopy =
         new PipeSection(this->getTag(), this->dout, this->thk,
-                        this->alphaV, this->wgt, this->rho);
+                        this->alphaV, this->rho);
     theCopy->parameterID = this->parameterID;
     return theCopy;
 }
@@ -170,6 +162,7 @@ int PipeSection::updateParameter(int parameterID, Information &info) {
 }
 int PipeSection::activateParameter(int parameterID) {
     this->parameterID = parameterID;
+    return 0;
 }
 const Vector &PipeSection::getStressResultantSensitivity(
     int gradIndex, bool conditional) {

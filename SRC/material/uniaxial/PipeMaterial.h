@@ -42,7 +42,7 @@ class PipeMaterialTemperaturePoint {
     double T;    // temperature
     double E;    // young's modulus
     double xnu;  // poisson's ratio
-    double alp;  // termal expansion coefficient
+    double alp;  // thermal expansion coefficient
 };
 
 class PipeMaterial : public UniaxialMaterial {

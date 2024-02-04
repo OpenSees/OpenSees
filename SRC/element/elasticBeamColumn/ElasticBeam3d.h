@@ -49,6 +49,7 @@ class ElasticBeam3d : public Element
 {
   public:
     ElasticBeam3d();        
+    ElasticBeam3d(int classTag);        
     ElasticBeam3d(int tag, double A, double E, double G, 
 		  double Jx, double Iy, double Iz,
           int Nd1, int Nd2, CrdTransf &theTransf,
@@ -102,7 +103,7 @@ class ElasticBeam3d : public Element
     int setParameter (const char **argv, int argc, Parameter &param);
     int updateParameter (int parameterID, Information &info);
 
-  private:
+  protected:
     double A,E,G,Jx,Iy,Iz;
 
     double rho;

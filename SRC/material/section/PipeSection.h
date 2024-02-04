@@ -38,8 +38,7 @@ class Information;
 class PipeSection : public SectionForceDeformation {
     // line 9939
    public:
-    PipeSection(int tag, double d, double t, double a, double w,
-                double r);
+    PipeSection(int tag, double d, double t, double a, double r);
     ~PipeSection(void);
 
     int commitState(void);
@@ -80,19 +79,19 @@ class PipeSection : public SectionForceDeformation {
     double DOUT() const { return dout; }
     double WALL() const { return thk; }
     double ALFAV() const { return alphaV; }
-    double WGT() const { return wgt; }
     double RHO() const { return rho; }
     double ROUT() const { return rout; }
     double RIN() const { return rin; }
     double AREA() const { return Ax; }
-    double XMI() const { return Iy; }
+    double IY() const { return Iy; }
+    double IZ() const { return Iz; }
+    double JX() const { return Jx; }
 
    protected:
    private:
     double dout;    // SECTD 9508
     double thk;     // WALL 9507
     double alphaV;  // SHEAR 9500
-    double wgt;     //
     double rho;     // SECTM 9509
 
     // DOUT         =  OUTSIDE DIAMETER

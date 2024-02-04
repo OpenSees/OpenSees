@@ -121,15 +121,22 @@ const char *PipeMaterial::getClassType(void) const {
 int PipeMaterial::setTrialStrain(double strain, double strainRate) {
     // trialStrain = strain;
     // trialStrainRate = strainRate;
+    return 0;
 }
 int PipeMaterial::setTrialStrain(double strain, double temperature,
-                                 double strainRate) {}
+                                 double strainRate) {
+    return 0;
+}
 int PipeMaterial::setTrial(double strain, double &stress,
-                           double &tangent, double strainRate) {}
+                           double &tangent, double strainRate) {
+    return 0;
+}
 int PipeMaterial::setTrial(double strain, double temperature,
                            double &stress, double &tangent,
                            double &thermalElongation,
-                           double strainRate) {}
+                           double strainRate) {
+    return 0;
+}
 
 double PipeMaterial::getStrain(void) { return 0.0; }
 double PipeMaterial::getStrainRate(void) { return 0.0; }
@@ -172,6 +179,7 @@ int PipeMaterial::updateParameter(int parameterID,
 // //////////////////////////////////////////
 int PipeMaterial::activateParameter(int parameterID) {
     this->parameterID = parameterID;
+    return 0;
 }
 double PipeMaterial::getStressSensitivity(int gradIndex,
                                           bool conditional) {
@@ -209,7 +217,7 @@ PipeMaterialTemperaturePoint PipeMaterial::selectPoint(double T,
 
     // more than 1 point
     int n = -1;
-    for (int k = 2; k < (int)points.size(); ++k) {
+    for (int k = 1; k < (int)points.size(); ++k) {
         if (T >= points[k - 1].T && T <= points[k].T) {
             n = k;
             break;
@@ -229,10 +237,10 @@ PipeMaterialTemperaturePoint PipeMaterial::selectPoint(double T,
     auto &pt1 = points[n - 1];
     auto &pt2 = points[n];
     double dt = pt2.T - pt1.T;
-    if (dt < 1e8) {
+    if (dt < 1e-8) {
         opserr << "WARNING: zero or negative temperature "
                   "difference between points ("
-               << pt1.T << ") and (" << pt2.T << "\n";
+               << pt1.T << ") and (" << pt2.T << ")\n";
         retVal = -1;
         return pt;
     }

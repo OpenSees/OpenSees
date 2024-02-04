@@ -353,6 +353,32 @@ ElasticBeam3d::ElasticBeam3d()
     theNodes[i] = 0;      
 }
 
+ElasticBeam3d::ElasticBeam3d(int classTag)
+  :Element(0, classTag), 
+   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
+   releasez(0), releasey(0),
+   Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
+   connectedExternalNodes(2), theCoordTransf(0),
+   theDamping(0)
+{
+  // does nothing
+  q0[0] = 0.0;
+  q0[1] = 0.0;
+  q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;
+
+  p0[0] = 0.0;
+  p0[1] = 0.0;
+  p0[2] = 0.0;
+  p0[3] = 0.0;
+  p0[4] = 0.0;
+  
+  // set node pointers to NULL
+  for (int i=0; i<2; i++)
+    theNodes[i] = 0;      
+}
+
 ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g, 
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
