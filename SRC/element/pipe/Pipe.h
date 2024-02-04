@@ -25,7 +25,7 @@
 #define Pipe_h
 
 #include <Domain.h>
-#include <Element.h>
+#include <ElasticBeam3d.h>
 #include <Matrix.h>
 #include <PipeMaterial.h>
 #include <PipeSection.h>
@@ -36,100 +36,34 @@
 
 class Node;
 
-// TODO: bend element 9527
-
 // straight pipe element
-class Pipe : public Element {
-    // Line: 9369
+class Pipe : public ElasticBeam3d {
    private:
-    std::vector<Node *> theNodes;
-    ID connectedExternalNodes;
     PipeMaterial *theMat;
     PipeSection *theSect;
 
-    Matrix M;
-    Matrix K;
-    Vector P;
-    Vector localY;
-
     double T0;        // stress free temperature
     double pressure;  // internal pressure
-    int gDir;  // direction of gravity 1-x, 2-y, 3-z, positive or
-               // negative
-
-    double currLN;    // line length
-    double currTavg;  // average temperature
-    Matrix currT;     // transformation matrix
 
    public:
     Pipe();
-    Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
-         PipeSection &sect, double vecyx = 0, double vecyy = 0,
-         double vecyz = 0, double t0 = 0, double pre = 0, int g=-3);
+    Pipe(int tag, int Nd1, int Nd2, CrdTransf &theTransf,
+         PipeMaterial &mat, PipeSection &sect, double to = 0.0,
+         double pre = 0.0, int cMass = 0, int releasez = 0,
+         int releasey = 0);
 
     ~Pipe();
 
     const char *getClassType(void) const;
 
-    int getNumExternalNodes(void) const;
-    const ID &getExternalNodes(void);
-    Node **getNodePtrs(void);
-
-    int getNumDOF(void);
-
     void setDomain(Domain *theDomain);
-
-    int commitState(void);
-
-    int revertToLastCommit(void);
-    int revertToStart(void);
-    int update(void);
-
-    const Matrix &getTangentStiff(void);
-    const Matrix &getInitialStiff(void);
-    const Matrix &getMass(void);
 
     void zeroLoad(void);
 
-    int addLoad(ElementalLoad *theLoad, double loadFactor);
-    int addInertiaLoadToUnbalance(const Vector &accel);
-
-    const Vector &getResistingForce(void);
-    const Vector &getResistingForceIncInertia(void);
-
-    int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel,
-                 FEM_ObjectBroker &theBroker);
-
-    void Print(OPS_Stream &s, int flag = 0);
-
-    Response *setResponse(const char **argv, int argc, OPS_Stream &s);
-
-    int getResponse(int responseID, Information &info);
-
-    int setParameter(const char **argv, int argc, Parameter &param);
-    int updateParameter(int parameterID, Information &info);
-
-    // utility
    private:
-    // default convention for local y-axis
-    void defaultLocalY(const Vector &localX, Vector &deLocalY);
-
-    // computation of direction cosine array for the local axes of
-    // pipe tangent element
-    int tangdc(Matrix &dircos);
-
-    // computation of the element stiffness and load matrices
-    // for a tangent (straight) pipe element
-    int tangks(const PipeMaterialTemperaturePoint &Tpt, Matrix &Flex,
-               Matrix &invF, Matrix &B, Matrix &H, Matrix &FEF,
-               Matrix &FEFC, Matrix &SA);
-
-    // transform the element stiffness matrix from local to global
-    int localGlobal();
-
-    // form the element matrices associated with 5 loading
-    int loading(Vector &FAC);
+    double aveTemp();
+    int updateSectionData();
+    int updateMaterialData();
 };
 
 #endif
