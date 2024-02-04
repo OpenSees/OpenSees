@@ -43,6 +43,7 @@ class Pipe : public ElasticBeam3d {
     PipeSection *theSect;
 
     double alp;       // thermal expansion coefficient
+    double nu;        // poission's ratio
     double T0;        // stress free temperature
     double pressure;  // internal pressure
 
