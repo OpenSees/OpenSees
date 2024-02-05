@@ -1434,6 +1434,16 @@ ElasticBeam2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     
     theResponse = new ElementResponse(this, 4, Vector(3));
 
+  }
+  // basic stiffness -
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M1");
+    output.tag("ResponseType","M2");
+    
+    theResponse =  new ElementResponse(this, 19, Matrix(3,3));
+    
   // global damping forces
   }    else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
 
@@ -1511,8 +1521,9 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
 {
   double N, M1, M2, V;
   double L = theCoordTransf->getInitialLength();
-  Vector Sd(3);
-
+  static Vector Sd(3);
+  static Matrix kb(3,3);
+  
   this->getResistingForce();
 
   switch (responseID) {
@@ -1547,6 +1558,19 @@ ElasticBeam2d::getResponse (int responseID, Information &eleInfo)
   case 6: // global rayleigh damping forces
     return eleInfo.setVector(this->getRayleighDampingForces());
 
+  case 19: // basic stiffness
+    kb.Zero();
+    kb(0,0) = E*A/L;
+    if (release == 0) {
+      kb(1,1) = kb(2,2) = 4*E*I/L;
+      kb(1,2) = kb(2,1) = 2*E*I/L;
+    }
+    if (release == 1)
+      kb(2,2) = 3*E*I/L;
+    if (release == 2)
+      kb(1,1) = 3*E*I/L;    
+    return eleInfo.setMatrix(kb);
+    
   case 21: // global damping forces
     return eleInfo.setVector(this->getDampingForce());
 

@@ -32,8 +32,6 @@ class ElementalLoad;
 class Channel;
 class FEM_ObjectBroker;
 
-#define BEAM_INTEGRATION_TAG_Chebyshev 1234
-
 class ChebyshevBeamIntegration : public BeamIntegration
 {
  public:

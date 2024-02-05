@@ -287,7 +287,7 @@ PenaltyMaterial::recvSelf(int cTag, Channel &theChannel,
     theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "PenaltyMaterial::recvSelf() - failed to create Material with classTag " 
-	   << dataID(0) << endln;
+	   << dataID(1) << endln;
       return -2;
     }
   }
