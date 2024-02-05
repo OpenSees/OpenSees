@@ -55,12 +55,14 @@ class ElasticBeam3d : public Element
           int Nd1, int Nd2, CrdTransf &theTransf,
           double rho = 0.0, int cMass = 0,
 		  int releasez = 0, int releasey = 0,
-		      Damping *theDamping = 0);
+		      Damping *theDamping = 0,
+          double alpvz = 0, double alpvy = 0);
 
     ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
 		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
 		  int releasez = 0, int releasey = 0,
-		  Damping *theDamping = 0);
+		  Damping *theDamping = 0,
+      double alpvz = 0, double alpvy = 0);
 
     ~ElasticBeam3d();
 
@@ -105,6 +107,7 @@ class ElasticBeam3d : public Element
 
   protected:
     double A,E,G,Jx,Iy,Iz;
+    double alphaVz, alphaVy; // shape factors for shear deformation
 
     double rho;
     int cMass;

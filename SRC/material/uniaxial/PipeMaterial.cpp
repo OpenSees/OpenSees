@@ -31,7 +31,7 @@ void *OPS_PipeMaterial(void) {
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: uniaxialMaterial Pipe "
-                  "tag? nt? T1? E1? xnu1? alp1? <T2? E2? xnu2? alp2? "
+                  "tag? nt? T1? E1? xnu1? alpT1? <T2? E2? xnu2? alpT2? "
                   "...>\n";
         return 0;
     }

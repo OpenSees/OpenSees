@@ -68,6 +68,8 @@ void* OPS_ElasticBeam3d(void)
     int releasey = 0;
     int numData = 1;
     int numOptionalArgs = 0;
+    double alphaVz = 0.0;
+    double alphaVy = 0.0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string theType = OPS_GetString();
 	if (theType == "-mass") {
@@ -112,7 +114,25 @@ void* OPS_ElasticBeam3d(void)
 	      return 0;
 	    }
 	  }
-	} 
+	} else if (theType == "-alphaVz") {
+    numOptionalArgs++;
+    if(OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;
+	    if(OPS_GetDoubleInput(&numData,&alphaVz) < 0) {
+        opserr << "WARNING: failed to read shear factor alphaVz\n";
+        return 0;
+      }
+	  }
+  } else if (theType == "-alphaVy") {
+    numOptionalArgs++;
+    if(OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;
+	    if(OPS_GetDoubleInput(&numData,&alphaVy) < 0) {
+        opserr << "WARNING: failed to read shear factor alphaVy\n";
+        return 0;
+      }
+	  }
+  } 
     }
 
     if (numArgs > 0) {
@@ -170,10 +190,10 @@ void* OPS_ElasticBeam3d(void)
     }
     
     if (theSection != 0) {
-      return new ElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
+      return new ElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping, alphaVz, alphaVy); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
-				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping);
+				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping, alphaVz, alphaVy);
     }
 }
 
@@ -187,6 +207,8 @@ void *OPS_ElasticBeam3d(const ID &info) {
     int releasez = 0;
     int releasey = 0;
     int numData = 1;
+    double alphaVz = 0.0;
+    double alphaVy = 0.0;
 
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
@@ -260,6 +282,22 @@ void *OPS_ElasticBeam3d(const ID &info) {
                         return 0;
                     }
                 }
+            } else if (theType == "-alphaVz") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &alphaVz) < 0) {
+                        opserr << "WARNING: failed to read shear "
+                                  "factor alphaVz\n";
+                        return 0;
+                    }
+                }
+            } else if (theType == "-alphaVy") {
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetDoubleInput(&numData, &alphaVy) < 0) {
+                        opserr << "WARNING: failed to read shear "
+                                  "factor alphaVy\n";
+                        return 0;
+                    }
+                }
             }
         }
     }
@@ -272,7 +310,7 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(11);
+        mdata.resize(13);
         mdata(0) = data[0];
         mdata(1) = data[1];
         mdata(2) = data[2];
@@ -284,6 +322,8 @@ void *OPS_ElasticBeam3d(const ID &info) {
         mdata(8) = releasez;
         mdata(9) = releasey;
         mdata(10) = transfTag;
+        mdata(11) = alphaVz;
+        mdata(12) = alphaVy;
         return &meshdata;
     }
 
@@ -296,7 +336,7 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 11) return 0;
+        if (mdata.Size() < 13) return 0;
         data[0] = mdata(0);
         data[1] = mdata(1);
         data[2] = mdata(2);
@@ -308,6 +348,8 @@ void *OPS_ElasticBeam3d(const ID &info) {
         releasez = (int)mdata(8);
         releasey = (int)mdata(9);
         transfTag = (int)mdata(10);
+        alphaVz = mdata(11);
+        alphaVy = mdata(12);
 
         iData[0] = info(2);
         iData[1] = info(3);
@@ -324,12 +366,13 @@ void *OPS_ElasticBeam3d(const ID &info) {
     return new ElasticBeam3d(iData[0], data[0], data[1], data[2],
                              data[3], data[4], data[5], iData[1],
                              iData[2], *theTrans, mass, cMass,
-                             releasez, releasey);
+                             releasez, releasey, 0, alphaVz, alphaVy);
 }
 
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
-   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
+   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), alphaVz(0.0),
+   alphaVy(0.0), rho(0.0), cMass(0),
    releasez(0), releasey(0),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0),
@@ -355,7 +398,8 @@ ElasticBeam3d::ElasticBeam3d()
 
 ElasticBeam3d::ElasticBeam3d(int tag, int classTag)
   :Element(tag, classTag), 
-   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
+   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), alphaVz(0.0),
+   alphaVy(0.0), rho(0.0), cMass(0),
    releasez(0), releasey(0),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0),
@@ -382,9 +426,10 @@ ElasticBeam3d::ElasticBeam3d(int tag, int classTag)
 ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g, 
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
-			     Damping *damping)
+			     Damping *damping, double alpvz, double alpvy)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
+   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), alphaVz(alpvz),
+   alphaVy(alpvy), rho(r), cMass(cm),
    releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
@@ -435,9 +480,10 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 
 ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
-			     Damping *damping)
+			     Damping *damping, double alpvz, double alpvy)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0),
+      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0), 
+      alphaVz(alpvz), alphaVy(alpvy),
    rho(r), cMass(cm), releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
