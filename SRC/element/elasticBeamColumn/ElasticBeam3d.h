@@ -135,6 +135,8 @@ class ElasticBeam3d : public Element
     CrdTransf *theCoordTransf;
 
     Damping *theDamping;
+
+    void shearCoefficients(double& B1, double& B2, double& C1, double& C2);
 };
 
 #endif
