@@ -54,6 +54,7 @@ void* OPS_TriangleSeries();
 void* OPS_TrigSeries();
 void* OPS_RectangularSeries();
 void* OPS_PulseSeries();
+void* OPS_SocketSeries();
 
 namespace {
     
@@ -223,7 +224,9 @@ namespace {
 	functionMap.insert(std::make_pair("TriangleSeries", &OPS_TriangleSeries));
 	functionMap.insert(std::make_pair("Path", &OPS_PathSeries));
 	functionMap.insert(std::make_pair("Series", &OPS_PathSeries));
-      
+	functionMap.insert(std::make_pair("Socket", &OPS_SocketSeries));
+	functionMap.insert(std::make_pair("SocketSeries", &OPS_SocketSeries));
+
 	return 0;
     }
 }

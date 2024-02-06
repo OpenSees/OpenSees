@@ -18,10 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision$
-// $Date$
-// $URL$
-
 // Written: fmk 
 // Created: 11/00
 // Revision: A
@@ -43,6 +39,7 @@
 #include <PathSeries.h>
 #include <PeerMotion.h>
 #include <PeerNGAMotion.h>
+#include <SocketSeries.h>
 #include <string.h>
 
 #ifdef _RELIABILITY
@@ -76,6 +73,7 @@ extern void *OPS_RectangularSeries(void);
 extern void *OPS_PulseSeries(void);
 extern void *OPS_PeerMotion(void);
 extern void *OPS_PeerNGAMotion(void);
+extern void* OPS_SocketSeries(void);
 
 #include <elementAPI.h>
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
@@ -141,6 +139,14 @@ TclTimeSeriesCommand(ClientData clientData,
 
   }
   
+  else if ((strcmp(argv[0], "Socket") == 0) || (strcmp(argv[0], "SocketSeries") == 0)) {
+
+    void* theResult = OPS_SocketSeries();
+    if (theResult != 0)
+      theSeries = (TimeSeries*)theResult;
+
+  }
+
   else if ((strcmp(argv[0],"Series") == 0) ||
 	   (strcmp(argv[0],"Path") == 0)) {
 
