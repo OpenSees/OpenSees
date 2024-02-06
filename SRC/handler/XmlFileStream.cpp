@@ -123,6 +123,13 @@ XmlFileStream::~XmlFileStream()
 
   if (xmlColumns != 0)
     delete xmlColumns;
+
+  if (tags != nullptr) {
+    for (int i=0; i<sizeTags; i++)
+      if (tags[i] != nullptr)
+        delete[] tags[i];
+    delete[] tags;
+  }
 }
 
 int 
@@ -427,11 +434,13 @@ XmlFileStream::endTag()
       if (attributeMode == true) {
 	theFile << "/>\n";
 	delete [] tags[numTag-1];
+	tags[numTag-1] = nullptr;
 	numTag--;
       } else {
 	this->indent();
 	theFile << "</" << tags[numTag-1] << ">\n";
 	delete [] tags[numTag-1];
+	tags[numTag-1] = nullptr;
 	numTag--;
       }    
       
@@ -464,6 +473,7 @@ XmlFileStream::endTag()
 
 	strcat(xmlString,"/>\n");
 	delete [] tags[numTag-1];
+	tags[numTag-1] = nullptr;
 	numTag--;
 
       } else {
@@ -488,6 +498,7 @@ XmlFileStream::endTag()
 	strcat(xmlString, ">\n");      
 
 	delete [] tags[numTag-1];
+	tags[numTag-1] = nullptr;
 	numTag--;
       }
 	  
