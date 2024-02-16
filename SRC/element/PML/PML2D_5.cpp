@@ -759,8 +759,8 @@ void PML2D_5::ComputeK(double* K,double* XYelement, double beta_0_x, double beta
     double a, b;  // Variables a and b
 
     // Calculate variables a and b
-    a = std::abs(XYelement[6] - XYelement[0]);
-    b = std::abs(XYelement[1] - XYelement[3]);
+    a = fabs(XYelement[6] - XYelement[0]);
+    b = fabs(XYelement[1] - XYelement[3]);
 
     // Continue with the rest of the function...
     // Add your C++ code here
@@ -948,8 +948,8 @@ void PML2D_5::ComputeM(double* M,double* XYelement, double alpha_0_x, double alp
     double a, b;  // Variables a and b
 
     // Calculate variables a and b
-    a = std::abs(XYelement[6] - XYelement[0]);
-    b = std::abs(XYelement[1] - XYelement[3]);
+    a = fabs(XYelement[6] - XYelement[0]);
+    b = fabs(XYelement[1] - XYelement[3]);
 
 
 	// Calculate the mass matrix
@@ -1136,8 +1136,8 @@ void PML2D_5::ComputeC(double* C,double* XYelement, double alpha_0_x, double alp
     double a, b;  // Variables a and b
 
     // Calculate variables a and b
-    a = std::abs(XYelement[6] - XYelement[0]);
-    b = std::abs(XYelement[1] - XYelement[3]);
+    a = fabs(XYelement[6] - XYelement[0]);
+    b = fabs(XYelement[1] - XYelement[3]);
 
 	C[0] = (a * b * rho * (L_PML_y * L_PML_y * a * a * beta_0_x + 10 * L_PML_y * L_PML_y * beta_0_x * xi * xi + 10 * L_PML_x * L_PML_x * beta_0_y * yj * yj + 5 * L_PML_y * L_PML_y * a * beta_0_x * xi + a * a * alpha_0_x * beta_0_y * yj * yj + a * a * alpha_0_y * beta_0_x * yj * yj + 10 * alpha_0_x * beta_0_y * xi * xi * yj * yj + 10 * alpha_0_y * beta_0_x * xi * xi * yj * yj + 5 * a * alpha_0_x * beta_0_y * xi * yj * yj + 5 * a * alpha_0_y * beta_0_x * xi * yj * yj)) / (90 * L_PML_x * L_PML_x * L_PML_y * L_PML_y) + (a * b * b * rho * (20 * L_PML_x * L_PML_x * beta_0_y * yj + 2 * a * a * alpha_0_x * beta_0_y * yj + 2 * a * a * alpha_0_y * beta_0_x * yj + 20 * alpha_0_x * beta_0_y * xi * xi * yj + 20 * alpha_0_y * beta_0_x * xi * xi * yj + 10 * a * alpha_0_x * beta_0_y * xi * yj + 10 * a * alpha_0_y * beta_0_x * xi * yj)) / (120 * L_PML_x * L_PML_x * L_PML_y * L_PML_y) + (a * b * b * b * rho * (10 * L_PML_x * L_PML_x * beta_0_y + a * a * alpha_0_x * beta_0_y + a * a * alpha_0_y * beta_0_x + 10 * alpha_0_x * beta_0_y * xi * xi + 10 * alpha_0_y * beta_0_x * xi * xi + 5 * a * alpha_0_x * beta_0_y * xi + 5 * a * alpha_0_y * beta_0_x * xi)) / (150 * L_PML_x * L_PML_x * L_PML_y * L_PML_y);
 	C[1] = 0;

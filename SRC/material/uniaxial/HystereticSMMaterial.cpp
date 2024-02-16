@@ -43,6 +43,7 @@
 #include <math.h>
 #include <float.h>
 #include <vector>
+#include <map>
 
 #include <HystereticSMMaterial.h>
 #include <Channel.h>
