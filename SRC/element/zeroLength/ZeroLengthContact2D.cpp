@@ -485,8 +485,8 @@ ZeroLengthContact2D::getTangentStiff(void)
     stiff6(1,4) = stiff4(1,3);
 
     stiff6(3,0) = stiff4(2,0);
-    stiff6(3,1) = stiff4(2,1);
     stiff6(4,0) = stiff4(3,0);
+    stiff6(3,1) = stiff4(2,1);
     stiff6(4,1) = stiff4(3,1);
 
     return stiff6;
@@ -540,8 +540,8 @@ ZeroLengthContact2D::getInitialStiff(void)
     stiff6(1,4) = stiff4(1,3);
 
     stiff6(3,0) = stiff4(2,0);
-    stiff6(3,1) = stiff4(2,1);
     stiff6(4,0) = stiff4(3,0);
+    stiff6(3,1) = stiff4(2,1);
     stiff6(4,1) = stiff4(3,1);
 
     return stiff6;
