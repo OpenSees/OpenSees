@@ -771,10 +771,10 @@ ZeroLengthContact2D::getResponse(int responseID, Information &eleInfo)
    const Vector &XJ = nodePointers[1]->getCrds();
    const Vector &UI = nodePointers[0]->getTrialDisp();
    const Vector &UJ = nodePointers[1]->getTrialDisp();
-   U_secondary(0) = XI[0] + UI[0];
-   U_secondary(1) = XI[1] + UI[1];
-   U_primary(0) = XJ[0] + UJ[0];
-   U_primary(1) = XJ[1] + UJ[1];
+   U_secondary(0) = XI(0) + UI(0);
+   U_secondary(1) = XI(1) + UI(1);
+   U_primary(0) = XJ(0) + UJ(0);
+   U_primary(1) = XJ(1) + UJ(1);
    
 	       gap=0;
 		   int i;
