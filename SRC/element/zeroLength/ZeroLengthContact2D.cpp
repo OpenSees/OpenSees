@@ -52,9 +52,11 @@
 const int ZeroLengthContact2D::numberNodes = 2 ;
 
 // static data for 2D
-Matrix  ZeroLengthContact2D::stiff(2*numberNodes,2*numberNodes) ;
-Vector  ZeroLengthContact2D::resid(2*numberNodes) ;
-Matrix  ZeroLengthContact2D::zeroMatrix(2*numberNodes,2*numberNodes) ;
+Matrix  ZeroLengthContact2D::stiff4(2*numberNodes,2*numberNodes) ;
+Vector  ZeroLengthContact2D::resid4(2*numberNodes) ;
+
+Matrix  ZeroLengthContact2D::stiff6(3*numberNodes,3*numberNodes) ;
+Vector  ZeroLengthContact2D::resid6(3*numberNodes) ;
 
 void* OPS_ZeroLengthContact2D()
 {
@@ -281,6 +283,11 @@ ZeroLengthContact2D::setDomain(Domain *theDomain)
 	if (dofNd1 == 2 && dofNd2 == 2) {
 	numDOF = 4;
 	}
+	else if (dofNd1 == 3 && dofNd2 == 3) {
+	  stiff6.Zero();
+	  resid6.Zero();
+	numDOF = 6;
+	}	
     else {
     opserr << "WARNING ZeroLengthContact2D::setDomain cannot handle " << dofNd1 <<
  	"dofs at nodes in " << dofNd1 << " d problem\n";
@@ -459,8 +466,31 @@ ZeroLengthContact2D::getTangentStiff(void)
   //opserr<< stiff ;
 
 
+  if (numDOF == 4)
+    return stiff4;
+  else {
+    stiff6(0,0) = stiff4(0,0);
+    stiff6(1,0) = stiff4(1,0);
+    stiff6(0,1) = stiff4(0,1);
+    stiff6(1,1) = stiff4(1,1);
 
-  return stiff ;
+    stiff6(3,3) = stiff4(2,2);
+    stiff6(4,3) = stiff4(3,2);
+    stiff6(3,4) = stiff4(2,3);
+    stiff6(4,4) = stiff4(3,3);    
+
+    stiff6(0,3) = stiff4(0,2);
+    stiff6(1,3) = stiff4(1,2);
+    stiff6(0,4) = stiff4(0,3);
+    stiff6(1,4) = stiff4(1,3);
+
+    stiff6(3,0) = stiff4(2,0);
+    stiff6(3,1) = stiff4(2,1);
+    stiff6(4,0) = stiff4(3,0);
+    stiff6(4,1) = stiff4(3,1);
+
+    return stiff6;
+  }
 
 
 
@@ -491,8 +521,31 @@ ZeroLengthContact2D::getInitialStiff(void)
   formResidAndTangent( tang_flag ) ;
 
 
+  if (numDOF == 4)
+    return stiff4;
+  else {
+    stiff6(0,0) = stiff4(0,0);
+    stiff6(1,0) = stiff4(1,0);
+    stiff6(0,1) = stiff4(0,1);
+    stiff6(1,1) = stiff4(1,1);
 
-  return stiff ;
+    stiff6(3,3) = stiff4(2,2);
+    stiff6(4,3) = stiff4(3,2);
+    stiff6(3,4) = stiff4(2,3);
+    stiff6(4,4) = stiff4(3,3);    
+
+    stiff6(0,3) = stiff4(0,2);
+    stiff6(1,3) = stiff4(1,2);
+    stiff6(0,4) = stiff4(0,3);
+    stiff6(1,4) = stiff4(1,3);
+
+    stiff6(3,0) = stiff4(2,0);
+    stiff6(3,1) = stiff4(2,1);
+    stiff6(4,0) = stiff4(3,0);
+    stiff6(4,1) = stiff4(3,1);
+
+    return stiff6;
+  }
 
 }
 
@@ -508,10 +561,13 @@ ZeroLengthContact2D::getDamp(void)
 
     // no damp
 
- 	zeroMatrix.Zero();
-
-	return zeroMatrix;
-
+  if (numDOF == 4) {
+    stiff4.Zero();
+    return stiff4;
+  } else {
+    stiff6.Zero();
+    return stiff6;
+  }
 }
 
 
@@ -525,11 +581,13 @@ ZeroLengthContact2D::getMass(void)
 {
 
     // no mass
-
- 	zeroMatrix.Zero();
-
-	return zeroMatrix;
-
+  if (numDOF == 4) {
+    stiff4.Zero();
+    return stiff4;
+  } else {
+    stiff6.Zero();
+    return stiff6;
+  }
 }
 
 
@@ -568,7 +626,15 @@ ZeroLengthContact2D::getResistingForce()
 
   //opserr<< "resid="<<resid;
 
-  return resid ;
+  if (numDOF == 4)
+    return resid4;
+  else {
+    resid6(0) = resid4(0);
+    resid6(1) = resid4(1);
+    resid6(3) = resid4(2);
+    resid6(4) = resid4(3);
+    return resid6;
+  }
 }
 
 
@@ -583,7 +649,15 @@ ZeroLengthContact2D::getResistingForceIncInertia()
 
   //opserr<< resid;
 
-  return  resid ;
+  if (numDOF == 4)
+    return resid4;
+  else {
+    resid6(0) = resid4(0);
+    resid6(1) = resid4(1);
+    resid6(3) = resid4(2);
+    resid6(4) = resid4(3);
+    return resid6;
+  }
 }
 
 
@@ -626,11 +700,11 @@ Response*
 ZeroLengthContact2D::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
      if (strcmp(argv[0],"force") == 0 || strcmp(argv[0],"forces") == 0)
-     return new ElementResponse(this, 1, resid);
+       return new ElementResponse(this, 1, Vector(numDOF));
 
      // tangent stiffness matrix
      else if (strcmp(argv[0],"stiff") == 0 || strcmp(argv[0],"stiffness") == 0)
-     return new ElementResponse(this, 2, stiff);
+       return new ElementResponse(this, 2, Matrix(numDOF,numDOF));
 
 	 // contact pressure
      else if (strcmp(argv[0],"pressure")== 0)
@@ -687,12 +761,21 @@ ZeroLengthContact2D::getResponse(int responseID, Information &eleInfo)
       // DEFINE:
 	  // gap = (U_primary-U_secondary) \dot (ContactNormal),
 	  // defines overlapped normal distance, always keep positive (+) when contacted
-      ///*
-		   const Vector   // get current trial position
-	  		       &U_secondary = nodePointers[0]->getCrds() + nodePointers[0]->getTrialDisp();
-
-           const Vector
-	  		       &U_primary= nodePointers[1]->getCrds() + nodePointers[1]->getTrialDisp();
+      ///
+      // get current trial position
+   //const Vector &U_secondary = nodePointers[0]->getCrds() + nodePointers[0]->getTrialDisp();
+   //const Vector &U_primary= nodePointers[1]->getCrds() + nodePointers[1]->getTrialDisp();
+   Vector U_secondary(2);
+   Vector U_primary(2);   
+   const Vector &XI = nodePointers[0]->getCrds();
+   const Vector &XJ = nodePointers[1]->getCrds();
+   const Vector &UI = nodePointers[0]->getTrialDisp();
+   const Vector &UJ = nodePointers[1]->getTrialDisp();
+   U_secondary(0) = XI[0] + UI[0];
+   U_secondary(1) = XI[1] + UI[1];
+   U_primary(0) = XJ[0] + UJ[0];
+   U_primary(1) = XJ[1] + UJ[1];
+   
 	       gap=0;
 		   int i;
 		   for (i=0; i<2; i++){
@@ -745,8 +828,8 @@ void  ZeroLengthContact2D::formResidAndTangent( int tang_flag )
 
 
 	// trial displacement vectors
- 	Vector DispTrialS(2); // trial disp for secondary node
-	Vector DispTrialP(2); // trial disp for primary node
+ 	static Vector DispTrialS(2); // trial disp for secondary node
+	static Vector DispTrialP(2); // trial disp for primary node
 	// trial frictional force vectors (in local coordinate)
     double t_trial;
     double TtrNorm;
@@ -757,6 +840,8 @@ void  ZeroLengthContact2D::formResidAndTangent( int tang_flag )
     int i, j;
 
     //zero stiffness and residual
+    Matrix &stiff = stiff4;
+    Vector &resid = resid4;
     stiff.Zero( ) ;
     resid.Zero( ) ;
 
@@ -777,9 +862,15 @@ void  ZeroLengthContact2D::formResidAndTangent( int tang_flag )
 	    pressure = Kn*gap ;  // pressure is positive if in contact
        // pressure = Kn*gap + lambda;  // changed for augmented lagrange
 
-		DispTrialS=nodePointers[0]->getTrialDisp();
-        DispTrialP=nodePointers[1]->getTrialDisp();
-
+	    //DispTrialS=nodePointers[0]->getTrialDisp();
+	    //DispTrialP=nodePointers[1]->getTrialDisp();
+	    const Vector &UI = nodePointers[0]->getTrialDisp();
+	    const Vector &UJ = nodePointers[1]->getTrialDisp();	    
+	    DispTrialS(0) = UI(0);
+	    DispTrialS(1) = UI(1);
+	    DispTrialP(0) = UJ(0);
+	    DispTrialP(1) = UJ(1);	    
+	    
         //opserr<<"DispTrialS " << DispTrialS;
         //opserr<<"DispTrialP " << DispTrialP;
 
