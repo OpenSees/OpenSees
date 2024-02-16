@@ -190,9 +190,6 @@ class ZeroLengthContact2D: public Element
   //form residual and tangent
   void formResidAndTangent(int tang_flag ) ;
 
-  Matrix *Ki;           // pointer to objects matrix (a class Matrix)
-  Vector *load;         // pointer to objects vector (a class Vector)
-
   //static variables for 2D contact
   static Matrix stiff4;   // for stiff matrix
   static Vector resid4;   // for force residual vector

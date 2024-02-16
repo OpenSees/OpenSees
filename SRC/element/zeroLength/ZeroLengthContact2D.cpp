@@ -110,8 +110,7 @@ ZeroLengthContact2D::ZeroLengthContact2D(int tag,
 					 double frictionRatio,  const Vector& normal )
   :Element(tag,ELE_TAG_ZeroLengthContact2D),
    connectedExternalNodes(numberNodes),
-   N(2*numberNodes), T(2*numberNodes), ContactNormal(2),
-   Ki(0), load(0)
+   N(2*numberNodes), T(2*numberNodes), ContactNormal(2)
 {
     // ensure the connectedExternalNode ID is of correct size & set values
     if (connectedExternalNodes.Size() != 2)
@@ -146,8 +145,7 @@ ZeroLengthContact2D::ZeroLengthContact2D(int tag,
 ZeroLengthContact2D::ZeroLengthContact2D(void)
   :Element(0,ELE_TAG_ZeroLengthContact2D),
   connectedExternalNodes(numberNodes),
-  N(2*numberNodes), T(2*numberNodes), ContactNormal(2),
-  Ki(0), load(0)
+  N(2*numberNodes), T(2*numberNodes), ContactNormal(2)
 {
 
   //opserr<<this->getTag()<< " new ZeroLengthContact2D::null constructor" <<endln;
@@ -169,12 +167,6 @@ ZeroLengthContact2D::~ZeroLengthContact2D()
 
   //opserr<<this->getTag()<<" ZeroLengthContact2D::destructor" <<endln;
 
-
-  if (load != 0)
-    delete load;
-
-  if (Ki != 0)
-    delete Ki;
 
 }
 
@@ -664,15 +656,85 @@ ZeroLengthContact2D::getResistingForceIncInertia()
 int
 ZeroLengthContact2D::sendSelf(int commitTag, Channel &theChannel)
 {
- // doing nothing here
-	return 0;
+  int res = 0;
+
+  int dbTag = this->getDbTag();
+
+  static ID idData(5);
+  idData(0) = this->getTag();
+  idData(1) = connectedExternalNodes(0);
+  idData(2) = connectedExternalNodes(1);  
+  idData(3) = numDOF;
+  idData(4) = ContactFlag;
+
+  res += theChannel.sendID(dbTag, commitTag, idData);
+  if (res < 0) {
+    opserr << "ZeroLengthContact2D::sendSelf -- failed to send ID data" << endln;
+    return res;
+  }
+
+  static Vector data(10);
+  data(0) = pressure;
+  data(1) = lambda;
+  data(2) = t1;
+  data(3) = t2;
+  data(4) = gap_n;
+  data(5) = Kn;
+  data(6) = Kt;
+  data(7) = fs;
+  data(8) = stickPt;
+  data(9) = xi;
+  
+  res += theChannel.sendVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "ZeroLengthContact2D::sendSelf -- failed to send Vector data" << endln;
+    return res;
+  }
+  
+  return res;
 }
 
 int
 ZeroLengthContact2D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-// doing nothing here
-	return 0;
+  int res = 0;
+
+  int dbTag = this->getDbTag();
+
+  static ID idData(5);
+  res += theChannel.recvID(dbTag, commitTag, idData);
+  if (res < 0) {
+    opserr << "ZeroLengthContact2D::recvSelf -- failed to receive ID data" << endln;
+    return res;
+  }
+  
+  this->setTag(idData(0));
+  connectedExternalNodes(0) = idData(1);
+  connectedExternalNodes(1) = idData(2);
+  numDOF = idData(3);
+  ContactFlag = idData(4);
+
+  static Vector data(10);
+  res += theChannel.recvVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "ZeroLengthContact2D::recvSelf -- failed to receive Vector data" << endln;
+    return res;
+  }
+
+  pressure = data(0);
+  lambda = data(1);
+  t1 = data(2);
+  t2 = data(3);
+  gap_n = data(4);
+  gap = gap_n;
+  Kn = data(5);
+  Kt = data(6);
+  fs = data(7);
+  stickPt = data(8);
+  xi = data(9);
+  
+  return res;
+ 
 }
 
 
