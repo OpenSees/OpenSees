@@ -31,7 +31,8 @@ void *OPS_PipeSection(void) {
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 3) {
         opserr << "Invalid #args, want: section Pipe "
-                  "tag? do? t? <alphaV?> <rho?>\n";
+                  "tag? do? t? <-alphaV alphaV?> <-defaultAlphaV?> "
+                  "<-rho rho?>\n";
         return 0;
     }
 
@@ -43,12 +44,9 @@ void *OPS_PipeSection(void) {
         return 0;
     }
 
-    // get data: do, t, alphaV, rho
-    double data[4] = {0, 0, 100, 0};
-    numData = OPS_GetNumRemainingInputArgs();
-    if (numData > 4) {
-        numData = 4;
-    }
+    // get data: do, t
+    double data[2] = {0, 0};
+    numData = 2;
     if (OPS_GetDoubleInput(&numData, data) < 0) {
         opserr << "WARNING: invalid data for pipe section\n";
         return 0;
@@ -62,8 +60,43 @@ void *OPS_PipeSection(void) {
         return 0;
     }
 
+    // alphaV and rho
+    double alphaV = 100.0;
+    double rho = 0.0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *option = OPS_GetString();
+        if (strcmp(option, "-defaultAlphaV") == 0) {
+            alphaV = -1.0;
+        } else if (strcmp(option, "-alphaV") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                numData = 1;
+                if (OPS_GetDoubleInput(&numData, &alphaV) < 0) {
+                    opserr << "WARNING: failed to get alphaV\n";
+                    return 0;
+                }
+                if (alphaV <= 0) {
+                    opserr << "WARNING: alphaV must be > 0. If you "
+                              "want to use the default value, use "
+                              "'-defaultAlphaV'\n";
+                    return 0;
+                }
+            }
+        } else if (strcmp(option, "-rho") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                numData = 1;
+                if (OPS_GetDoubleInput(&numData, &rho) < 0) {
+                    opserr << "WARNING: failed to get rho\n";
+                    return 0;
+                }
+                if (rho < 0) {
+                    rho = 0;
+                }
+            }
+        }
+    }
+
     auto *sect =
-        new PipeSection(iData[0], data[0], data[1], data[2], data[3]);
+        new PipeSection(iData[0], data[0], data[1], alphaV, rho);
 
     return sect;
 }
@@ -90,7 +123,7 @@ PipeSection::PipeSection(int tag, double d, double t, double a,
     if (Iy <= 0) {
         opserr << "WARNING: Iy <= 0\n";
     }
-    if (alphaV < 1e-8) {
+    if (alphaV <= 0) {
         double dum2 = 4.0 * (rout2 * rout - rin2 * rin) / 3.0;
         double dum3 = (rout2 + rin2) * thk;
         if (dum3 < 1e-8) {
