@@ -286,6 +286,12 @@ int Pipe::updateSectionData() {
     ElasticBeam3d::Iy = theSect->IY();
     ElasticBeam3d::Iz = theSect->IZ();
     ElasticBeam3d::rho = theSect->RHO();
+    double alphaV = theSect->ALFAV();
+    if (alphaV > 99) {
+        alphaV = 0.0;
+    }
+    ElasticBeam3d::alphaVz = alphaV;
+    ElasticBeam3d::alphaVy = alphaV;
     return 0;
 }
 
