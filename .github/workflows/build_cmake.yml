@@ -98,24 +98,33 @@ jobs:
           export PYTHONPATH="../../build/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
-# Not building on Windows until we can figure out how to use Fortran
-# with Github Actions
-    #  build-win32:
-    #    name: Build on Windows
-    #    runs-on: [windows-latest]
-    #    steps:
-    #    - name: Checkout sources
-    #      uses: actions/checkout@v2
-    #      with: {ref: cmake-build}
-    #
-    #    - name: Install Conan
-    #      uses: turtlebrowser/get-conan@main
-    #
-    #    - name: Build
-    #      run: |
-    #        mkdir build
-    #        cd build
-    #        cmake ..
-    #        cmake --build . --target OpenSeesTcl -j5
 
+  build-win64-msbuild:
+    name: Build on Windows using MSBuild
+    runs-on: windows-2022
+    steps:
+      - name: Checkout sources
+        uses: actions/checkout@v4
 
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      # As the fortran binaries are precompiled,
+      # this is just for the compiler libraries
+      - name: Setup Fortan
+        uses: fortran-lang/setup-fortran@v1
+        with:
+          compiler: intel
+          version: "2023.2.0"
+
+      - name: Install Tcl
+        run: choco install magicsplat-tcl-tk
+
+      - name: Add msbuild to PATH
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Build solution
+        run: |
+          cd Win64
+          msbuild /p:Configuration=Release
