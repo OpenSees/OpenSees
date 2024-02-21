@@ -40,7 +40,7 @@ set displayMode "displayOFF"
 set g 386.4
 set P 192
 set m [expr $P/$g]
-set mR 1.0e6
+set mR 0
 set PI [expr 2.0 * asin(1.0)]
 set period 2.5;
 set mag 5.0;

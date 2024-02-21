@@ -26,6 +26,7 @@ OBJS       = $(RELIABILITY_OBJS) \
 	TrigSeries.o \
 	RampSeries.o \
 	ConstantSeries.o \
+	MPAccSeries.o \
 	UniformExcitation.o \
 	TimeSeriesIntegrator.o \
 	TrapezoidalTimeSeriesIntegrator.o \

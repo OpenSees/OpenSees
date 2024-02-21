@@ -45,6 +45,7 @@
 #include <PeerMotion.h>
 #include <PeerNGAMotion.h>
 #include <string.h>
+#include <MPAccSeries.h>   //Tang.S
 
 #ifdef _RELIABILITY
 #include <DiscretizedRandomProcessSeries.h>
@@ -78,6 +79,7 @@ extern void *OPS_RectangularSeries(void);
 extern void *OPS_PulseSeries(void);
 extern void *OPS_PeerMotion(void);
 extern void *OPS_PeerNGAMotion(void);
+extern void* OPS_MPAccSeries(void);   //Tang.S
 
 #include <elementAPI.h>
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
@@ -108,6 +110,12 @@ TclTimeSeriesCommand(ClientData clientData,
     void *theResult = OPS_TrigSeries();
     if (theResult != 0)
       theSeries = (TimeSeries *)theResult;
+    //Tang.S
+  } else if ((strcmp(argv[0], "MPAcc") == 0) || (strcmp(argv[0], "MPAccSeries") == 0)) {
+
+      void* theResult = OPS_MPAccSeries();
+      if (theResult != 0)
+          theSeries = (TimeSeries*)theResult;
 
   }	
 

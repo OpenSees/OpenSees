@@ -55,6 +55,7 @@
 #include <TriMesh.h>
 #include <TetMesh.h>
 #include <BackgroundMesh.h>
+#include <Damping.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
@@ -709,6 +710,7 @@ int OPS_MeshRegion()
     double betaK  = 0.0;
     double betaK0 = 0.0;
     double betaKc = 0.0;
+    Damping *theDamping = 0;
 
     ID *theNodes = 0;
     ID *theElements = 0;
@@ -893,6 +895,26 @@ int OPS_MeshRegion()
 		opserr << "WARNING region tag? .. -rayleigh aM bK bK0 - invalid bKc " << endln;
 		return -1;
 	    }
+	}  else if (strcmp(flag,"-damp") == 0) {
+
+	    // ensure no segmentation fault if user messes up
+	    if (OPS_GetNumRemainingInputArgs() < 1) {
+		opserr << "WARNING region tag? .. -damp dampingTag?\n";
+		return -1;
+	    }
+		
+		int dampingTag = 0;
+
+	    // read in damping factors
+	    if (OPS_GetIntInput(&numdata, &dampingTag) < 0) {
+		opserr << "WARNING region tag? .. -damp dampingTag?" << endln;
+		return -1;
+	    }
+	    theDamping = OPS_getDamping(dampingTag);
+	    if(theDamping == 0) {
+		opserr << "damping not found\n";
+	    return -1;
+		}
 	}
     }
 
@@ -936,6 +958,8 @@ int OPS_MeshRegion()
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
 	theRegion->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
     }
+	
+	if(theDamping) theRegion->setDamping(theDamping);
 
     if (theElements != 0) {
 	delete theElements;

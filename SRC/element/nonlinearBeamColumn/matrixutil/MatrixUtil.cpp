@@ -22,7 +22,7 @@
 // $Date: 2003-04-04 16:55:03 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/nonlinearBeamColumn/matrixutil/MatrixUtil.cpp,v $
  
-#include <math.h>
+#include <cmath>
                                                                         
 #include <stdlib.h>
 #include <Vector.h>
