@@ -860,6 +860,7 @@
 #define ELE_TAG_PML2D_12                  261
 #define ELE_TAG_PML2DVISCOUS              262
 #define ELE_TAG_Pipe                      263
+#define ELE_TAG_CurvedPipe                264
 
 
 #define FRN_TAG_Coulomb            1

@@ -69,7 +69,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TrapezoidalBeamIntegration.h>
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
-#include <Pipe.h>
 
 void* OPS_ZeroLengthND();
 void* OPS_ZeroLengthSection();
@@ -252,6 +251,7 @@ void* OPS_PML2D_12(void);
 void* OPS_PML2DVISCOUS(void);
 void* OPS_PML3D(void);
 void* OPS_PipeElement();
+void* OPS_CurvedPipeElement();
 
 
 namespace {
@@ -784,6 +784,7 @@ namespace {
 	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
 	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
 	functionMap.insert(std::make_pair("pipe", &OPS_PipeElement));
+	functionMap.insert(std::make_pair("CurvedPipe", &OPS_CurvedPipeElement));
 	return 0;
     }
 }

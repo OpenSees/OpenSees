@@ -32,7 +32,8 @@ void *OPS_PipeElement() {
     if (OPS_GetNumRemainingInputArgs() < 6) {
         opserr << "Invalid #args,  want: element pipe "
                   "tag? nd1? nd2? transfTag? pipeMatTag? pipeSecTag?"
-                  "<-T0 T0? -p p? -cMass? -releasey releasey? -releasez releasez?>\n";
+                  "<-T0 T0? -p p? -cMass? -releasey releasey? "
+                  "-releasez releasez?>\n";
         return 0;
     }
 
@@ -125,6 +126,15 @@ Pipe::Pipe()
       T0(0.0),
       pressure(0.0) {}
 
+Pipe::Pipe(int tag, int classTag)
+    : ElasticBeam3d(tag, classTag),
+      theMat(0),
+      theSect(0),
+      alp(0.0),
+      nu(0.0),
+      T0(0.0),
+      pressure(0.0) {}
+
 Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
            PipeMaterial &mat, PipeSection &sect, double t0,
            double pre, int cm, int rz, int ry)
@@ -135,48 +145,10 @@ Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
       nu(0.0),
       T0(t0),
       pressure(pre) {
-    // nodes
-    connectedExternalNodes(0) = nd1;
-    connectedExternalNodes(1) = nd2;
-
-    // section
-    theSect = dynamic_cast<PipeSection *>(sect.getCopy());
-    if (theSect == 0) {
-        opserr << "Pipe element - failed to "
-                  "get a copy of section "
-               << sect.getTag() << "\n";
+    if (createPipe(nd1, nd2, theTransf, mat, sect, cm, rz, ry) < 0) {
+        opserr << "WARNING: failed to create pipe element\n";
         exit(-1);
     }
-
-    // material
-    theMat = dynamic_cast<PipeMaterial *>(mat.getCopy());
-    if (theMat == 0) {
-        opserr << "Pipe element - failed to get a copy of "
-                  "material with tag "
-               << mat.getTag() << "\n";
-        exit(-1);
-    }
-
-    // transf
-    theCoordTransf = theTransf.getCopy3d();
-
-    if (!theCoordTransf) {
-        opserr << "Pipe element -- failed to get "
-                  "copy of coordinate transformation\n";
-        exit(-1);
-    }
-
-    // Make no release if input not 0, 1, 2, or 3
-    releasez = rz;
-    releasey = ry;
-    if (releasez < 0 || releasez > 3) {
-        releasez = 0;
-    }
-    if (releasey < 0 || releasey > 3) {
-        releasey = 0;
-    }
-
-    cMass = cm;
 }
 
 Pipe::~Pipe() {
@@ -321,7 +293,56 @@ void Pipe::zeroLoad(void) {
         double dout = theSect->DOUT();
         double thk = theSect->WALL();
 
-        ElasticBeam3d::q0[0] -= 0.25 * pressure * (dout - thk) *
-                                (1. - 2 * nu) * A / thk;
+        ElasticBeam3d::q0[0] -=
+            0.25 * pressure * (dout - thk) * (1. - 2 * nu) * A / thk;
     }
+}
+
+int Pipe::createPipe(int nd1, int nd2, CrdTransf &theTransf,
+                     PipeMaterial &mat, PipeSection &sect, int cm,
+                     int rz, int ry) {
+    // nodes
+    connectedExternalNodes(0) = nd1;
+    connectedExternalNodes(1) = nd2;
+
+    // section
+    theSect = dynamic_cast<PipeSection *>(sect.getCopy());
+    if (theSect == 0) {
+        opserr << "Pipe element - failed to "
+                  "get a copy of section "
+               << sect.getTag() << "\n";
+        return -1;
+    }
+
+    // material
+    theMat = dynamic_cast<PipeMaterial *>(mat.getCopy());
+    if (theMat == 0) {
+        opserr << "Pipe element - failed to get a copy of "
+                  "material with tag "
+               << mat.getTag() << "\n";
+        return -1;
+    }
+
+    // transf
+    theCoordTransf = theTransf.getCopy3d();
+
+    if (!theCoordTransf) {
+        opserr << "Pipe element -- failed to get "
+                  "copy of coordinate transformation\n";
+        return -1;
+    }
+
+    // Make no release if input not 0, 1, 2, or 3
+    releasez = rz;
+    releasey = ry;
+    if (releasez < 0 || releasez > 3) {
+        releasez = 0;
+    }
+    if (releasey < 0 || releasey > 3) {
+        releasey = 0;
+    }
+
+    cMass = cm;
+
+    return 0;
 }
