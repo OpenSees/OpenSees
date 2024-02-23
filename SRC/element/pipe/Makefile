@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = Pipe.o 
+OBJS       = Pipe.o CurvedPipe.o
 
 all:         $(OBJS)
 

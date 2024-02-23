@@ -653,6 +653,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/BeamBrick.o \
 	$(FE)/element/PFEMElement/BeamDisk.o \
 	$(FE)/element/Pipe/Pipe.o \
+	$(FE)/element/Pipe/CurvedPipe.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \

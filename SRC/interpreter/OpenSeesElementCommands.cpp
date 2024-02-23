@@ -69,7 +69,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TrapezoidalBeamIntegration.h>
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
-#include <Pipe.h>
 
 void* OPS_ZeroLengthND();
 void* OPS_ZeroLengthSection();
@@ -264,6 +263,7 @@ void* OPS_ShellMITC4Thermal();
 void* OPS_ShellNLDKGQThermal();
 void* OPS_ShellNLDKGTThermal();
 void* OPS_PipeElement();
+void* OPS_CurvedPipeElement();
 
 
 namespace {
@@ -823,6 +823,7 @@ namespace {
 	functionMap.insert(std::make_pair("ShellMITC4Thermal", &OPS_ShellMITC4Thermal));
 	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
 	functionMap.insert(std::make_pair("pipe", &OPS_PipeElement));
+	functionMap.insert(std::make_pair("CurvedPipe", &OPS_CurvedPipeElement));
 	return 0;
     }
 }

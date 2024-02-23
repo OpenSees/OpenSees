@@ -21,55 +21,33 @@
 */
 
 // Minjie
-#ifndef Pipe_h
-#define Pipe_h
+#ifndef CurvedPipe_h
+#define CurvedPipe_h
 
-#include <Domain.h>
-#include <ElasticBeam3d.h>
-#include <Matrix.h>
-#include <PipeMaterial.h>
-#include <PipeSection.h>
-#include <Vector.h>
-#include <elementAPI.h>
-
-#include <vector>
+#include "Pipe.h"
 
 class Node;
 
-// straight pipe element
-class Pipe : public ElasticBeam3d {
+// CurvedPipe element
+class CurvedPipe : public Pipe {
    protected:
-    PipeMaterial *theMat;
-    PipeSection *theSect;
-
-    double alp;       // thermal expansion coefficient
-    double nu;        // poission's ratio
-    double T0;        // stress free temperature
-    double pressure;  // internal pressure
 
    public:
-    Pipe();
-    Pipe(int tag, int classTag);
-    Pipe(int tag, int Nd1, int Nd2, CrdTransf &theTransf,
+    CurvedPipe();
+    CurvedPipe(int tag, int Nd1, int Nd2, CrdTransf &theTransf,
          PipeMaterial &mat, PipeSection &sect, double to = 0.0,
          double pre = 0.0, int cMass = 0, int releasez = 0,
          int releasey = 0);
 
-    ~Pipe();
+   //  ~CurvedPipe();
 
-    const char *getClassType(void) const;
+   //  const char *getClassType(void) const;
 
-    void setDomain(Domain *theDomain);
+   //  void setDomain(Domain *theDomain);
 
-    void zeroLoad(void);
+   //  void zeroLoad(void);
 
    protected:
-    double aveTemp();
-    int updateSectionData();
-    int updateMaterialData();
-    int createPipe(int nd1, int nd2, CrdTransf &theTransf,
-                   PipeMaterial &mat, PipeSection &sect, int cm,
-                   int rz, int ry);
 };
 
 #endif
