@@ -248,6 +248,18 @@ int Pipe::updateMaterialData() {
     nu = Tpt.xnu;
     ElasticBeam3d::G = ElasticBeam3d::E / (2 * (1.0 + nu));
     alp = Tpt.alp;
+    if (E <= 0) {
+        opserr << "E <= 0\n";
+        return -1;
+    }
+    if (G <= 0) {
+        opserr << "G <= 0\n";
+        return -1;
+    }
+    if (alp <= 0) {
+        opserr << "alp <= 0\n";
+        return -1;
+    }
 
     return retVal;
 }
@@ -270,13 +282,13 @@ int Pipe::updateSectionData() {
 void Pipe::zeroLoad(void) {
     // update section data
     if (updateSectionData() < 0) {
-        opserr << "Pipe::setDomain failed to update section data\n";
+        opserr << "Pipe::zeroLoad failed to update section data\n";
         return;
     }
 
     // update material data
     if (updateMaterialData() < 0) {
-        opserr << "Pipe::setDomain failed to update material data\n";
+        opserr << "Pipe::zeroLoad failed to update material data\n";
         return;
     }
 

@@ -31,23 +31,30 @@ class Node;
 // CurvedPipe element
 class CurvedPipe : public Pipe {
    protected:
+    Vector center;
+    double radius;
+    double theta0;
+    double tolWall;
 
    public:
     CurvedPipe();
     CurvedPipe(int tag, int Nd1, int Nd2, CrdTransf &theTransf,
-         PipeMaterial &mat, PipeSection &sect, double to = 0.0,
-         double pre = 0.0, int cMass = 0, int releasez = 0,
-         int releasey = 0);
+               PipeMaterial &mat, PipeSection &sect, const Vector &c,
+               double to = 0.0, double pre = 0.0, int cMass = 0,
+               double tol = 0.1);
 
-   //  ~CurvedPipe();
+    ~CurvedPipe();
 
-   //  const char *getClassType(void) const;
+    const char *getClassType(void) const;
 
-   //  void setDomain(Domain *theDomain);
+    void setDomain(Domain *theDomain);
 
-   //  void zeroLoad(void);
+    void zeroLoad(void);
 
    protected:
+    int flexibility(Matrix &fb);
+    int basicDeform(Vector &ub0);
+    int getTheta0();
 };
 
 #endif
