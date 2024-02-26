@@ -637,7 +637,7 @@ MEFI::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 		//allocate new materials
 		theSection = new SectionForceDeformation *[nip];
 		if (theSection == 0) {
-			opserr << "MEFI::recvSelf() - Could not allocate Section array\n";
+			opserr << "MEFI::recvSelf() - Could not allocate section array\n";
 			return -1;
 		}
 		for (int i = 0; i < nip; i++) {
@@ -646,7 +646,7 @@ MEFI::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 			//allocate new material with the sent class tag
 			theSection[i] = theBroker.getNewSection(matClassTag);
 			if (theSection[i] == 0) {
-				opserr << "MEFI::recvSelf() - Broker could not create Section of class type " << matClassTag << endln;
+				opserr << "MEFI::recvSelf() - Broker could not create section of class type " << matClassTag << endln;
 				return -1;
 			}
 			//now receive materials into the newly allocated space
@@ -813,8 +813,8 @@ Response* MEFI::setResponse(const char **argv, int argc, OPS_Stream &output)
 			strcmp(argv[0], "RC_panel") || strcmp(argv[0], "RC_Panel") == 0) {
 
 	  //check if correct # of arguments passed
-	  if (argc != 3) {
-		  opserr << "WARNING: Number of recorder input for section is: " << argc - 1 << "; should be 2: secTag and $Response_Type.\n";
+	  if (argc < 3) {
+		  opserr << "WARNING: Number of recorder input for section is: " << argc - 1 << "; should be at least 3.\n";
 		  return 0;
 	  }
 
@@ -823,7 +823,7 @@ Response* MEFI::setResponse(const char **argv, int argc, OPS_Stream &output)
 	  output.tag("Material");
 	  output.attr("number", secNum);
 
-	  theResponse = theSection[secNum - 1]->setResponse(&argv[argc - 1], argc - 2, output);
+	  theResponse = theSection[secNum - 1]->setResponse(&argv[2], argc - 2, output);
 
   }
 
