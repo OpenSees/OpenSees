@@ -82,7 +82,7 @@ int
 InitStressMaterial::findInitialStrain(void)
 {
   // determine the initial strain
-  double tol=1e-12;
+  double tol = fabs(sigInit)*1e-12;
   double dSig = sigInit;
   double tStrain = 0.0, tStress = 0.0;
   int count = 0;

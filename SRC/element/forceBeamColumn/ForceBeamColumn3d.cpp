@@ -2309,7 +2309,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
        secDefSize   += size;
     }
 
-    Vector dData(1+1+NEBD+NEBD*NEBD+secDefSize+4);   
+    Vector dData(1+1+1+NEBD+NEBD*NEBD+secDefSize+4);   
 
     if (theChannel.recvVector(dbTag, commitTag, dData) < 0)  {
       opserr << "ForceBeamColumn3d::recvSelf() - failed to send Vector data\n";
