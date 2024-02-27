@@ -1,5 +1,5 @@
 // Code written/implemented by:	Kristijan Kolozvari (kkolozvari@fullerton.edu)
-//								Carlos N. LÛpez
+//								Carlos N. L√≥pez
 //								Leonardo M. Massone
 //								 
 // User documentation available at: https://kkolozvari.github.io/E-SFI-MVLEM-3D/
@@ -21,7 +21,7 @@
 //    1........2 |-> x
 //
 // Reference:
-// Kristijan Kolozvari, Carlos N. LÛpez, Leonardo M. Massone (2023), ìEfficient Three-dimensional Shear-flexure Interaction Model for Reinforced Concrete Wallsî, Engineering Structures, Vol. 294, 116700, https://doi.org/10.1016/j.engstruct.2023.116700.
+// Kristijan Kolozvari, Carlos N. L√≥pez, Leonardo M. Massone (2023), ‚ÄúEfficient Three-dimensional Shear-flexure Interaction Model for Reinforced Concrete Walls‚Äù, Engineering Structures, Vol. 294, 116700, https://doi.org/10.1016/j.engstruct.2023.116700.
 //
 // User documentation available at: https://kkolozvari.github.io/E-SFI-MVLEM-3D/
 //
@@ -93,6 +93,12 @@ void* OPS_E_SFI_MVLEM_3D(void)
 	int* matTags = new int[m];
 
 	NDMaterial** theMaterials = new NDMaterial * [m];
+	for (int i = 0; i < m; i++) {
+		theThickness[i] = 0.0;
+		theWidth[i] = 0.0;
+		matTags[i] = 0;
+		theMaterials[i] = 0;
+	}
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 

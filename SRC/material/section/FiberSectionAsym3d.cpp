@@ -68,22 +68,41 @@ void* OPS_FiberSectionAsym3d()
     
     numData = 1;
     int tag;
-    if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
+    if (OPS_GetIntInput(&numData, &tag) < 0) {
+      opserr << "FiberSectionAsym3d - unable to read tag" << endln;
+      return 0;
+    }
+    
     numData = 2;
     double dData[2];
-    if (OPS_GetDoubleInput(&numData, dData) < 0) return 0;
+    if (OPS_GetDoubleInput(&numData, dData) < 0) {
+      opserr << "FiberSectionAsym3d - unable to read shear center data" << endln;
+      return 0;
+    }
 
     double GJ = 0.0;
     UniaxialMaterial *torsion = 0;
     bool deleteTorsion = false;
-    if (OPS_GetNumRemainingInputArgs() >= 2) {
+    while (OPS_GetNumRemainingInputArgs() > 0) {
         const char* opt = OPS_GetString();
-        if (strcmp(opt, "-GJ") == 0) {
+        if (strcmp(opt, "-GJ") == 0  && OPS_GetNumRemainingInputArgs() > 0) {
             numData = 1;
-            if (OPS_GetDoubleInput(&numData, &GJ) < 0) return 0;
+            if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	      opserr << "WARNING: failed to read GJ" << endln;
+	      return 0;
+	    }
             torsion = new ElasticMaterial(0, GJ);
             deleteTorsion = true;
         }
+	if (strcmp(opt, "-torsion") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;
+	  int torsionTag;
+	  if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
+	    opserr << "WARNING: failed to read torsion\n";
+	    return 0;
+	  }
+	  torsion = OPS_getUniaxialMaterial(torsionTag);
+	}	
     }
     
     int num = 30;
@@ -140,9 +159,11 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, Fiber **fibers, Uniaxia
     zBar = QyBar/Abar;
   }
 
-  theTorsion = torsion->getCopy();
-  if (theTorsion == 0) {
-    opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
+  if (torsion != 0) {
+    theTorsion = torsion->getCopy();
+    if (theTorsion == 0) {
+      opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
+    }
   }
 
   s = new Vector(sData, 5);              //Xinlong
@@ -192,10 +213,12 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial *torsi
 	}
     }
 
-  theTorsion = torsion->getCopy();
-  if (theTorsion == 0) {
-    opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
-  }
+    if (torsion != 0) {
+      theTorsion = torsion->getCopy();
+      if (theTorsion == 0) {
+	opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
+      }
+    }
 
     s = new Vector(sData, 5);                //Xinlong
     ks = new Matrix(kData, 5, 5);            //Xinlong
@@ -267,9 +290,11 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial **mats
   yBar = QzBar/Abar;  
   zBar = QyBar/Abar;  
 
-  theTorsion = torsion->getCopy();
-  if (theTorsion == 0) {
-    opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
+  if (torsion != 0) {
+    theTorsion = torsion->getCopy();
+    if (theTorsion == 0) {
+      opserr << "FiberSectionAsym3d::FiberSectionAsym3d -- failed to get copy of torsion material\n";
+    }
   }
 
   s = new Vector(sData, 5);      //Xinlong
@@ -884,17 +909,23 @@ FiberSectionAsym3d::sendSelf(int commitTag, Channel &theChannel)
 
   // create an id to send objects tag and numFibers, 
   //     size 6 so no conflict with matData below if just 2 fibers
-  static Vector data(6);
+  static Vector data(7);
   data(0) = this->getTag();
   data(1) = numFibers;
   data(2) = (theTorsion != 0) ? 1 : 0;
   int dbTag = this->getDbTag();
   if (theTorsion != 0) {
-      theTorsion->setDbTag(dbTag);
-      data(3) = theTorsion->getClassTag();
+    data(3) = theTorsion->getClassTag();
+    int torsionDbTag = theTorsion->getDbTag();
+    if (torsionDbTag == 0) {
+      torsionDbTag = theChannel.getDbTag();
+      if (torsionDbTag != 0)
+	theTorsion->setDbTag(torsionDbTag);
+    }
+    data(4) = torsionDbTag;    
   }
-  data(4) = ys;
-  data(5) = zs;
+  data(5) = ys;
+  data(6) = zs;
 
   res += theChannel.sendVector(dbTag, commitTag, data);
   if (res < 0) {
@@ -949,12 +980,12 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static Vector data(6);
+  static Vector data(7);
   
   int dbTag = this->getDbTag();
   res += theChannel.recvVector(dbTag, commitTag, data);
-  ys = data(4);
-  zs = data(5);
+  ys = data(5);
+  zs = data(6);
 
   if (res < 0) {
    opserr << "FiberSectionAsym3d::recvSelf - failed to recv Vector data\n";
@@ -964,19 +995,23 @@ FiberSectionAsym3d::recvSelf(int commitTag, Channel &theChannel,
   this->setTag((int)data(0));
 
   if ((int)data(2) == 1 && theTorsion == 0) {
-      int cTag = (int)data(3);
-      theTorsion = theBroker.getNewUniaxialMaterial(cTag);
-      if (theTorsion == 0) {
-          opserr << "FiberSectionAsym3d::recvSelf - failed to get torsion material \n";
-          return -1;
-      }
-      theTorsion->setDbTag(dbTag);
+    int torsionClassTag = data(3);
+    int torsionDbTag = data(4);
+    theTorsion = theBroker.getNewUniaxialMaterial(torsionClassTag);
+    if (theTorsion == 0) {
+      opserr << "FiberSection3d::recvSelf - failed to get torsion material \n";
+      return -1;
+    }
+    theTorsion->setDbTag(torsionDbTag);
   }
-
-  if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
-	   opserr << "FiberSectionAsym3d::recvSelf - torsion failed to recvSelf \n";
-       return -2;
+  if ((int)data(2) == 1) {
+    if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
+      opserr << "FiberSection3d::recvSelf - torsion failed to recvSelf \n";
+      return -2;
+    }
   }
+  else
+    theTorsion = 0;
   
   // recv data about materials objects, classTag and dbTag
   if ((int)data(1) != 0) {
