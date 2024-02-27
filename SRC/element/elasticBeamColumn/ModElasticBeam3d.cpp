@@ -364,9 +364,9 @@ const Matrix &ModElasticBeam3d::getInitialStiff(void) {
   double EIyoverL2 = K44y * Iy * EoverL;   // 2EIy/L, modified
   double EIyoverL4 = K11y * Iy * EoverL;   // 4EIy/L, modified
   double EIyoverL6 = K33y * Iy * EoverL;   // 4EIy/L, modified
-  kb(1, 1) = EIyoverL4;
-  kb(2, 2) = EIyoverL6;
-  kb(2, 1) = kb(1, 2) = EIyoverL2;
+  kb(3, 3) = EIyoverL4;
+  kb(4, 4) = EIyoverL6;
+  kb(4, 3) = kb(3, 4) = EIyoverL2;
 
   return theCoordTransf->getInitialGlobalStiffMatrix(kb);
 }
