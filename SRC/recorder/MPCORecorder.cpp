@@ -4899,8 +4899,25 @@ int MPCORecorder::initialize()
 	*/
 	hid_t h_gp_info = h5::group::create(m_data->info.h_file_id, "INFO", H5P_DEFAULT, m_data->info.h_group_proplist, H5P_DEFAULT);
 	hid_t h_dset_dim = h5::dataset::createAndWrite(h_gp_info, "SPATIAL_DIM", m_data->info.num_dimensions);
+	{
+		std::vector<std::string> version_tokens;
+		utils::strings::split(OPS_VERSION, '.', version_tokens, true);
+		if (version_tokens.size() > 0) {
+			std::vector<int> version(version_tokens.size(), 0);
+			for (std::size_t i = 0; i < version_tokens.size(); ++i) {
+				try { 
+					version[i] = std::stoi(version_tokens[i]);
+				}
+				catch (...) {
+					version[i] = 0;
+				}
+			}
+			hid_t h_dset_version = h5::dataset::createAndWrite(h_gp_info, "VERSION", version);
+			status = h5::dataset::close(h_dset_version);
+		}
+	}
 	status = h5::dataset::close(h_dset_dim);
-	status = h5::group::close(h_gp_info);	
+	status = h5::group::close(h_gp_info);
 	/*
 	mark as initialized and return
 	*/
