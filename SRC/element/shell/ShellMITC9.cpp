@@ -1622,7 +1622,7 @@ int  ShellMITC9::sendSelf (int commitTag,Channel &theChannel)
   int dataTag = this->getDbTag();
   // Now quad sends the ids of its materials
   int matDbTag;
-  static ID idData(27);
+  static ID idData(28);
   int i;
 
   for (i = 0; i < 9; i++) {
@@ -1683,7 +1683,7 @@ int  ShellMITC9::recvSelf (int commitTag,Channel &theChannel,
 {
   int res = 0;
   int dataTag = this->getDbTag();
-  static ID idData(27);
+  static ID idData(28);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {

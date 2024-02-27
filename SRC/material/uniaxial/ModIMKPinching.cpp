@@ -49,7 +49,8 @@ OPS_ModIMKPinching()
 {
   if (numModIMKPinchingMaterials == 0) {
     numModIMKPinchingMaterials++;
-    opserr << "Modified Ibarra-Medina-Krawinkler Model with Pinched Hysteretic Response\n";
+    opserr << "WARNING: DO NOT USE THE \"ModIMKPeakOriented\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKPinching\" or \"HystereticSM\" INSTEAD.\n";        
+
   }
  
   // Pointer to a uniaxial material that will be returned

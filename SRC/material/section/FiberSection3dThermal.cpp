@@ -43,9 +43,72 @@
 #include <Information.h>
 #include <MaterialResponse.h>
 #include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
 #include <math.h>
+#include <elementAPI.h>
 
 ID FiberSection3dThermal::code(3);
+
+void* OPS_FiberSection3dThermal()
+{
+    int numData = OPS_GetNumRemainingInputArgs();
+    if(numData < 1) {
+	    opserr<<"insufficient arguments for FiberSection3d\n";
+	    return 0;
+    }
+    
+    numData = 1;
+    int tag;
+    if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
+
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
+      opserr << "Use either -GJ $GJ or -torsion $matTag\n";
+      opserr << "\nFiberSection3d section: " << tag << endln;
+      return 0;
+    }
+    
+    UniaxialMaterial *torsion = 0;
+    bool deleteTorsion = false;
+    bool computeCentroid = true;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt,"-noCentroid") == 0) {
+	computeCentroid = false;
+      }
+      if (strcmp(opt, "-GJ") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	double GJ;
+	if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	  opserr << "WARNING: failed to read GJ\n";
+	  return 0;
+	}
+	torsion = new ElasticMaterial(0,GJ);
+	deleteTorsion = true;
+      }
+      if (strcmp(opt, "-torsion") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	int torsionTag;
+	if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
+	  opserr << "WARNING: failed to read torsion\n";
+	  return 0;
+	}
+	torsion = OPS_getUniaxialMaterial(torsionTag);
+      }
+    }
+
+    if (torsion == 0) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
+      opserr << "\nFiberSection3d section: " << tag << endln;
+      return 0;
+    }
+    
+    int num = 30;
+    SectionForceDeformation *section = new FiberSection3dThermal(tag, num, computeCentroid);
+    if (deleteTorsion)
+      delete torsion;
+    return section;
+}
 
 // constructors:
 FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, bool compCentroid):
@@ -808,8 +871,15 @@ FiberSection3dThermal::sendSelf(int commitTag, Channel &theChannel)
      return res;
     }
 
-    // send the fiber data, i.e. area and loc
-    Vector fiberData(matData, 3*numFibers);
+    // send the fiber data, i.e. area and loc, T, and Tmax
+    Vector fiberData(5*numFibers);
+    for (int i = 0; i < numFibers; i++) {
+      fiberData(            i) = matData[i];
+      fiberData(  numFibers+i) = matData[numFibers+i];
+      fiberData(2*numFibers+i) = matData[2*numFibers+i];      
+      fiberData(3*numFibers+i) = Fiber_T[i];
+      fiberData(4*numFibers+i) = Fiber_TMax[i];
+    }    
     res += theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
      opserr << "FiberSection2d::sendSelf - failed to send material data\n";
@@ -858,11 +928,17 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
 	for (int i=0; i<numFibers; i++)
 	  delete theMaterials[i];
 	delete [] theMaterials;
-	if (matData != 0)
-	  delete [] matData;
-	matData = 0;
-	theMaterials = 0;
+	theMaterials = 0;	
       }
+      if (matData != 0)
+	delete [] matData;
+      if (Fiber_T != 0)
+	delete [] Fiber_T;
+      if (Fiber_TMax != 0)
+	delete [] Fiber_TMax;	
+      Fiber_T = 0;
+      Fiber_TMax = 0;	
+      matData = 0;
 
       // create memory to hold material pointers and fiber data
       numFibers = data(1);
@@ -884,15 +960,33 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
 	  opserr << "FiberSection2d::recvSelf  -- failed to allocate double array for material data\n";
 	  exit(-1);
 	}
+
+	Fiber_T = new double [numFibers];
+	if (Fiber_T == 0) {
+	  opserr <<"FiberSection3dThermal::recvSelf  -- failed to allocate double array for fiber T\n";
+	  exit(-1);
+	}
+	Fiber_TMax = new double [numFibers];
+	if (Fiber_TMax == 0) {
+	  opserr <<"FiberSection3dThermal::recvSelf  -- failed to allocate double array for fiber TMax\n";
+	  exit(-1);
+	}			
       }
     }
 
-    Vector fiberData(matData, 3*numFibers);
+    Vector fiberData(5*numFibers);
     res += theChannel.recvVector(dbTag, commitTag, fiberData);
     if (res < 0) {
      opserr << "FiberSection2d::sendSelf - failed to send material data\n";
      return res;
     }
+    for (int i = 0; i < numFibers; i++) {
+      matData[i] =             fiberData(          i);
+      matData[numFibers+i] =   fiberData(numFibers+i);
+      matData[2*numFibers+i] = fiberData(2*numFibers+i);
+      Fiber_T[i]    = fiberData(3*numFibers+i);
+      Fiber_TMax[i] = fiberData(4*numFibers+i);
+    }       
 
     int i;
     for (i=0; i<numFibers; i++) {

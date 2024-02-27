@@ -479,6 +479,7 @@ ElasticMaterialThermal::getElongTangent(double TempT, double& ET, double& Elong,
   else {
     ET = E0;
     ThermalElongation = Alpha * TempT;
+    Elong = ThermalElongation;
   }
   
   return 0.0; // We have to return something, why is this function not void? ... MHS
