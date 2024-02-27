@@ -900,8 +900,14 @@ FiberSection2dThermal::sendSelf(int commitTag, Channel &theChannel)
       return res;
     }
 
-    // send the fiber data, i.e. area and loc
-    Vector fiberData(matData, 2*numFibers);
+    // send the fiber data, i.e. area and loc, tangent, and elongP
+    Vector fiberData(4*numFibers);
+    for (int i = 0; i < numFibers; i++) {
+      fiberData(            i) = matData[i];
+      fiberData(  numFibers+i) = matData[numFibers+i];
+      fiberData(2*numFibers+i) = Fiber_Tangent[i];
+      fiberData(3*numFibers+i) = Fiber_ElongP[i];
+    }
     res += theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
       opserr <<  "FiberSection2dThermal::sendSelf - failed to send material data\n";
@@ -949,11 +955,17 @@ FiberSection2dThermal::recvSelf(int commitTag, Channel &theChannel,
 	for (int i=0; i<numFibers; i++)
 	  delete theMaterials[i];
 	delete [] theMaterials;
-	if (matData != 0)
-	  delete [] matData;
-	matData = 0;
 	theMaterials = 0;
       }
+      if (matData != 0)
+	delete [] matData;
+      if (Fiber_Tangent != 0)
+	delete [] Fiber_Tangent;
+      if (Fiber_ElongP != 0)
+	delete [] Fiber_ElongP;	
+      Fiber_Tangent = 0;
+      Fiber_ElongP = 0;	
+      matData = 0;
 
       // create memory to hold material pointers and fiber data
       numFibers = data(1);
@@ -974,15 +986,32 @@ FiberSection2dThermal::recvSelf(int commitTag, Channel &theChannel,
 	  opserr <<"FiberSection2dThermal::recvSelf  -- failed to allocate double array for material data\n";
 	  exit(-1);
 	}
+
+	Fiber_Tangent = new double [numFibers];
+	if (Fiber_Tangent == 0) {
+	  opserr <<"FiberSection2dThermal::recvSelf  -- failed to allocate double array for fiber tangent\n";
+	  exit(-1);
+	}
+	Fiber_ElongP = new double [numFibers];
+	if (Fiber_ElongP == 0) {
+	  opserr <<"FiberSection2dThermal::recvSelf  -- failed to allocate double array for fiber elongation\n";
+	  exit(-1);
+	}		
       }
     }
 
-    Vector fiberData(matData, 2*numFibers);
+    Vector fiberData(4*numFibers);
     res += theChannel.recvVector(dbTag, commitTag, fiberData);
     if (res < 0) {
       opserr <<  "FiberSection2dThermal::recvSelf - failed to recv material data\n";
       return res;
     }
+    for (int i = 0; i < numFibers; i++) {
+      matData[i] =           fiberData(          i);
+      matData[numFibers+i] = fiberData(numFibers+i);
+      Fiber_Tangent[i] = fiberData(2*numFibers+i);
+      Fiber_ElongP[i]  = fiberData(3*numFibers+i);
+    }    
 
     int i;
     for (i=0; i<numFibers; i++) {

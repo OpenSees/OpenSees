@@ -65,6 +65,8 @@ NewtonLineSearch::~NewtonLineSearch()
 {
   if (theOtherTest != 0)
     delete theOtherTest;
+  if (theLineSearch != 0)
+    delete theLineSearch;
 }
 
 int
