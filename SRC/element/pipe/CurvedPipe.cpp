@@ -230,6 +230,7 @@ int CurvedPipe::flexibility(Matrix &fb) {
     double E = ElasticBeam3d::E;
     double Iz = ElasticBeam3d::Iz;
     double Iy = ElasticBeam3d::Iy;
+    double Jx = ElasticBeam3d::Jx;
     double R = radius;
     double c = cos(theta0);
     double s = sin(theta0);
@@ -238,6 +239,8 @@ int CurvedPipe::flexibility(Matrix &fb) {
     double R2 = R * R;
     double Ay = A / 1e6;
     double Az = A / 1e6;
+    double L = theCoordTransf->getInitialLength();
+    double L2 = L * L;
 
     if (alphaV > 0) {
         Ay = A / alphaV;
@@ -249,14 +252,109 @@ int CurvedPipe::flexibility(Matrix &fb) {
     fb.Zero();
 
     if (alphaV > 0) {
+        // 0,0
         fb(0, 0) = A * Ay * G * R2;
         fb(0, 0) *= 2 * t0 * c * c + t0 - 8 * s2 * c + s;
         fb(0, 0) += A * E * Iz * (t0 - s);
         fb(0, 0) += Ay * G * Iz * (t0 + s);
         fb(0, 0) /= 2 * A * Ay * E * G * Iz;
+
+        // 1,1
+        fb(1, 1) = A * Ay * G;
+        fb(1, 1) *= 0.5 * L2 * t0 + R2 * (t0 - s);
+        fb(1, 1) += A * E * Iz * (t0 + s);
+        fb(1, 1) += Ay * G * Iz * (t0 - s);
+        fb(1, 1) /= 2 * A * Ay * E * G * Iz * L2;
+
+        // 1,2
+        fb(1, 2) = A * Ay * G;
+        fb(1, 2) *= -0.5 * L2 * t0 + R2 * (t0 - s);
+        fb(1, 2) += A * E * Iz * (t0 + s);
+        fb(1, 2) += Ay * G * Iz * (t0 - s);
+        fb(1, 2) /= 2 * A * Ay * E * G * Iz * L2;
+
+        // 2,2
+        fb(2, 2) = A * Ay * G;
+        fb(2, 2) *= 0.5 * L2 * t0 + R2 * (t0 - s);
+        fb(2, 2) += A * E * Iz * (t0 + s);
+        fb(2, 2) += Ay * G * Iz * (t0 - s);
+        fb(2, 2) /= 2 * A * Ay * E * G * Iz * L2;
+
+        // 3,3
+        fb(3, 3) = Az * G;
+        fb(3, 3) *= L2 * t0 + 2 * R2 * (t0 - s);
+        fb(3, 3) += 4 * E * Iy * t0;
+        fb(3, 3) /= 4 * Az * E * G * Iy * L2;
+
+        // 3,4
+        fb(3, 4) = Az * G;
+        fb(3, 4) *= -L2 * t0 + 2 * R2 * (t0 - s);
+        fb(3, 4) += 4 * E * Iy * t0;
+        fb(3, 4) /= 4 * Az * E * G * Iy * L2;
+
+        // 4,4
+        fb(4, 4) = Az * G;
+        fb(4, 4) *= L2 * t0 + 2 * R2 * (t0 - s);
+        fb(4, 4) += 4 * E * Iy * t0;
+        fb(4, 4) /= 4 * Az * E * G * Iy * L2;
+
+    } else {
+        // 0,0
+        fb(0, 0) = A * R2;
+        fb(0, 0) *= 2 * t0 * c * c + t0 - 8 * s2 * c + s;
+        fb(0, 0) += Iz * (t0 - s);
+        fb(0, 0) /= 2 * A * E * Iz;
+
+        // 1,1
+        fb(1, 1) = A;
+        fb(1, 1) *= 0.5 * L2 * t0 + R2 * (t0 - s);
+        fb(1, 1) += Iz * (t0 - s);
+        fb(1, 1) /= 2 * A * E * Iz * L2;
+
+        // 1,2
+        fb(1, 2) = A;
+        fb(1, 2) *= -0.5 * L2 * t0 + R2 * (t0 - s);
+        fb(1, 2) += Iz * (t0 - s);
+        fb(1, 2) /= 2 * A * E * Iz * L2;
+
+        // 2,2
+        fb(2, 2) = A;
+        fb(2, 2) *= 0.5 * L2 * t0 + R2 * (t0 - s);
+        fb(2, 2) += Iz * (t0 - s);
+        fb(2, 2) /= 2 * A * E * Iz * L2;
+
+        // 3,3
+        fb(3, 3) = L2 * t0 + 2 * R2 * (t0 - s);
+        fb(3, 3) /= 4 * E * Iy * L2;
+
+        // 3,4
+        fb(3, 4) = -L2 * t0 + 2 * R2 * (t0 - s);
+        fb(3, 4) /= 4 * E * Iy * L2;
+
+        // 4,4
+        fb(4, 4) = L2 * t0 + 2 * R2 * (t0 - s);
+        fb(4, 4) /= 4 * E * Iy * L2;
     }
 
-    // fb(1, 0) = ;
+    // 0,1
+    fb(0, 1) = R;
+    fb(0, 1) *= -0.5 * t0 * c + s2;
+    fb(0, 1) /= E * Iz;
+
+    // 0,2
+    fb(0, 2) = R;
+    fb(0, 2) *= 0.5 * t0 * c - s2;
+    fb(0, 2) /= E * Iz;
+
+    // 5,5
+    fb(5, 5) = t0 / (G * Jx);
+
+    // symmetric
+    for (int j = 0; j < 6; ++j) {
+        for (int i = j + 1; i < 6; ++i) {
+            fb(i, j) = fb(j, i);
+        }
+    }
 
     return 0;
 }
