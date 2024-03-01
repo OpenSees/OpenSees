@@ -27,6 +27,25 @@
 
 #include <cmath>
 
+// 20 gauss points in (wi, xi)
+std::vector<double> CurvedPipe::gaussPts = {
+    0.1527533871307258,  -0.0765265211334973, 0.1527533871307258,
+    0.0765265211334973,  0.1491729864726037,  -0.2277858511416451,
+    0.1491729864726037,  0.2277858511416451,  0.1420961093183820,
+    -0.3737060887154195, 0.1420961093183820,  0.3737060887154195,
+    0.1316886384491766,  -0.5108670019508271, 0.1316886384491766,
+    0.5108670019508271,  0.1181945319615184,  -0.6360536807265150,
+    0.1181945319615184,  0.6360536807265150,  0.1019301198172404,
+    -0.7463319064601508, 0.1019301198172404,  0.7463319064601508,
+    0.0832767415767048,  -0.8391169718222188, 0.0832767415767048,
+    0.8391169718222188,  0.0626720483341091,  -0.9122344282513259,
+    0.0626720483341091,  0.9122344282513259,  0.0406014298003869,
+    -0.9639719272779138, 0.0406014298003869,  0.9639719272779138,
+    0.0176140071391521,  -0.9931285991850949, 0.0176140071391521,
+    0.9931285991850949};
+
+// function object for
+
 void *OPS_CurvedPipeElement() {
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 10) {
@@ -127,7 +146,14 @@ void *OPS_CurvedPipeElement() {
 }
 
 CurvedPipe::CurvedPipe()
-    : Pipe(), center(3), radius(0.0), theta0(0.0), tolWall(0.1) {}
+    : Pipe(),
+      center(3),
+      radius(0.0),
+      theta0(0.0),
+      tolWall(0.1),
+      wa(0.0),
+      wy(0.0),
+      wz(0.0) {}
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2,
                        CrdTransf &theTransf, PipeMaterial &mat,
@@ -137,7 +163,10 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2,
       center(3),
       radius(0.0),
       theta0(0.0),
-      tolWall(tol) {
+      tolWall(tol),
+      wa(0.0),
+      wy(0.0),
+      wz(0.0) {
     if (Pipe::createPipe(nd1, nd2, theTransf, mat, sect, cm, 0, 0) <
         0) {
         opserr << "WARNING: failed to create curved pipe element\n";
@@ -208,158 +237,6 @@ void CurvedPipe::zeroLoad(void) {
     }
 }
 
-int CurvedPipe::flexibility(Matrix &fb) {
-    // update section data
-    if (updateSectionData() < 0) {
-        opserr << "CurvedPipe::flexibility failed to update section "
-                  "data\n";
-        return;
-    }
-
-    // update material data
-    if (updateMaterialData() < 0) {
-        opserr << "CurvedPipe::flexibility failed to update material "
-                  "data\n";
-        return;
-    }
-
-    // material and section properties
-    double A = ElasticBeam3d::A;
-    double alphaV = theSect->ALFAV();
-    double G = ElasticBeam3d::G;
-    double E = ElasticBeam3d::E;
-    double Iz = ElasticBeam3d::Iz;
-    double Iy = ElasticBeam3d::Iy;
-    double Jx = ElasticBeam3d::Jx;
-    double R = radius;
-    double c = cos(theta0);
-    double s = sin(theta0);
-    double s2 = sin(theta0 / 2.0);
-    double t0 = theta0;
-    double R2 = R * R;
-    double Ay = A / 1e6;
-    double Az = A / 1e6;
-    double L = theCoordTransf->getInitialLength();
-    double L2 = L * L;
-
-    if (alphaV > 0) {
-        Ay = A / alphaV;
-        Az = A / alphaV;
-    }
-
-    // fb
-    fb.resize(6, 6);
-    fb.Zero();
-
-    if (alphaV > 0) {
-        // 0,0
-        fb(0, 0) = A * Ay * G * R2;
-        fb(0, 0) *= 2 * t0 * c * c + t0 - 8 * s2 * c + s;
-        fb(0, 0) += A * E * Iz * (t0 - s);
-        fb(0, 0) += Ay * G * Iz * (t0 + s);
-        fb(0, 0) /= 2 * A * Ay * E * G * Iz;
-
-        // 1,1
-        fb(1, 1) = A * Ay * G;
-        fb(1, 1) *= 0.5 * L2 * t0 + R2 * (t0 - s);
-        fb(1, 1) += A * E * Iz * (t0 + s);
-        fb(1, 1) += Ay * G * Iz * (t0 - s);
-        fb(1, 1) /= 2 * A * Ay * E * G * Iz * L2;
-
-        // 1,2
-        fb(1, 2) = A * Ay * G;
-        fb(1, 2) *= -0.5 * L2 * t0 + R2 * (t0 - s);
-        fb(1, 2) += A * E * Iz * (t0 + s);
-        fb(1, 2) += Ay * G * Iz * (t0 - s);
-        fb(1, 2) /= 2 * A * Ay * E * G * Iz * L2;
-
-        // 2,2
-        fb(2, 2) = A * Ay * G;
-        fb(2, 2) *= 0.5 * L2 * t0 + R2 * (t0 - s);
-        fb(2, 2) += A * E * Iz * (t0 + s);
-        fb(2, 2) += Ay * G * Iz * (t0 - s);
-        fb(2, 2) /= 2 * A * Ay * E * G * Iz * L2;
-
-        // 3,3
-        fb(3, 3) = Az * G;
-        fb(3, 3) *= L2 * t0 + 2 * R2 * (t0 - s);
-        fb(3, 3) += 4 * E * Iy * t0;
-        fb(3, 3) /= 4 * Az * E * G * Iy * L2;
-
-        // 3,4
-        fb(3, 4) = Az * G;
-        fb(3, 4) *= -L2 * t0 + 2 * R2 * (t0 - s);
-        fb(3, 4) += 4 * E * Iy * t0;
-        fb(3, 4) /= 4 * Az * E * G * Iy * L2;
-
-        // 4,4
-        fb(4, 4) = Az * G;
-        fb(4, 4) *= L2 * t0 + 2 * R2 * (t0 - s);
-        fb(4, 4) += 4 * E * Iy * t0;
-        fb(4, 4) /= 4 * Az * E * G * Iy * L2;
-
-    } else {
-        // 0,0
-        fb(0, 0) = A * R2;
-        fb(0, 0) *= 2 * t0 * c * c + t0 - 8 * s2 * c + s;
-        fb(0, 0) += Iz * (t0 - s);
-        fb(0, 0) /= 2 * A * E * Iz;
-
-        // 1,1
-        fb(1, 1) = A;
-        fb(1, 1) *= 0.5 * L2 * t0 + R2 * (t0 - s);
-        fb(1, 1) += Iz * (t0 - s);
-        fb(1, 1) /= 2 * A * E * Iz * L2;
-
-        // 1,2
-        fb(1, 2) = A;
-        fb(1, 2) *= -0.5 * L2 * t0 + R2 * (t0 - s);
-        fb(1, 2) += Iz * (t0 - s);
-        fb(1, 2) /= 2 * A * E * Iz * L2;
-
-        // 2,2
-        fb(2, 2) = A;
-        fb(2, 2) *= 0.5 * L2 * t0 + R2 * (t0 - s);
-        fb(2, 2) += Iz * (t0 - s);
-        fb(2, 2) /= 2 * A * E * Iz * L2;
-
-        // 3,3
-        fb(3, 3) = L2 * t0 + 2 * R2 * (t0 - s);
-        fb(3, 3) /= 4 * E * Iy * L2;
-
-        // 3,4
-        fb(3, 4) = -L2 * t0 + 2 * R2 * (t0 - s);
-        fb(3, 4) /= 4 * E * Iy * L2;
-
-        // 4,4
-        fb(4, 4) = L2 * t0 + 2 * R2 * (t0 - s);
-        fb(4, 4) /= 4 * E * Iy * L2;
-    }
-
-    // 0,1
-    fb(0, 1) = R;
-    fb(0, 1) *= -0.5 * t0 * c + s2;
-    fb(0, 1) /= E * Iz;
-
-    // 0,2
-    fb(0, 2) = R;
-    fb(0, 2) *= 0.5 * t0 * c - s2;
-    fb(0, 2) /= E * Iz;
-
-    // 5,5
-    fb(5, 5) = t0 / (G * Jx);
-
-    // symmetric
-    for (int j = 0; j < 6; ++j) {
-        for (int i = j + 1; i < 6; ++i) {
-            fb(i, j) = fb(j, i);
-        }
-    }
-
-    return 0;
-}
-int CurvedPipe::basicDeform(Vector &ub0) { return 0; }
-
 int CurvedPipe::getTheta0() {
     // compute radius
     const auto &crds1 = theNodes[0]->getCrds();
@@ -383,4 +260,130 @@ int CurvedPipe::getTheta0() {
     theta0 = 2.0 * asin(radius / Lhalf);
 
     return 0;
+}
+
+void CurvedPipe::bx(double theta, Matrix &mat) {
+    mat.resize(6, 6);
+    mat.Zero();
+    double c = cos(theta);
+    double s = sin(theta);
+    double L = theCoordTransf->getInitialLength();
+    double R = radius;
+    double H = R * (c - cos(theta0));
+    double x = L / 2.0 + R * s;
+    double invL = 1.0 / L;
+    mat(0, 0) = c;
+    mat(0, 1) = -s * invL;
+    mat(0, 2) = -s * invL;
+    mat(1, 0) = -H;
+    mat(1, 1) = R * s * invL - 0.5;
+    mat(1, 2) = R * s * invL + 0.5;
+    mat(2, 3) = x * invL - 1;
+    mat(2, 4) = x * invL;
+    mat(3, 5) = 1;
+    mat(4, 0) = s;
+    mat(4, 1) = c * invL;
+    mat(4, 2) = c * invL;
+    mat(4, 3) = invL;
+    mat(4, 4) = invL;
+}
+
+void CurvedPipe::Spx(double theta, Vector &vec) {
+    vec.resize(6);
+    vec.Zero();
+    double ct = cos(theta);
+    double ct0 = cos(theta0);
+    double st = sin(theta);
+    double s2t = sin(2 * theta);
+    double st2 = st * st;
+    double L = theCoordTransf->getInitialLength();
+    double L2 = L * L;
+    double R = radius;
+    double R2 = R * R;
+    vec(0) = L * wa * ct / 2.0 - R * wa * s2t / 2.0 - R * wy * st2;
+    vec(1) = -L2 * wy / 8.0 - L * R * wa * ct / 2.0 +
+             L * R * wa * ct0 / 2.0 - R2 * wa * st * ct0 +
+             R2 * wa * s2t / 2.0 + R2 * wy * st2 / 2.0;
+    vec(2) = wz * (-L2 + 4 * R2 * st2) / 8.0;
+    vec(4) = st * (L * wa - 2 * R * wa * st + 2 * R * wy * ct) / 2.0;
+    vec(5) = R * wz * st;
+}
+
+void CurvedPipe::fs(double theta, Matrix &mat) {
+    mat.resize(6, 6);
+    mat.Zero();
+
+    mat(0, 0) = 1.0 / (E * A);
+    mat(1, 1) = 1.0 / (E * Iz);
+    mat(2, 2) = 1.0 / (E * Iy);
+    mat(3, 3) = 1.0 / (G * Jx);
+
+    double alphaV = theSect->ALFAV();
+    if (alphaV > 0) {
+        double Ay = A / alphaV;
+        double Az = A / alphaV;
+        mat(4, 4) = 1.0 / (G * Ay);
+        mat(5, 5) = 1.0 / (G * Az);
+    }
+}
+
+void CurvedPipe::fb(double theta, Matrix &mat) {
+    mat.resize(6, 6);
+    mat.Zero();
+
+    Matrix bxmat, fsmat;
+    bx(theta, bxmat);
+    fs(theta, fsmat);
+    mat.addMatrixTripleProduct(0.0, bxmat, fsmat, 1.0);
+}
+
+void CurvedPipe::ubno(double theta, Vector &vec) {
+    vec.resize(6);
+    vec.Zero();
+
+    Matrix fsmat, bxmat;
+    Vector spxvec;
+    fs(theta, fsmat);
+    bx(theta, bxmat);
+    Spx(theta, spxvec);
+
+    Vector temp(6);
+    temp.addMatrixVector(0.0, fsmat, spxvec, 1.0);
+    vec.addMatrixTransposeVector(0.0, bxmat, temp, 1.0);
+}
+
+int CurvedPipe::kb(double theta, Matrix &mat, Vector &vec) {
+    Matrix fbmat;
+    Vector ubnovec;
+
+    integrateGauss(-theta0 / 2.0, theta0 / 2.0, fbmat, ubnovec);
+
+    if (fbmat.Invert(mat) < 0) {
+        return -1;
+    }
+
+    vec.resize(6);
+    vec.addMatrixVector(0.0, mat, ubnovec, -1.0);
+
+    return 0;
+}
+
+void CurvedPipe::integrateGauss(double a, double b, Matrix &resm,
+                                Vector &resv) {
+    double p = (b - a) / 2.0;
+    double q = (b + a) / 2.0;
+    resm.resize(6, 6);
+    resm.Zero();
+    resv.resize(6);
+    resv.Zero();
+    for (int i = 0; i < (int)gaussPts.size() / 2; ++i) {
+        double xi = gaussPts[2 * i + 1] * p + q;
+        double wi = gaussPts[2 * i] * p;
+        Matrix mat;
+        Vector vec;
+        fb(xi, mat);
+        resm.addMatrix(1.0, mat, wi);
+        ubno(xi, vec);
+        resv.addVector(1.0, vec, wi);
+    }
 }
