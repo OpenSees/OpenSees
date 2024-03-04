@@ -260,6 +260,7 @@
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
+#include "InitStrainNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 
 // Fibers
@@ -2007,6 +2008,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitStressNDMaterial:
       return new InitStressNDMaterial();
+
+  case ND_TAG_InitStrainNDMaterial:
+      return new InitStrainNDMaterial();
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();

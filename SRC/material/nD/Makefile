@@ -74,6 +74,7 @@ OBJS       = NDMaterial.o \
 	TclModelBuilderNDMaterialCommand.o \
 	WrapperNDMaterial.o \
 	InitStressNDMaterial.o \
+	InitStrainNDMaterial.o \
 	ConcreteMcftNonLinear5.o \
 	ConcreteMcftNonLinear7.o \
 	CapPlasticity.o \

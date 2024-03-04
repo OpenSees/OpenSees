@@ -379,6 +379,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\InitStressNDMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.cpp" />
@@ -791,6 +792,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\InitStressNDMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.h" />

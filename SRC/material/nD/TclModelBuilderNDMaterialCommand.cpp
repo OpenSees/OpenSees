@@ -87,6 +87,7 @@ extern  void *OPS_J2CyclicBoundingSurfaceMaterial(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_InitStressNDMaterial(void);
+extern  void *OPS_InitStrainNDMaterial(void);
 extern  void *OPS_StressDensityMaterial(void);
 extern  void *OPS_SimplifiedJ2(void);
 extern  void *OPS_PlaneStressSimplifiedJ2(void);
@@ -215,6 +216,14 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
     else if ((strcmp(argv[1],"InitStressMaterial") == 0) || (strcmp(argv[1],"InitStress") == 0)) {
       void *theMat = OPS_InitStressNDMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1],"InitStrain") == 0) {
+      void *theMat = OPS_InitStrainNDMaterial();
       if (theMat != 0) 
         theMaterial = (NDMaterial *)theMat;
       else 
