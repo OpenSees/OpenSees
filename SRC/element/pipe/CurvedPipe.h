@@ -35,9 +35,6 @@ class CurvedPipe : public Pipe {
     double radius;
     double theta0;
     double tolWall;
-    double wa;
-    double wy;
-    double wz;
 
     static std::vector<double> gaussPts;
 
@@ -56,6 +53,10 @@ class CurvedPipe : public Pipe {
 
     void zeroLoad(void);
 
+    const Matrix &getTangentStiff();
+    const Matrix &getInitialStiff();
+    const Vector &getResistingForce();
+
    protected:
     int getTheta0();
 
@@ -64,7 +65,7 @@ class CurvedPipe : public Pipe {
     void fs(double theta, Matrix &mat);
     void fb(double theta, Matrix &mat);
     void ubno(double theta, Vector &);
-    int kb(double theta, Matrix &mat, Vector &vec);
+    int kb(Matrix &mat, Vector &vec);
     void integrateGauss(double a, double b, Matrix &res,
                         Vector &resv);
 };
