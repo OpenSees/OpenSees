@@ -146,14 +146,7 @@ void *OPS_CurvedPipeElement() {
 }
 
 CurvedPipe::CurvedPipe()
-    : Pipe(),
-      center(3),
-      radius(0.0),
-      theta0(0.0),
-      tolWall(0.1),
-      wa(0.0),
-      wy(0.0),
-      wz(0.0) {}
+    : Pipe(), center(3), radius(0.0), theta0(0.0), tolWall(0.1) {}
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2,
                        CrdTransf &theTransf, PipeMaterial &mat,
@@ -163,10 +156,7 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2,
       center(3),
       radius(0.0),
       theta0(0.0),
-      tolWall(tol),
-      wa(0.0),
-      wy(0.0),
-      wz(0.0) {
+      tolWall(tol) {
     if (Pipe::createPipe(nd1, nd2, theTransf, mat, sect, cm, 0, 0) <
         0) {
         opserr << "WARNING: failed to create curved pipe element\n";
@@ -204,6 +194,39 @@ void CurvedPipe::setDomain(Domain *theDomain) {
     }
 }
 
+const Matrix &CurvedPipe::getTangentStiff() {
+    // ub
+    const Vector &v = theCoordTransf->getBasicTrialDisp();
+
+    // kb and pb0
+    Matrix kbm;
+    Vector pb0;
+    if (kb(kbm, pb0) < 0) {
+        opserr << "WARNING: failed to compute kb\n";
+        ElasticBeam3d::K.Zero();
+        return ElasticBeam3d::K;
+    }
+
+    // pb
+    q.addMatrixVector(0.0, kbm, v, 1.0);
+    q += pb0;
+
+    return theCoordTransf->getGlobalStiffMatrix(kbm, q);
+}
+
+const Matrix &CurvedPipe::getInitialStiff() {
+    // kb and pb0
+    Matrix kbm;
+    Vector pb0;
+    if (kb(kbm, pb0) < 0) {
+        opserr << "WARNING: failed to compute kb\n";
+        ElasticBeam3d::K.Zero();
+        return ElasticBeam3d::K;
+    }
+
+    return theCoordTransf->getInitialGlobalStiffMatrix(kbm);
+}
+
 void CurvedPipe::zeroLoad(void) {
     // update section data
     if (updateSectionData() < 0) {
@@ -220,20 +243,32 @@ void CurvedPipe::zeroLoad(void) {
     }
 
     this->ElasticBeam3d::zeroLoad();
+}
 
-    // due to thermal
-    double temp = aveTemp();
-    if (temp > 0) {
-        ElasticBeam3d::q0[0] -= E * A * alp * temp;
+const Vector &CurvedPipe::getResistingForce() {
+    // ub
+    const Vector &v = theCoordTransf->getBasicTrialDisp();
+
+    // kb and pb0
+    Matrix kbm;
+    Vector pb0;
+    if (kb(kbm, pb0) < 0) {
+        opserr << "WARNING: failed to compute kb\n";
+        ElasticBeam3d::P.Zero();
+        return ElasticBeam3d::P;
     }
 
-    // due to internal pressure
-    if (pressure != 0) {
-        double dout = theSect->DOUT();
-        double thk = theSect->WALL();
+    // pb
+    q.addMatrixVector(0.0, kbm, v, 1.0);
+    q += pb0;
 
-        ElasticBeam3d::q0[0] -=
-            0.25 * pressure * (dout - thk) * (1. - 2 * nu) * A / thk;
+    Vector p0Vec(ElasticBeam3d::p0, 5);
+
+    P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
+
+    // subtract external load P = P - Q
+    if (rho != 0) {
+        P.addVector(1.0, Q, -1.0);
     }
 }
 
@@ -300,6 +335,7 @@ void CurvedPipe::Spx(double theta, Vector &vec) {
     double L2 = L * L;
     double R = radius;
     double R2 = R * R;
+    double wa = ElasticBeam3d::wx;
     vec(0) = L * wa * ct / 2.0 - R * wa * s2t / 2.0 - R * wy * st2;
     vec(1) = -L2 * wy / 8.0 - L * R * wa * ct / 2.0 +
              L * R * wa * ct0 / 2.0 - R2 * wa * st * ct0 +
@@ -350,9 +386,37 @@ void CurvedPipe::ubno(double theta, Vector &vec) {
     Vector temp(6);
     temp.addMatrixVector(0.0, fsmat, spxvec, 1.0);
     vec.addMatrixTransposeVector(0.0, bxmat, temp, 1.0);
+
+    // update section data
+    if (updateSectionData() < 0) {
+        opserr << "Pipe::setDomain failed to update section data\n";
+        return;
+    }
+
+    // update material data
+    if (updateMaterialData() < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return;
+    }
+
+    // due to thermal
+    double dT = aveTemp();
+    double L = theCoordTransf->getInitialLength();
+    if (dT > 0) {
+        vec(0) += L * alp * dT;
+    }
+
+    // due to internal pressure
+    if (pressure != 0) {
+        double dout = theSect->DOUT();
+        double thk = theSect->WALL();
+
+        vec(0) += 0.25 * pressure * (dout - thk) * (1. - 2 * nu) * L /
+                  (E * thk);
+    }
 }
 
-int CurvedPipe::kb(double theta, Matrix &mat, Vector &vec) {
+int CurvedPipe::kb(Matrix &mat, Vector &vec) {
     Matrix fbmat;
     Vector ubnovec;
 
