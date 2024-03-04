@@ -6,11 +6,11 @@
 #==============================================================================
 target_sources(OPS_Material
     PRIVATE
-    ReinforcedConcreteLayerMembraneSection01.cpp
-    ReinforcedConcreteLayerMembraneSection02.cpp
+    ReinforcedConcreteLayeredMembraneSection.cpp
+    LayeredMembraneSection.cpp
     PUBLIC
-    ReinforcedConcreteLayerMembraneSection01.h
-    ReinforcedConcreteLayerMembraneSection02.h
+    ReinforcedConcreteLayeredMembraneSection.h
+    LayeredMembraneSection.h
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

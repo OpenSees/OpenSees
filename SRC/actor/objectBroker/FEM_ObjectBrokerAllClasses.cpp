@@ -186,8 +186,8 @@
 #include "Elliptical2.h"
 #include "Isolator2spring.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
-#include "ReinforcedConcreteLayerMembraneSection/ReinforcedConcreteLayerMembraneSection01.h" // M. J. Nunez
-#include "ReinforcedConcreteLayerMembraneSection/ReinforcedConcreteLayerMembraneSection02.h" // M. J. Nunez
+#include "LayeredMembraneSection/ReinforcedConcreteLayeredMembraneSection.h" // M. J. Nunez
+#include "LayeredMembraneSection/LayeredMembraneSection.h" // M. J. Nunez
 
 // NDMaterials
 #include "ElasticIsotropicPlaneStrain2D.h"
@@ -1781,11 +1781,11 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
       return new Isolator2spring();
 	
 
-	case SEC_TAG_ReinforcedConcreteLayerMembraneSection01:
-		return new ReinforcedConcreteLayerMembraneSection01();
+	case SEC_TAG_ReinforcedConcreteLayeredMembraneSection:
+		return new ReinforcedConcreteLayeredMembraneSection();
 
-	case SEC_TAG_ReinforcedConcreteLayerMembraneSection02:
-		return new ReinforcedConcreteLayerMembraneSection02();
+	case SEC_TAG_LayeredMembraneSection:
+		return new LayeredMembraneSection();
 
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewSection - ";

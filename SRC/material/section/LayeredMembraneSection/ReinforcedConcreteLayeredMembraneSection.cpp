@@ -3,19 +3,19 @@
 //
 // Created: 04/2023
 // 
-// Description: This file contains the ReinforcedConcreteLayerMembraneSection01 class definition
-// A ReinforcedConcreteLayerMembraneSection01 is a subclass of the sectionForceDeformation class and corresponds to the abstract representation
-// for the stress-strain behavior for a Reinforced Concrete Layer Membrane Element in the Finite Element Method or Structural Analysis. 
+// Description: This file contains the ReinforcedConcreteLayeredMembraneSection class definition
+// A ReinforcedConcreteLayeredMembraneSection is a subclass of the sectionForceDeformation class and corresponds to the abstract representation
+// for the stress-strain behavior for a reinforced concrete layered membrane element in the Finite Element Method or Structural Analysis. 
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
-// Source: \OpenSees\SRC\material\section\ReinforcedConcreteLayerMembraneSection
+// Source: \OpenSees\SRC\material\section\LayeredMembraneSection
 //
 // Rev: 1.0
 
-#include <ReinforcedConcreteLayerMembraneSection01.h>
+#include <ReinforcedConcreteLayeredMembraneSection.h>
 #include <NDMaterial.h>
 #include <Vector.h>
 #include <Matrix.h>
@@ -30,13 +30,13 @@
 using namespace std;
 
 // Read input parameters and build the section
-void* OPS_ReinforcedConcreteLayerMembraneSection01()
+void* OPS_ReinforcedConcreteLayeredMembraneSection()
 {
 	int numArgs = OPS_GetNumRemainingInputArgs();
 
 	// Parse the script for material parameters
 	if (numArgs < 9) {
-		opserr << "Want: ReinforcedConcreteLayerMembraneSection01 $secTag $nSteelLayer $nConcLayer -reinfSteel {$RSteelAtEachLayer} -conc {$concAtEachLayer} -concThick {$concThicknessAtEachLayer} <-epscr $epscr> <-epsc $epsc>" << endln;
+		opserr << "Want: ReinforcedConcreteLayeredMembraneSection $secTag $nSteelLayers $nConcLayers -reinfSteel {$RSteelAtEachLayer} -conc {$concAtEachLayer} -concThick {$concThicknessAtEachLayer}" << endln;
 		return 0;
 	}
 
@@ -46,24 +46,22 @@ void* OPS_ReinforcedConcreteLayerMembraneSection01()
 	const char* str;
 	NDMaterial** theConcMats;
 	NDMaterial** theSteelMats;
-	double strainAtFcr = 0.00008;            // default value for strain at tension cracking of the concrete
-	double strainAtFc = -0.002;              // default value for strain at the compresion strength of the concrete
 
 	int numdata = 1;
 	if (OPS_GetIntInput(&numdata, &tag) < 0) {
-		opserr << "WARNING invalid section ReinforcedConcreteLayerMembraneSection01 tag" << endln;
+		opserr << "WARNING invalid section ReinforcedConcreteLayeredMembraneSection tag" << endln;
 		return 0;
 	}
 	
 	if (OPS_GetIntInput(&numdata, &nSlayers) < 0) {
 		opserr << "WARNING invalid nSlayers" << endln;
-		opserr << "ReinforcedConcreteLayerMembraneSection01 section: " << tag << endln;
+		opserr << "ReinforcedConcreteLayeredMembraneSection section: " << tag << endln;
 		return 0;
 	}
 	
 	if (OPS_GetIntInput(&numdata, &nClayers) < 0) {
 		opserr << "WARNING invalid nClayers" << endln;
-		opserr << "ReinforcedConcreteLayerMembraneSection01 section: " << tag << endln;
+		opserr << "ReinforcedConcreteLayeredMembraneSection section: " << tag << endln;
 		return 0;
 	}
 
@@ -80,14 +78,14 @@ void* OPS_ReinforcedConcreteLayerMembraneSection01()
 		if (strcmp(str, "-reinfSteel") == 0) {
 			numdata = nSlayers;
 			if (OPS_GetIntInput(&numdata, steelMatTags) != 0) {
-				opserr << "Invalid nDMaterial reinforced steel tag for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
+				opserr << "Invalid nDMaterial reinforced steel tag for ReinforcedConcreteLayeredMembraneSection " << tag << endln;
 				return 0;
 			}
 			for (int i = 0; i < nSlayers; i++) {
 				theSteelMats[i] = 0;
 				theSteelMats[i] = OPS_getNDMaterial(steelMatTags[i]);
 				if (theSteelMats[i] == 0) {
-					opserr << "Invalid nDMaterial reinforced steel tag " << steelMatTags[i] << " for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
+					opserr << "Invalid nDMaterial reinforced steel tag " << steelMatTags[i] << " for ReinforcedConcreteLayeredMembraneSection " << tag << endln;
 					return 0;
 				}
 			}
@@ -95,14 +93,14 @@ void* OPS_ReinforcedConcreteLayerMembraneSection01()
 		else if (strcmp(str, "-conc") == 0) {
 			numdata = nClayers;
 			if (OPS_GetIntInput(&numdata, concMatTags) != 0) {
-				opserr << "Invalid nDMaterial concrete tag for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
+				opserr << "Invalid nDMaterial concrete tag for ReinforcedConcreteLayeredMembraneSection " << tag << endln;
 				return 0;
 			}
 			for (int i = 0; i < nClayers; i++) {
 				theConcMats[i] = 0;
 				theConcMats[i] = OPS_getNDMaterial(concMatTags[i]);
 				if (theConcMats[i] == 0) {
-					opserr << "Invalid nDMaterial concrete tag " << concMatTags[i] << " for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
+					opserr << "Invalid nDMaterial concrete tag " << concMatTags[i] << " for ReinforcedConcreteLayeredMembraneSection " << tag << endln;
 					return 0;
 				}
 			}
@@ -110,26 +108,12 @@ void* OPS_ReinforcedConcreteLayerMembraneSection01()
 		else if (strcmp(str, "-concThick") == 0) {
 			numdata = nClayers;
 			if (OPS_GetDoubleInput(&numdata, cThickness) != 0) {
-				opserr << "Invalid thick parameter for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
-				return 0;
-			}
-		}
-		else if (strcmp(str, "-epscr") == 0) {
-			numdata = 1;
-			if (OPS_GetDouble(&numdata, &strainAtFcr) != 0) {
-				opserr << "Invalid epscr parameter for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
-				return 0;
-			}
-		}
-		else if (strcmp(str, "-epsc") == 0) {
-			numdata = 1;
-			if (OPS_GetDouble(&numdata, &strainAtFc) != 0) {
-				opserr << "Invalid epsc parameter for ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
+				opserr << "Invalid thick parameter for ReinforcedConcreteLayeredMembraneSection " << tag << endln;
 				return 0;
 			}
 		}
 		else {
-			opserr << "WARNING: Invalid option " << str << " in ReinforcedConcreteLayerMembraneSection01 " << tag << endln;
+			opserr << "WARNING: Invalid option " << str << " in ReinforcedConcreteLayeredMembraneSection " << tag << endln;
 			return 0;
 		}
 		
@@ -137,7 +121,7 @@ void* OPS_ReinforcedConcreteLayerMembraneSection01()
     
 	}
 
-	SectionForceDeformation* theSection = new ReinforcedConcreteLayerMembraneSection01(tag, nSlayers, nClayers, theSteelMats, theConcMats, cThickness, strainAtFcr, strainAtFc);
+	SectionForceDeformation* theSection = new ReinforcedConcreteLayeredMembraneSection(tag, nSlayers, nClayers, theSteelMats, theConcMats, cThickness);
 
 	// Clean up dynamic memory
 	if (theSteelMats != 0)
@@ -155,23 +139,21 @@ void* OPS_ReinforcedConcreteLayerMembraneSection01()
 }
 
 //static vector and matrices
-ID ReinforcedConcreteLayerMembraneSection01::array(8);
+ID ReinforcedConcreteLayeredMembraneSection::array(3);
 
 // Full constructor
-ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01(int tag,							// section tag
+ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection(int tag,							// section tag
 	int nSteelLayer,																								// number of reinforced steel layers
 	int nConcLayer,																									// number of concrete layers
 	NDMaterial** reinforcedSteelMaterialObjects,																	// array of nDMaterial reinforced steel tags for each layer
 	NDMaterial** concrete2DMaterialObjects,																			// array of nDMaterial concrete tags for each layer
-	double* concThickness,																							// array of concrete layers thickness
-	double strainAtFcr,																								// strain at tension cracking of the concrete
-	double strainAtFc)																								// strain at the compresion strength of the concrete
+	double* concThickness)																							// array of concrete layers thickness
 
-	:SectionForceDeformation(tag, SEC_TAG_ReinforcedConcreteLayerMembraneSection01),
-	numberReinforcedSteelLayers(nSteelLayer), numberConcreteLayers(nConcLayer), ecr(strainAtFcr), ec(strainAtFc), 
+	:SectionForceDeformation(tag, SEC_TAG_ReinforcedConcreteLayeredMembraneSection),
+	numberReinforcedSteelLayers(nSteelLayer), numberConcreteLayers(nConcLayer), 
 	CSectionStrain(3), CSectionStress(3), CSectionTangent(3, 3),
 	TSectionStrain(3), TSectionStress(3), TSectionTangent(3, 3), InitialTangent(3, 3),
-	strainPrincipalDirection(3), poissonRatios(2), crackPattern(6), pi(3.1415926535)
+	strainPrincipalDirection(3), poissonRatios(2), crackPattern(4), pi(3.1415926535)
 {
 
 	// Set initial values
@@ -184,6 +166,9 @@ ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection
 	poissonRatios(0) = 0.0;
 	poissonRatios(1) = 0.0;
 
+	ecr = 0.0;
+	ec = 0.0;
+
 	crackPattern.Zero();
 
 	for (int i = 0; i < 3; i++) {
@@ -195,17 +180,17 @@ ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection
 
 	// Check concrete layers thickness input
 	if (concThickness == 0) {
-		opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01 - Null concrete layers thickness array passed.\n";
+		opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection - Null concrete layers thickness array passed.\n";
 		exit(-1);
 	}
 
 	// Check materials input
 	if (reinforcedSteelMaterialObjects == 0) {
-		opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Null nDMaterial reinforced steel array passed.\n";
+		opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Null nDMaterial reinforced steel array passed.\n";
 		exit(-1);
 	}
 	if (concrete2DMaterialObjects == 0) {
-		opserr <<"ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Null nDMaterial concrete array passed.\n";
+		opserr <<"ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Null nDMaterial concrete array passed.\n";
 		exit(-1);
 	}
 
@@ -223,25 +208,25 @@ ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection
 	TheConcrete2DMaterial = new NDMaterial * [numberConcreteLayers];
 
 	if (TheReinforcedSteel2DMaterial == 0) {
-		opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Failed to allocate pointers for ND reinforced steel materials.\n";
+		opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Failed to allocate pointers for ND reinforced steel materials.\n";
 		exit(-1);
 	}
 	if (TheConcrete2DMaterial == 0) {
-		opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Failed to allocate pointers for ND concrete materials.\n";
+		opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Failed to allocate pointers for ND concrete materials.\n";
 		exit(-1);
 	}
 
 	// Get copies of the ND reinforced steel materials 
 	for (int i = 0; i < numberReinforcedSteelLayers; i++) {
 		if (reinforcedSteelMaterialObjects[i] == 0) {
-			opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Null ND reinforced steel material pointer passed.\n";
+			opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Null ND reinforced steel material pointer passed.\n";
 			exit(-1);
 		}
 
 		TheReinforcedSteel2DMaterial[i] = reinforcedSteelMaterialObjects[i]->getCopy("PlaneStress2D");
 
 		if (TheReinforcedSteel2DMaterial[i] == 0) {
-			opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Failed to copy ND reinforced steel material.\n";
+			opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Failed to copy ND reinforced steel material.\n";
 			exit(-1);
 		}
 	}
@@ -249,14 +234,14 @@ ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection
 	// Get copies of the ND concrete materials 
 	for (int i = 0; i < numberConcreteLayers; i++) {
 		if (concrete2DMaterialObjects[i] == 0) {
-			opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Null ND concrete material pointer passed.\n";
+			opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Null ND concrete material pointer passed.\n";
 			exit(-1);
 		}
 
 		TheConcrete2DMaterial[i] = concrete2DMaterialObjects[i]->getCopy("PlaneStress2D");
 
 		if (TheConcrete2DMaterial[i] == 0) {
-			opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() - Failed to copy ND concrete material.\n";
+			opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() - Failed to copy ND concrete material.\n";
 			exit(-1);
 		}
 	}
@@ -264,8 +249,8 @@ ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection
 }
 
 // Blank constructor (constructor for blank object that recvSelf needs to be invoked upon) (constructor which should be invoked by an FEM_ObjectBroker only)
-ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01() :
-	SectionForceDeformation(0, SEC_TAG_ReinforcedConcreteLayerMembraneSection01),
+	ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection() :
+	SectionForceDeformation(0, SEC_TAG_ReinforcedConcreteLayeredMembraneSection),
 	numberReinforcedSteelLayers(0), numberConcreteLayers(0),
 	CSectionStrain(3), CSectionStress(3), CSectionTangent(3, 3),
 	TSectionStrain(3), TSectionStress(3), TSectionTangent(3, 3), InitialTangent(3, 3),
@@ -277,8 +262,8 @@ ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection
 	this->revertToStart();
 }
 
-// Destructor (clean up memory the ReinforcedConcreteLayerMembraneSection01 objects allocates)
-ReinforcedConcreteLayerMembraneSection01::~ReinforcedConcreteLayerMembraneSection01()
+// Destructor (clean up memory the ReinforcedConcreteLayeredMembraneSection objects allocates)
+	ReinforcedConcreteLayeredMembraneSection::~ReinforcedConcreteLayeredMembraneSection()
 {
 	if (t != 0) delete []t;
 
@@ -297,7 +282,7 @@ ReinforcedConcreteLayerMembraneSection01::~ReinforcedConcreteLayerMembraneSectio
 	}
 }
 
-int ReinforcedConcreteLayerMembraneSection01::setTrialSectionDeformation(const Vector& newTrialSectionStrain)
+int ReinforcedConcreteLayeredMembraneSection::setTrialSectionDeformation(const Vector& newTrialSectionStrain)
 {
 	// Set the membrane strain (e11,e22,e12) in the section
 	TSectionStrain(0) = newTrialSectionStrain(0);
@@ -369,32 +354,33 @@ int ReinforcedConcreteLayerMembraneSection01::setTrialSectionDeformation(const V
 	return 0;
 }
 
-const Vector& ReinforcedConcreteLayerMembraneSection01::getSectionDeformation(void)
+const Vector& ReinforcedConcreteLayeredMembraneSection::getSectionDeformation(void)
 {
 	return TSectionStrain;
 }
 
-const Vector& ReinforcedConcreteLayerMembraneSection01::getStressResultant(void)
+const Vector& ReinforcedConcreteLayeredMembraneSection::getStressResultant(void)
 {
+	// newName = TSectionStress/espesor_total
 	return TSectionStress;
 }
 
-const Matrix& ReinforcedConcreteLayerMembraneSection01::getSectionTangent(void)
+const Matrix& ReinforcedConcreteLayeredMembraneSection::getSectionTangent(void)
 {
 	return TSectionTangent;
 }
 
-const Vector& ReinforcedConcreteLayerMembraneSection01::getCommittedStrain(void)
+const Vector& ReinforcedConcreteLayeredMembraneSection::getCommittedStrain(void)
 {
 	return CSectionStrain;
 }
 
-const Vector& ReinforcedConcreteLayerMembraneSection01::getCommittedStress(void)
+const Vector& ReinforcedConcreteLayeredMembraneSection::getCommittedStress(void)
 {
 	return CSectionStress;
 }
 
-double ReinforcedConcreteLayerMembraneSection01::getRho(void)
+double ReinforcedConcreteLayeredMembraneSection::getRho(void)
 {
 	double rhoH = 0.0;
 
@@ -405,11 +391,11 @@ double ReinforcedConcreteLayerMembraneSection01::getRho(void)
 	return rhoH;
 }
 
-double ReinforcedConcreteLayerMembraneSection01::getEcAvg(void)
+double ReinforcedConcreteLayeredMembraneSection::getEcAvg(void)
 {
 	DummyStream theDummyStream;
 
-	char aa[80] = "getEc";
+	char aa[80] = "getParameters";
 	const char* argv[1];
 	argv[0] = aa;
 
@@ -420,17 +406,17 @@ double ReinforcedConcreteLayerMembraneSection01::getEcAvg(void)
 		Response* theResponse = TheConcrete2DMaterial[ic]->setResponse(argv, 1, theDummyStream);
 
 		if (theResponse == 0) {
-			opserr << "ReinforcedConcreteLayerMembraneSection01::ReinforcedConcreteLayerMembraneSection01 - failed to get input parameters for OrthotropicRotatingAngleConcreteT2DMaterial01 with tag: " << this->getTag() << "\n";
+			opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection - failed to get concrete parameters for ReinforcedConcreteLayeredMembraneSection with tag: " << this->getTag() << "\n";
 			exit(-1);
 		}
 
-		// Get OrthotropicRotatingAngleConcreteT2DMaterial01 input variables
+		// Get OrthotropicRotatingAngleConcreteT2DMaterial01 concrete parameters
 		theResponse->getResponse();
-		Information& theInfoInput = theResponse->getInformation();
-		const Vector& InputNDMat = theInfoInput.getData();
+		Information& theInfoPar = theResponse->getInformation();
+		const Vector& ParNDConc = theInfoPar.getData();
 
 		// Get concrete young's modulus and multiplied by the thickness of each layer
-		EcAvg += (InputNDMat[1]) * t[ic];
+		EcAvg += (ParNDConc[1]) * t[ic];
 
 		delete theResponse;
 	}
@@ -440,7 +426,7 @@ double ReinforcedConcreteLayerMembraneSection01::getEcAvg(void)
 	return EcAvg;
 }
 
-const Matrix& ReinforcedConcreteLayerMembraneSection01::getInitialTangent(void)
+const Matrix& ReinforcedConcreteLayeredMembraneSection::getInitialTangent(void)
 {
 	// Get the initial membrane section stiffness
 	double initialSectionTangent[3][3];			// membrane section stiffness: [Dm] = h*[MaterialTangent] is the membrane stiffness Tangent = Sum(Tangent_ic(zTop_ic - zBottom_ic)) + Sum(Tangent_is(t_is))
@@ -486,43 +472,36 @@ const Matrix& ReinforcedConcreteLayerMembraneSection01::getInitialTangent(void)
 	return InitialTangent;
 }
 
-SectionForceDeformation* ReinforcedConcreteLayerMembraneSection01::getCopy(void)
+SectionForceDeformation* ReinforcedConcreteLayeredMembraneSection::getCopy(void)
 {
-	ReinforcedConcreteLayerMembraneSection01* theCopy = new ReinforcedConcreteLayerMembraneSection01(this->getTag(),
+	ReinforcedConcreteLayeredMembraneSection* theCopy = new ReinforcedConcreteLayeredMembraneSection(this->getTag(),
 		numberReinforcedSteelLayers,
 		numberConcreteLayers,
 		TheReinforcedSteel2DMaterial,
 		TheConcrete2DMaterial,
-		t,
-		ecr,
-		ec);
+		t);
 
 	return theCopy;
 }
 
-const ID& ReinforcedConcreteLayerMembraneSection01::getType(void)
+const ID& ReinforcedConcreteLayeredMembraneSection::getType(void)
 {
 	static bool initialized = false;
 	if (!initialized) {
 		array(0) = SECTION_RESPONSE_FXX;
 		array(1) = SECTION_RESPONSE_FYY;
 		array(2) = SECTION_RESPONSE_FXY;
-		array(3) = SECTION_RESPONSE_MXX;
-		array(4) = SECTION_RESPONSE_MYY;
-		array(5) = SECTION_RESPONSE_MXY;
-		array(6) = SECTION_RESPONSE_VXZ;
-		array(7) = SECTION_RESPONSE_VYZ;
 		initialized = true;
 	}
 	return array;
 }
 
-int ReinforcedConcreteLayerMembraneSection01::getOrder(void) const
+int ReinforcedConcreteLayeredMembraneSection::getOrder(void) const
 {
 	return 3;
 }
 
-int ReinforcedConcreteLayerMembraneSection01::commitState(void)
+int ReinforcedConcreteLayeredMembraneSection::commitState(void)
 {
 	int success = 0;
 
@@ -539,10 +518,13 @@ int ReinforcedConcreteLayerMembraneSection01::commitState(void)
 	CSectionStress = TSectionStress;
 	CSectionTangent = TSectionTangent;
 
+	// Set the crack pattern for the section
+	this->setCrackPattern();
+
 	return success;
 }
 
-int ReinforcedConcreteLayerMembraneSection01::revertToLastCommit(void)
+int ReinforcedConcreteLayeredMembraneSection::revertToLastCommit(void)
 {
 	int success = 0;
 
@@ -557,12 +539,12 @@ int ReinforcedConcreteLayerMembraneSection01::revertToLastCommit(void)
 	// Revert the history variables to last commit
 	TSectionStrain = CSectionStrain;
 	TSectionStress = CSectionStress;
-	TSectionTangent = TSectionTangent;
+	TSectionTangent = CSectionTangent;
 
 	return success;
 }
 
-int ReinforcedConcreteLayerMembraneSection01::revertToStart(void)
+int ReinforcedConcreteLayeredMembraneSection::revertToStart(void)
 {
 	int success = 0;
 
@@ -588,21 +570,19 @@ int ReinforcedConcreteLayerMembraneSection01::revertToStart(void)
 	return success;
 }
 
-int ReinforcedConcreteLayerMembraneSection01::sendSelf(int commitTag, Channel& theChannel)
+int ReinforcedConcreteLayeredMembraneSection::sendSelf(int commitTag, Channel& theChannel)
 {
 	int res = 0;
 	int dataTag = this->getDbTag();
 
-	static ID iData(5);
+	static ID iData(3);
 	iData(0) = this->getTag();
 	iData(1) = numberReinforcedSteelLayers;
 	iData(2) = numberConcreteLayers;
-	iData(3) = ecr;
-	iData(4) = ec;
 
 	res += theChannel.sendID(dataTag, commitTag, iData);
 	if (res < 0) {
-		opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::sendSelf() - " << this->getTag() << " failed to send ID data" << endln;
+		opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::sendSelf() - " << this->getTag() << " failed to send ID data" << endln;
 		return res;
 	}
 
@@ -626,14 +606,14 @@ int ReinforcedConcreteLayerMembraneSection01::sendSelf(int commitTag, Channel& t
 
 		res += theChannel.sendVector(dataTag, commitTag, vecDataRS);
 		if (res < 0) {
-			opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
+			opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
 			return res;
 		}
 
 		for (i = 0; i < numberReinforcedSteelLayers; i++) {
 			res += TheReinforcedSteel2DMaterial[i]->sendSelf(commitTag, theChannel);
 			if (res < 0) {
-				opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::sendSelf() - " << this->getTag() << " failed to send its Material" << endln;
+				opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::sendSelf() - " << this->getTag() << " failed to send its Material" << endln;
 				return res;
 			}
 		}
@@ -664,14 +644,14 @@ int ReinforcedConcreteLayerMembraneSection01::sendSelf(int commitTag, Channel& t
 
 		res += theChannel.sendVector(dataTag, commitTag, vecDataC);
 		if (res < 0) {
-			opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
+			opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::sendSelf() - " << this->getTag() << " failed to send Vector data" << endln;
 			return res;
 		}
 
 		for (i = 0; i < numberConcreteLayers; i++) {
 			res += TheConcrete2DMaterial[i]->sendSelf(commitTag, theChannel);
 			if (res < 0) {
-				opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::sendSelf() - " << this->getTag() << " failed to send its Material" << endln;
+				opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::sendSelf() - " << this->getTag() << " failed to send its Material" << endln;
 				return res;
 			}
 		}
@@ -680,24 +660,24 @@ int ReinforcedConcreteLayerMembraneSection01::sendSelf(int commitTag, Channel& t
 	return res;
 }
 
-int ReinforcedConcreteLayerMembraneSection01::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
+int ReinforcedConcreteLayeredMembraneSection::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
 	int res = 0;
 
 	int dataTag = this->getDbTag();
 
-	static ID iData(5);
+	static ID iData(3);
 	res += theChannel.recvID(dataTag, commitTag, iData);
 
 	if (res < 0) {
-		opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::recvSelf() - " << this->getTag() << " failed to receive ID data" << endln;
+		opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::recvSelf() - " << this->getTag() << " failed to receive ID data" << endln;
 		return res;
 	}
 
 	this->setTag(iData(0));
 
 	int i;
-	if (numberReinforcedSteelLayers != iData(1));
+	if (numberReinforcedSteelLayers != iData(1))
 	{
 		numberReinforcedSteelLayers = iData(1);
 		if (TheReinforcedSteel2DMaterial != 0)
@@ -730,16 +710,13 @@ int ReinforcedConcreteLayerMembraneSection01::recvSelf(int commitTag, Channel& t
 		for (i = 0; i < numberConcreteLayers; i++)
 			TheConcrete2DMaterial[i] = nullptr;
 	}
-	
-	ecr                         = iData(3);
-	ec                          = iData(4);
 
-	if (numberReinforcedSteelLayers)
+	if (numberReinforcedSteelLayers > 0)
 	{
 		Vector vecDataRS(2 * numberReinforcedSteelLayers);
 		res += theChannel.recvVector(dataTag, commitTag, vecDataRS);
 		if (res < 0) {
-			opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::recvSelf() - " << this->getTag() << " failed to receive Vector data" << endln;
+			opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::recvSelf() - " << this->getTag() << " failed to receive Vector data" << endln;
 			return res;
 		}
 		int counter = 0;
@@ -749,14 +726,14 @@ int ReinforcedConcreteLayerMembraneSection01::recvSelf(int commitTag, Channel& t
 				if (TheReinforcedSteel2DMaterial[i]) delete TheReinforcedSteel2DMaterial[i];
 				TheReinforcedSteel2DMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
 				if (TheReinforcedSteel2DMaterial[i] == nullptr) {
-					opserr << "ReinforcedConcreteLayerMembraneSection01::recvSelf() - Broker could no create NDMaterial of class type " << matClassTag << endln;
+					opserr << "ReinforcedConcreteLayeredMembraneSection::recvSelf() - Broker could no create NDMaterial of class type " << matClassTag << endln;
 					return -1;
 				}
 			}
 			TheReinforcedSteel2DMaterial[i]->setDbTag((int)vecDataRS(counter++));
 			res += TheReinforcedSteel2DMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
 			if (res < 0) {
-				opserr << "ReinforcedConcreteLayerMembraneSection01::recvSelf() - material " << i << " failed to recv itself" << endln;
+				opserr << "ReinforcedConcreteLayeredMembraneSection::recvSelf() - material " << i << " failed to recv itself" << endln;
 				return res;
 			}
 		}
@@ -767,7 +744,7 @@ int ReinforcedConcreteLayerMembraneSection01::recvSelf(int commitTag, Channel& t
 		Vector vecDataC(3 * numberConcreteLayers);
 		res += theChannel.recvVector(dataTag, commitTag, vecDataC);
 		if (res < 0) {
-			opserr << "WARNING ReinforcedConcreteLayerMembraneSection01::recvSelf() - " << this->getTag() << " failed to receive Vector data" << endln;
+			opserr << "WARNING ReinforcedConcreteLayeredMembraneSection::recvSelf() - " << this->getTag() << " failed to receive Vector data" << endln;
 			return res;
 		}
 		int counter = 0;
@@ -781,14 +758,14 @@ int ReinforcedConcreteLayerMembraneSection01::recvSelf(int commitTag, Channel& t
 				if (TheConcrete2DMaterial[i]) delete TheConcrete2DMaterial[i];
 				TheConcrete2DMaterial[i] = theBroker.getNewNDMaterial(matClassTag);
 				if (TheConcrete2DMaterial[i] == nullptr) {
-					opserr << "ReinforcedConcreteLayerMembraneSection01::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
+					opserr << "ReinforcedConcreteLayeredMembraneSection::recvSelf() - Broker could not create NDMaterial of class type " << matClassTag << endln;
 					return -1;
 				}
 			}
 			TheConcrete2DMaterial[i]->setDbTag((int)vecDataC(counter++));
 			res += TheConcrete2DMaterial[i]->recvSelf(commitTag, theChannel, theBroker);
 			if (res < 0) {
-				opserr << "ReinforcedConcreteLayerMembraneSection01:recvSelf() - material " << i << " failed to recv itself" << endln;
+				opserr << "ReinforcedConcreteLayeredMembraneSection::recvSelf() - material " << i << " failed to recv itself" << endln;
 				return res;
 			}
 		}
@@ -797,9 +774,9 @@ int ReinforcedConcreteLayerMembraneSection01::recvSelf(int commitTag, Channel& t
 	return res;
 }
 
-void ReinforcedConcreteLayerMembraneSection01::Print(OPS_Stream& s, int flag)
+void ReinforcedConcreteLayeredMembraneSection::Print(OPS_Stream& s, int flag)
 {
-	s << "ReinforcedConcreteLayerMembraneSection01 tag: " << this->getTag() << endln;
+	s << "ReinforcedConcreteLayeredMembraneSection tag: " << this->getTag() << endln;
 	s << "Total thickness h = " << h << endln;
 
 	for (int iC = 0; iC < numberConcreteLayers; iC++) {
@@ -816,16 +793,17 @@ void ReinforcedConcreteLayerMembraneSection01::Print(OPS_Stream& s, int flag)
 
 }
 
-Response* ReinforcedConcreteLayerMembraneSection01::setResponse(const char** argv, int argc, OPS_Stream& s)
+Response* ReinforcedConcreteLayeredMembraneSection::setResponse(const char** argv, int argc, OPS_Stream& s)
 {
 	Response* theResponse = 0;
-	if (strcmp(argv[0], "panel_strain") == 0 || strcmp(argv[0], "Panel_strain") == 0) {
+
+	if (strcmp(argv[0], "panel_avg_stress") == 0 || strcmp(argv[0], "Panel_AvgStress") == 0) {
 		s.tag("SectionOutput");
-		s.attr("secType", "ReinforcedConcreteLayerMembraneSection01");
+		s.attr("secType", "ReinforcedConcreteLayeredMembraneSection");
 		s.attr("secTag", this->getTag());
-		s.tag("ResponseType", "eps11");
-		s.tag("ResponseType", "eps22");
-		s.tag("ResponseType", "eps12");
+		s.tag("ResponseType", "sigma11");
+		s.tag("ResponseType", "sigma22");
+		s.tag("ResponseType", "sigma12");
 		s.endTag();
 
 		Vector data1(3);
@@ -834,24 +812,35 @@ Response* ReinforcedConcreteLayerMembraneSection01::setResponse(const char** arg
 		theResponse = new MaterialResponse(this, 1, data1);
 
 	}
-	else if (strcmp(argv[0], "panel_stress") == 0 || strcmp(argv[0], "Panel_Stress") == 0) {
+	else if (strcmp(argv[0], "cracking_pattern") == 0 || strcmp(argv[0], "Cracking_pattern") == 0) {
 		s.tag("SectionOutput");
-		s.attr("secType", "ReinforcedConcreteLayerMembraneSection01");
+		s.attr("secType", "ReinforcedConcreteLayeredMembraneSection");
 		s.attr("secTag", this->getTag());
-		s.tag("ResponseType", "sigma11");
-		s.tag("ResponseType", "sigma22");
-		s.tag("ResponseType", "sigma12");
+		s.tag("ResponseType", "CP1");
+		s.tag("ResponseType", "CP2");
+		s.tag("ResponseType", "CP3");
+		s.tag("ResponseType", "CP4");
 		s.endTag();
 
-		Vector data2(3);
+		Vector data2(4);
 		data2.Zero();
 
 		theResponse = new MaterialResponse(this, 2, data2);
 
 	}
+	else if (strcmp(argv[0], "thetaPD_angle") == 0 || strcmp(argv[0], "ThetaPD") == 0 || strcmp(argv[0],"thetaPD") == 0) {
+		s.tag("SectionOutput");
+		s.attr("secType", "ReinforcedConcreteLayeredMembraneSection");
+		s.attr("secTag", this->getTag());
+		s.tag("ResponseType", "thetaPD");
+		s.endTag();
+
+		theResponse = new MaterialResponse(this, 3, 0.0);
+
+	}
 	else if (strcmp(argv[0], "getBendingParameters") == 0) {
 		s.tag("SectionOutput");
-		s.attr("secType", "ReinforcedConcreteLayerMembraneSection01");
+		s.attr("secType", "ReinforcedConcreteLayeredMembraneSection");
 		s.attr("secTag", this->getTag());
 		s.tag("ResponseType", "Eave");
 		s.tag("ResponseType", "Tave");
@@ -860,35 +849,103 @@ Response* ReinforcedConcreteLayerMembraneSection01::setResponse(const char** arg
 		Vector data3(2);
 		data3.Zero();
 
-		theResponse = new MaterialResponse(this, 3, data3);
+		theResponse = new MaterialResponse(this, 4, data3);
+	}
+	else if (strcmp(argv[0], "panel_force") == 0 || strcmp(argv[0], "Panel_Force") == 0 || strcmp(argv[0], "Panel_force") == 0) {
+		s.tag("SectionOutput");
+		s.attr("secType", "ReinforcedConcreteLayeredMembraneSection");
+		s.attr("secTag", this->getTag());
+		s.tag("ResponseType", "Nxx");
+		s.tag("ResponseType", "Nyy");
+		s.tag("ResponseType", "Nxy");
+		s.endTag();
+
+		Vector data4(3);
+		data4.Zero();
+
+		theResponse = new MaterialResponse(this, 5, data4);
+	}
+	else if (strcmp(argv[0], "panel_strain") == 0 || strcmp(argv[0], "Panel_Strain") == 0 || strcmp(argv[0], "Panel_strain") == 0) {
+		s.tag("SectionOutput");
+		s.attr("secType", "ReinforcedConcreteLayeredMembraneSection");
+		s.attr("secTag", this->getTag());
+		s.tag("ResponseType", "eps11");
+		s.tag("ResponseType", "eps22");
+		s.tag("ResponseType", "eps12");
+		s.endTag();
+
+		Vector data5(3);
+		data5.Zero();
+
+		theResponse = new MaterialResponse(this, 6, data5);
+	}
+	else if (strcmp(argv[0], "CLayer") == 0 || strcmp(argv[0], "ConcLayer") == 0) {
+		if (argc != 3) {
+			opserr << "ReinforcedConcreteLayeredMembraneSection::setResponse() - need to specify more data\n";
+			return 0;
+		}
+		int pointNum = atoi(argv[1]);
+		if (pointNum > 0 && pointNum <= numberConcreteLayers) {
+			s.tag("LayerOutput");
+			s.attr("number", pointNum);
+			s.attr("thickness", t[pointNum]);
+
+			theResponse = TheConcrete2DMaterial[pointNum - 1]->setResponse(&argv[2], argc - 2, s);
+
+		}
+	}
+	else if (strcmp(argv[0], "RSLayer") == 0 || strcmp(argv[0], "ReinfSteelLayer") == 0) {
+		if (argc != 3) {
+			opserr << "ReinforcedConcreteLayeredMembraneSection::setResponse() - need to specify more data\n";
+			return 0;
+		}
+		int pointNum = atoi(argv[1]);
+		if (pointNum > 0 && pointNum <= numberReinforcedSteelLayers) {
+			s.tag("LayerOutput");
+			s.attr("number", pointNum);
+
+			theResponse = TheReinforcedSteel2DMaterial[pointNum - 1]->setResponse(&argv[2], argc - 2, s);
+
+		}
 	}
 	else {
 
 		return this->SectionForceDeformation::setResponse(argv, argc, s);
 	}
 
+
 	return theResponse;
 }
 
 
-int ReinforcedConcreteLayerMembraneSection01::getResponse(int responseID, Information& info)
+int ReinforcedConcreteLayeredMembraneSection::getResponse(int responseID, Information& info)
 {
 	if (responseID == 1) {
-		return info.setVector(this->getCommittedStrain());
+		return info.setVector(this->getSectionStressAvg());
 	}
 	else if (responseID == 2) {
-		return info.setVector(this->getCommittedStress());
+		return info.setVector(this->getCrackPattern());
 	}
 	else if (responseID == 3) {
+		return info.setDouble(this->getThetaPDAngle());
+	}
+	else if (responseID == 4) {
 		return info.setVector(this->getBendingParameters());
+	}
+	else if (responseID == 5) {
+		return info.setVector(this->getCommittedStress());
+	}
+	else if (responseID == 6) {
+		return info.setVector(this->getCommittedStrain());
 	}
 	else {
 		return 0;
+
 	}
 }
 
 // Function that returns bending parameters - added for MEFI3D by Maria Jose Nunez, UChile
-Vector ReinforcedConcreteLayerMembraneSection01::getBendingParameters(void)
+Vector ReinforcedConcreteLayeredMembraneSection::getBendingParameters(void)
 {
 	Vector input_par(2);
 
@@ -900,13 +957,60 @@ Vector ReinforcedConcreteLayerMembraneSection01::getBendingParameters(void)
 	return input_par;
 }
 
-void ReinforcedConcreteLayerMembraneSection01::setCrackPattern(void)
+void ReinforcedConcreteLayeredMembraneSection::setCrackPattern(void)
 {
+	// Get strain concrete propierties (ec, ecr)
+	double* strainAtFt = new double[numberConcreteLayers];
+	double* strainAtFc = new double[numberConcreteLayers];
+
+	DummyStream theDummyStream;
+	char aa[80] = "getParameters";
+	const char* argv[1];
+	argv[0] = aa;
+
+	for (int i = 0; i < numberConcreteLayers; i++)
+	{
+		Response* theResponse = TheConcrete2DMaterial[i]->setResponse(argv, 1, theDummyStream);
+
+		if (theResponse == 0) {
+			opserr << "ReinforcedConcreteLayeredMembraneSection::ReinforcedConcreteLayeredMembraneSection - failed to get strain concrete parameters for RCLMS section with tag: " << this->getTag() << "\n";
+			exit(-1);
+		}
+
+		theResponse->getResponse();
+		Information& theInfoPar = theResponse->getInformation();
+		const Vector& ParNDConc = theInfoPar.getData();
+
+		strainAtFc[i] = ParNDConc[2];
+		strainAtFt[i] = ParNDConc[3];
+
+		delete theResponse;
+	}
+	 
+	double maxVal = numeric_limits<double>::lowest();
+	double minVal = numeric_limits<double>::max();
+
+	for (int i = 0; i < numberConcreteLayers; i++) {
+		if (strainAtFc[i] > maxVal) {
+			maxVal = strainAtFc[i];
+		}
+		if (strainAtFt[i] < minVal) {
+			minVal = strainAtFt[i];
+		}
+	}
+
+	ec = maxVal;
+	ecr = minVal;
+
+
+	delete[] strainAtFc;
+	delete[] strainAtFt;
+
 	// Calculate the Principal Direction of Strain
 	this->calculateStrainPrincipalDirections01();
 
 	// Calculate the Poisson Ratios
-	if (crackPattern(0) == 1 || crackPattern(3) == 1) {
+	if (crackPattern(0) == 1 || crackPattern(2) == 1) {
 		isConcreteCracked = true;
 	}
 	else {
@@ -935,34 +1039,44 @@ void ReinforcedConcreteLayerMembraneSection01::setCrackPattern(void)
 	// Check if the Concrete has crushing
 	// Select the minimal strain in the principal direction
 	double minStrain = min(newUniaxialStrainPD[0], newUniaxialStrainPD[1]);
-	int factorWidthComp = 10;
-	if (minStrain <= ec || (crackPattern(3) == 1 && minStrain < 0)) {
-		crackPattern(3) = 1;
-		crackPattern(4) = thetaPrincipalDirection;
-		crackPattern(5) = minStrain / ec / factorWidthComp;
+	if (minStrain <= ec || (crackPattern(2) == 1 && minStrain < 0)) {
+		crackPattern(2) = 1;
+		crackPattern(3) = thetaPrincipalDirection;
 	}
-	else {
-		crackPattern(5) = 0;
-	}
-	int factorWidthTension = 1000;
+
 	// Check if the concrete has been cracked in the direction 1
-	if (newUniaxialStrainPD[0] >= ecr || (crackPattern(0) == 1 && newUniaxialStrainPD[0] >= 0)) {
+	double maxStrain = max(newUniaxialStrainPD[0], newUniaxialStrainPD[1]);
+	if (maxStrain >= ecr || (crackPattern(0) == 1 && maxStrain >= 0)) {
 		crackPattern(0) = 1;
 		crackPattern(1) = thetaPrincipalDirection;
-		crackPattern(2) = newUniaxialStrainPD[0] / ecr / factorWidthTension;
-	}
-	else {
-		crackPattern(2) = 0;
 	}
 
 }
 
-const Vector& ReinforcedConcreteLayerMembraneSection01::getCrackPattern(void)
+const Vector& ReinforcedConcreteLayeredMembraneSection::getCrackPattern(void)
 {
 	return crackPattern;
 }
 
-void ReinforcedConcreteLayerMembraneSection01::calculateStrainPrincipalDirections01(void)
+double ReinforcedConcreteLayeredMembraneSection::getThetaPDAngle(void)
+{
+	return thetaPrincipalDirection;
+}
+
+Vector ReinforcedConcreteLayeredMembraneSection::getSectionStressAvg(void)
+{
+	Vector SectionStressAvg(3);
+
+	SectionStressAvg.Zero();
+
+	SectionStressAvg(0) = TSectionStress(0) / h;
+	SectionStressAvg(1) = TSectionStress(1) / h;
+	SectionStressAvg(2) = TSectionStress(2) / h;
+
+	return SectionStressAvg;
+}
+
+void ReinforcedConcreteLayeredMembraneSection::calculateStrainPrincipalDirections01(void)
 {
 	double strain_vec[3];		//ex, ey, gamma
 	double doubleThetaPD, cos2Theta, sin2Theta;
@@ -993,7 +1107,7 @@ void ReinforcedConcreteLayerMembraneSection01::calculateStrainPrincipalDirection
 	return;
 }
 
-void ReinforcedConcreteLayerMembraneSection01::calculateAngle01(double cosTheta, double sinTheta, double& theta)
+void ReinforcedConcreteLayeredMembraneSection::calculateAngle01(double cosTheta, double sinTheta, double& theta)
 {
 	double thetaFromCos, thetaFromSin;
 
@@ -1015,7 +1129,7 @@ void ReinforcedConcreteLayerMembraneSection01::calculateAngle01(double cosTheta,
 	return;
 }
 
-void ReinforcedConcreteLayerMembraneSection01::calculatePoissonRatios(double e1, double e2)
+void ReinforcedConcreteLayeredMembraneSection::calculatePoissonRatios(double e1, double e2)
 {
 	double nu[2];
 

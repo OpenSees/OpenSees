@@ -3,20 +3,20 @@
 //
 // Created: 04/2023
 // 
-// Description: This file contains the ReinforcedConcreteLayerMembraneSection01 class definition
-// A ReinforcedConcreteLayerMembraneSection01 is a subclass of the sectionForceDeformation class and corresponds to the abstract representation
-// for the stress-strain behavior for a Reinforced Concrete Layer Membrane Element in the Finite Element Method or Structural Analysis. 
+// Description: This file contains the ReinforcedConcreteLayeredMembraneSection class definition
+// A ReinforcedConcreteLayeredMembraneSection is a subclass of the sectionForceDeformation class and corresponds to the abstract representation
+// for the stress-strain behavior for a reinforced concrete layered membrane element in the Finite Element Method or Structural Analysis. 
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
-// Source: \OpenSees\SRC\material\section\ReinforcedConcreteLayerMembraneSection
+// Source: \OpenSees\SRC\material\section\LayeredMembraneSection
 //
 // Rev: 1.0
 
-#ifndef ReinforcedConcreteLayerMembraneSection01_h
-#define ReinforcedConcreteLayerMembraneSection01_h
+#ifndef ReinforcedConcreteLayeredMembraneSection_h
+#define ReinforcedConcreteLayeredMembraneSection_h
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,21 +29,19 @@
 
 #include <SectionForceDeformation.h>
 
-class ReinforcedConcreteLayerMembraneSection01 : public SectionForceDeformation {
+class ReinforcedConcreteLayeredMembraneSection : public SectionForceDeformation {
 public:
 
-	ReinforcedConcreteLayerMembraneSection01(int tag,			// section tag
+	ReinforcedConcreteLayeredMembraneSection(int tag,			// section tag
 		int nSteelLayer,										// number of reinforced steel layers
 		int nConcLayer,											// number of concrete layers
 		NDMaterial** reinforcedSteelMaterialObjects,			// array of nDMaterial reinforced steel tags for each layer
 		NDMaterial** concrete2DMaterialObjects,					// array of nDMaterial concrete tags for each layer
-		double* concThickness,									// array of concrete layers thickness
-		double strainAtFcr = 0.00008,							// strain at tension cracking of the concrete
-		double strainAtFc = -0.002);							// strain at the compresion strength of the concrete
+		double* concThickness);									// array of concrete layers thickness
 
-	ReinforcedConcreteLayerMembraneSection01();
+	ReinforcedConcreteLayeredMembraneSection();
 
-	~ReinforcedConcreteLayerMembraneSection01();
+	~ReinforcedConcreteLayeredMembraneSection();
 
 	int setTrialSectionDeformation(const Vector& newTrialSectionStrain);
 
@@ -55,7 +53,7 @@ public:
 
 	// Public methods to obtain a copy of section and other information
 	SectionForceDeformation* getCopy(void);
-	const char* getClassType(void) const { return "ReinforcedConcreteLayerMembrane"; };
+	const char* getClassType(void) const { return "ReinforcedConcreteLayeredMembraneSection"; };
 	const ID& getType(void);
 	int getOrder(void) const;
 	
@@ -81,14 +79,19 @@ public:
 
 private:
 	
-	void setCrackPattern(void);														// Obtain the crack pattern for the PlaneElementSection
-	const Vector& getCrackPattern(void);											// Return the crack pattern
 	void calculateStrainPrincipalDirections01(void);								// Calculate the principal direction for the strains (11, 22, 12) using the calculateAngle01 method
 	void calculateAngle01(double cosTheta, double sinTheta, double& theta);			// Calculate the theta angle [-pi,pi] from the cos(theta) and sin(theta)
 	void calculatePoissonRatios(double e1, double e2);								// Calculate the Vecchio Poisson Ratios
-	// Function used by MEFI3D
+	void setCrackPattern(void);														// Obtain the crack pattern for the PlaneElementSection
+	
+	// Functions used by MEFI3D
 	double getEcAvg(void);															// Return the average young's modulus of concrete
-	Vector getBendingParameters(void);												// Return input parameters
+	Vector getBendingParameters(void);												// Return bending parameters
+	
+	// Functions used for recorders
+	const Vector& getCrackPattern(void);											// Return the crack pattern
+	double getThetaPDAngle(void);													// Return the principal strain direction 
+	Vector getSectionStressAvg(void);											    // Return the average section stress
 
 	// Private attributes
 	NDMaterial** TheConcrete2DMaterial;												// Array of ND concrete materials
@@ -128,4 +131,4 @@ private:
 	static ID array;
 };
 
-#endif // !ReinforcedConcreteLayerMembraneSection01_h
+#endif // !ReinforcedConcreteLayeredMembraneSection_h

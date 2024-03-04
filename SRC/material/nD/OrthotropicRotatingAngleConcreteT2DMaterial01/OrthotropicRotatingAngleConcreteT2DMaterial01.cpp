@@ -9,7 +9,7 @@
 // Loading with damage that is used in Finite Element Method or Structural Analysis.
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
 // Source: \OpenSees\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01
@@ -731,17 +731,56 @@ const Matrix& OrthotropicRotatingAngleConcreteT2DMaterial01::getInitialTangent(v
 Response* OrthotropicRotatingAngleConcreteT2DMaterial01::setResponse(const char** argv, int argc, OPS_Stream& theOutput)
 {
 	Response* theResponse = 0;
-	if (strcmp(argv[0], "getEc") == 0) {
+	if (strcmp(argv[0], "getParameters") == 0) {
 		theOutput.tag("NdMaterialOutput");
 		theOutput.attr("matType", this->getClassType());
 		theOutput.attr("matTag", this->getTag());
 		theOutput.tag("ResponseType", "MaterialTag");
 		theOutput.tag("ResponseType", "Ec");
+		theOutput.tag("ResponseType", "ec");
+		theOutput.tag("ResponseType", "ecr");
 		theOutput.endTag();
 
-		Vector data1(2);
+		Vector data1(4);
 		data1.Zero();
 		theResponse = new MaterialResponse(this, 101, data1);
+	}
+	else if (strcmp(argv[0], "strain_stress_concrete1") == 0 || strcmp(argv[0], "Strain_Stress_Concrete1") == 0) {
+		theOutput.tag("NdMaterialOutput");
+		theOutput.attr("matType", this->getClassType());
+		theOutput.attr("matTag", this->getTag());
+		theOutput.tag("ResponseType", "eps11");
+		theOutput.tag("ResponseType", "sig11");
+		theOutput.endTag();
+
+		Vector data2(2);
+		data2.Zero();
+		theResponse = new MaterialResponse(this, 102, data2);
+	}
+	else if (strcmp(argv[0], "strain_stress_concrete2") == 0 || strcmp(argv[0], "Strain_Stress_Concrete2") == 0) {
+		theOutput.tag("NdMaterialOutput");
+		theOutput.attr("matType", this->getClassType());
+		theOutput.attr("matTag", this->getTag());
+		theOutput.tag("ResponseType", "eps11");
+		theOutput.tag("ResponseType", "sig11");
+		theOutput.endTag();
+
+		Vector data3(2);
+		data3.Zero();
+		theResponse = new MaterialResponse(this, 103, data3);
+	}
+	else if (strcmp(argv[0], "concrete_layer_stress") == 0 || strcmp(argv[0], "Concrete_Layer_Stress") == 0) {
+		theOutput.tag("NdMaterialOutput");
+		theOutput.attr("matType", this->getClassType());
+		theOutput.attr("matTag", this->getTag());
+		theOutput.tag("ResponseType", "sigma11");
+		theOutput.tag("ResponseType", "sigma22");
+		theOutput.tag("ResponseType", "sigma12");
+		theOutput.endTag();
+
+		Vector data4(3);
+		data4.Zero();
+		theResponse = new MaterialResponse(this, 104, data4);
 	}
 	else
 		return this->NDMaterial::setResponse(argv, argc, theOutput);
@@ -752,26 +791,60 @@ Response* OrthotropicRotatingAngleConcreteT2DMaterial01::setResponse(const char*
 int OrthotropicRotatingAngleConcreteT2DMaterial01::getResponse(int responseID, Information& matInformation)
 {
 	if (responseID == 101) {
-		return matInformation.setVector(this->getEc());
+		return matInformation.setVector(this->getParameters());
+	}
+	else if (responseID == 102) {
+		return matInformation.setVector(this->getStrainStressConcrete1());
+	}
+	else if (responseID == 103) {
+		return matInformation.setVector(this->getStrainStressConcrete2());
+	}
+	else if (responseID == 104) {
+		return matInformation.setVector(this->getStress());
 	}
 	else {
 		return 0;
 	}
 }
 
-// Function that returns input parameters (concrete Young's modulus) - added for MEFI3D by Maria Jose Nunez, UChile
-Vector OrthotropicRotatingAngleConcreteT2DMaterial01::getEc(void)
+// Function that returns concrete Young's modulus and strain at tension and compression strength of concrete - added for RCLMS and MEFI3D by Maria Jose Nunez, UChile
+Vector OrthotropicRotatingAngleConcreteT2DMaterial01::getParameters(void)
 {
-	Vector input_par(2);
+	Vector concrete_par(4);
 
-	input_par.Zero();
+	concrete_par.Zero();
 
-	input_par(0) = this->getTag();
-	input_par(1) = Eo;
+	concrete_par(0) = this->getTag();
+	concrete_par(1) = Eo;
+	concrete_par(2) = ec;
+	concrete_par(3) = ecr;
 
-	return input_par;
+	return concrete_par;
 }
 
+// Strain-stress for uniaxial concrete 1
+Vector OrthotropicRotatingAngleConcreteT2DMaterial01::getStrainStressConcrete1(void)
+{
+	Vector StrainStressConc1(2);
+	StrainStressConc1.Zero();
+
+	StrainStressConc1(0) = theMaterial[0]->getStrain();
+	StrainStressConc1(1) = theMaterial[0]->getStress();
+
+	return StrainStressConc1;
+}
+
+// Strain-stress for uniaxial concrete 2
+Vector OrthotropicRotatingAngleConcreteT2DMaterial01::getStrainStressConcrete2(void)
+{
+	Vector StrainStressConc2(2);
+	StrainStressConc2.Zero();
+
+	StrainStressConc2(0) = theMaterial[1]->getStrain();
+	StrainStressConc2(1) = theMaterial[1]->getStress();
+
+	return StrainStressConc2;
+}
 
 int OrthotropicRotatingAngleConcreteT2DMaterial01::commitState(void)
 {

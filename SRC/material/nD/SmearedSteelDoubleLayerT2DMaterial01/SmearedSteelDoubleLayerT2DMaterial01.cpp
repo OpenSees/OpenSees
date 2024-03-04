@@ -9,7 +9,7 @@
 // in the direction of the bars, so a uniaxial constitutive model is used to represent the behavior of reinforcing steel bars in each direction.
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
 // Source: \OpenSees\SRC\material\nD\SmearedSteelDoubleLayerT2DMaterial01
@@ -27,6 +27,7 @@
 #include <DummyStream.h>
 #include <elementAPI.h>
 #include <cmath>
+#include <MaterialResponse.h>
 
 // Read input parameters and build the material
 void* OPS_SmearedSteelDoubleLayerT2DMaterial01()
@@ -225,7 +226,11 @@ void SmearedSteelDoubleLayerT2DMaterial01::Print(OPS_Stream& s, int flag)
 	s << "Reinforcing ratio of the smeared steel layer 2: " << ratioLayer2 << endln;
 
 	s << "Strain:" << endln;
-	s << "EpsX = " << Tstrain(0) << ", EpsY = " << Tstrain(1) << ", GammaXY = " << Tstrain(2) << endln;
+	s << "EpsX = " << TstrainLayer(0) << ", EpsY = " << TstrainLayer(1) << ", GammaXY = " << TstrainLayer(2) << endln;
+	//Strain and stress of the uniaxial materials
+	s << "Strain and stress of Steel Uniaxial Materials:" << endln;
+	s << "Steel 1: Strain = " << theMaterial[0]->getStrain() << ", Stress = " << theMaterial[0]->getStress() << endln;
+	s << "Steel 2: Strain = " << theMaterial[1]->getStrain() << ", Stress = " << theMaterial[1]->getStress() << endln;
 }
 
 int SmearedSteelDoubleLayerT2DMaterial01::sendSelf(int commitTag, Channel& theChannel)
@@ -603,12 +608,89 @@ int SmearedSteelDoubleLayerT2DMaterial01::revertToStart(void)
 
 Response* SmearedSteelDoubleLayerT2DMaterial01::setResponse(const char** argv, int argc, OPS_Stream& theOutput)
 {
-	return NDMaterial::setResponse(argv, argc, theOutput);
+	Response* theResponse = 0;
+
+	if (strcmp(argv[0], "strain_stress_steel1") == 0 || strcmp(argv[0], "Strain_Stress_Steel1") == 0) {
+		theOutput.tag("NdMaterialOutput");
+		theOutput.attr("matType", this->getClassType());
+		theOutput.attr("matTag", this->getTag());
+		theOutput.tag("ResponseType", "eps11");
+		theOutput.tag("ResponseType", "sig11");
+		theOutput.endTag();
+
+		Vector data1(2);
+		data1.Zero();
+		theResponse = new MaterialResponse(this, 101, data1);
+	}
+	else if (strcmp(argv[0], "strain_stress_steel2") == 0 || strcmp(argv[0], "Strain_Stress_Steel2") == 0) {
+		theOutput.tag("NdMaterialOutput");
+		theOutput.attr("matType", this->getClassType());
+		theOutput.attr("matTag", this->getTag());
+		theOutput.tag("ResponseType", "eps11");
+		theOutput.tag("ResponseType", "sig11");
+		theOutput.endTag();
+
+		Vector data2(2);
+		data2.Zero();
+		theResponse = new MaterialResponse(this, 102, data2);
+	}
+	else if (strcmp(argv[0], "steel_layer_stress") == 0 || strcmp(argv[0], "Steel_Layer_Stress") == 0) {
+		theOutput.tag("NdMaterialOutput");
+		theOutput.attr("matType", this->getClassType());
+		theOutput.attr("matTag", this->getTag());
+		theOutput.tag("ResponseType", "sigma11");
+		theOutput.tag("ResponseType", "sigma22");
+		theOutput.tag("ResponseType", "sigma12");
+		theOutput.endTag();
+
+		Vector data3(3);
+		data3.Zero();
+		theResponse = new MaterialResponse(this, 103, data3);
+	}
+	else
+		return this->NDMaterial::setResponse(argv, argc, theOutput);
+
+	return theResponse;
 }
 
 int SmearedSteelDoubleLayerT2DMaterial01::getResponse(int responseID, Information& matInformation)
 {
-	return NDMaterial::getResponse(responseID, matInformation);
+	if (responseID == 101) {
+		return matInformation.setVector(this->getStrainStressSteel1());
+	}
+	else if (responseID == 102) {
+		return matInformation.setVector(this->getStrainStressSteel2());
+	}
+	else if (responseID == 103) {
+		return matInformation.setVector(this->getStress());
+	}
+	else {
+		return 0;
+	}
+}
+
+// Strain-stress for uniaxial steel 1
+Vector SmearedSteelDoubleLayerT2DMaterial01::getStrainStressSteel1(void)
+{
+	Vector StrainStressSteel1(2);
+	StrainStressSteel1.Zero();
+
+	StrainStressSteel1(0) = theMaterial[0]->getStrain();
+	StrainStressSteel1(1) = theMaterial[0]->getStress();
+
+	return StrainStressSteel1;
+}
+
+// Strain-stress for uniaxial steel 2
+Vector SmearedSteelDoubleLayerT2DMaterial01::getStrainStressSteel2(void)
+{
+	Vector StrainStressSteel2(2);
+	StrainStressSteel2.Zero();
+
+	StrainStressSteel2(0) = theMaterial[1]->getStrain();
+	StrainStressSteel2(1) = theMaterial[1]->getStress();
+
+	return StrainStressSteel2;
 }
 
 void SmearedSteelDoubleLayerT2DMaterial01::calculateStrainPrincipalDirections01(void)

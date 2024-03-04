@@ -3,20 +3,20 @@
 //
 // Created: 07/2023
 // 
-// Description: This file contains the ReinforcedConcreteLayerMembraneSection02 class definition
-// A ReinforcedConcreteLayerMembraneSection02 is a subclass of the sectionForceDeformation class and corresponds to the abstract representation
+// Description: This file contains the LayeredMembraneSection class definition
+// A LayeredMembraneSection is a subclass of the sectionForceDeformation class and corresponds to the abstract representation
 // for the stress-strain behavior for a Reinforced Concrete Layer Membrane Element in the Finite Element Method or Structural Analysis. 
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
-// Source: \OpenSees\SRC\material\section\ReinforcedConcreteLayerMembraneSection
+// Source: \OpenSees\SRC\material\section\LayeredMembraneSection
 //
 // Rev: 1.0
 
-#ifndef ReinforcedConcreteLayerMembraneSection02_h
-#define ReinforcedConcreteLayerMembraneSection02_h
+#ifndef LayeredMembraneSection_h
+#define LayeredMembraneSection_h
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -29,16 +29,19 @@
 
 #include <SectionForceDeformation.h>
 
-class ReinforcedConcreteLayerMembraneSection02 : public SectionForceDeformation {
+class LayeredMembraneSection : public SectionForceDeformation {
 public:
 
-	ReinforcedConcreteLayerMembraneSection02(int tag,			// section tag
-		NDMaterial* RCMaterialObject,							// reinforced concrete nDMaterial tag
-		double Thickness);										// section thickness
+	LayeredMembraneSection(int tag,			                    // section tag
+		double totalThickness,									// section total thickness
+		int nLayers,											// number of layers
+		NDMaterial** MaterialObjects,							// array of nDMaterial tags 
+		double* Thickness,										// array of layers thicknesses
+		double Eaverage = 0.0);									// modulus of Elasticity
 
-	ReinforcedConcreteLayerMembraneSection02();
+	LayeredMembraneSection();
 
-	~ReinforcedConcreteLayerMembraneSection02();
+	~LayeredMembraneSection();
 
 	int setTrialSectionDeformation(const Vector& newTrialSectionStrain);
 
@@ -50,7 +53,7 @@ public:
 
 	// Public methods to obtain a copy of section and other information
 	SectionForceDeformation* getCopy(void);
-	const char* getClassType(void) const { return "ReinforcedConcreteLayerMembrane"; };
+	const char* getClassType(void) const { return "LayeredMembraneSection"; };
 	const ID& getType(void);
 	int getOrder(void) const;
 	
@@ -72,16 +75,24 @@ public:
 	const Vector& getCommittedStress(void);
 
 	// Function used by MEFI3D
-	double getRho(void);															// Return the concrete density
+	double getRho(void);														
 
 private:
 
 	// Function used by MEFI3D
-	double getEcAvg(void);															// Return the average young's modulus of RC material
-	Vector getBendingParameters(void);												// Return input parameters
+	Vector getBendingParameters(void);												// Return bending parameters
+
+	// Function used for recorders
+	Vector getSectionStressAvg(void);												// Return the average section stress
 
 	// Private attributes
-	NDMaterial* TheRCMaterial;														// Pointer to a nd material
+	NDMaterial** The2DMaterials;												    // Array of nD materials
+	
+	int numberLayers;																// Store the number of layers
+	double t_total;																	// Store the section total thickness
+
+	// Out of plane parameter
+	double Eave;																	// Store the modulus of elasticity
 	
 	// Committed State Variables
 	Vector CSectionStrain;															// Store the commit strains of the membrane section
@@ -93,9 +104,9 @@ private:
 	Matrix TSectionTangent;															// Store the trial tangent of the membrane section
 	Matrix InitialTangent;															// Store the initial tangent of the membrane section
 
-	double t;																		// Store the thickness of the section 
+	double* t;																		// Store the layers thicknesses
 
 	static ID array;
 };
 
-#endif // !ReinforcedConcreteLayerMembraneSection02_h
+#endif // !LayeredMembraneSection_h

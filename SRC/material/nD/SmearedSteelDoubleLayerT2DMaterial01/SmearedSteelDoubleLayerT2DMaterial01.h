@@ -9,7 +9,7 @@
 // in the direction of the bars, so a uniaxial constitutive model is used to represent the behavior of reinforcing steel bars in each direction.
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
 // Source: \OpenSees\SRC\material\nD\SmearedSteelDoubleLayerT2DMaterial01
@@ -83,6 +83,10 @@ class SmearedSteelDoubleLayerT2DMaterial01 : public NDMaterial
 	  void calculateStrainPrincipalDirections01(void);											// calculate the principal direction for the strains (11, 22, 12) using the calculateAngle01 method
 	  void calculateAngle01(double cosTheta, double sinTheta, double& theta);					// calculate the theta angle [-pi,pi] from the cos(theta) and sin(theta)
 	  void calculateStrainTransformationMatrix(double* pTmatrixStrain, double theta);			// calculate the Strain Transformation Matrix that goes from the Local Coord System to the orientation of the Principal Direction of strain
+
+	  // Functions for recorders
+	  Vector getStrainStressSteel1(void);
+	  Vector getStrainStressSteel2(void);
 
 	  UniaxialMaterial** theMaterial;		// pointer to a material
 

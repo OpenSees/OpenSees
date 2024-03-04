@@ -357,8 +357,8 @@
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
-#define SEC_TAG_ReinforcedConcreteLayerMembraneSection01 7701 // M. J. Nunez - UChile
-#define SEC_TAG_ReinforcedConcreteLayerMembraneSection02 7702 // M. J. Nunez - UChile
+#define SEC_TAG_ReinforcedConcreteLayeredMembraneSection 7701 // M. J. Nunez - UChile
+#define SEC_TAG_LayeredMembraneSection 7702 // M. J. Nunez - UChile
 
 #define SECTION_INTEGRATION_TAG_WideFlange 1
 #define SECTION_INTEGRATION_TAG_RC 2

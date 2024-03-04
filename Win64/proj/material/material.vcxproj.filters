@@ -116,8 +116,8 @@
     <Filter Include="nD\SmearedSteelDoubleLayerT2DMaterial01">
       <UniqueIdentifier>{fd8d83ef-3398-4382-a13d-a44c90db022b}</UniqueIdentifier>
     </Filter>
-    <Filter Include="section\ReinforcedConcreteLayerMembraneSection">
-      <UniqueIdentifier>{a0bc02f9-c404-4c54-9cbe-323f4389efc2}</UniqueIdentifier>
+    <Filter Include="section\LayeredMembraneSection">
+      <UniqueIdentifier>{5db15df2-5764-49de-b5d0-e7b292f7136e}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -1514,11 +1514,11 @@
     <ClCompile Include="..\..\..\SRC\material\nD\SmearedSteelDoubleLayerT2DMaterial01\SmearedSteelDoubleLayerT2DMaterial01.cpp">
       <Filter>nD\SmearedSteelDoubleLayerT2DMaterial01</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\section\ReinforcedConcreteLayerMembraneSection\ReinforcedConcreteLayerMembraneSection01.cpp">
-      <Filter>section\ReinforcedConcreteLayerMembraneSection</Filter>
+    <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\LayeredMembraneSection.cpp">
+      <Filter>section\LayeredMembraneSection</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\section\ReinforcedConcreteLayerMembraneSection\ReinforcedConcreteLayerMembraneSection02.cpp">
-      <Filter>section\ReinforcedConcreteLayerMembraneSection</Filter>
+    <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ReinforcedConcreteLayeredMembraneSection.cpp">
+      <Filter>section\LayeredMembraneSection</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2771,11 +2771,11 @@
     <ClInclude Include="..\..\..\SRC\material\nD\SmearedSteelDoubleLayerT2DMaterial01\SmearedSteelDoubleLayerT2DMaterial01.h">
       <Filter>nD\SmearedSteelDoubleLayerT2DMaterial01</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\section\ReinforcedConcreteLayerMembraneSection\ReinforcedConcreteLayerMembraneSection01.h">
-      <Filter>section\ReinforcedConcreteLayerMembraneSection</Filter>
+    <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\LayeredMembraneSection.h">
+      <Filter>section\LayeredMembraneSection</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\section\ReinforcedConcreteLayerMembraneSection\ReinforcedConcreteLayerMembraneSection02.h">
-      <Filter>section\ReinforcedConcreteLayerMembraneSection</Filter>
+    <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ReinforcedConcreteLayeredMembraneSection.h">
+      <Filter>section\LayeredMembraneSection</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

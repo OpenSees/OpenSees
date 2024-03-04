@@ -9,7 +9,7 @@
 // Loading with damage that is used in Finite Element Method or Structural Analysis.
 //
 // Reference:
-// 1. Rojas, F., Anderson, J. C., Massones, L. M. (2016). A nonlinear quadrilateral layered membrane with drilling degrees of freedom for 
+// 1. Rojas, F., Anderson, J. C., Massone, L. M. (2016). A nonlinear quadrilateral layered membrane element with drilling degrees of freedom for 
 // the modeling of reinforced concrete walls. Engineering Structures, 124, 521-538.
 //
 // Source: \OpenSees\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01
@@ -82,8 +82,12 @@ private:
 	void calculateStrainTransformationMatrix(double* pTmatrixStrain, double theta);			// calculate the Strain Transformation Matrix that goes from the Local Coord System to the orientation of the Principal Direction of strain
 	void calculateStressTransformationMatrix(double* pTmatrixStress, double theta);			// calculate the Stress Transformation Matrix that goes from the orientation of the Principal Direction T(-thetaPD) to the Local Coord System
 
-	// Function added for MEFI3D
-	Vector getEc(void);		                // return input parameters
+	// Function added for RCLMS and MEFI3D
+	Vector getParameters(void);		                // return concrete parameters
+
+	// Functions for recorders
+	Vector getStrainStressConcrete1(void);
+	Vector getStrainStressConcrete2(void);
 
 	// Pointers to material arrays
 	UniaxialMaterial** theMaterial;         // pointer of the materials
