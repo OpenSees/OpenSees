@@ -4898,24 +4898,26 @@ int MPCORecorder::initialize()
 	create info group and metadata
 	*/
 	hid_t h_gp_info = h5::group::create(m_data->info.h_file_id, "INFO", H5P_DEFAULT, m_data->info.h_group_proplist, H5P_DEFAULT);
-	hid_t h_dset_dim = h5::dataset::createAndWrite(h_gp_info, "SPATIAL_DIM", m_data->info.num_dimensions);
+	hid_t h_dset_solvername = h5::dataset::createAndWrite(h_gp_info, "SOLVER_NAME", "OpenSees");
+	status = h5::dataset::close(h_dset_solvername);
 	{
 		std::vector<std::string> version_tokens;
 		utils::strings::split(OPS_VERSION, '.', version_tokens, true);
 		if (version_tokens.size() > 0) {
 			std::vector<int> version(version_tokens.size(), 0);
 			for (std::size_t i = 0; i < version_tokens.size(); ++i) {
-				try { 
+				try {
 					version[i] = std::stoi(version_tokens[i]);
 				}
 				catch (...) {
 					version[i] = 0;
 				}
 			}
-			hid_t h_dset_version = h5::dataset::createAndWrite(h_gp_info, "VERSION", version);
+			hid_t h_dset_version = h5::dataset::createAndWrite(h_gp_info, "SOLVER_VERSION", version);
 			status = h5::dataset::close(h_dset_version);
 		}
 	}
+	hid_t h_dset_dim = h5::dataset::createAndWrite(h_gp_info, "SPATIAL_DIM", m_data->info.num_dimensions);
 	status = h5::dataset::close(h_dset_dim);
 	status = h5::group::close(h_gp_info);
 	/*
