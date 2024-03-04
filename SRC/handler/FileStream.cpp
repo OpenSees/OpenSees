@@ -30,6 +30,7 @@
 #include <ID.h>
 #include <Channel.h>
 #include <Message.h>
+#include <string.h>
 
 
 using std::cerr;
