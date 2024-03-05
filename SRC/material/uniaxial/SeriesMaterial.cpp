@@ -83,7 +83,7 @@ OPS_SeriesMaterial(void)
   }
   numArgs = numArgs - numOptionalArgs;
     
-  if (numArgs < 3) {
+  if (numArgs < 2) {
     opserr << "Invalid #args,  want: uniaxialMaterial Series $tag $tag1 $tag2 ... $tagN <-iter maxIter tol>" << endln;
     return 0;
   }
