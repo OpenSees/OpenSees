@@ -39,7 +39,7 @@ class InitStrainNDMaterial : public NDMaterial
 {
   public:
     InitStrainNDMaterial(int tag, NDMaterial &material, const Vector &eps0);
-    InitStrainNDMaterial(int tag, NDMaterial &material, double eps0);   
+    InitStrainNDMaterial(int tag, NDMaterial &material, double eps0);
     InitStrainNDMaterial();
     ~InitStrainNDMaterial();
     
@@ -74,6 +74,7 @@ class InitStrainNDMaterial : public NDMaterial
     void Print(OPS_Stream &s, int flag =0);
     
     int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information& info);
 
     Response* setResponse(const char** argv, int argc, OPS_Stream& output);
 
