@@ -145,8 +145,15 @@ Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
       nu(0.0),
       T0(t0),
       pressure(pre) {
-    if (createPipe(nd1, nd2, theTransf, mat, sect, cm, rz, ry) < 0) {
+    if (createPipe(nd1, nd2, mat, sect, cm, rz, ry) < 0) {
         opserr << "WARNING: failed to create pipe element\n";
+        exit(-1);
+    }
+    // transf
+    theCoordTransf = theTransf.getCopy3d();
+    if (!theCoordTransf) {
+        opserr << "Pipe element -- failed to get "
+                  "copy of coordinate transformation\n";
         exit(-1);
     }
 }
@@ -310,9 +317,8 @@ void Pipe::zeroLoad(void) {
     }
 }
 
-int Pipe::createPipe(int nd1, int nd2, CrdTransf &theTransf,
-                     PipeMaterial &mat, PipeSection &sect, int cm,
-                     int rz, int ry) {
+int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
+                     PipeSection &sect, int cm, int rz, int ry) {
     // nodes
     connectedExternalNodes(0) = nd1;
     connectedExternalNodes(1) = nd2;
@@ -332,15 +338,6 @@ int Pipe::createPipe(int nd1, int nd2, CrdTransf &theTransf,
         opserr << "Pipe element - failed to get a copy of "
                   "material with tag "
                << mat.getTag() << "\n";
-        return -1;
-    }
-
-    // transf
-    theCoordTransf = theTransf.getCopy3d();
-
-    if (!theCoordTransf) {
-        opserr << "Pipe element -- failed to get "
-                  "copy of coordinate transformation\n";
         return -1;
     }
 

@@ -35,12 +35,13 @@ class CurvedPipe : public Pipe {
     double radius;
     double theta0;
     double tolWall;
+    int transfTag;
 
     static std::vector<double> gaussPts;
 
    public:
     CurvedPipe();
-    CurvedPipe(int tag, int Nd1, int Nd2, CrdTransf &theTransf,
+    CurvedPipe(int tag, int Nd1, int Nd2, int transfTag,
                PipeMaterial &mat, PipeSection &sect, const Vector &c,
                double to = 0.0, double pre = 0.0, int cMass = 0,
                double tol = 0.1);
@@ -68,6 +69,8 @@ class CurvedPipe : public Pipe {
     int kb(Matrix &mat, Vector &vec);
     void integrateGauss(double a, double b, Matrix &res,
                         Vector &resv);
+    static int crossProduct(const Vector &A, const Vector &B,
+                            Vector &res);
 };
 
 #endif
