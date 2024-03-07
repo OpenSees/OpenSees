@@ -67,9 +67,8 @@ class Pipe : public ElasticBeam3d {
     double aveTemp();
     int updateSectionData();
     int updateMaterialData();
-    int createPipe(int nd1, int nd2, CrdTransf &theTransf,
-                   PipeMaterial &mat, PipeSection &sect, int cm,
-                   int rz, int ry);
+    int createPipe(int nd1, int nd2, PipeMaterial &mat,
+                   PipeSection &sect, int cm, int rz, int ry);
 };
 
 #endif

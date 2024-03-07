@@ -24,6 +24,7 @@
 #include "CurvedPipe.h"
 
 #include <CrdTransf.h>
+#include <LinearCrdTransf3d.h>
 
 #include <cmath>
 
@@ -132,15 +133,16 @@ void *OPS_CurvedPipeElement() {
     }
 
     auto *theTrans = OPS_getCrdTransf(iData[3]);
-    if (theTrans == 0) {
+    if (theTrans != 0) {
         opserr << "WARNING: CrdTransf " << iData[3]
-               << " is not found\n";
+               << " should not exist (CurvedPipe will create "
+                  "internally)\n";
         return 0;
     }
 
-    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2],
-                               *theTrans, *theMat, *theSect, center,
-                               T0, pressure, cMass);
+    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2], iData[3],
+                               *theMat, *theSect, center, T0,
+                               pressure, cMass);
 
     return ele;
 }
@@ -148,17 +150,17 @@ void *OPS_CurvedPipeElement() {
 CurvedPipe::CurvedPipe()
     : Pipe(), center(3), radius(0.0), theta0(0.0), tolWall(0.1) {}
 
-CurvedPipe::CurvedPipe(int tag, int nd1, int nd2,
-                       CrdTransf &theTransf, PipeMaterial &mat,
-                       PipeSection &sect, const Vector &c, double to,
-                       double pre, int cm, double tol)
+CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, int tTag,
+                       PipeMaterial &mat, PipeSection &sect,
+                       const Vector &c, double to, double pre, int cm,
+                       double tol)
     : Pipe(tag, ELE_TAG_CurvedPipe),
       center(3),
       radius(0.0),
       theta0(0.0),
-      tolWall(tol) {
-    if (Pipe::createPipe(nd1, nd2, theTransf, mat, sect, cm, 0, 0) <
-        0) {
+      tolWall(tol),
+      transfTag(tTag) {
+    if (Pipe::createPipe(nd1, nd2, mat, sect, cm, 0, 0) < 0) {
         opserr << "WARNING: failed to create curved pipe element\n";
         exit(-1);
     }
@@ -180,6 +182,58 @@ const char *CurvedPipe::getClassType(void) const {
 };
 
 void CurvedPipe::setDomain(Domain *theDomain) {
+    // create transf3D internally
+    if (theDomain == 0) {
+        opserr << "Pipe::setDomain -- Domain is null\n";
+        exit(-1);
+    }
+
+    int ndm = OPS_GetNDM();
+    if (ndm != 3) {
+        opserr << "WARNING: pipe element must be 3D\n";
+        exit(-1);
+    }
+
+    theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
+    theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
+
+    if (theNodes[0] == 0) {
+        opserr << "Pipe::setDomain  tag: " << this->getTag()
+               << " -- Node 1: " << connectedExternalNodes(0)
+               << " does not exist\n";
+        exit(-1);
+    }
+
+    if (theNodes[1] == 0) {
+        opserr << "Pipe::setDomain  tag: " << this->getTag()
+               << " -- Node 2: " << connectedExternalNodes(1)
+               << " does not exist\n";
+        exit(-1);
+    }
+
+    const auto &crdsI = theNodes[0]->getCrds();
+    const auto &crdsJ = theNodes[1]->getCrds();
+
+    Vector CI = crdsI;
+    CI -= center;
+    CI.Normalize();
+
+    Vector IJ = crdsJ;
+    IJ -= crdsI;
+    IJ.Normalize();
+
+    Vector zAxis;
+    if (crossProduct(CI, IJ, zAxis) < 0) {
+        exit(-1);
+    }
+
+    if (ElasticBeam3d::theCoordTransf != 0) {
+        delete ElasticBeam3d::theCoordTransf;
+        ElasticBeam3d::theCoordTransf = 0;
+    }
+    ElasticBeam3d::theCoordTransf =
+        new LinearCrdTransf3d(transfTag, zAxis);
+
     // set domain
     this->Pipe::setDomain(theDomain);
 
@@ -460,4 +514,22 @@ void CurvedPipe::integrateGauss(double a, double b, Matrix &resm,
     }
     resm *= radius;
     resv *= radius;
+}
+
+int CurvedPipe::crossProduct(const Vector &A, const Vector &B,
+                             Vector &res) {
+    if (A.Size() != 3 || B.Size() != 3) {
+        opserr << "WARNING: vector A and B's size must be 3 -- "
+                  "CurvedPipe::crossProduct\n";
+        return -1;
+    }
+
+    res.resize(3);
+    res.Zero();
+
+    res(0) = A(1) * B(2) - A(2) * B(1);
+    res(1) = A(2) * B(0) - A(0) * B(2);
+    res(2) = A(0) * B(1) - A(1) * B(0);
+
+    return 0;
 }
