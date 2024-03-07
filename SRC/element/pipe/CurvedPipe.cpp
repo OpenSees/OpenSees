@@ -48,7 +48,7 @@ std::vector<double> CurvedPipe::gaussPts = {
 
 void *OPS_CurvedPipeElement() {
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 10) {
+    if (OPS_GetNumRemainingInputArgs() < 9) {
         opserr << "Invalid #args,  want: element CurvedPipe "
                   "tag? nd1? nd2? transfTag? pipeMatTag? pipeSecTag?"
                   "xC? yC? zC?"
@@ -171,10 +171,6 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2,
         }
         center(i) = c(i);
     }
-    if (radius <= 0) {
-        opserr << "WARNING: radius <= 0\n";
-        exit(-1);
-    }
 }
 
 CurvedPipe::~CurvedPipe() {}
@@ -202,7 +198,8 @@ const Matrix &CurvedPipe::getTangentStiff() {
     Matrix kbm;
     Vector pb0;
     if (kb(kbm, pb0) < 0) {
-        opserr << "WARNING: failed to compute kb\n";
+        opserr
+            << "WARNING: failed to compute kb -- getTangentStiff\n";
         ElasticBeam3d::K.Zero();
         return ElasticBeam3d::K;
     }
@@ -219,7 +216,8 @@ const Matrix &CurvedPipe::getInitialStiff() {
     Matrix kbm;
     Vector pb0;
     if (kb(kbm, pb0) < 0) {
-        opserr << "WARNING: failed to compute kb\n";
+        opserr
+            << "WARNING: failed to compute kb -- getInitialStiff\n";
         ElasticBeam3d::K.Zero();
         return ElasticBeam3d::K;
     }
@@ -253,7 +251,8 @@ const Vector &CurvedPipe::getResistingForce() {
     Matrix kbm;
     Vector pb0;
     if (kb(kbm, pb0) < 0) {
-        opserr << "WARNING: failed to compute kb\n";
+        opserr
+            << "WARNING: failed to compute kb -- getResistingForce\n";
         ElasticBeam3d::P.Zero();
         return ElasticBeam3d::P;
     }
@@ -270,6 +269,8 @@ const Vector &CurvedPipe::getResistingForce() {
     if (rho != 0) {
         P.addVector(1.0, Q, -1.0);
     }
+
+    return P;
 }
 
 int CurvedPipe::getTheta0() {
@@ -280,19 +281,23 @@ int CurvedPipe::getTheta0() {
     double R1 = (center - crds1).Norm();
     double R2 = (center - crds2).Norm();
     radius = (R1 + R2) / 2.0;
+    if (radius <= 0) {
+        opserr << "WARNING: radius <= 0\n";
+        return -1;
+    }
 
     double thk = theSect->WALL();
-
     if (fabs(R1 - R2) > tolWall * thk) {
         opserr << "WARNING: the computed radius from node I is "
                   "different to "
                   "the one computed from node J more than "
                << tolWall << " * wall thickness\n";
+        return -1;
     }
 
     // compute theta0
     double Lhalf = theCoordTransf->getInitialLength() / 2.0;
-    theta0 = 2.0 * asin(radius / Lhalf);
+    theta0 = asin(Lhalf / radius);
 
     return 0;
 }
@@ -319,8 +324,8 @@ void CurvedPipe::bx(double theta, Matrix &mat) {
     mat(4, 0) = s;
     mat(4, 1) = c * invL;
     mat(4, 2) = c * invL;
-    mat(4, 3) = invL;
-    mat(4, 4) = invL;
+    mat(5, 3) = invL;
+    mat(5, 4) = invL;
 }
 
 void CurvedPipe::Spx(double theta, Vector &vec) {
@@ -355,6 +360,9 @@ void CurvedPipe::fs(double theta, Matrix &mat) {
     mat(3, 3) = 1.0 / (G * Jx);
 
     double alphaV = theSect->ALFAV();
+    if (alphaV > 99) {
+        alphaV = 0.0;
+    }
     if (alphaV > 0) {
         double Ay = A / alphaV;
         double Az = A / alphaV;
@@ -420,7 +428,7 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
     Matrix fbmat;
     Vector ubnovec;
 
-    integrateGauss(-theta0 / 2.0, theta0 / 2.0, fbmat, ubnovec);
+    integrateGauss(-theta0, theta0, fbmat, ubnovec);
 
     if (fbmat.Invert(mat) < 0) {
         return -1;
@@ -447,7 +455,9 @@ void CurvedPipe::integrateGauss(double a, double b, Matrix &resm,
         Vector vec;
         fb(xi, mat);
         resm.addMatrix(1.0, mat, wi);
-        ubno(xi, vec);
-        resv.addVector(1.0, vec, wi);
+        // ubno(xi, vec);
+        // resv.addVector(1.0, vec, wi);
     }
+    resm *= radius;
+    resv *= radius;
 }
