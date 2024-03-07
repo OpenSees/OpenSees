@@ -22,6 +22,7 @@
 
 // Minjie
 #include <CrdTransf.h>
+#include <LinearCrdTransf3d.h>
 #include <Node.h>
 #include <Pipe.h>
 
@@ -29,17 +30,17 @@
 
 void *OPS_PipeElement() {
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 6) {
+    if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "Invalid #args,  want: element pipe "
-                  "tag? nd1? nd2? transfTag? pipeMatTag? pipeSecTag?"
+                  "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
                   "<-T0 T0? -p p? -cMass? -releasey releasey? "
                   "-releasez releasez?>\n";
         return 0;
     }
 
     // get tag
-    int iData[6];
-    int numData = 6;
+    int iData[5];
+    int numData = 5;
     if (OPS_GetIntInput(&numData, iData) < 0) {
         opserr << "WARNING invalid integer input for pipe element\n";
         return 0;
@@ -88,31 +89,24 @@ void *OPS_PipeElement() {
     }
 
     auto *theSect = dynamic_cast<PipeSection *>(
-        OPS_getSectionForceDeformation(iData[5]));
+        OPS_getSectionForceDeformation(iData[4]));
     if (theSect == 0) {
-        opserr << "WARNING: section " << iData[5]
+        opserr << "WARNING: section " << iData[4]
                << " is not found or not a pipe section\n";
         return 0;
     }
 
     auto *theMat = dynamic_cast<PipeMaterial *>(
-        OPS_getUniaxialMaterial(iData[4]));
+        OPS_getUniaxialMaterial(iData[3]));
     if (theMat == 0) {
-        opserr << "WARNING: uniaxialMaterial " << iData[4]
+        opserr << "WARNING: uniaxialMaterial " << iData[3]
                << " is not found or not a pipe material\n";
         return 0;
     }
 
-    auto *theTrans = OPS_getCrdTransf(iData[3]);
-    if (theTrans == 0) {
-        opserr << "WARNING: CrdTransf " << iData[3]
-               << " is not found\n";
-        return 0;
-    }
-
     auto *ele =
-        new Pipe(iData[0], iData[1], iData[2], *theTrans, *theMat,
-                 *theSect, T0, pressure, cMass, releasez, releasey);
+        new Pipe(iData[0], iData[1], iData[2], *theMat, *theSect, T0,
+                 pressure, cMass, releasez, releasey);
 
     return ele;
 }
@@ -135,9 +129,9 @@ Pipe::Pipe(int tag, int classTag)
       T0(0.0),
       pressure(0.0) {}
 
-Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
-           PipeMaterial &mat, PipeSection &sect, double t0,
-           double pre, int cm, int rz, int ry)
+Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
+           PipeSection &sect, double t0, double pre, int cm, int rz,
+           int ry)
     : ElasticBeam3d(tag, ELE_TAG_Pipe),
       theMat(0),
       theSect(0),
@@ -147,13 +141,6 @@ Pipe::Pipe(int tag, int nd1, int nd2, CrdTransf &theTransf,
       pressure(pre) {
     if (createPipe(nd1, nd2, mat, sect, cm, rz, ry) < 0) {
         opserr << "WARNING: failed to create pipe element\n";
-        exit(-1);
-    }
-    // transf
-    theCoordTransf = theTransf.getCopy3d();
-    if (!theCoordTransf) {
-        opserr << "Pipe element -- failed to get "
-                  "copy of coordinate transformation\n";
         exit(-1);
     }
 }
@@ -200,21 +187,39 @@ void Pipe::setDomain(Domain *theDomain) {
         exit(-1);
     }
 
-    // check dofs
-    int dofNd1 = theNodes[0]->getNumberDOF();
-    int dofNd2 = theNodes[1]->getNumberDOF();
+    const auto &crdsI = theNodes[0]->getCrds();
+    const auto &crdsJ = theNodes[1]->getCrds();
 
-    if (dofNd1 != getNumDOF() / 2) {
-        opserr << "Pipe::setDomain  tag: " << this->getTag()
-               << " -- Node 1: " << connectedExternalNodes(0)
-               << " has incorrect number of DOF\n";
+    Vector IJ = crdsJ;
+    IJ -= crdsI;
+    IJ.Normalize();
+
+    Vector gzAxis(ndm);
+    gzAxis(2) = 1.0;
+
+    Vector dir;
+    if (crossProduct(IJ, gzAxis, dir) < 0) {
         exit(-1);
     }
+    dir.Normalize();
 
-    if (dofNd2 != getNumDOF() / 2) {
-        opserr << "Pipe::setDomain  tag: " << this->getTag()
-               << " -- Node 2: " << connectedExternalNodes(1)
-               << " has incorrect number of DOF\n";
+    Vector zAxis(ndm);
+    if (dir.Norm() < 0.1) {
+        // parallel to global z axis
+        zAxis(0) = 1.0;
+    } else {
+        zAxis(2) = 1.0;
+    }
+
+    if (ElasticBeam3d::theCoordTransf != 0) {
+        delete ElasticBeam3d::theCoordTransf;
+        ElasticBeam3d::theCoordTransf = 0;
+    }
+    ElasticBeam3d::theCoordTransf =
+        new LinearCrdTransf3d(nextTransfTag(), zAxis);
+    if (ElasticBeam3d::theCoordTransf == 0) {
+        opserr << "WARNING: failed to crete Transformation object -- "
+                  "CurvedPipe\n";
         exit(-1);
     }
 
@@ -323,6 +328,8 @@ int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
     connectedExternalNodes(0) = nd1;
     connectedExternalNodes(1) = nd2;
 
+    cMass = cm;
+
     // section
     theSect = dynamic_cast<PipeSection *>(sect.getCopy());
     if (theSect == 0) {
@@ -351,7 +358,40 @@ int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
         releasey = 0;
     }
 
-    cMass = cm;
+    return 0;
+}
+
+int Pipe::crossProduct(const Vector &A, const Vector &B,
+                       Vector &res) {
+    if (A.Size() != 3 || B.Size() != 3) {
+        opserr << "WARNING: vector A and B's size must be 3 -- "
+                  "CurvedPipe::crossProduct\n";
+        return -1;
+    }
+
+    res.resize(3);
+    res.Zero();
+
+    res(0) = A(1) * B(2) - A(2) * B(1);
+    res(1) = A(2) * B(0) - A(0) * B(2);
+    res(2) = A(0) * B(1) - A(1) * B(0);
 
     return 0;
+}
+
+int Pipe::nextTransfTag() {
+    ID tags = OPS_getAllCrdTransfTags();
+    int gap = 10;
+    if (tags.Size() == 0) {
+        return gap;
+    }
+
+    int maxTag = tags(0);
+    for (int i = 1; i < tags.Size(); ++i) {
+        if (tags(i) < maxTag) {
+            maxTag = tags(i);
+        }
+    }
+
+    return maxTag + gap;
 }

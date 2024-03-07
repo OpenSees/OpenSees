@@ -50,10 +50,9 @@ class Pipe : public ElasticBeam3d {
    public:
     Pipe();
     Pipe(int tag, int classTag);
-    Pipe(int tag, int Nd1, int Nd2, CrdTransf &theTransf,
-         PipeMaterial &mat, PipeSection &sect, double to = 0.0,
-         double pre = 0.0, int cMass = 0, int releasez = 0,
-         int releasey = 0);
+    Pipe(int tag, int Nd1, int Nd2, PipeMaterial &mat,
+         PipeSection &sect, double to = 0.0, double pre = 0.0,
+         int cMass = 0, int releasez = 0, int releasey = 0);
 
     ~Pipe();
 
@@ -69,6 +68,9 @@ class Pipe : public ElasticBeam3d {
     int updateMaterialData();
     int createPipe(int nd1, int nd2, PipeMaterial &mat,
                    PipeSection &sect, int cm, int rz, int ry);
+    static int crossProduct(const Vector &A, const Vector &B,
+                            Vector &res);
+    static int nextTransfTag();
 };
 
 #endif

@@ -49,17 +49,17 @@ std::vector<double> CurvedPipe::gaussPts = {
 
 void *OPS_CurvedPipeElement() {
     // check inputs
-    if (OPS_GetNumRemainingInputArgs() < 9) {
+    if (OPS_GetNumRemainingInputArgs() < 8) {
         opserr << "Invalid #args,  want: element CurvedPipe "
-                  "tag? nd1? nd2? transfTag? pipeMatTag? pipeSecTag?"
+                  "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
                   "xC? yC? zC?"
                   "<-T0 T0? -p p? -cMass? -tolWall? tolWall?>\n";
         return 0;
     }
 
     // get tag
-    int iData[6];
-    int numData = 6;
+    int iData[5];
+    int numData = 5;
     if (OPS_GetIntInput(&numData, iData) < 0) {
         opserr << "WARNING invalid integer input for curved pipe "
                   "element\n";
@@ -117,32 +117,23 @@ void *OPS_CurvedPipeElement() {
     }
 
     auto *theSect = dynamic_cast<PipeSection *>(
-        OPS_getSectionForceDeformation(iData[5]));
+        OPS_getSectionForceDeformation(iData[4]));
     if (theSect == 0) {
-        opserr << "WARNING: section " << iData[5]
+        opserr << "WARNING: section " << iData[4]
                << " is not found or not a curved pipe section\n";
         return 0;
     }
 
     auto *theMat = dynamic_cast<PipeMaterial *>(
-        OPS_getUniaxialMaterial(iData[4]));
+        OPS_getUniaxialMaterial(iData[3]));
     if (theMat == 0) {
-        opserr << "WARNING: uniaxialMaterial " << iData[4]
+        opserr << "WARNING: uniaxialMaterial " << iData[3]
                << " is not found or not a curved pipe material\n";
         return 0;
     }
 
-    auto *theTrans = OPS_getCrdTransf(iData[3]);
-    if (theTrans != 0) {
-        opserr << "WARNING: CrdTransf " << iData[3]
-               << " should not exist (CurvedPipe will create "
-                  "internally)\n";
-        return 0;
-    }
-
-    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2], iData[3],
-                               *theMat, *theSect, center, T0,
-                               pressure, cMass);
+    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2], *theMat,
+                               *theSect, center, T0, pressure, cMass);
 
     return ele;
 }
@@ -150,16 +141,14 @@ void *OPS_CurvedPipeElement() {
 CurvedPipe::CurvedPipe()
     : Pipe(), center(3), radius(0.0), theta0(0.0), tolWall(0.1) {}
 
-CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, int tTag,
-                       PipeMaterial &mat, PipeSection &sect,
-                       const Vector &c, double to, double pre, int cm,
-                       double tol)
+CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
+                       PipeSection &sect, const Vector &c, double to,
+                       double pre, int cm, double tol)
     : Pipe(tag, ELE_TAG_CurvedPipe),
       center(3),
       radius(0.0),
       theta0(0.0),
-      tolWall(tol),
-      transfTag(tTag) {
+      tolWall(tol) {
     if (Pipe::createPipe(nd1, nd2, mat, sect, cm, 0, 0) < 0) {
         opserr << "WARNING: failed to create curved pipe element\n";
         exit(-1);
@@ -232,10 +221,27 @@ void CurvedPipe::setDomain(Domain *theDomain) {
         ElasticBeam3d::theCoordTransf = 0;
     }
     ElasticBeam3d::theCoordTransf =
-        new LinearCrdTransf3d(transfTag, zAxis);
+        new LinearCrdTransf3d(nextTransfTag(), zAxis);
+    if (ElasticBeam3d::theCoordTransf == 0) {
+        opserr << "WARNING: failed to crete Transformation object -- "
+                  "CurvedPipe\n";
+        exit(-1);
+    }
+
+    // update section data
+    if (updateSectionData() < 0) {
+        opserr << "Pipe::setDomain failed to update section data\n";
+        return;
+    }
+
+    // update material data
+    if (updateMaterialData() < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return;
+    }
 
     // set domain
-    this->Pipe::setDomain(theDomain);
+    this->ElasticBeam3d::setDomain(theDomain);
 
     // compute theta0
     if (this->getTheta0() < 0) {
@@ -514,22 +520,4 @@ void CurvedPipe::integrateGauss(double a, double b, Matrix &resm,
     }
     resm *= radius;
     resv *= radius;
-}
-
-int CurvedPipe::crossProduct(const Vector &A, const Vector &B,
-                             Vector &res) {
-    if (A.Size() != 3 || B.Size() != 3) {
-        opserr << "WARNING: vector A and B's size must be 3 -- "
-                  "CurvedPipe::crossProduct\n";
-        return -1;
-    }
-
-    res.resize(3);
-    res.Zero();
-
-    res(0) = A(1) * B(2) - A(2) * B(1);
-    res(1) = A(2) * B(0) - A(0) * B(2);
-    res(2) = A(0) * B(1) - A(1) * B(0);
-
-    return 0;
 }
