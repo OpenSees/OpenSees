@@ -52,12 +52,42 @@ OPS_SeriesMaterial(void)
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
+  int maxIter = 1;
+  double tol = 1e-10;
+  
+  // Read optional args first
+  int numOptionalArgs = 0;  
   int numArgs = OPS_GetNumRemainingInputArgs();
-  if (numArgs < 3) {
-    opserr << "Invalid #args,  want: uniaxialMaterial Series $tag $tag1 $tag2 ... " << endln;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    std::string type = OPS_GetString();
+    if (type == "-iter") {
+      numOptionalArgs++;
+      int numData = 1;
+      if (OPS_GetNumRemainingInputArgs() > 1) {
+	if (OPS_GetIntInput(&numData, &maxIter) < 0) {
+	  opserr << "WARNING: failed to get maxIter" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;
+	if (OPS_GetDoubleInput(&numData, &tol) < 0) {
+	  opserr << "WARNING: failed to get tol" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;	  
+      }
+    }
+  }
+
+  if (numArgs > 0) {
+    OPS_ResetCurrentInputArg(-numArgs);
+  }
+  numArgs = numArgs - numOptionalArgs;
+    
+  if (numArgs < 2) {
+    opserr << "Invalid #args,  want: uniaxialMaterial Series $tag $tag1 $tag2 ... $tagN <-iter maxIter tol>" << endln;
     return 0;
   }
-  
+
   int *iData = new int[numArgs];
   UniaxialMaterial **theMats = new UniaxialMaterial *[numArgs-1];
     
@@ -79,7 +109,7 @@ OPS_SeriesMaterial(void)
   }
 
   // Parsing was successful, allocate the material
-  theMaterial = new SeriesMaterial(iData[0], numArgs-1, theMats);
+  theMaterial = new SeriesMaterial(iData[0], numArgs-1, theMats, maxIter, tol);
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Series" << endln;
     return 0;
