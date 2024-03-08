@@ -188,6 +188,7 @@
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
 #include "LayeredMembraneSection/ReinforcedConcreteLayeredMembraneSection.h" // M. J. Nunez
 #include "LayeredMembraneSection/LayeredMembraneSection.h" // M. J. Nunez
+#include "LayeredMembraneSection/ElasticMembraneSection.h" // M. J. Nunez
 
 // NDMaterials
 #include "ElasticIsotropicPlaneStrain2D.h"
@@ -1786,6 +1787,9 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
 
 	case SEC_TAG_LayeredMembraneSection:
 		return new LayeredMembraneSection();
+
+	case SEC_TAG_ElasticMembraneSection:
+		return new ElasticMembraneSection();
 
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewSection - ";

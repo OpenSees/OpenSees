@@ -252,6 +252,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\LayeredMembraneSection.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ReinforcedConcreteLayeredMembraneSection.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.cpp" />
@@ -716,6 +717,7 @@
     <ClInclude Include="..\..\..\SRC\material\section\integration\RCCircularSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\RCTunnelSectionIntegration.h" />
     <ClInclude Include="..\..\..\SRC\material\section\integration\TubeSectionIntegration.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.h" />
     <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\LayeredMembraneSection.h" />
     <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ReinforcedConcreteLayeredMembraneSection.h" />
     <ClInclude Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.h" />

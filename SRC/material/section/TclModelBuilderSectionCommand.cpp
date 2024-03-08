@@ -113,6 +113,7 @@ extern void *OPS_ElasticMembranePlateSection(void);
 extern void *OPS_ElasticPlateSection(void);
 extern void *OPS_ReinforcedConcreteLayeredMembraneSection(void); // M. J. Nunez - UChile
 extern void *OPS_LayeredMembraneSection(void); // M. J. Nunez - UChile
+extern void *OPS_ElasticMembraneSection(void); // M. J. Nunez - UChile
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -442,6 +443,14 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 
     else if ((strcmp(argv[1], "LayeredMembraneSection") == 0) || (strcmp(argv[1], "LMS") == 0)) {
         void* theMat = OPS_LayeredMembraneSection();
+        if (theMat != 0)
+            theSection = (SectionForceDeformation*)theMat;
+        else
+            return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1], "ElasticMembraneSection") == 0) {
+        void* theMat = OPS_ElasticMembraneSection();
         if (theMat != 0)
             theSection = (SectionForceDeformation*)theMat;
         else

@@ -1,7 +1,8 @@
 include ../../../../Makefile.def
 
 OBJS       = ReinforcedConcreteLayeredMembraneSection.o\
-             LayeredMembraneSection.o
+             LayeredMembraneSection.o\
+			 ElasticMembraneSection.o
 
 all:         $(OBJS)
 
