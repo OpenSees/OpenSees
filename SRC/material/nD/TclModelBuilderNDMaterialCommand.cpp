@@ -1216,7 +1216,16 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 		else 
 			return TCL_ERROR;
 	}
-	
+
+	else if(strcmp(argv[1], "Parallel3D") == 0) {
+		void *theMat = OPS_Parallel3DMaterial();
+		if (theMat != 0)  {
+			theMaterial = (NDMaterial *)theMat;
+		}
+		else 
+			return TCL_ERROR;
+	}
+
 	else if(strcmp(argv[1], "ASDConcrete3D") == 0) {
 		void *theMat = OPS_ASDConcrete3DMaterial();
 		if (theMat != 0)  {

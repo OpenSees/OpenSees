@@ -62,6 +62,7 @@ void* OPS_PlateRebarMaterialThermal();
 void* OPS_PlateFromPlaneStressMaterial();
 void* OPS_OrthotropicMaterial();
 void* OPS_Series3DMaterial();
+void* OPS_Parallel3DMaterial();
 void* OPS_PlateFromPlaneStressMaterialThermal();
 void* OPS_ConcreteS();
 void* OPS_PlaneStressUserMaterial();
@@ -180,6 +181,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("PlateFromPlaneStress", &OPS_PlateFromPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("Orthotropic", &OPS_OrthotropicMaterial));
 	nDMaterialsMap.insert(std::make_pair("Series3D", &OPS_Series3DMaterial));
+	nDMaterialsMap.insert(std::make_pair("Parallel3D", &OPS_Parallel3DMaterial));
 	nDMaterialsMap.insert(std::make_pair("PlateFromPlaneStressThermal", &OPS_PlateFromPlaneStressMaterialThermal));
 	nDMaterialsMap.insert(std::make_pair("ConcreteS", &OPS_ConcreteS));
 	nDMaterialsMap.insert(std::make_pair("PlaneStressUserMaterial", &OPS_PlaneStressUserMaterial));
