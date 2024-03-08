@@ -614,6 +614,7 @@
 #define ELEMENT_TAGS_WrapperElement      2
 #define ELE_TAG_ElasticBeam2d            3
 #define ELE_TAG_ModElasticBeam2d         4
+#define ELE_TAG_ModElasticBeam3d         41234
 #define ELE_TAG_ElasticBeam3d            5
 #define ELE_TAG_ElasticBeamWarping3d            5001
 #define ELE_TAG_Beam2d    	         6
