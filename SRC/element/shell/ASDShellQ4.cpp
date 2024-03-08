@@ -1839,6 +1839,18 @@ int ASDShellQ4::setParameter(const char** argv, int argc, Parameter& param)
     return res;
 }
 
+double ASDShellQ4::getCharacteristicLength(void)
+{
+    // by default we return the min distance between 2 nodes, which should coincide
+    // with lch = sqrt(A) in non-distorted elements.
+    // however, when the EAS is used, the element localizes only in a row of gauss points
+    // so the lch should be half the original one
+    double lch = Element::getCharacteristicLength();
+    if (m_eas)
+        lch /= 2.0;
+    return lch;
+}
+
 int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
 {
     // Check options

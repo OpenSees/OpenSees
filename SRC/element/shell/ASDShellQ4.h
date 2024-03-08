@@ -179,6 +179,9 @@ public:
 
     int setParameter(const char** argv, int argc, Parameter& param);
 
+    // calculate the characteristic length for this element
+    double getCharacteristicLength(void);
+
     // display -ambaker1
     int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
 
