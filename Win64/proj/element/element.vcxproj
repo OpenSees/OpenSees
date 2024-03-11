@@ -28,22 +28,22 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -238,6 +238,7 @@
     <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell.cpp" />
     <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp" />
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp" />
     <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp" />
@@ -540,6 +541,7 @@
     <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell.h" />
     <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h" />
     <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h" />
     <ClInclude Include="..\..\..\SRC\element\masonry\BeamGT.h" />
     <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan12.h" />

@@ -20,12 +20,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -135,6 +135,7 @@
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\TclGradientInelasticBeamColumnCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp" />
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp" />
@@ -143,7 +144,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\MVLEM_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp" />
-	<ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\HigherOrder.cpp" />
@@ -177,7 +178,6 @@
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_12.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp" />
-
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp" />
@@ -418,6 +418,7 @@
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h" />
     <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h" />
@@ -426,7 +427,7 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\MVLEM_3D.h" />
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h" />
-	<ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h" />
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundDef.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\BackgroundMesh.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\HigherOrder.h" />

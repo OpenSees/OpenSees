@@ -1058,6 +1058,9 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp">
+      <Filter>joint</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1798,9 +1801,6 @@
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
       <Filter>PML</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_7.h">
-      <Filter>PML</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h">
       <Filter>PML</Filter>
     </ClInclude>
@@ -1857,6 +1857,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h">
+      <Filter>joint</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -303,6 +303,7 @@
 #include "componentElement/ComponentElement2d.h"
 #include "componentElement/ComponentElement3d.h"
 #include "elasticBeamColumn/ModElasticBeam2d.h"			//SAJalali
+
 #include "elasticBeamColumn/ElasticTimoshenkoBeam2d.h"
 #include "elasticBeamColumn/ElasticTimoshenkoBeam3d.h"
 #include "forceBeamColumn/ForceBeamColumn2d.h"
@@ -361,6 +362,7 @@
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
+#include "joint/Inno3DPnPJoint.h" // Cristian Miculas
 #include "twoNodeLink/TwoNodeLink.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
@@ -986,6 +988,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
             
     case ELE_TAG_Joint2D:				// Arash
       return new Joint2D();			// Arash
+	  
+    case ELE_TAG_Inno3DPnPJoint:	// Cristian Miculas
+      return new Inno3DPnPJoint();	// Cristian Miculas
       
     case ELE_TAG_TwoNodeLink:				
       return new TwoNodeLink();			

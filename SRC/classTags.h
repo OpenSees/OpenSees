@@ -858,6 +858,7 @@
 #define ELE_TAG_PML2D_5                   260
 #define ELE_TAG_PML2D_12                  261
 #define ELE_TAG_PML2DVISCOUS              262
+#define ELE_TAG_Inno3DPnPJoint			  263 // Cristian Miculas
 
 
 #define FRN_TAG_Coulomb            1
