@@ -112,6 +112,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/shell \
                -I$(FE)/element/joint \
 	       -I$(FE)/element/mvlem \
+	       -I$(FE)/element/mefi \
                -I$(FE)/element/elastomericBearing \
                -I$(FE)/element/frictionBearing \
                -I$(FE)/element/frictionBearing/frictionModel \
