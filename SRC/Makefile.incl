@@ -42,6 +42,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/material/section/fiber \
                -I$(FE)/material/section/integration \
                -I$(FE)/material/section/yieldSurface \
+	       -I$(FE)/material/section/LayeredMembraneSection \
                -I$(FE)/material/yieldSurface/evolution \
                -I$(FE)/material/yieldSurface/plasticHardeningMaterial \
                -I$(FE)/material/yieldSurface/yieldSurfaceBC \
