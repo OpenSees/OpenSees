@@ -194,6 +194,9 @@
 #include "Elliptical2.h"
 #include "Isolator2spring.h"
 #include "LayeredShellFiberSection.h" // Yuli Huang & Xinzheng Lu 
+#include "LayeredMembraneSection/ReinforcedConcreteLayeredMembraneSection.h" // M. J. Nunez
+#include "LayeredMembraneSection/LayeredMembraneSection.h" // M. J. Nunez
+#include "LayeredMembraneSection/ElasticMembraneSection.h" // M. J. Nunez
 
 // NDMaterials
 #include "ElasticIsotropicPlaneStrain2D.h"
@@ -261,6 +264,8 @@
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
+#include "OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.h" // M. J. Nunez
+#include "SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.h" // M. J. Nunez
 
 // Fibers
 #include "fiber/UniaxialFiber2d.h"
@@ -1820,6 +1825,16 @@ FEM_ObjectBrokerAllClasses::getNewSection(int classTag)
     case SEC_TAG_Isolator2spring:
       return new Isolator2spring();
 	
+
+	case SEC_TAG_ReinforcedConcreteLayeredMembraneSection:
+		return new ReinforcedConcreteLayeredMembraneSection();
+
+	case SEC_TAG_LayeredMembraneSection:
+		return new LayeredMembraneSection();
+
+	case SEC_TAG_ElasticMembraneSection:
+		return new ElasticMembraneSection();
+
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewSection - ";
 	     opserr << " - no section type exists for class tag ";
@@ -2014,6 +2029,12 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();
+
+  case ND_TAG_OrthotropicRotatingAngleConcreteT2DMaterial01:
+	  return new OrthotropicRotatingAngleConcreteT2DMaterial01();
+
+  case ND_TAG_SmearedSteelDoubleLayerT2DMaterial01:
+	  return new SmearedSteelDoubleLayerT2DMaterial01();
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
