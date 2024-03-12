@@ -57,6 +57,8 @@ double DispBeamColumn2d::workArea[100];
 
 void* OPS_DispBeamColumn2d()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
 	return 0;
@@ -86,6 +88,16 @@ void* OPS_DispBeamColumn2d()
 		}
 	    }
 	}
+    else if (strcmp(type, "-damp") == 0) {
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -120,7 +132,7 @@ void* OPS_DispBeamColumn2d()
     }
     
     Element *theEle =  new DispBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass,cmass);
+					    *bi,*theTransf,mass,cmass,theDamping);
     delete [] sections;
     return theEle;
 }
@@ -132,7 +144,8 @@ void* OPS_DispBeamColumn2d(const ID &info)
     int numData;
     double mass = 0.0;
     int cmass = 0;
-
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     // regular element, not in a mesh, get tags
     if (info.Size() == 0) {
 	if(OPS_GetNumRemainingInputArgs() < 5) {
@@ -182,6 +195,16 @@ void* OPS_DispBeamColumn2d(const ID &info)
 		    }
 		}
 	    }
+        else if (strcmp(type, "-damp") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0) {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
 	}
     }
 
@@ -253,7 +276,7 @@ void* OPS_DispBeamColumn2d(const ID &info)
     }
     
     Element *theEle =  new DispBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass,cmass);
+					    *bi,*theTransf,mass,cmass, theDamping);
     delete [] sections;
     return theEle;
 }

@@ -102,6 +102,7 @@ extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
 extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
+extern void *OPS_ModElasticBeam3d(void);
 extern void *OPS_ElasticBeam2d(const ID &info);
 extern void *OPS_ElasticBeam3d(void);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
@@ -522,6 +523,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   } else if ((strcmp(argv[1],"ModElasticBeam2d") == 0) || (strcmp(argv[1],"modElasticBeam2d")) == 0) {
     Element *theEle = (Element *)OPS_ModElasticBeam2d();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+  } else if ((strcmp(argv[1],"ModElasticBeam3d") == 0) || (strcmp(argv[1],"modElasticBeam3d")) == 0) {
+    Element *theEle = (Element *)OPS_ModElasticBeam3d();
     if (theEle != 0) 
       theElement = theEle;
     else {

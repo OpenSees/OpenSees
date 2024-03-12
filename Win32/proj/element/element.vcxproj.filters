@@ -970,6 +970,8 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
       <Filter>mefi</Filter>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1737,6 +1739,8 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
       <Filter>mefi</Filter>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

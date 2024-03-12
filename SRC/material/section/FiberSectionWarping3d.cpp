@@ -66,8 +66,11 @@ void* OPS_FiberSectionWarping3d()
     
     numData = 1;
     int tag;
-    if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
-
+    if (OPS_GetIntInput(&numData, &tag) < 0) {
+      opserr << "FiberSectionWarping3d - unable to read tag" << endln;
+      return 0;
+    }
+    
     if (OPS_GetNumRemainingInputArgs() < 2) {
       opserr << "WARNING torsion not specified for FiberSection\n";
       opserr << "Use either -GJ $GJ or -torsion $matTag\n";

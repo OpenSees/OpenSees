@@ -63,7 +63,8 @@ class BoucWenInfill : public UniaxialMaterial
 	 double tolerance,
 	 int maxNumIter);
 	
-    ~BoucWenInfill();
+    BoucWenInfill();
+    ~BoucWenInfill();  
 
     const char *getClassType(void) const {return "BoucWenMaterial";};
 

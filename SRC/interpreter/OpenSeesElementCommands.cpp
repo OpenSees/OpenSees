@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ShellMITC4.h>
 #include <ShellDKGQ.h>
 #include <ShellNLDKGQ.h>
+#include <ShellANDeS.h>
 #include <FourNodeTetrahedron.h>
 #include <TenNodeTetrahedron.h>
 
@@ -85,6 +86,7 @@ void* OPS_ComponentElement2d();
 void* OPS_ComponentElement3d();
 void* OPS_ZeroLengthImpact3D();
 void* OPS_ModElasticBeam2d();
+void* OPS_ModElasticBeam3d();
 void* OPS_ElasticTimoshenkoBeam2d();
 void* OPS_ElasticTimoshenkoBeam3d();
 extern "C" void* OPS_PY_Macro2D();
@@ -111,6 +113,7 @@ void* OPS_MEFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
+void* OPS_ShellANDeS();
 void* OPS_ShellDKGQ();
 void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
@@ -680,6 +683,8 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthImpact3D", &OPS_ZeroLengthImpact3D));
 	functionMap.insert(std::make_pair("ModElasticBeam2d", &OPS_ModElasticBeam2d));
 	functionMap.insert(std::make_pair("modElasticBeam2d", &OPS_ModElasticBeam2d));
+	functionMap.insert(std::make_pair("ModElasticBeam3d", &OPS_ModElasticBeam3d));
+	functionMap.insert(std::make_pair("modElasticBeam3d", &OPS_ModElasticBeam3d));
 	functionMap.insert(std::make_pair("ElasticTimoshenkoBeam", &OPS_ElasticTimoshenkoBeam));
 	functionMap.insert(std::make_pair("elasticTimoshenkoBeam", &OPS_ElasticTimoshenkoBeam));
 	functionMap.insert(std::make_pair("pyMacro2D", &OPS_PY_Macro2D));
@@ -716,6 +721,7 @@ namespace {
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
+	functionMap.insert(std::make_pair("ShellANDeS", &OPS_ShellANDeS));
 	functionMap.insert(std::make_pair("shellMITC4", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("ShellMITC4", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("shellNL", &OPS_ShellMITC9));
