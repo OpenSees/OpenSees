@@ -132,6 +132,9 @@
     <Filter Include="PML">
       <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mefi">
+      <UniqueIdentifier>{793b16ee-7c65-4ec9-b131-696c18f42f54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -965,6 +968,8 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
+      <Filter>mefi</Filter>
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
       <Filter>elasticBeamColumn</Filter>
     </ClCompile>
@@ -1732,6 +1737,8 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
+      <Filter>mefi</Filter>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
       <Filter>elasticBeamColumn</Filter>
     </ClInclude>
