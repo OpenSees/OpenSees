@@ -147,7 +147,7 @@ void OpenSeesReliabilityCommands::wipe() {
 
     if (theProbabilityTransformation != 0) {
         delete theProbabilityTransformation;
-        theReliabilityConvergenceCheck = 0;
+        theProbabilityTransformation = 0;
     }
     if (theRandomNumberGenerator != 0) {
         delete theRandomNumberGenerator;
