@@ -2552,23 +2552,16 @@ int OPS_runFOSMAnalysis() {
         return -1;
     }
 
-    FOSMAnalysis *theFOSMAnalysis = new FOSMAnalysis(
+    FOSMAnalysis theFOSMAnalysis(
         theReliabilityDomain, theStructuralDomain, theFunctionEvaluator,
         theGradientEvaluator, 0, filename);
 
-    if (theFOSMAnalysis == 0) {
-        opserr << "ERROR: could not create theFOSMAnalysis \n";
-        return -1;
-    }
-
     // Now run the analysis
-    if (theFOSMAnalysis->analyze() < 0) {
+    if (theFOSMAnalysis.analyze() < 0) {
         opserr << "WARNING: the FOSM analysis failed\n";
         return -1;
     }
 
-    delete theFOSMAnalysis;
-    
     return 0;
 }
 
@@ -2642,25 +2635,17 @@ int OPS_runFORMAnalysis() {
     }
 
     // Create the analysis object
-    FORMAnalysis *theFORMAnalysis = new FORMAnalysis(
+    FORMAnalysis theFORMAnalysis(
         theReliabilityDomain, theFindDesignPointAlgorithm,
         theFunctionEvaluator, theProbabilityTransformation, filename,
         relSensTag);
 
-    // Check that it really was created
-    if (theFORMAnalysis == 0) {
-        opserr << "ERROR: could not create theFORMAnalysis \n";
-        return TCL_ERROR;
-    }
-
     // Now run the analysis
-    if (theFORMAnalysis->analyze() < 0) {
+    if (theFORMAnalysis.analyze() < 0) {
         opserr << "WARNING: the FORM analysis failed\n";
         return -1;
     }
 
-    delete theFORMAnalysis;
-    
     return 0;
 }
 
@@ -2826,27 +2811,18 @@ int OPS_runImportanceSamplingAnalysis() {
         return -1;
     }
 
-    ImportanceSamplingAnalysis *theImportanceSamplingAnalysis =
-        new ImportanceSamplingAnalysis(
+    ImportanceSamplingAnalysis theImportanceSamplingAnalysis(
             theReliabilityDomain, theStructuralDomain,
             theProbabilityTransformation, theFunctionEvaluator,
             theRandomNumberGenerator, 0, numberOfSimulations, targetCOV,
             samplingVariance, printFlag, filename, analysisTypeTag);
 
-    if (theImportanceSamplingAnalysis == 0) {
-        opserr << "ERROR: could not create "
-                  "theImportanceSamplingAnalysis \n";
-        return -1;
-    }
+    cmds->setImportanceSamplingAnalysis(&theImportanceSamplingAnalysis);
 
-    cmds->setImportanceSamplingAnalysis(theImportanceSamplingAnalysis);
-
-    if (theImportanceSamplingAnalysis->analyze() < 0) {
+    if (theImportanceSamplingAnalysis.analyze() < 0) {
         opserr << "WARNING: failed to run ImportanceSamplingAnalysis\n";
         return -1;
     }
 
-    delete theImportanceSamplingAnalysis;
-    
     return 0;
 }
