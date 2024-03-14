@@ -2252,8 +2252,8 @@ int OPS_gradientEvaluator() {
             return -1;
         }
         Integrator *sensAlgo = cmds->getSensitivityAlgorithm();
-        if (sensAlgo == 0) {
-            opserr << "WARNING: integrator must be defined before "
+        if (sensAlgo == 0 && strcmp(type,"OpenSees") == 0) {
+            opserr << "WARNING: OpenSees integrator must be defined before "
                       "gradient evaluator\n";
             return -1;
         }
