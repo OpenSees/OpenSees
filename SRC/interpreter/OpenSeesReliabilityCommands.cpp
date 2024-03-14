@@ -2817,7 +2817,7 @@ int OPS_runImportanceSamplingAnalysis() {
             theRandomNumberGenerator, 0, numberOfSimulations, targetCOV,
             samplingVariance, printFlag, filename, analysisTypeTag);
 
-    cmds->setImportanceSamplingAnalysis(&theImportanceSamplingAnalysis);
+    //cmds->setImportanceSamplingAnalysis(&theImportanceSamplingAnalysis);
 
     if (theImportanceSamplingAnalysis.analyze() < 0) {
         opserr << "WARNING: failed to run ImportanceSamplingAnalysis\n";
