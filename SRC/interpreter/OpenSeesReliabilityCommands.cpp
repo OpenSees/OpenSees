@@ -127,8 +127,10 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(
 }
 
 OpenSeesReliabilityCommands::~OpenSeesReliabilityCommands() {
-    if (theDomain != 0) delete theDomain;
-    cmds = 0;
+  this->wipe();
+  if (theDomain != 0)
+    delete theDomain;
+  cmds = 0;
 }
 
 ReliabilityDomain *OpenSeesReliabilityCommands::getDomain() {
@@ -2565,6 +2567,8 @@ int OPS_runFOSMAnalysis() {
         return -1;
     }
 
+    delete theFOSMAnalysis;
+    
     return 0;
 }
 
@@ -2655,6 +2659,8 @@ int OPS_runFORMAnalysis() {
         return -1;
     }
 
+    delete theFORMAnalysis;
+    
     return 0;
 }
 
@@ -2840,5 +2846,7 @@ int OPS_runImportanceSamplingAnalysis() {
         return -1;
     }
 
+    delete theImportanceSamplingAnalysis;
+    
     return 0;
 }
