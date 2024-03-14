@@ -91,6 +91,8 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SearchWithStepSizeAndStepDirection.h>
 #include <SecantRootFinding.h>
 #include <StandardReliabilityConvergenceCheck.h>
+#include <FirstPrincipalCurvature.h>
+#include <CurvaturesBySearchAlgorithm.h>
 
 // active object
 static OpenSeesReliabilityCommands *cmds = 0;
@@ -1998,17 +2000,49 @@ int OPS_findCurvatures() {
   const char *type = OPS_GetString();
 
   // Check that the necessary ingredients are present
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "Need theReliabilityDomain before find curvatures" << endln;
+    return -1;
+  }
 
+  FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
+  if (theFunctionEvaluator == 0) {
+    opserr << "Need theFunctionEvaluator before find curvatures" << endln;    
+    return -1;
+  }  
+
+  FORMAnalysis *theFORMAnalysis = cmds->getFORMAnalysis();
+  if (theFORMAnalysis == 0) {
+    opserr << "FORMAnalysis must be performed prior to find curvatures" << endln;    
+    return -1;
+  }
+  
   // 
   FindCurvatures *theFindCurvatures = 0;
   if (strcmp(type, "firstPrincipal") == 0) {
-
+    theFindCurvatures = new FirstPrincipalCurvature(theReliabilityDomain,
+						    theFunctionEvaluator,
+						    theFORMAnalysis);
   }
   else if (strcmp(type, "bySearchAlgorithm") == 0) {
+    int numCurvatures = -1;
+    int numData = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numData, &numCurvatures) < 0) {
+	opserr << "ERROR: unable to read numCurvatures for " << type
+	       << " curvature finding" << endln;
+	return -1;
+      }
+    }
 
+    theFindCurvatures = new CurvaturesBySearchAlgorithm(theReliabilityDomain,
+							theFunctionEvaluator,
+							theFORMAnalysis, numCurvatures);    
   }
   else if (strcmp(type, "curvatureFitting") == 0) {
-
+    opserr << "curvatureFitting not in Python interpreter yet, also need to add Hessian" << endln;
+    return -1;
   }
   else {
     opserr << "ERROR: unrecognized type of FindCurvatures strategy" << endln;
