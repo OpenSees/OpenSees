@@ -2479,6 +2479,7 @@ int inputCheck() {
     // theCorrelationMatrix
 
     // set defaults
+    /*
     ProbabilityTransformation *theProbabilityTransformation =
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
@@ -2487,17 +2488,20 @@ int inputCheck() {
                << endln;
         theProbabilityTransformation =
             new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
     }
-
+    */
+    
     // reliabilityConvergenceCheck  Standard         -e1 1.0e-3
     // -e2 1.0e-3  -print 1 functionEvaluator            Tcl
     // gradientEvaluator            FiniteDifference -pert 1000
 
     SearchDirection *theSearchDirection = cmds->getSearchDirection();
     if (theSearchDirection == 0) {
-        opserr << "No searchDirectin specified, assuming Standard"
+        opserr << "No searchDirection specified, assuming iHLRF"
                << endln;
         theSearchDirection = new HLRFSearchDirection();
+	cmds->setSearchDirection(theSearchDirection);
     }
 
     // meritFunctionCheck           AdkZhang         -multi 2.0
@@ -2525,6 +2529,12 @@ int OPS_runFOSMAnalysis() {
         return -1;
     }
 
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "FOSMAnalysis -- ReliabilityDomain is not defined\n";
+        return -1;
+    }
+
     // Check for essential ingredients
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
@@ -2537,12 +2547,6 @@ int OPS_runFOSMAnalysis() {
     if (theGradientEvaluator == 0) {
         opserr << "Need theGradientEvaluator before a FOSMAnalysis "
                   "can be created\n";
-        return -1;
-    }
-
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-    if (theReliabilityDomain == 0) {
-        opserr << "ReliabilityDomain is not defined\n";
         return -1;
     }
 
@@ -2580,6 +2584,12 @@ int OPS_runFORMAnalysis() {
         return -1;
     }
 
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "FORMAnalysis -- ReliabilityDomain is not defined\n";
+        return -1;
+    }
+    
     // Check for essential ingredients
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
@@ -2600,16 +2610,11 @@ int OPS_runFORMAnalysis() {
     ProbabilityTransformation *theProbabilityTransformation =
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
-        opserr << "Need theProbabilityTransformation before a "
-                  "FORMAnalysis "
-                  "can be created\n";
-        return -1;
-    }
-
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-    if (theReliabilityDomain == 0) {
-        opserr << "ReliabilityDomain is not defined\n";
-        return -1;
+      opserr << "FORMAnalysis - probability transformation not defined - ";
+      opserr << "assuming all independent transformation" << endln;
+	theProbabilityTransformation =
+            new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);      
     }
 
     Domain *theStructuralDomain = cmds->getStructuralDomain();
@@ -2666,13 +2671,22 @@ int OPS_runImportanceSamplingAnalysis() {
     }
     const char *filename = OPS_GetString();
 
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "Need theReliabilityDomain before a "
+                  "ImportanceSamplingAnalysis can be created\n";
+        return -1;
+    }
+
     // Check for essential tools
     ProbabilityTransformation *theProbabilityTransformation =
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
-        opserr << "Need theProbabilityTransformation before a "
-                  "ImportanceSamplingAnalysis can be created\n";
-        return -1;
+      opserr << "ImportanceSampingAnalysis - probability transformation not defined - ";
+      opserr << "assuming all independent transformation" << endln;
+	theProbabilityTransformation =
+            new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
     }
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
@@ -2684,16 +2698,13 @@ int OPS_runImportanceSamplingAnalysis() {
     RandomNumberGenerator *theRandomNumberGenerator =
         cmds->getRandomNumberGenerator();
     if (theRandomNumberGenerator == 0) {
-        opserr << "Need theRandomNumberGenerator before a "
-                  "ImportanceSamplingAnalysis can be created\n";
-        return -1;
+      // Don't really need to say this - just do it - bc CStdLib is the only option -- MHS
+      //opserr << "ImportanceSampingAnalysis - random number generator not defined - ";
+      //opserr << "assuming CStdLib generator" << endln;      
+	theRandomNumberGenerator = new CStdLibRandGenerator();
+	cmds->setRandomNumberGenerator(theRandomNumberGenerator);
     }
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-    if (theReliabilityDomain == 0) {
-        opserr << "Need theReliabilityDomain before a "
-                  "ImportanceSamplingAnalysis can be created\n";
-        return -1;
-    }
+
     Domain *theStructuralDomain = cmds->getStructuralDomain();
     if (theReliabilityDomain == 0) {
         opserr << "Need theStructuralDomain before a "
