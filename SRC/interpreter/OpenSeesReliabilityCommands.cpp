@@ -2586,7 +2586,7 @@ int OPS_runFORMAnalysis() {
     // Check for essential ingredients
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
-        opserr << "Need theGFunEvaluator before a FOSMAnalysis can "
+        opserr << "Need theGFunEvaluator before a FORMAnalysis can "
                   "be created\n";
         return -1;
     }
@@ -2595,7 +2595,7 @@ int OPS_runFORMAnalysis() {
         cmds->getFindDesignPointAlgorithm();
     if (theFindDesignPointAlgorithm == 0) {
         opserr << "Need theFindDesignPointAlgorithm before a "
-                  "FOSMAnalysis "
+                  "FORMAnalysis "
                   "can be created\n";
         return -1;
     }
@@ -2604,7 +2604,7 @@ int OPS_runFORMAnalysis() {
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
         opserr << "Need theProbabilityTransformation before a "
-                  "FOSMAnalysis "
+                  "FORMAnalysis "
                   "can be created\n";
         return -1;
     }
