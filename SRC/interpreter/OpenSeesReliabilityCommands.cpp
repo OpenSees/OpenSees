@@ -2648,12 +2648,19 @@ int OPS_runFOSMAnalysis() {
         return -1;
     }
 
-    FOSMAnalysis theFOSMAnalysis(
+    FOSMAnalysis *theFOSMAnalysis = new FOSMAnalysis(
         theReliabilityDomain, theStructuralDomain, theFunctionEvaluator,
         theGradientEvaluator, 0, filename);
 
+    if (theFOSMAnalysis == 0) {
+      opserr << "Unable to create FOSM analysis" << endln;
+      return -1;
+    }
+
+    cmds->setFOSMAnalysis(theFOSMAnalysis);
+    
     // Now run the analysis
-    if (theFOSMAnalysis.analyze() < 0) {
+    if (theFOSMAnalysis->analyze() < 0) {
         opserr << "WARNING: the FOSM analysis failed\n";
         return -1;
     }
@@ -2732,13 +2739,20 @@ int OPS_runFORMAnalysis() {
     }
 
     // Create the analysis object
-    FORMAnalysis theFORMAnalysis(
+    FORMAnalysis *theFORMAnalysis = new FORMAnalysis(
         theReliabilityDomain, theFindDesignPointAlgorithm,
         theFunctionEvaluator, theProbabilityTransformation, filename,
         relSensTag);
 
+    if (theFORMAnalysis == 0) {
+      opserr << "Unable to create FORM analysis" << endln;
+      return -1;
+    }
+    
+    cmds->setFORMAnalysis(theFORMAnalysis);
+    
     // Now run the analysis
-    if (theFORMAnalysis.analyze() < 0) {
+    if (theFORMAnalysis->analyze() < 0) {
         opserr << "WARNING: the FORM analysis failed\n";
         return -1;
     }
@@ -2914,15 +2928,21 @@ int OPS_runImportanceSamplingAnalysis() {
         return -1;
     }
 
-    ImportanceSamplingAnalysis theImportanceSamplingAnalysis(
+    ImportanceSamplingAnalysis *theImportanceSamplingAnalysis
+      = new ImportanceSamplingAnalysis(
             theReliabilityDomain, theStructuralDomain,
             theProbabilityTransformation, theFunctionEvaluator,
             theRandomNumberGenerator, 0, numberOfSimulations, targetCOV,
             samplingVariance, printFlag, filename, analysisTypeTag);
 
-    //cmds->setImportanceSamplingAnalysis(&theImportanceSamplingAnalysis);
+    if (theImportanceSamplingAnalysis == 0) {
+      opserr << "Unable to create ImportanceSampling analysis" << endln;
+      return -1;
+    }
+    
+    cmds->setImportanceSamplingAnalysis(theImportanceSamplingAnalysis);
 
-    if (theImportanceSamplingAnalysis.analyze() < 0) {
+    if (theImportanceSamplingAnalysis->analyze() < 0) {
         opserr << "WARNING: failed to run ImportanceSamplingAnalysis\n";
         return -1;
     }
