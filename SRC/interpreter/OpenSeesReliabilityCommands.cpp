@@ -111,6 +111,7 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(
       theStepSizeRule(0),
       theRootFinding(0),
       theFindDesignPointAlgorithm(0),
+      theFindCurvatures(0),
       theFunctionEvaluator(0),
       theGradientEvaluator(0),
       thePolakHeDualPurpose(0),
@@ -178,6 +179,10 @@ void OpenSeesReliabilityCommands::wipe() {
     if (theFindDesignPointAlgorithm != 0) {
         delete theFindDesignPointAlgorithm;
         theFindDesignPointAlgorithm = 0;
+    }
+    if (theFindCurvatures != 0) {
+        delete theFindCurvatures;
+        theFindCurvatures = 0;
     }
     if (theFunctionEvaluator != 0) {
         delete theFunctionEvaluator;
@@ -1217,6 +1222,15 @@ void OpenSeesReliabilityCommands::setFindDesignPointAlgorithm(
     theFindDesignPointAlgorithm = algo;
 }
 
+void OpenSeesReliabilityCommands::setFindCurvatures(
+    FindCurvatures *algo) {
+    if (theFindCurvatures != 0) {
+        delete theFindCurvatures;
+        theFindCurvatures = 0;
+    }
+    theFindCurvatures = algo;
+}
+
 void OpenSeesReliabilityCommands::setGradientEvaluator(
     GradientEvaluator *eval) {
     if (theGradientEvaluator != 0) {
@@ -1968,6 +1982,47 @@ int OPS_rootFinding() {
     }
 
     return 0;
+}
+
+int OPS_findCurvatures() {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to findCurvatures" << endln;
+    return -1;
+  }
+  if (cmds == 0) {
+    opserr << "WARNING: reliability cmds not defined\n";
+    return -1;
+  }
+
+  // type
+  const char *type = OPS_GetString();
+
+  // Check that the necessary ingredients are present
+
+  // 
+  FindCurvatures *theFindCurvatures = 0;
+  if (strcmp(type, "firstPrincipal") == 0) {
+
+  }
+  else if (strcmp(type, "bySearchAlgorithm") == 0) {
+
+  }
+  else if (strcmp(type, "curvatureFitting") == 0) {
+
+  }
+  else {
+    opserr << "ERROR: unrecognized type of FindCurvatures strategy" << endln;
+    return -1;
+  }
+
+  if (theFindCurvatures == 0) {
+    opserr << "ERROR: could not create theFindCurvatures" << endln;
+    return -1;
+  }
+  
+  cmds->setFindCurvatures(theFindCurvatures);
+  
+  return 0;
 }
 
 int OPS_findDesignPoint() {

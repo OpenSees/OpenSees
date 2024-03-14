@@ -2820,6 +2820,18 @@ static PyObject *Py_ops_findDesignPoint(PyObject *self,
   return wrapper->getResults();
 }
 
+static PyObject *Py_ops_findCurvatures(PyObject *self,
+				       PyObject *args) {
+  wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+  if (OPS_findCurvatures() < 0) {
+    opserr << (void *)0;
+    return NULL;
+  }
+
+  return wrapper->getResults();
+}
+
 static PyObject *Py_ops_runFORMAnalysis(PyObject *self, PyObject *args) {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 

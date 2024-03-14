@@ -54,6 +54,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FORMAnalysis.h>
 #include <FOSMAnalysis.h>
 #include <FindDesignPointAlgorithm.h>
+#include <FindCurvatures.h>
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
 #include <ImportanceSamplingAnalysis.h>
@@ -116,6 +117,9 @@ class OpenSeesReliabilityCommands {
     return theFindDesignPointAlgorithm;
   }
 
+  void setFindCurvatures(FindCurvatures *algo);
+  FindCurvatures *getFindCurvatures() { return theFindCurvatures; }  
+
   void setFunctionEvaluator(FunctionEvaluator *eval);
   FunctionEvaluator *getFunctionEvaluator() {
     return theFunctionEvaluator;
@@ -175,7 +179,8 @@ class OpenSeesReliabilityCommands {
   StepSizeRule *theStepSizeRule;
   RootFinding *theRootFinding;
   FindDesignPointAlgorithm *theFindDesignPointAlgorithm;
-
+  FindCurvatures *theFindCurvatures;
+  
   FunctionEvaluator *theFunctionEvaluator;
   GradientEvaluator *theGradientEvaluator;
 
