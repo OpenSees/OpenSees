@@ -2036,6 +2036,7 @@ int OPS_findDesignPoint() {
         opserr << "Assume all RV's are independent" << endln;
         theProbabilityTransformation =
             new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
     }
 
     ReliabilityConvergenceCheck *theReliabilityConvergenceCheck =
@@ -2496,6 +2497,7 @@ int inputCheck() {
     // -e2 1.0e-3  -print 1 functionEvaluator            Tcl
     // gradientEvaluator            FiniteDifference -pert 1000
 
+    /*
     SearchDirection *theSearchDirection = cmds->getSearchDirection();
     if (theSearchDirection == 0) {
         opserr << "No searchDirection specified, assuming iHLRF"
@@ -2503,7 +2505,8 @@ int inputCheck() {
         theSearchDirection = new HLRFSearchDirection();
 	cmds->setSearchDirection(theSearchDirection);
     }
-
+    */
+    
     // meritFunctionCheck           AdkZhang         -multi 2.0
     // -add 10.0   -factor 0.5 stepSizeRule                 Armijo
     // -maxNum 5    -base 0.5   -initial 1.0 2  -print 0 startPoint
