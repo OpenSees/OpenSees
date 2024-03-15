@@ -120,6 +120,7 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(
       theSQPtriplePurpose(0),
       theFOSMAnalysis(0),
       theFORMAnalysis(0),
+      theSORMAnalysis(0),
       theImportanceSamplingAnalysis(0),
       theSensAlgo(0) {
     if (structuralDomain != 0) {
@@ -202,6 +203,10 @@ void OpenSeesReliabilityCommands::wipe() {
         delete theFORMAnalysis;
         theFORMAnalysis = 0;
     }
+    if (theSORMAnalysis != 0) {
+        delete theSORMAnalysis;
+        theSORMAnalysis = 0;
+    }    
     if (theImportanceSamplingAnalysis != 0) {
         delete theImportanceSamplingAnalysis;
         theImportanceSamplingAnalysis = 0;
@@ -1271,6 +1276,14 @@ void OpenSeesReliabilityCommands::setFORMAnalysis(FORMAnalysis *analysis) {
         theFORMAnalysis = 0;
     }
     theFORMAnalysis = analysis;
+}
+
+void OpenSeesReliabilityCommands::setSORMAnalysis(SORMAnalysis *analysis) {
+    if (theSORMAnalysis != 0) {
+        delete theSORMAnalysis;
+        theSORMAnalysis = 0;
+    }
+    theSORMAnalysis = analysis;
 }
 
 void OpenSeesReliabilityCommands::setImportanceSamplingAnalysis(
@@ -2754,6 +2767,72 @@ int OPS_runFORMAnalysis() {
     // Now run the analysis
     if (theFORMAnalysis->analyze() < 0) {
         opserr << "WARNING: the FORM analysis failed\n";
+        return -1;
+    }
+
+    return 0;
+}
+
+int OPS_runSORMAnalysis() {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING: Wrong number of input parameter to SORM "
+	       << "analysis" << endln;;
+        return -1;
+    }
+
+    // get file name
+    const char *filename = OPS_GetString();
+
+    // Do input check
+    if (inputCheck() < 0) {
+        return -1;
+    }
+
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+      opserr << "FORMAnalysis -- ReliabilityDomain is not defined" << endln;
+      return -1;
+    }
+    
+    // Check for essential ingredients
+    FindCurvatures *theFindCurvatures = cmds->getFindCurvatures();
+    if (theFindCurvatures == 0) {
+        opserr << "Need FindCurvature approach before a SORMAnalysis can "
+	       << "be created" << endln;
+        return -1;
+    }
+
+    FORMAnalysis *theFORMAnalysis =
+        cmds->getFORMAnalysis();
+    if (theFORMAnalysis == 0) {
+        opserr << "Need to run a FORM analysis before "
+	       << "SORMAnalysis can be created" << endln;
+        return -1;
+    }
+
+    // Check for essential ingredients
+    FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
+    if (theFunctionEvaluator == 0) {
+        opserr << "Need theGFunEvaluator before a SORMAnalysis can "
+	       << "be created" << endln;
+        return -1;
+    }
+    
+    // Create the analysis object
+    SORMAnalysis *theSORMAnalysis = new SORMAnalysis(
+        theReliabilityDomain, theFunctionEvaluator,
+	theFORMAnalysis, theFindCurvatures, filename);
+
+    if (theSORMAnalysis == 0) {
+      opserr << "Unable to create SORM analysis" << endln;
+      return -1;
+    }
+    
+    cmds->setSORMAnalysis(theSORMAnalysis);
+    
+    // Now run the analysis
+    if (theSORMAnalysis->analyze() < 0) {
+        opserr << "WARNING: the SORM analysis failed\n";
         return -1;
     }
 

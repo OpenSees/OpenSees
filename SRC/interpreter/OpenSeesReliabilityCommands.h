@@ -52,6 +52,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #include <Domain.h>
 #include <FORMAnalysis.h>
+#include <SORMAnalysis.h>
 #include <FOSMAnalysis.h>
 #include <FindDesignPointAlgorithm.h>
 #include <FindCurvatures.h>
@@ -154,6 +155,9 @@ class OpenSeesReliabilityCommands {
   void setFORMAnalysis(FORMAnalysis *analysis);
   FORMAnalysis *getFORMAnalysis() { return theFORMAnalysis; }
 
+  void setSORMAnalysis(SORMAnalysis *analysis);
+  SORMAnalysis *getSORMAnalysis() { return theSORMAnalysis; }  
+
   void setImportanceSamplingAnalysis(
       ImportanceSamplingAnalysis *analysis);
   ImportanceSamplingAnalysis *getImportanceSamplingAnalysis() {
@@ -191,6 +195,7 @@ class OpenSeesReliabilityCommands {
   // analysis
   FOSMAnalysis *theFOSMAnalysis;
   FORMAnalysis *theFORMAnalysis;
+  SORMAnalysis *theSORMAnalysis;
   ImportanceSamplingAnalysis *theImportanceSamplingAnalysis;
 
   // sensitivity algorithm

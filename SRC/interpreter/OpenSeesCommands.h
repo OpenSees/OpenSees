@@ -403,6 +403,7 @@ int OPS_gradientEvaluator();
 int OPS_wipeReliability();
 int OPS_runFOSMAnalysis();
 int OPS_runFORMAnalysis();
+int OPS_runSORMAnalysis();
 int OPS_runImportanceSamplingAnalysis();
 ReliabilityDomain* OPS_GetReliabilityDomain();
 

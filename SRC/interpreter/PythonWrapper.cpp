@@ -2843,6 +2843,17 @@ static PyObject *Py_ops_runFORMAnalysis(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_runSORMAnalysis(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_runSORMAnalysis() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getLSFTags(PyObject *self, PyObject *args) {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
@@ -3111,7 +3122,9 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("domainCommitTag", &Py_ops_domainCommitTag);
     addCommand("runFOSMAnalysis", &Py_ops_runFOSMAnalysis);
     addCommand("findDesignPoint", &Py_ops_findDesignPoint);
+    addCommand("findCurvatures", &Py_ops_findCurvatures);
     addCommand("runFORMAnalysis", &Py_ops_runFORMAnalysis);
+    addCommand("runSORMAnalysis", &Py_ops_runSORMAnalysis);    
     addCommand("getLSFTags", &Py_ops_getLSFTags);
     addCommand("runImportanceSamplingAnalysis", &Py_ops_runImportanceSamplingAnalysis);
     addCommand("IGA", &Py_ops_IGA);
