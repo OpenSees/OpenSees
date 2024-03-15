@@ -74,6 +74,11 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <PythonRV.h>
 #endif
 
+#include <StandardLinearOscillatorDisplacementFilter.h>
+#include <StandardLinearOscillatorVelocityFilter.h>
+#include <StandardLinearOscillatorAccelerationFilter.h>
+#include <KooFilter.h>
+
 #include <AdkZhangMeritFunctionCheck.h>
 #include <AllIndependentTransformation.h>
 #include <ArmijoStepSizeRule.h>
@@ -337,6 +342,69 @@ int OPS_gradPerformanceFunction() {
     }
 
     return 0;
+}
+int OPS_filter() {
+  Filter *theFilter = 0;
+  int tag;
+  double period_Tn, damping, dtpulse;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "ERROR: Invalid number of arguments to filter "
+      "command: filter tag type arg1 arg2 ..." << endln;
+    return -1;
+  }
+
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for filter commands" << endln;
+    return -1;
+  }
+
+  const char *type = OPS_GetString();
+  if (strcmp(type,"standard") == 0 || strcmp(type,"Koo") == 0 ||
+      strcmp(type,"standardDisplacement") == 0 ||
+      strcmp(type,"standardVelocity") == 0 ||
+      strcmp(type,"standardAcceleration") == 0) {
+
+    if (OPS_GetDoubleInput(&numdata, &period_Tn) < 0) {
+      opserr << "ERROR: invalid period for filter" << endln;
+      return -1;
+    }
+    if (OPS_GetDoubleInput(&numdata, &damping) < 0) {
+      opserr << "ERROR: invalid damping for filter" << endln;
+      return -1;
+    }
+
+    if (strcmp(type,"standard") == 0 || strcmp(type,"standardDisplacement") == 0)
+      theFilter = new StandardLinearOscillatorDisplacementFilter(tag, period_Tn, damping);
+    if (strcmp(type,"standardVelocity") == 0)
+      theFilter = new StandardLinearOscillatorVelocityFilter(tag, period_Tn, damping);
+    if (strcmp(type,"standardAcceleration") == 0)
+      theFilter = new StandardLinearOscillatorAccelerationFilter(tag, period_Tn, damping);
+    if (strcmp(type,"Koo") == 0)
+      theFilter = new KooFilter(tag, period_Tn, damping);    
+  }
+  else {
+    opserr << "Unknown filter type: " << type << endln;
+    return -1;
+  }
+
+  if (theFilter == 0) {
+    opserr << "ERROR: ran out of memory creating filter \n";
+    opserr << type << ' ' << tag << endln;
+    return -1;
+  }
+  
+  // ADD THE OBJECT TO THE DOMAIN
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain->addFilter(theFilter) == false) {
+    opserr << "ERROR: failed to add filter to the domain\n";
+    opserr << type << ' ' << tag << endln;
+    delete theFilter; // otherwise memory leak
+    return -1;
+  }
+  
+  return 0;
 }
 
 int OPS_randomVariable() {
