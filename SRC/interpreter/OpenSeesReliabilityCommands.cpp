@@ -78,6 +78,10 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <StandardLinearOscillatorVelocityFilter.h>
 #include <StandardLinearOscillatorAccelerationFilter.h>
 #include <KooFilter.h>
+#include <GammaModulatingFunction.h>
+#include <ConstantModulatingFunction.h>
+#include <TrapezoidalModulatingFunction.h>
+#include <KooModulatingFunction.h>
 
 #include <AdkZhangMeritFunctionCheck.h>
 #include <AllIndependentTransformation.h>
@@ -343,10 +347,11 @@ int OPS_gradPerformanceFunction() {
 
     return 0;
 }
+
 int OPS_filter() {
   Filter *theFilter = 0;
   int tag;
-  double period_Tn, damping, dtpulse;
+  double period_Tn, damping;//, dtpulse;
 
   if (OPS_GetNumRemainingInputArgs() < 3) {
     opserr << "ERROR: Invalid number of arguments to filter "
@@ -356,7 +361,7 @@ int OPS_filter() {
 
   int numdata = 1;
   if (OPS_GetIntInput(&numdata, &tag) < 0) {
-    opserr << "ERROR: invalid tag for filter commands" << endln;
+    opserr << "ERROR: invalid tag for filter command" << endln;
     return -1;
   }
 
@@ -401,6 +406,166 @@ int OPS_filter() {
     opserr << "ERROR: failed to add filter to the domain\n";
     opserr << type << ' ' << tag << endln;
     delete theFilter; // otherwise memory leak
+    return -1;
+  }
+  
+  return 0;
+}
+
+int OPS_modulatingFunction() {
+  ModulatingFunction *theModulatingFunction = 0;
+  int tag;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "ERROR: Invalid number of arguments to modulating function "
+      "command: modulatingFunction tag type arg1 arg2 ..." << endln;
+    return -1;
+  }
+
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for modulatingFunction command" << endln;
+    return -1;
+  }
+
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  
+  const char *type = OPS_GetString();
+  if (strcmp(type,"gamma") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+      opserr << "ERROR: insufficient input for gamma modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double abc[3];
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 3;
+    if (OPS_GetDoubleInput(&numdata, abc) < 0) {
+      opserr << "ERROR: invalid double data for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new GammaModulatingFunction(tag, theFilter,
+							abc[0], abc[1], abc[2]);
+  }
+  else if (strcmp(type,"constant") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "ERROR: insufficient input for constant modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double amplitude;
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata, &amplitude) < 0) {
+      opserr << "ERROR: invalid amplitude for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new ConstantModulatingFunction(tag, theFilter, amplitude);
+  }
+  else if (strcmp(type,"trapezoidal") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+      opserr << "ERROR: insufficient input for trapezoidal modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double ddata[5];
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 5;
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+      opserr << "ERROR: invalid double data for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new TrapezoidalModulatingFunction(tag, theFilter,
+							      ddata[0], ddata[1], ddata[2],
+							      ddata[3], ddata[4]);
+  }  
+  else if (strcmp(type,"Koo") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+      opserr << "ERROR: insufficient input for Koo modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double ddata[2];
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 2;
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+      opserr << "ERROR: invalid double data for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new KooModulatingFunction(tag, theFilter, ddata[0], ddata[1]);
+  }
+  else {
+    opserr << "Unknown modulatingFunction type: " << type << endln;
+    return -1;
+  }
+
+  if (theModulatingFunction == 0) {
+    opserr << "ERROR: ran out of memory creating modulating function \n";
+    opserr << type << ' ' << tag << endln;
+    return -1;
+  }
+  
+  // ADD THE OBJECT TO THE DOMAIN
+  if (theReliabilityDomain->addModulatingFunction(theModulatingFunction) == false) {
+    opserr << "ERROR: failed to add modulating function to the domain\n";
+    opserr << type << ' ' << tag << endln;
+    delete theModulatingFunction; // otherwise memory leak
     return -1;
   }
   

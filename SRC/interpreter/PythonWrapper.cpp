@@ -2393,6 +2393,18 @@ static PyObject *Py_ops_filter(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_modulatingFunction(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_modulatingFunction() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getRVTags(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -3096,6 +3108,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getNodeLoadData", &Py_ops_getNodeLoadData);
     addCommand("randomVariable", &Py_ops_randomVariable);
     addCommand("filter", &Py_ops_filter);
+    addCommand("modulatingFunction", &Py_ops_modulatingFunction);
     addCommand("getRVTags", &Py_ops_getRVTags);
     addCommand("getRVParamTag", &Py_ops_getRVParamTag);
     addCommand("getRVValue", &Py_ops_getRVValue);
