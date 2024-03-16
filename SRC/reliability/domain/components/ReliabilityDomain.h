@@ -110,6 +110,11 @@ public:
 	Filter *getFilterPtrFromIndex(int index);
 	int getFilterIndex(int tag);
 
+    	ModulatingFunction *getModulatingFunctionPtr(int tag);
+	// Following two methods to map index to tag and vice versa
+	ModulatingFunction *getModulatingFunctionPtrFromIndex(int index);
+	int getModulatingFunctionIndex(int tag);
+
 	CorrelationCoefficient *getCorrelationCoefficientPtr(int tag);
 	ModulatingFunction *getModulatingFunction(int tag);
 	Filter *getFilter(int tag);
@@ -219,7 +224,13 @@ private:
 	enum {filterSize_init = 10};
 	enum {filterSize_grow = 2};
 	int filterSize;
-	int numFilters;  
+	int numFilters;
+
+	int *modFcnIndex;
+	enum {modFcnSize_init = 10};
+	enum {modFcnSize_grow = 2};
+	int modFcnSize;
+	int numModulatingFunctions;    
 };
 
 #endif

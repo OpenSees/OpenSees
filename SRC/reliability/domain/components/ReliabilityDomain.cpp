@@ -56,7 +56,8 @@
 
 ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
     theOpenSeesDomain(passedDomain),
-    numRandomVariables(0), numLimitStateFunctions(0), numCutsets(0)
+    numRandomVariables(0), numLimitStateFunctions(0), numCutsets(0),
+    numFilters(0), numModulatingFunctions(0)
 {
 
 	theRandomVariablesPtr = new ArrayOfTaggedObjects (256);
@@ -92,7 +93,10 @@ ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
 	cutsetSize = cutsetSize_init;
 
 	filterIndex = new int[filterSize_init];
-	filterSize = filterSize_init;	
+	filterSize = filterSize_init;
+
+	modFcnIndex = new int[modFcnSize_init];
+	modFcnSize = modFcnSize_init;		
 }
 
 void
@@ -113,8 +117,10 @@ ReliabilityDomain::clearAll()
  
   if (theCorrelationCoefficientsPtr != 0) 
     theCorrelationCoefficientsPtr->clearAll();
-  if (theModulatingFunctionsPtr != 0)
+  if (theModulatingFunctionsPtr != 0) {
     theModulatingFunctionsPtr->clearAll();
+    numModulatingFunctions = 0;
+  }
   if (theSpectraPtr != 0)
     theSpectraPtr->clearAll();
   if (theFiltersPtr != 0) {
@@ -202,7 +208,9 @@ ReliabilityDomain::~ReliabilityDomain()
   if (cutsetIndex != 0)
     delete [] cutsetIndex;
   if (filterIndex != 0)
-    delete [] filterIndex;  
+    delete [] filterIndex;
+  if (modFcnIndex != 0)
+    delete [] modFcnIndex;    
 }
 
 
@@ -316,8 +324,34 @@ ReliabilityDomain::addCutset(Cutset *theCutset)
 bool
 ReliabilityDomain::addModulatingFunction(ModulatingFunction *theModulatingFunction)
 {
-	bool result = theModulatingFunctionsPtr->addComponent(theModulatingFunction);
-	return result;
+  bool result = theModulatingFunctionsPtr->addComponent(theModulatingFunction);
+
+  if (result == true) {
+
+    // Array is full
+    if (numModulatingFunctions == modFcnSize) {
+
+      // Increase size and allocate new array
+      modFcnSize += modFcnSize_grow;
+      int *tmp_modFcnIndex = new int[modFcnSize];
+
+      // Copy values from old array to new
+      for (int i = 0; i < numModulatingFunctions; i++)
+	tmp_modFcnIndex[i] = modFcnIndex[i];
+
+      // Get rid of old array
+      delete [] modFcnIndex;
+
+      // Set pointer to new array
+      modFcnIndex = tmp_modFcnIndex;
+    }
+
+    // Add to index
+    modFcnIndex[numModulatingFunctions] = theModulatingFunction->getTag();
+    numModulatingFunctions++;
+  }
+  
+  return result;
 }
 
 bool
@@ -675,6 +709,48 @@ ReliabilityDomain::getFilterIndex(int tag)
   return index;
 }
 
+ModulatingFunction * 
+ReliabilityDomain::getModulatingFunctionPtr(int tag)
+{
+  TaggedObject *theComponent = theModulatingFunctionsPtr->getComponentPtr(tag);
+  if ( theComponent == 0 )
+    return 0;
+  ModulatingFunction *result = (ModulatingFunction *) theComponent;
+  return result;
+}
+
+ModulatingFunction *
+ReliabilityDomain::getModulatingFunctionPtrFromIndex(int index)
+{
+  if (index >= 0 && index < numModulatingFunctions)
+    return this->getModulatingFunctionPtr(modFcnIndex[index]);
+
+  else {
+    opserr << "ReliabilityDomain::getModulatintFunctionPtrFromIndex -- index " << index << " out of bounds 0 ... " << numModulatingFunctions-1 << endln;
+    return 0;
+  }
+
+}
+
+int
+ReliabilityDomain::getModulatingFunctionIndex(int tag)
+{
+  int index;
+
+  // Find index of cutset with specified tag
+  for (index = 0; index < numModulatingFunctions; index++) {
+    if (modFcnIndex[index] == tag)
+      break;
+  }
+
+  if (index == numModulatingFunctions) {
+    opserr << "ReliabilityDomain::getModulatingFunctionIndex -- modulating function with tag " << tag << " not found" << endln;
+    return -1;
+  }
+
+  return index;
+}
+
 
 ModulatingFunction *
 ReliabilityDomain::getModulatingFunction(int tag)
@@ -858,6 +934,32 @@ ReliabilityDomain::removeFilter(int tag)
     // Now remove the component
     theFiltersPtr->removeComponent(tag);
     numFilters--;
+  }
+
+  return 0;
+}
+
+int
+ReliabilityDomain::removeModulatingFunction(int tag)
+{
+  ModulatingFunction *theModFcn = (ModulatingFunction*) theModulatingFunctionsPtr->getComponentPtr(tag);
+  
+  if (theModFcn != 0) {
+
+    // Find where filter is located
+    int index;
+    for (index = 0; index < numModulatingFunctions; index++) {
+      if (modFcnIndex[index] == tag)
+	  break;
+    }
+    
+    // Shift indices down by one
+    for (int i = index; i < numModulatingFunctions-1; i++)
+      modFcnIndex[i] = modFcnIndex[i+1];
+    
+    // Now remove the component
+    theModulatingFunctionsPtr->removeComponent(tag);
+    numModulatingFunctions--;
   }
 
   return 0;
