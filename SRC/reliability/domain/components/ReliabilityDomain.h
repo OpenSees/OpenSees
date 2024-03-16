@@ -105,6 +105,11 @@ public:
 	Cutset *getCutsetPtrFromIndex(int index);
 	int getCutsetIndex(int tag);
 
+  	Filter *getFilterPtr(int tag);
+	// Following two methods to map index to tag and vice versa
+	Filter *getFilterPtrFromIndex(int index);
+	int getFilterIndex(int tag);
+
 	CorrelationCoefficient *getCorrelationCoefficientPtr(int tag);
 	ModulatingFunction *getModulatingFunction(int tag);
 	Filter *getFilter(int tag);
@@ -209,6 +214,12 @@ private:
 	enum {cutsetSize_grow = 2};
 	int cutsetSize;
 	int numCutsets;
+
+	int *filterIndex;
+	enum {filterSize_init = 10};
+	enum {filterSize_grow = 2};
+	int filterSize;
+	int numFilters;  
 };
 
 #endif
