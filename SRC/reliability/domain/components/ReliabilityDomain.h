@@ -115,6 +115,11 @@ public:
 	ModulatingFunction *getModulatingFunctionPtrFromIndex(int index);
 	int getModulatingFunctionIndex(int tag);
 
+    	Spectrum *getSpectrumPtr(int tag);
+	// Following two methods to map index to tag and vice versa
+	Spectrum *getSpectrumPtrFromIndex(int index);
+	int getSpectrumIndex(int tag);  
+
 	CorrelationCoefficient *getCorrelationCoefficientPtr(int tag);
 	ModulatingFunction *getModulatingFunction(int tag);
 	Filter *getFilter(int tag);
@@ -230,7 +235,13 @@ private:
 	enum {modFcnSize_init = 10};
 	enum {modFcnSize_grow = 2};
 	int modFcnSize;
-	int numModulatingFunctions;    
+	int numModulatingFunctions;
+
+	int *spectraIndex;
+	enum {spectraSize_init = 10};
+	enum {spectraSize_grow = 2};
+	int spectraSize;
+	int numSpectra;      
 };
 
 #endif
