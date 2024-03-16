@@ -210,19 +210,26 @@ include_directories(${OPS_INCLUDE_DIRS})
 # NUMERICAL LIBRARIES
 #
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_5.1.1")
+add_subdirectory("${OPS_BUNDLED_DIR}/SuperLU_5.1.1")
+include_directories("${OPS_BUNDLED_DIR}/SuperLU_5.1.1")
 set (SUPERLU_LIBRARIES SUPERLU)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/UMFPACK")
+add_subdirectory("${OPS_BUNDLED_DIR}/UMFPACK")
+include_directories("${OPS_BUNDLED_DIR}/UMFPACK")
 set (UMFPACK_LIBRARIES UMFPACK)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/AMD")
+add_subdirectory("${OPS_BUNDLED_DIR}/AMD")
+include_directories("${OPS_BUNDLED_DIR}/AMD")
 set (AMD_LIBRARIES AMD)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ARPACK")
+add_subdirectory("${OPS_BUNDLED_DIR}/ARPACK")
+include_directories("${OPS_BUNDLED_DIR}/ARPACK")
 set (ARPACK_LIBRARIES ARPACK)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/CSPARSE")
+add_subdirectory("${OPS_BUNDLED_DIR}/CSPARSE")
+include_directories("${OPS_BUNDLED_DIR}/CSPARSE")
 set (CSPARSE_LIBRARIES CSPARSE)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
+add_subdirectory("${OPS_BUNDLED_DIR}/tetgen1.4.3")
+include_directories("${OPS_BUNDLED_DIR}/tetgen1.4.3")
 set (TETGEN_LIBRARIES tet)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
+add_subdirectory("${OPS_BUNDLED_DIR}/Triangle")
+include_directories("${OPS_BUNDLED_DIR}/Triangle")
 set (TRIANGLE_LIBRARIES triangle)
 
 
@@ -246,8 +253,10 @@ if(LAPACK_FOUND)
   message(STATUS "LAPACK_LINKER_FLAGS = ${LAPACK_LINKER_FLAGS}")
   message(STATUS "LAPACK_LIBRARIES = ${LAPACK_LIBRARIES}" )
 else()
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/BLAS") 
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/LAPACK")
+  add_subdirectory("${OPS_BUNDLED_DIR}/BLAS") 
+  include_directories("${OPS_BUNDLED_DIR}/BLAS") 
+  add_subdirectory("${OPS_BUNDLED_DIR}/LAPACK")
+  include_directories("${OPS_BUNDLED_DIR}/LAPACK")
   set(LAPACK_LIBRARIES LAPACK)
 endif()
 
@@ -291,8 +300,10 @@ if(MPI_FOUND)
 
   endif()
 
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
+  add_subdirectory("${OPS_BUNDLED_DIR}/SuperLU_DIST_4.3/SRC")
+  include_directories("${OPS_BUNDLED_DIR}/SuperLU_DIST_4.3/SRC")
+  add_subdirectory("${OPS_BUNDLED_DIR}/METIS")    
+  include_directories("${OPS_BUNDLED_DIR}/METIS") 
 else()
   message(STATUS "MPI was NOT found.")
 endif()
@@ -330,7 +341,6 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${UMFPACK_LIBRARIES}
        ${TETGEN_LIBRARIES}
        ${TRIANGLE_LIBRARIES}                     
-       ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
 )
