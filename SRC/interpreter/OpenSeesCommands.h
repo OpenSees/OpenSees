@@ -376,6 +376,7 @@ int OPS_partition();
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
 int OPS_filter();
+int OPS_spectrum();
 int OPS_modulatingFunction();
 int OPS_getRVTags();
 int OPS_getRVParamTag();

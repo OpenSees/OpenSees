@@ -82,6 +82,8 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ConstantModulatingFunction.h>
 #include <TrapezoidalModulatingFunction.h>
 #include <KooModulatingFunction.h>
+#include <JonswapSpectrum.h>
+#include <NarrowBandSpectrum.h>
 
 #include <AdkZhangMeritFunctionCheck.h>
 #include <AllIndependentTransformation.h>
@@ -412,6 +414,78 @@ int OPS_filter() {
   return 0;
 }
 
+int OPS_spectrum() {
+  Spectrum *theSpectrum = 0;
+  int tag;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "ERROR: Invalid number of arguments to spectrum "
+      "command: spectrum tag type arg1 arg2 ..." << endln;
+    return -1;
+  }
+
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for spectrum command" << endln;
+    return -1;
+  }
+
+  const char *type = OPS_GetString();
+  if (strcmp(type,"jonswap") == 0) {
+    if (OPS_GetNumRemainingInputArgs() < 5) {
+      opserr << "ERROR: insufficient arguments for jonswap spectrum" << endln;
+      return -1;
+    }
+    double data[5];
+    numdata = 5;
+    if (OPS_GetDoubleInput(&numdata,data) < 0) {
+      opserr << "ERROR: invalid double data for spectrum with tag " << tag << endln;
+      return -1;
+    }
+
+    theSpectrum = new JonswapSpectrum(tag, data[0], data[1], data[2], data[3], data[4]);    
+  }
+  else if (strcmp(type,"narrowband") == 0) {
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+      opserr << "ERROR: insufficient arguments for narrowband spectrum" << endln;
+      return -1;
+    }
+    double data[3];
+    numdata = 3;
+    if (OPS_GetDoubleInput(&numdata,data) < 0) {
+      opserr << "ERROR: invalid double data for spectrum with tag " << tag << endln;
+      return -1;
+    }
+
+    theSpectrum = new NarrowBandSpectrum(tag, data[0], data[1], data[2]);
+  }
+  else if (strcmp(type,"points") == 0) {
+    opserr << "ERROR: points spectrum not yet added to Python interpreter" << endln;
+    return -1;
+  } 
+  else {
+    opserr << "Unknown spectrum type: " << type << endln;
+    return -1;
+  }
+
+  if (theSpectrum == 0) {
+    opserr << "ERROR: ran out of memory creating spectrum \n";
+    opserr << type << ' ' << tag << endln;
+    return -1;
+  }
+  
+  // ADD THE OBJECT TO THE DOMAIN
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain->addSpectrum(theSpectrum) == false) {
+    opserr << "ERROR: failed to add spectrum to the domain\n";
+    opserr << type << ' ' << tag << endln;
+    delete theSpectrum; // otherwise memory leak
+    return -1;
+  }
+  
+  return 0;
+}
+
 int OPS_modulatingFunction() {
   ModulatingFunction *theModulatingFunction = 0;
   int tag;
@@ -445,7 +519,7 @@ int OPS_modulatingFunction() {
       return -1;
     }
 
-    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
     if (theFilter == 0) {
       opserr << "ERROR: could not find filter with tag " << filterTag
 	     << " for modulating function" << endln;
@@ -475,7 +549,7 @@ int OPS_modulatingFunction() {
       return -1;
     }
 
-    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
     if (theFilter == 0) {
       opserr << "ERROR: could not find filter with tag " << filterTag
 	     << " for modulating function" << endln;
@@ -504,7 +578,7 @@ int OPS_modulatingFunction() {
       return -1;
     }
 
-    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
     if (theFilter == 0) {
       opserr << "ERROR: could not find filter with tag " << filterTag
 	     << " for modulating function" << endln;
@@ -535,7 +609,7 @@ int OPS_modulatingFunction() {
       return -1;
     }
 
-    Filter *theFilter = theReliabilityDomain->getFilter(filterTag);
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
     if (theFilter == 0) {
       opserr << "ERROR: could not find filter with tag " << filterTag
 	     << " for modulating function" << endln;
@@ -2783,6 +2857,8 @@ int inputCheck() {
   }
   */
     ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+
+    /*
     num = theReliabilityDomain->getNumberOfFilters();
     for (i = 1; i <= num; i++) {
         component = theReliabilityDomain->getFilter(i);
@@ -2791,7 +2867,8 @@ int inputCheck() {
             return -1;
         }
     }
-
+    */
+    /*
     num = theReliabilityDomain->getNumberOfModulatingFunctions();
     for (i = 1; i <= num; i++) {
         component = theReliabilityDomain->getModulatingFunction(i);
@@ -2801,7 +2878,8 @@ int inputCheck() {
             return -1;
         }
     }
-
+    */
+    /*
     num = theReliabilityDomain->getNumberOfSpectra();
     for (i = 1; i <= num; i++) {
         component = theReliabilityDomain->getSpectrum(i);
@@ -2810,7 +2888,7 @@ int inputCheck() {
             return -1;
         }
     }
-
+    */
     // Check that the correlation matrix is positive definite
     // theCorrelationMatrix
 
