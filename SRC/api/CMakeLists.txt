@@ -30,4 +30,4 @@ target_sources(OPS_Api PUBLIC
 endif()
 
 target_include_directories(OPS_Api PUBLIC ${CMAKE_CURRENT_LIST_DIR})
-
+set_target_properties(OPS_Api PROPERTIES LINKER_LANGUAGE CXX)

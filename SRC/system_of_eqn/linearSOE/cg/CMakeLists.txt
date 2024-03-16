@@ -5,15 +5,11 @@
 #
 #==============================================================================
 
-target_sources(OPS_Material
-    PRIVATE
-        LimitStateMaterial.cpp
-        PinchingLimitStateMaterial.cpp
-    PUBLIC
-        LimitStateMaterial.h
-        PinchingLimitStateMaterial.h
+target_sources(OPS_SysOfEqn
+  PRIVATE
+    ConjugateGradientSolver.cpp
+  PUBLIC
+    ConjugateGradientSolver.h
 )
-target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(limitCurve)
-
+target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})

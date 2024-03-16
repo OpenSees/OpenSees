@@ -5,15 +5,11 @@
 #
 #==============================================================================
 
-target_sources(OPS_Material
+target_sources(OPS_Optimization
     PRIVATE
-        LimitStateMaterial.cpp
-        PinchingLimitStateMaterial.cpp
+        TclOptimizationBuilder.cpp
     PUBLIC
-        LimitStateMaterial.h
-        PinchingLimitStateMaterial.h
+        TclOptimizationBuilder.h
 )
-target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(limitCurve)
-
+target_include_directories(OPS_Optimization PUBLIC ${CMAKE_CURRENT_LIST_DIR})
