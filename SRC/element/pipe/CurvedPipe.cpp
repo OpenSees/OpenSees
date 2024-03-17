@@ -321,9 +321,10 @@ const Vector &CurvedPipe::getResistingForce() {
     q.addMatrixVector(0.0, kbm, v, 1.0);
     q += pb0;
 
-    Vector p0Vec(ElasticBeam3d::p0, 5);
+    Vector p0Vec;
+    plw(p0Vec);
 
-    P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
+    P = theCoordTransf->getGlobalResistingForce(q, p0Vec, true);
 
     // subtract external load P = P - Q
     if (rho != 0) {
@@ -357,6 +358,10 @@ int CurvedPipe::getTheta0() {
 
     // compute theta0
     double Lhalf = theCoordTransf->getInitialLength() / 2.0;
+    if (Lhalf > 0.99985 * radius) {
+        opserr << "WARNING: the angle of the curve >= 178 degree\n";
+        return -1;
+    }
     theta0 = asin(Lhalf / radius);
 
     return 0;
@@ -370,7 +375,7 @@ void CurvedPipe::bx(double theta, Matrix &mat) {
     double L = theCoordTransf->getInitialLength();
     double R = radius;
     double H = R * (c - cos(theta0));
-    double x = L / 2.0 + R * s;
+    double H0 = R * cos(theta0);
     double invL = 1.0 / L;
     mat(0, 0) = c;
     mat(0, 1) = -s * invL;
@@ -378,9 +383,12 @@ void CurvedPipe::bx(double theta, Matrix &mat) {
     mat(1, 0) = -H;
     mat(1, 1) = R * s * invL - 0.5;
     mat(1, 2) = R * s * invL + 0.5;
-    mat(2, 3) = x * invL - 1;
-    mat(2, 4) = x * invL;
-    mat(3, 5) = 1;
+    mat(2, 3) = s * H0 * invL - 0.5 * c;
+    mat(2, 4) = s * H0 * invL + 0.5 * c;
+    mat(2, 5) = -s;
+    mat(3, 3) = R * invL * (1 - cos(theta - theta0));
+    mat(3, 4) = R * invL * (1 - cos(theta + theta0));
+    mat(3, 5) = c;
     mat(4, 0) = s;
     mat(4, 1) = c * invL;
     mat(4, 2) = c * invL;
@@ -391,23 +399,33 @@ void CurvedPipe::bx(double theta, Matrix &mat) {
 void CurvedPipe::Spx(double theta, Vector &vec) {
     vec.resize(6);
     vec.Zero();
-    double ct = cos(theta);
-    double ct0 = cos(theta0);
-    double st = sin(theta);
-    double s2t = sin(2 * theta);
-    double st2 = st * st;
+    double wx = ElasticBeam3d::wx;
+    double wy = ElasticBeam3d::wy;
+    double wz = ElasticBeam3d::wz;
+    double c = cos(theta);
+    double s = sin(theta);
     double L = theCoordTransf->getInitialLength();
-    double L2 = L * L;
     double R = radius;
     double R2 = R * R;
-    double wa = ElasticBeam3d::wx;
-    vec(0) = L * wa * ct / 2.0 - R * wa * s2t / 2.0 - R * wy * st2;
-    vec(1) = -L2 * wy / 8.0 - L * R * wa * ct / 2.0 +
-             L * R * wa * ct0 / 2.0 - R2 * wa * st * ct0 +
-             R2 * wa * s2t / 2.0 + R2 * wy * st2 / 2.0;
-    vec(2) = wz * (-L2 + 4 * R2 * st2) / 8.0;
-    vec(4) = st * (L * wa - 2 * R * wa * st + 2 * R * wy * ct) / 2.0;
-    vec(5) = R * wz * st;
+    double H0 = R * cos(theta0);
+    double invL = 1.0 / L;
+    double stt0 = sin(theta - theta0);
+    double ctt0 = cos(theta - theta0);
+    vec(0) = wx * R *
+                 (c * theta0 - s - c * theta +
+                  2 * s * theta0 * H0 * invL) -
+             wy * R * s * theta;
+    vec(1) = wx * R *
+                 (c * R * theta - 2 * s * R * theta0 * H0 * invL -
+                  c * R * theta0 + theta0 * H0) +
+             wy * R * (s * R * theta - theta0 * L * 0.5 + c * R - H0);
+    vec(2) = wz * R2 * (-theta0 * stt0 + ctt0 - 1);
+    vec(3) = wz * R2 * (-theta + theta0 * ctt0 + stt0);
+    vec(4) = wx * R *
+                 (c + s * theta0 - s * theta -
+                  2 * c * theta0 * H0 * invL) +
+             wy * R * c * theta;
+    vec(5) = -wz * R * theta;
 }
 
 void CurvedPipe::fs(double theta, Matrix &mat) {
@@ -515,9 +533,41 @@ void CurvedPipe::integrateGauss(double a, double b, Matrix &resm,
         Vector vec;
         fb(xi, mat);
         resm.addMatrix(1.0, mat, wi);
-        // ubno(xi, vec);
-        // resv.addVector(1.0, vec, wi);
+        ubno(xi, vec);
+        resv.addVector(1.0, vec, wi);
     }
     resm *= radius;
     resv *= radius;
+}
+
+void CurvedPipe::plw(Vector &vec) {
+    // [plw1, plw2, plw8, plw3, plw9, plw4] match
+    // LinearCrdTransf3D::getGlobalResistingForce
+    vec.resize(6);
+
+    // member load
+    double wx = ElasticBeam3d::wx;
+    double wy = ElasticBeam3d::wy;
+    double wz = ElasticBeam3d::wz;
+    double R = radius;
+    double H0 = R * cos(theta0);
+    double L = theCoordTransf->getInitialLength();
+
+    // plw1
+    vec(0) = -2 * wx * R * theta0;
+
+    // plw2
+    vec(1) = wx * R * (1.0 - 2 * theta0 * H0 / L) - wy * R * theta0;
+
+    // plw8
+    vec(2) = -wx * R * (1.0 - 2 * theta0 * H0 / L) - wy * R * theta0;
+
+    // plw3
+    vec(3) = -wz * R * theta0;
+
+    // plw9
+    vec(4) = -wz * R * theta0;
+
+    // plw4
+    vec(5) = wz * R * (L - 2 * theta0 * H0);
 }

@@ -59,6 +59,7 @@ class CurvedPipe : public Pipe {
    protected:
     int getTheta0();
 
+    void plw(Vector &vec);
     void bx(double theta, Matrix &mat);
     void Spx(double theta, Vector &vec);
     void fs(double theta, Matrix &mat);
