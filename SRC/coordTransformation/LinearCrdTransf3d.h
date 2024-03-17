@@ -68,7 +68,7 @@ public:
 	const Vector &getBasicTrialVel(void);
 	const Vector &getBasicTrialAccel(void);
     
-    const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &p0);
+    const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &p0,bool inclPlw4Torsion=false);
     const Matrix &getGlobalStiffMatrix(const Matrix &basicStiff, const Vector &basicForce);
     const Matrix &getInitialGlobalStiffMatrix(const Matrix &basicStiff);
     
