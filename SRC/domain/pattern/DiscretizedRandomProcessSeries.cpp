@@ -42,6 +42,80 @@
 #include <math.h>
 #include <stdlib.h>
 
+#include <elementAPI.h>
+#include <ModulatingFunction.h>
+#include <OpenSeesReliabilityCommands.h>
+
+void *
+OPS_DiscretizedRandomProcessSeries(void)
+{
+  // Pointer that will be returned
+  TimeSeries *theSeries = 0;
+
+  int tag;
+  double mean,maxStdv;
+
+  int numData = 1;
+
+  int numRemainingArgs = OPS_GetNumRemainingInputArgs();
+  if (numRemainingArgs < 4) {
+    opserr << "ERROR: Insufficient arguments for DiscretizedRandomProcess series" << endln;
+    return 0;
+  }
+
+  if (OPS_GetIntInput(&numData, &tag) != 0) {
+    opserr << "WARNING invalid tag for DiscretizedRandomProcess" << endln;
+    return 0;
+  }
+  if (OPS_GetDouble(&numData, &mean) != 0) {
+    opserr << "WARNING invalid mean for DicretizedRandomProcess with tag: " << tag << endln;
+    return 0;
+  }
+  if (OPS_GetDouble(&numData, &maxStdv) != 0) {
+    opserr << "WARNING invalid maxStdv for DicretizedRandomProcess with tag: " << tag << endln;
+    return 0;
+  }  
+
+  ReliabilityDomain *theReliabilityDomain = OPS_GetReliabilityDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "ERROR DiscretizedRandomProcess -- reliability domain not defined" << endln;
+    return 0;
+  }
+  
+  int numModFcns = numRemainingArgs - 3;
+  ModulatingFunction **theModFcns = new ModulatingFunction*[numModFcns];
+  for (int i = 0; i < numModFcns; i++) {
+    numData = 1;
+    int modTag;
+    if (OPS_GetInt(&numData, &modTag) != 0) {
+      opserr << "WARNING invalid modulating function tag in DiscretizedRandomProcess with tag: " << tag << endln;
+      delete [] theModFcns; // So no memory leak
+      return 0;
+    }
+    //
+    // Get pointer from reliability domain
+    //
+    theModFcns[i] = theReliabilityDomain->getModulatingFunctionPtr(modTag);
+    if (theModFcns[i] == 0) {
+      opserr << "ERROR DiscretizedRandomProcess -- modulating function with tag "
+	     << modTag << " not found" << endln;
+      delete [] theModFcns; // So no memory leak
+      return 0;
+    }
+  }
+
+  theSeries = new DiscretizedRandomProcessSeries(tag, numModFcns, theModFcns, mean, maxStdv);
+  delete [] theModFcns;
+  
+  if (theSeries == 0) {
+    opserr << "WARNING ran out of memory creating DiscretizedRandomProcess series with tag: " << tag << endln;
+    delete [] theModFcns; // So no memory leak    
+    return 0;
+  }
+
+  return theSeries;
+}
+
 DiscretizedRandomProcessSeries::DiscretizedRandomProcessSeries(int tag,
 							       int num, 
 							       ModulatingFunction **theModFuncs,
