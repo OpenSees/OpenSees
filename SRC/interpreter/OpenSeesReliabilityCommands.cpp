@@ -133,6 +133,7 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(
       theFORMAnalysis(0),
       theSORMAnalysis(0),
       theImportanceSamplingAnalysis(0),
+      theMonteCarloAnalysis(0),      
       theSensAlgo(0) {
     if (structuralDomain != 0) {
         theDomain = new ReliabilityDomain(structuralDomain);
@@ -222,6 +223,10 @@ void OpenSeesReliabilityCommands::wipe() {
         delete theImportanceSamplingAnalysis;
         theImportanceSamplingAnalysis = 0;
     }
+    if (theMonteCarloAnalysis != 0) {
+        delete theMonteCarloAnalysis;
+        theMonteCarloAnalysis = 0;
+    }    
 }
 
 int OPS_wipeReliability() {
@@ -1600,6 +1605,15 @@ void OpenSeesReliabilityCommands::setImportanceSamplingAnalysis(
         theImportanceSamplingAnalysis = 0;
     }
     theImportanceSamplingAnalysis = analysis;
+}
+
+void OpenSeesReliabilityCommands::setMonteCarloAnalysis(
+    MonteCarloResponseAnalysis *analysis) {
+    if (theMonteCarloAnalysis != 0) {
+        delete theMonteCarloAnalysis;
+        theMonteCarloAnalysis = 0;
+    }
+    theMonteCarloAnalysis = analysis;
 }
 
 int OPS_startPoint() {
@@ -3202,7 +3216,7 @@ int OPS_runImportanceSamplingAnalysis() {
     }
 
     Domain *theStructuralDomain = cmds->getStructuralDomain();
-    if (theReliabilityDomain == 0) {
+    if (theStructuralDomain == 0) {
         opserr << "Need theStructuralDomain before a "
                   "ImportanceSamplingAnalysis can be created\n";
         return -1;
@@ -3284,7 +3298,7 @@ int OPS_runImportanceSamplingAnalysis() {
             int numdata = 1;
             double data = 0.0;
             if (OPS_GetDoubleInput(&numdata, &data) < 0) {
-                opserr << "ERROR: invalid input: samplingVariance \n";
+                opserr << "ERROR: invalid input: maxNum \n";
                 return -1;
             }
             numberOfSimulations = long(data);
@@ -3336,6 +3350,122 @@ int OPS_runImportanceSamplingAnalysis() {
         opserr << "WARNING: failed to run ImportanceSamplingAnalysis\n";
         return -1;
     }
+
+    return 0;
+}
+
+int OPS_runMonteCarloAnalysis() {
+    if (cmds == 0) {
+        return -1;
+    }
+
+    // do input check
+    if (inputCheck() < 0) {
+        return -1;
+    }
+
+    // filename
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING: need filename\n";
+        return -1;
+    }
+    const char *filename = OPS_GetString();
+
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "Need theReliabilityDomain before a "
+                  "ImportanceSamplingAnalysis can be created\n";
+        return -1;
+    }
+
+    // Check for essential tools
+    ProbabilityTransformation *theProbabilityTransformation =
+        cmds->getProbabilityTransformation();
+    if (theProbabilityTransformation == 0) {
+      opserr << "ImportanceSampingAnalysis - probability transformation not defined - ";
+      opserr << "assuming all independent transformation" << endln;
+	theProbabilityTransformation =
+            new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
+    }
+    FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
+    if (theFunctionEvaluator == 0) {
+        opserr << "Need theGFunEvaluator before a "
+                  "ImportanceSamplingAnalysis "
+                  "can be created\n";
+        return -1;
+    }
+    RandomNumberGenerator *theRandomNumberGenerator =
+        cmds->getRandomNumberGenerator();
+    if (theRandomNumberGenerator == 0) {
+      // Don't really need to say this - just do it - bc CStdLib is the only option -- MHS
+      //opserr << "ImportanceSampingAnalysis - random number generator not defined - ";
+      //opserr << "assuming CStdLib generator" << endln;      
+	theRandomNumberGenerator = new CStdLibRandGenerator();
+	cmds->setRandomNumberGenerator(theRandomNumberGenerator);
+    }
+
+    // Declaration of input parameters
+    long int numberOfSimulations = 1000;
+    double targetCOV = 0.05;
+    int seed = 0;
+    int printFlag = 0;
+    char outputFile[80] = "";
+    char *tclFileName = 0;
+
+    while (OPS_GetNumRemainingInputArgs() > 1) {
+        const char *type = OPS_GetString();
+
+        if (strcmp(type, "-maxNum") == 0 || strcmp(type,"maxNum") == 0) {
+            int numdata = 1;
+	    double data = 0.0;
+            if (OPS_GetDoubleInput(&numdata, &data) < 0) {
+                opserr << "ERROR: invalid input: numberOfSimulations \n";
+                return -1;
+            }
+            numberOfSimulations = long(data);
+
+        } else if (strcmp(type, "-seed") == 0) {
+            int numdata = 1;
+            if (OPS_GetIntInput(&numdata, &seed) < 0) {
+                opserr << "ERROR: invalid input: seed \n";
+                return -1;
+            }
+
+        } else if (strcmp(type, "-print") == 0 || strcmp(type, "-printFlag") == 0) {
+            int numdata = 1;
+            if (OPS_GetIntInput(&numdata, &printFlag) < 0) {
+                opserr << "ERROR: invalid input: printFlag \n";
+                return -1;
+            }
+
+        } else {
+            opserr << "ERROR: invalid input to Monte Carlo analysis. \n";
+            return -1;
+        }
+    }
+
+    
+    MonteCarloResponseAnalysis *theMonteCarloAnalysis = 0;
+    /*
+      theMonteCarloAnalysis
+      = new MonteCarloResponseAnalysis(theReliabilityDomain, 0,
+				       theProbabilityTransformation, //theFunctionEvaluator,
+				       theRandomNumberGenerator, numberOfSimulations,
+				       printFlag, outputFile, tclFileName, seed);
+
+    if (theMonteCarloAnalysis == 0) {
+      opserr << "Unable to create MonteCarlo analysis" << endln;
+      return -1;
+    }
+    
+    cmds->setMonteCarloAnalysis(theMonteCarloAnalysis);
+
+    if (theMonteCarloAnalysis->analyze() < 0) {
+        opserr << "WARNING: failed to run MonteCarloAnalysis\n";
+        return -1;
+    }
+*/
 
     return 0;
 }

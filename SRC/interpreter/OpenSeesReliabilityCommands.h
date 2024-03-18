@@ -59,6 +59,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FunctionEvaluator.h>
 #include <GradientEvaluator.h>
 #include <ImportanceSamplingAnalysis.h>
+#include <MonteCarloResponseAnalysis.h>
 #include <Integrator.h>
 #include <MeritFunctionCheck.h>
 #include <PolakHeSearchDirectionAndMeritFunction.h>
@@ -164,6 +165,9 @@ class OpenSeesReliabilityCommands {
     return theImportanceSamplingAnalysis;
   }
 
+  void setMonteCarloAnalysis(MonteCarloResponseAnalysis *analysis);
+  MonteCarloResponseAnalysis *getMonteCarloAnalysis() { return theMonteCarloAnalysis; }
+  
   void setSensitivityAlgorithm(Integrator *inte) {
     theSensAlgo = inte;
   }
@@ -197,7 +201,8 @@ class OpenSeesReliabilityCommands {
   FORMAnalysis *theFORMAnalysis;
   SORMAnalysis *theSORMAnalysis;
   ImportanceSamplingAnalysis *theImportanceSamplingAnalysis;
-
+  MonteCarloResponseAnalysis *theMonteCarloAnalysis;
+  
   // sensitivity algorithm
   Integrator *theSensAlgo;
 };
