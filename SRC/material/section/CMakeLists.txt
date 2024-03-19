@@ -87,4 +87,4 @@ add_subdirectory(fiber)
 add_subdirectory(repres)
 add_subdirectory(yieldSurface)
 add_subdirectory(integration)
-
+add_subdirectory(LayeredMembraneSection)
