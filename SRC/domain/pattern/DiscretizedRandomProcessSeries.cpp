@@ -121,22 +121,29 @@ DiscretizedRandomProcessSeries::DiscretizedRandomProcessSeries(int tag,
 							       ModulatingFunction **theModFuncs,
 							       double p_mean,
 							       double p_maxStdv)
- :TimeSeries(tag, TSERIES_TAG_DiscretizedRandomProcessSeries)
+  :TimeSeries(tag, TSERIES_TAG_DiscretizedRandomProcessSeries),
+   numModFuncs(num), c(0.0), mean(p_mean), maxStdv(p_maxStdv),
+   theModulatingFunctions(theModFuncs), randomVariables(0), kickInTimes(0), parameterID(0)
 {
-  randomVariables = 0;
-  kickInTimes = 0;
-  theModulatingFunctions = theModFuncs;
-  numModFuncs = num;
-  mean = p_mean;
-  maxStdv = p_maxStdv;
-  
-  c = 0.0;
+
 }
 
 TimeSeries *
 DiscretizedRandomProcessSeries::getCopy(void) 
 {
-  opserr << "DiscretizedRandomProcessSeries::getCopy() - not yet implemented\n";
+  DiscretizedRandomProcessSeries *theCopy =
+    new DiscretizedRandomProcessSeries(this->getTag(), numModFuncs, theModulatingFunctions,
+				       mean, maxStdv);
+
+  theCopy->c = c;
+  theCopy->parameterID = parameterID;
+  
+  if (randomVariables != 0)
+    theCopy->randomVariables = new Vector(*randomVariables);
+
+  if (kickInTimes != 0)
+    theCopy->kickInTimes = new Vector(*kickInTimes);  
+  
   return 0;
 }
 
