@@ -132,6 +132,9 @@
     <Filter Include="PML">
       <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mefi">
+      <UniqueIdentifier>{793b16ee-7c65-4ec9-b131-696c18f42f54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -710,7 +713,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
-	<ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
@@ -951,7 +954,7 @@
       <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
-      <Filter>PML</Filter>  
+      <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp">
       <Filter>PML</Filter>
@@ -964,6 +967,11 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
+      <Filter>mefi</Filter>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1474,7 +1482,7 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
-	<ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
@@ -1719,7 +1727,7 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
       <Filter>PML</Filter>
-    </ClInclude>    
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
       <Filter>PML</Filter>
     </ClInclude>
@@ -1728,6 +1736,11 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
+      <Filter>mefi</Filter>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
