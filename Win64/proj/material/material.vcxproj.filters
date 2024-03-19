@@ -110,6 +110,15 @@
     <Filter Include="nD\UWmaterials">
       <UniqueIdentifier>{be456511-844e-4f02-b923-14685753222d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="nD\OrthotropicRotatingAngleConcreteT2DMaterial01">
+      <UniqueIdentifier>{a05c9bf6-42c1-4381-a867-44ccee02fc48}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="nD\SmearedSteelDoubleLayerT2DMaterial01">
+      <UniqueIdentifier>{fd8d83ef-3398-4382-a13d-a44c90db022b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="section\LayeredMembraneSection">
+      <UniqueIdentifier>{5db15df2-5764-49de-b5d0-e7b292f7136e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp">
@@ -1499,6 +1508,21 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.cpp">
+      <Filter>nD\OrthotropicRotatingAngleConcreteT2DMaterial01</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\SmearedSteelDoubleLayerT2DMaterial01\SmearedSteelDoubleLayerT2DMaterial01.cpp">
+      <Filter>nD\SmearedSteelDoubleLayerT2DMaterial01</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\LayeredMembraneSection.cpp">
+      <Filter>section\LayeredMembraneSection</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ReinforcedConcreteLayeredMembraneSection.cpp">
+      <Filter>section\LayeredMembraneSection</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.cpp">
+      <Filter>section\LayeredMembraneSection</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2743,6 +2767,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\TDConcreteNL.h">
       <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.h">
+      <Filter>nD\OrthotropicRotatingAngleConcreteT2DMaterial01</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\SmearedSteelDoubleLayerT2DMaterial01\SmearedSteelDoubleLayerT2DMaterial01.h">
+      <Filter>nD\SmearedSteelDoubleLayerT2DMaterial01</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\LayeredMembraneSection.h">
+      <Filter>section\LayeredMembraneSection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ReinforcedConcreteLayeredMembraneSection.h">
+      <Filter>section\LayeredMembraneSection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.h">
+      <Filter>section\LayeredMembraneSection</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
