@@ -105,7 +105,6 @@ OPS_DiscretizedRandomProcessSeries(void)
   }
 
   theSeries = new DiscretizedRandomProcessSeries(tag, numModFcns, theModFcns, mean, maxStdv);
-  delete [] theModFcns;
   
   if (theSeries == 0) {
     opserr << "WARNING ran out of memory creating DiscretizedRandomProcess series with tag: " << tag << endln;
@@ -144,7 +143,7 @@ DiscretizedRandomProcessSeries::getCopy(void)
   if (kickInTimes != 0)
     theCopy->kickInTimes = new Vector(*kickInTimes);  
   
-  return 0;
+  return theCopy;
 }
 
 
