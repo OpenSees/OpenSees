@@ -260,6 +260,8 @@ int Parallel3DMaterial::setTrialStrain(const Vector& v)
 		if (!m_materials[i]->setTrialStrain(v))
 			result = -1;
 	}
+	computeStress();
+	computeTangent();
 	return result;
 }
 
@@ -271,6 +273,8 @@ int Parallel3DMaterial::setTrialStrain(const Vector& v, const Vector& r)
 		if (!m_materials[i]->setTrialStrain(v, r))
 			result = -1;
 	}
+	computeStress();
+	computeTangent();
 	return result;
 }
 
