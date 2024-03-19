@@ -165,5 +165,7 @@ add_subdirectory(UWmaterials)
 add_subdirectory(matCMM)
 add_subdirectory(stressDensityModel)
 add_subdirectory(UANDESmaterials)
+add_subdirectory(OrthotropicRotatingAngleConcreteT2DMaterial01)
+add_subdirectory(SmearedSteelDoubleLayerT2DMaterial01)
 
 
