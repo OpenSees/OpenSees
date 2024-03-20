@@ -324,7 +324,7 @@ const Vector &CurvedPipe::getResistingForce() {
     Vector p0Vec;
     plw(p0Vec);
 
-    P = theCoordTransf->getGlobalResistingForce(q, p0Vec, true);
+    P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
 
     // subtract external load P = P - Q
     if (rho != 0) {
@@ -472,46 +472,50 @@ void CurvedPipe::ubno(double theta, Vector &vec) {
     Vector temp(6);
     temp.addMatrixVector(0.0, fsmat, spxvec, 1.0);
     vec.addMatrixTransposeVector(0.0, bxmat, temp, 1.0);
-
-    // update section data
-    if (updateSectionData() < 0) {
-        opserr << "Pipe::setDomain failed to update section data\n";
-        return;
-    }
-
-    // update material data
-    if (updateMaterialData() < 0) {
-        opserr << "Pipe::setDomain failed to update material data\n";
-        return;
-    }
-
-    // due to thermal
-    double dT = aveTemp();
-    double L = theCoordTransf->getInitialLength();
-    if (dT > 0) {
-        vec(0) += L * alp * dT;
-    }
-
-    // due to internal pressure
-    if (pressure != 0) {
-        double dout = theSect->DOUT();
-        double thk = theSect->WALL();
-
-        vec(0) += 0.25 * pressure * (dout - thk) * (1. - 2 * nu) * L /
-                  (E * thk);
-    }
 }
 
 int CurvedPipe::kb(Matrix &mat, Vector &vec) {
     Matrix fbmat;
     Vector ubnovec;
 
+    // integrate fb and ub0
     integrateGauss(-theta0, theta0, fbmat, ubnovec);
 
+    // thermal and pressure added to ub0
+    // update section data
+    if (updateSectionData() < 0) {
+        opserr << "Pipe::setDomain failed to update section data\n";
+        return -1;
+    }
+
+    // update material data
+    if (updateMaterialData() < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return -1;
+    }
+
+    // due to thermal
+    double dT = aveTemp();
+    double R = radius;
+    if (dT > 0) {
+        ubnovec(0) += 2 * R * alp * dT * sin(theta0);
+    }
+
+    // due to internal pressure
+    if (pressure != 0) {
+        // double dout = theSect->DOUT();
+        // double thk = theSect->WALL();
+
+        // vec(0) += 0.25 * pressure * (dout - thk) * (1. - 2 * nu) * L /
+        //           (E * thk);
+    }
+
+    // kb
     if (fbmat.Invert(mat) < 0) {
         return -1;
     }
 
+    // pb0
     vec.resize(6);
     vec.addMatrixVector(0.0, mat, ubnovec, -1.0);
 

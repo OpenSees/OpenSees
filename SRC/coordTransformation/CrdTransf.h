@@ -87,7 +87,7 @@ public:
     virtual double getd1overLdh(void) {return 0.0;}
     // AddingSensitivity:END //////////////////////////////////
     
-    virtual const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &uniformLoad, bool inclPlw4Torsion=false) = 0;
+    virtual const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &uniformLoad) = 0;
     virtual const Matrix &getGlobalStiffMatrix(const Matrix &basicStiff, const Vector &basicForce) = 0;
     virtual const Matrix &getInitialGlobalStiffMatrix(const Matrix &basicStiff) = 0;
     
