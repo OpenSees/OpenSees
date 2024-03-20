@@ -768,7 +768,7 @@ LinearCrdTransf3d::getBasicTrialAccel(void)
 
 
 const Vector &
-LinearCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0, bool inclPlw4Torsion)
+LinearCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
 {
     // transform resisting forces from the basic system to local coordinates
     static double pl[12];
@@ -800,7 +800,7 @@ LinearCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0, b
     pl[7] += p0(2);
     pl[2] += p0(3);
     pl[8] += p0(4);
-    if (p0.Size() > 5 && inclPlw4Torsion) {
+    if (p0.Size() > 5) {
         // if 6th value is provided, it's torsion
         pl[3] = p0(5);
     }
