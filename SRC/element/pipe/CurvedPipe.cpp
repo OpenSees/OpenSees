@@ -149,7 +149,7 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       radius(0.0),
       theta0(0.0),
       tolWall(tol) {
-    if (Pipe::createPipe(nd1, nd2, mat, sect, cm, 0, 0) < 0) {
+    if (Pipe::createPipe(nd1, nd2, mat, sect, cm, 0, 0, pre) < 0) {
         opserr << "WARNING: failed to create curved pipe element\n";
         exit(-1);
     }
@@ -503,11 +503,23 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
 
     // due to internal pressure
     if (pressure != 0) {
-        // double dout = theSect->DOUT();
-        // double thk = theSect->WALL();
+        double dout = theSect->DOUT();
+        double thk = theSect->WALL();
 
-        // vec(0) += 0.25 * pressure * (dout - thk) * (1. - 2 * nu) * L /
-        //           (E * thk);
+        // converted from SAP 5
+        double RM = (dout - thk) * 0.5;
+        double DU2 = R / RM;
+        double DUM = pressure * RM * 0.5 / (E * thk);
+        double DU3 = 1.0 + DUM * (1 - nu * (2 * DU2 - 1) / (DU2 - 1));
+        double BTA = DU3 / (1.0 + DUM * (2 - nu));
+        BTA = -(1.0 - BTA) / R;
+
+        ubnovec(0) += 0.5 * pressure * R * (dout - thk) *
+                      (1. - 2 * nu) * sin(theta0) / (E * thk);
+        ubnovec(0) +=
+            2 * R * R * BTA * (theta0 * cos(theta0) - sin(theta0));
+        ubnovec(1) += -R * BTA * theta0;
+        ubnovec(2) += R * BTA * theta0;
     }
 
     // kb

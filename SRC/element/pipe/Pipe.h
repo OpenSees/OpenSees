@@ -67,7 +67,8 @@ class Pipe : public ElasticBeam3d {
     int updateSectionData();
     int updateMaterialData();
     int createPipe(int nd1, int nd2, PipeMaterial &mat,
-                   PipeSection &sect, int cm, int rz, int ry);
+                   PipeSection &sect, int cm, int rz, int ry,
+                   double pre);
     static int crossProduct(const Vector &A, const Vector &B,
                             Vector &res);
     static int nextTransfTag();
