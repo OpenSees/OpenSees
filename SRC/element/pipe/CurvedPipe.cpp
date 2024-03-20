@@ -139,7 +139,12 @@ void *OPS_CurvedPipeElement() {
 }
 
 CurvedPipe::CurvedPipe()
-    : Pipe(), center(3), radius(0.0), theta0(0.0), tolWall(0.1) {}
+    : Pipe(),
+      center(3),
+      radius(0.0),
+      theta0(0.0),
+      tolWall(0.1),
+      kp(1.0) {}
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
                        PipeSection &sect, const Vector &c, double to,
@@ -148,7 +153,8 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       center(3),
       radius(0.0),
       theta0(0.0),
-      tolWall(tol) {
+      tolWall(tol),
+      kp(1.0) {
     if (Pipe::createPipe(nd1, nd2, mat, sect, cm, 0, 0, pre) < 0) {
         opserr << "WARNING: failed to create curved pipe element\n";
         exit(-1);
@@ -432,9 +438,13 @@ void CurvedPipe::fs(double theta, Matrix &mat) {
     mat.resize(6, 6);
     mat.Zero();
 
+    if (kp < 1) {
+        kp = 1;
+    }
+
     mat(0, 0) = 1.0 / (E * A);
-    mat(1, 1) = 1.0 / (E * Iz);
-    mat(2, 2) = 1.0 / (E * Iy);
+    mat(1, 1) = kp / (E * Iz);
+    mat(2, 2) = kp / (E * Iy);
     mat(3, 3) = 1.0 / (G * Jx);
 
     double alphaV = theSect->ALFAV();
@@ -478,6 +488,23 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
     Matrix fbmat;
     Vector ubnovec;
 
+    // bend flexibility factor due to pressure
+    double R = radius;
+    if (pressure != 0) {
+        double dout = theSect->DOUT();
+        double thk = theSect->WALL();
+        double RM = (dout - thk) * 0.5;
+
+        double h = thk * R / (RM * RM);
+        double DUM2 = pow(R / thk, 4.0 / 3);
+        double DUM = 6 * pressure / (E * h);
+        DUM = 1.0 + DUM * DUM2;
+        this->kp = 1.65 / h / DUM;
+        if (this->kp < 1) {
+            this->kp = 1.0;
+        }
+    }
+
     // integrate fb and ub0
     integrateGauss(-theta0, theta0, fbmat, ubnovec);
 
@@ -496,7 +523,6 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
 
     // due to thermal
     double dT = aveTemp();
-    double R = radius;
     if (dT > 0) {
         ubnovec(0) += 2 * R * alp * dT * sin(theta0);
     }
@@ -506,13 +532,30 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
         double dout = theSect->DOUT();
         double thk = theSect->WALL();
 
-        // converted from SAP 5
+        // strain due to pressure converted from SAP 5
         double RM = (dout - thk) * 0.5;
-        double DU2 = R / RM;
-        double DUM = pressure * RM * 0.5 / (E * thk);
-        double DU3 = 1.0 + DUM * (1 - nu * (2 * DU2 - 1) / (DU2 - 1));
-        double BTA = DU3 / (1.0 + DUM * (2 - nu));
-        BTA = -(1.0 - BTA) / R;
+
+        int MEL = 1;
+        double BTA = 0.0;
+
+        if (MEL) {
+            // MEL REPORT 10-66, EQUATION (3-29).
+            double DUM = 3.14159265 * pow(RM, 4) * pressure;
+            DUM *= 0.5 / (E * Iz);
+            double DU2 = RM / R;
+            double BTA =
+                DUM * (2 - 2 * nu + (3 + 1.5 * nu) * DU2 * DU2);
+            BTA = -BTA / R;
+            
+        } else {
+            // C. S. PARKER, EQUATION (10), 2-28-69.
+            double DU2 = R / RM;
+            double DUM = pressure * RM * 0.5 / (E * thk);
+            double DU3 =
+                1.0 + DUM * (1 - nu * (2 * DU2 - 1) / (DU2 - 1));
+            double BTA = DU3 / (1.0 + DUM * (2 - nu));
+            BTA = -(1.0 - BTA) / R;
+        }
 
         ubnovec(0) += 0.5 * pressure * R * (dout - thk) *
                       (1. - 2 * nu) * sin(theta0) / (E * thk);

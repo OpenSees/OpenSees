@@ -35,6 +35,7 @@ class CurvedPipe : public Pipe {
     double radius;
     double theta0;
     double tolWall;
+    double kp;  // flexibility factor
 
     static std::vector<double> gaussPts;
 
