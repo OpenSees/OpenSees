@@ -139,7 +139,7 @@ Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       nu(0.0),
       T0(t0),
       pressure(pre) {
-    if (createPipe(nd1, nd2, mat, sect, cm, rz, ry) < 0) {
+    if (createPipe(nd1, nd2, mat, sect, cm, rz, ry, pre) < 0) {
         opserr << "WARNING: failed to create pipe element\n";
         exit(-1);
     }
@@ -323,7 +323,8 @@ void Pipe::zeroLoad(void) {
 }
 
 int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
-                     PipeSection &sect, int cm, int rz, int ry) {
+                     PipeSection &sect, int cm, int rz, int ry,
+                     double pre) {
     // nodes
     connectedExternalNodes(0) = nd1;
     connectedExternalNodes(1) = nd2;
@@ -357,6 +358,8 @@ int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
     if (releasey < 0 || releasey > 3) {
         releasey = 0;
     }
+
+    pressure = pre;
 
     return 0;
 }
