@@ -335,6 +335,8 @@
 #include "UWelements/Quad4FiberOverlay.h"
 #include "UWelements/Brick8FiberOverlay.h"
 #include "EmbeddedBeamInterfaceL.h"
+#include "SurfaceLoad.h"
+#include "TriSurfaceLoad.h"
 
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
@@ -928,6 +930,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
 
+    case ELE_TAG_SurfaceLoad:
+      return new SurfaceLoad();
+
+    case ELE_TAG_TriSurfaceLoad:
+      return new TriSurfaceLoad();      
+      
     case ELE_TAG_Quad4FiberOverlay:
       return new Quad4FiberOverlay(); //Amin Pakzad
 	
