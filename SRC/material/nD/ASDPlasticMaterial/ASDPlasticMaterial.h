@@ -416,7 +416,7 @@ public:
     {
         static Vector return_vector(6);
         int find_pos = 0;
-        
+
         // Note by J. Abell on Wed 06 Dec 2023 11:44:24
         //
         // The lambda capture of return_vector which is declared static above triggers
@@ -428,7 +428,7 @@ public:
         //   Because usually the lambda functions are used for threaded applications
         //   this warning is there to help with race conditions on the return_vector.
         //   In this case the warning is benign because opensees is not threaded
-        //   at this level. 
+        //   at this level.
         //   We want to keep the static allocation of return_vector to avoid
         //   many calls to malloc (new) every time this function is called
         //   for performance reasons, so we have to live with the warning.
@@ -480,17 +480,48 @@ public:
         return CommitPlastic_Strain;
     }
 
-    const Matrix& getTangent()
+    void ComputeTangentStiffness()
     {
-        static Matrix return_matrix(6, 6);
-
-        if(INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Elastic)
+        if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Elastic)
         {
             VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
             Stiffness = Eelastic;
         }
+        // else if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Continuum)
+        // {
 
-        copyToMatrixReference(this->Stiffness, return_matrix);
+        //     VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
+        //     const VoigtVector& n = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
+        //     const VoigtVector& m = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
+
+        //     double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+
+        //     double den_after_corrector = n.transpose() * Eelastic * m - xi_star_h_star;
+
+        //     VoigtMatrix Econtinuum = Eelastic - Eelastic * m * (n.transpose() * Eelastic) / den_after_corrector;
+        //     Stiffness = Econtinuum;
+        // }
+        // else if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Secant)
+        // {
+
+        //     VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
+        //     const VoigtVector& n = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
+        //     const VoigtVector& m = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
+
+        //     double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+
+        //     double den_after_corrector = n.transpose() * Eelastic * m - xi_star_h_star;
+
+        //     VoigtMatrix Econtinuum = Eelastic - Eelastic * m * (n.transpose() * Eelastic) / den_after_corrector;
+        //     Stiffness = (Econtinuum + Eelastic)/2;
+        // }
+    }
+
+    const Matrix& getTangent()
+    {
+        static Matrix return_matrix(6, 6);
+
+        copyToMatrixReference(Stiffness, return_matrix);
 
         return return_matrix;
     }
@@ -500,13 +531,9 @@ public:
     {
         static Matrix return_matrix(6, 6);
 
-        // if (first_step)
-        // {
         VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
         Stiffness = Eelastic;
-        // }
 
-        // this->Stiffness.toMatrix(return_matrix);
         copyToMatrixReference(this->Stiffness, return_matrix);
 
         return return_matrix;
@@ -859,7 +886,6 @@ private:
         intersection_strain *= 0;
 
         VoigtMatrix Eelastic = et(sigma, parameters_storage);
-        Stiffness = Eelastic;
 
         dsigma = Eelastic * depsilon;
 
@@ -877,7 +903,6 @@ private:
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
             Stiffness = Eelastic;
         }
         else  //Plasticity
@@ -976,9 +1001,6 @@ private:
             //Correct the trial stress
             TrialStress = TrialStress - dLambda * Eelastic * m;
 
-            // Calculate the stiffness for the global iteration:
-            Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
-
 
             // ============================================================================================
             // Add the additional step: returning to the yield surface.
@@ -1001,7 +1023,7 @@ private:
                 TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
                 TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
 
-                double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
+                //double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
                 // Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
             }
             else
@@ -1035,6 +1057,8 @@ private:
             {
                 errorcode = 0;
             }
+
+            ComputeTangentStiffness();
 
         }
 
@@ -1110,7 +1134,6 @@ private:
         intersection_strain *= 0;
 
         VoigtMatrix Eelastic = et(CommitStress, parameters_storage);
-        Stiffness = Eelastic;
 
         dsigma = Eelastic * depsilon;
 
@@ -1129,7 +1152,6 @@ private:
 
         if ((yf_val_start <= 0.0 && yf_val_end <= 0.0) || yf_val_start > yf_val_end) //Elasticity
         {
-            VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
             Stiffness = Eelastic;
         }
         else  //Plasticity
@@ -1384,22 +1406,6 @@ private:
                                                  );
                 TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
                 TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
-
-                double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
-                // Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
-
-                if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Elastic)
-                {
-                    VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
-                    this->Stiffness = Eelastic;
-                }
-                if (INT_OPT_tangent_operator_type[this->getTag()] == ASDPlasticMaterial_Tangent_Operator_Type::Continuum)
-                {
-                    VoigtMatrix Eelastic = et(TrialStress, parameters_storage);
-                    VoigtMatrix Econtinuum = Eelastic - Eelastic*m_after_corrector*(n_after_corrector.transpose()*Eelastic) / den_after_corrector;
-                    this->Stiffness = Econtinuum; 
-                }
-
             }
             // ============================================================================================
             // ============================================================================================
@@ -1426,7 +1432,7 @@ private:
                 exit(-1);
             }
 
-            Stiffness = Eelastic;// - (Eelastic * m) * (n * Eelastic ) / den;
+            ComputeTangentStiffness();
         }
 
         return 0;
