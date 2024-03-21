@@ -405,6 +405,8 @@ void populate_ASDPlasticMaterial(T* instance)
                         tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Elastic;
                     else if (std::strcmp(tangent_type_name, "Continuum") == 0)
                         tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Continuum;
+                    else if (std::strcmp(tangent_type_name, "Secant") == 0)
+                        tangent = (int) ASDPlasticMaterial_Tangent_Operator_Type::Secant;
                     else
                     {
                         cout << "WARNING! Unrecognised ASDPlasticMaterial_Tangent_Operator_Type name " << tangent_type_name << endl;

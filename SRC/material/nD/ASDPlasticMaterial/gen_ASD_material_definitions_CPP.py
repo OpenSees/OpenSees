@@ -3,13 +3,13 @@ from itertools import product
 
 EL = [
     "LinearIsotropic3D_EL",
-    "DuncanChang_EL",
+    # "DuncanChang_EL",
 ]
 
 YF = [
     "VonMises_YF",
     "DruckerPrager_YF",
-    "RoundedMohrCoulomb_YF",
+    # "RoundedMohrCoulomb_YF",
 ]
 
 PF = [
@@ -22,7 +22,7 @@ IV_YF = {}
 
 IV_YF["VonMises_YF"] = [
     "BackStress<TensorLinearHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
-    "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
+    # "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
 ]
 
 IV_YF["DruckerPrager_YF"] = IV_YF["VonMises_YF"] 
@@ -41,7 +41,7 @@ IV_PF = {
     "DruckerPrager_PF":
     [
     "BackStress<TensorLinearHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
-    "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
+    # "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
     ]
 }
 

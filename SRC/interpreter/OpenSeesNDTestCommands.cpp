@@ -324,14 +324,20 @@ void* OPS_NDCommitState()
 
 void* OPS_NDUpdateIntegerParameter()
 {
+
+    opserr << "OPS_NDUpdateIntegerParameter" << endln;
+
     int tag = 0;
     int responseID = 0;
     int theNewIntegerParameterValue = 0;
 
     int numdata = 1;
     if (OPS_GetIntInput(&numdata, &tag) < 0) return 0;
+    opserr << "tag = " << tag  << endln;
     if (OPS_GetIntInput(&numdata, &responseID) < 0) return 0;
+    opserr << "responseID = " << responseID  << endln;
     if (OPS_GetIntInput(&numdata, &theNewIntegerParameterValue) < 0) return 0;
+    opserr << "theNewIntegerParameterValue = " << theNewIntegerParameterValue  << endln;
 
 
     NDMaterial* mat = OPS_getNDMaterial(tag);

@@ -83,6 +83,16 @@ using AF_cr = ModelParameterType<double, AF_cr_Name>;
 struct Dilatancy_Name { static constexpr const char* name = "Dilatancy";};
 using Dilatancy = ModelParameterType<double, Dilatancy_Name>;
 
+//For ScalarExponentialLinear hardening
+struct ScalarExponentialLinear_Sigma0_Name { static constexpr const char* name = "ScalarExponentialLinear_Sigma0";};
+using ScalarExponentialLinear_Sigma0 = ModelParameterType<double, ScalarExponentialLinear_Sigma0_Name>;
+struct ScalarExponentialLinear_SigmaInf_Name { static constexpr const char* name = "ScalarExponentialLinear_SigmaInf";};
+using ScalarExponentialLinear_SigmaInf = ModelParameterType<double, ScalarExponentialLinear_SigmaInf_Name>;
+struct ScalarExponentialLinear_delta_Name { static constexpr const char* name = "ScalarExponentialLinear_delta";};
+using ScalarExponentialLinear_delta = ModelParameterType<double, ScalarExponentialLinear_delta_Name>;
+
+
+
 
 // ============================================================================
 // Other Model Parameters 

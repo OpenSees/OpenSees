@@ -56,6 +56,28 @@ struct LinearHardeningForScalarPolicy {
     using parameters_t = tuple<ScalarLinearHardeningParameter>;
 };
 
+// struct ScalarExponentialLinear {
+//     static constexpr const char* NAME = "ScalarExponentialLinear";
+//     HARDENING_FUNCTION_DEFINITION 
+//     {
+//         double Sigma0 = GET_PARAMETER_VALUE(ScalarExponentialLinear_Sigma0);
+//         double SigmaInf = GET_PARAMETER_VALUE(ScalarExponentialLinear_SigmaInf);
+//         double delta = GET_PARAMETER_VALUE(ScalarExponentialLinear_delta);
+//         double H = GET_PARAMETER_VALUE(ScalarLinearHardeningParameter);
+
+//         // This is the same as the hardening of the "q(xi)" in terms of the internal variable "xi" in J2Plasticity,
+//         // xi is root23 accumulated plastic which we here compute
+//         double dxi = QRT_2_over_3 * dLambda;
+        
+//         // Because of how ASDPlasticMaterial works, instead of using the explicit form of 
+//         // q(xi) used in J2 plasticity, we here use the incremental form. Thus, this
+//         // function returns dq / dxi 
+//         // double dq_over_dxi = -delta * (SigmaInf - Sigma0) * exp(-delta*)
+        
+//     }
+//     using parameters_t = tuple<ScalarExponentialLinear_Sigma0,ScalarExponentialLinear_SigmaInf, ScalarExponentialLinear_delta, ScalarLinearHardeningParameter>;
+// };
+
 struct ArmstrongFrederickPolicy {
     static constexpr const char* NAME = "ArmstrongFrederickHardeningFunction";
     HARDENING_FUNCTION_DEFINITION
