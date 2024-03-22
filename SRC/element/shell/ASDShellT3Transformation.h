@@ -140,7 +140,7 @@ public:
         return ASDShellT3LocalCoordinateSystem(
             Vector3Type(m_nodes[0]->getCrds()),
             Vector3Type(m_nodes[1]->getCrds()),
-            Vector3Type(m_nodes[2]->getCrds()))
+            Vector3Type(m_nodes[2]->getCrds())
         );
     }
 

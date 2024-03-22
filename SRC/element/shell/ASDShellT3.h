@@ -67,8 +67,8 @@ public:
     };
     class NLDrillingData {
     public:
-        std::vector<Vector> strain_comm = { Vector(8), Vector(8), Vector(8) };
-        std::vector<Vector> stress_comm = { Vector(8), Vector(8), Vector(8) };
+        Vector strain_comm = Vector(8);
+        Vector stress_comm = Vector(8);
         double damage = 0.0;
         double damage_comm = 0.0;
     };
@@ -134,9 +134,6 @@ public:
 
     int setParameter(const char** argv, int argc, Parameter& param);
 
-    // calculate the characteristic length for this element
-    double getCharacteristicLength(void);
-
     // display
     int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
 
@@ -144,10 +141,6 @@ private:
 
     // internal method to compute everything using switches...
     int calculateAll(Matrix& LHS, Vector& RHS, int options);
-
-    void AGQIinitialize();
-    void AGQIupdate(const Vector& UL);
-    void AGQIbeginGaussLoop(const ASDShellT3LocalCoordinateSystem& reference_cs);
 
 private:
 
