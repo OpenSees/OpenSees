@@ -36,6 +36,9 @@ class CurvedPipe : public Pipe {
     double theta0;
     double tolWall;
     double kp;  // flexibility factor
+    double Length;
+    Matrix alg;  // local-global transformation
+    Matrix abl;  // basic-local transformation
 
     static std::vector<double> gaussPts;
 
@@ -47,15 +50,37 @@ class CurvedPipe : public Pipe {
 
     ~CurvedPipe();
 
-    const char *getClassType(void) const;
+    const char *getClassType() const;
 
     void setDomain(Domain *theDomain);
+    int commitState();
+    int revertToLastCommit();
+    int revertToStart();
+    int update();
 
-    void zeroLoad(void);
+    void zeroLoad();
+    int addLoad(ElementalLoad *theLoad, double loadFactor);
+    int addInertiaLoadToUnbalance(const Vector &accel);
 
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
     const Vector &getResistingForce();
+    const Vector &getResistingForceIncInertia();
+    const Vector &getDampingForce();
+
+    int sendSelf(int commitTag, Channel &theChannel);
+    int recvSelf(int commitTag, Channel &theChannel,
+                 FEM_ObjectBroker &theBroker);
+
+    void Print(OPS_Stream &s, int flag = 0);
+    int displaySelf(Renderer &theViewer, int displayMode, float fact,
+                    const char **modes = 0, int numModes = 0);
+
+    Response *setResponse(const char **argv, int argc, OPS_Stream &s);
+    int getResponse(int responseID, Information &info);
+
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
 
    protected:
     int getTheta0();
