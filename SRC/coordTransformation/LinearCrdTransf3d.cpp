@@ -800,10 +800,6 @@ LinearCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
     pl[7] += p0(2);
     pl[2] += p0(3);
     pl[8] += p0(4);
-    if (p0.Size() > 5) {
-        // if 6th value is provided, it's torsion
-        pl[3] = p0(5);
-    }
     
     // transform resisting forces  from local to global coordinates
     static Vector pg(12);
