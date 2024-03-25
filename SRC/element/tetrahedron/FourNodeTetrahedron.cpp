@@ -222,7 +222,7 @@ FourNodeTetrahedron::FourNodeTetrahedron( )
     initDisp[i] = Vector(3);
     initDisp[i].Zero();
   }
-  do_update = 1;
+  do_update = true;
 }
 
 
@@ -239,7 +239,7 @@ FourNodeTetrahedron::FourNodeTetrahedron(int tag,
    connectedExternalNodes(4), applyLoad(0), load(0), Ki(0)
 {
   B.Zero();
-  do_update = 1;
+  do_update = true;
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
   connectedExternalNodes(2) = node3 ;
@@ -817,7 +817,7 @@ void   FourNodeTetrahedron::formInertiaTerms( int tangFlag )
   //zero mass 
   mass.Zero( ) ;
 
-  if(do_update == 0)
+  if(!do_update)
   {
     return ;
   }
@@ -937,8 +937,7 @@ int
 FourNodeTetrahedron::update(void) 
 {
 
-  if(do_update == 0)
-  {
+  if(!do_update ) {
     stiff.Zero();
     resid.Zero();
     mass.Zero();
@@ -1177,7 +1176,7 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
   stiff.Zero( ) ;
   resid.Zero( ) ;
 
-  if (do_update == 0)
+  if (!do_update)
   {
     return ;
   }
@@ -1480,7 +1479,7 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   idData(17) = connectedExternalNodes(1);
   idData(18) = connectedExternalNodes(2);
   idData(19) = connectedExternalNodes(3);
-  idData(26) = do_update;
+  idData(26) = (int) do_update;
   // idData(20) = connectedExternalNodes(4);
   // idData(21) = connectedExternalNodes(5);
   // idData(22) = connectedExternalNodes(6);
@@ -1555,7 +1554,7 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   connectedExternalNodes(1) = idData(17);
   connectedExternalNodes(2) = idData(18);
   connectedExternalNodes(3) = idData(19);
-  do_update = idData(26);
+  do_update = (bool) idData(26);
   // connectedExternalNodes(4) = idData(20);
   // connectedExternalNodes(5) = idData(21);
   // connectedExternalNodes(6) = idData(22);
@@ -1900,10 +1899,10 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     }
     else if (parameterID == 1414)
     {
-      int new_do_update = info.theDouble;
-      if (do_update == 0 && new_do_update == 1)
+      bool new_do_update = info.theDouble;
+      if (!do_update  && new_do_update )
       {
-        do_update = 1;
+        do_update = true;
         Domain * mydomain = this->getDomain();
         opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
         for ( int i = 0; i < NumNodes; i++ ) 
@@ -1914,7 +1913,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
         }
         opserr << endln;
       }
-      if(new_do_update == 0)
+      if(!new_do_update)
       {
         opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - will not update\n";
       }
