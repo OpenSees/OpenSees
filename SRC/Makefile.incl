@@ -31,6 +31,8 @@ FE_INCLUDES  = -I$(FE)/matrix \
 		   -I$(FE)/material/nD/UWmaterials \
            -I$(FE)/material/nD/UANDESmaterials \
 		   -I$(FE)/material/nD/stressDensityModel \
+	       -I$(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01 \
+	       -I$(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01 \
 	       -I$(FE)/material/section \
                -I$(FE)/material/section/repres/cell \
                -I$(FE)/material/section/repres/patch \
@@ -40,6 +42,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/material/section/fiber \
                -I$(FE)/material/section/integration \
                -I$(FE)/material/section/yieldSurface \
+	       -I$(FE)/material/section/LayeredMembraneSection \
                -I$(FE)/material/yieldSurface/evolution \
                -I$(FE)/material/yieldSurface/plasticHardeningMaterial \
                -I$(FE)/material/yieldSurface/yieldSurfaceBC \
@@ -109,6 +112,7 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/element/shell \
                -I$(FE)/element/joint \
 	       -I$(FE)/element/mvlem \
+	       -I$(FE)/element/mefi \
                -I$(FE)/element/elastomericBearing \
                -I$(FE)/element/frictionBearing \
                -I$(FE)/element/frictionBearing/frictionModel \
