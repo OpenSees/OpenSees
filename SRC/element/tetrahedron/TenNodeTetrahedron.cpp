@@ -229,7 +229,7 @@ TenNodeTetrahedron::TenNodeTetrahedron( )
 		initDisp[i] = Vector(3);
 		initDisp[i].Zero();
 	}
-	do_update = 1;
+	do_update = true;
 }
 
 
@@ -253,7 +253,7 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
 {
 	// opserr << "TenNodeTetrahedron::constructor - START\n";
 	B.Zero();
-	do_update = 1;
+	do_update = true;
 	connectedExternalNodes(0) = node1 ;
 	connectedExternalNodes(1) = node2 ;
 	connectedExternalNodes(2) = node3 ;
@@ -849,7 +849,7 @@ void   TenNodeTetrahedron::formInertiaTerms( int tangFlag )
 	//zero mass
 	mass.Zero( ) ;
 
-	if (do_update == 0)
+	if (!do_update)
 	{
 		return ;
 	}
@@ -969,7 +969,7 @@ TenNodeTetrahedron::update(void)
 {
 
 	// opserr << "TenNodeTetrahedron::update -- START" << endln;
-	if (do_update == 0)
+	if (!do_update)
 	{
 		stiff.Zero();
 		resid.Zero();
@@ -1217,7 +1217,7 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
 	stiff.Zero( ) ;
 	resid.Zero( ) ;
 
-	if (do_update == 0)
+	if (!do_update)
 	{
 		return ;
 	}
@@ -1519,7 +1519,7 @@ int  TenNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
 	idData(17) = connectedExternalNodes(1);
 	idData(18) = connectedExternalNodes(2);
 	idData(19) = connectedExternalNodes(3);
-	idData(26) = do_update;
+	idData(26) = (int) do_update;
 	// idData(20) = connectedExternalNodes(4);
 	// idData(21) = connectedExternalNodes(5);
 	// idData(22) = connectedExternalNodes(6);
@@ -1594,7 +1594,7 @@ int  TenNodeTetrahedron::recvSelf (int commitTag,
 	connectedExternalNodes(1) = idData(17);
 	connectedExternalNodes(2) = idData(18);
 	connectedExternalNodes(3) = idData(19);
-	do_update = idData(26);
+	do_update = (bool) idData(26);
 	// connectedExternalNodes(4) = idData(20);
 	// connectedExternalNodes(5) = idData(21);
 	// connectedExternalNodes(6) = idData(22);
@@ -1939,10 +1939,10 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 	}
 	else if (parameterID == 1414)
 	{
-		int new_do_update = info.theDouble;
-		if (do_update == 0 && new_do_update == 1)
+		bool new_do_update = info.theDouble;
+		if (!do_update && new_do_update )
 		{
-			do_update = 1;
+			do_update = true;
 			Domain * mydomain = this->getDomain();
 			// opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
 			for ( int i = 0; i < NumNodes; i++ )
@@ -1953,7 +1953,7 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
 			}
 			// opserr << endln;
 		}
-		if (new_do_update == 0)
+		if (!new_do_update)
 		{
 			opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - will not update\n";
 		}

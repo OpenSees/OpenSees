@@ -211,7 +211,7 @@ private :
     Matrix transpose( int dim1, int dim2, const Matrix &M ) ;
     Vector initDisp[NumNodes];
 
-    int do_update;
+    bool do_update;
 } ;
 
 #endif
