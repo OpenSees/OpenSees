@@ -53,7 +53,7 @@ void* OPS_TenNodeTetrahedron()
 	if (OPS_GetNumRemainingInputArgs() < 12)
 	{
 		opserr << "WARNING insufficient arguments\n";
-		opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? \n";
+		opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? <doInitDisp?>\n";
 		return 0;
 	}
 
@@ -89,10 +89,33 @@ void* OPS_TenNodeTetrahedron()
 		}
 	}
 
+	num = OPS_GetNumRemainingInputArgs();
+	
+	int do_init_disp_int = 0;
+	bool do_init_disp = false;
 
 
-	// opserr << "OPS_TenNodeTetrahedron END" << endln;
-	return new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2]);
+	if (num >= 1)
+	{
+		num = 1;
+		if (OPS_GetIntInput(&num, &do_init_disp_int) < 0)
+		{
+			opserr << "WARNING: invalid double data\n";
+			return 0;
+		}
+	}
+
+	do_init_disp = (bool) do_init_disp_int; 
+
+	Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp);
+
+	if (the_new_element_ptr == NULL)
+	{
+		opserr << "OPS_TenNodeTetrahedron() - Could not create pointer to new TenNodeTetrahedron object" << endln;
+		return 0;
+	}
+
+	return the_new_element_ptr;
 }
 
 void* OPS_TenNodeTetrahedron(const ID& info)
@@ -210,7 +233,7 @@ Matrix TenNodeTetrahedron::B(NumStressComponents, NumDOFsPerNode) ;
 //null constructor
 TenNodeTetrahedron::TenNodeTetrahedron( )
 	: Element( 0, ELE_TAG_TenNodeTetrahedron ),
-	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
+	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false)
 {
 	B.Zero();
 
@@ -247,9 +270,9 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
                                        int node9,
                                        int node10,
                                        NDMaterial &theMaterial,
-                                       double b1, double b2, double b3)
+                                       double b1, double b2, double b3, bool do_init_disp_)
 	: Element(tag, ELE_TAG_TenNodeTetrahedron),
-	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
+	  connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(do_init_disp_)
 {
 	// opserr << "TenNodeTetrahedron::constructor - START\n";
 	B.Zero();
@@ -324,7 +347,11 @@ void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 	for ( i = 0; i < NumNodes; i++ )
 	{
 		nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
-		initDisp[i] = nodePointers[i]->getDisp();
+
+		if(do_init_disp)
+		{
+			initDisp[i] = nodePointers[i]->getDisp();
+		}
 	}
 
 	this->DomainComponent::setDomain(theDomain);
