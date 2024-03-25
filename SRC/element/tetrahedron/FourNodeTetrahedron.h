@@ -63,7 +63,7 @@ class FourNodeTetrahedron : public Element {
 	  int node3,
 	  int node4,
 	  NDMaterial &theMaterial,
-	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0);
+	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, bool do_init_disp_ =false);
     
     //destructor 
     virtual ~FourNodeTetrahedron( ) ;
@@ -198,6 +198,7 @@ class FourNodeTetrahedron : public Element {
     Vector initDisp[NumNodes];
 
     bool do_update;
+    bool do_init_disp;
 } ; 
 
 #endif

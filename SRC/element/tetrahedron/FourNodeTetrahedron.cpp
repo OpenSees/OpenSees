@@ -53,7 +53,7 @@ void* OPS_FourNodeTetrahedron()
     if (OPS_GetNumRemainingInputArgs() < 6) 
     {
       opserr << "WARNING insufficient arguments\n";
-      opserr << "Want: element FourNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? matTag?\n";
+      opserr << "Want: element FourNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? matTag? (doInitDisp?)\n";
       return 0;
     }
 
@@ -73,6 +73,7 @@ void* OPS_FourNodeTetrahedron()
       opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
     }
 
+    // Get the body forces
     double data[3] = {0,0,0};
     num = OPS_GetNumRemainingInputArgs();
 
@@ -88,7 +89,16 @@ void* OPS_FourNodeTetrahedron()
         return 0;
       }     
     }
-    return new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
+
+    Element* the_new_element_ptr = new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
+
+    if (the_new_element_ptr == NULL)
+    {
+      opserr << "OPS_TenNodeTetrahedron() - Could not create pointer to new TenNodeTetrahedron object" << endln;
+      return 0;
+    }
+
+    return the_new_element_ptr;
 }
 
 void* OPS_FourNodeTetrahedron(const ID& info)
@@ -203,7 +213,7 @@ Matrix FourNodeTetrahedron::B(NumStressComponents,NumDOFsPerNode) ;
 //null constructor
 FourNodeTetrahedron::FourNodeTetrahedron( ) 
 :Element( 0, ELE_TAG_FourNodeTetrahedron ),
- connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
+ connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false)
 {
   B.Zero();
 
@@ -234,9 +244,9 @@ FourNodeTetrahedron::FourNodeTetrahedron(int tag,
        int node3,
        int node4,
        NDMaterial &theMaterial,
-       double b1, double b2, double b3)
+       double b1, double b2, double b3, bool do_init_disp_)
   :Element(tag, ELE_TAG_FourNodeTetrahedron),
-   connectedExternalNodes(4), applyLoad(0), load(0), Ki(0)
+   connectedExternalNodes(4), applyLoad(0), load(0), Ki(0), do_init_disp(do_init_disp_)
 {
   B.Zero();
   do_update = true;
@@ -298,7 +308,10 @@ void  FourNodeTetrahedron::setDomain( Domain *theDomain )
   for ( i=0; i<NumNodes; i++ ) 
   {
       nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
-      initDisp[i] = nodePointers[i]->getDisp();
+      if(do_init_disp)
+      {
+        initDisp[i] = nodePointers[i]->getDisp();
+      }
   }
 
   this->DomainComponent::setDomain(theDomain);
@@ -1449,7 +1462,7 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(27);
+  static ID idData(28);
 
   idData(24) = this->getTag();
   if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
@@ -1480,6 +1493,7 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   idData(18) = connectedExternalNodes(2);
   idData(19) = connectedExternalNodes(3);
   idData(26) = (int) do_update;
+  idData(27) = (int) do_init_disp;
   // idData(20) = connectedExternalNodes(4);
   // idData(21) = connectedExternalNodes(5);
   // idData(22) = connectedExternalNodes(6);
@@ -1527,7 +1541,7 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(27);
+  static ID idData(28);
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING FourNodeTetrahedron::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1555,6 +1569,7 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   connectedExternalNodes(2) = idData(18);
   connectedExternalNodes(3) = idData(19);
   do_update = (bool) idData(26);
+  do_init_disp = (bool) idData(27);
   // connectedExternalNodes(4) = idData(20);
   // connectedExternalNodes(5) = idData(21);
   // connectedExternalNodes(6) = idData(22);
