@@ -55,7 +55,7 @@ OPS_ComponentElement2d(void)
 
   int numArgs = OPS_GetNumRemainingInputArgs();
   if (numArgs < 3) {
-    opserr << "Invalid #args,  want: element CompositeElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
+    opserr << "Invalid #args,  want: element componentElement tag iNode jNode A E I crdTag hinge1 hinge2 \n";
     return 0;
   }
   
@@ -63,22 +63,43 @@ OPS_ComponentElement2d(void)
   double dData[3];  
   int numData = 3;
   if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids ints" << endln;
+    opserr << "WARNING componentElement - invalid ints" << endln;
     return 0;
   }
 
   numData = 3;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids double" << endln;
+    opserr << "WARNING componentElement - invalid doubles" << endln;
     return 0;
   }
 
-  numData = 3;
+  numData = 1;
   if (OPS_GetIntInput(&numData, &iData[3]) != 0) {
-    opserr << "WARNING ElasticComponent2d - invalids second set ints" << endln;
+    opserr << "WARNING componentElement - invalid second transformation tag" << endln;
     return 0;
   }
 
+  bool useK = false;
+  double k[2];
+
+  std::string flag = OPS_GetString();
+  if (flag == "-stiffness" || flag == "-k") {
+    numData = 2;
+    if (OPS_GetDoubleInput(&numData, k) != 0) {
+      opserr << "WARNING componentElement - invalid stiffness values" << endln;
+      return 0;
+    }
+    useK = true;
+  }
+  else {
+    OPS_ResetCurrentInputArg(-1);
+    numData = 2;
+    if (OPS_GetIntInput(&numData, &iData[4]) != 0) {
+      opserr << "WARNING componentElement - invalid material tags" << endln;
+      return 0;
+    }    
+  }
+  
   double mass = 0.0;
   int cMass = 0;
   while(OPS_GetNumRemainingInputArgs() > 0) {
@@ -95,17 +116,25 @@ OPS_ComponentElement2d(void)
 
   CrdTransf *theTrans = OPS_getCrdTransf(iData[3]);
 
-  UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
-  UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
-
-  // Parsing was successful, allocate the material
-  theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2], 
-				      iData[1], iData[2], 
-				      *theTrans, end1, end2, 
-				      mass,cMass);
+  if (useK) {
+    theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2],
+					iData[1], iData[2], 
+					*theTrans, k[0], k[1],
+					mass,cMass);
+  }
+  else {
+    UniaxialMaterial *end1 = OPS_getUniaxialMaterial(iData[4]);
+    UniaxialMaterial *end2 = OPS_getUniaxialMaterial(iData[5]);
+    
+    // Parsing was successful, allocate the material
+    theElement = new ComponentElement2d(iData[0], dData[0], dData[1], dData[2],
+					iData[1], iData[2], 
+					*theTrans, end1, end2,
+					mass,cMass);
+  }  
 
   if (theElement == 0) {
-    opserr << "WARNING could not create element of type ComponentElement2d\n";
+    opserr << "WARNING could not create element of type componentElement\n";
     return 0;
   }
   
@@ -1073,7 +1102,25 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 4, Vector(3));
     
   
-  } else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
+  }
+  // basic deformation
+  else if (strcmp(argv[0],"basicDeformation") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M_1");
+    output.tag("ResponseType","M_2");
+    
+    theResponse = new ElementResponse(this, 8, Vector(3));
+  }
+  // basic stiffness
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M_1");
+    output.tag("ResponseType","M_2");
+    
+    theResponse = new ElementResponse(this, 19, Matrix(3,3));
+  }  
+  
+  else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
 
     output.tag("ResponseType","end1_Defo");
     output.tag("ResponseType","end1_Force");
@@ -1107,7 +1154,8 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
   this->getResistingForce();
   static Vector vect4(4);
   static Vector vect2(2);
-
+  static Matrix kb(3,3);
+  
   switch (responseID) {
   case 1: // stiffness
     return eleInfo.setMatrix(this->getTangentStiff());
@@ -1146,7 +1194,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect4);
 
-  case 6: // basic forces
+  case 6: // hinge tangent
     if (end1Hinge != 0) {
       vect2(0) = end1Hinge->getTangent();
     }
@@ -1155,7 +1203,17 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect2);
 
-
+  case 8:
+    return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
+    
+  case 19:
+    kb.Zero();
+    kb(0,0) = EAoverL;
+    kb(1,1) = kTrial(0,0);
+    kb(2,2) = kTrial(1,1);
+    kb(1,2) = kTrial(0,1);
+    kb(2,1) = kTrial(1,0);
+    return eleInfo.setMatrix(kb);
 
   default:
     return -1;

@@ -257,6 +257,7 @@ int OPS_Layer();
 
 /* OpenSeesCrdTransfCommands.cpp */
 int OPS_CrdTransf();
+int OPS_Damping();
 
 /* OpenSeesBeamIntegrationCommands.cpp */
 int OPS_BeamIntegration();
@@ -421,6 +422,7 @@ int OPS_resetModel();
 int OPS_initializeAnalysis();
 int OPS_printA();
 int OPS_printB();
+int OPS_printX();
 int OPS_printModel();
 int OPS_Database();
 int OPS_save();

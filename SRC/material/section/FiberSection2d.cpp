@@ -926,6 +926,13 @@ FiberSection2d::setResponse(const char **argv, int argc,
 			    OPS_Stream &output)
 {
   Response *theResponse = 0;
+
+  if (strcmp(argv[0],"fiberIndex") == 0) {
+    if (argc < 3)
+      return 0;
+    int key = atoi(argv[1]);
+    return theMaterials[key]->setResponse(&argv[2], argc-2, output);
+  }
   
   if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
@@ -993,7 +1000,7 @@ FiberSection2d::setResponse(const char **argv, int argc,
       //ySearch = matData[0];
       ySearch = fiberLocs[0];      
       dy = ySearch-yCoord;
-      closestDist = fabs(dy);
+      closestDist = dy*dy;
       key = 0;
       for (int j = 1; j < numFibers; j++) {
 	//ySearch = matData[2*j];
@@ -1163,9 +1170,16 @@ FiberSection2d::setParameter(const char **argv, int argc, Parameter &param)
 
   int result = -1;
 
+  if (strcmp(argv[0],"fiberIndex") == 0) {
+    if (argc < 3)
+      return 0;
+    int key = atoi(argv[1]);
+    return theMaterials[key]->setParameter(&argv[2], argc-2, param);
+  }
+  
   // Check if the parameter belongs to the material
   if (strstr(argv[0],"material") != 0) {
-    
+
     if (argc < 3)
       return 0;
 

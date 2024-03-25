@@ -18,9 +18,6 @@
     <Filter Include="zeroLength">
       <UniqueIdentifier>{34edf597-ca23-45a1-a1c7-7723635d5919}</UniqueIdentifier>
     </Filter>
-    <Filter Include="beamWithHinges">
-      <UniqueIdentifier>{83a3c374-25f8-4682-9247-90334059a512}</UniqueIdentifier>
-    </Filter>
     <Filter Include="crdTransf">
       <UniqueIdentifier>{169394f8-16cf-4672-a034-6695caa4febc}</UniqueIdentifier>
     </Filter>
@@ -135,6 +132,9 @@
     <Filter Include="PML">
       <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mefi">
+      <UniqueIdentifier>{793b16ee-7c65-4ec9-b131-696c18f42f54}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -220,9 +220,6 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\zeroLength\ZeroLengthSection.cpp">
       <Filter>zeroLength</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\beamWithHinges\TclBeamWithHingesBuilder.cpp">
-      <Filter>beamWithHinges</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransf2d.cpp">
       <Filter>crdTransf</Filter>
@@ -716,6 +713,9 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
       <Filter>componentElement</Filter>
     </ClCompile>
@@ -952,6 +952,26 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
       <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_12.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
+      <Filter>mefi</Filter>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1462,6 +1482,9 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
       <Filter>componentElement</Filter>
     </ClInclude>
@@ -1698,6 +1721,26 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
       <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_3.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
+      <Filter>mefi</Filter>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

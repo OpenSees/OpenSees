@@ -73,6 +73,7 @@ void* OPS_ElasticBeam3d(void)
 	if (theType == "-mass") {
 	  numOptionalArgs++;
 	  if(OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;	    
 	    if(OPS_GetDoubleInput(&numData,&mass) < 0)
 	      return 0;
 	    numOptionalArgs++;	    
@@ -83,6 +84,7 @@ void* OPS_ElasticBeam3d(void)
 	} else if (theType == "-releasez") {
 	  numOptionalArgs++;	  
 	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;	    
 	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
 	      opserr << "WARNING: failed to get releasez";
 	      return 0;
@@ -92,6 +94,7 @@ void* OPS_ElasticBeam3d(void)
 	} else if (theType == "-releasey") {
 	  numOptionalArgs++;	  
 	  if (OPS_GetNumRemainingInputArgs() > 0) {
+	    numData = 1;
 	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
 	      opserr << "WARNING: failed to get releasey";
 	      return 0;
@@ -101,17 +104,20 @@ void* OPS_ElasticBeam3d(void)
 	} else if(theType == "-damp"){
 	  numOptionalArgs++;	  
 	  if(OPS_GetNumRemainingInputArgs() > 0) {
-      if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
-		  theDamping = OPS_getDamping(dampingTag);
-      if(theDamping == 0) {
+	    numData = 1;
+	    if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
+	    theDamping = OPS_getDamping(dampingTag);
+	    if(theDamping == 0) {
 	      opserr<<"damping not found\n";
 	      return 0;
-      }
-    }
+	    }
+	  }
 	} 
     }
 
-    OPS_ResetCurrentInputArg(-numArgs);    
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);    
+    }
     numArgs = numArgs - numOptionalArgs;
       
     if(numArgs < 10 && numArgs != 5) {
@@ -405,15 +411,34 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
 			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-   releasez(relz), releasey(rely),
+      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0),
+   rho(r), cMass(cm), releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
 {
-  E = 1.0;
-  G = 1.0;
-  Jx = 0.0;
-  rho = r;
-  cMass = cm;
+  // Try to find E in the section
+  const char *argv[1] = {"E"};
+  int argc = 1;
+  Parameter param;
+  int ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    E = param.getValue();
+
+  if (E == 0.0) {
+    opserr << "ElasticBeam3d::ElasticBeam3d - E from section is zero, using E = 1" << endln;
+    E = 1.0;
+  }
+
+  // Try to find G in the section
+  argv[0] = {"G"};
+  ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    G = param.getValue();
+
+  if (G == 0.0) {
+    opserr << "ElasticBeam3d::ElasticBeam3d - G from section is zero, using G = 1" << endln;
+    G = 1.0;
+  }  
   
   const Matrix &sectTangent = section.getInitialTangent();
   const ID &sectCode = section.getType();
@@ -421,16 +446,16 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     int code = sectCode(i);
     switch(code) {
     case SECTION_RESPONSE_P:
-      A = sectTangent(i,i);
+      A = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MZ:
-      Iz = sectTangent(i,i);
+      Iz = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_MY:
-      Iy = sectTangent(i,i);
+      Iy = sectTangent(i,i)/E;
       break;
     case SECTION_RESPONSE_T:
-      Jx = sectTangent(i,i);
+      Jx = sectTangent(i,i)/G;
       break;
     default:
       break;
@@ -1559,7 +1584,19 @@ ElasticBeam3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ResponseType","T");
     
     theResponse = new ElementResponse(this, 4, Vector(6));
-
+  }
+  // basic stiffness -
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","Mz_1");
+    output.tag("ResponseType","Mz_2");
+    output.tag("ResponseType","My_1");
+    output.tag("ResponseType","My_2");
+    output.tag("ResponseType","T");    
+    
+    theResponse =  new ElementResponse(this, 19, Matrix(6,6));
+    
   // global damping forces
   } else if (theDamping && (strcmp(argv[0],"globalDampingForce") == 0 || strcmp(argv[0],"globalDampingForces") == 0)) {
 
@@ -1653,6 +1690,7 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   static Vector Res(12);
   Res = this->getResistingForce();
   static Vector s(6);
+  static Matrix kb(6,6);
   
   switch (responseID) {
   case 1: // stiffness
@@ -1713,6 +1751,29 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
     return eleInfo.setVector(s);
   }
 
+  case 19: // basic stiffness
+    kb.Zero();
+    kb(0,0) = E*A/L;
+    kb(5,5) = G*Jx/L;
+    if (releasez == 0) {
+      kb(1,1) = kb(2,2) = 4*E*Iz/L;
+      kb(1,2) = kb(2,1) = 2*E*Iz/L;
+    }
+    if (releasez == 1)
+      kb(2,2) = 3*E*Iz/L;
+    if (releasez == 2)
+      kb(1,1) = 3*E*Iz/L;
+    
+    if (releasey == 0) {
+      kb(3,3) = kb(4,4) = 4*E*Iy/L;
+      kb(3,4) = kb(4,3) = 2*E*Iy/L;
+    }
+    if (releasey == 1)
+      kb(4,4) = 3*E*Iy/L;
+    if (releasey == 2)
+      kb(3,3) = 3*E*Iy/L;        
+    return eleInfo.setMatrix(kb);
+    
   case 21: // global damping forces
     return eleInfo.setVector(this->getDampingForce());
     

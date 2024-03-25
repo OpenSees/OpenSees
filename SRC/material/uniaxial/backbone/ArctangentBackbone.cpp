@@ -42,8 +42,8 @@ OPS_ArctangentBackbone(void)
 {
   HystereticBackbone *theBackbone = 0;
 
-  if (OPS_GetNumRemainingInputArgs() < 4) {
-    opserr << "Invalid number of args, want: hystereticBackbone Arctangent tag? K1? gamma? alpha?" << endln;
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "Invalid number of args, want: hystereticBackbone Arctangent tag? K1? gamma? alpha? -or- E? Fy?" << endln;
     return 0;
   }
 
@@ -56,13 +56,25 @@ OPS_ArctangentBackbone(void)
     return 0;
   }
 
-  numData = 3;
+  numData = 2;
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING invalid data for hystereticBackbone Arctangent" << endln;
     return 0;
   }
 
-  theBackbone = new ArctangentBackbone(iData[0], dData[0], dData[1], dData[2]);
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    numData = 1;
+    if (OPS_GetDoubleInput(&numData, &dData[2]) != 0) {
+      opserr << "WARNING invalid data for hystereticBackbone Arctangent" << endln;
+      return 0;
+    }
+  
+    theBackbone = new ArctangentBackbone(iData[0], dData[0], dData[1], dData[2]);
+  }
+  else {
+    theBackbone = new ArctangentBackbone(iData[0], dData[0], dData[1]);
+  }
+  
   if (theBackbone == 0) {
     opserr << "WARNING could not create ArctangentBackbone\n";
     return 0;
@@ -82,6 +94,19 @@ ArctangentBackbone::ArctangentBackbone(int tag, double k1, double gy, double a):
   alpha = fabs(alpha);
   
   K2 = tan(alpha)/gammaY;
+}
+
+ArctangentBackbone::ArctangentBackbone(int tag, double E, double Fy):
+  HystereticBackbone(tag,BACKBONE_TAG_Arctangent),
+  K1(0.0), K2(0.0), gammaY(Fy/E), alpha(0.8)
+{
+  if (gammaY == 0.0)
+    opserr << "ArctangentBackbone::ArctangentBackbone -- gammaY is zero" << endln;
+  
+  gammaY = fabs(gammaY);
+
+  K2 = tan(alpha)/gammaY;
+  K1 = E/K2;
 }
 
 ArctangentBackbone::ArctangentBackbone():

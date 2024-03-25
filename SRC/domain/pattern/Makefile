@@ -24,7 +24,9 @@ OBJS       = $(RELIABILITY_OBJS) \
 	TimeSeries.o \
 	TclPatternCommand.o \
 	TrigSeries.o \
+	RampSeries.o \
 	ConstantSeries.o \
+	MPAccSeries.o \
 	UniformExcitation.o \
 	TimeSeriesIntegrator.o \
 	TrapezoidalTimeSeriesIntegrator.o \

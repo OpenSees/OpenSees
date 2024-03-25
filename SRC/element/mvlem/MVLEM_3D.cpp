@@ -110,6 +110,11 @@ void* OPS_MVLEM_3D(void)
 	UniaxialMaterial** theMaterialsConcrete = new UniaxialMaterial * [m];
 	UniaxialMaterial** theMaterialsSteel = new UniaxialMaterial * [m];
 	UniaxialMaterial** theMaterialsShear = new UniaxialMaterial * [1];
+	for (int i = 0; i < m; i++) {
+		theMaterialsConcrete[i] = 0;
+		theMaterialsSteel[i] = 0;
+	}
+	theMaterialsShear[0] = 0;
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 	while (numArgs > 0) {
@@ -2859,7 +2864,7 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "globalMy_l");
 		s.tag("ResponseType", "globalMz_l");
 
-		return theResponse = new ElementResponse(this, 1, Vector(24));
+		theResponse = new ElementResponse(this, 1, Vector(24));
 
 	}
 
@@ -2892,7 +2897,7 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "localMy_l");
 		s.tag("ResponseType", "localMz_l");
 
-		return theResponse = new ElementResponse(this, 2, Vector(24));
+		theResponse = new ElementResponse(this, 2, Vector(24));
 
 	}
 
@@ -2901,7 +2906,7 @@ Response *MVLEM_3D::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "fi");
 
-		return theResponse = new ElementResponse(this, 3, 0.0);
+		theResponse = new ElementResponse(this, 3, 0.0);
 	}
 
 	// Fiber strain

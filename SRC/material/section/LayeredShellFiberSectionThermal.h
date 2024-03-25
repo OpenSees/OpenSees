@@ -138,7 +138,7 @@ class LayeredShellFiberSectionThermal : public SectionForceDeformation{
 
     static ID array ;  
 
-	Vector  *sT;  //  Pointer to sTData
+	Vector  sT;  //  Pointer to sTData
 	double  *ThermalElongation; // thermal elongation
 	int countnGauss;
 	double AverageThermalForceP ;

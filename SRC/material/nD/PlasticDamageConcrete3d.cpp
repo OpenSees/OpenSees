@@ -609,7 +609,7 @@ PlasticDamageConcrete3d::getCopy(const char *type)
   
     return theCopy;  
   } else {
-    return 0;
+    return NDMaterial::getCopy(type);
   }
 }
 

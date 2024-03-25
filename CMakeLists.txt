@@ -34,11 +34,21 @@ include(OpenSeesFunctions)
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
+#
+# for ubuntu this has to be before the Compiler SPECIFIC stuff below .. go figure!
+#
+
+find_package(MPI)
+
+
+
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
 #
 # Compiler SPECIFIC
 #
+
+
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
@@ -52,7 +62,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  # add_compile_options(-fPIC)
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
- MESSAGE("COMPILER: Clang")
+ MESSAGE("COMPILER: GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
  MESSAGE("COMPILER: Intel")
  add_compile_options(-fPIC)
@@ -351,16 +361,20 @@ endif()
 
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
-  set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  if (NOT DEFINED SCALAPACK_LIBRARIES)
+     set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  endif()
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set (MKL_LPATH ${MKL_ROOT}/lib/intel64)
     set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_ilp64.lib;${MKL_LPATH}/mkl_intel_ilp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_ilp64.lib")
   endif() 
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")     
+
 else()
   message(STATUS "MKL NOT found .. user to provide -DSCALAPACK_LIBRARIES=")
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
+
 endif()
+
+message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
   
 #get_cmake_property(_variableNames VARIABLES)
 #list (SORT _variableNames)
@@ -813,6 +827,7 @@ if(HDF5_FOUND)
    set(_hdf5_libs hdf5 hdf5_cpp)
    if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
          add_compile_definitions(_H5DRM)
+         add_compile_definitions(_HDF5)
          message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")    
    endif()
 else()

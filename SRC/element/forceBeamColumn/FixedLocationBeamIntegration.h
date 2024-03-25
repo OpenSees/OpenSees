@@ -56,6 +56,8 @@ class FixedLocationBeamIntegration : public BeamIntegration
   void getLocationsDeriv(int nIP, double L, double dLdh, double *dptsdh);
   void getWeightsDeriv(int nIP, double L, double dLdh, double *dwtsdh);
 
+  void calculateWeights();
+  
  private:
   Vector pts;
   Vector wts;

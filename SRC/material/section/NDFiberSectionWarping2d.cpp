@@ -84,8 +84,9 @@ void* OPS_NDFiberSectionWarping2d()
 // constructors:
 NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, Fiber **fibers, double a): 
 SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
-numFibers(num), sizeFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a), sectionIntegr(0),
-	e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5), yBarZero(0.0)
+numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
+yBar(0.0), alpha(a), yBarZero(0.0), DeltaYbar(0.0), sectionIntegr(0),
+e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5)
 { 
 	if (numFibers != 0) {
 		theMaterials = new NDMaterial *[numFibers]; 
@@ -176,8 +177,8 @@ numFibers(num), sizeFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a
 NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, double a): 
     SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
     numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
-    yBar(0.0), alpha(a), sectionIntegr(0), e(5), s(0), ks(0), 
-    parameterID(0), dedh(5)
+    yBar(0.0), alpha(a), yBarZero(0.0), DeltaYbar(0.0), sectionIntegr(0),
+    e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5)
 {
     if (sizeFibers != 0) {
 	theMaterials = new NDMaterial *[sizeFibers];
@@ -222,8 +223,9 @@ NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, double a):
 NDFiberSectionWarping2d::NDFiberSectionWarping2d(int tag, int num, NDMaterial **mats,
 	SectionIntegration &si, double a):
 SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
-  numFibers(num), sizeFibers(num), theMaterials(0), matData(0), yBar(0.0), alpha(a),
-	sectionIntegr(0), e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5), yBarZero(0.0)
+numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
+yBar(0.0), alpha(a), yBarZero(0.0), DeltaYbar(0.0), sectionIntegr(0),
+e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5)
 {
 	if (numFibers != 0) {
 		theMaterials = new NDMaterial *[numFibers];
@@ -316,8 +318,9 @@ SectionForceDeformation(tag, SEC_TAG_NDFiberSectionWarping2d),
 // constructor for blank object that recvSelf needs to be invoked upon
 NDFiberSectionWarping2d::NDFiberSectionWarping2d():
 SectionForceDeformation(0, SEC_TAG_NDFiberSectionWarping2d),
-  numFibers(0), sizeFibers(0), theMaterials(0), matData(0), yBar(0.0), alpha(6.0/6),
-	sectionIntegr(0), e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5), yBarZero(0.0)
+numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
+yBar(0.0), alpha(0.0), yBarZero(0.0), DeltaYbar(0.0), sectionIntegr(0),
+e(5), eCommit(5), s(0), ks(0), parameterID(0), dedh(5)
 {
 	s = new Vector(sData, 5);
 	ks = new Matrix(kData, 5, 5);
@@ -826,6 +829,8 @@ SectionForceDeformation*
 	theCopy->eCommit = eCommit;
 	theCopy->e = e;
 	theCopy->yBar = yBar;
+	theCopy->yBarZero = yBarZero;
+	theCopy->DeltaYbar = DeltaYbar;	
 
 	theCopy->alpha = alpha;
 	theCopy->parameterID = parameterID;
@@ -1208,168 +1213,191 @@ int
 }
 
 int
-	NDFiberSectionWarping2d::sendSelf(int commitTag, Channel &theChannel)
+NDFiberSectionWarping2d::sendSelf(int commitTag, Channel &theChannel)
 {
-	int res = 0;
+  int res = 0;
 
-	// create an id to send objects tag and numFibers, 
-	//     size 3 so no conflict with matData below if just 1 fiber
-	static ID data(3);
-	data(0) = this->getTag();
-	data(1) = numFibers;
-	int dbTag = this->getDbTag();
-	res += theChannel.sendID(dbTag, commitTag, data);
-	if (res < 0) {
-		opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send ID data\n";
-		return res;
-	}    
+  // create an id to send objects tag and numFibers, 
+  //     size 3 so no conflict with matData below if just 1 fiber
+  static ID data(3);
+  data(0) = this->getTag();
+  data(1) = numFibers;
+  int dbTag = this->getDbTag();
+  res += theChannel.sendID(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send ID data\n";
+    return res;
+  }    
 
-	if (numFibers != 0) {
+  static Vector ddata(4+1); // +1 so no conflict when 2 fibers
+  ddata(0) = yBar;
+  ddata(1) = alpha;
+  ddata(2) = yBarZero;
+  ddata(3) = DeltaYbar;
+  res += theChannel.sendVector(dbTag, commitTag, ddata);
+  if (res < 0) {
+    opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send Vector data\n";
+    return res;
+  }
+  
+  if (numFibers != 0) {
 
-		// create an id containingg classTag and dbTag for each material & send it
-		ID materialData(2*numFibers);
-		for (int i=0; i<numFibers; i++) {
-			NDMaterial *theMat = theMaterials[i];
-			materialData(2*i) = theMat->getClassTag();
-			int matDbTag = theMat->getDbTag();
-			if (matDbTag == 0) {
-				matDbTag = theChannel.getDbTag();
-				if (matDbTag != 0)
-					theMat->setDbTag(matDbTag);
-			}
-			materialData(2*i+1) = matDbTag;
-		}    
+    // create an id containingg classTag and dbTag for each material & send it
+    ID materialData(2*numFibers);
+    for (int i=0; i<numFibers; i++) {
+      NDMaterial *theMat = theMaterials[i];
+      materialData(2*i) = theMat->getClassTag();
+      int matDbTag = theMat->getDbTag();
+      if (matDbTag == 0) {
+	matDbTag = theChannel.getDbTag();
+	if (matDbTag != 0)
+	  theMat->setDbTag(matDbTag);
+      }
+      materialData(2*i+1) = matDbTag;
+    }    
 
-		res += theChannel.sendID(dbTag, commitTag, materialData);
-		if (res < 0) {
-			opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send material data\n";
-			return res;
-		}    
+    res += theChannel.sendID(dbTag, commitTag, materialData);
+    if (res < 0) {
+      opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send material data\n";
+      return res;
+    }    
 
-		// send the fiber data, i.e. area and loc
-		Vector fiberData(matData, 2*numFibers);
-		res += theChannel.sendVector(dbTag, commitTag, fiberData);
-		if (res < 0) {
-			opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send material data\n";
-			return res;
-		}    
+    // send the fiber data, i.e. area and loc
+    Vector fiberData(matData, 2*numFibers);
+    res += theChannel.sendVector(dbTag, commitTag, fiberData);
+    if (res < 0) {
+      opserr <<  "NDFiberSectionWarping2d::sendSelf - failed to send material data\n";
+      return res;
+    }    
 
-		// now invoke send(0 on all the materials
-		for (int j=0; j<numFibers; j++)
-			theMaterials[j]->sendSelf(commitTag, theChannel);
-
-	}
-
-	return res;
+    // now invoke send(0 on all the materials
+    for (int j=0; j<numFibers; j++)
+      theMaterials[j]->sendSelf(commitTag, theChannel);
+    
+  }
+  
+  return res;
 }
 
 int
-	NDFiberSectionWarping2d::recvSelf(int commitTag, Channel &theChannel,
-	FEM_ObjectBroker &theBroker)
+NDFiberSectionWarping2d::recvSelf(int commitTag, Channel &theChannel,
+				  FEM_ObjectBroker &theBroker)
 {
-	int res = 0;
+  int res = 0;
+  
+  static ID data(3);
+  
+  int dbTag = this->getDbTag();
+  res += theChannel.recvID(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv ID data\n";
+    return res;
+  }    
+  this->setTag(data(0));
 
-	static ID data(3);
+  static Vector ddata(5);
+  res += theChannel.recvVector(dbTag, commitTag, ddata);
+  if (res < 0) {
+    opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv Vector data\n";
+    return res;
+  }
 
-	int dbTag = this->getDbTag();
-	res += theChannel.recvID(dbTag, commitTag, data);
-	if (res < 0) {
-		opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv ID data\n";
-		return res;
-	}    
-	this->setTag(data(0));
-
-	// recv data about materials objects, classTag and dbTag
-	if (data(1) != 0) {
-		ID materialData(2*data(1));
-		res += theChannel.recvID(dbTag, commitTag, materialData);
-		if (res < 0) {
-			opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv material data\n";
-			return res;
-		}    
-
-		// if current arrays not of correct size, release old and resize
-		if (theMaterials == 0 || numFibers != data(1)) {
-			// delete old stuff if outa date
-			if (theMaterials != 0) {
-				for (int i=0; i<numFibers; i++)
-					delete theMaterials[i];
-				delete [] theMaterials;
-				if (matData != 0)
-					delete [] matData;
-				matData = 0;
-				theMaterials = 0;
-			}
-
-			// create memory to hold material pointers and fiber data
-			numFibers = data(1);
-			sizeFibers = data(1);			
-			if (numFibers != 0) {
-				theMaterials = new NDMaterial *[numFibers];
-
-				if (theMaterials == 0) {
-					opserr <<"NDFiberSectionWarping2d::recvSelf -- failed to allocate Material pointers\n";
-					exit(-1);
-				}
-
-				for (int j=0; j<numFibers; j++)
-					theMaterials[j] = 0;
-
-				matData = new double [numFibers*2];
-
-				if (matData == 0) {
-					opserr <<"NDFiberSectionWarping2d::recvSelf  -- failed to allocate double array for material data\n";
-					exit(-1);
-				}
-			}
-		}
-
-		Vector fiberData(matData, 2*numFibers);
-		res += theChannel.recvVector(dbTag, commitTag, fiberData);
-		if (res < 0) {
-			opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv material data\n";
-			return res;
-		}    
-
-		int i;
-		for (i=0; i<numFibers; i++) {
-			int classTag = materialData(2*i);
-			int dbTag = materialData(2*i+1);
-
-			// if material pointed to is blank or not of corrcet type, 
-			// release old and create a new one
-			if (theMaterials[i] == 0)
-				theMaterials[i] = theBroker.getNewNDMaterial(classTag);
-			else if (theMaterials[i]->getClassTag() != classTag) {
-				delete theMaterials[i];
-				theMaterials[i] = theBroker.getNewNDMaterial(classTag);      
-			}
-
-			if (theMaterials[i] == 0) {
-				opserr <<"NDFiberSectionWarping2d::recvSelf -- failed to allocate double array for material data\n";
-				exit(-1);
-			}
-
-			theMaterials[i]->setDbTag(dbTag);
-			res += theMaterials[i]->recvSelf(commitTag, theChannel, theBroker);
-		}
-
-		double Qz = 0.0;
-		double A  = 0.0;
-		double yLoc, Area;
-
-		// Recompute centroid
-		for (i = 0; i < numFibers; i++) {
-			yLoc = matData[2*i];
-			Area = matData[2*i+1];
-			A  += Area;
-			Qz += yLoc*Area;
-		}
-
-		yBar = Qz/A;
-	}    
-
-	return res;
+  yBar = ddata(0);
+  alpha = ddata(1);
+  yBarZero = ddata(2);
+  DeltaYbar = ddata(3);
+  
+  // recv data about materials objects, classTag and dbTag
+  if (data(1) != 0) {
+    ID materialData(2*data(1));
+    res += theChannel.recvID(dbTag, commitTag, materialData);
+    if (res < 0) {
+      opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv material data\n";
+      return res;
+    }    
+    
+    // if current arrays not of correct size, release old and resize
+    if (theMaterials == 0 || numFibers != data(1)) {
+      // delete old stuff if outa date
+      if (theMaterials != 0) {
+	for (int i=0; i<numFibers; i++)
+	  delete theMaterials[i];
+	delete [] theMaterials;
+	if (matData != 0)
+	  delete [] matData;
+	matData = 0;
+	theMaterials = 0;
+      }
+      
+      // create memory to hold material pointers and fiber data
+      numFibers = data(1);
+      sizeFibers = data(1);			
+      if (numFibers != 0) {
+	theMaterials = new NDMaterial *[numFibers];
+	
+	if (theMaterials == 0) {
+	  opserr <<"NDFiberSectionWarping2d::recvSelf -- failed to allocate Material pointers\n";
+	  exit(-1);
+	}
+	
+	for (int j=0; j<numFibers; j++)
+	  theMaterials[j] = 0;
+	
+	matData = new double [numFibers*2];
+	
+	if (matData == 0) {
+	  opserr <<"NDFiberSectionWarping2d::recvSelf  -- failed to allocate double array for material data\n";
+	  exit(-1);
+	}
+      }
+    }
+    
+    Vector fiberData(matData, 2*numFibers);
+    res += theChannel.recvVector(dbTag, commitTag, fiberData);
+    if (res < 0) {
+      opserr <<  "NDFiberSectionWarping2d::recvSelf - failed to recv material data\n";
+      return res;
+    }    
+    
+    int i;
+    for (i=0; i<numFibers; i++) {
+      int classTag = materialData(2*i);
+      int dbTag = materialData(2*i+1);
+      
+      // if material pointed to is blank or not of corrcet type, 
+      // release old and create a new one
+      if (theMaterials[i] == 0)
+	theMaterials[i] = theBroker.getNewNDMaterial(classTag);
+      else if (theMaterials[i]->getClassTag() != classTag) {
+	delete theMaterials[i];
+	theMaterials[i] = theBroker.getNewNDMaterial(classTag);      
+      }
+      
+      if (theMaterials[i] == 0) {
+	opserr <<"NDFiberSectionWarping2d::recvSelf -- failed to allocate double array for material data\n";
+	exit(-1);
+      }
+      
+      theMaterials[i]->setDbTag(dbTag);
+      res += theMaterials[i]->recvSelf(commitTag, theChannel, theBroker);
+    }
+    
+    double Qz = 0.0;
+    double A  = 0.0;
+    double yLoc, Area;
+    
+    // Recompute centroid
+    for (i = 0; i < numFibers; i++) {
+      yLoc = matData[2*i];
+      Area = matData[2*i+1];
+      A  += Area;
+      Qz += yLoc*Area;
+    }
+    
+    yBar = Qz/A;
+  }    
+  
+  return res;
 }
 
 void
@@ -1521,7 +1549,7 @@ int
 				if (ok != -1)
 					result = ok;
 			}
-			return result;
+		return result;
 	}
 
 	// Check if it belongs to the section integration

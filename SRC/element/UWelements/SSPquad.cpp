@@ -116,6 +116,124 @@ OPS_SSPquad(void)
   	return theElement;
 }
 
+void *OPS_SSPquad(const ID &info) {
+		if (info.Size() == 0) {
+				opserr << "WARNING: info is empty -- SSPquad\n";
+				return 0;
+		}
+
+		int ndm = OPS_GetNDM();
+		int ndf = OPS_GetNDF();
+
+		// mesh data
+    static std::map<int, Vector> meshdata;
+
+		// save data
+    if (info(0) == 1) {
+        // check input
+        if (info.Size() < 2) {
+            opserr << "WARNING: need info -- inmesh, meshtag\n";
+            return 0;
+        }
+				if (OPS_GetNumRemainingInputArgs() < 3) {
+					opserr << "Invalid #args, want: matTag? type? thickness? <b1? b2?>?\n";
+					return 0;
+				}
+
+				// save data
+        Vector &mdata = meshdata[info(1)];
+        mdata.resize(5);
+        mdata.Zero();
+
+				// mat
+				int matTag;
+        int num = 1;
+        if (OPS_GetIntInput(&num, &matTag) < 0) {
+            opserr << "WARNING: invalid matTag\n";
+            return 0;
+        }
+        mdata(0) = matTag;
+
+				const char *type = OPS_GetString();
+        if (strcmp(type, "PlaneStrain") == 0) {
+            mdata(1) = 1;
+        } else if (strcmp(type, "PlaneStress") == 0) {
+            mdata(1) = 2;
+        }
+
+        double thk = 1.0;
+        num = 1;
+        if (OPS_GetDoubleInput(&num, &thk) < 0) {
+            opserr << "WARNING: invalid double inputs\n";
+            return 0;
+        }
+        mdata(2) = thk;
+
+				if (OPS_GetNumRemainingInputArgs() > 0) {
+					double b1 = 0.0;
+					num = 1;
+					if (OPS_GetDoubleInput(&num, &b1) < 0) {
+							opserr << "WARNING: invalid double inputs\n";
+							return 0;
+					}
+					mdata(3) = b1;
+				}
+				if (OPS_GetNumRemainingInputArgs() > 0) {
+					double b2 = 0.0;
+					num = 1;
+					if (OPS_GetDoubleInput(&num, &b2) < 0) {
+							opserr << "WARNING: invalid double inputs\n";
+							return 0;
+					}
+					mdata(4) = b2;
+				}
+
+        return &meshdata;
+		}
+
+		// load data
+    if (info(0) == 2) {
+        if (info.Size() < 7) {
+            opserr << "WARNING: need info -- inmesh, meshtag, "
+                      "eleTag, nd1, nd2, nd3, nd4\n";
+            return 0;
+        }
+
+        int eleTag = info(2);
+
+        // get data
+        Vector &mdata = meshdata[info(1)];
+        if (mdata.Size() < 5) {
+            return 0;
+        }
+
+				int matTag = (int)mdata(0);
+        const char *type = "PlaneStrain";
+        if (mdata(1) == 1) {
+            type = "PlaneStrain";
+        } else {
+            type = "PlaneStress";
+        }
+        double thk = mdata(2);
+				double b1 = mdata(3);
+				double b2 = mdata(4);
+
+
+        NDMaterial *mat = OPS_getNDMaterial(matTag);
+        if (mat == 0) {
+            opserr << "WARNING material not found\n";
+            opserr << "Material: " << matTag;
+            opserr << "\nSSPquad element: " << eleTag << endln;
+            return 0;
+        }
+
+        return new SSPquad(eleTag, info(3), info(4), info(5),
+                                info(6), *mat, type, thk, b1, b2);
+    }
+
+  	return 0;
+}
+
 // full constructor
 SSPquad::SSPquad(int tag, int Nd1, int Nd2, int Nd3, int Nd4, NDMaterial &theMat, 
                           const char *type, double thick, double b1, double b2)
