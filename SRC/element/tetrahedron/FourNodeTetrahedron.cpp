@@ -90,7 +90,27 @@ void* OPS_FourNodeTetrahedron()
       }     
     }
 
-    Element* the_new_element_ptr = new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
+    //Get init disp flag
+
+    num = OPS_GetNumRemainingInputArgs();
+    
+    int do_init_disp_int = 0;
+    bool do_init_disp = false;
+
+
+    if (num >= 1)
+    {
+        num = 1;
+        if (OPS_GetIntInput(&num, &do_init_disp_int) < 0)
+        {
+            opserr << "WARNING: invalid double data\n";
+            return 0;
+        }
+    }
+
+    do_init_disp = (bool) do_init_disp_int; 
+
+    Element* the_new_element_ptr = new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2], do_init_disp);
 
     if (the_new_element_ptr == NULL)
     {
@@ -308,6 +328,8 @@ void  FourNodeTetrahedron::setDomain( Domain *theDomain )
   for ( i=0; i<NumNodes; i++ ) 
   {
       nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
+
+
       if(do_init_disp)
       {
         initDisp[i] = nodePointers[i]->getDisp();
