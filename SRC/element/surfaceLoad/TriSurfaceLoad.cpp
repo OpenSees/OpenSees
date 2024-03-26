@@ -244,7 +244,7 @@ TriSurfaceLoad::UpdateBase(double Xi, double Eta)
 
     // Normalize
     // double norm = myNhat.Norm();
-    myNhat = myNhat / 2;
+    myNhat = myNhat / 3;
 
     return 0;
 }
