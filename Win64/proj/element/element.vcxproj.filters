@@ -141,6 +141,9 @@
     <Filter Include="damping">
       <UniqueIdentifier>{d9c89d0b-b0ee-498a-bc11-9303c8b7338b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mefi">
+      <UniqueIdentifier>{433d184e-6963-4d36-8e44-f5345a43fc5f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -1060,6 +1063,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp">
       <Filter>joint</Filter>
+     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
+      <Filter>mefi</Filter>
+     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1863,6 +1872,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h">
       <Filter>joint</Filter>
+     </ClCompile>
+    <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
+      <Filter>mefi</Filter>
+      </ClCompile>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
