@@ -102,6 +102,7 @@ extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
 extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
+extern void *OPS_ModElasticBeam3d(void);
 extern void *OPS_ElasticBeam2d(const ID &info);
 extern void *OPS_ElasticBeam3d(void);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
@@ -154,6 +155,7 @@ extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void* OPS_SFI_MVLEM_3D(void);// Kristijan Kolozvari
 extern void* OPS_E_SFI_MVLEM_3D(void);// Kristijan Kolozvari
 extern void *OPS_E_SFI(void);   	// C. N. Lopez
+extern void *OPS_MEFI(void);   		// C. N. Lopez
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
@@ -528,6 +530,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if ((strcmp(argv[1],"ModElasticBeam3d") == 0) || (strcmp(argv[1],"modElasticBeam3d")) == 0) {
+    Element *theEle = (Element *)OPS_ModElasticBeam3d();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
   } else if ((strcmp(argv[1],"elasticBeamColumn") == 0) || (strcmp(argv[1],"elasticBeam")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -892,7 +903,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
-  else if (strcmp(argv[1], "E_SFI") == 0) {    // C. N. Lopez
+  else if (strcmp(argv[1], "E_SFI") == 0) {  // C. N. Lopez
 
     void* theEle = OPS_E_SFI();
     if (theEle != 0)
@@ -900,6 +911,20 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     else {
         opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
         return TCL_ERROR;
+    }
+  }
+  
+  else if (strcmp(argv[1],"MEFI") == 0) {    // C. N. Lopez
+    
+    void *theEle = 0;
+    int NDM = OPS_GetNDM();
+    if (NDM == 2)
+      theEle = OPS_MEFI();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
     }
   }
   
