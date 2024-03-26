@@ -56,7 +56,8 @@
 
 ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
     theOpenSeesDomain(passedDomain),
-    numRandomVariables(0), numLimitStateFunctions(0), numCutsets(0)
+    numRandomVariables(0), numLimitStateFunctions(0), numCutsets(0),
+    numFilters(0), numModulatingFunctions(0), numSpectra(0)
 {
 
 	theRandomVariablesPtr = new ArrayOfTaggedObjects (256);
@@ -90,6 +91,15 @@ ReliabilityDomain::ReliabilityDomain(Domain *passedDomain):
 	
 	cutsetIndex = new int[cutsetSize_init];
 	cutsetSize = cutsetSize_init;
+
+	filterIndex = new int[filterSize_init];
+	filterSize = filterSize_init;
+
+	modFcnIndex = new int[modFcnSize_init];
+	modFcnSize = modFcnSize_init;
+
+	spectraIndex = new int[spectraSize_init];
+	spectraSize = spectraSize_init;			
 }
 
 void
@@ -110,12 +120,18 @@ ReliabilityDomain::clearAll()
  
   if (theCorrelationCoefficientsPtr != 0) 
     theCorrelationCoefficientsPtr->clearAll();
-  if (theModulatingFunctionsPtr != 0)
+  if (theModulatingFunctionsPtr != 0) {
     theModulatingFunctionsPtr->clearAll();
-  if (theSpectraPtr != 0)
+    numModulatingFunctions = 0;
+  }
+  if (theSpectraPtr != 0) {
     theSpectraPtr->clearAll();
-  if (theFiltersPtr != 0)
+    numSpectra = 0;
+  }
+  if (theFiltersPtr != 0) {
     theFiltersPtr->clearAll();
+    numFilters = 0;
+  }
 
   if (theDesignVariablesPtr != 0) 
     theDesignVariablesPtr->clearAll();
@@ -196,6 +212,12 @@ ReliabilityDomain::~ReliabilityDomain()
     delete [] lsfIndex;
   if (cutsetIndex != 0)
     delete [] cutsetIndex;
+  if (filterIndex != 0)
+    delete [] filterIndex;
+  if (modFcnIndex != 0)
+    delete [] modFcnIndex;
+  if (spectraIndex != 0)
+    delete [] spectraIndex;      
 }
 
 
@@ -309,22 +331,101 @@ ReliabilityDomain::addCutset(Cutset *theCutset)
 bool
 ReliabilityDomain::addModulatingFunction(ModulatingFunction *theModulatingFunction)
 {
-	bool result = theModulatingFunctionsPtr->addComponent(theModulatingFunction);
-	return result;
+  bool result = theModulatingFunctionsPtr->addComponent(theModulatingFunction);
+
+  if (result == true) {
+
+    // Array is full
+    if (numModulatingFunctions == modFcnSize) {
+
+      // Increase size and allocate new array
+      modFcnSize += modFcnSize_grow;
+      int *tmp_modFcnIndex = new int[modFcnSize];
+
+      // Copy values from old array to new
+      for (int i = 0; i < numModulatingFunctions; i++)
+	tmp_modFcnIndex[i] = modFcnIndex[i];
+
+      // Get rid of old array
+      delete [] modFcnIndex;
+
+      // Set pointer to new array
+      modFcnIndex = tmp_modFcnIndex;
+    }
+
+    // Add to index
+    modFcnIndex[numModulatingFunctions] = theModulatingFunction->getTag();
+    numModulatingFunctions++;
+  }
+  
+  return result;
 }
 
 bool
 ReliabilityDomain::addSpectrum(Spectrum *theSpectrum)
 {
-	bool result = theSpectraPtr->addComponent(theSpectrum);
-	return result;
+  bool result = theSpectraPtr->addComponent(theSpectrum);
+
+  if (result == true) {
+
+    // Array is full
+    if (numSpectra == spectraSize) {
+
+      // Increase size and allocate new array
+      spectraSize += spectraSize_grow;
+      int *tmp_spectraIndex = new int[spectraSize];
+
+      // Copy values from old array to new
+      for (int i = 0; i < numSpectra; i++)
+	tmp_spectraIndex[i] = spectraIndex[i];
+
+      // Get rid of old array
+      delete [] spectraIndex;
+
+      // Set pointer to new array
+      spectraIndex = tmp_spectraIndex;
+    }
+
+    // Add to index
+    spectraIndex[numSpectra] = theSpectrum->getTag();
+    numSpectra++;
+  }
+
+  
+  return result;
 }
 
 bool
 ReliabilityDomain::addFilter(Filter *theFilter)
 {
-	bool result = theFiltersPtr->addComponent(theFilter);
-	return result;
+  bool result = theFiltersPtr->addComponent(theFilter);
+
+  if (result == true) {
+
+    // Array is full
+    if (numFilters == filterSize) {
+
+      // Increase size and allocate new array
+      filterSize += filterSize_grow;
+      int *tmp_filterIndex = new int[filterSize];
+
+      // Copy values from old array to new
+      for (int i = 0; i < numFilters; i++)
+	tmp_filterIndex[i] = filterIndex[i];
+
+      // Get rid of old array
+      delete [] filterIndex;
+
+      // Set pointer to new array
+      filterIndex = tmp_filterIndex;
+    }
+
+    // Add to index
+    filterIndex[numFilters] = theFilter->getTag();
+    numFilters++;
+  }
+
+  return result;  
 }
 
 
@@ -600,6 +701,89 @@ ReliabilityDomain::getCutsetIndex(int tag)
   return index;
 }
 
+Filter * 
+ReliabilityDomain::getFilterPtr(int tag)
+{
+  TaggedObject *theComponent = theFiltersPtr->getComponentPtr(tag);
+  if ( theComponent == 0 )
+    return 0;
+  Filter *result = (Filter *) theComponent;
+  return result;
+}
+
+Filter *
+ReliabilityDomain::getFilterPtrFromIndex(int index)
+{
+  if (index >= 0 && index < numFilters)
+    return this->getFilterPtr(filterIndex[index]);
+
+  else {
+    opserr << "ReliabilityDomain::getFilterPtrFromIndex -- index " << index << " out of bounds 0 ... " << numFilters-1 << endln;
+    return 0;
+  }
+
+}
+
+int
+ReliabilityDomain::getFilterIndex(int tag)
+{
+  int index;
+
+  // Find index of cutset with specified tag
+  for (index = 0; index < numFilters; index++) {
+    if (filterIndex[index] == tag)
+      break;
+  }
+
+  if (index == numFilters) {
+    opserr << "ReliabilityDomain::getFilterIndex -- filter with tag " << tag << " not found" << endln;
+    return -1;
+  }
+
+  return index;
+}
+
+ModulatingFunction * 
+ReliabilityDomain::getModulatingFunctionPtr(int tag)
+{
+  TaggedObject *theComponent = theModulatingFunctionsPtr->getComponentPtr(tag);
+  if ( theComponent == 0 )
+    return 0;
+  ModulatingFunction *result = (ModulatingFunction *) theComponent;
+  return result;
+}
+
+ModulatingFunction *
+ReliabilityDomain::getModulatingFunctionPtrFromIndex(int index)
+{
+  if (index >= 0 && index < numModulatingFunctions)
+    return this->getModulatingFunctionPtr(modFcnIndex[index]);
+
+  else {
+    opserr << "ReliabilityDomain::getModulatintFunctionPtrFromIndex -- index " << index << " out of bounds 0 ... " << numModulatingFunctions-1 << endln;
+    return 0;
+  }
+
+}
+
+int
+ReliabilityDomain::getModulatingFunctionIndex(int tag)
+{
+  int index;
+
+  // Find index of cutset with specified tag
+  for (index = 0; index < numModulatingFunctions; index++) {
+    if (modFcnIndex[index] == tag)
+      break;
+  }
+
+  if (index == numModulatingFunctions) {
+    opserr << "ReliabilityDomain::getModulatingFunctionIndex -- modulating function with tag " << tag << " not found" << endln;
+    return -1;
+  }
+
+  return index;
+}
 
 ModulatingFunction *
 ReliabilityDomain::getModulatingFunction(int tag)
@@ -611,6 +795,47 @@ ReliabilityDomain::getModulatingFunction(int tag)
 	return result;
 }
 
+Spectrum * 
+ReliabilityDomain::getSpectrumPtr(int tag)
+{
+  TaggedObject *theComponent = theSpectraPtr->getComponentPtr(tag);
+  if ( theComponent == 0 )
+    return 0;
+  Spectrum *result = (Spectrum *) theComponent;
+  return result;
+}
+
+Spectrum *
+ReliabilityDomain::getSpectrumPtrFromIndex(int index)
+{
+  if (index >= 0 && index < numSpectra)
+    return this->getSpectrumPtr(spectraIndex[index]);
+
+  else {
+    opserr << "ReliabilityDomain::getSpectrumPtrFromIndex -- index " << index << " out of bounds 0 ... " << numSpectra-1 << endln;
+    return 0;
+  }
+
+}
+
+int
+ReliabilityDomain::getSpectrumIndex(int tag)
+{
+  int index;
+
+  // Find index of cutset with specified tag
+  for (index = 0; index < numSpectra; index++) {
+    if (spectraIndex[index] == tag)
+      break;
+  }
+
+  if (index == numSpectra) {
+    opserr << "ReliabilityDomain::getSpectrumIndex -- spectrum with tag " << tag << " not found" << endln;
+    return -1;
+  }
+
+  return index;
+}
 
 Spectrum *
 ReliabilityDomain::getSpectrum(int tag)
@@ -762,6 +987,57 @@ ReliabilityDomain::removeCutset(int tag)
   return 0;
 }
 
+int
+ReliabilityDomain::removeFilter(int tag)
+{
+  Filter *theFilter = (Filter*) theFiltersPtr->getComponentPtr(tag);
+  
+  if (theFilter != 0) {
+
+    // Find where filter is located
+    int index;
+    for (index = 0; index < numFilters; index++) {
+      if (filterIndex[index] == tag)
+	  break;
+    }
+    
+    // Shift indices down by one
+    for (int i = index; i < numFilters-1; i++)
+      filterIndex[i] = filterIndex[i+1];
+    
+    // Now remove the component
+    theFiltersPtr->removeComponent(tag);
+    numFilters--;
+  }
+
+  return 0;
+}
+
+int
+ReliabilityDomain::removeModulatingFunction(int tag)
+{
+  ModulatingFunction *theModFcn = (ModulatingFunction*) theModulatingFunctionsPtr->getComponentPtr(tag);
+  
+  if (theModFcn != 0) {
+
+    // Find where filter is located
+    int index;
+    for (index = 0; index < numModulatingFunctions; index++) {
+      if (modFcnIndex[index] == tag)
+	  break;
+    }
+    
+    // Shift indices down by one
+    for (int i = index; i < numModulatingFunctions-1; i++)
+      modFcnIndex[i] = modFcnIndex[i+1];
+    
+    // Now remove the component
+    theModulatingFunctionsPtr->removeComponent(tag);
+    numModulatingFunctions--;
+  }
+
+  return 0;
+}
 
 //-Quan
 

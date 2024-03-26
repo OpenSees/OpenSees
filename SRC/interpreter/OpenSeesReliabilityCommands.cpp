@@ -74,6 +74,17 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <PythonRV.h>
 #endif
 
+#include <StandardLinearOscillatorDisplacementFilter.h>
+#include <StandardLinearOscillatorVelocityFilter.h>
+#include <StandardLinearOscillatorAccelerationFilter.h>
+#include <KooFilter.h>
+#include <GammaModulatingFunction.h>
+#include <ConstantModulatingFunction.h>
+#include <TrapezoidalModulatingFunction.h>
+#include <KooModulatingFunction.h>
+#include <JonswapSpectrum.h>
+#include <NarrowBandSpectrum.h>
+
 #include <AdkZhangMeritFunctionCheck.h>
 #include <AllIndependentTransformation.h>
 #include <ArmijoStepSizeRule.h>
@@ -91,6 +102,8 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SearchWithStepSizeAndStepDirection.h>
 #include <SecantRootFinding.h>
 #include <StandardReliabilityConvergenceCheck.h>
+#include <FirstPrincipalCurvature.h>
+#include <CurvaturesBySearchAlgorithm.h>
 
 // active object
 static OpenSeesReliabilityCommands *cmds = 0;
@@ -111,12 +124,14 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(
       theStepSizeRule(0),
       theRootFinding(0),
       theFindDesignPointAlgorithm(0),
+      theFindCurvatures(0),
       theFunctionEvaluator(0),
       theGradientEvaluator(0),
       thePolakHeDualPurpose(0),
       theSQPtriplePurpose(0),
       theFOSMAnalysis(0),
       theFORMAnalysis(0),
+      theSORMAnalysis(0),
       theImportanceSamplingAnalysis(0),
       theSensAlgo(0) {
     if (structuralDomain != 0) {
@@ -127,8 +142,10 @@ OpenSeesReliabilityCommands::OpenSeesReliabilityCommands(
 }
 
 OpenSeesReliabilityCommands::~OpenSeesReliabilityCommands() {
-    if (theDomain != 0) delete theDomain;
-    cmds = 0;
+  this->wipe();
+  if (theDomain != 0)
+    delete theDomain;
+  cmds = 0;
 }
 
 ReliabilityDomain *OpenSeesReliabilityCommands::getDomain() {
@@ -177,6 +194,10 @@ void OpenSeesReliabilityCommands::wipe() {
         delete theFindDesignPointAlgorithm;
         theFindDesignPointAlgorithm = 0;
     }
+    if (theFindCurvatures != 0) {
+        delete theFindCurvatures;
+        theFindCurvatures = 0;
+    }
     if (theFunctionEvaluator != 0) {
         delete theFunctionEvaluator;
         theFunctionEvaluator = 0;
@@ -193,6 +214,10 @@ void OpenSeesReliabilityCommands::wipe() {
         delete theFORMAnalysis;
         theFORMAnalysis = 0;
     }
+    if (theSORMAnalysis != 0) {
+        delete theSORMAnalysis;
+        theSORMAnalysis = 0;
+    }    
     if (theImportanceSamplingAnalysis != 0) {
         delete theImportanceSamplingAnalysis;
         theImportanceSamplingAnalysis = 0;
@@ -323,6 +348,302 @@ int OPS_gradPerformanceFunction() {
     }
 
     return 0;
+}
+
+int OPS_filter() {
+  Filter *theFilter = 0;
+  int tag;
+  double period_Tn, damping;//, dtpulse;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "ERROR: Invalid number of arguments to filter "
+      "command: filter tag type arg1 arg2 ..." << endln;
+    return -1;
+  }
+
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for filter command" << endln;
+    return -1;
+  }
+
+  const char *type = OPS_GetString();
+  if (strcmp(type,"standard") == 0 || strcmp(type,"Koo") == 0 ||
+      strcmp(type,"standardDisplacement") == 0 ||
+      strcmp(type,"standardVelocity") == 0 ||
+      strcmp(type,"standardAcceleration") == 0) {
+
+    if (OPS_GetDoubleInput(&numdata, &period_Tn) < 0) {
+      opserr << "ERROR: invalid period for filter" << endln;
+      return -1;
+    }
+    if (OPS_GetDoubleInput(&numdata, &damping) < 0) {
+      opserr << "ERROR: invalid damping for filter" << endln;
+      return -1;
+    }
+
+    if (strcmp(type,"standard") == 0 || strcmp(type,"standardDisplacement") == 0)
+      theFilter = new StandardLinearOscillatorDisplacementFilter(tag, period_Tn, damping);
+    if (strcmp(type,"standardVelocity") == 0)
+      theFilter = new StandardLinearOscillatorVelocityFilter(tag, period_Tn, damping);
+    if (strcmp(type,"standardAcceleration") == 0)
+      theFilter = new StandardLinearOscillatorAccelerationFilter(tag, period_Tn, damping);
+    if (strcmp(type,"Koo") == 0)
+      theFilter = new KooFilter(tag, period_Tn, damping);    
+  }
+  else {
+    opserr << "Unknown filter type: " << type << endln;
+    return -1;
+  }
+
+  if (theFilter == 0) {
+    opserr << "ERROR: ran out of memory creating filter \n";
+    opserr << type << ' ' << tag << endln;
+    return -1;
+  }
+  
+  // ADD THE OBJECT TO THE DOMAIN
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain->addFilter(theFilter) == false) {
+    opserr << "ERROR: failed to add filter to the domain\n";
+    opserr << type << ' ' << tag << endln;
+    delete theFilter; // otherwise memory leak
+    return -1;
+  }
+  
+  return 0;
+}
+
+int OPS_spectrum() {
+  Spectrum *theSpectrum = 0;
+  int tag;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "ERROR: Invalid number of arguments to spectrum "
+      "command: spectrum tag type arg1 arg2 ..." << endln;
+    return -1;
+  }
+
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for spectrum command" << endln;
+    return -1;
+  }
+
+  const char *type = OPS_GetString();
+  if (strcmp(type,"jonswap") == 0) {
+    if (OPS_GetNumRemainingInputArgs() < 5) {
+      opserr << "ERROR: insufficient arguments for jonswap spectrum" << endln;
+      return -1;
+    }
+    double data[5];
+    numdata = 5;
+    if (OPS_GetDoubleInput(&numdata,data) < 0) {
+      opserr << "ERROR: invalid double data for spectrum with tag " << tag << endln;
+      return -1;
+    }
+
+    theSpectrum = new JonswapSpectrum(tag, data[0], data[1], data[2], data[3], data[4]);    
+  }
+  else if (strcmp(type,"narrowband") == 0) {
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+      opserr << "ERROR: insufficient arguments for narrowband spectrum" << endln;
+      return -1;
+    }
+    double data[3];
+    numdata = 3;
+    if (OPS_GetDoubleInput(&numdata,data) < 0) {
+      opserr << "ERROR: invalid double data for spectrum with tag " << tag << endln;
+      return -1;
+    }
+
+    theSpectrum = new NarrowBandSpectrum(tag, data[0], data[1], data[2]);
+  }
+  else if (strcmp(type,"points") == 0) {
+    opserr << "ERROR: points spectrum not yet added to Python interpreter" << endln;
+    return -1;
+  } 
+  else {
+    opserr << "Unknown spectrum type: " << type << endln;
+    return -1;
+  }
+
+  if (theSpectrum == 0) {
+    opserr << "ERROR: ran out of memory creating spectrum \n";
+    opserr << type << ' ' << tag << endln;
+    return -1;
+  }
+  
+  // ADD THE OBJECT TO THE DOMAIN
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain->addSpectrum(theSpectrum) == false) {
+    opserr << "ERROR: failed to add spectrum to the domain\n";
+    opserr << type << ' ' << tag << endln;
+    delete theSpectrum; // otherwise memory leak
+    return -1;
+  }
+  
+  return 0;
+}
+
+int OPS_modulatingFunction() {
+  ModulatingFunction *theModulatingFunction = 0;
+  int tag;
+
+  if (OPS_GetNumRemainingInputArgs() < 3) {
+    opserr << "ERROR: Invalid number of arguments to modulating function "
+      "command: modulatingFunction tag type arg1 arg2 ..." << endln;
+    return -1;
+  }
+
+  int numdata = 1;
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR: invalid tag for modulatingFunction command" << endln;
+    return -1;
+  }
+
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  
+  const char *type = OPS_GetString();
+  if (strcmp(type,"gamma") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 4) {
+      opserr << "ERROR: insufficient input for gamma modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double abc[3];
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 3;
+    if (OPS_GetDoubleInput(&numdata, abc) < 0) {
+      opserr << "ERROR: invalid double data for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new GammaModulatingFunction(tag, theFilter,
+							abc[0], abc[1], abc[2]);
+  }
+  else if (strcmp(type,"constant") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "ERROR: insufficient input for constant modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double amplitude;
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 1;
+    if (OPS_GetDoubleInput(&numdata, &amplitude) < 0) {
+      opserr << "ERROR: invalid amplitude for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new ConstantModulatingFunction(tag, theFilter, amplitude);
+  }
+  else if (strcmp(type,"trapezoidal") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 6) {
+      opserr << "ERROR: insufficient input for trapezoidal modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double ddata[5];
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 5;
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+      opserr << "ERROR: invalid double data for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new TrapezoidalModulatingFunction(tag, theFilter,
+							      ddata[0], ddata[1], ddata[2],
+							      ddata[3], ddata[4]);
+  }  
+  else if (strcmp(type,"Koo") == 0) {
+
+    if (OPS_GetNumRemainingInputArgs() < 3) {
+      opserr << "ERROR: insufficient input for Koo modulatingFunction" << endln;
+      return -1;
+    }
+    
+    int filterTag;
+    double ddata[2];
+    if (OPS_GetIntInput(&numdata, &filterTag) < 0) {
+      opserr << "ERROR: invalid filter tag for modulating function" << endln;
+      return -1;
+    }
+
+    Filter *theFilter = theReliabilityDomain->getFilterPtr(filterTag);
+    if (theFilter == 0) {
+      opserr << "ERROR: could not find filter with tag " << filterTag
+	     << " for modulating function" << endln;
+      return -1;
+    }
+    
+    numdata = 2;
+    if (OPS_GetDoubleInput(&numdata, ddata) < 0) {
+      opserr << "ERROR: invalid double data for modulating function" << endln;
+      return -1;
+    }    
+
+    theModulatingFunction = new KooModulatingFunction(tag, theFilter, ddata[0], ddata[1]);
+  }
+  else {
+    opserr << "Unknown modulatingFunction type: " << type << endln;
+    return -1;
+  }
+
+  if (theModulatingFunction == 0) {
+    opserr << "ERROR: ran out of memory creating modulating function \n";
+    opserr << type << ' ' << tag << endln;
+    return -1;
+  }
+  
+  // ADD THE OBJECT TO THE DOMAIN
+  if (theReliabilityDomain->addModulatingFunction(theModulatingFunction) == false) {
+    opserr << "ERROR: failed to add modulating function to the domain\n";
+    opserr << type << ' ' << tag << endln;
+    delete theModulatingFunction; // otherwise memory leak
+    return -1;
+  }
+  
+  return 0;
 }
 
 int OPS_randomVariable() {
@@ -1215,6 +1536,15 @@ void OpenSeesReliabilityCommands::setFindDesignPointAlgorithm(
     theFindDesignPointAlgorithm = algo;
 }
 
+void OpenSeesReliabilityCommands::setFindCurvatures(
+    FindCurvatures *algo) {
+    if (theFindCurvatures != 0) {
+        delete theFindCurvatures;
+        theFindCurvatures = 0;
+    }
+    theFindCurvatures = algo;
+}
+
 void OpenSeesReliabilityCommands::setGradientEvaluator(
     GradientEvaluator *eval) {
     if (theGradientEvaluator != 0) {
@@ -1253,6 +1583,14 @@ void OpenSeesReliabilityCommands::setFORMAnalysis(FORMAnalysis *analysis) {
         theFORMAnalysis = 0;
     }
     theFORMAnalysis = analysis;
+}
+
+void OpenSeesReliabilityCommands::setSORMAnalysis(SORMAnalysis *analysis) {
+    if (theSORMAnalysis != 0) {
+        delete theSORMAnalysis;
+        theSORMAnalysis = 0;
+    }
+    theSORMAnalysis = analysis;
 }
 
 void OpenSeesReliabilityCommands::setImportanceSamplingAnalysis(
@@ -1968,6 +2306,79 @@ int OPS_rootFinding() {
     return 0;
 }
 
+int OPS_findCurvatures() {
+  if (OPS_GetNumRemainingInputArgs() < 1) {
+    opserr << "ERROR: wrong number of arguments to findCurvatures" << endln;
+    return -1;
+  }
+  if (cmds == 0) {
+    opserr << "WARNING: reliability cmds not defined\n";
+    return -1;
+  }
+
+  // type
+  const char *type = OPS_GetString();
+
+  // Check that the necessary ingredients are present
+  ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "Need theReliabilityDomain before find curvatures" << endln;
+    return -1;
+  }
+
+  FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
+  if (theFunctionEvaluator == 0) {
+    opserr << "Need theFunctionEvaluator before find curvatures" << endln;    
+    return -1;
+  }  
+
+  FORMAnalysis *theFORMAnalysis = cmds->getFORMAnalysis();
+  if (theFORMAnalysis == 0) {
+    opserr << "FORMAnalysis must be performed prior to find curvatures" << endln;    
+    return -1;
+  }
+  
+  // 
+  FindCurvatures *theFindCurvatures = 0;
+  if (strcmp(type, "firstPrincipal") == 0) {
+    theFindCurvatures = new FirstPrincipalCurvature(theReliabilityDomain,
+						    theFunctionEvaluator,
+						    theFORMAnalysis);
+  }
+  else if (strcmp(type, "bySearchAlgorithm") == 0) {
+    int numCurvatures = -1;
+    int numData = 1;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numData, &numCurvatures) < 0) {
+	opserr << "ERROR: unable to read numCurvatures for " << type
+	       << " curvature finding" << endln;
+	return -1;
+      }
+    }
+
+    theFindCurvatures = new CurvaturesBySearchAlgorithm(theReliabilityDomain,
+							theFunctionEvaluator,
+							theFORMAnalysis, numCurvatures);    
+  }
+  else if (strcmp(type, "curvatureFitting") == 0) {
+    opserr << "curvatureFitting not in Python interpreter yet, also need to add Hessian" << endln;
+    return -1;
+  }
+  else {
+    opserr << "ERROR: unrecognized type of FindCurvatures strategy" << endln;
+    return -1;
+  }
+
+  if (theFindCurvatures == 0) {
+    opserr << "ERROR: could not create theFindCurvatures" << endln;
+    return -1;
+  }
+  
+  cmds->setFindCurvatures(theFindCurvatures);
+  
+  return 0;
+}
+
 int OPS_findDesignPoint() {
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "ERROR: wrong number of arguments to "
@@ -2034,6 +2445,7 @@ int OPS_findDesignPoint() {
         opserr << "Assume all RV's are independent" << endln;
         theProbabilityTransformation =
             new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
     }
 
     ReliabilityConvergenceCheck *theReliabilityConvergenceCheck =
@@ -2445,6 +2857,8 @@ int inputCheck() {
   }
   */
     ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+
+    /*
     num = theReliabilityDomain->getNumberOfFilters();
     for (i = 1; i <= num; i++) {
         component = theReliabilityDomain->getFilter(i);
@@ -2453,7 +2867,8 @@ int inputCheck() {
             return -1;
         }
     }
-
+    */
+    /*
     num = theReliabilityDomain->getNumberOfModulatingFunctions();
     for (i = 1; i <= num; i++) {
         component = theReliabilityDomain->getModulatingFunction(i);
@@ -2463,7 +2878,8 @@ int inputCheck() {
             return -1;
         }
     }
-
+    */
+    /*
     num = theReliabilityDomain->getNumberOfSpectra();
     for (i = 1; i <= num; i++) {
         component = theReliabilityDomain->getSpectrum(i);
@@ -2472,11 +2888,12 @@ int inputCheck() {
             return -1;
         }
     }
-
+    */
     // Check that the correlation matrix is positive definite
     // theCorrelationMatrix
 
     // set defaults
+    /*
     ProbabilityTransformation *theProbabilityTransformation =
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
@@ -2485,19 +2902,24 @@ int inputCheck() {
                << endln;
         theProbabilityTransformation =
             new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
     }
-
+    */
+    
     // reliabilityConvergenceCheck  Standard         -e1 1.0e-3
     // -e2 1.0e-3  -print 1 functionEvaluator            Tcl
     // gradientEvaluator            FiniteDifference -pert 1000
 
+    /*
     SearchDirection *theSearchDirection = cmds->getSearchDirection();
     if (theSearchDirection == 0) {
-        opserr << "No searchDirectin specified, assuming Standard"
+        opserr << "No searchDirection specified, assuming iHLRF"
                << endln;
         theSearchDirection = new HLRFSearchDirection();
+	cmds->setSearchDirection(theSearchDirection);
     }
-
+    */
+    
     // meritFunctionCheck           AdkZhang         -multi 2.0
     // -add 10.0   -factor 0.5 stepSizeRule                 Armijo
     // -maxNum 5    -base 0.5   -initial 1.0 2  -print 0 startPoint
@@ -2523,6 +2945,12 @@ int OPS_runFOSMAnalysis() {
         return -1;
     }
 
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "FOSMAnalysis -- ReliabilityDomain is not defined\n";
+        return -1;
+    }
+
     // Check for essential ingredients
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
@@ -2538,12 +2966,6 @@ int OPS_runFOSMAnalysis() {
         return -1;
     }
 
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-    if (theReliabilityDomain == 0) {
-        opserr << "ReliabilityDomain is not defined\n";
-        return -1;
-    }
-
     Domain *theStructuralDomain = cmds->getStructuralDomain();
     if (theStructuralDomain == 0) {
         opserr << "Structural Domain is not defined\n";
@@ -2555,10 +2977,12 @@ int OPS_runFOSMAnalysis() {
         theGradientEvaluator, 0, filename);
 
     if (theFOSMAnalysis == 0) {
-        opserr << "ERROR: could not create theFOSMAnalysis \n";
-        return -1;
+      opserr << "Unable to create FOSM analysis" << endln;
+      return -1;
     }
 
+    cmds->setFOSMAnalysis(theFOSMAnalysis);
+    
     // Now run the analysis
     if (theFOSMAnalysis->analyze() < 0) {
         opserr << "WARNING: the FOSM analysis failed\n";
@@ -2583,6 +3007,12 @@ int OPS_runFORMAnalysis() {
         return -1;
     }
 
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "FORMAnalysis -- ReliabilityDomain is not defined\n";
+        return -1;
+    }
+    
     // Check for essential ingredients
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
@@ -2603,16 +3033,11 @@ int OPS_runFORMAnalysis() {
     ProbabilityTransformation *theProbabilityTransformation =
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
-        opserr << "Need theProbabilityTransformation before a "
-                  "FORMAnalysis "
-                  "can be created\n";
-        return -1;
-    }
-
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-    if (theReliabilityDomain == 0) {
-        opserr << "ReliabilityDomain is not defined\n";
-        return -1;
+      opserr << "FORMAnalysis - probability transformation not defined - ";
+      opserr << "assuming all independent transformation" << endln;
+	theProbabilityTransformation =
+            new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);      
     }
 
     Domain *theStructuralDomain = cmds->getStructuralDomain();
@@ -2643,15 +3068,82 @@ int OPS_runFORMAnalysis() {
         theFunctionEvaluator, theProbabilityTransformation, filename,
         relSensTag);
 
-    // Check that it really was created
     if (theFORMAnalysis == 0) {
-        opserr << "ERROR: could not create theFORMAnalysis \n";
-        return TCL_ERROR;
+      opserr << "Unable to create FORM analysis" << endln;
+      return -1;
     }
-
+    
+    cmds->setFORMAnalysis(theFORMAnalysis);
+    
     // Now run the analysis
     if (theFORMAnalysis->analyze() < 0) {
         opserr << "WARNING: the FORM analysis failed\n";
+        return -1;
+    }
+
+    return 0;
+}
+
+int OPS_runSORMAnalysis() {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING: Wrong number of input parameter to SORM "
+	       << "analysis" << endln;;
+        return -1;
+    }
+
+    // get file name
+    const char *filename = OPS_GetString();
+
+    // Do input check
+    if (inputCheck() < 0) {
+        return -1;
+    }
+
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+      opserr << "FORMAnalysis -- ReliabilityDomain is not defined" << endln;
+      return -1;
+    }
+    
+    // Check for essential ingredients
+    FindCurvatures *theFindCurvatures = cmds->getFindCurvatures();
+    if (theFindCurvatures == 0) {
+        opserr << "Need FindCurvature approach before a SORMAnalysis can "
+	       << "be created" << endln;
+        return -1;
+    }
+
+    FORMAnalysis *theFORMAnalysis =
+        cmds->getFORMAnalysis();
+    if (theFORMAnalysis == 0) {
+        opserr << "Need to run a FORM analysis before "
+	       << "SORMAnalysis can be created" << endln;
+        return -1;
+    }
+
+    // Check for essential ingredients
+    FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
+    if (theFunctionEvaluator == 0) {
+        opserr << "Need theGFunEvaluator before a SORMAnalysis can "
+	       << "be created" << endln;
+        return -1;
+    }
+    
+    // Create the analysis object
+    SORMAnalysis *theSORMAnalysis = new SORMAnalysis(
+        theReliabilityDomain, theFunctionEvaluator,
+	theFORMAnalysis, theFindCurvatures, filename);
+
+    if (theSORMAnalysis == 0) {
+      opserr << "Unable to create SORM analysis" << endln;
+      return -1;
+    }
+    
+    cmds->setSORMAnalysis(theSORMAnalysis);
+    
+    // Now run the analysis
+    if (theSORMAnalysis->analyze() < 0) {
+        opserr << "WARNING: the SORM analysis failed\n";
         return -1;
     }
 
@@ -2675,13 +3167,22 @@ int OPS_runImportanceSamplingAnalysis() {
     }
     const char *filename = OPS_GetString();
 
+    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
+    if (theReliabilityDomain == 0) {
+        opserr << "Need theReliabilityDomain before a "
+                  "ImportanceSamplingAnalysis can be created\n";
+        return -1;
+    }
+
     // Check for essential tools
     ProbabilityTransformation *theProbabilityTransformation =
         cmds->getProbabilityTransformation();
     if (theProbabilityTransformation == 0) {
-        opserr << "Need theProbabilityTransformation before a "
-                  "ImportanceSamplingAnalysis can be created\n";
-        return -1;
+      opserr << "ImportanceSampingAnalysis - probability transformation not defined - ";
+      opserr << "assuming all independent transformation" << endln;
+	theProbabilityTransformation =
+            new AllIndependentTransformation(theReliabilityDomain, 0);
+	cmds->setProbabilityTransformation(theProbabilityTransformation);
     }
     FunctionEvaluator *theFunctionEvaluator = cmds->getFunctionEvaluator();
     if (theFunctionEvaluator == 0) {
@@ -2693,16 +3194,13 @@ int OPS_runImportanceSamplingAnalysis() {
     RandomNumberGenerator *theRandomNumberGenerator =
         cmds->getRandomNumberGenerator();
     if (theRandomNumberGenerator == 0) {
-        opserr << "Need theRandomNumberGenerator before a "
-                  "ImportanceSamplingAnalysis can be created\n";
-        return -1;
+      // Don't really need to say this - just do it - bc CStdLib is the only option -- MHS
+      //opserr << "ImportanceSampingAnalysis - random number generator not defined - ";
+      //opserr << "assuming CStdLib generator" << endln;      
+	theRandomNumberGenerator = new CStdLibRandGenerator();
+	cmds->setRandomNumberGenerator(theRandomNumberGenerator);
     }
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-    if (theReliabilityDomain == 0) {
-        opserr << "Need theReliabilityDomain before a "
-                  "ImportanceSamplingAnalysis can be created\n";
-        return -1;
-    }
+
     Domain *theStructuralDomain = cmds->getStructuralDomain();
     if (theReliabilityDomain == 0) {
         opserr << "Need theStructuralDomain before a "
@@ -2820,19 +3318,18 @@ int OPS_runImportanceSamplingAnalysis() {
         return -1;
     }
 
-    ImportanceSamplingAnalysis *theImportanceSamplingAnalysis =
-        new ImportanceSamplingAnalysis(
+    ImportanceSamplingAnalysis *theImportanceSamplingAnalysis
+      = new ImportanceSamplingAnalysis(
             theReliabilityDomain, theStructuralDomain,
             theProbabilityTransformation, theFunctionEvaluator,
             theRandomNumberGenerator, 0, numberOfSimulations, targetCOV,
             samplingVariance, printFlag, filename, analysisTypeTag);
 
     if (theImportanceSamplingAnalysis == 0) {
-        opserr << "ERROR: could not create "
-                  "theImportanceSamplingAnalysis \n";
-        return -1;
+      opserr << "Unable to create ImportanceSampling analysis" << endln;
+      return -1;
     }
-
+    
     cmds->setImportanceSamplingAnalysis(theImportanceSamplingAnalysis);
 
     if (theImportanceSamplingAnalysis->analyze() < 0) {
