@@ -14,4 +14,4 @@ target_sources(OPS_Java
 )
 target_include_directories(OPS_Java PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
-add_subdirectory(./kepler/)
+add_subdirectory(kepler)

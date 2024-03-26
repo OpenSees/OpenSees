@@ -28,7 +28,11 @@ add_subdirectory(umfGEN)
 
 add_subdirectory(profileSPD)
 #add_subdirectory(cg)
-#add_subdirectory(petsc)
-#add_subdirectory(mumps)
+if(DEFINED PETSC_FLAG)
+  add_subdirectory(petsc)
+endif()
+message(STATUS "MUMPS_FLAG = ${MUMPS_FLAG}")
+if(DEFINED MUMPS_FLAG)
+endif()
 #add_subdirectory(itpack)
 

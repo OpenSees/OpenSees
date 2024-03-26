@@ -184,68 +184,12 @@ set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 # Global Includes
 #----------------------------------------------------------------
 # include paths to main abstract classes
- 
-# NOTE BeamIntegration and MatrixUtil need to be removed from element/forceBEamColumn
-
-include_directories(
-  ${OPS_SRC_DIR}
-  ${OPS_SRC_DIR}/matrix
-  ${OPS_SRC_DIR}/handler
-  ${OPS_SRC_DIR}/database
-  ${OPS_SRC_DIR}/element
-  ${OPS_SRC_DIR}/element/forceBeamColumn
-  ${OPS_SRC_DIR}/element/nonlinearBeamColumn/matrixutil
-  ${OPS_SRC_DIR}/coordTransformation
-  ${OPS_SRC_DIR}/damping
-  ${OPS_SRC_DIR}/tagged
-  ${OPS_SRC_DIR}/tagged/storage
-  ${OPS_SRC_DIR}/recorder
-  ${OPS_SRC_DIR}/renderer
-  ${OPS_SRC_DIR}/damage
-  ${OPS_SRC_DIR}/recorder/response
-  ${OPS_SRC_DIR}/material
-  ${OPS_SRC_DIR}/material/section
-  ${OPS_SRC_DIR}/material/uniaxial
-  ${OPS_SRC_DIR}/material/nD
-  ${OPS_SRC_DIR}/graph/graph
-  ${OPS_SRC_DIR}/graph/numberer
-  ${OPS_SRC_DIR}/graph/partitioner
-  ${OPS_SRC_DIR}/domain/component
-  ${OPS_SRC_DIR}/domain/domain
-  ${OPS_SRC_DIR}/domain/subdomain
-  ${OPS_SRC_DIR}/domain/load
-  ${OPS_SRC_DIR}/domain/loadBalancer
-  ${OPS_SRC_DIR}/domain/pattern
-  ${OPS_SRC_DIR}/domain/groundMotion
-  ${OPS_SRC_DIR}/domain/node
-  ${OPS_SRC_DIR}/domain/constraints
-  ${OPS_SRC_DIR}/domain/region
-  ${OPS_SRC_DIR}/analysis/algorithm
-  ${OPS_SRC_DIR}/analysis/dof_grp
-  ${OPS_SRC_DIR}/analysis/fe_ele
-  ${OPS_SRC_DIR}/analysis/algorithm/equiSolnAlgo
-  ${OPS_SRC_DIR}/analysis/algorithm/eigenAlgo
-  ${OPS_SRC_DIR}/analysis/algorithm/domainDecompAlgo
-  ${OPS_SRC_DIR}/analysis/analysis
-  ${OPS_SRC_DIR}/analysis/integrator
-  ${OPS_SRC_DIR}/analysis/handler
-  ${OPS_SRC_DIR}/analysis/numberer
-  ${OPS_SRC_DIR}/analysis/model
-  ${OPS_SRC_DIR}/convergenceTest
-  ${OPS_SRC_DIR}/modelbuilder
-  ${OPS_SRC_DIR}/system_of_eqn
-  ${OPS_SRC_DIR}/system_of_eqn/linearSOE
-  ${OPS_SRC_DIR}/system_of_eqn/eigenSOE
-  ${OPS_SRC_DIR}/actor/actor
-  ${OPS_SRC_DIR}/actor/channel
-  ${OPS_SRC_DIR}/actor/objectBroker
-  ${OPS_SRC_DIR}/actor/message
-)
-
-# TODO: Temporary fix; include all directories with .h files through glob
+# include all directories with CMakeLists.txt files through glob
+# Searching for *.h masks when CMakeLists.txt are not setup
+include_directories(${OPS_SRC_DIR})
 file(GLOB_RECURSE ops_include_files CONFIGURE_DEPENDS 
-    ${OPS_SRC_DIR}/*.h
-    ${OPS_BUNDLED_DIR}/*.h
+    ${OPS_SRC_DIR}/CMakeLists.txt
+    #${OPS_BUNDLED_DIR}/CMakeLists.txt
 )
 set(OPS_INCLUDE_DIRS "")
 foreach(filepath ${ops_include_files})
@@ -255,7 +199,6 @@ endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 
 include_directories(${OPS_INCLUDE_DIRS})
-# end TODO
 
 # ##############################################################
 #
@@ -267,19 +210,26 @@ include_directories(${OPS_INCLUDE_DIRS})
 # NUMERICAL LIBRARIES
 #
 
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_5.1.1")
+add_subdirectory("${OPS_BUNDLED_DIR}/SuperLU_5.1.1")
+include_directories("${OPS_BUNDLED_DIR}/SuperLU_5.1.1")
 set (SUPERLU_LIBRARIES SUPERLU)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/UMFPACK")
+add_subdirectory("${OPS_BUNDLED_DIR}/UMFPACK")
+include_directories("${OPS_BUNDLED_DIR}/UMFPACK")
 set (UMFPACK_LIBRARIES UMFPACK)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/AMD")
+add_subdirectory("${OPS_BUNDLED_DIR}/AMD")
+include_directories("${OPS_BUNDLED_DIR}/AMD")
 set (AMD_LIBRARIES AMD)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ARPACK")
+add_subdirectory("${OPS_BUNDLED_DIR}/ARPACK")
+include_directories("${OPS_BUNDLED_DIR}/ARPACK")
 set (ARPACK_LIBRARIES ARPACK)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/CSPARSE")
+add_subdirectory("${OPS_BUNDLED_DIR}/CSPARSE")
+include_directories("${OPS_BUNDLED_DIR}/CSPARSE")
 set (CSPARSE_LIBRARIES CSPARSE)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
+add_subdirectory("${OPS_BUNDLED_DIR}/tetgen1.4.3")
+include_directories("${OPS_BUNDLED_DIR}/tetgen1.4.3")
 set (TETGEN_LIBRARIES tet)
-add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
+add_subdirectory("${OPS_BUNDLED_DIR}/Triangle")
+include_directories("${OPS_BUNDLED_DIR}/Triangle")
 set (TRIANGLE_LIBRARIES triangle)
 
 
@@ -303,8 +253,10 @@ if(LAPACK_FOUND)
   message(STATUS "LAPACK_LINKER_FLAGS = ${LAPACK_LINKER_FLAGS}")
   message(STATUS "LAPACK_LIBRARIES = ${LAPACK_LIBRARIES}" )
 else()
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/BLAS") 
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/LAPACK")
+  add_subdirectory("${OPS_BUNDLED_DIR}/BLAS") 
+  include_directories("${OPS_BUNDLED_DIR}/BLAS") 
+  add_subdirectory("${OPS_BUNDLED_DIR}/LAPACK")
+  include_directories("${OPS_BUNDLED_DIR}/LAPACK")
   set(LAPACK_LIBRARIES LAPACK)
 endif()
 
@@ -348,8 +300,10 @@ if(MPI_FOUND)
 
   endif()
 
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")    
+  add_subdirectory("${OPS_BUNDLED_DIR}/SuperLU_DIST_4.3/SRC")
+  include_directories("${OPS_BUNDLED_DIR}/SuperLU_DIST_4.3/SRC")
+  add_subdirectory("${OPS_BUNDLED_DIR}/METIS")    
+  include_directories("${OPS_BUNDLED_DIR}/METIS") 
 else()
   message(STATUS "MPI was NOT found.")
 endif()
@@ -387,7 +341,6 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${UMFPACK_LIBRARIES}
        ${TETGEN_LIBRARIES}
        ${TRIANGLE_LIBRARIES}                     
-       ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
 )
