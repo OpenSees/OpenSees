@@ -531,14 +531,12 @@ FiberSectionWarping3d::getSectionDeformation(void)
 const Matrix&
 FiberSectionWarping3d::getSectionTangent(void)
 {
-  opserr << *ks << endln;
   return *ks;
 }
 
 const Vector&
 FiberSectionWarping3d::getStressResultant(void)
 {
-  opserr << *s << endln;
   return *s;
 }
 
