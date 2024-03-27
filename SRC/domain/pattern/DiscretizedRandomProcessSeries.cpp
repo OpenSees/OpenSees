@@ -291,12 +291,12 @@ int
 DiscretizedRandomProcessSeries::setParameter(const char **argv, int argc,
 					     Parameter &param)
 {
-  if (argc < 1)
+  if (argc < 3)
     return -1;
 
   // **** MHS needs to fix this!!
   //int rvNumber = info.theInt;
-  int rvNumber = 1;  // to get it to compile for now
+  int rvNumber = atoi(argv[2]);  // to get it to compile for now
   // **********************
 
 	// The second argument tells when the random variable "kicks in".
@@ -304,8 +304,7 @@ DiscretizedRandomProcessSeries::setParameter(const char **argv, int argc,
 	// In case the vector doesn't exist
 	if (kickInTimes == 0) {
 		kickInTimes = new Vector(rvNumber);
-		(*kickInTimes)(rvNumber-1) = (double)atof(argv[0]);
-
+		(*kickInTimes)(rvNumber-1) = (double)atof(argv[1]);
 		// Assume more than one random variable, so don't 
 		// update factor 'c' here.
 	}
@@ -325,9 +324,7 @@ DiscretizedRandomProcessSeries::setParameter(const char **argv, int argc,
 		}
 
 		// Put in new value
-		(*kickInTimes)(rvNumber-1) = (double)atof(argv[0]);
-
-
+		(*kickInTimes)(rvNumber-1) = (double)atof(argv[1]);
 		/////// Update factor 'c' /////////
 
 		// Number of discretizing random variables
@@ -383,12 +380,12 @@ DiscretizedRandomProcessSeries::setParameter(const char **argv, int argc,
 		}
 
 c = maxStdv;
-opserr << "c: " << c << endln;
+//opserr << "c: " << c << endln;
 
 		//////////////////////////////////////
 	}
 	else {
-		(*kickInTimes)(rvNumber-1) = (double)atof(argv[0]);
+		(*kickInTimes)(rvNumber-1) = (double)atof(argv[1]);
 	}
 
 	// The random variable number is returned as a parameter ID
