@@ -524,7 +524,8 @@ int OPS_Patch()
 		delete thePatch;
 		return -1;
 	    }
-	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    double dval = cells[j]->getdValue();
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos,dval);
 	    theActiveFiberSectionWarping3d->addFiber(*theFiber);	
 
 	} else if (theActiveFiberSectionAsym3d != 0) {
