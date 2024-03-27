@@ -449,11 +449,11 @@ FiberSectionWarping3d::setTrialSectionDeformation (const Vector &deforms)
     // section stiffness matrix k, refer to Alemdar
     kData[0] += value;
     kData[3] += (y*y+z*z)*value;
-    kData[6] += vas1 * y;
-    kData[12] += vas2 * z; 
-    kData[15] += (y*y+z*z)*value;
-    kData[18] += (y*y+z*z)*(y*y+z*z)*value;
-    kData[24] += omig*omig*value;
+    kData[7] += vas1 * y;
+    kData[14] += vas2 * z; 
+    //kData[18] += (y*y+z*z)*value;
+    kData[21] += (y*y+z*z)*(y*y+z*z)*value;
+    kData[28] += omig*omig*value;
     
     // section force vector D, refer to Alemdar
     double fs0 = stress * A;
@@ -463,7 +463,8 @@ FiberSectionWarping3d::setTrialSectionDeformation (const Vector &deforms)
     sData[3] += fs0 * (y*y+z*z);
     sData[4] += -fs0 * omig;
   }
-
+  kData[18] = kData[3];
+  
   if (theTorsion != 0) {
     double stress, tangent;
     res += theTorsion->setTrial(d8, stress, tangent);
@@ -507,12 +508,13 @@ FiberSectionWarping3d::getInitialTangent(void)
     // section stiffness matrix k, refer to Alemdar
     kInitialData[0] += value;
     kInitialData[3] += (y*y+z*z)*value;
-    kInitialData[6] += vas1 * y;
-    kInitialData[12] += vas2 * z; 
-    kInitialData[15] += (y*y+z*z)*value;
-    kInitialData[18] += (y*y+z*z)*(y*y+z*z)*value;
-    kInitialData[24] += omig*omig*value;
+    kInitialData[7] += vas1 * y;
+    kInitialData[14] += vas2 * z; 
+    //kInitialData[18] += (y*y+z*z)*value;
+    kInitialData[21] += (y*y+z*z)*(y*y+z*z)*value;
+    kInitialData[28] += omig*omig*value;
   }
+  kInitialData[18] = kInitialData[3];
 
   if (theTorsion != 0)
     kInitialData[35] = theTorsion->getInitialTangent();
@@ -529,12 +531,14 @@ FiberSectionWarping3d::getSectionDeformation(void)
 const Matrix&
 FiberSectionWarping3d::getSectionTangent(void)
 {
+  opserr << *ks << endln;
   return *ks;
 }
 
 const Vector&
 FiberSectionWarping3d::getStressResultant(void)
 {
+  opserr << *s << endln;
   return *s;
 }
 
@@ -672,11 +676,11 @@ FiberSectionWarping3d::revertToLastCommit(void)
     
     kData[0] += value;
     kData[3] += (y*y+z*z)*value;
-    kData[6] += vas1 * y;
-    kData[12] += vas2 * z; 
-    kData[15] += (y*y+z*z)*value;
-    kData[18] += (y*y+z*z)*(y*y+z*z)*value;
-    kData[24] += omig*omig*value;
+    kData[7] += vas1 * y;
+    kData[14] += vas2 * z; 
+    //kData[18] += (y*y+z*z)*value;
+    kData[21] += (y*y+z*z)*(y*y+z*z)*value;
+    kData[28] += omig*omig*value;
     
     double fs0 = stress * A;
     
@@ -686,7 +690,8 @@ FiberSectionWarping3d::revertToLastCommit(void)
     sData[3] += fs0 * (y*y+z*z);
     sData[4] += -fs0 * omig;
   }
-
+  kData[18] = kData[5];
+  
   if (theTorsion != 0) {
     err += theTorsion->revertToLastCommit();
     sData[5] = theTorsion->getStress();
@@ -742,11 +747,11 @@ FiberSectionWarping3d::revertToStart(void)
 
     kData[0] += value;
     kData[3] += (y*y+z*z)*value;
-    kData[6] += vas1 * y;
-    kData[12] += vas2 * z; 
-    kData[15] += (y*y+z*z)*value;
-    kData[18] += (y*y+z*z)*(y*y+z*z)*value;
-    kData[24] += omig*omig*value;
+    kData[7] += vas1 * y;
+    kData[14] += vas2 * z; 
+    //kData[18] += (y*y+z*z)*value;
+    kData[21] += (y*y+z*z)*(y*y+z*z)*value;
+    kData[28] += omig*omig*value;
     
     double fs0 = stress * A;
 
@@ -756,7 +761,8 @@ FiberSectionWarping3d::revertToStart(void)
     sData[3] += fs0 * (y*y+z*z);
     sData[4] += -fs0 * omig;
   }
-
+  kData[18] = kData[3];
+  
   if (theTorsion != 0) {
     err += theTorsion->revertToStart();
     kData[35] = theTorsion->getTangent();
