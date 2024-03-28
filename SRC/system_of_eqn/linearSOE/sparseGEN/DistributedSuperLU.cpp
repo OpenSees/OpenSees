@@ -55,6 +55,15 @@
   #else
       superlu_options_t options;
   #endif
+
+#else
+
+  #if defined(SUPERLU_DIST_MAJOR_VERSION) && SUPERLU_DIST_MAJOR_VERSION >= 5
+    superlu_dist_options_t options;
+  #else
+    superlu_options_t options;
+  #endif
+
 #endif
 
 SuperLUStat_t stat;
