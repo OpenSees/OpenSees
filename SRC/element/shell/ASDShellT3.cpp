@@ -140,6 +140,10 @@ namespace
     constexpr double ETA = 1.0 / 3.0;
     constexpr double WTS = 0.5;
 
+    // drilling curvature scale factor.
+    // make sure it is not so high to over-stiffen the element
+    constexpr double DH_SCALE = 1.0e-2;
+
     // shape functions
     inline void shapeFunctions(double xi, double eta, Vector& N)
     {
@@ -218,6 +222,8 @@ namespace
         Matrix B1 = Matrix(8, 18); // strain-displacement matrix with inverted bending terms
         Matrix B1TD = Matrix(18, 8); // holds the B1^T*D terms
         Vector Bd = Vector(18); // strain-displacement matrix for drilling
+        Vector Bhx = Vector(18); // strain-displacement matrix for drilling (curv x)
+        Vector Bhy = Vector(18); // strain-displacement matrix for drilling (curv x)
         Vector N = Vector(3); // shape functions
         Matrix dN = Matrix(3, 2); // shape functions derivatives in isoparametric space
         Matrix dNdX = Matrix(3, 2); // shape functions derivatives in cartesian space
@@ -246,26 +252,22 @@ namespace
 
     // computes the complete B matrix
     void computeBMatrix(
-        const Vector3Type& p1,
-        const Vector3Type& p2,
-        const Vector3Type& p3,
-        double A,
-        Matrix& B,
-        Vector& Bd
+        const ASDShellT3LocalCoordinateSystem& LCS,
+        Matrix& B, Vector& Bd, Vector& Bhx, Vector& Bhy
     )
     {
         // some constants
-        double a = p2.x() - p1.x();
-        double b = p2.y() - p1.y();
-        double c = p3.y() - p1.y();
-        double d = p3.x() - p1.x();
-        double w = 1.0 / (2.0 * A);
+        double w = 1.0 / (2.0 * LCS.Area());
+        double a = LCS.P2().x() - LCS.P1().x();
+        double b = LCS.P2().y() - LCS.P1().y();
+        double c = LCS.P3().y() - LCS.P1().y();
+        double d = LCS.P3().x() - LCS.P1().x();
 
         // initialize
         B.Zero();
         Bd.Zero();
 
-        // membrane part (compatible part)
+        // membrane part
         // N1
         B(0, 0) = (b - c) * w;
         B(1, 1) = (d - a) * w;
@@ -281,6 +283,28 @@ namespace
         B(1, 13) =  a * w;
         B(2, 12) =  a * w;
         B(2, 13) = -b * w;
+
+        // We use the drilling penalty as defined by hughes and brezzi,
+        // where we link the independent rotation to the skew symmetric 
+        // part of the in-plane displacement field.
+        // N1
+        Bd(0) = (a - d) / 2.0 * w;
+        Bd(1) = (b - c) / 2.0 * w;
+        Bd(5) = -1.0 / 3.0;
+        Bhx(5) = (b - c) * w;
+        Bhy(5) = (d - a) * w;
+        // N2
+        Bd(6) = d / 2.0 * w;
+        Bd(7) = c / 2.0 * w;
+        Bd(11) = -1.0 / 3.0;
+        Bhx(11) = c * w;
+        Bhy(11) = -d * w;
+        // N3
+        Bd(12) = -a / 2.0 * w;
+        Bd(13) = -b / 2.0 * w;
+        Bd(17) = -1.0 / 3.0;
+        Bhx(17) = -b * w;
+        Bhy(17) = a * w;
 
         // bending part
         // N1
@@ -320,24 +344,92 @@ namespace
         B(7, 15) = -(a * c) / 2.0 * w;
         B(7, 16) = (a * d) / 2.0 * w;
 
-        // We use the drilling penalty as defined by hughes and brezzi,
-        // where we link the independent rotation to the skew symmetric part of the in-plane displacement field.
-
-        //Bd(0) = -0.5 * dNdX(0, 1);
-        //Bd(1) = 0.5 * dNdX(0, 0);
-        //Bd(5) = -N(0);
-
-        //Bd(6) = -0.5 * dNdX(1, 1);
-        //Bd(7) = 0.5 * dNdX(1, 0);
-        //Bd(11) = -N(1);
-
-        //Bd(12) = -0.5 * dNdX(2, 1);
-        //Bd(13) = 0.5 * dNdX(2, 0);
-        //Bd(17) = -N(2);
-
-        //Bd(18) = -0.5 * dNdX(3, 1);
-        //Bd(19) = 0.5 * dNdX(3, 0);
-        //Bd(23) = -N(3);
+        // OPT
+        static Matrix Te(3, 3);
+        static Matrix T0(3, 9);
+        static Matrix Q1(3, 3);
+        static Matrix Q2(3, 3);
+        static Matrix Q3(3, 3);
+        static Matrix Q(3, 3);
+        static Matrix QT0(3, 9);
+        static Matrix Bopt(3, 9);
+        // geom params
+        const auto& p1 = LCS.P1();
+        const auto& p2 = LCS.P2();
+        const auto& p3 = LCS.P3();
+        double A4 = LCS.Area() * 4.0;
+        double A23 = 2.0 * LCS.Area() / 3.0;
+        double x32 = p3.x() - p2.x();
+        double y32 = p3.y() - p2.y();
+        double x13 = p1.x() - p3.x();
+        double y13 = p1.y() - p3.y();
+        double x21 = p2.x() - p1.x();
+        double y21 = p2.y() - p1.y();
+        double y12 = p1.y() - p2.y();
+        double y23 = p2.y() - p3.y();
+        double y31 = p3.y() - p1.y();
+        double x23 = p2.x() - p3.x();
+        double x31 = p3.x() - p1.x();
+        double x12 = p1.x() - p2.x();
+        double l21 = x21 * x21 + y21 * y21;
+        double l32 = x32 * x32 + y32 * y32;
+        double l13 = x13 * x13 + y13 * y13;
+        // opt optimal parameters
+        double b1 = 1.0;
+        double b2 = 2.0;
+        double b3 = 1.0;
+        double b4 = 0.0;
+        double b5 = 1.0;
+        double b6 = -1.0;
+        double b7 = -1.0;
+        double b8 = -1.0;
+        double b9 = -2.0;
+        double b0 = 0.5;
+        double opt_scale = std::sqrt(3.0 / 4.0 * b0);
+        // matrix T0
+        T0(0, 0) = x32; T0(0, 1) = y32; T0(0, 2) = A4; T0(0, 3) = x13; T0(0, 4) = y13; T0(0, 5) = 0; T0(0, 6) = x21; T0(0, 7) = y21; T0(0, 8) = 0;
+        T0(1, 0) = x32; T0(1, 1) = y32; T0(1, 2) = 0; T0(1, 3) = x13; T0(1, 4) = y13; T0(1, 5) = A4; T0(1, 6) = x21; T0(1, 7) = y21; T0(1, 8) = 0;
+        T0(2, 0) = x32; T0(2, 1) = y32; T0(2, 2) = 0; T0(2, 3) = x13; T0(2, 4) = y13; T0(2, 5) = 0; T0(2, 6) = x21; T0(2, 7) = y21; T0(2, 8) = A4;
+        T0 /= A4;
+        // matrix Te
+        Te(0, 0) = y23 * y13 * l21; Te(0, 1) = y31 * y21 * l32; Te(0, 2) = y12 * y32 * l13;
+        Te(1, 0) = x23 * x13 * l21; Te(1, 1) = x31 * x21 * l32; Te(0, 2) = x12 * x32 * l13;
+        Te(2, 0) = (y23 * x31 + x32 * y13) * l21;
+        Te(2, 1) = (y31 * x12 + x13 * y21) * l32;
+        Te(2, 2) = (y12 * x23 + x21 * y32) * l13;
+        Te /= A4 * LCS.Area();
+        // Q1
+        Q1(0, 0) = A23 * b1 / l21; Q1(0, 1) = A23 * b2 / l21; Q1(0, 2) = A23 * b3 / l21;
+        Q1(1, 0) = A23 * b4 / l32; Q1(1, 1) = A23 * b5 / l32; Q1(1, 2) = A23 * b6 / l32;
+        Q1(2, 0) = A23 * b7 / l13; Q1(2, 1) = A23 * b8 / l13; Q1(2, 2) = A23 * b9 / l13;
+        // Q2
+        Q2(0, 0) = A23 * b9 / l21; Q2(0, 1) = A23 * b7 / l21; Q2(0, 2) = A23 * b8 / l21;
+        Q2(1, 0) = A23 * b3 / l32; Q2(1, 1) = A23 * b1 / l32; Q2(1, 2) = A23 * b2 / l32;
+        Q2(2, 0) = A23 * b6 / l13; Q2(2, 1) = A23 * b4 / l13; Q2(2, 2) = A23 * b5 / l13;
+        // Q3
+        Q3(0, 0) = A23 * b5 / l21; Q3(0, 1) = A23 * b6 / l21; Q3(0, 2) = A23 * b4 / l21;
+        Q3(1, 0) = A23 * b8 / l32; Q3(1, 1) = A23 * b9 / l32; Q3(1, 2) = A23 * b7 / l32;
+        Q3(2, 0) = A23 * b3 / l13; Q3(2, 1) = A23 * b1 / l13; Q3(2, 2) = A23 * b2 / l13;
+        // Q = Q1*xi1 + Q2*xi2 + Q3*xi3 (here tested at centroid... underintegrated)
+        double xi1 = 1.0 / 3.0;
+        double xi2 = 1.0 / 3.0;
+        double xi3 = 1.0 / 3.0;
+        Q.addMatrix(0.0, Q1, xi1);
+        Q.addMatrix(1.0, Q2, xi2);
+        Q.addMatrix(1.0, Q3, xi3);
+        // Bopt = Te*Q*T0
+        QT0.addMatrixProduct(0.0, Q, T0, 1.0);
+        Bopt.addMatrixProduct(0.0, Te, QT0, 1.0);
+        // add it to the membrane part of B
+        for (int i = 0; i < 3; ++i) {
+            for (int node = 0; node < 3; ++node) {
+                int j = node * 6;
+                int k = node * 3;
+                B(i, j) += opt_scale * Bopt(i, k);
+                B(i, j + 1) += opt_scale * Bopt(i, k + 1);
+                B(i, j + 5) += opt_scale * Bopt(i, k + 2);
+            }
+        }
     }
 
     // invert bending terms
@@ -1424,16 +1516,13 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
     ASDShellT3LocalCoordinateSystem local_cs =
         m_transformation->createLocalCoordinateSystem(UG);
 
-    // Jacobian
-    auto& jac = ASDShellT3Globals::instance().jac;
-
     // Some matrices/vectors
     auto& B = ASDShellT3Globals::instance().B;
     auto& Bd = ASDShellT3Globals::instance().Bd;
+    auto& Bhx = ASDShellT3Globals::instance().Bhx;
+    auto& Bhy = ASDShellT3Globals::instance().Bhy;
     auto& B1 = ASDShellT3Globals::instance().B1;
     auto& B1TD = ASDShellT3Globals::instance().B1TD;
-    auto& N = ASDShellT3Globals::instance().N;
-    auto& dN = ASDShellT3Globals::instance().dN;
     auto& E = ASDShellT3Globals::instance().E;
     auto& S = ASDShellT3Globals::instance().S;
     auto& D = ASDShellT3Globals::instance().D;
@@ -1453,25 +1542,25 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
     auto& UL = ASDShellT3Globals::instance().UL;
     m_transformation->calculateLocalDisplacements(local_cs, UG, UL);
 
-    // Drilling strain-displacement matrix at center for reduced integration
+    // Drilling data for drilling damage (optional)
     static Vector drill_dstrain(8);
     static Vector drill_dstress(8);
     static Vector drill_dstress_el(8);
 
-    // Current integration point data
-    shapeFunctions(XI, ETA, N);
-    shapeFunctionsNaturalDerivatives(XI, ETA, dN);
-    jac.calculate(reference_cs, dN);
-    double dA = WTS * jac.detJ;
-
     // Strain-displacement matrix
-    computeBMatrix(
-        reference_cs.P1(),
-        reference_cs.P2(),
-        reference_cs.P3(),
-        reference_cs.Area(),
-        B, Bd
-    );
+    computeBMatrix(reference_cs, B, Bd, Bhx, Bhy);
+
+    // Stenberg shear stabilization coefficient
+    // to avoid shear oscillations in the thin limit
+    double thickness = evaluateSectionThickness();
+    double stab_coef = 0.1;
+    double mesh_size = std::max(std::max(
+        (reference_cs.P2() - reference_cs.P1()).norm(),
+        (reference_cs.P3() - reference_cs.P2()).norm()),
+        (reference_cs.P1() - reference_cs.P3()).norm());
+    double sh_stab = thickness * thickness /
+        (thickness * thickness + stab_coef * mesh_size * mesh_size);
+    sh_stab = std::sqrt(sh_stab); // use the sqrt for symmetry (as in shear correction factor)
 
     // Update strain strain
     if (options & OPT_UPDATE)
@@ -1486,19 +1575,34 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
             E.addMatrixVector(0.0, B, UL, 1.0);
         }
 
+        // apply Stenberg stabilization
+        E(6) *= sh_stab;
+        E(7) *= sh_stab;
+
         // Update section
         result += m_section->setTrialSectionDeformation(E);
 
         // Drilling strain Ed = Bd*UL
-        double Ed = 0.0;
-        for (int i = 0; i < 18; i++)
-            Ed += Bd(i) * UL(i);
-        m_drill_strain = Ed;
+        m_drill_strain = 0.0;
+        m_drill_curvature_x = 0.0;
+        m_drill_curvature_y = 0.0;
+        for (int i = 0; i < 18; i++) {
+            m_drill_strain += Bd(i) * UL(i);
+            m_drill_curvature_x += Bhx(i) * UL(i);
+            m_drill_curvature_y += Bhy(i) * UL(i);
+        }
     }
 
     // Invert bending terms for correct statement of equilibrium
     if ((options & OPT_RHS) || (options & OPT_LHS))
         invertBBendingTerms(B, B1);
+
+    // drilling curvature scale
+    // Note: use lch^2 to make it size-invariant.
+    // Here we use the drilling curvature only to stabilize the 2 spurious zero-energy modes,
+    // we are not actually using a cosserat continuum with an internal length-scale, so
+    // we don't want size-effects here.
+    double dh_scale_factor = DH_SCALE * std::pow(getCharacteristicLength(), 2.0);
 
     // Integrate RHS
     if (options & OPT_RHS)
@@ -1507,7 +1611,7 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
         if (m_angle != 0.0) {
             auto& Ssection = m_section->getStressResultant();
             S.addMatrixVector(0.0, Rs, Ssection, 1.0);
-            if (m_damping) {
+             if (m_damping) {
                 m_damping->update(Ssection);
                 auto& Sdsection = m_damping->getDampingForce();
                 S.addMatrixVector(1.0, Rs, Sdsection, 1.0);
@@ -1521,8 +1625,12 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
             }
         }
 
+        // apply Stenberg stabilization
+        S(6) *= sh_stab;
+        S(7) *= sh_stab;
+
         // Add current integration point contribution (RHS)
-        RHS.addMatrixTransposeVector(1.0, B1, S, dA);
+        RHS.addMatrixTransposeVector(1.0, B1, S, reference_cs.Area());
 
         // Compute drilling damages
         if (m_drill_mode == DrillingDOF_NonLinear) {
@@ -1549,14 +1657,21 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
 
         // Add drilling stress = Bd'*Sd * dA (RHS)
         double Sd = m_drill_stiffness * m_drill_strain;
-        if (m_drill_mode == DrillingDOF_NonLinear)
+        double Shx = m_drill_stiffness * m_drill_curvature_x * dh_scale_factor;
+        double Shy = m_drill_stiffness * m_drill_curvature_y * dh_scale_factor;
+        if (m_drill_mode == DrillingDOF_NonLinear) {
             Sd *= (1.0 - m_nldrill->damage_comm);
-        for (int i = 0; i < 18; i++)
-            RHS(i) += Bd(i) * Sd * dA;
+            Shx *= (1.0 - m_nldrill->damage_comm);
+            Shy *= (1.0 - m_nldrill->damage_comm);
+        }
+        for (int i = 0; i < 18; i++) {
+            RHS(i) += Bd(i) * Sd * reference_cs.Area();
+            RHS(i) += Bhx(i) * Shx * reference_cs.Area();
+            RHS(i) += Bhy(i) * Shy * reference_cs.Area();
+        }
     }
 
-    // AGQI: due to the static condensation, the following items
-    // must be computed if we need either the RHS or the LHS, or both of them
+    // Integrate LHS
     if (options & OPT_LHS)
     {
         // Section tangent
@@ -1577,22 +1692,30 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
                 m_section->getSectionTangent();
             if (m_damping) D *= m_damping->getStiffnessMultiplier();
         }
-    }
 
-    // Integrate LHS
-    if (options & OPT_LHS)
-    {
+        // apply Stenberg stabilization
+        for (int i = 0; i < 8; ++i) {
+            D(6, i) *= sh_stab;
+            D(7, i) *= sh_stab;
+            D(i, 6) *= sh_stab;
+            D(i, 7) *= sh_stab;
+        }
+
         // Add current integration point contribution (LHS)
-        B1TD.addMatrixTransposeProduct(0.0, B1, D, dA);
+        B1TD.addMatrixTransposeProduct(0.0, B1, D, reference_cs.Area());
         LHS.addMatrixProduct(1.0, B1TD, B, 1.0);
 
         // Add drilling stiffness = Bd'*Kd*Bd * dA (LHS)
         double drill_tang = m_drill_stiffness;
         if (m_drill_mode == DrillingDOF_NonLinear)
             drill_tang *= (1.0 - m_nldrill->damage_comm);
-        for (int i = 0; i < 18; i++)
-            for (int j = 0; j < 18; j++)
-                LHS(i, j) += Bd(i) * drill_tang * Bd(j) * dA;
+        for (int i = 0; i < 18; i++) {
+            for (int j = 0; j < 18; j++) {
+                LHS(i, j) += Bd(i) * drill_tang * Bd(j) * reference_cs.Area();
+                LHS(i, j) += Bhx(i) * drill_tang * Bhx(j) * reference_cs.Area() * dh_scale_factor;
+                LHS(i, j) += Bhy(i) * drill_tang * Bhy(j) * reference_cs.Area() * dh_scale_factor;
+            }
+        }
     }
 
     // Transform LHS to global coordinate system
@@ -1604,6 +1727,17 @@ int ASDShellT3::calculateAll(Matrix& LHS, Vector& RHS, int options)
 
     // Done
     return result;
+}
+
+double ASDShellT3::evaluateSectionThickness()
+{
+    const Matrix& D = m_section->getInitialTangent();
+    double k00 = D(0, 0); // k00 = h * E / ( 1.0 - nu*nu ) -> membrane modulus
+    if (k00 == 0.0) return 0.0;
+    double k33 = -D(3, 3); // k33 = -E * (h * h * h) / 12.0 / (1.0 - nu * nu) -> bending modulus
+    // k00/k33 = h/I = h/(h^2/12) = 12/h^2
+    double h = std::sqrt(12.0 * k33 / k00);
+    return h;
 }
 
 int

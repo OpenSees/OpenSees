@@ -52,7 +52,6 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <Damping.h>
-#include <vector>
 
 class SectionForceDeformation;
 class ASDShellT3Transformation;
@@ -142,6 +141,9 @@ private:
     // internal method to compute everything using switches...
     int calculateAll(Matrix& LHS, Vector& RHS, int options);
 
+    // internal method to evaluate the thickness of the section
+    double evaluateSectionThickness();
+
 private:
 
     // cross section
@@ -160,6 +162,8 @@ private:
     // drilling strain for the independent rotation field (Hughes-Brezzi)
     DrillingDOFMode m_drill_mode = DrillingDOF_Elastic;
     double m_drill_strain = 0.0;
+    double m_drill_curvature_x = 0.0;
+    double m_drill_curvature_y = 0.0;
     double m_drill_stiffness = 0.0;
     NLDrillingData* m_nldrill = nullptr;
 
