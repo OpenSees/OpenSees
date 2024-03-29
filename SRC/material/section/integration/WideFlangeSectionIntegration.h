@@ -42,7 +42,8 @@ class WideFlangeSectionIntegration : public SectionIntegration
 
   void getFiberLocations(int nFibers, double *yi, double *zi = 0);
   void getFiberWeights(int nFibers, double *wt);
-
+  void getFiberSectorials(int nFibers, double *omega);
+  
   const char* getClassType(void) const {return "WideFlangeSectionIntegration";}
   SectionIntegration *getCopy(void);
 

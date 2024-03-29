@@ -296,6 +296,50 @@ WideFlangeSectionIntegration::getFiberWeights(int nFibers, double *wt)
   return;
 }
 
+void
+WideFlangeSectionIntegration::getFiberSectorials(int nFibers, double *omega)
+{
+  //double dw = d-2*tf;
+  
+  double a_f = bf*tf/(Nftf*Nfbf);
+  //double a_w = dw*tw/Nfdw;
+
+  double h = 0.5*bf*(0.5*d-0.5*tf);
+  double m = 2*h/bf;
+
+  //double yIncr  = tf/Nftf;
+  //double yStart = 0.5 * (d-yIncr);
+  
+  double zIncr  = bf/Nfbf;
+  double zStart = 0.5 * zIncr;// (bf-zIncr);
+  
+  int loc = 0;
+
+  // Assuming all fibers in flanges have same y-coordinate
+  for (int iz = 0; iz < Nfbf; iz++) {
+    double z = zStart + zIncr*iz;
+    for (int j = 0; j < Nftf; j++, loc++) {
+      omega[loc] = -h + m*z;
+      omega[nFibers-loc-1] = -omega[loc];
+    }
+  }
+
+  // Sectorial coordinate is zero in web
+  for ( ; loc < nFibers-Nftf*Nfbf; loc++) {
+    omega[loc] = 0.0;
+  }
+
+  /*
+  double Cw = 0.0;
+  for (int i = 0; i < Nftf*Nfbf; i++) {
+    Cw += 2 * a_f*omega[i]*omega[i];
+  }
+  opserr << "Cw = " << Cw << endln;
+  */
+  
+  return;
+}
+
 SectionIntegration*
 WideFlangeSectionIntegration::getCopy(void)
 {
