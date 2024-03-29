@@ -34,12 +34,15 @@
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
 #include <FiberSection2d.h>
+#include <FiberSection3d.h>
 #include <NDFiberSection2d.h>
 #include <NDFiberSectionWarping2d.h>
 
+#include <ElasticMaterial.h>
+
 void* OPS_WFSection2d()
 {
-  if (OPS_GetNumRemainingInputArgs() < 8) {
+  if (OPS_GetNumRemainingInputArgs() < 10) {
     opserr << "WARNING insufficient arguments\n";
     opserr << "Want: section WFSection2d tag? matTag? d? tw? bf? tf? nfdw? nftf? <-nd shape?>" << endln;
     return 0;
@@ -48,6 +51,7 @@ void* OPS_WFSection2d()
   int tag, matTag;
   double d, tw, bf, tf;
   int nfdw, nftf;
+  int nfbf, nftw;
   
   SectionForceDeformation* theSection = 0;
   
@@ -97,8 +101,20 @@ void* OPS_WFSection2d()
     opserr << "WFSection2d section: " << tag << endln;
     return 0;
   }
+
+  if (OPS_GetIntInput(&numdata, &nfbf) < 0) {
+    opserr << "WARNING invalid nfbf" << endln;
+    opserr << "WFSection2d section: " << tag << endln;
+    return 0;
+  }
   
-  WideFlangeSectionIntegration wfsect(d, tw, bf, tf, nfdw, nftf);
+  if (OPS_GetIntInput(&numdata, &nftw) < 0) {
+    opserr << "WARNING invalid nftw" << endln;
+    opserr << "WFSection2d section: " << tag << endln;
+    return 0;
+  }  
+  
+  WideFlangeSectionIntegration wfsect(d, tw, bf, tf, nfdw, nftf, nfbf, nftw);
   
   int numFibers = wfsect.getNumFibers();
   
@@ -153,7 +169,13 @@ void* OPS_WFSection2d()
     wfsect.arrangeFibers(theMats, theSteel);
     
     // Parsing was successful, allocate the section
-    theSection = new FiberSection2d(tag, numFibers, theMats, wfsect);
+    int ndm = OPS_GetNDM();
+    if (ndm == 2)
+      theSection = new FiberSection2d(tag, numFibers, theMats, wfsect);
+    if (ndm == 3) {
+      ElasticMaterial torsion(0,1);
+      theSection = new FiberSection3d(tag, numFibers, theMats, wfsect, torsion);    
+    }
     
     delete [] theMats;
   }
@@ -220,26 +242,31 @@ WideFlangeSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
 {
   double dw = d-2*tf;
   
-  int loc;
+  int loc = 0;
   
   double yIncr  = tf/Nftf;
   double yStart = 0.5 * (d-yIncr);
-  
-  for (loc = 0; loc < Nftf; loc++) {
-    yi[loc] = yStart - yIncr*loc;
-    yi[nFibers-loc-1] = -yi[loc];
-  }
-  
-  yIncr  = dw/Nfdw;
-  yStart = 0.5 * (dw-yIncr);
-  
-  for (int count = 0; loc < nFibers-Nftf; loc++, count++) {
-    yi[loc] = yStart - yIncr*count;
+
+  double zIncr  = bf/Nfbf;
+  double zStart = 0.5 * (bf-zIncr);
+
+  for (int iz = 0; iz < Nfbf; iz++) {
+    double z = zStart - zIncr*iz;
+    for (int j = 0; j < Nftf; j++, loc++) {
+      yi[loc] = yStart - yIncr*j;
+      yi[nFibers-loc-1] = -yi[loc];
+      if (zi != 0)
+	zi[loc] = zi[nFibers-loc-1] = z;
+    }
   }
 
-  if (zi != 0) {
-    for (int i = 0; i < nFibers; i++)
-      zi[i] = 0.0;
+  yIncr  = dw/Nfdw;
+  yStart = 0.5 * (dw-yIncr);
+
+  for (int count = 0; loc < nFibers-Nftf*Nfbf; loc++, count++) {
+    yi[loc] = yStart - yIncr*count;
+    if (zi != 0)
+      zi[loc] = 0.0;
   }
 
   return;
@@ -250,17 +277,19 @@ WideFlangeSectionIntegration::getFiberWeights(int nFibers, double *wt)
 {
   double dw = d-2*tf;
   
-  double a_f = bf*tf/Nftf;
+  double a_f = bf*tf/(Nftf*Nfbf);
   double a_w = dw*tw/Nfdw;
   
   int loc = 0;
-  
-  for (loc = 0; loc < Nftf; loc++) {
-    wt[loc] = a_f;
-    wt[nFibers-loc-1] = a_f;
+
+  for (int iz = 0; iz < Nfbf; iz++) {
+    for (int j = 0; j < Nftf; j++, loc++) {
+      wt[loc] = a_f;
+      wt[nFibers-loc-1] = a_f;
+    }
   }
-  
-  for ( ; loc < nFibers-Nftf; loc++) {
+
+  for ( ; loc < nFibers-Nftf*Nfbf; loc++) {
     wt[loc] = a_w;
   }
 
