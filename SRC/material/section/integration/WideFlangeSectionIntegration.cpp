@@ -165,17 +165,17 @@ WideFlangeSectionIntegration::WideFlangeSectionIntegration(double D,
 							   double TW,
 							   double BF,
 							   double TF,
-							   int NFDW,
-							   int NFTF):
+							   int NFDW, int NFTF,
+							   int NFBF, int NFTW):
   SectionIntegration(SECTION_INTEGRATION_TAG_WideFlange),
-  d(D), tw(TW), bf(BF), tf(TF), Nfdw(NFDW), Nftf(NFTF), parameterID(0)
+  d(D), tw(TW), bf(BF), tf(TF), Nfdw(NFDW), Nftf(NFTF), Nfbf(NFBF), Nftw(NFTW), parameterID(0)
 {
   
 }
 
 WideFlangeSectionIntegration::WideFlangeSectionIntegration():
   SectionIntegration(SECTION_INTEGRATION_TAG_WideFlange),
-  d(0.0), tw(0.0), bf(0.0), tf(0.0), Nfdw(0), Nftf(0), parameterID(0)
+  d(0.0), tw(0.0), bf(0.0), tf(0.0), Nfdw(0), Nftf(0), Nfbf(0), Nftw(0), parameterID(0)
 {
   
 }
@@ -188,7 +188,7 @@ WideFlangeSectionIntegration::~WideFlangeSectionIntegration()
 int
 WideFlangeSectionIntegration::getNumFibers(FiberType type)
 {
-  return Nfdw + 2*Nftf;
+  return Nfdw*Nftw + 2*Nftf*Nfbf;
 }
 
 int
@@ -270,7 +270,9 @@ WideFlangeSectionIntegration::getFiberWeights(int nFibers, double *wt)
 SectionIntegration*
 WideFlangeSectionIntegration::getCopy(void)
 {
-  return new WideFlangeSectionIntegration(d, tw, bf, tf, Nfdw, Nftf);
+  WideFlangeSectionIntegration *theCopy = new WideFlangeSectionIntegration(d, tw, bf, tf, Nfdw, Nftf, Nfbf, Nftw);
+
+  return theCopy;
 }
 
 int
@@ -437,6 +439,8 @@ WideFlangeSectionIntegration::Print(OPS_Stream &s, int flag)
   s << " tf = " << tf << endln;
   s << " Nfdw = " << Nfdw;
   s << " Nftf = " << Nftf << endln;
+  s << " Nfbf = " << Nfbf;
+  s << " Nftw = " << Nftw << endln;  
 
   return;
 }
@@ -444,7 +448,7 @@ WideFlangeSectionIntegration::Print(OPS_Stream &s, int flag)
 int
 WideFlangeSectionIntegration::sendSelf(int cTag, Channel &theChannel)
 {
-  static Vector data(6);
+  static Vector data(8);
 
   data(0) = d;
   data(1) = tw;
@@ -452,6 +456,8 @@ WideFlangeSectionIntegration::sendSelf(int cTag, Channel &theChannel)
   data(3) = tf;
   data(4) = Nfdw;
   data(5) = Nftf;
+  data(6) = Nfbf;
+  data(7) = Nftw;  
 
   int dbTag = this->getDbTag();
 
@@ -467,7 +473,7 @@ int
 WideFlangeSectionIntegration::recvSelf(int cTag, Channel &theChannel,
 				       FEM_ObjectBroker &theBroker)
 {
-  static Vector data(6);
+  static Vector data(8);
 
   int dbTag = this->getDbTag();
 
@@ -482,6 +488,8 @@ WideFlangeSectionIntegration::recvSelf(int cTag, Channel &theChannel,
   tf   = data(3);
   Nfdw = (int)data(4);
   Nftf = (int)data(5);
+  Nfbf = (int)data(6);
+  Nftw = (int)data(7);  
 
   return 0;
 }

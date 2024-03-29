@@ -34,7 +34,7 @@ class WideFlangeSectionIntegration : public SectionIntegration
 {
  public:
   WideFlangeSectionIntegration(double d, double tw, double bf, double tf,
-			       int Nfdw, int Nftf);
+			       int Nfdw, int Nftf, int Nfbf = 1, int Nftw = 1);
   WideFlangeSectionIntegration();
   ~WideFlangeSectionIntegration();
 
@@ -71,7 +71,9 @@ class WideFlangeSectionIntegration : public SectionIntegration
 
   int Nfdw;
   int Nftf;
-
+  int Nfbf;
+  int Nftw;
+  
   int parameterID;
 };
 
