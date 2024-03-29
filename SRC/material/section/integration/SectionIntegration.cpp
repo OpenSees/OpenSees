@@ -37,7 +37,7 @@ SectionIntegration::~SectionIntegration()
 }
 
 void
-SectionIntegrator::getFiberSectorials(int nFibers, double *omega)
+SectionIntegration::getFiberSectorials(int nFibers, double *omega)
 {
   for (int i = 0; i < nFibers; i++)
     omega[i] = 0.0;
