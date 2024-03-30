@@ -29,7 +29,7 @@
 // Description: This file contains the implementation for the CrdTransf class.
 // CrdTransf provides the abstraction of a frame 
 // coordinate transformation. It is an abstract base class and 
-// thus no objects of its type can be instatiated. 
+// thus no objects of its type can be instantiated. 
 
 #include <CrdTransf.h>
 #include <ID.h>
@@ -37,7 +37,8 @@
 
 #include <TaggedObject.h>
 #include <MapOfTaggedObjects.h>
-#include <CrdTransfResponse.h>
+#include <GenericResponse.h>
+typedef GenericResponse<CrdTransf> CrdTransfResponse;
 
 static MapOfTaggedObjects theCrdTransfObjects;
 
