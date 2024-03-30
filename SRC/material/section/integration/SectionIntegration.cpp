@@ -42,7 +42,7 @@ SectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzidh)
   for (int i = 0; i < nFibers; i++)
     dyidh[i] = 0.0;
 
-  if (dyidh != 0) {
+  if (dzidh != 0) {
     for (int i = 0; i < nFibers; i++)
       dzidh[i] = 0.0;
   }

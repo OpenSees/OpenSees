@@ -108,6 +108,8 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE);
 	@$(CD) $(FE)/material/nD/stressDensityModel; $(MAKE);
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE);
+	@$(CD) $(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01; $(MAKE);
+	@$(CD) $(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01; $(MAKE);
 
 test: $(OBJS) main.o
 	$(LINKER) $(LINKFLAGS) main.o ../../../SRC/api/elementAPI_Dummy.o $(FE_LIBRARY) \
@@ -134,6 +136,9 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/matCMM; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/stressDensityModel; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01; $(MAKE) wipe;
+	
 
 wipe: spotless
 
