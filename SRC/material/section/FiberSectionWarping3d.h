@@ -103,6 +103,8 @@ class FiberSectionWarping3d : public SectionForceDeformation
    // double   Height;
     double yBar;       // Section centroid
     double zBar;
+
+    SectionIntegration *sectionIntegr;
   
     static ID code;
 
