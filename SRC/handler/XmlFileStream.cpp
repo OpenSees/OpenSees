@@ -1385,7 +1385,7 @@ XmlFileStream::mergeXML()
       theFile0.open(fileName, ios::in);
 
       int fileNameLength = int(strlen(fileName));
-      sprintf(&fileName[fileNameLength-2],"");
+      fileName[fileNameLength-2] = '\0';
       
       theFile.open(fileName, ios::out);
       fileOpen = 1;
