@@ -2153,9 +2153,8 @@ DispBeamColumnNL2d::getResistingForceSensitivity(int gradNumber)
 
       continue;
 
-      double si;
       for(int j = 0; j < order; j++) {
-	si = s(j)*wt[i];
+	double si = s(j)*wt[i];
 	switch(code(j)) {
 	case SECTION_RESPONSE_P:
 	  dqdh(0) += -dLdh/(L*L);
