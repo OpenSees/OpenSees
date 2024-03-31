@@ -291,7 +291,6 @@ StaticDomainDecompositionAnalysis::eigen(int numMode, bool generalized, bool fin
     //
 
     if (generalized == true) {
-      int result = 0;
       FE_EleIter &theEles2 = theAnalysisModel->getFEs();    
       while((elePtr = theEles2()) != 0) {     
 	elePtr->zeroTangent();
