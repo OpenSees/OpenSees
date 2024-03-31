@@ -48,9 +48,9 @@
 
 LagrangeMP_FE::LagrangeMP_FE(int tag, Domain &theDomain, MP_Constraint &TheMP,
 			     DOF_Group &theGroup, double Alpha)
-:FE_Element(tag, 3,(tag, TheMP.getConstrainedDOFs()).Size()+
-	      (TheMP.getRetainedDOFs()).Size() + 
-	      (TheMP.getRetainedDOFs()).Size()),
+:FE_Element(tag, 3,  TheMP.getConstrainedDOFs().Size()
+                   + TheMP.getRetainedDOFs().Size()
+                   + TheMP.getRetainedDOFs().Size()),
  alpha(Alpha), theMP(&TheMP), 
  theConstrainedNode(0), theRetainedNode(0),
  theDofGroup(&theGroup), tang(0), resid(0)
