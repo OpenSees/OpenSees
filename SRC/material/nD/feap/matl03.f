@@ -48,7 +48,7 @@ c     // Compute useful constants
       one3 = 1.d0/3.d0
       two3 = 2.d0*one3
       root23 = sqrt(two3)
-      
+
 c     // Read in material parameters
       K = ud(1)
       G = ud(2)
@@ -62,15 +62,15 @@ c     // \sigma += m p
       do i = 1,3
          sig(i) = pn1
       end do
-      
+
 c     // Add bulk term to material tangent
 c     // D_t += K * mm^T
       do i = 1,3
          do j = 1,i
             dd(i,j) = K
-         end do      
+         end do
       end do
-      
+
 c     // Compute trial deviatoric strains in 9-component form
 c     // e_{n+1} = I_{dev} \epsilon = (I - 1/3 mm^T) \epsilon
       evn1 = trace*one3
@@ -123,18 +123,18 @@ c     // First iteration or an elastic step
 
 c       // No change in history variables n+1 <-- n
          do i = 1,7
-	    h1(i) = hn(i)
+           h1(i) = hn(i)
          end do
 
 c       // Add deviatoric part to material stress after mapping
 c       // to 6-component form
          do i = 1,3
-	    sig(i) = sig(i) + sn1(i)
+           sig(i) = sig(i) + sn1(i)
          end do
          sig(4) = sig(4) + 0.5d0*(sn1(4)+sn1(5))
          sig(5) = sig(5) + 0.5d0*(sn1(6)+sn1(7))
          sig(6) = sig(6) + 0.5d0*(sn1(8)+sn1(9))
-         
+
 c       // Add deviatoric part to material tangent after mapping to
 c       // 6-component form
 c       // D_t += 2 G I_o I_{dev}
@@ -160,15 +160,15 @@ c       // Compute normal to yield surface
 c       // n_{n+1} = \frac{s_{n+1}}{\|s_{n+1}\|}
          tmp1 = 1.d0/nsn1       ! Save some flops
          do i = 1,9
-	    nn1(i) = sn1(i)*tmp1
+           nn1(i) = sn1(i)*tmp1
          end do
-        
+
 c       // Compute consistency parameter
          dlam = Fn1 / (twoG+two3*H)
 
 c       // Update plastic deviatoric strains in 9-component form
          do i = 1,9
-	    epn(i) = epn(i) + dlam*nn1(i)
+           epn(i) = epn(i) + dlam*nn1(i)
          end do
 
 c       // Update effective plastic strain
@@ -178,7 +178,7 @@ c       // \kappa{n+1} = \kappa_n + sqrt(2/3) (\Delta \lambda)
 c       // Put trial history variables into vector after mapping back
 c       // to 6-component form
          do i = 1,3
-	    h1(i) = epn(i)
+           h1(i) = epn(i)
          end do
          h1(4) = 2.d0*epn(4)
          h1(5) = 2.d0*epn(6)
@@ -195,7 +195,7 @@ c       // yield surface
 c       // Add deviatoric part to material stress after mapping to
 c       // 6-component form
          do i = 1,3
-	    sig(i) = sig(i) + sn1(i)
+           sig(i) = sig(i) + sn1(i)
          end do
          sig(4) = sig(4) + 0.5d0*(sn1(4)+sn1(5))
          sig(5) = sig(5) + 0.5d0*(sn1(6)+sn1(7))
@@ -230,28 +230,28 @@ c       // Compute temporary 6-component vector
 c       // a = n^T I_{dev} = n - 1/3 (n^T m) m
          tmp1 = one3*(nn1(1)+nn1(2)+nn1(3))
          do i = 1,3
-	    a(i) = nn1(i)-tmp1
+           a(i) = nn1(i)-tmp1
          end do
          do i = 4,6
-	    a(i) = nn1(i)
+           a(i) = nn1(i)
          end do
 
 c       // Add deviatoric part to material tangent
 c       // D_t += tmp_2 n n^T I_{dev} = tmp2 n a^T
          tmp2 = twoG*G*(1.d0/(G+one3*H)-2.d0*dlam/nsn1)
          do i = 1,6
-	    do j = 1,i
+           do j = 1,i
                dd(i,j) = dd(i,j) - tmp2*nn1(i)*a(j)
-	    end do
+           end do
          end do
-         
+
       end if
 
 c     // Complete symmetric tangent matrix
       do i = 1,6
          do j = 1,i-1
-	    dd(j,i) = dd(i,j)
+           dd(j,i) = dd(i,j)
          end do
       end do
-      
+
       end
