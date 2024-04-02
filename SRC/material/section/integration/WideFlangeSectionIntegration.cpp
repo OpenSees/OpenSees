@@ -35,6 +35,7 @@
 #include <NDMaterial.h>
 #include <FiberSection2d.h>
 #include <FiberSection3d.h>
+#include <FiberSectionWarping3d.h>
 #include <NDFiberSection2d.h>
 #include <NDFiberSectionWarping2d.h>
 
@@ -118,7 +119,7 @@ void* OPS_WFSection2d()
   
   int numFibers = wfsect.getNumFibers();
   
-  if (OPS_GetNumRemainingInputArgs() > 0) {
+  if (false && OPS_GetNumRemainingInputArgs() > 0) {
     
     double shape = 1.0;
     if (OPS_GetNumRemainingInputArgs() > 1) {
@@ -150,6 +151,8 @@ void* OPS_WFSection2d()
 	theSection = new NDFiberSection2d(tag, numFibers, theMats, wfsect, shape);
       } else if (strcmp(flag,"-ndWarping") == 0) {
 	theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);
+      } else if (strcmp(flag,"-warping") == 0) {
+	//theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);	
       }
     }
     delete [] theMats;
@@ -169,12 +172,23 @@ void* OPS_WFSection2d()
     wfsect.arrangeFibers(theMats, theSteel);
     
     // Parsing was successful, allocate the section
+    theSection = 0;
+    bool warping = false;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* flag = OPS_GetString();
+      if (strcmp(flag,"-warping") == 0) {
+	warping = true;
+      }
+    }
     int ndm = OPS_GetNDM();
     if (ndm == 2)
       theSection = new FiberSection2d(tag, numFibers, theMats, wfsect);
     if (ndm == 3) {
-      ElasticMaterial torsion(0,1);
-      theSection = new FiberSection3d(tag, numFibers, theMats, wfsect, torsion);    
+      ElasticMaterial torsion(0,0.5*29000*5.861);
+      if (warping)
+	theSection = new FiberSectionWarping3d(tag, numFibers, theMats, wfsect, torsion);
+      else
+	theSection = new FiberSection3d(tag, numFibers, theMats, wfsect, torsion);
     }
     
     delete [] theMats;
