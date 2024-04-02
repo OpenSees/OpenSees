@@ -46,7 +46,7 @@ c-----[--.----+----.----+----.-----------------------------------------]
 c     // Compute useful constants
       one3 = 1.d0/3.d0
       two3 = 2.d0*one3
-      
+
 c     // Read in material parameters
       K = ud(1)
       G = ud(2)
@@ -61,7 +61,7 @@ c     // Get the strain trace
 
 c     // If there is a bulk viscoelastic effect
       if (muK.gt.0.d0) then
-	
+
 c       // Put strain trace in trial history
          h1(7) = evn1
 
@@ -82,13 +82,13 @@ c       // Compute pressure p_{n+1}
 
 c       // Compute bulk viscoelastic tangent term
          Kve = K*((1.d0-muK) + muK/tmp1)
-	
+
 c     // Otherwise, no bulk viscoelastic effect
       else
 
          Kve = K
          pn1 = Kve*evn1
-	
+
       end if
 
 c     // Add pressure contribution to material stress
@@ -102,7 +102,7 @@ c     // D_t += Kve * mm^T
       do i = 1,3
          do j = 1,3
             dd(i,j) = Kve
-         end do      
+         end do
       end do
 
 
@@ -123,7 +123,7 @@ c       // Put deviatoric strains into trial history
          do i = 1,6
             h1(i) = en1(i)
          end do
-         
+
 c       // Compute temporary quantities for integrating rate equation
          tmp1 = 1.d0 + theta*dt/lamG
          tmp2 = 1.d0 - (1.d0-theta)*dt/lamG
@@ -165,12 +165,12 @@ c     // Otherwise, no shear viscoelastic effect
 
 c       // Do the bulk terms ...
          do i = 1,3
-	    sn1(i) = G*2.d0*en1(i)
+            sn1(i) = G*2.d0*en1(i)
          end do
 
 c       // ... and now do the shear terms
          do i = 4,6
-	    sn1(i) = G*en1(i)
+            sn1(i) = G*en1(i)
          end do
 
       end if
