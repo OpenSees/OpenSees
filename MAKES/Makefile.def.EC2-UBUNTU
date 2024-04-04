@@ -183,7 +183,7 @@ RANLIBFLAGS     =
 ifeq ($(INTERPRETER_LANGUAGE), PYTHON)
 
 
-C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
+C++FLAGS         = -Wall -D_LINUX -D_UNIX -D_PYTHON3 -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
 	$(PROGRAMMING_FLAG) -fPIC -ffloat-store 
 CFLAGS          = -Wall -fPIC
@@ -195,7 +195,7 @@ LINKFLAGS       = -g -pg
 
 else
 
-C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
+C++FLAGS         = -Wall -D_LINUX -D_UNIX -D_PYTHON3 -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
 	$(PROGRAMMING_FLAG) -O3 -ffloat-store -fPIC
 CFLAGS          = -Wall -O2 -fPIC
