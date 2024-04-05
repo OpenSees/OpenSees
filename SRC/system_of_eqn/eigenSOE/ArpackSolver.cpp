@@ -156,14 +156,6 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
   int ldv = n;
   int lworkl = ncv*ncv + 8*ncv;
 
-  //opserr << "Arpack: n, nev, ncv, ldv, lworkl" << endln;
-  //opserr << n << ' ' << nev << ' ' << ncv << ' ' << ldv << ' ' << lworkl << endln;
-  if (nev > 1) {
-    ncv = nev+1;
-    lworkl = ncv*ncv + 8*ncv;
-    //opserr << "now - ncv = " << ncv << ", lworkl = " << lworkl << endln;
-  }
-  
   int processID = theArpackSOE->processID;
   
   // set up the space for ARPACK functions.
@@ -186,16 +178,17 @@ ArpackSolver::solve(int numModes, bool generalized, bool findSmallest)
     resid = new double[n];
     select = new int[ncv];
 
+    for (int i=0; i<lworkl+1; i++)
+	   workl[i] = 0;
+    for (int i=0; i<3*n+1; i++)
+      workd[i] = 0;
+
+    for (int i=0; i<ldv*ncv; i++)
+      v[i] = 0;
+    
     numModesMax = numModes;
   }
 
-  for (int i=0; i<lworkl+1; i++)
-    workl[i] = 0;
-  for (int i=0; i<3*n+1; i++)
-    workd[i] = 0;
-  for (int i=0; i<ldv*ncv; i++)
-    v[i] = 0;
-        
   char which[3];
   if (findSmallest == true) {
     strcpy(which, "LM");
