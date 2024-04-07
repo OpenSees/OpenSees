@@ -48,6 +48,7 @@ class SectionIntegration : public MovableObject
 
   virtual void getLocationsDeriv(int nFibers, double *dyidh, double *dzidh = 0);
   virtual void getWeightsDeriv(int nFibers, double *dwtdh);
+  virtual void getSectorialsDeriv(int nFibers, double *domegadh);
 
   virtual void Print(OPS_Stream &s, int flag = 0) = 0;
 
