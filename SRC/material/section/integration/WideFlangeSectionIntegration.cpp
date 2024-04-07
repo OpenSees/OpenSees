@@ -37,161 +37,238 @@
 #include <FiberSection3d.h>
 #include <FiberSectionWarping3d.h>
 #include <NDFiberSection2d.h>
+#include <NDFiberSection3d.h>
 #include <NDFiberSectionWarping2d.h>
 
 #include <ElasticMaterial.h>
 
 void* OPS_WFSection2d()
 {
-  if (OPS_GetNumRemainingInputArgs() < 10) {
+  // Read optional arguments first
+  int numOptionalArgs = 0;
+  int numArgs = OPS_GetNumRemainingInputArgs();
+  int numData = 0;
+  
+  // Check for early exit
+  if (OPS_GetNumRemainingInputArgs() < 8) {
     opserr << "WARNING insufficient arguments\n";
-    opserr << "Want: section WFSection2d tag? matTag? d? tw? bf? tf? nfdw? nftf? <-nd shape?>" << endln;
+    opserr << "Want: section WFSection tag? matTag? d? tw? bf? tf? nfdw? nftf? <-nd shape?>" << endln;
+    return 0;
+  }
+
+  int ndm = OPS_GetNDM();
+  //int ndf = OPS_GetNDF();
+    
+  bool haveGJ = false; double GJ;
+  bool warping = false;
+  bool haveND = false; double shape = 1.0;
+  
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    std::string type = OPS_GetString();
+    if (type == "-GJ") {
+      numOptionalArgs++;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;	  
+	if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	  opserr << "WARNING WFSection: failed to get GJ" << endln;
+	  return 0;
+	}
+	haveGJ = true;
+	numOptionalArgs++;
+      }
+    }
+    if (type == "-nd") {
+      numOptionalArgs++;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;	  
+	if (OPS_GetDoubleInput(&numData, &shape) < 0) {
+	  opserr << "WARNING WFSection: failed to get alpha" << endln;
+	  return 0;
+	}
+	haveND = true;
+	numOptionalArgs++;
+      }
+    }  
+    if (type == "-warping") {
+      numOptionalArgs++;
+      warping = true;
+    }  
+  }
+  
+  if (numArgs > 0) {
+    OPS_ResetCurrentInputArg(-numArgs);
+  }
+  numArgs = numArgs - numOptionalArgs;
+
+  if (numArgs != 8 && numArgs != 10) {
+    opserr << "WARNING insufficient arguments\n";
+    opserr << "Want: section WFSection tag? matTag? d? tw? bf? tf? nfdw? nftf? <nfbf? nftw?> ..." << endln;
     return 0;
   }
   
   int tag, matTag;
   double d, tw, bf, tf;
   int nfdw, nftf;
-  int nfbf, nftw;
+  int nfbf = 1;
+  int nftw = 1;
   
   SectionForceDeformation* theSection = 0;
   
   int numdata = 1;
   if (OPS_GetIntInput(&numdata, &tag) < 0) {
-    opserr << "WARNING invalid section WFSection2d tag" << endln;
+    opserr << "WARNING invalid section WFSection tag" << endln;
     return 0;
   }
   
   if (OPS_GetIntInput(&numdata, &matTag) < 0) {
-    opserr << "WARNING invalid section WFSection2d matTag" << endln;
+    opserr << "WARNING invalid section WFSection matTag" << endln;
     return 0;
   }
   
   if (OPS_GetDoubleInput(&numdata, &d) < 0) {
     opserr << "WARNING invalid d" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
+    opserr << "WFSection section: " << tag << endln;
     return 0;
   }
   
   if (OPS_GetDoubleInput(&numdata, &tw) < 0) {
     opserr << "WARNING invalid tw" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
+    opserr << "WFSection section: " << tag << endln;
     return 0;
   }
   
   if (OPS_GetDoubleInput(&numdata, &bf) < 0) {
     opserr << "WARNING invalid bf" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
+    opserr << "WFSection section: " << tag << endln;
     return 0;
   }
   
   if (OPS_GetDoubleInput(&numdata, &tf) < 0) {
     opserr << "WARNING invalid tf" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
+    opserr << "WFSection section: " << tag << endln;
     return 0;
   }
   
   if (OPS_GetIntInput(&numdata, &nfdw) < 0) {
     opserr << "WARNING invalid nfdw" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
+    opserr << "WFSection section: " << tag << endln;
     return 0;
   }
   
   if (OPS_GetIntInput(&numdata, &nftf) < 0) {
     opserr << "WARNING invalid nftf" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
+    opserr << "WFSection section: " << tag << endln;
     return 0;
   }
 
-  if (OPS_GetIntInput(&numdata, &nfbf) < 0) {
-    opserr << "WARNING invalid nfbf" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
-    return 0;
+  if (numArgs > 8) {
+    if (OPS_GetIntInput(&numdata, &nfbf) < 0) {
+      opserr << "WARNING invalid nfbf" << endln;
+      opserr << "WFSection section: " << tag << endln;
+      return 0;
+    }
+    
+    if (OPS_GetIntInput(&numdata, &nftw) < 0) {
+      opserr << "WARNING invalid nftw" << endln;
+      opserr << "WFSection section: " << tag << endln;
+      return 0;
+    }
   }
-  
-  if (OPS_GetIntInput(&numdata, &nftw) < 0) {
-    opserr << "WARNING invalid nftw" << endln;
-    opserr << "WFSection2d section: " << tag << endln;
-    return 0;
-  }  
   
   WideFlangeSectionIntegration wfsect(d, tw, bf, tf, nfdw, nftf, nfbf, nftw);
   
   int numFibers = wfsect.getNumFibers();
-  
-  if (false && OPS_GetNumRemainingInputArgs() > 0) {
-    
-    double shape = 1.0;
-    if (OPS_GetNumRemainingInputArgs() > 1) {
-      if (OPS_GetDoubleInput(&numdata, &shape) < 0) {
-	opserr << "WARNING invalid shape" << endln;
-	opserr << "WFSection2d section: " << tag << endln;
+
+  if (ndm == 2) {
+    // NDMaterial, 2D
+    if (haveND) {
+      NDMaterial *theSteel = OPS_getNDMaterial(matTag);
+      if (theSteel == 0) {
+	opserr << "WARNING ND material does not exist\n";
+	opserr << "material: " << matTag;
+	opserr << "\nWFSection section: " << tag << endln;
 	return 0;
       }
+    
+      NDMaterial **theMats = new NDMaterial *[numFibers];
+      wfsect.arrangeFibers(theMats, theSteel);
+
+      theSection = new NDFiberSection2d(tag, numFibers, theMats, wfsect, shape);
+
+      delete [] theMats;
     }
-    
-    NDMaterial *theSteel = OPS_getNDMaterial(matTag);
-    
-    if (theSteel == 0) {
-      opserr << "WARNING ND material does not exist\n";
-      opserr << "material: " << matTag;
-      opserr << "\nWFSection2d section: " << tag << endln;
-      return 0;
-    }
-    
-    NDMaterial **theMats = new NDMaterial *[numFibers];
-    
-    wfsect.arrangeFibers(theMats, theSteel);
-    
-    // Parsing was successful, allocate the section
-    theSection = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* flag = OPS_GetString();
-      if (strcmp(flag,"-nd") == 0) {
-	theSection = new NDFiberSection2d(tag, numFibers, theMats, wfsect, shape);
-      } else if (strcmp(flag,"-ndWarping") == 0) {
-	theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);
-      } else if (strcmp(flag,"-warping") == 0) {
-	//theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats, wfsect, shape);	
+    // Uniaxial, 2D
+    else {
+      UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
+      if (theSteel == 0) {
+	opserr << "WARNING material does not exist\n";
+	opserr << "material: " << matTag;
+	opserr << "\nWFSection section: " << tag << endln;
+	return 0;
       }
-    }
-    delete [] theMats;
-  }
-  else {
-    UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
-    
-    if (theSteel == 0) {
-      opserr << "WARNING uniaxial material does not exist\n";
-      opserr << "material: " << matTag;
-      opserr << "\nWFSection2d section: " << tag << endln;
-      return 0;
-    }
-    
-    UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-    
-    wfsect.arrangeFibers(theMats, theSteel);
-    
-    // Parsing was successful, allocate the section
-    theSection = 0;
-    bool warping = false;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-      const char* flag = OPS_GetString();
-      if (strcmp(flag,"-warping") == 0) {
-	warping = true;
-      }
-    }
-    int ndm = OPS_GetNDM();
-    if (ndm == 2)
+      
+      UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+      wfsect.arrangeFibers(theMats, theSteel);
+
       theSection = new FiberSection2d(tag, numFibers, theMats, wfsect);
-    if (ndm == 3) {
-      ElasticMaterial torsion(0,0.5*29000*5.861);
-      if (warping)
-	theSection = new FiberSectionWarping3d(tag, numFibers, theMats, wfsect, torsion);
-      else
-	theSection = new FiberSection3d(tag, numFibers, theMats, wfsect, torsion);
+
+      delete [] theMats;      
     }
+  }
+  if (ndm == 3) {
+    // Uniaxial, 3D
+    if (haveGJ && !haveND) {
+      UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
+      if (theSteel == 0) {
+	opserr << "WARNING material does not exist\n";
+	opserr << "material: " << matTag;
+	opserr << "\nWFSection section: " << tag << endln;
+	return 0;
+      }
+      
+      UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+      wfsect.arrangeFibers(theMats, theSteel);
+
+      ElasticMaterial torsion(0,GJ);
+      theSection = new FiberSection3d(tag, numFibers, theMats, wfsect, torsion);
+
+      delete [] theMats;      
+    }
+    // NDMaterial, 3D
+    if (haveND) {
+      NDMaterial *theSteel = OPS_getNDMaterial(matTag);
+      if (theSteel == 0) {
+	opserr << "WARNING ND material does not exist\n";
+	opserr << "material: " << matTag;
+	opserr << "\nWFSection section: " << tag << endln;
+	return 0;
+      }
     
-    delete [] theMats;
+      NDMaterial **theMats = new NDMaterial *[numFibers];
+      wfsect.arrangeFibers(theMats, theSteel);
+
+      theSection = new NDFiberSection3d(tag, numFibers, theMats, wfsect, shape);
+
+      delete [] theMats;      
+    }
+    // Uniaxial warping, 3D
+    if (haveGJ && warping) {
+      UniaxialMaterial *theSteel = OPS_getUniaxialMaterial(matTag);
+      if (theSteel == 0) {
+	opserr << "WARNING material does not exist\n";
+	opserr << "material: " << matTag;
+	opserr << "\nWFSection section: " << tag << endln;
+	return 0;
+      }
+      
+      UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
+      wfsect.arrangeFibers(theMats, theSteel);
+
+      ElasticMaterial torsion(0,GJ);
+      theSection = new FiberSectionWarping3d(tag, numFibers, theMats, wfsect, torsion);
+
+      delete [] theMats;
+    }
   }
   
   return theSection;
@@ -315,7 +392,7 @@ WideFlangeSectionIntegration::getFiberSectorials(int nFibers, double *omega)
 {
   //double dw = d-2*tf;
   
-  double a_f = bf*tf/(Nftf*Nfbf);
+  //double a_f = bf*tf/(Nftf*Nfbf);
   //double a_w = dw*tw/Nfdw;
 
   double h = 0.5*bf*(0.5*d-0.5*tf);
