@@ -85,7 +85,7 @@ class SAWSMaterial : public UniaxialMaterial
   double BETA;
 
   // History Variables
-  double TOL     ;
+  //double TOL     ;
   int    IFLAG   ;
   int    JFLAG   ;
   int    IMODE   ;
