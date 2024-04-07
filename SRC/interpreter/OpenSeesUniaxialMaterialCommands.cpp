@@ -139,6 +139,7 @@ void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
 void* OPS_ElasticPowerFunc();
 void* OPS_MultiLinear();
+void* OPS_ContinuumUniaxialMaterial();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
 void* OPS_PathIndependentMaterial();
@@ -149,6 +150,7 @@ void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
+void* OPS_BoucWenOriginal();
 void* OPS_BoucWenInfill();
 void* OPS_BWBN();
 void* OPS_PySimple1();
@@ -178,6 +180,7 @@ void* OPS_OriginCentered();
 void* OPS_HookGap();
 void* OPS_FRPConfinedConcrete02();
 void* OPS_pyUCLA();
+void* OPS_ElasticMaterialThermal();
 void* OPS_Steel01Thermal();
 void* OPS_Steel02Thermal();
 void* OPS_ConcretewBeta();
@@ -427,6 +430,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("MultiLinear", &OPS_MultiLinear));
   uniaxialMaterialsMap.insert(std::make_pair(
+      "Continuum", &OPS_ContinuumUniaxialMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
       "InitStrainMaterial", &OPS_InitStrainMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("InitStrain", &OPS_InitStrainMaterial));
@@ -451,6 +456,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
   uniaxialMaterialsMap.insert(
+      std::make_pair("BoucWenOriginal", &OPS_BoucWenOriginal));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("BoucWenInfill", &OPS_BoucWenInfill));  
   uniaxialMaterialsMap.insert(
       std::make_pair("BWBN", &OPS_BWBN));
@@ -511,6 +518,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("PYUCLA", &OPS_pyUCLA));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticThermal", &OPS_ElasticMaterialThermal));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("Steel01Thermal", &OPS_Steel01Thermal));
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel02Thermal", &OPS_Steel02Thermal));

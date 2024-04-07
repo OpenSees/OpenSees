@@ -1,4 +1,4 @@
-// Code written/implemented by:	Carlos L髉ez Olea (carlos.lopez.o@ug.uchile.cl)
+// Code written/implemented by:	Carlos L贸pez Olea (carlos.lopez.o@ug.uchile.cl)
 //								Leonardo M. Massone
 //								Kristijan Kolozvari
 //
@@ -17,9 +17,9 @@
 // obtain accurate predictions from squat to slender RC walls.
 //
 // References:
-// 1.- Massone, L. M., L髉ez, C. N., & Kolozvari, K. (2021). Formulation of an efficient shear-flexure interaction model for planar reinforced concrete walls. Engineering Structures, 243, 112680.
-// 2.- L髉ez, C. N., Massone, L. M., & Kolozvari, K. (2022). Validation of an efficient shear-flexure interaction model for planar reinforced concrete walls. Engineering Structures, 252, 113590.
-// 3.- L髉ez C. N. Efficient shear-flexure interaction model for nonlinear analysis of reinforced concrete structural walls. MS Dissertation. Santiago, Chile: University of Chile; 2021.
+// 1.- Massone, L. M., L贸pez, C. N., & Kolozvari, K. (2021). Formulation of an efficient shear-flexure interaction model for planar reinforced concrete walls. Engineering Structures, 243, 112680.
+// 2.- L贸pez, C. N., Massone, L. M., & Kolozvari, K. (2022). Validation of an efficient shear-flexure interaction model for planar reinforced concrete walls. Engineering Structures, 252, 113590.
+// 3.- L贸pez C. N. Efficient shear-flexure interaction model for nonlinear analysis of reinforced concrete structural walls. MS Dissertation. Santiago, Chile: University of Chile; 2021.
 // 
 // Source: /usr/local/cvs/OpenSees/SRC/element/mvlem/E_SFI.cpp
 //
@@ -79,6 +79,12 @@ void* OPS_E_SFI()
 	int* matTags = new int[m];
 
 	NDMaterial** theMaterials = new NDMaterial * [m];
+	for (int i = 0; i < m; i++) {
+		theThickness[i] = 0.0;
+		theWidth[i] = 0.0;
+		matTags[i] = 0;
+		theMaterials[i] = 0;
+	}
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 	while (numArgs >= (m + 1)) {

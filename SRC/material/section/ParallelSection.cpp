@@ -144,6 +144,12 @@ ParallelSection::ParallelSection (int tag, int numSecs,
     }
   }
 
+  this->setUpCode();
+}
+
+void
+ParallelSection::setUpCode(void)
+{
   order = 0;
 
   bool haveP = false;
@@ -406,7 +412,7 @@ ParallelSection::revertToStart(void)
 int
 ParallelSection::sendSelf(int cTag, Channel &theChannel)
 {
-  static ID data(3); // 3 so no conflict if only one section
+  static ID data(3); // 3 so no conflict when one section
   data(0) = this->getDbTag();
   data(1) = numSections;
 
@@ -511,6 +517,9 @@ ParallelSection::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
       return -6;
     }
   }
+
+  this->setUpCode();
+  
   return 0;  
 }
 

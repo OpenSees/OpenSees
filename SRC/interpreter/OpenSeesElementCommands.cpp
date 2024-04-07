@@ -58,6 +58,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ShellMITC4.h>
 #include <ShellDKGQ.h>
 #include <ShellNLDKGQ.h>
+#include <ShellANDeS.h>
 #include <FourNodeTetrahedron.h>
 #include <TenNodeTetrahedron.h>
 
@@ -85,6 +86,7 @@ void* OPS_ComponentElement2d();
 void* OPS_ComponentElement3d();
 void* OPS_ZeroLengthImpact3D();
 void* OPS_ModElasticBeam2d();
+void* OPS_ModElasticBeam3d();
 void* OPS_ElasticTimoshenkoBeam2d();
 void* OPS_ElasticTimoshenkoBeam3d();
 extern "C" void* OPS_PY_Macro2D();
@@ -107,9 +109,11 @@ void* OPS_MVLEM_3D();
 void* OPS_SFI_MVLEM_3D();
 void* OPS_E_SFI_MVLEM_3D();
 void* OPS_E_SFI();
+void* OPS_MEFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
+void* OPS_ShellANDeS();
 void* OPS_ShellDKGQ();
 void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
@@ -126,6 +130,7 @@ void* OPS_SSPquadUP();
 void* OPS_SSPbrick();
 void* OPS_SSPbrickUP();
 void* OPS_SurfaceLoad();
+void* OPS_TriSurfaceLoad();
 void* OPS_TPB1D();
 void* OPS_ElasticTubularJoint();
 void* OPS_FourNodeQuad3d();
@@ -679,6 +684,8 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthImpact3D", &OPS_ZeroLengthImpact3D));
 	functionMap.insert(std::make_pair("ModElasticBeam2d", &OPS_ModElasticBeam2d));
 	functionMap.insert(std::make_pair("modElasticBeam2d", &OPS_ModElasticBeam2d));
+	functionMap.insert(std::make_pair("ModElasticBeam3d", &OPS_ModElasticBeam3d));
+	functionMap.insert(std::make_pair("modElasticBeam3d", &OPS_ModElasticBeam3d));
 	functionMap.insert(std::make_pair("ElasticTimoshenkoBeam", &OPS_ElasticTimoshenkoBeam));
 	functionMap.insert(std::make_pair("elasticTimoshenkoBeam", &OPS_ElasticTimoshenkoBeam));
 	functionMap.insert(std::make_pair("pyMacro2D", &OPS_PY_Macro2D));
@@ -707,13 +714,15 @@ namespace {
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM_3D));
-	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));    
+	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));  
+	functionMap.insert(std::make_pair("MEFI", &OPS_MEFI));	
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
 	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
+	functionMap.insert(std::make_pair("ShellANDeS", &OPS_ShellANDeS));
 	functionMap.insert(std::make_pair("shellMITC4", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("ShellMITC4", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("shellNL", &OPS_ShellMITC9));
@@ -750,6 +759,7 @@ namespace {
 	functionMap.insert(std::make_pair("SSPbrickUP", &OPS_SSPbrickUP));
 	functionMap.insert(std::make_pair("SSPBrickUP", &OPS_SSPbrickUP));
 	functionMap.insert(std::make_pair("SurfaceLoad", &OPS_SurfaceLoad));
+	functionMap.insert(std::make_pair("TriSurfaceLoad", &OPS_TriSurfaceLoad));
 	functionMap.insert(std::make_pair("elasticBeamColumn", &OPS_ElasticBeam));
 	functionMap.insert(std::make_pair("elasticBeamColumnWarping", &OPS_ElasticBeamWarping3d));
 	functionMap.insert(std::make_pair("dispBeamColumnWarping", &OPS_DispBeamColumnWarping3d));	

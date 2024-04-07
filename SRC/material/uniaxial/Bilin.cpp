@@ -52,7 +52,7 @@ OPS_Bilin()
 {
   if (numBilinMaterials == 0) {
     numBilinMaterials++;
-    opserr << "Modified Ibarra-Medina-Krawinkler Model with Bilinear Hysteretic Response\n";
+    opserr << "WARNING: DO NOT USE THE \"Bilin\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKBilin\" or \"HystereticSM\" INSTEAD.\n";
   }
 
   // Pointer to a uniaxial material that will be returned

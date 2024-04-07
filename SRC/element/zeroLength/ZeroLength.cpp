@@ -61,7 +61,8 @@ Vector ZeroLength::ZeroLengthV12(12);
 void* OPS_ZeroLength()
 {
     int ndm = OPS_GetNDM();
-
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     //
     // first scan the command line to obtain eleID, iNode, jNode, material ID's
     // and their directions, and the orientation of ele xPrime and yPrime not
@@ -179,24 +180,41 @@ void* OPS_ZeroLength()
 		    return 0;
 		}
 	    }
-	} else 	if (strcmp(type,"-dampMats") == 0)  {
-	  doRayleighDamping = 2;
-	  numdata = 1;
-	  int matType;
-	  for (int i=0; i<numMats; i++) {
-	    // the first one not an int
-	    if (OPS_GetIntInput(&numdata,&matType) < 0) {
-	      UniaxialMaterial *theMat = OPS_getUniaxialMaterial(matType);
-	      if (theMat == 0) {
-		opserr << "WARNING no damp material material " << matType << " for zeroLength ele: " << idata[0] << endln;
-		return 0;
-	      } else {
-		theDampMats[i] = theMat;
-	      }
-	    }
-	  }
-
-	} else if (strcmp(type,"-orient") == 0) {
+    }
+    else 	if (strcmp(type, "-dampMats") == 0) {
+        doRayleighDamping = 2;
+        numdata = 1;
+        int matType;
+        for (int i = 0; i < numMats; i++) {
+            // the first one not an int
+            if (OPS_GetIntInput(&numdata, &matType) < 0) {
+                UniaxialMaterial* theMat = OPS_getUniaxialMaterial(matType);
+                if (theMat == 0) {
+                    opserr << "WARNING no damp material material " << matType << " for zeroLength ele: " << idata[0] << endln;
+                    return 0;
+                }
+                else {
+                    theDampMats[i] = theMat;
+                }
+            }
+        }
+    }  
+    else if (strcmp(type, "-damp") == 0) {
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            numdata = 1;
+            if (OPS_GetIntInput(&numdata, &dampingTag) < 0) return 0;
+            if (dampingTag)
+            {
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0)
+                {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
+	} 
+    else if (strcmp(type,"-orient") == 0) {
 	    if (ndm == 2 && OPS_GetNumRemainingInputArgs() < 3) {
 	      opserr<<"WARNING zeroLength - insufficient orient values for 2D model" << endln;
 		return 0;
@@ -226,7 +244,7 @@ void* OPS_ZeroLength()
     
     Element *theEle = 0;
     if (doRayleighDamping != 2) 
-      theEle = new ZeroLength(idata[0], ndm, idata[1], idata[2], x, y, numMats, theMats, dirs, doRayleighDamping);
+      theEle = new ZeroLength(idata[0], ndm, idata[1], idata[2], x, y, numMats, theMats, dirs, doRayleighDamping,theDamping);
     else
       theEle = new ZeroLength(idata[0], ndm, idata[1], idata[2], x, y, numMats, theMats, theDampMats, dirs, doRayleighDamping);
 
@@ -1066,7 +1084,7 @@ ZeroLength::sendSelf(int commitTag, Channel &theChannel)
 
 	// Make one size bigger so not a multiple of 3, otherwise will conflict
 	// with classTags ID
-	static ID idData(9);
+	static ID idData(10);
 
 	idData(0) = this->getTag();
 	idData(1) = dimension;
@@ -1160,7 +1178,7 @@ ZeroLength::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBr
   // ZeroLength creates an ID, receives the ID and then sets the 
   // internal data with the data in the ID
 
-  static ID idData(9);
+  static ID idData(10);
 
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {

@@ -59,7 +59,6 @@ public:
   
   int setTrialStrain(double strain, double strainRate = 0.0); 
   double setCreepStrain(double time, double stress); //Added by AMK
-  double setStress(double strain, double &stiff); //Added by AMK
   double getCurrentTime(void); //Added by AMK
   double getStrain(void);
   double getPHI_i(void); //Added by AMK      
@@ -91,8 +90,6 @@ public:
 protected:
   
 private:
-  void Tens_Envlp (double epsc, double &sigc, double &Ect);
-  void Compr_Envlp (double epsc, double &sigc, double &Ect);
   UniaxialMaterial *wrappedMaterial;
   
   // matpar : Concrete FIXED PROPERTIES
@@ -155,13 +152,17 @@ private:
   int crack_flag;
   int crackP_flag;
   int iter; //Iteration number
+
+  enum{startSize=500, growSize=200};
+  int maxSize;
   
-  float PHI_i[5000];
-  float E_i[5000];
-  float DSIG_i[5000];
-  float dsig_i[5000];
-  float TIME_i[5000]; //Time from the previous time step
-  float DTIME_i[5000];
+  float *PHI_i;
+  float *E_i;
+  float *DSIG_i;
+  float *TIME_i;
+  float *DTIME_i;
+
+  void expandArrays();
 };
 
 
