@@ -428,9 +428,11 @@ int OPS_Fiber()
 
     }
 
+    if (theFiber != 0)
+       delete theFiber;
+	
     if (res < 0) {
 	opserr << "WARNING failed to add fiber to section\n";
-	delete theFiber;
 	return -1;
     }
 
