@@ -36,10 +36,10 @@ namespace ASDPlasticMaterialGlobals
 {
 
 
-// constexpr double SQRT_2_over_3  = 0.816496580928;//sqrt(2.0 / 3.0); //in case unsupported by compiler
-constexpr double SQRT_2_over_3  = sqrt(2.0 / 3.0);
-// constexpr double SQRT_2_over_27 = 0.272165526976;//sqrt(2.0 / 27.0); //in case unsupported by compiler
-constexpr double SQRT_2_over_27 = sqrt(2.0 / 27.0);
+constexpr double SQRT_2_over_3  = 0.816496580928;//sqrt(2.0 / 3.0); //in case unsupported by compiler
+//constexpr double SQRT_2_over_3  = sqrt(2.0 / 3.0);
+constexpr double SQRT_2_over_27 = 0.272165526976;//sqrt(2.0 / 27.0); //in case unsupported by compiler
+//constexpr double SQRT_2_over_27 = sqrt(2.0 / 27.0);
 
 constexpr double MACHINE_EPSILON = std::numeric_limits<double>::epsilon();
 

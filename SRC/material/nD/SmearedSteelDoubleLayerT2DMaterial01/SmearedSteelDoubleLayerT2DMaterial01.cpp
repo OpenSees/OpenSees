@@ -16,7 +16,7 @@
 //
 // Rev: 1.0
 
-#include <SmearedSteelDoubleLayerT2DMaterial01.h>
+#include "SmearedSteelDoubleLayerT2DMaterial01.h"
 #include <UniaxialMaterial.h>
 #include <Vector.h>
 #include <Matrix.h>

@@ -29,7 +29,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <OPS_Globals.h>
-#include <E_SFI.h>
+#include "E_SFI.h"
 #include <Information.h>
 #include <Domain.h>
 #include <Node.h>

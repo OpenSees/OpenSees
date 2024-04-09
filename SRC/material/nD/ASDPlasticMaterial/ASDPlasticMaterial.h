@@ -432,7 +432,7 @@ public:
         //   We want to keep the static allocation of return_vector to avoid
         //   many calls to malloc (new) every time this function is called
         //   for performance reasons, so we have to live with the warning.
-        iv_storage.apply([&pos, &find_pos, &return_vector, this](auto & internal_variable)
+        iv_storage.apply([&pos, &find_pos, this](auto & internal_variable)
         {
             if (pos == find_pos)
             {
@@ -729,9 +729,9 @@ public:
         s << "  Yield Function          : " << yf.NAME << endln;
         s << "  Plastic flow direction  : " << pf.NAME << endln;
         s << "  Elasticity              : " << et.NAME << endln;
-        s << "  # of Internal variables : " << iv_storage.size() <<  endln;
+        s << "  # of Internal variables : " << (int) iv_storage.size() <<  endln;
         iv_storage.print_components();
-        s << "  # of Parameters         : " << parameters_storage.size() <<  endln;
+        s << "  # of Parameters         : " << (int) parameters_storage.size() <<  endln;
         parameters_storage.print_components();
     }
 
