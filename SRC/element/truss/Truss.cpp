@@ -183,7 +183,7 @@ Truss::Truss(int tag, int dim,
   dimension(dim), numDOF(0),
   theLoad(0), theMatrix(0), theVector(0),
   L(0.0), A(a), rho(r), doRayleighDamping(damp),
-  cMass(cm), initialDisp(0), useInitialDisp(initDisp)
+  cMass(cm), useInitialDisp(initDisp), initialDisp(0)
 {
     // get a copy of the material and check we obtained a valid copy
     theMaterial = theMat.getCopy();
@@ -225,7 +225,7 @@ Truss::Truss()
  dimension(0), numDOF(0),
  theLoad(0), theMatrix(0), theVector(0),
  L(0.0), A(0.0), rho(0.0), doRayleighDamping(0),
- cMass(0), initialDisp(0), useInitialDisp(false)
+ cMass(0), useInitialDisp(false), initialDisp(0)
 {
     // ensure the connectedExternalNode ID is of correct size 
   if (connectedExternalNodes.Size() != 2) {
