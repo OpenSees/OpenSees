@@ -37,6 +37,13 @@ SectionIntegration::~SectionIntegration()
 }
 
 void
+SectionIntegration::getFiberSectorials(int nFibers, double *omega)
+{
+  for (int i = 0; i < nFibers; i++)
+    omega[i] = 0.0;
+}
+
+void
 SectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzidh)
 {
   for (int i = 0; i < nFibers; i++)
@@ -53,4 +60,11 @@ SectionIntegration::getWeightsDeriv(int nFibers, double *dwtdh)
 {
   for (int i = 0; i < nFibers; i++)
     dwtdh[i] = 0.0;
+}
+
+void
+SectionIntegration::getSectorialsDeriv(int nFibers, double *domegadh)
+{
+  for (int i = 0; i < nFibers; i++)
+    domegadh[i] = 0.0;
 }
