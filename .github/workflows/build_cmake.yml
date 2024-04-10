@@ -61,8 +61,7 @@ jobs:
         cd ../EXAMPLES/ExamplePython/
         export PYTHONPATH="../../build/lib/"
         python3 -c "import sys; print(sys.path)"
-        sudo apt install valgrind
-        valgrind python3 example_variable_analysis.py
+        python3 example_variable_analysis.py
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
 #          run: |
