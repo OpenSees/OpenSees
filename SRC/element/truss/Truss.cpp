@@ -953,6 +953,8 @@ Truss::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   cMass = (int)data(8);
 
   useInitialDisp = data(12) > 0.0 ? true : false;
+  if (initialDisp != 0)
+    delete [] initialDisp;
   if (useInitialDisp) {
     initialDisp = new double[dimension];
     for (int i=0; i<dimension; i++)
@@ -1127,7 +1129,7 @@ Truss::computeCurrentStrain(void) const
     const Vector &disp2 = theNodes[1]->getTrialDisp();	
 
     double dLength = 0.0;
-    if (!useInitialDisp && initialDisp == 0)
+    if (!useInitialDisp || initialDisp == 0)
       for (int i = 0; i < dimension; i++)
 	dLength += (disp2(i)-disp1(i))*cosX[i];
     else
