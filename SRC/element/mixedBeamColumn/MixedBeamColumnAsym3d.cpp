@@ -959,8 +959,10 @@ int MixedBeamColumnAsym3d::revertToStart()
   //perform transformation - transform axial force form centroid to shear center
   kr.addMatrixTripleProduct(0.0, Tr, kv, 1.0);
 
-  Ki = new Matrix(crdTransf->getInitialGlobalStiffMatrix(kr));
-
+  if (Ki == 0)
+    Ki = new Matrix(NEGD,NEGD);
+  *Ki = crdTransf->getInitialGlobalStiffMatrix(kr);
+	
   // Vector V is zero at initial state
   V.Zero();
   committedV.Zero();
