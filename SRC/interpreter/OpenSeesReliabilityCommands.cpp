@@ -2831,119 +2831,6 @@ int OPS_transformUtoX() {
     return 0;
 }
 
-int inputCheck() {
-    // Check that tagged objects are consecutive
-    int i, num;
-    ReliabilityDomainComponent *component;
-    if (cmds == 0) {
-        opserr << "WARNING: cmds is not defined\n";
-        return -1;
-    }
-
-    // Clear out old parameter positioners so we don't produce a
-    // memory leak
-    /*
-  theReliabilityDomain->removeAllParameterPositioners();
-
-  ParameterIter &paramIter = theStructuralDomain->getParameters();
-  Parameter *theParam;
-  i = 1;
-  while ((theParam = paramIter()) != 0) {
-  ParameterPositioner *theParamPos =
-  new ParameterPositioner(i, *theParam);
-  theParamPos->setGradNumber(i);
-  if (theReliabilityDomain->addParameterPositioner(theParamPos) ==
-  false) { opserr << "ERROR: failed to add parameter positioner "
-  << i << endln; delete theParamPos; // otherwise memory leak
-  return TCL_ERROR;
-  }
-  i++;
-  }
-  */
-    /*
-  num =
-  theReliabilityDomain->getNumberOfRandomVariablePositioners(); for
-  (i=1; i<=num; i++) { component =
-  theReliabilityDomain->getRandomVariablePositionerPtr(i); if
-  (component == 0) { opserr << "ERROR: Non-consecutive random
-  variable positioner list." << endln; return TCL_ERROR;
-  }
-  }
-  */
-    ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
-
-    /*
-    num = theReliabilityDomain->getNumberOfFilters();
-    for (i = 1; i <= num; i++) {
-        component = theReliabilityDomain->getFilter(i);
-        if (component == 0) {
-            opserr << "ERROR: Non-consecutive filter list." << endln;
-            return -1;
-        }
-    }
-    */
-    /*
-    num = theReliabilityDomain->getNumberOfModulatingFunctions();
-    for (i = 1; i <= num; i++) {
-        component = theReliabilityDomain->getModulatingFunction(i);
-        if (component == 0) {
-            opserr << "ERROR: Non-consecutive modulating function list."
-                   << endln;
-            return -1;
-        }
-    }
-    */
-    /*
-    num = theReliabilityDomain->getNumberOfSpectra();
-    for (i = 1; i <= num; i++) {
-        component = theReliabilityDomain->getSpectrum(i);
-        if (component == 0) {
-            opserr << "ERROR: Non-consecutive spectrum list." << endln;
-            return -1;
-        }
-    }
-    */
-    // Check that the correlation matrix is positive definite
-    // theCorrelationMatrix
-
-    // set defaults
-    /*
-    ProbabilityTransformation *theProbabilityTransformation =
-        cmds->getProbabilityTransformation();
-    if (theProbabilityTransformation == 0) {
-        opserr << "No probabilityTransformation specified, assuming "
-                  "AllIndependent"
-               << endln;
-        theProbabilityTransformation =
-            new AllIndependentTransformation(theReliabilityDomain, 0);
-	cmds->setProbabilityTransformation(theProbabilityTransformation);
-    }
-    */
-    
-    // reliabilityConvergenceCheck  Standard         -e1 1.0e-3
-    // -e2 1.0e-3  -print 1 functionEvaluator            Tcl
-    // gradientEvaluator            FiniteDifference -pert 1000
-
-    /*
-    SearchDirection *theSearchDirection = cmds->getSearchDirection();
-    if (theSearchDirection == 0) {
-        opserr << "No searchDirection specified, assuming iHLRF"
-               << endln;
-        theSearchDirection = new HLRFSearchDirection();
-	cmds->setSearchDirection(theSearchDirection);
-    }
-    */
-    
-    // meritFunctionCheck           AdkZhang         -multi 2.0
-    // -add 10.0   -factor 0.5 stepSizeRule                 Armijo
-    // -maxNum 5    -base 0.5   -initial 1.0 2  -print 0 startPoint
-    // Mean findDesignPoint              StepSearch -maxNumIter 30
-    // -printDesignPointX CalRel_manual_1_output/1_designX.out
-    // randomNumberGenerator        CStdLib
-
-    return 0;
-}
-
 int OPS_runFOSMAnalysis() {
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "WARNING: Wrong number of input parameter to FOSM "
@@ -2953,11 +2840,6 @@ int OPS_runFOSMAnalysis() {
 
     // get file name
     const char *filename = OPS_GetString();
-
-    // Do input check
-    if (inputCheck() < 0) {
-        return -1;
-    }
 
     ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
     if (theReliabilityDomain == 0) {
@@ -3015,11 +2897,6 @@ int OPS_runFORMAnalysis() {
 
     // get file name
     const char *filename = OPS_GetString();
-
-    // Do input check
-    if (inputCheck() < 0) {
-        return -1;
-    }
 
     ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
     if (theReliabilityDomain == 0) {
@@ -3108,11 +2985,6 @@ int OPS_runSORMAnalysis() {
     // get file name
     const char *filename = OPS_GetString();
 
-    // Do input check
-    if (inputCheck() < 0) {
-        return -1;
-    }
-
     ReliabilityDomain *theReliabilityDomain = cmds->getDomain();
     if (theReliabilityDomain == 0) {
       opserr << "FORMAnalysis -- ReliabilityDomain is not defined" << endln;
@@ -3166,11 +3038,6 @@ int OPS_runSORMAnalysis() {
 
 int OPS_runImportanceSamplingAnalysis() {
     if (cmds == 0) {
-        return -1;
-    }
-
-    // do input check
-    if (inputCheck() < 0) {
         return -1;
     }
 
@@ -3356,11 +3223,6 @@ int OPS_runImportanceSamplingAnalysis() {
 
 int OPS_runMonteCarloAnalysis() {
     if (cmds == 0) {
-        return -1;
-    }
-
-    // do input check
-    if (inputCheck() < 0) {
         return -1;
     }
 
