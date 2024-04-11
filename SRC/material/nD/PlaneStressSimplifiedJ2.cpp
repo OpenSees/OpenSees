@@ -21,7 +21,7 @@
 
 
 
-# define ND_TAG_PlaneStress   34526557578673
+# define ND_TAG_PlaneStress   3452
 
 
 Matrix PlaneStressSimplifiedJ2::tmpMatrix(3,3);
