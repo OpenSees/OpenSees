@@ -24,21 +24,26 @@
 // Original implementation: Massimo Petracca (ASDEA)
 //
 // A 3-node general shear-deformable (thick) shell element based on 
-// the Cell-based Smoothed Discrete Shear Gap (CS-DSG) formulation 
+// the MITC3 (Mixed Interpolation of Tensorial Components) formulation 
 // to avoid transverse-shear-locking in the thin shell limit.
+// The membrane behavior is based on the ANDeS formulation using the
+// drilling DOF to improve the membrane behavior.
 // 
 // It supports both linear and corotational kinematics.
 //
 //  References:
 //
-// 1 Nguyen-Thoi, T., Phung-Van, P., Thai-Hoang, C., & Nguyen-Xuan, H. 
-//   "A cell-based smoothed discrete shear gap method (CS-DSG3) using triangular 
-//   elements for static and free vibration analyses of shell structures"
-//   International Journal of Mechanical Sciences, 74, 32-45 (2013).
-//   https://www.sciencedirect.com/science/article/pii/S002074031300129X
-//   https://biblio.ugent.be/publication/5662705/file/5752662
+// 1 Lee, P. S., & Bathe, K. J. (2004). 
+//   "Development of MITC isotropic triangular shell finite elements."
+//   Computers & Structures, 82(11-12), 945-962.
+//   https://doi.org/10.1016/j.compstruc.2004.02.004
+//   
+// 2 Felippa, C.A., & Militello, C. (1992).
+//   "Membrane triangles with corner drilling freedoms - II.The ANDES element."
+//   Finite elements in analysisand design, 12(3 - 4), 189 - 201.
+//   https://doi.org/10.1016/0168-874X(92)90034-A
 //
-// 2 Hughes, Thomas JR, and F. Brezzi. 
+// 3 Hughes, Thomas JR, and F. Brezzi. 
 //   "On drilling degrees of freedom." 
 //   Computer methods in applied mechanics and engineering 72.1 (1989): 105-121.
 //   https://www.sciencedirect.com/science/article/pii/0045782589901242
@@ -84,6 +89,7 @@ public:
         SectionForceDeformation* section,
         const Vector& local_x,
         bool corotational = false,
+        bool reduced_integration = false,
         DrillingDOFMode drill_mode = DrillingDOF_Elastic,
         Damping* theDamping = 0);
     virtual ~ASDShellT3();
@@ -146,8 +152,11 @@ private:
 
 private:
 
-    // cross section
-    SectionForceDeformation* m_section = nullptr;
+    // optional 
+    bool m_reduced_integration = false;
+
+    // cross sections
+    SectionForceDeformation* m_sections[3] = { nullptr, nullptr, nullptr };
 
     // nodal ids
     ID m_node_ids = ID(3);
@@ -172,7 +181,7 @@ private:
     double m_angle = 0.0;
 
     // damping
-    Damping* m_damping = nullptr;
+    Damping* m_damping[3] = { nullptr, nullptr, nullptr };
 
     // initialization flag
     bool m_initialized = false;
