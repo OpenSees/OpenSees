@@ -391,7 +391,7 @@ int LayeredMembraneSection::revertToLastCommit(void)
 	// Revert the history variables to last commit
 	TSectionStrain = CSectionStrain;
 	TSectionStress = CSectionStress;
-	TSectionTangent = TSectionTangent;
+	TSectionTangent = CSectionTangent;
 
 	return success;
 }
