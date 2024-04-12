@@ -163,6 +163,7 @@
 #include "JankowskiImpact.h"
 #include "ViscoelasticGap.h"
 #include "Pinching4Material.h"
+#include "SAWSMaterial.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -1729,6 +1730,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Pinching4:
 		return new Pinching4Material();
+
+	case MAT_TAG_SAWSMaterial:
+		return new SAWSMaterial();
 
 
 	default:
