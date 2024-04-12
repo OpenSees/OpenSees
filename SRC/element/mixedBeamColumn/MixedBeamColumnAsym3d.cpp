@@ -959,8 +959,10 @@ int MixedBeamColumnAsym3d::revertToStart()
   //perform transformation - transform axial force form centroid to shear center
   kr.addMatrixTripleProduct(0.0, Tr, kv, 1.0);
 
-  Ki = new Matrix(crdTransf->getInitialGlobalStiffMatrix(kr));
-
+  if (Ki == 0)
+    Ki = new Matrix(NEGD,NEGD);
+  *Ki = crdTransf->getInitialGlobalStiffMatrix(kr);
+	
   // Vector V is zero at initial state
   V.Zero();
   committedV.Zero();
@@ -1100,7 +1102,8 @@ int MixedBeamColumnAsym3d::update() {
   //double GJ;
   //double torsionalForce;
   //Vector sectionForceShapeFcn[numSections];
-  sectionForceShapeFcn = new Vector[numSections];
+  if (sectionForceShapeFcn == 0)
+    sectionForceShapeFcn = new Vector[numSections];
   for ( i = 0; i < numSections; i++ ) {
     sectionForceShapeFcn[i] = Vector(NSD);
   }

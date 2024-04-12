@@ -9,7 +9,7 @@
 // points and weights of the classical finite element formulation of membrane elements to resemble strips (fibers), similarly to macroscopic elements.
 //
 // Reference:
-// 1.- López, C. N., Rojas, F., & Massone, L. M. (2022). Membrane fiber element for reinforced concrete walls – the benefits of macro and micro modeling approaches. Engineering Structures, 254, 113819.
+// 1.- LÃ³pez, C. N., Rojas, F., & Massone, L. M. (2022). Membrane fiber element for reinforced concrete walls â€“ the benefits of macro and micro modeling approaches. Engineering Structures, 254, 113819.
 //
 // Source: /usr/local/cvs/OpenSees/SRC/element/mefi/MEFI.cpp
 //
@@ -753,7 +753,7 @@ Response* MEFI::setResponse(const char **argv, int argc, OPS_Stream &output)
   output.attr("node3", connectedExternalNodes(2));
   output.attr("node4", connectedExternalNodes(3));
 
-  char dataOut[10];
+  char dataOut[40];
 
   //global forces
   if (strcmp(argv[0], "force") == 0 || strcmp(argv[0], "forces") == 0 ||
