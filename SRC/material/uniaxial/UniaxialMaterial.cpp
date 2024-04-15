@@ -373,11 +373,10 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 	 
 	  //Added by Liming, UoE, for temperature and elongation output,[SIF]2017
 	  case 7:
-		  if ((this->getVariable("TempAndElong", infoData)) != 0) {
-			  opserr << "Warning: invalid tag in uniaxialMaterial:getVariable" << endln;
-			  return -1;
-		  }
-		  tempData = infoData.getData();
+		  if ((this->getVariable("TempAndElong", infoData)) != 0)
+			  tempData.Zero();
+		  else
+		      tempData = infoData.getData();
 		  matInfo.setVector(tempData);
 		  return 0;
 	  //by SAJalali
