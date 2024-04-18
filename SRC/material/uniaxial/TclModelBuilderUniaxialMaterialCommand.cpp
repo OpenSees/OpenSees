@@ -78,6 +78,7 @@ extern void *OPS_EPPGapMaterial(void);
 extern void *OPS_ParallelMaterial(void);
 extern void *OPS_SeriesMaterial(void);
 extern void *OPS_PathIndependentMaterial(void);
+extern void *OPS_ContinuumUniaxialMaterial(void);
 extern void *OPS_BackboneMaterial(void);
 extern void *OPS_FatigueMaterial(void);
 extern void *OPS_HardeningMaterial(void);
@@ -1104,6 +1105,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     if (strcmp(argv[1],"PathIndependent") == 0) {
 
       void *theMat = OPS_PathIndependentMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
+    if (strcmp(argv[1],"Continuum") == 0) {
+
+      void *theMat = OPS_ContinuumUniaxialMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 

@@ -191,6 +191,7 @@ TransformationDOF_Group::TransformationDOF_Group(int tag,
 :DOF_Group(tag,node),
  theMP(0),Trans(0),modTangent(0),modUnbalance(0),modID(0),theSPs(0) 
 {
+    needRetainedData = -1;
     modNumDOF = node->getNumberDOF();
     // create space for the SP_Constraint array
     theSPs = new SP_Constraint *[modNumDOF];

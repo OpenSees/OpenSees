@@ -157,14 +157,65 @@ MidDistanceBeamIntegration::getCopy(void)
 int
 MidDistanceBeamIntegration::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int res = 0;
+  
+  int dbTag = this->getDbTag();
+
+  int nIP = pts.Size();
+  static ID iData(1);
+  iData(0) = nIP;
+  res = theChannel.sendID(dbTag, cTag, iData);
+  if (res < 0) {
+    opserr << "MidDistanceBeamIntegration::sendSelf - failed to send ID data" << endln;
+    return res;
+  }  
+
+  Vector dData(nIP*2);
+  for (int i=0; i<nIP; i++) {
+    dData(i) = pts(i);
+    dData(i+nIP) = wts(i);
+  }
+  res = theChannel.sendVector(dbTag, cTag, dData);
+  if (res < 0) {
+    opserr << "MidDistanceBeamIntegration::sendSelf - failed to send Vector data" << endln;
+    return res;
+  }
+  
+  return res;
 }
 
 int
 MidDistanceBeamIntegration::recvSelf(int cTag, Channel &theChannel,
 				     FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int res = 0;
+  
+  int dbTag = this->getDbTag();
+  
+  static ID iData(1);
+  res = theChannel.recvID(dbTag, cTag, iData);
+  if (res < 0) {
+    opserr << "MidDistanceBeamIntegration::recvSelf - failed to recv ID data" << endln;
+    return res;
+  }  
+  int nIP = iData(0);
+  
+  pts.resize(nIP);
+  wts.resize(nIP);
+
+  Vector dData(nIP*2);
+  res = theChannel.recvVector(dbTag, cTag, dData);
+  if (res < 0) {
+    opserr << "MidDistanceBeamIntegration::recvSelf - failed to recv Vector data" << endln;
+    return res;
+  }    
+
+  for (int i=0; i<nIP; i++) {
+    pts(i) = dData(i);
+    wts(i) = dData(i+nIP);
+  }
+  
+  return res;
 }
 
 int
