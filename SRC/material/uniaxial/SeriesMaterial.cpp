@@ -388,7 +388,7 @@ SeriesMaterial::revertToStart(void)
 	Ctangent = 0.0;
 
 	for (int i = 0; i < numMaterials; i++) {
-		err += theModels[i]->revertToLastCommit();
+		err += theModels[i]->revertToStart();
 
 		strain[i] = 0.0;
 		stress[i] = 0.0;
