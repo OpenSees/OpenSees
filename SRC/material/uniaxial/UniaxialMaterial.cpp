@@ -214,6 +214,7 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
   if ( (strcmp(argv[0],"stress") == 0) ||
        (strcmp(argv[0],"tangent") == 0)||
        (strcmp(argv[0],"strain") == 0) ||
+       (strcmp(argv[0],"plasticStrain") == 0) ||
        (strcmp(argv[0],"stressStrain") == 0) ||
        (strcmp(argv[0],"stressANDstrain") == 0) || 
        (strcmp(argv[0],"stressAndStrain") == 0) ||
@@ -224,10 +225,11 @@ UniaxialMaterial::setResponse(const char **argv, int argc,
        (strcmp(argv[0],"stressANDstrainANDtangent") == 0) ||
        (strstr(argv[0],"stressSensitivity") != 0) ||
        (strstr(argv[0],"strainSensitivity") != 0)||
-	  (strstr(argv[0], "TempElong") != 0)
+	  (strcmp(argv[0],"TempElong") == 0) ||
+	  (strcmp(argv[0],"tempANDelong") == 0) ||
 	  //by SAJalali
-	  || (strstr(argv[0], "energy") != 0) ||
-	  (strstr(argv[0], "Energy") != 0)
+	  (strcmp(argv[0],"energy") == 0) ||
+	  (strcmp(argv[0],"Energy") == 0)
 	  
 	  ) {
     
@@ -373,11 +375,10 @@ UniaxialMaterial::getResponse(int responseID, Information &matInfo)
 	 
 	  //Added by Liming, UoE, for temperature and elongation output,[SIF]2017
 	  case 7:
-		  if ((this->getVariable("TempAndElong", infoData)) != 0) {
-			  opserr << "Warning: invalid tag in uniaxialMaterial:getVariable" << endln;
-			  return -1;
-		  }
-		  tempData = infoData.getData();
+		  if ((this->getVariable("TempAndElong", infoData)) != 0)
+			  tempData.Zero();
+		  else
+		      tempData = infoData.getData();
 		  matInfo.setVector(tempData);
 		  return 0;
 	  //by SAJalali
