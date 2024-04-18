@@ -310,20 +310,36 @@ int CurvedPipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
     const Vector &data = theLoad->getData(type, loadFactor);
 
     if (type == LOAD_TAG_Beam3dUniformLoad) {
-        double wy = data(0) * loadFactor;  // Transverse
-        double wz = data(1) * loadFactor;  // Transverse
-        double wx =
-            data(2) * loadFactor;  // Axial (+ve from node I to J)
+        // transform global member load to local
+        Matrix T(3, 3);
+        Vector global_w(3);
+        for (int i = 0; i < 3; ++i) {
+            for (int j = 0; j < 3; ++j) {
+                T(i, j) = alg(i, j);
+            }
+        }
 
-        ElasticBeam3d::wx += wx;
-        ElasticBeam3d::wy += wy;
-        ElasticBeam3d::wz += wz;
+        // wy, wz, wx
+        global_w(1) = data(0) * loadFactor;
+        global_w(2) = data(1) * loadFactor;
+        global_w(0) = data(2) * loadFactor;
+
+        Vector local_w(3);
+        local_w.addMatrixVector(0.0, T, global_w, 1.0);
+
+        ElasticBeam3d::wx +=
+            local_w(0);  // Axial (+ve from node I to J)
+        ElasticBeam3d::wy += local_w(1);  // Transverse
+        ElasticBeam3d::wz += local_w(2);  // Transverse
+
     } else {
         opserr << "CurvedPipe::addLoad()  -- load type unknown for "
                   "element with tag: "
                << this->getTag() << "\n";
         return -1;
     }
+
+    return 0;
 }
 
 int CurvedPipe::addInertiaLoadToUnbalance(const Vector &accel) {

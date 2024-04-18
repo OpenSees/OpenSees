@@ -61,6 +61,7 @@ class Pipe : public ElasticBeam3d {
     void setDomain(Domain *theDomain);
 
     void zeroLoad(void);
+    int addLoad(ElementalLoad *theLoad, double loadFactor);
 
    protected:
     double aveTemp();
