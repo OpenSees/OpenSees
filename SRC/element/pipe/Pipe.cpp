@@ -22,6 +22,7 @@
 
 // Minjie
 #include <CrdTransf.h>
+#include <ElementalLoad.h>
 #include <LinearCrdTransf3d.h>
 #include <Node.h>
 #include <Pipe.h>
@@ -320,6 +321,94 @@ void Pipe::zeroLoad(void) {
         ElasticBeam3d::q0[0] -=
             0.25 * pressure * (dout - thk) * (1. - 2 * nu) * A / thk;
     }
+}
+
+int Pipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
+    int type;
+    const Vector &data = theLoad->getData(type, loadFactor);
+    double L = theCoordTransf->getInitialLength();
+    double B1, B2, C1, C2;  // shear coefficients
+    shearCoefficients(B1, B2, C1, C2);
+
+    if (type == LOAD_TAG_Beam3dUniformLoad) {
+        // transformation matrix
+        Matrix T(3, 3);
+        Vector xAxis(3), yAxis(3), zAxis(3);
+        Vector global_w(3);
+        if (theCoordTransf->getLocalAxes(xAxis, yAxis, zAxis) < 0) {
+            return -1;
+        }
+        xAxis.Normalize();
+        yAxis.Normalize();
+        zAxis.Normalize();
+        for (int j = 0; j < 3; ++j) {
+            T(0, j) = xAxis(j);
+            T(1, j) = yAxis(j);
+            T(2, j) = zAxis(j);
+        }
+
+        // global wy, wz, wx
+        global_w(1) = data(0) * loadFactor;
+        global_w(2) = data(1) * loadFactor;
+        global_w(0) = data(2) * loadFactor;
+
+        // local
+        Vector local_w(3);
+        local_w.addMatrixVector(0.0, T, global_w, 1.0);
+
+        double wx = local_w(0);  // Transverse
+        double wy = local_w(1);  // Transverse
+        double wz = local_w(2);  // Axial (+ve from node I to J)
+
+        this->wx += wx;
+        this->wy += wy;
+        this->wz += wz;
+
+        double Vy = 0.5 * wy * L;
+        double Mz = Vy * L / 6.0;  // wy*L*L/12
+        double Vz = 0.5 * wz * L;
+        double My = Vz * L / 6.0;  // wz*L*L/12
+        double P = wx * L;
+
+        // Reactions in basic system
+        p0[0] -= P;
+        p0[1] -= Vy;
+        p0[2] -= Vy;
+        p0[3] -= Vz;
+        p0[4] -= Vz;
+
+        // Fixed end forces in basic system
+        q0[0] -= 0.5 * P;
+        if (releasez == 0) {
+            q0[1] -= Mz * (2 * B1 - C1);
+            q0[2] += Mz * (2 * B1 - C1);
+        }
+        if (releasez == 1) {
+            q0[2] += wy * L * L / 8;
+        }
+        if (releasez == 2) {
+            q0[1] -= wy * L * L / 8;
+        }
+
+        if (releasey == 0) {
+            q0[3] += My * (2 * B2 - C2);
+            q0[4] -= My * (2 * B2 - C2);
+        }
+        if (releasey == 1) {
+            q0[4] -= wz * L * L / 8;
+        }
+        if (releasey == 2) {
+            q0[3] += wz * L * L / 8;
+        }
+
+    } else {
+        opserr << "Pipe::addLoad()  -- load type unknown "
+                  "for element with tag: "
+               << this->getTag() << endln;
+        return -1;
+    }
+
+    return 0;
 }
 
 int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
