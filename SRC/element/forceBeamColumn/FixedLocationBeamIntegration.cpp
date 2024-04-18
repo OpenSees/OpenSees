@@ -84,6 +84,14 @@ FixedLocationBeamIntegration::FixedLocationBeamIntegration(int nIP,
     pts(i) = pt(i);
   }
 
+  this->calculateWeights();
+}
+
+void
+FixedLocationBeamIntegration::calculateWeights()
+{
+  int nIP = pts.Size();
+  
   Vector R(nIP);
   for (int i = 0; i < nIP; i++)
     R(i) = 1.0/(i+1);
@@ -144,14 +152,64 @@ FixedLocationBeamIntegration::getCopy(void)
 int
 FixedLocationBeamIntegration::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int res = 0;
+
+  int dbTag = this->getDbTag();
+
+  int nIP = wts.Size();
+  static ID iData(1);
+  iData(0) = nIP;
+  res = theChannel.sendID(dbTag, cTag, iData);
+  if (res < 0) {
+    opserr << "FixedLocationBeamIntegration::sendSelf - failed to send ID data" << endln;
+    return res;
+  }  
+
+  Vector dData(nIP);
+  for (int i=0; i<nIP; i++)
+    dData(i) = pts(i);
+
+  res = theChannel.sendVector(dbTag, cTag, dData);
+  if (res < 0) {
+    opserr << "FixedLocationBeamIntegration::sendSelf - failed to send Vector data" << endln;
+    return res;
+  }
+  
+  return res;  
 }
 
 int
 FixedLocationBeamIntegration::recvSelf(int cTag, Channel &theChannel,
 				       FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int res = 0;
+  
+  int dbTag = this->getDbTag();
+  
+  static ID iData(1);
+  res = theChannel.recvID(dbTag, cTag, iData);
+  if (res < 0) {
+    opserr << "FixedLocationBeamIntegration::recvSelf - failed to recv ID data" << endln;
+    return res;
+  }  
+  int nIP = iData(0);
+  
+  pts.resize(nIP);
+  wts.resize(nIP);
+
+  Vector dData(nIP);
+  res = theChannel.recvVector(dbTag, cTag, dData);
+  if (res < 0) {
+    opserr << "FixedLocationBeamIntegration::recvSelf - failed to recv Vector data" << endln;
+    return res;
+  }    
+
+  for (int i=0; i<nIP; i++)
+    pts(i) = dData(i);
+
+  this->calculateWeights();
+  
+  return res;
 }
 
 int

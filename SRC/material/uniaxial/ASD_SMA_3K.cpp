@@ -537,7 +537,7 @@ ASD_SMA_3K::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(23);
+  static Vector data(25);
   
   data(0) = this->getTag();
   data(1) = k1;
@@ -560,8 +560,10 @@ ASD_SMA_3K::sendSelf(int cTag, Channel &theChannel)
   data(18) = Tstress;
   data(19) = Ttangent;
   data(20) = Cstrain;
-  data(21) = TLastStrain;
-  data(22) = CLastStrain;
+  data(21) = Cstress;
+  data(22) = Ctangent;  
+  data(23) = TLastStrain;
+  data(24) = CLastStrain;
   
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -576,7 +578,7 @@ ASD_SMA_3K::recvSelf(int cTag, Channel &theChannel,
 {
   int res = 0;
   
-  static Vector data(23);
+  static Vector data(25);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -605,8 +607,10 @@ ASD_SMA_3K::recvSelf(int cTag, Channel &theChannel,
 	Tstress = data(18);
 	Ttangent = data(19);
 	Cstrain = data(20);
-    TLastStrain = data(21) ;
-    CLastStrain=data(22) ;
+	Cstress = data(21);
+	Ctangent = data(22);	
+    TLastStrain = data(23) ;
+    CLastStrain=data(24) ;
   }
     
   return res;

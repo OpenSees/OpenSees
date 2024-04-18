@@ -116,8 +116,6 @@ class SurfaceLoad : public Element
     Vector dcrd3;             // current coordinates of node 3
     Vector dcrd4;             // current coordinates of node 4
 
-    int MyTag;                // what is my name?
-
     static double oneOverRoot3;
     static double GsPts[4][2];
 

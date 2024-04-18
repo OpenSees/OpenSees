@@ -55,6 +55,8 @@ double DispBeamColumn3d::workArea[200];
 
 void* OPS_DispBeamColumn3d()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
 	return 0;
@@ -84,6 +86,17 @@ void* OPS_DispBeamColumn3d()
 		}
 	    }
 	}
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -118,7 +131,7 @@ void* OPS_DispBeamColumn3d()
     }
     
     Element *theEle =  new DispBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					    *bi,*theTransf,mass,cmass);
+					    *bi,*theTransf,mass,cmass, theDamping);
     delete [] sections;
     return theEle;
 }
@@ -129,7 +142,8 @@ void *OPS_DispBeamColumn3d(const ID &info) {
     double mass = 0.0;
     int cmass = 0;
     int numData;
-
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
     if (ndm != 3 || ndf != 6) {
@@ -173,6 +187,17 @@ void *OPS_DispBeamColumn3d(const ID &info) {
                 if (OPS_GetNumRemainingInputArgs() > 0) {
                     if (OPS_GetDoubleInput(&numData, &mass) < 0) {
                         opserr << "WARNING: invalid mass\n";
+                        return 0;
+                    }
+                }
+            }
+            else if (strcmp(type, "-damp") == 0) {
+
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                    theDamping = OPS_getDamping(dampingTag);
+                    if (theDamping == 0) {
+                        opserr << "damping not found\n";
                         return 0;
                     }
                 }
@@ -254,7 +279,7 @@ void *OPS_DispBeamColumn3d(const ID &info) {
 
     Element *theEle = new DispBeamColumn3d(
         iData[0], iData[1], iData[2], secTags.Size(), sections, *bi,
-        *theTransf, mass, cmass);
+        *theTransf, mass, cmass, theDamping);
     delete[] sections;
     return theEle;
 }

@@ -121,8 +121,6 @@ TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressu
     myExternalNodes(1) = Nd2;
     myExternalNodes(2) = Nd3;
 
-	MyTag = tag;
-
 	GsPts[0][0] = 0.5;
 
   my_pressure = pressure;
@@ -142,7 +140,6 @@ TriSurfaceLoad::TriSurfaceLoad()
    	dcrd2(SL_NUM_NDF),
    	dcrd3(SL_NUM_NDF)
 {
-  MyTag = 0;
   GsPts[0][0] = 0;
   my_pressure = 0;
   rhoH = 0;
@@ -247,7 +244,7 @@ TriSurfaceLoad::UpdateBase(double Xi, double Eta)
 
     // Normalize
     // double norm = myNhat.Norm();
-    myNhat = myNhat / 2;
+    myNhat = myNhat / 3;
 
     return 0;
 }
@@ -347,65 +344,38 @@ TriSurfaceLoad::sendSelf(int commitTag, Channel &theChannel)
   // object - don't want to have to do the check if sending data
   int dataTag = this->getDbTag();
 
-  // TriSurfaceLoad packs it's data into a Vector and sends this to theChannel
-  // along with it's dbTag and the commitTag passed in the arguments
+  // TriSurfaceLoad packs its data into a Vector and sends this to theChannel
+  // along with its dbTag and the commitTag passed in the arguments
 
-  static Vector data(5);
+  static Vector data(4 + 6*SL_NUM_NDF + SL_NUM_NODE);
   data(0) = this->getTag();
-  data(1) = SL_NUM_DOF;
-  data(2) = my_pressure;
-  data(3) = mLoadFactor;
-  data(4) = rhoH;
+  data(1) = my_pressure;
+  data(2) = mLoadFactor;
+  data(3) = rhoH;
 
+  for (int i = 0; i < SL_NUM_NDF; i++) {
+    data(4+             i) = g1(i);
+    data(4+  SL_NUM_NDF+i) = g2(i);
+    data(4+2*SL_NUM_NDF+i) = myNhat(i);
+    data(4+3*SL_NUM_NDF+i) = dcrd1(i);
+    data(4+4*SL_NUM_NDF+i) = dcrd2(i);
+    data(4+5*SL_NUM_NDF+i) = dcrd3(i);
+  }
+  for (int i = 0; i < SL_NUM_NODE; i++)
+    data(4+6*SL_NUM_NDF+i) = myNI(i);
+  
   res = theChannel.sendVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send data\n";
     return -1;
   }           
 
-  // TriSurfaceLoad then sends the tags of it's four nodes
+  // TriSurfaceLoad then sends the tags of its four nodes
   res = theChannel.sendID(dataTag, commitTag, myExternalNodes);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send myExternalNodes\n";
     return -2;
   }
-
-  res = theChannel.sendVector(dataTag, commitTag, g1);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send g1\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, g2);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send g2\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, myNhat);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send myNhat\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, myNI);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send myNI\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, dcrd1);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send dcrd1\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, dcrd2);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send dcrd2\n";
-    return -2;
-  }
-  res = theChannel.sendVector(dataTag, commitTag, dcrd3);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to send dcrd3\n";
-    return -2;
-  }
-
 
   return 0;
 }
@@ -418,64 +388,35 @@ TriSurfaceLoad::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &t
 
   // TriSurfaceLoad creates a Vector, receives the Vector and then sets the 
   // internal data with the data in the Vector
-  static Vector data(5);
+  static Vector data(4 + 6*SL_NUM_NDF + SL_NUM_NODE);
   res = theChannel.recvVector(dataTag, commitTag, data);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::recvSelf() - failed to receive Vector\n";
     return -1;
   }           
   
-  MyTag = data(0);
-  my_pressure = data(2);
-  mLoadFactor = data(3);
-  rhoH = data(4);
+  this->setTag(int(data(0)));
+  my_pressure = data(1);
+  mLoadFactor = data(2);
+  rhoH = data(3);
 
-  this->setTag((int)MyTag);
-
-
-  // TriSurfaceLoad now receives the tags of it's four external nodes
+  for (int i = 0; i < SL_NUM_NDF; i++) {
+    g1(i)     = data(4+             i);
+    g2(i)     = data(4+  SL_NUM_NDF+i);
+    myNhat(i) = data(4+2*SL_NUM_NDF+i);
+    dcrd1(i)  = data(4+3*SL_NUM_NDF+i);
+    dcrd2(i)  = data(4+4*SL_NUM_NDF+i);
+    dcrd3(i)  = data(4+5*SL_NUM_NDF+i);
+  }
+  for (int i = 0; i < SL_NUM_NODE; i++)
+    myNI(i) = data(4+6*SL_NUM_NDF+i);
+  
+  // TriSurfaceLoad now receives the tags of its four external nodes
   res = theChannel.recvID(dataTag, commitTag, myExternalNodes);
   if (res < 0) {
     opserr <<"WARNING TriSurfaceLoad::recvSelf() - " << this->getTag() << " failed to receive ID\n";
     return -2;
   }
-
-  res = theChannel.recvVector(dataTag, commitTag, g1);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive g1\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, g2);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive g2\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, myNhat);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive myNhat\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, myNI);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive myNI\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, dcrd1);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive dcrd1\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, dcrd2);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive dcrd2\n";
-    return -2;
-  }
-  res = theChannel.recvVector(dataTag, commitTag, dcrd3);
-  if (res < 0) {
-    opserr <<"WARNING TriSurfaceLoad::sendSelf() - " << this->getTag() << " failed to receive dcrd3\n";
-    return -2;
-  }
-
 
   return 0;
 }

@@ -241,21 +241,6 @@ TensionOnlyMaterial::sendSelf(int cTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dataVec(3);
-  dataVec(0) = 0.0;//minStrain;
-  dataVec(1) = 0.0;//maxStrain;
-  /*
-  if (Cfailed == true)
-    dataVec(2) = 1.0;
-  else
-    dataVec(2) = 0.0;
-  */
-  
-  if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
-    opserr << "TensionOnlyMaterial::sendSelf() - failed to send the Vector\n";
-    return -2;
-  }
-
   if (theMaterial->sendSelf(cTag, theChannel) < 0) {
     opserr << "TensionOnlyMaterial::sendSelf() - failed to send the Material\n";
     return -3;
@@ -289,24 +274,6 @@ TensionOnlyMaterial::recvSelf(int cTag, Channel &theChannel,
   }
   theMaterial->setDbTag(dataID(2));
 
-  static Vector dataVec(3);
-  if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
-    opserr << "TensionOnlyMaterial::recvSelf() - failed to get the Vector\n";
-    return -3;
-  }
-
-  /*
-  minStrain = dataVec(0);
-  maxStrain = dataVec(1);
-  
-  if (dataVec(2) == 1.0)
-    Cfailed = true;
-  else
-    Cfailed = false;
-
-  Tfailed = Cfailed;
-  */
-  
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "TensionOnlyMaterial::recvSelf() - failed to get the Material\n";
     return -4;

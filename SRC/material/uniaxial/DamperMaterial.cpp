@@ -265,21 +265,33 @@ DamperMaterial::recvSelf(int cTag, Channel &theChannel,
     }
 
     this->setTag(int(data(0)));
-    if (theMaterial != 0)
-      delete theMaterial;
-
     int matClassTag = data[1];
-    dbTag = data[2];
-    UniaxialMaterial *theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
-    if (theMaterial  == 0) {
-      opserr << "FATAL DamperMaterial::recvSelf() ";
-      opserr << " could not get a UniaxialMaterial \n";
-      //exit(-1);
-      return -1;
-    }    	    
-    theMaterial->setDbTag(dbTag);
-    theMaterial->recvSelf(cTag, theChannel, theBroker);
 
+    if (theMaterial == 0) {
+      theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
+      if (theMaterial == 0) {
+	opserr << "DamperMaterial::recvSelf -- could not get UniaxialMaterial" << endln;
+	return -1;
+      }
+    }
+    
+    dbTag = data[2];
+    if (theMaterial->getClassTag() != matClassTag) {
+      delete theMaterial;
+      theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
+      if (theMaterial == 0) {
+	opserr << "DamperMaterial::recvSelf -- could not get UniaxialMaterial" << endln;
+	return -1;
+      }
+    }
+ 
+    theMaterial->setDbTag(dbTag);
+    res = theMaterial->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "DamperMaterial::recvSelf -- count not receive Uniaxialmaterial" << endln;
+      return res;
+    }
+ 
     return 0;
 }
 
