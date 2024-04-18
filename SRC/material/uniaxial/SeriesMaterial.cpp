@@ -385,7 +385,11 @@ SeriesMaterial::revertToStart(void)
 
 	Cstrain = 0.0;
 	Cstress = 0.0;
-	Ctangent = 0.0;
+	Ctangent = this->getInitialTangent();
+
+        Tstrain = 0.0;
+        Tstress = 0.0;
+        Ttangent = Ctangent;
 
 	for (int i = 0; i < numMaterials; i++) {
 		err += theModels[i]->revertToStart();
