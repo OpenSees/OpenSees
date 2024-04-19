@@ -1775,8 +1775,8 @@ ASDCoupledHinge3D::commitState(void)
     opserr << "-- Mz law: " << endln;
     MzMaterial->Print(opserr, 3);
     opserr << "\n";
-    return err;
 #endif
+    return err;
 }
 
 int
