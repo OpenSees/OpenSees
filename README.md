@@ -24,3 +24,9 @@ https://OpenSees.github.io/OpenSeesDocumentation
 ## Build Instructions
 Steps to build OpenSees on Windows, Linux, and Mac:
 https://opensees.github.io/OpenSeesDocumentation/developer/build.html
+
+## Modeling Questions
+Issues related to modeling questions will be closed. Instead, post your modeling questions on the OpenSees 
+message board or in the OpenSees Facebook group.
++ https://opensees.berkeley.edu/community
++ https://facebook.com/groups/opensees

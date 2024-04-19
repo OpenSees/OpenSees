@@ -10,8 +10,10 @@
 target_sources(OPS_Element
     PRIVATE
         ComponentElement2d.cpp
+        ComponentElement3d.cpp    
     PUBLIC
         ComponentElement2d.h
+        ComponentElement3d.h
 )
 #target_include_directories(OPS_Element_componentElement PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})

@@ -148,7 +148,8 @@ double SecStifDamping::getStiffnessMultiplier(void)
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
   double km = 0.0;
-  if (dT > 0.0 && t > ta && t < td) km = beta / dT;
+  StaticAnalysis **theStaticAnalysis = OPS_GetStaticAnalysis();
+  if (!*theStaticAnalysis && dT > 0.0 && t > ta && t < td) km = beta / dT;
   return 1.0 + km;
 }
 

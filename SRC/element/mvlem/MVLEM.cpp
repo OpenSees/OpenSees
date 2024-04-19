@@ -102,6 +102,15 @@ void *OPS_MVLEM(void)
   UniaxialMaterial **theMaterialsConcrete = new UniaxialMaterial* [m];
   UniaxialMaterial **theMaterialsSteel = new UniaxialMaterial*[m];
   UniaxialMaterial **theMaterialsShear = new UniaxialMaterial*[1];
+  for (int i = 0; i < m; i++) {
+    theThickness[i] = 0.0;
+    theWidth[i] = 0.0;
+    theRho[i] = 0.0;
+    matTags[i] = 0;
+    theMaterialsConcrete[i] = 0;
+    theMaterialsSteel[i] = 0;
+  }
+  theMaterialsShear[0] = 0;
 
   numArgs = OPS_GetNumRemainingInputArgs();
   while (numArgs > 0) {
@@ -1376,7 +1385,7 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("ResponseType", "Fy_j");
 		s.tag("ResponseType", "Mz_j");
 
-		return theResponse = new ElementResponse(this, 1, Vector(6));
+		return new ElementResponse(this, 1, Vector(6));
 
 	}
 
@@ -1385,7 +1394,7 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "fi");
 
-		return theResponse = new ElementResponse(this, 2, 0.0);
+		return new ElementResponse(this, 2, 0.0);
 	}
 
 	// Fiber Strain
@@ -1393,7 +1402,7 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "ey");
 
-		return theResponse = new ElementResponse(this, 3, Vector(m));
+		return new ElementResponse(this, 3, Vector(m));
 	}
 
 	// Fiber Concrete Stress
@@ -1401,7 +1410,7 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "syc");
 
-		return theResponse = new ElementResponse(this, 4, Vector(m));
+		return new ElementResponse(this, 4, Vector(m));
 	}
 
 	// Fiber Steel Stress
@@ -1409,7 +1418,7 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "sys");
 
-		return theResponse = new ElementResponse(this, 5, Vector(m));
+		return new ElementResponse(this, 5, Vector(m));
 	}
 
 	// Shear Force Deformation
@@ -1417,7 +1426,7 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 
 		s.tag("ResponseType", "shFD");
 
-		return theResponse = new ElementResponse(this, 6, Vector(2));
+		return new ElementResponse(this, 6, Vector(2));
 	}
 
 	s.endTag();

@@ -833,14 +833,15 @@ ASDShellQ4::setDamping(Domain *theDomain, Damping *damping)
   if (theDomain && damping)
   {
     for (int i = 0; i < 4; i++) {
+      if (m_damping[i]) delete m_damping[i];
       m_damping[i] = damping->getCopy();
       if (!m_damping[i]) {
         opserr << "ASDShellQ4::setDamping - failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (m_damping[i] && m_damping[i]->setDomain(theDomain, 8)) {
         opserr << "ASDShellQ4::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }
@@ -1129,7 +1130,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
 
     idData(16) = 0;
     idData(17) = 0;
-    if (m_damping) {
+    if (m_damping[0]) {
       idData(16) = m_damping[0]->getClassTag();
       int dbTag = m_damping[0]->getDbTag();
       if (dbTag == 0) {
@@ -1208,7 +1209,7 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     }
 
     // Ask the Damping to send itself
-    if (m_damping) {
+    if (m_damping[0]) {
       for (int i = 0 ;  i < 4; i++) {
         res += m_damping[i]->sendSelf(commitTag, theChannel);
         if (res < 0) {

@@ -114,8 +114,7 @@ class FiberSection3dThermal : public SectionForceDeformation
     Vector *s;         // section resisting forces  (axial force, bending moment)
     Matrix *ks;        // section stiffness
 
-    double   sTData[3];               //JZ data for s vector
-    Vector *sT;  // JZ  section resisting forces, caused by the temperature
+    Vector sT;  // JZ  section resisting forces, caused by the temperature
     //double  *TemperatureTangent; // JZ  the E of E*A*alpha*DeltaT
     double *Fiber_T;  //An array storing the TempT of the fibers.
     double *Fiber_TMax; //An array storing the TempTMax of the fibers.

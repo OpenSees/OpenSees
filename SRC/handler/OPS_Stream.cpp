@@ -120,3 +120,7 @@ void
 OPS_Stream::setAddCommon(int flag) {
   addCommonFlag = flag;
 }
+
+int OPS_Stream::flush() {
+  return 0;
+}

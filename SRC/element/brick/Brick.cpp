@@ -51,6 +51,9 @@
 
 void* OPS_Brick()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
+
     if (OPS_GetNumRemainingInputArgs() < 10) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: element Brick eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node 8? matTag?\n";
@@ -82,9 +85,25 @@ void* OPS_Brick()
 	    return 0;
 	}	
     }
+    //option,Tang.S
+    int numData = 1;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        std::string theType = OPS_GetString();
+        if (theType == "-damp") {
+
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0) {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
+    }
 
     return new Brick(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],
-		     idata[8],*mat,data[0],data[1],data[2]);
+		     idata[8],*mat,data[0],data[1],data[2], theDamping);
 }
 
 //static data
@@ -249,15 +268,17 @@ Brick::setDamping(Domain *theDomain, Damping *damping)
   {
     for (int i = 0; i < 8; i++)
     {
+      if (theDamping[i]) delete theDamping[i];
+
       theDamping[i] =(*damping).getCopy();
     
       if (!theDamping[i]) {
         opserr << "Brick::setDamping -- failed to get copy of damping\n";
-        exit(-1);
+        return -1;
       }
       if (theDamping[i] && theDamping[i]->setDomain(theDomain, 6)) {
         opserr << "Brick::setDamping -- Error initializing damping\n";
-        exit(-1);
+        return -2;
       }
     }
   }
@@ -1394,7 +1415,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
 
   idData(26) = 0;
   idData(27) = 0;
-  if (theDamping) {
+  if (theDamping[0]) {
     idData(26) = theDamping[0]->getClassTag();
     int dbTag = theDamping[0]->getDbTag();
     if (dbTag == 0) {
@@ -1436,7 +1457,7 @@ int  Brick::sendSelf (int commitTag, Channel &theChannel)
   }
   
   // Ask the Damping to send itself
-  if (theDamping) {
+  if (theDamping[0]) {
     for (i = 0 ;  i < 8; i++) {
       res += theDamping[i]->sendSelf(commitTag, theChannel);
       if (res < 0) {

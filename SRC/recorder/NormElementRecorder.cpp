@@ -680,3 +680,10 @@ NormElementRecorder::initialize(void)
 
   return 0;
 }
+
+int NormElementRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
+}

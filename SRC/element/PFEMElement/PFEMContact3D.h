@@ -1,22 +1,24 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
-** ****************************************************************** */
+/* ******************************************************************
+***
+**    OpenSees - Open System for Earthquake Engineering Simulation **
+**          Pacific Earthquake Engineering Research Center **
+** **
+** **
+** (C) Copyright 1999, The Regents of the University of California **
+** All Rights Reserved. **
+** **
+** Commercial use of this program without express permission of the **
+** University of California, Berkeley, is strictly prohibited.  See **
+** file 'COPYRIGHT'  in main directory for information on usage and **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES. **
+** **
+** Developed by: **
+**   Frank McKenna (fmckenna@ce.berkeley.edu) **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu) **
+**   Filip C. Filippou (filippou@ce.berkeley.edu) **
+** **
+** ******************************************************************
+*/
 
 // $Revision $
 // $Date$
@@ -38,9 +40,10 @@ class PFEMContact3D : public Element {
    public:
     PFEMContact3D();
 
-    PFEMContact3D(int tag, int nd1, int nd2, int nd3, int nd4, double kk,
-                  double thk, double m, double b, double dc, double a,
-                  double e, double rho);
+    PFEMContact3D(int tag, int nd1, int nd2, int nd3, int nd4,
+                  int nd5, int nd6, int nd7, int nd8, double dc,
+                  double e, double rho, double nx, double ny,
+                  double nz, double ae);
 
     ~PFEMContact3D();
 
@@ -51,7 +54,7 @@ class PFEMContact3D : public Element {
 
     Node **getNodePtrs(void) { return &nodes[0]; }
 
-    int getNumDOF(void) { return ndf[3]; }
+    int getNumDOF(void) { return ndf.back(); }
 
     // public methods to set the state of the element
     int revertToLastCommit(void) { return 0; }
@@ -99,46 +102,26 @@ class PFEMContact3D : public Element {
                     const char **displayModes = 0, int numModes = 0);
 
    private:
-    double getLine(double &A, double &B, double &C, double &dx, double &dy,
-                   double &x1, double &y1, double &x2, double &y2,
-                   double &x3, double &y3, double &L);
-
-    static void getdL(double L, double dx, double dy, Vector &dL);
-
-    static void getdA(double L, double A, const Vector &dL, Vector &dA);
-
-    static void getdB(double L, double B, const Vector &dL, Vector &dB);
-
-    static void getdC(double L, double C, double x1, double y1, double x2,
-                      double y2, const Vector &dL, Vector &dC);
-
-    static void getdD(double A, double B, double x3, double y3,
-                      const Vector &dA, const Vector &dB, const Vector &dC,
-                      Vector &dD);
+    double getD();
 
     double getP(double D);
 
-    void getdP(const Vector &dD, double D, Vector &dP);
-
-    void getV(Vector &vn, double &vt, Vector &vj);
+    double getVI();
 
     bool inContact(double D);
 
    private:
-    // kdoverAd = E / Ld, Ld - length of debris
-    // thk - thickness of debris
-    // mu - damping ratio
-    // beta -frictional coefficient
-    // Dc - initial distance between node 3 and edge 1-2
-    // alpha - stiffness parameter
+    // Dc - initial distance
     // E - elastic modulus of debris
     // rho - density of debris
+    // ndir - normal direction from 5678 to 1234
 
     ID ntags;
     std::vector<Node *> nodes;
-    double kdoverAd, thk, mu, beta, Dc, alpha, E, rho;
+    double Dc, E, rho, Ae, Fi;
     std::vector<int> ndf;
-    double signvt0, F0;
+    Vector ndir;
+
     static Matrix K;
     static Vector P;
 };

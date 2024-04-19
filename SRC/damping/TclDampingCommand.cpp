@@ -266,6 +266,7 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
             count++;
         }
         Damping = new URDDamping(dampingTag, numfreq, etaFreq, dptol, ta, td, facSeries, prttag, maxiter);
+        delete etaFreq;
     }
     else if (strcmp(argv[1], "URDbeta") == 0) {
     int numfreq;
@@ -332,6 +333,8 @@ TclCommand_addDamping(ClientData clientData, Tcl_Interp *interp,
         count++;
     }
     Damping = new URDDampingbeta(dampingTag, numfreq, tmpomegac, tmpbeta, ta, td, facSeries);
+    delete tmpbeta;
+    delete tmpomegac;
     }
     else {
       opserr << "WARNING TclModelBuilder - damping - invalid Type\n";

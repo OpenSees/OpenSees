@@ -45,7 +45,7 @@
 -------------------------------*/
 // Detailed descriptions of the model and its implementation can be found in the following:
 // (1) Knaack, A.M., Kurama, Y.C. 2018. Modeling Time-Dependent Deformations: Application for Reinforced Concrete Beams with 
-//     Recycled Concrete Aggregates. ACI Structural J. 115, 175–190. doi:10.14359/51701153
+//     Recycled Concrete Aggregates. ACI Structural J. 115, 175ï¿½190. doi:10.14359/51701153
 // (2) Knaack, A.M., 2013. Sustainable concrete structures using recycled concrete aggregate: short-term and long-term behavior
 //     considering material variability. PhD Dissertation, Civil and Environmental Engineering and Earth Sciences, University of Notre Dame, Notre Dame, Indiana, USA, 680 pp.
 // A manual describing the use of the model and sample files can be found at:
@@ -53,7 +53,7 @@
 //----------------------------------------------------------------------------------------------------------------------------
 
 //----------------------------------------------------------------------------------------------------------------------------
-// Disclaimer: This software is provided “as is”, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
+// Disclaimer: This software is provided ï¿½as isï¿½, without any warranties, expressed or implied. In no event shall the developers be liable for any claim, damages, or liability arising from or in connection with this software.
 //----------------------------------------------------------------------------------------------------------------------------
 
 #ifndef TDConcreteMC10_h
@@ -94,7 +94,6 @@ class TDConcreteMC10 : public UniaxialMaterial //ntosic: changed name
 	double setShrinkDrying(double time); //Added by AMK //ntosic: split into basic and drying shrinkage
 	double getShrinkBasic(void); //Added by AMK //ntosic: split into basic and drying
 	double getShrinkDrying(void); //Added by AMK //ntosic: split into basic and drying
-    double getKappa(void);
     
     int commitState(void);
     int revertToLastCommit(void);    
@@ -140,7 +139,7 @@ class TDConcreteMC10 : public UniaxialMaterial //ntosic: changed name
 	double phibb; //ntosic
 	double phida; //ntosic
 	double phidb; //ntosic
-    double sigCr; // stress that creep curve is based on //ntosic: CHANGE?
+  //double sigCr; // stress that creep curve is based on //ntosic: CHANGE?
     double beta;
     double tcast;
 	double cem; //ntosic
@@ -196,7 +195,6 @@ class TDConcreteMC10 : public UniaxialMaterial //ntosic: changed name
     float dsig_i[5000];
     float TIME_i[5000]; //Time from the previous time step
     float DTIME_i[5000];
-    float kappa[5000];
 };
 
 

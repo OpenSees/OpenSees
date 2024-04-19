@@ -870,23 +870,6 @@ ForceBeamColumnCBDI2d::update()
     f.Zero();
     vr.Zero();
       
-    if (beamIntegr->addElasticFlexibility(L, f) < 0) {
-      vr(0) += f(0,0)*SeTrial(0);
-      vr(1) += f(1,1)*SeTrial(1) + f(1,2)*SeTrial(2);
-      vr(2) += f(2,1)*SeTrial(1) + f(2,2)*SeTrial(2);
-    }
-    
-    double v0[3];
-    v0[0] = 0.0; v0[1] = 0.0; v0[2] = 0.0;
-    
-    for (int ie = 0; ie < numEleLoads; ie++) 
-      beamIntegr->addElasticDeformations(eleLoads[ie], eleLoadFactors[ie], L, v0);
-    
-    // Add effects of element loads
-    vr(0) += v0[0];
-    vr(1) += v0[1];
-    vr(2) += v0[2];
-	  
     bool isGamma = false;
 
     for (int i = 0; i < numSections; i++) {
@@ -1992,9 +1975,6 @@ ForceBeamColumnCBDI2d::getInitialFlexibility(Matrix &fe)
   double L = crdTransf->getInitialLength();
   double oneOverL  = 1.0/L;  
   
-  // Flexibility from elastic interior
-  beamIntegr->addElasticFlexibility(L, fe);
-  
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
   
@@ -2974,7 +2954,7 @@ ForceBeamColumnCBDI2d::setResponse(const char **argv, int argc, OPS_Stream &outp
     theResponse = new ElementResponse(this, 111, Matrix(numSections,3));
 
   else if (strcmp(argv[0],"cbdiDisplacements") == 0)
-    theResponse = new ElementResponse(this, 112, Matrix(20,3));
+    theResponse = new ElementResponse(this, 112, Matrix(1,3));
   
   // section response -
   else if (strstr(argv[0],"sectionX") != 0) {
@@ -3171,8 +3151,6 @@ ForceBeamColumnCBDI2d::getResponse(int responseID, Information &eleInfo)
       d2 += (wts[i]*L)*kappa*b;
     }
     
-    d2 += beamIntegr->getTangentDriftI(L, LI, Se(1), Se(2));
-    
     for (i = numSections-1; i >= 0; i--) {
       double x = pts[i]*L;
       if (x < LI)
@@ -3187,8 +3165,6 @@ ForceBeamColumnCBDI2d::getResponse(int responseID, Information &eleInfo)
       d3 += (wts[i]*L)*kappa*b;
     }
     
-    d3 += beamIntegr->getTangentDriftJ(L, LI, Se(1), Se(2));
-
     static Vector d(2);
     d(0) = d2;
     d(1) = d3;
@@ -3284,11 +3260,10 @@ ForceBeamColumnCBDI2d::getResponse(int responseID, Information &eleInfo)
     double ipts[maxNumSections];
     beamIntegr->getSectionLocations(numSections, L, ipts);
     // CBDI influence matrix
-    double pts[20];
-    for (int i = 0; i < 20; i++)
-      pts[i] = 1.0/(20-1)*i;
-    Matrix ls(20, numSections);
-    getCBDIinfluenceMatrix(20, pts, numSections, ipts, L, ls);
+    double pts[1];
+    pts[0] = eleInfo.theDouble;
+    Matrix ls(1, numSections);
+    getCBDIinfluenceMatrix(1, pts, numSections, ipts, L, ls);
     // Curvature vector
     Vector kappa(numSections);
     for (int i = 0; i < numSections; i++) {
@@ -3300,20 +3275,19 @@ ForceBeamColumnCBDI2d::getResponse(int responseID, Information &eleInfo)
 	  kappa(i) += e(j);
     }
     // Displacement vector
-    Vector dispsy(20);
+    Vector dispsy(1);
     dispsy.addMatrixVector(0.0, ls, kappa, 1.0);
     static Vector uxb(2);
     static Vector uxg(2);
-    Matrix disps(20,3);
+    Matrix disps(1,3);
     vp = crdTransf->getBasicTrialDisp();
-    for (int i = 0; i < 20; i++) {
-      uxb(0) = pts[i]*vp(0); // linear shape function
-      uxb(1) = dispsy(i);
-      uxg = crdTransf->getPointGlobalDisplFromBasic(pts[i],uxb);
-      disps(i,0) = uxg(0);
-      disps(i,1) = uxg(1);
-      disps(i,2) = 0.0;   
-    }
+    uxb(0) = pts[0]*vp(0); // linear shape function
+    uxb(1) = dispsy(0);
+    uxg = crdTransf->getPointGlobalDisplFromBasic(pts[0],uxb);
+    disps(0,0) = uxg(0);
+    disps(0,1) = uxg(1);
+    disps(0,2) = 0.0;   
+
     return eleInfo.setMatrix(disps);
   }
   
@@ -3999,9 +3973,6 @@ ForceBeamColumnCBDI2d::computedqdh(int gradNumber)
   static Matrix dfedh(3,3);
   dfedh.Zero();
 
-  if (beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh) < 0)
-    dvdh.addMatrixVector(1.0, dfedh, Se, -1.0);
-  
   //opserr << "dfedh: " << dfedh << endln;
 
   static Vector dqdh(3);
@@ -4024,8 +3995,6 @@ ForceBeamColumnCBDI2d::computedfedh(int gradNumber)
 
   double dLdh = crdTransf->getdLdh();
   double d1oLdh = crdTransf->getd1overLdh();
-
-  beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh);
 
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);

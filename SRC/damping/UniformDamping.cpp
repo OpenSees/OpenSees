@@ -304,7 +304,8 @@ double UniformDamping::getStiffnessMultiplier(void)
   double t = theDomain->getCurrentTime();
   double dT = theDomain->getDT();
   double km = 0.0;
-  if (dT > 0.0 && t > ta && t < td)
+  StaticAnalysis **theStaticAnalysis = OPS_GetStaticAnalysis();
+  if (!*theStaticAnalysis && dT > 0.0 && t > ta && t < td)
   {
     for (int i = 0; i < nFilter; ++i)
     {

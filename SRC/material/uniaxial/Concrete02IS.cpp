@@ -101,6 +101,11 @@ Concrete02IS::Concrete02IS(int tag, double _E0, double _fc, double _epsc0, doubl
   ecminP = 0.0;
   deptP = 0.0;
 
+  if (fc > 0) fc = -fc;
+  if (epsc0 > 0) epsc0 = -epsc0;
+  if (fcu > 0) fcu = -fcu;
+  if (epscu > 0) epscu = -epscu;
+	  
   eP = E0;//2.0*fc / epsc0; // Marafi Change 2018/01/31
   epsP = 0.0;
   sigP = 0.0;
@@ -118,6 +123,11 @@ Concrete02IS::Concrete02IS(int tag, double _E0, double _fc, double _epsc0, doubl
   ecminP = 0.0;
   deptP = 0.0;
 
+  if (fc > 0) fc = -fc;
+  if (epsc0 > 0) epsc0 = -epsc0;
+  if (fcu > 0) fcu = -fcu;
+  if (epscu > 0) epscu = -epscu;
+	  
   eP = E0;//2.0*fc / epsc0; // Marafi Change 2018/01/31
   epsP = 0.0;
   sigP = 0.0;

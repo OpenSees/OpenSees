@@ -300,6 +300,8 @@ PVDRecorder::vtu()
     }
     if (nodendf < 3) {
 	nodendf = 3;
+    } else if (nodendf > 3) {
+        nodendf = 3;
     }
 
     // get parts
@@ -445,7 +447,7 @@ PVDRecorder::savePart0(int nodendf)
     // points header
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
     theFile<<" Name="<<quota<<"Points"<<quota;
     theFile<<" NumberOfComponents="<<quota<<3<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -480,7 +482,7 @@ PVDRecorder::savePart0(int nodendf)
     // connectivity
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"connectivity"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -494,7 +496,7 @@ PVDRecorder::savePart0(int nodendf)
 
     // offsets
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"offsets"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -506,7 +508,7 @@ PVDRecorder::savePart0(int nodendf)
 
     // types
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"types"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -528,7 +530,7 @@ PVDRecorder::savePart0(int nodendf)
     // node tags
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"NodeTag"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -543,7 +545,7 @@ PVDRecorder::savePart0(int nodendf)
     // node velocity
     if(nodedata.vel) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Velocity"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -569,7 +571,7 @@ PVDRecorder::savePart0(int nodendf)
     if(nodedata.disp) {
 	// all displacement
     // this->indent();
-	// theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	// theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	// theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
 	// theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	// theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -592,7 +594,7 @@ PVDRecorder::savePart0(int nodendf)
 
     // displacement
     this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Displacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<3<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -617,7 +619,7 @@ PVDRecorder::savePart0(int nodendf)
     // node incr displacement
     if(nodedata.incrdisp) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"IncrDisplacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -642,7 +644,7 @@ PVDRecorder::savePart0(int nodendf)
     // node acceleration
     if(nodedata.accel) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Acceleration"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -667,7 +669,7 @@ PVDRecorder::savePart0(int nodendf)
     // node pressure
     if(nodedata.pressure) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Pressure"<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
 	this->incrLevel();
@@ -688,7 +690,7 @@ PVDRecorder::savePart0(int nodendf)
     // node reaction
     if(nodedata.reaction) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Reaction"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -713,7 +715,7 @@ PVDRecorder::savePart0(int nodendf)
     // node unbalanced load
     if(nodedata.unbalanced) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"UnbalancedLoad"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -738,7 +740,7 @@ PVDRecorder::savePart0(int nodendf)
     // node mass
     if(nodedata.mass) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"NodeMass"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -763,7 +765,7 @@ PVDRecorder::savePart0(int nodendf)
     // node eigen vector
     for(int k=0; k<nodedata.numeigen; k++) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"EigenVector"<<k+1<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -801,7 +803,7 @@ PVDRecorder::savePart0(int nodendf)
     // element tags
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"ElementTag"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -899,7 +901,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // points header
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
     theFile<<" Name="<<quota<<"Points"<<quota;
     theFile<<" NumberOfComponents="<<quota<<3<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -934,7 +936,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // connectivity
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"connectivity"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -948,7 +950,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
 
     // offsets
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"offsets"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -960,7 +962,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
 
     // types
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"types"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -982,7 +984,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node tags
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"NodeTag"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -997,7 +999,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node velocity
     if(nodedata.vel) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Velocity"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1022,7 +1024,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node displacement
     if(nodedata.disp) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Displacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1042,7 +1044,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node incr displacement
     if(nodedata.incrdisp) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"IncrDisplacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1062,7 +1064,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node acceleration
     if(nodedata.accel) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Acceleration"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1082,7 +1084,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node pressure
     if(nodedata.pressure) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Pressure"<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
 	this->incrLevel();
@@ -1099,7 +1101,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node reaction
     if(nodedata.reaction) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Reaction"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1119,7 +1121,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node unbalanced load
     if(nodedata.unbalanced) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"UnbalancedLoad"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1139,7 +1141,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node mass
     if(nodedata.mass) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"NodeMass"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1159,7 +1161,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // node eigen vector
     for(int k=0; k<nodedata.numeigen; k++) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"EigenVector"<<k+1<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1188,7 +1190,7 @@ PVDRecorder::savePartParticle(int pno, int bgtag, int nodendf)
     // element tags
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"ElementTag"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -1309,7 +1311,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // points header
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
     theFile<<" Name="<<quota<<"Points"<<quota;
     theFile<<" NumberOfComponents="<<quota<<3<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1350,7 +1352,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // connectivity
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"connectivity"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -1380,7 +1382,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 
     // offsets
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"offsets"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -1396,7 +1398,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 
     // types
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"types"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -1425,7 +1427,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node tags
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"NodeTag"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -1440,7 +1442,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node velocity
     if(nodedata.vel) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Velocity"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1466,7 +1468,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     if(nodedata.disp) {
 	// all displacement
     // this->indent();
-	// theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	// theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	// theFile<<" Name="<<quota<<"AllDisplacement"<<quota;
 	// theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	// theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1489,7 +1491,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 
     // displacement
     this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Displacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<3<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1514,7 +1516,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node incr displacement
     if(nodedata.incrdisp) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"IncrDisplacement"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1539,7 +1541,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node acceleration
     if(nodedata.accel) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Acceleration"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1564,7 +1566,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node pressure
     if(nodedata.pressure) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Pressure"<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
 	this->incrLevel();
@@ -1585,7 +1587,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node reaction
     if(nodedata.reaction) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"Reaction"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1610,7 +1612,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node unbalanced load
     if(nodedata.unbalanced) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"UnbalancedLoad"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1635,7 +1637,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node mass
     if(nodedata.mass) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"NodeMass"<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1660,7 +1662,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // node eigen vector
     for(int k=0; k<nodedata.numeigen; k++) {
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<"EigenVector"<<k+1<<quota;
 	theFile<<" NumberOfComponents="<<quota<<nodendf<<quota;
 	theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
@@ -1698,7 +1700,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
     // element tags
     this->incrLevel();
     this->indent();
-    theFile<<"<DataArray type="<<quota<<"Int32"<<quota;
+    theFile<<"<DataArray type="<<quota<<"Int64"<<quota;
     theFile<<" Name="<<quota<<"ElementTag"<<quota;
     theFile<<" format="<<quota<<"ascii"<<quota<<">\n";
     this->incrLevel();
@@ -1729,7 +1731,7 @@ PVDRecorder::savePart(int partno, int ctag, int nodendf)
 
 	// save data
 	this->indent();
-	theFile<<"<DataArray type="<<quota<<"Float32"<<quota;
+	theFile<<"<DataArray type="<<quota<<"Float64"<<quota;
 	theFile<<" Name="<<quota<<eles[0]->getClassType();
 	for(int j=0; j<argc; j++) {
 	    theFile<<argv[j];
@@ -1949,6 +1951,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_TFP_Bearing] = VTK_LINE;
     vtktypes[ELE_TAG_TFP_Bearing2d] = VTK_LINE;
     vtktypes[ELE_TAG_TripleFrictionPendulum] = VTK_LINE;
+    vtktypes[ELE_TAG_TripleFrictionPendulumX] = VTK_LINE;
     vtktypes[ELE_TAG_PFEMElement2D] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_FourNodeQuad02] = VTK_QUAD;
     vtktypes[ELE_TAG_cont2d01] = VTK_POLY_VERTEX;
@@ -1982,6 +1985,9 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_SFI_MVLEM] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_MVLEM_3D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_SFI_MVLEM_3D] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_E_SFI_MVLEM_3D] = VTK_POLY_VERTEX;
+	vtktypes[ELE_TAG_E_SFI] = VTK_POLY_VERTEX;
+	vtktypes[ELE_TAG_MEFI] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_TaylorHood2D] = VTK_QUADRATIC_TRIANGLE;
     vtktypes[ELE_TAG_PFEMElement2DQuasi] = VTK_TRIANGLE;
@@ -1994,6 +2000,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_PFEMContact3D] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
@@ -2029,4 +2036,11 @@ PVDRecorder::getfilename(const char* name)
     // more slash
     pathname = fname.substr(0,found+1);
     basename = fname.substr(found+1);
+}
+
+int PVDRecorder::flush(void) {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
 }

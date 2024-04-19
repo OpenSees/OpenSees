@@ -81,6 +81,7 @@ extern void printCommand(int argc, TCL_Char **argv);
 //
 
 extern  void *OPS_ComponentElement2d(void);
+extern  void *OPS_ComponentElement3d(void);
 //extern  void *OPS_ComponentElementDamp2d(void);
 extern  void *OPS_TrussElement(void);
 extern  void *OPS_TrussSectionElement(void);
@@ -101,6 +102,7 @@ extern void *OPS_PileToe3D(void);
 extern void *OPS_SurfaceLoad(void);
 extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
+extern void *OPS_ModElasticBeam3d(void);
 extern void *OPS_ElasticBeam2d(const ID &info);
 extern void *OPS_ElasticBeam3d(void);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
@@ -129,9 +131,14 @@ extern void *OPS_Quad4FiberOverlay(void);
 extern void *OPS_Brick8FiberOverlay(void);
 extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
+extern void *OPS_TripleFrictionPendulumX(void);
 extern void *OPS_Truss2(void);
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
+extern void *OPS_PML2D_3(void);
+extern void *OPS_PML2D_5(void);
+extern void *OPS_PML2D_12(void);
+extern void *OPS_PML2DVISCOUS(void);
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -139,13 +146,16 @@ extern void *OPS_LeadRubberX(void);
 extern void *OPS_ElastomericX(void);
 extern void *OPS_N4BiaxialTruss(void);
 extern void *OPS_AC3D8HexWithSensitivity(void);
-extern void *OPS_ASID8QuadWithSensitivity(void);
+extern void *OPS_ASI3D8QuadWithSensitivity(void);
 extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);       // Kristijan Kolozvari
 extern void *OPS_SFI_MVLEM(void);   // Kristijan Kolozvari
 extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
-extern void* OPS_SFI_MVLEM_3D(void);    // Kristijan Kolozvari
+extern void* OPS_SFI_MVLEM_3D(void);// Kristijan Kolozvari
+extern void* OPS_E_SFI_MVLEM_3D(void);// Kristijan Kolozvari
+extern void *OPS_E_SFI(void);   	// C. N. Lopez
+extern void *OPS_MEFI(void);   		// C. N. Lopez
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
 extern void *OPS_PFEMElement2DBubble(const ID &info);
@@ -165,6 +175,7 @@ extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
+extern void *OPS_TenNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
 extern void *OPS_ASDAbsorbingBoundary2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ASDAbsorbingBoundary3D(void); // Massimo Petracca (ASDEA)
@@ -478,8 +489,12 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
 
 
-  } else if (strcmp(argv[1],"componentElement2d") == 0) {
-    void *theEle = OPS_ComponentElement2d();
+  } else if (strcmp(argv[1],"componentElement2d") == 0 || strcmp(argv[1],"componentElement") == 0) {
+    void *theEle = 0;
+    if (OPS_GetNDM() == 2)
+      theEle = OPS_ComponentElement2d();
+    if (OPS_GetNDM() == 3)
+      theEle = OPS_ComponentElement3d();    
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -515,6 +530,15 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if ((strcmp(argv[1],"ModElasticBeam3d") == 0) || (strcmp(argv[1],"modElasticBeam3d")) == 0) {
+    Element *theEle = (Element *)OPS_ModElasticBeam3d();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
   } else if ((strcmp(argv[1],"elasticBeamColumn") == 0) || (strcmp(argv[1],"elasticBeam")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -528,6 +552,43 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
+  } else if ((strcmp(argv[1],"PML2D_3") == 0) || (strcmp(argv[1],"pml2d_3")) == 0) {
+    Element *theEle = (Element *)OPS_PML2D_3();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if ((strcmp(argv[1],"PML2D_5") == 0) || (strcmp(argv[1],"pml2d_5")) == 0) {
+    Element *theEle = (Element *)OPS_PML2D_5();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if ((strcmp(argv[1],"PML2D_12") == 0) || (strcmp(argv[1],"pml2d_12")) == 0) {
+    Element *theEle = (Element *)OPS_PML2D_12();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if ((strcmp(argv[1],"PMLVISCOUS") == 0) || (strcmp(argv[1],"pmlviscous")) == 0) {
+    Element *theEle = 0;
+    ID info;
+    if (OPS_GetNDM() == 2)
+      theEle = (Element *)OPS_PML2DVISCOUS();
+    // else
+    //   theEle = (Element *)OPS_PML3DVISCOUS();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    } 
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
@@ -729,6 +790,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if (strcmp(argv[1], "TripleFrictionPendulumX") == 0) {
+  
+  void* theEle = OPS_TripleFrictionPendulumX();
+  if (theEle != 0)
+      theElement = (Element*)theEle;
+  else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+  }
+	  
   } else if (strcmp(argv[1],"HDR") == 0) {
     
     void *theEle = OPS_HDR();
@@ -819,6 +890,41 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     else {
         opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
         return TCL_ERROR;
+    }
+  }
+  else if (strcmp(argv[1], "E_SFI_MVLEM_3D") == 0) {    // Kristijan Kolozvari
+
+      void* theEle = OPS_E_SFI_MVLEM_3D();
+      if (theEle != 0)
+          theElement = (Element*)theEle;
+      else {
+          opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+          return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "E_SFI") == 0) {  // C. N. Lopez
+
+    void* theEle = OPS_E_SFI();
+    if (theEle != 0)
+        theElement = (Element*)theEle;
+    else {
+        opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+        return TCL_ERROR;
+    }
+  }
+  
+  else if (strcmp(argv[1],"MEFI") == 0) {    // C. N. Lopez
+    
+    void *theEle = 0;
+    int NDM = OPS_GetNDM();
+    if (NDM == 2)
+      theEle = OPS_MEFI();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
     }
   }
   
@@ -1172,7 +1278,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "ASI3D8") == 0) {
     
-    void *theEle = OPS_ASID8QuadWithSensitivity();
+    void *theEle = OPS_ASI3D8QuadWithSensitivity();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -1317,6 +1423,20 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "FourNodeTetrahedron") == 0) {
       void *theEle = OPS_FourNodeTetrahedron();
+      if (theEle != 0) 
+      {
+        theElement = (Element*)theEle;
+      } 
+      else 
+      {
+        opserr<<"tclelementcommand -- unable to create element of type : "
+            <<argv[1]<<endln;
+        return TCL_ERROR;
+      }
+
+  }
+  else if (strcmp(argv[1], "TenNodeTetrahedron") == 0) {
+      void *theEle = OPS_TenNodeTetrahedron();
       if (theEle != 0) 
       {
         theElement = (Element*)theEle;
@@ -1592,7 +1712,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
       }
   }
-  
+  else if (strcmp(argv[1],"beamWithHinges") == 0) {
+    void *theEle = OPS_BeamWithHinges();
+    if (theEle != 0) 
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;    
+    }
+  }
+	
   // if one of the above worked
   if (theElement != 0) {
     if (theTclDomain->addElement(theElement) == false) {
@@ -1637,14 +1766,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     int result = TclModelBuilder_addForceBeamColumn(clientData, interp, argc, argv,
 						    theTclDomain, theTclBuilder);
     return result;
-  } else if (strcmp(argv[1],"beamWithHinges") == 0) {
-    void *theEle = OPS_BeamWithHinges();
-    if (theEle != 0) 
-      theElement = (Element *)theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;    
-    }
   } else if ((strcmp(argv[1],"quad") == 0) || (strcmp(argv[1],"stdQuad") == 0)) {
     int result = TclModelBuilder_addFourNodeQuad(clientData, interp, argc, argv,
 						 theTclDomain, theTclBuilder);

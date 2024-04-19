@@ -101,6 +101,8 @@
 #define TSERIES_TAG_PeerMotion       11
 #define TSERIES_TAG_PeerNGAMotion       12
 #define TSERIES_TAG_PathTimeSeriesThermal  13  //L.Jiang [ SIF ]
+#define TSERIES_TAG_RampSeries  14  //CDM
+#define TSERIES_TAG_MPAccSeries       15 //Tang.S[SEU]
 
 #define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2
@@ -119,6 +121,7 @@
 #define MAT_TAG_Steel01				 5
 #define MAT_TAG_Hardening			 6
 #define MAT_TAG_Hysteretic			 7
+#define MAT_TAG_HystereticSM		1969  // Silvia Mazzoni, 2022
 #define MAT_TAG_EPPGap				 8
 #define MAT_TAG_Viscous				 9
 #define MAT_TAG_Backbone			10
@@ -151,6 +154,9 @@
 #define MAT_TAG_Concrete07                      37
 #define MAT_TAG_HyperbolicGapMaterial           38
 #define MAT_TAG_ImpactMaterial                  39
+#define MAT_TAG_Hertzdamp                  420
+#define MAT_TAG_JankowskiImpact            421
+#define MAT_TAG_ViscoelasticGap            422
 #define MAT_TAG_ShearPanelMaterial		40
 #define MAT_TAG_SAWSMaterial			41
 #define MAT_TAG_ConcreteL01			42
@@ -239,10 +245,13 @@
 #define MAT_TAG_Trilinwp2 222
 #define MAT_TAG_Trilinwpd 223
 #define MAT_TAG_TDConcrete 224
+#define MAT_TAG_TDConcreteNL 2240
 #define MAT_TAG_TDConcreteEXP 225
 #define MAT_TAG_TDConcreteMC10 226
 #define MAT_TAG_TDConcreteMC10NL 227
 #define MAT_TAG_CoulombDamperMaterial 228
+#define MAT_TAG_FlagShapeMaterial 229
+#define MAT_TAG_CreepMaterial 230
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -297,6 +306,8 @@
 
 #define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
 
+#define MAT_TAG_GMG_CyclicReinforcedConcrete    9999    // Rasool Ghorbani
+
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
@@ -327,6 +338,7 @@
 #define SEC_TAG_YieldSurface2D02                21
 #define SEC_TAG_YieldSurface2D01                22
 #define SEC_TAG_ElasticShear2d                  23
+#define SEC_TAG_ElasticBDShear2d 2376
 #define SEC_TAG_ElasticShear3d                  24
 #define SEC_TAG_FiberSection2dInt		25
 #define SEC_TAG_FiberSection2dThermal		26
@@ -341,9 +353,14 @@
 #define SEC_TAG_LayeredShellFiberSectionThermal 35     //L.Jiang[SIF]
 #define SEC_TAG_BiaxialHysteretic 36
 #define SEC_TAG_ElasticTube3d 37
-#define SEC_TAG_ASDCoupledHinge3D	38
+#define SEC_TAG_CreepSection 38
+#define SEC_TAG_ASDCoupledHinge3D 39
 
 #define SEC_TAG_MCFTFiberSection2d 7601
+
+#define SEC_TAG_ReinforcedConcreteLayeredMembraneSection 7701 // M. J. Nunez - UChile
+#define SEC_TAG_LayeredMembraneSection 7702 // M. J. Nunez - UChile
+#define SEC_TAG_ElasticMembraneSection 7703 // M. J. Nunez - UChile
 
 #define SECTION_INTEGRATION_TAG_WideFlange 1
 #define SECTION_INTEGRATION_TAG_RC 2
@@ -449,6 +466,7 @@
 #define ND_TAG_BeamFiberMaterial2d		2004
 #define ND_TAG_BeamFiberMaterial2dPS		2005
 #define ND_TAG_OrthotropicMaterial		2006
+#define ND_TAG_Series3DMaterial		2007
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -520,6 +538,11 @@
 #define ND_TAG_ElasticPlaneStress 7014
 #define ND_TAG_ElasticOrthotropicPlaneStress 7015
 #define ND_TAG_VonPapaDamage 7016
+
+#define ND_TAG_ASDConcrete3DMaterial 7017 // Massimo Petracca ASDEA Software
+
+#define ND_TAG_OrthotropicRotatingAngleConcreteT2DMaterial01 7018 // M. J. Nunez - UChile
+#define ND_TAG_SmearedSteelDoubleLayerT2DMaterial01 7019		  // M. J. Nunez - UChile
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
@@ -598,6 +621,7 @@
 #define ELEMENT_TAGS_WrapperElement      2
 #define ELE_TAG_ElasticBeam2d            3
 #define ELE_TAG_ModElasticBeam2d         4
+#define ELE_TAG_ModElasticBeam3d         41234
 #define ELE_TAG_ElasticBeam3d            5
 #define ELE_TAG_ElasticBeamWarping3d            5001
 #define ELE_TAG_Beam2d    	         6
@@ -621,7 +645,7 @@
 #define ELE_TAG_ZeroLengthContactNTS2D	24
 #define ELE_TAG_ZeroLengthInterface2D	25
 #define ELE_TAG_CoupledZeroLength	26
-#define ELE_TAG_BiaxialZeroLength	260
+#define ELE_TAG_BiaxialZeroLength	2626
 #define ELE_TAG_ZeroLengthRocking       27
 #define ELE_TAG_NLBeamColumn2d	        28
 #define ELE_TAG_NLBeamColumn3d	        29
@@ -801,6 +825,7 @@
 #define ELE_TAG_GradientInelasticBeamColumn3d	193
 #define ELE_TAG_CohesiveZoneQuad 194
 #define ELE_TAG_ComponentElement2d       195
+#define ELE_TAG_ComponentElement3d       195195
 #define ELE_TAG_InerterElement 196
 #define ELE_TAG_BeamColumn2DwLHNMYS 197
 #define ELE_TAG_BeamColumn3DwLHNMYS 198
@@ -832,9 +857,17 @@
 #define ELE_TAG_IGAVolumePatch       	  252 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
 #define ELE_TAG_IGAKLShell       	  253 // IGA Shell by Felipe Elgueta and jaabell (UANDES)
 #define ELE_TAG_IGAKLShell_BendingStrip   254 // IGA Shell by Felipe Elgueta and jaabell (UANDES) 216 because 208 was taken
-
+#define ELE_TAG_PFEMContact3D             255
+#define ELE_TAG_TenNodeTetrahedron        256 //by jaabell and j0selarenas (UANDES)
+#define ELE_TAG_E_SFI        			257 // C. N. Lopez
+#define ELE_TAG_TripleFrictionPendulumX               258
+#define ELE_TAG_E_SFI_MVLEM_3D	          259259 // Kristijan Kolozvari
 #define ELE_TAG_ExternalElement           99990
-
+#define ELE_TAG_PML2D_3                   259
+#define ELE_TAG_PML2D_5                   260
+#define ELE_TAG_PML2D_12                  261
+#define ELE_TAG_PML2DVISCOUS              262
+#define ELE_TAG_MEFI        			  270 // C. N. Lopez
 
 
 #define FRN_TAG_Coulomb            1
@@ -855,6 +888,10 @@
 #define BEAM_INTEGRATION_TAG_FixedLocation     8
 #define BEAM_INTEGRATION_TAG_LowOrder     9
 #define BEAM_INTEGRATION_TAG_MidDistance     40
+#define BEAM_INTEGRATION_TAG_Chebyshev     401
+
+#define BEAM_INTEGRATION_TAG_ConcentratedPlasticity     41
+#define BEAM_INTEGRATION_TAG_ConcentratedCurvature     42
 
 #define BEAM_INTEGRATION_TAG_HingeMidpoint 10
 #define BEAM_INTEGRATION_TAG_HingeEndpoint 11

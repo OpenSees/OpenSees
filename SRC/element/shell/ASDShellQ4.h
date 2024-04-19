@@ -106,6 +106,8 @@ public:
         Damping *theDamping = 0);
     virtual ~ASDShellQ4();
 
+    const char *getClassType(void) const {return "ASDShellQ4";}
+    
     // domain
     void setDomain(Domain* theDomain);
     int setDamping(Domain *theDomain, Damping *theDamping);

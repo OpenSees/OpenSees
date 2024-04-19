@@ -1271,6 +1271,14 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
 
     theResponse =  new ElementResponse(this, 6, Vector(2*numSections));
 
+  } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M1");
+    output.tag("ResponseType","M2");
+
+    theResponse =  new ElementResponse(this, 19, Matrix(3,3));
+    
   } else if (strcmp(argv[0],"integrationPoints") == 0) {
     theResponse =  new ElementResponse(this, 100, Vector(numSections));
 
@@ -1444,7 +1452,10 @@ int MixedBeamColumn2d::getResponse(int responseID, Information &eleInfo) {
 
     return eleInfo.setVector(tempVector);
 
-  } else if (responseID == 100) { // integration points
+  } else if (responseID == 19)
+    return eleInfo.setMatrix(kv);
+  
+  else if (responseID == 100) { // integration points
 
     double L = crdTransf->getInitialLength();
     double pts[MAX_NUM_SECTIONS];

@@ -89,7 +89,13 @@ void *OPS_SFI_MVLEM(void)
   int *matTags = new int[m];
 
   NDMaterial **theMaterials = new NDMaterial* [m];
-
+  for (int i = 0; i < m; i++) {
+    theThickness[i] = 0.0;
+    theWidth[i] = 0.0;
+    matTags[i] = 0;
+    theMaterials[i] = 0;
+  }
+	
   numArgs = OPS_GetNumRemainingInputArgs();
   while (numArgs >= (m+1)) {
       //OPS_GetStringCopy(&str);
@@ -964,7 +970,7 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 			s.tag("ResponseType","Fy_j");
 			s.tag("ResponseType","Mz_j");
 			
-			return theResponse = new ElementResponse(this, 1, Vector(6));
+			theResponse = new ElementResponse(this, 1, Vector(6));
 
 	}  
 
@@ -973,7 +979,7 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		
 			s.tag("ResponseType","Dsh");
 		
-		return theResponse = new ElementResponse(this, 2, 0.0);
+		theResponse = new ElementResponse(this, 2, 0.0);
 
 	} 
 	
@@ -982,7 +988,7 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		
 			s.tag("ResponseType","fi");
 		
-		return theResponse = new ElementResponse(this, 3, 0.0);
+		theResponse = new ElementResponse(this, 3, 0.0);
 	}
 
 	// Material output
@@ -1001,13 +1007,13 @@ Response *SFI_MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		s.tag("Material");
 		s.attr("number",matNum);
 		
-		return theResponse = theMaterial[matNum-1]->setResponse(&argv[argc-1], argc-2, s);
+		theResponse = theMaterial[matNum-1]->setResponse(&argv[argc-1], argc-2, s);
 
     }
 
 	s.endTag();
 	
-	return 0;
+	return theResponse;
 }
 
 // Obtain element responses

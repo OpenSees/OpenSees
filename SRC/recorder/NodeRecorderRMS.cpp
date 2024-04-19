@@ -486,6 +486,9 @@ NodeRecorderRMS::~NodeRecorderRMS()
       delete theTimeSeries[i];
     delete [] theTimeSeries;
   }
+
+  if (timeSeriesValues != 0)
+    delete [] timeSeriesValues;  
 }
 
 int 
@@ -1100,4 +1103,11 @@ double NodeRecorderRMS::getRecordedValue(int clmnId, int rowOffset, bool reset)
 	if (reset)
 	  count = 0;
 	return res;
+}
+
+int NodeRecorderRMS::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
 }

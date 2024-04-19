@@ -42,11 +42,13 @@ class SectionIntegration : public MovableObject
 
   virtual void getFiberLocations(int nFibers, double *yi, double *zi = 0) = 0;
   virtual void getFiberWeights(int nFibers, double *wt) = 0;
-
+  virtual void getFiberSectorials(int nFibers, double *omega);
+  
   virtual SectionIntegration *getCopy(void) = 0;
 
   virtual void getLocationsDeriv(int nFibers, double *dyidh, double *dzidh = 0);
   virtual void getWeightsDeriv(int nFibers, double *dwtdh);
+  virtual void getSectorialsDeriv(int nFibers, double *domegadh);
 
   virtual void Print(OPS_Stream &s, int flag = 0) = 0;
 

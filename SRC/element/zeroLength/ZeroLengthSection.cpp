@@ -113,7 +113,7 @@ void* OPS_ZeroLengthSection()
     // get section
     SectionForceDeformation* theSection = OPS_getSectionForceDeformation(iData[3]);
     if(theSection == 0) {
-      opserr << "zeroLengthSection -- no section with tag " << iData[0] << " exists in Domain" << endln;
+      opserr << "zeroLengthSection -- no section with tag " << iData[3] << " exists in Domain" << endln;
 	return 0;
     }
 

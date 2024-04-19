@@ -34,6 +34,42 @@
 
 #include <math.h>
 
+#include <elementAPI.h>
+
+void *
+OPS_ReeseSandBackbone(void)
+{
+  HystereticBackbone *theBackbone = 0;
+
+  if (OPS_GetNumRemainingInputArgs() < 6) {
+    opserr << "Invalid number of args, want: hystereticBackbone ReeseSand tag? kx? ym? pm? yu? pu?" << endln;
+    return 0;
+  }
+
+  int matTag;
+  double dData[5];
+  
+  int numData = 1;
+  if (OPS_GetIntInput(&numData, &matTag) != 0) {
+    opserr << "WARNING invalid tag for hystereticBackbone ReeseSand" << endln;
+    return 0;
+  }
+  numData = 5;
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "WARNING invalid values for hystereticBackbone ReeseSand" << endln;
+    return 0;
+  }  
+
+  theBackbone = new ReeseSandBackbone(matTag, dData[0], dData[1], dData[2],
+				      dData[3], dData[4]);
+  if (theBackbone == 0) {
+    opserr << "WARNING could not create ReeseSandBackbone\n";
+    return 0;
+  }
+
+  return theBackbone;  
+}
+
 ReeseSandBackbone::ReeseSandBackbone(int tag, double KX, 
 				     double YM, double PM,
 				     double YU, double PU):
@@ -105,12 +141,6 @@ ReeseSandBackbone::getStress (double strain)
     stress = pu;
 
   return signStrain*stress;
-}
-
-double
-ReeseSandBackbone::getEnergy (double strain)
-{
-  return 0.0;
 }
 
 double

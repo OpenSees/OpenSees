@@ -99,6 +99,11 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   ecminP = 0.0;
   deptP = 0.0;
 
+  if (fc > 0) fc = -fc;
+  if (epsc0 > 0) epsc0 = -epsc0;
+  if (fcu > 0) fcu = -fcu;
+  if (epscu > 0) epscu = -epscu;
+
   eP = 2.0*fc/epsc0;
   epsP = 0.0;
   sigP = 0.0;
@@ -115,6 +120,11 @@ Concrete02::Concrete02(int tag, double _fc, double _epsc0, double _fcu,
   ecminP = 0.0;
   deptP = 0.0;
 
+  if (fc > 0) fc = -fc;
+  if (epsc0 > 0) epsc0 = -epsc0;
+  if (fcu > 0) fcu = -fcu;
+  if (epscu > 0) epscu = -epscu;
+	  
   eP = 2.0*fc/epsc0;
   epsP = 0.0;
   sigP = 0.0;
