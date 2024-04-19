@@ -54,7 +54,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-//#define _DBG_COUPLEDSEC3D
+#define _DBG_COUPLEDSEC3D
 
 ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData) :
     size(nN * nTheta * nData), numberAxial(nN), numberTheta(nTheta), numberData(nData), theVector(size)
@@ -176,7 +176,7 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
     int jp1 = 0;
     int inverse = 0;
     double jXjp1, jXdirection, directionXjp1;
-    while ((!found) && (j <= numberTheta)) 
+    while ((!found) && (j < numberTheta)) 
     { 
         j += 1;
         jp1 += 1;
@@ -217,7 +217,7 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
         jXjp1 = dir_j(0) * dir_jp1(1) - dir_j(1) * dir_jp1(0);
         jXdirection = dir_j(0) * direction(1) - dir_j(1) * direction(0);
         directionXjp1 = direction(0) * dir_jp1(1) - direction(1) * dir_jp1(0);
-        if ((jXjp1 * jXdirection > 0) && (directionXjp1 * jXjp1 > 0))
+        if ((jXjp1 * jXdirection >= 0) && (directionXjp1 * jXjp1 >= 0))
         {
 #ifdef _DBG_COUPLEDSEC3D
             opserr << "wanted direction found!";
@@ -276,8 +276,8 @@ int ASDCoupledHinge3DDomainData::getMyMzForNAndDirection(double N, double theta,
     opserr << "Check alfa, beta\n";
     opserr << alfa << " + " << beta << " = " << alfa+beta << "\n";
 #endif
-    My = My_j * alfa + My_jp1 * beta;
-    Mz = Mz_j * alfa + Mz_jp1 * beta;
+    My = My_j * beta + My_jp1 * alfa;
+    Mz = Mz_j * beta + Mz_jp1 * alfa;
    /* if (inverse == 0) 
     {
         My = (My_jp1 - My_j) / (theta_jp1 - theta_j) * (theta - theta_j) + My_j;
@@ -861,29 +861,30 @@ void* OPS_ASDCoupledHinge3D()
 #endif
 
     // Create a Pinching4 material for My
+    // For now set hard-coded: TODO set optional parameters!
 
-    double mdp = 0.5;
-    double mfp = 0.3;
-    double msp = 0.0;
-    double mdn = 0.5;
-    double mfn = 0.3;
-    double msn = 0.0;
-    double gk1 = 0.0;
+    double mdp = 0.3;
+    double mfp = 0.45;
+    double msp = 0.05;
+    double mdn = 0.3;
+    double mfn = 0.45;
+    double msn = 0.05;
+    double gk1 = 2.0;
     double gk2 = 0.0;
-    double gk3 = 0.0;
+    double gk3 = 0.8;
     double gk4 = 0.0;
-    double gklim = 0.0;
-    double gd1 = 0.0;
+    double gklim = 0.8;
+    double gd1 = 0.4;
     double gd2 = 0.0;
-    double gd3 = 0.0;
+    double gd3 = 2.0;
     double gd4 = 0.0;
-    double gdlim = 0.0;
-    double gf1 = 0.0;
+    double gdlim = 0.8;
+    double gf1 = 0.8;
     double gf2 = 0.0;
-    double gf3 = 0.0;
+    double gf3 = 1.7;
     double gf4 = 0.0;
-    double gflim = 0.0;
-    double ge = 0.0;
+    double gflim = 0.8;
+    double ge = 100.0;
     int dc = 1;
     UniaxialMaterial* matMy = new Pinching4Material(0,f1p,d1p,f2p,d2p,f3p,d3p,f4p,d4p,f1n,d1n,f2n,d2n,f3n,d3n,f4n,d4n,mdp,mfp,msp,mdn,mfn,msn,gk1,gk2,gk3,gk4,gklim,gd1,gd2,gd3,gd4,gdlim,gf1,gf2,gf3,gf4,gflim,ge,dc);
 #ifdef _DBG_COUPLEDSEC3D
@@ -1107,8 +1108,12 @@ int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
   opserr << "My tangent: " << m_num_tang(1);
   opserr << " Mz tangent: " << m_num_tang(2) << endln;
   opserr << "set trial strain to My law: " << def(1) << endln;
-  opserr << "My law: " << endln;
+  opserr << "-- My law: " << endln;
   MyMaterial->Print(opserr, 3);
+  opserr << "\n";
+  opserr << "set trial strain to Mz law: " << def(2) << endln;
+  opserr << "-- Mz law: " << endln;
+  MzMaterial->Print(opserr, 3);
   opserr << "\n";
 
 #else
@@ -1415,6 +1420,9 @@ ASDCoupledHinge3D::updateLaws(void)
         theta += 2 * M_PI;
     // Now compute the points on the domain with the same direction
 #ifdef _DBG_COUPLEDSEC3D
+    opserr << "point 1 Y " << par_f1p_Y.getValue() << " " << par_d1p_Y.getValue() << endln;
+    opserr << "point 1 Z " << par_f1p_Z.getValue() << " " << par_d1p_Z.getValue() << endln;
+    opserr << "ky = " << ky << " kz = " << kz << endln;
     opserr << "My = " << My << " (tolM = " << tolM << ")" << endln;
     opserr << "Mz = " << Mz << " (tolM = " << tolM << ")" << endln;
 #endif
@@ -1640,22 +1648,22 @@ ASDCoupledHinge3D::commitState(void)
         opserr << "Finished update " << endln;
 #endif
 
-        double My, Mz;
-        My = MyMaterial->getStress();
-        Mz = MzMaterial->getStress();
+        //double My, Mz;
+        //My = MyMaterial->getStress();
+        //Mz = MzMaterial->getStress();
 
-        MyMaterial->setTrialStrain(MyMaterial->getStrain());
-        MzMaterial->setTrialStrain(MzMaterial->getStrain());
+        //MyMaterial->setTrialStrain(MyMaterial->getStrain());
+        //MzMaterial->setTrialStrain(MzMaterial->getStrain());
 
-        // compare My with MyMaterial->getStress();
-        double errY = std::abs(MyMaterial->getStress() - My);
-        double errZ = std::abs(MzMaterial->getStress() - Mz);
+        //// compare My with MyMaterial->getStress();
+        //double errY = abs(MyMaterial->getStress() - My);
+        //double errZ = abs(MzMaterial->getStress() - Mz);
 
-        errExplicit = std::max(errY, errZ) / MmaxAbs;
+        //errExplicit = std::max(errY, errZ) / MmaxAbs;
 
-        // revert to last commit
-        err += MyMaterial->revertToLastCommit();
-        err += MzMaterial->revertToLastCommit();
+        //// revert to last commit
+        //err += MyMaterial->revertToLastCommit();
+        //err += MzMaterial->revertToLastCommit();
 #ifdef _DBG_COUPLEDSEC3D
         opserr << "\nReverted to Last commit\n";
         opserr << "My\n";
@@ -1668,10 +1676,12 @@ ASDCoupledHinge3D::commitState(void)
     opserr << "ASDCoupledHinge3D::commitState (updated laws)\n";
     opserr << "My tangent: " << m_num_tang(1);
     opserr << " Mz tangent: " << m_num_tang(2) << endln;
-    opserr << "My law: " << endln;
+    opserr << "-- My law: " << endln;
     MyMaterial->Print(opserr, 3);
     opserr << "\n";
-  
+    opserr << "-- Mz law: " << endln;
+    MzMaterial->Print(opserr, 3);
+    opserr << "\n";
     return err;
 }
 
@@ -1693,6 +1703,8 @@ ASDCoupledHinge3D::revertToLastCommit(void)
     if (err == 0) {
         updateLaws();
     }
+
+    
 
     return err;
 }	
