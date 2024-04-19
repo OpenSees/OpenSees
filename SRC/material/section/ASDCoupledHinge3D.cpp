@@ -54,7 +54,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define _DBG_COUPLEDSEC3D
+//#define _DBG_COUPLEDSEC3D
 
 ASDCoupledHinge3DDomainData::ASDCoupledHinge3DDomainData(int nN, int nTheta, int nData) :
     size(nN * nTheta * nData), numberAxial(nN), numberTheta(nTheta), numberData(nData), theVector(size)
@@ -423,8 +423,7 @@ namespace {
 }
 
 
-void* OPS_ASDCoupledHinge3D()
-{
+void* OPS_ASDCoupledHinge3D() {
     static bool first_done = false;
     if (!first_done) {
         opserr << "Using ASDCoupledHinge3D - Developed by: Diego Talledo, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
@@ -434,8 +433,13 @@ void* OPS_ASDCoupledHinge3D()
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "WARNING insufficient arguments\n"
             "Want: section ASDCoupledHinge3D tag? Ktor? Kvy? Kvz? Kax? -initialFlexuralStiffness \"Ky?\" \"Kz?\""
-            "<-simpleStrengthDomain Nmin? Nmax? MyMax? NMyMax? MzMax? NMzMax?> <-strengthDomainByPoints nN? nTheta? {listN} {listMy} {listMz}> <-hardening as?>"
-            "-thetaP \"thetaPy?\" \"thetaPz?\" -thetaPC \"thetaPCy?\" \"thetaPCz?\"\n";
+            "<-simpleStrengthDomain Nmin? Nmax? MyMax? MzMax? NMMax?> <-strengthDomainByPoints nN? nTheta? {listN} {listMy} {listMz}> <-hardening as?>"
+            "-thetaP \"thetaPy?\" \"thetaPz?\" -thetaPC \"thetaPCy?\" \"thetaPCz?\""
+            "<-hystereticParams rDispP? rForceP? uForceP? rDispN? rForceN? uForceN?>"
+            "<-damageUnloadStiffness gk1? gk2? gk3? gk4? gklim?>"
+            "<-damageReloadStiffness gd1? gd2? gd3? gd4? gdlim?>"
+            "<-damageForce gf1? gf2? gf3? gf4? gflim?>"
+            "<-damageType type? ge?>\n";
         return 0;
     }
 	    
@@ -484,8 +488,7 @@ void* OPS_ASDCoupledHinge3D()
     double Nmax = 0;
     double MyMax = 0;
     double MzMax = 0;
-    double NMyMax = 0;
-    double NMzMax = 0;
+    double NMMax = 0;
     // by points
     // number of discretizations in N axis
     // number of discretization about angle in My-Mz plane
@@ -502,8 +505,17 @@ void* OPS_ASDCoupledHinge3D()
     double Mz_u_p = 0.0;
     double Mz_u_n = 0.0;
 
-    // hardening
+    // hardening by default
     double a_s = 1.001;
+
+    // Hysteretic behavior parameters by default
+    double rDispP = 0.2, rForceP = 0.5, uForceP = 0.0;
+    double rDispN = 0.2, rForceN = 0.5, uForceN = 0.0;
+    double gk1 = 0.0, gk2 = 0.0, gk3 = 0.0, gk4 = 0.0, gklim = 0.0;
+    double gd1 = 0.0, gd2 = 0.0, gd3 = 0.0, gd4 = 0.0, gdlim = 0.0;
+    double gf1 = 0.0, gf2 = 0.0, gf3 = 0.0, gf4 = 0.0, gflim = 0.0;
+    double ge = 100.0;
+    double dmgType = 1; // cycle by default
 
     // an expression for pre-cap plastic deformation in y and z local directions
     bool preCapDeformationDefined = false;
@@ -593,10 +605,8 @@ void* OPS_ASDCoupledHinge3D()
             opserr << theThetaPExpressionY.c_str() << "\n";
             opserr << theThetaPExpressionZ.c_str() << "\n";
 #endif
-
             preCapDeformationDefined = true;
-        }
-        else if (strcmp(type, "-thetaPC") == 0) {
+        } else if (strcmp(type, "-thetaPC") == 0) {
             //opserr << "Parsing thetaPC\n";
             numdata = 2;
             if (OPS_GetNumRemainingInputArgs() < numdata) {
@@ -632,7 +642,6 @@ void* OPS_ASDCoupledHinge3D()
 
             postCapDeformationDefined = true;
         } else  if (strcmp(type, "-hardening") == 0) {
-            //opserr << "Parsing hardening\n";
             numdata = 1;
             if (OPS_GetNumRemainingInputArgs() < numdata) {
                 opserr << "WARNING insufficient arguments\n"
@@ -646,6 +655,89 @@ void* OPS_ASDCoupledHinge3D()
                 return 0;
             }
             a_s = data[0];
+        } else  if (strcmp(type, "-hystereticParams") == 0) {
+            numdata = 6;
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING insufficient arguments\n"
+                    "-hystereticParams rDispP? rForceP? uForceP? rDispN? rForceN? uForceN?"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, data) < 0) {
+                opserr << "WARNING invalid double inputs -hystereticParams\n"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            rDispP = data[0]; rForceP = data[1]; uForceP = data[2];
+            rDispN = data[3]; rForceN = data[4]; uForceN = data[5];
+        } else  if (strcmp(type, "-damageUnloadStiffness") == 0) {
+            numdata = 5;
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING insufficient arguments\n"
+                    "-damageUnloadStiffness gk1? gk2? gk3? gk4? gklim?"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, data) < 0) {
+                opserr << "WARNING invalid double inputs -damageUnloadStiffness\n"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            gk1 = data[0]; gk2 = data[1]; gk3 = data[2]; gk4 = data[3]; gklim = data[4];
+        } else  if (strcmp(type, "-damageReloadStiffness") == 0) {
+            numdata = 5;
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING insufficient arguments\n"
+                    "-damageUnloadStiffness gk1? gk2? gk3? gk4? gklim?"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, data) < 0) {
+                opserr << "WARNING invalid double inputs -damageReloadStiffness\n"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            gd1 = data[0]; gd2 = data[1]; gd3 = data[2]; gd4 = data[3]; gdlim = data[4];
+        } else  if (strcmp(type, "-damageForce") == 0) {
+            numdata = 5;
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING insufficient arguments\n"
+                    "-damageForce gf1? gf2? gf3? gf4? gflim?"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, data) < 0) {
+                opserr << "WARNING invalid double inputs -damageForce\n"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            gf1 = data[0]; gf2 = data[1]; gf3 = data[2]; gf4 = data[3]; gflim = data[4];
+        } else  if (strcmp(type, "-damageType") == 0) {
+            const char* type = OPS_GetString();
+            if (strcmp(type, "cycle") == 0 || strcmp(type, "Cycle") == 0 || strcmp(type, "DamageCycle") == 0 || strcmp(type, "damageCycle") == 0) {
+                dmgType = 1;
+            }
+            else if (strcmp(type, "energy") == 0 || strcmp(type, "Energy") == 0 || strcmp(type, "DamageEnergy") == 0 || strcmp(type, "damageEnergy") == 0) {
+                dmgType = 0;
+            }
+            else {
+                opserr << "WARNING invalid type of damage calculation specified\n";
+                opserr << "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            numdata = 1;
+            if (OPS_GetNumRemainingInputArgs() < numdata) {
+                opserr << "WARNING insufficient arguments\n"
+                    "-damageType type? ge?"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            if (OPS_GetDoubleInput(&numdata, data) < 0) {
+                opserr << "WARNING invalid double inputs -damageType\n"
+                    "section ASDCoupledHinge3D: " << tag << endln;
+                return 0;
+            }
+            ge = data[0];
         } else if (strcmp(type, "-simpleStrengthDomain") == 0) {
             if (strengthDomainMode != STRENGTH_DOMAIN_UNDEFINED) {
                 opserr << "only one strength domain need to be defined!\n"
@@ -654,10 +746,11 @@ void* OPS_ASDCoupledHinge3D()
             }
             // simplified strength domain, giving few data.
             // we assume a double symetric - rect - section so that MinMoment = - MaxMoment
-            numdata = 6;
+            // we assume also that NMMax is corresponding to both My and Mz
+            numdata = 5;
             if (OPS_GetNumRemainingInputArgs() < numdata) {
                 opserr << "WARNING insufficient arguments\n"
-                    "-simpleStrengthDomain Nmin? Nmax? MyMax? NMyMax? MzMax? NMzMax?"
+                    "-simpleStrengthDomain Nmin? Nmax? MyMax? MzMax? NMMax?"
                     "section ASDCoupledHinge3D: " << tag << endln;
                 return 0;
             }
@@ -670,15 +763,41 @@ void* OPS_ASDCoupledHinge3D()
             Nmax = data[1];
             MyMax = data[2];
             MzMax = data[3];
-            NMyMax = data[4];
-            NMzMax = data[5];
+            NMMax = data[4];
 
             strengthDomainMode = STRENGTH_DOMAIN_SIMPLIFIED;
 
-            // TO DO: check correctness of data and then create a simplified domain with some sort of interpolation
+            // create a simplified domain. In future with some interpolation
+            nN = 3;
+            nTheta = 4;
 
-            opserr << "To be implemented !!! ERROR\n";
-            return 0;
+            // Create the domain as a DomainData object
+            strengthDomain = ASDCoupledHinge3DDomainData(nN, nTheta, 3);
+            for (int j = 0; j < nTheta; j++) {
+                strengthDomain.setValue(0, j, 0, Nmin);
+                strengthDomain.setValue(2, j, 0, Nmax);
+                for (int k = 1; k < 3; k++) {
+                    strengthDomain.setValue(0, j, k, 0.0);
+                    strengthDomain.setValue(2, j, k, 0.0);
+                }
+            }
+            // write points of maximum moment
+            for (int j = 0; j < nTheta; j++) {
+                strengthDomain.setValue(1, j, 0, NMMax);
+            }
+            strengthDomain.setValue(1, 0, 1, MyMax);
+            strengthDomain.setValue(1, 0, 2, 0.0);
+            strengthDomain.setValue(1, 1, 1, 0.0);
+            strengthDomain.setValue(1, 1, 2, MzMax);
+            strengthDomain.setValue(1, 2, 1, -MyMax);
+            strengthDomain.setValue(1, 2, 2, 0.0);
+            strengthDomain.setValue(1, 3, 1, 0.0);
+            strengthDomain.setValue(1, 3, 2, -MzMax);
+
+#ifdef _DBG_COUPLEDSEC3D
+            opserr << "strengthDomain created: " << endln;
+            strengthDomain.print();
+#endif
         } else if (strcmp(type, "-strengthDomainByPoints") == 0) {
             //opserr << "strengthDomainByPoints -> reading data\n";
             // strength domain given by points
@@ -758,31 +877,36 @@ void* OPS_ASDCoupledHinge3D()
             opserr << "strengthDomain created: " << endln;
             strengthDomain.print();
 #endif
-
-            // get Domain Values for My and Mz positive and negative when N = 0
-            double tmp;
-            strengthDomain.getMyMzForNAndDirection(0.0,0.0,My_u_p,tmp);
-            strengthDomain.getMyMzForNAndDirection(0.0, M_PI, My_u_n, tmp);
-            strengthDomain.getMyMzForNAndDirection(0.0, M_PI/2, tmp, Mz_u_p);
-            strengthDomain.getMyMzForNAndDirection(0.0, M_PI*3/2.0, tmp, Mz_u_n);
-
-#ifdef _DBG_COUPLEDSEC3D
-            opserr << "For N = 0 \nMy+ = " << My_u_p << endln;
-            opserr << "My- = " << My_u_n << endln;
-            opserr << "Mz+ = " << Mz_u_p << endln;
-            opserr << "Mz- = " << Mz_u_n << endln;
-
-            opserr << "Domain is this one: \n";
-            strengthDomain.print();
-            opserr << endln;
-#endif
-
             strengthDomainMode = STRENGTH_DOMAIN_BY_POINTS;
         }
-        
     }
 
     opserr << "Parsed the command. Creating the materials.\n";
+
+    // Check that a domain is created
+    if (strengthDomainMode == STRENGTH_DOMAIN_UNDEFINED) {
+        opserr << "A domain needs to be created providing simpleStrengthDomain or strengthDomainByPoints\n";
+        return 0;
+    }
+
+    // get Domain Values for My and Mz positive and negative when N = 0
+    double tmp;
+    strengthDomain.getMyMzForNAndDirection(0.0, 0.0, My_u_p, tmp);
+    strengthDomain.getMyMzForNAndDirection(0.0, M_PI, My_u_n, tmp);
+    strengthDomain.getMyMzForNAndDirection(0.0, M_PI / 2, tmp, Mz_u_p);
+    strengthDomain.getMyMzForNAndDirection(0.0, M_PI * 3 / 2.0, tmp, Mz_u_n);
+
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "Domain intersections after creation" << endln;
+    opserr << "For N = 0 \nMy+ = " << My_u_p << endln;
+    opserr << "My- = " << My_u_n << endln;
+    opserr << "Mz+ = " << Mz_u_p << endln;
+    opserr << "Mz- = " << Mz_u_n << endln;
+
+    opserr << "Domain is this one: \n";
+    strengthDomain.print();
+    opserr << endln;
+#endif
 
     // Create an elastic material for axial
     UniaxialMaterial* matAxial = new ElasticMaterial(0, Kax, 0.0, Kax);
@@ -861,32 +985,22 @@ void* OPS_ASDCoupledHinge3D()
 #endif
 
     // Create a Pinching4 material for My
-    // For now set hard-coded: TODO set optional parameters!
-
-    double mdp = 0.3;
-    double mfp = 0.45;
-    double msp = 0.05;
-    double mdn = 0.3;
-    double mfn = 0.45;
-    double msn = 0.05;
-    double gk1 = 2.0;
-    double gk2 = 0.0;
-    double gk3 = 0.8;
-    double gk4 = 0.0;
-    double gklim = 0.8;
-    double gd1 = 0.4;
-    double gd2 = 0.0;
-    double gd3 = 2.0;
-    double gd4 = 0.0;
-    double gdlim = 0.8;
-    double gf1 = 0.8;
-    double gf2 = 0.0;
-    double gf3 = 1.7;
-    double gf4 = 0.0;
-    double gflim = 0.8;
-    double ge = 100.0;
-    int dc = 1;
-    UniaxialMaterial* matMy = new Pinching4Material(0,f1p,d1p,f2p,d2p,f3p,d3p,f4p,d4p,f1n,d1n,f2n,d2n,f3n,d3n,f4n,d4n,mdp,mfp,msp,mdn,mfn,msn,gk1,gk2,gk3,gk4,gklim,gd1,gd2,gd3,gd4,gdlim,gf1,gf2,gf3,gf4,gflim,ge,dc);
+    double mdp = rDispP;
+    double mfp = rForceP;
+    double msp = uForceP;
+    double mdn = rDispN;
+    double mfn = rForceN;
+    double msn = uForceN;
+#ifdef _DBG_COUPLEDSEC3D
+    opserr << "Hysteretic parameters used for pinching4\n";
+    opserr << "mdp = " << mdp << " - mfp = " << mfp << " - msp = " << msp << endln;
+    opserr << "mdn = " << mdn << " - mfn = " << mfn << " - msn = " << msn << endln;
+    opserr << "gk1 = " << gk1 << " - gk2 = " << gk2 << " - gk3 = " << gk3 << " - gk4 = " << gk4 << " - gklim = " << gklim << endln;
+    opserr << "gd1 = " << gd1 << " - gd2 = " << gd2 << " - gd3 = " << gd3 << " - gd4 = " << gd4 << " - gdlim = " << gdlim << endln;
+    opserr << "gf1 = " << gf1 << " - gf2 = " << gf2 << " - gf3 = " << gf3 << " - gf4 = " << gf4 << " - gflim = " << gflim << endln;
+    opserr << "ge = " << ge << " - dmgType = " << dmgType << endln;
+#endif
+    UniaxialMaterial* matMy = new Pinching4Material(0,f1p,d1p,f2p,d2p,f3p,d3p,f4p,d4p,f1n,d1n,f2n,d2n,f3n,d3n,f4n,d4n,mdp,mfp,msp,mdn,mfn,msn,gk1,gk2,gk3,gk4,gklim,gd1,gd2,gd3,gd4,gdlim,gf1,gf2,gf3,gf4,gflim,ge,dmgType);
 #ifdef _DBG_COUPLEDSEC3D
     matMy->Print(opserr, 2);
     opserr << endln;
@@ -938,31 +1052,8 @@ void* OPS_ASDCoupledHinge3D()
     opserr << "Initial spring Mz - : (" << f1n << ", " << d1n << "), (" << f2n << ", " << d2n << "), (" << f3n << ", " << d3n << "), (" << f4n << ", " << d4n << ")\n";
 #endif
 
-    // Create a Pinching4 material for Mz - For now without damage, later on with damage parameters input by the user if optionally given
-    mdp = 0.5;
-    mfp = 0.3;
-    msp = 0.0;
-    mdn = 0.5;
-    mfn = 0.3;
-    msn = 0.0;
-    gk1 = 0.0;
-    gk2 = 0.0;
-    gk3 = 0.0;
-    gk4 = 0.0;
-    gklim = 0.0;
-    gd1 = 0.0;
-    gd2 = 0.0;
-    gd3 = 0.0;
-    gd4 = 0.0;
-    gdlim = 0.0;
-    gf1 = 0.0;
-    gf2 = 0.0;
-    gf3 = 0.0;
-    gf4 = 0.0;
-    gflim = 0.0;
-    ge = 0.0;
-    dc = 1;
-    UniaxialMaterial* matMz = new Pinching4Material(0, f1p, d1p, f2p, d2p, f3p, d3p, f4p, d4p, f1n, d1n, f2n, d2n, f3n, d3n, f4n, d4n, mdp, mfp, msp, mdn, mfn, msn, gk1, gk2, gk3, gk4, gklim, gd1, gd2, gd3, gd4, gdlim, gf1, gf2, gf3, gf4, gflim, ge, dc);
+    // Create a Pinching4 material for Mz - For now same as Y direction for histeretic properties
+    UniaxialMaterial* matMz = new Pinching4Material(0, f1p, d1p, f2p, d2p, f3p, d3p, f4p, d4p, f1n, d1n, f2n, d2n, f3n, d3n, f4n, d4n, mdp, mfp, msp, mdn, mfn, msn, gk1, gk2, gk3, gk4, gklim, gd1, gd2, gd3, gd4, gdlim, gf1, gf2, gf3, gf4, gflim, ge, dmgType);
 #ifdef _DBG_COUPLEDSEC3D
     matMz->Print(opserr, 2);
     opserr << endln;
@@ -1104,6 +1195,7 @@ int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
   ret += lam_pert(VyMaterial, def(3), 3);
   ret += lam_pert(VzMaterial, def(4), 4);
   ret += lam_pert(torsionMaterial, def(5), 5);
+#ifdef _DBG_COUPLEDSEC3D
   opserr << "ASDCoupledHinge3D::setTrialSectionDeformation\n";
   opserr << "My tangent: " << m_num_tang(1);
   opserr << " Mz tangent: " << m_num_tang(2) << endln;
@@ -1115,6 +1207,7 @@ int ASDCoupledHinge3D::setTrialSectionDeformation (const Vector &def)
   opserr << "-- Mz law: " << endln;
   MzMaterial->Print(opserr, 3);
   opserr << "\n";
+#endif
 
 #else
 
@@ -1672,7 +1765,7 @@ ASDCoupledHinge3D::commitState(void)
         MzMaterial->Print(opserr, 2);
 #endif
     } 
-
+#ifdef _DBG_COUPLEDSEC3D
     opserr << "ASDCoupledHinge3D::commitState (updated laws)\n";
     opserr << "My tangent: " << m_num_tang(1);
     opserr << " Mz tangent: " << m_num_tang(2) << endln;
@@ -1683,6 +1776,7 @@ ASDCoupledHinge3D::commitState(void)
     MzMaterial->Print(opserr, 3);
     opserr << "\n";
     return err;
+#endif
 }
 
 int

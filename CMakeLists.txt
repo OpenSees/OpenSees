@@ -361,7 +361,7 @@ if(MKL_FOUND)
      set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
   endif()
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    set (MKL_LPATH ${MKL_ROOT}/lib/intel64)
+    set (MKL_LPATH ${MKL_ROOT}/lib)
     set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_ilp64.lib;${MKL_LPATH}/mkl_intel_ilp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_ilp64.lib")
   endif() 
 
