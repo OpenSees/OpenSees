@@ -119,9 +119,6 @@
     <Filter Include="section\LayeredMembraneSection">
       <UniqueIdentifier>{5db15df2-5764-49de-b5d0-e7b292f7136e}</UniqueIdentifier>
     </Filter>
-    <Filter Include="nD\ASDPlasticMaterial">
-      <UniqueIdentifier>{9ee7393d-eb08-4a08-aaea-07dbbd4a958e}</UniqueIdentifier>
-    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp">
@@ -1526,9 +1523,6 @@
     <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.cpp">
       <Filter>section\LayeredMembraneSection</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2788,60 +2782,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.h">
       <Filter>section\LayeredMembraneSection</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\AllASDHardeningFunctions.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\AllASDInternalVariableTypes.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\AllASDModelParameterTypes.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\AllASDPlasticMaterials.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\ASDPlasticMaterial.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\ASDPlasticMaterialGlobals.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\ASDPlasticMaterialTraits.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\ElasticityBase.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\HardeningFunction.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\InternalVariableType.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\ModelParameterType.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\PlasticFlowBase.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\std_tuple_concat.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\utuple_storage.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\YieldFunctionBase.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\ElasticityModels\AllElasticityModels.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\PlasticFlowDirections\AllPlasticFlowDirections.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\YieldFunctions\AllYieldFunctions.h">
-      <Filter>nD\ASDPlasticMaterial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
