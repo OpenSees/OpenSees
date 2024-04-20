@@ -241,7 +241,6 @@ include_directories(
   ${OPS_SRC_DIR}/actor/objectBroker
   ${OPS_SRC_DIR}/actor/message
   ${OPS_BUNDLED_DIR}/eigenAPI
-  ${OPS_BUNDLED_DIR}/eigenAPI/eigen
 )
 
 # TODO: Temporary fix; include all directories with .h files through glob
