@@ -378,13 +378,14 @@ public:
 
 			if (angle >= 2.0 * M_PI)
 				angle = std::fmod(angle, 2.0 * M_PI);
-
+			
+                        // compute eta from Felippa et al 2005, Equation (101)
 			double eta;
 			if (angle < 0.05) {
 				double angle2 = angle * angle;
 				double angle4 = angle2 * angle2;
 				double angle6 = angle4 * angle2;
-				eta = 1.0 / 12.0 + 1.0 / 270.0 * angle2 + 1.0 / 30240.0 * angle4 + 1.0 / 1209600.0 * angle6;
+				eta = 1.0 / 12.0 + 1.0 / 720.0 * angle2 + 1.0 / 30240.0 * angle4 + 1.0 / 1209600.0 * angle6;
 			}
 			else {
 				eta = (1.0 - 0.5 * angle * std::tan(0.5 * M_PI - 0.5 * angle)) / (angle * angle);
@@ -447,7 +448,9 @@ public:
 			double eta;
 			double mu;
 			if (angle < 0.05) {
-				eta = 1.0 / 12.0 + angle2 / 270.0 + angle4 / 30240.0 + angle6 / 1209600.0;
+				// Equation (101) from Felippa et al 2005.
+				eta = 1.0 / 12.0 + angle2 / 720.0 + angle4 / 30240.0 + angle6 / 1209600.0;
+				// Equation (103) from Felippa et al 2005.
 				mu = 1.0 / 360.0 + angle2 / 7560.0 + angle4 / 201600.0 + angle6 / 5987520.0;
 			}
 			else {
