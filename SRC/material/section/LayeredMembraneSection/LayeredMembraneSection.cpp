@@ -15,7 +15,7 @@
 //
 // Rev: 1.0
 
-#include "LayeredMembraneSection.h"
+#include <LayeredMembraneSection.h>
 #include <NDMaterial.h>
 #include <Vector.h>
 #include <Matrix.h>

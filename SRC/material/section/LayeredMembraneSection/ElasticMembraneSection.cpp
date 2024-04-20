@@ -14,7 +14,7 @@
 //
 // Rev: 1.0
 
-#include "ElasticMembraneSection.h"
+#include <ElasticMembraneSection.h>
 #include <Vector.h>
 #include <Matrix.h>
 #include <Channel.h>

@@ -15,7 +15,7 @@
 //
 // Rev: 1.0
 
-#include "ReinforcedConcreteLayeredMembraneSection.h"
+#include <ReinforcedConcreteLayeredMembraneSection.h>
 #include <NDMaterial.h>
 #include <Vector.h>
 #include <Matrix.h>
