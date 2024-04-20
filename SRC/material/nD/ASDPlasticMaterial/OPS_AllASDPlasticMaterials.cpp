@@ -157,35 +157,6 @@ void *OPS_AllASDPlasticMaterials(void)
         cout << "el_type = " << el_type << (matches_el ? " :) " : " ") <<"\n";
         cout << "iv_type = " << iv_type  <<"\n";
 
-        int nmodels = 0;
-
-        cout << "\nSIMILAR AVAILABLE MODELS:\n\n";
-        for(model_spec_t &model : available_models)
-        {
-            bool print_this_model = false;
-            std::string model_yf_type = std::get<0>(model);
-            std::string model_pf_type = std::get<1>(model);
-            std::string model_el_type = std::get<2>(model);
-            std::string model_iv_type = std::get<3>(model);
-
-            if(matches_yf && std::strcmp(yf_type, model_yf_type.c_str())==0)
-                print_this_model = true;
-            if(matches_pf && std::strcmp(pf_type, model_pf_type.c_str())==0)
-                print_this_model = true;
-            if(matches_el && std::strcmp(el_type, model_el_type.c_str())==0)
-                print_this_model = true;
-
-            if(print_this_model)
-            {
-                cout << "yf_type = " << std::get<0>(model) << "\n";
-                cout << "pf_type = " << std::get<1>(model) << "\n";
-                cout << "el_type = " << std::get<2>(model) << "\n";
-                cout << "iv_type = " << std::get<3>(model) << "\n\n";
-
-                nmodels++;
-            }
-        }
-        cout << "\nTotal: " << nmodels << " models. \n\n";
     }
 
 
