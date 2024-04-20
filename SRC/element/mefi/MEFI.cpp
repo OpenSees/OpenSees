@@ -15,7 +15,7 @@
 //
 // Rev: 1.0                                                       
 
-#include "MEFI.h"
+#include <MEFI.h>
 #include <Node.h>
 #include <SectionForceDeformation.h>
 #include <Matrix.h>
