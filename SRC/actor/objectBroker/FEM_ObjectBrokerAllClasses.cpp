@@ -373,6 +373,7 @@
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
+#include "joint/Inno3DPnPJoint.h" // Cristian Miculas
 #include "twoNodeLink/TwoNodeLink.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
@@ -1012,6 +1013,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
             
     case ELE_TAG_Joint2D:				// Arash
       return new Joint2D();			// Arash
+	  
+    case ELE_TAG_Inno3DPnPJoint:	// Cristian Miculas
+      return new Inno3DPnPJoint();	// Cristian Miculas
       
     case ELE_TAG_TwoNodeLink:				
       return new TwoNodeLink();			

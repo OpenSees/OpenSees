@@ -17,7 +17,7 @@
     <ClCompile Include="..\..\VC2005errno.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\main.cpp">
+    <ClCompile Include="..\..\..\EXAMPLES\Example1\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
