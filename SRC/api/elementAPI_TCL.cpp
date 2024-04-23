@@ -364,6 +364,7 @@ int OPS_EvalDoubleTclStringExpression(const char* theExpression, double& current
         opserr << "\" caused error:" << endln << Tcl_GetStringResult(theInterp) << endln;
         return -1;
     }
+    return 0;
 }
 
 extern "C"
