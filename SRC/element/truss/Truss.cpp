@@ -1223,6 +1223,10 @@ Truss::setResponse(const char **argv, int argc, OPS_Stream &output)
             }
         }
     }
+    else if (strcmp(argv[0], "energy") == 0)
+    {
+        theResponse = new ElementResponse(this, 2000, 0.0);
+    }
 
     output.endTag();
     return theResponse;
@@ -1266,6 +1270,9 @@ Truss::getResponse(int responseID, Information &eleInfo)
       kVec(0,0) = A*force/L;
       return eleInfo.setMatrix(kVec);
       
+    case 2000:
+        return eleInfo.setDouble(A * L * theMaterial->getEnergy());
+
     default:
       return 0;
     }
