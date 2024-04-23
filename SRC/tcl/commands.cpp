@@ -54,6 +54,7 @@ extern "C" {
 extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
+extern void OPS_clearAllSectionRepres(void);
 
 extern void OPS_clearAllHystereticBackbone(void);
 extern void OPS_clearAllStiffnessDegradation(void);
@@ -1433,6 +1434,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllUniaxialMaterial();
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
+  OPS_clearAllSectionRepres();
 
   OPS_clearAllHystereticBackbone();
   OPS_clearAllStiffnessDegradation();
