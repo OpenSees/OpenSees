@@ -373,6 +373,7 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI1.C" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\KikuchiBearing.cpp" />
@@ -633,6 +634,7 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleNormalSpring.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleShearSpring.h" />
