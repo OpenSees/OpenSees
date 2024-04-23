@@ -683,8 +683,6 @@ ZeroLengthSection::setResponse(const char **argv, int argc, OPS_Stream &output)
 				else {
 					// it is a number. Now we have to make sure it is within the allowed range
 					// for this element (in this case it can only be 1)
-					// If it is > 1, then we MUST return NULL, because the MPCO recorder iteratively
-					// uses this call to understand how many fibers we have in a section
 					if (sectionNum == 1) {
 						theResponse = theSection->setResponse(&argv[2], argc - 2, output);
 					}
