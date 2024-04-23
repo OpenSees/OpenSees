@@ -98,13 +98,13 @@ void* OPS_FourNodeTetrahedron()
     bool do_init_disp = false;
 
 
-    if (num >= 1)
+    while (OPS_GetNumRemainingInputArgs() > 0) 
     {
-        num = 1;
-        if (OPS_GetIntInput(&num, &do_init_disp_int) < 0)
+        const char* type = OPS_GetString(); // Fetch the next string from input
+        if (strcmp(type, "-doInitDisp") == 0) 
         {
-            opserr << "WARNING: invalid double data\n";
-            return 0;
+            num = 1;
+            OPS_GetIntInput(&num, &do_init_disp_int); 
         }
     }
 
