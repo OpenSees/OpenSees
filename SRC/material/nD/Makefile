@@ -57,6 +57,7 @@ OBJS       = NDMaterial.o \
 	J2ThreeDimensional.o \
 	OrthotropicMaterial.o \
 	Series3DMaterial.o \
+	Parallel3DMaterial.o \
 	PlaneStrainMaterial.o \
 	PlaneStressMaterial.o \
 	PlaneStressUserMaterial.o \
@@ -74,6 +75,7 @@ OBJS       = NDMaterial.o \
 	TclModelBuilderNDMaterialCommand.o \
 	WrapperNDMaterial.o \
 	InitStressNDMaterial.o \
+	InitStrainNDMaterial.o \
 	ConcreteMcftNonLinear5.o \
 	ConcreteMcftNonLinear7.o \
 	CapPlasticity.o \

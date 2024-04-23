@@ -222,6 +222,7 @@
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
 #include "Series3DMaterial.h"
+#include "Parallel3DMaterial.h"
 #include "PlaneStressRebarMaterial.h"
 #include "PlaneStressLayeredMaterial.h"
 //start Yuli Huang & Xinzheng L
@@ -264,6 +265,7 @@
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
+#include "InitStrainNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 #include "OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.h" // M. J. Nunez
 #include "SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.h" // M. J. Nunez
@@ -1932,6 +1934,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_Series3DMaterial:
     return new Series3DMaterial();
 
+  case ND_TAG_Parallel3DMaterial:
+    return new Parallel3DMaterial();
+
   case ND_TAG_PlaneStressRebarMaterial:
     return new PlaneStressRebarMaterial();
 
@@ -2047,6 +2052,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitStressNDMaterial:
       return new InitStressNDMaterial();
+
+  case ND_TAG_InitStrainNDMaterial:
+      return new InitStrainNDMaterial();
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();
