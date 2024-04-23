@@ -112,6 +112,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE);
 	@$(CD) $(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01; $(MAKE);
 	@$(CD) $(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01; $(MAKE);
+	@$(CD) $(FE)/material/nD/ASDPlasticMaterial; $(MAKE);
 
 test: $(OBJS) main.o
 	$(LINKER) $(LINKFLAGS) main.o ../../../SRC/api/elementAPI_Dummy.o $(FE_LIBRARY) \

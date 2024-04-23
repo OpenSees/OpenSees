@@ -567,6 +567,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ShellNLDKGT.o \
 	$(FE)/element/shell/ShellNLDKGQThermal.o \
 	$(FE)/element/shell/ASDShellQ4.o \
+	$(FE)/element/shell/ASDShellT3.o \
 	$(FE)/element/shell/R3vectors.o \
 	$(FE)/element/shell/ShellANDeS.o \
 	$(FE)/element/brick/Brick.o \
@@ -1055,6 +1056,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlateFromPlaneStressMaterial.o \
 	$(FE)/material/nD/PlateRebarMaterial.o \
 	$(FE)/material/nD/ASDConcrete3DMaterial.o \
+	$(FE)/material/nD/ASDPlasticMaterial/OPS_AllASDPlasticMaterials.o \
 	$(FE)/material/nD/stressDensityModel/stressDensity.o \
 	$(FE)/material/nD/stressDensityModel/SDM-UC.o \
 	$(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.o \
