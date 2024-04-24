@@ -240,6 +240,7 @@ include_directories(
   ${OPS_SRC_DIR}/actor/channel
   ${OPS_SRC_DIR}/actor/objectBroker
   ${OPS_SRC_DIR}/actor/message
+  ${OPS_BUNDLED_DIR}/eigenAPI
 )
 
 # TODO: Temporary fix; include all directories with .h files through glob
@@ -281,6 +282,8 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
 set (TETGEN_LIBRARIES tet)
 add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
 set (TRIANGLE_LIBRARIES triangle)
+# add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/eigenAPI")
+# set (EIGENAPI_LIBRARIES EIGENAPI)
 
 
 if (NOT DEFINED LAPACK_LIBRARIES) 
@@ -390,6 +393,7 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
+       ${EIGENAPI_LIBRARIES}
 )
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})

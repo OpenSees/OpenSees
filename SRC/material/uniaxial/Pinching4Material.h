@@ -94,6 +94,8 @@ public :
 	int setParameter(const char** argv, int argc, Parameter& param);
 	int updateParameter(int parameterID, Information& info);
 
+	double getEnergy(void) { return Tenergy; }
+
 protected:
 
 private:
