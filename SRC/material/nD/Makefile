@@ -141,6 +141,7 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/ASDPlasticMaterial; $(MAKE) wipe;
 	
 
 wipe: spotless
