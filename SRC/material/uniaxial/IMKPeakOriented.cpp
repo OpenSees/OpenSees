@@ -668,7 +668,6 @@ IMKPeakOriented::getCopy(void)
 int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    cout << " sendSelf" << endln;
 
     static Vector data(137);
     data(0) = this->getTag();
@@ -804,7 +803,6 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         this->setTag(0);
     }
     else {
-        cout << " recvSelf" << endln;
         this->setTag((int)data(0));
     // 23 Fixed Input Material Parameters
         Ke = data(1);
