@@ -2987,6 +2987,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getNDF", &Py_ops_getNDFF);
     addCommand("eleNodes", &Py_ops_eleNodes);
     addCommand("eleType", &Py_ops_eleType);    
+    addCommand("classType", &Py_ops_classType);    
     addCommand("nodeDOFs", &Py_ops_nodeDOFs);
     addCommand("nodeMass", &Py_ops_nodeMass);
     addCommand("nodePressure", &Py_ops_nodePressure);
