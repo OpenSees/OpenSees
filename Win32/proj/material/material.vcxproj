@@ -25,7 +25,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -379,6 +379,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\InitStressNDMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.cpp" />
@@ -422,6 +423,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\ASDConcrete3DMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\Series3DMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\Parallel3DMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlateFiberMaterial.cpp" />
@@ -791,6 +793,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\ElasticOrthotropicThreeDimensional.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\InitStressNDMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\InitialStateAnalysisWrapper.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\ManzariDafalias.h" />
@@ -831,6 +834,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\ASDConcrete3DMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\Series3DMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\Parallel3DMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\BeamFiberMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressMaterial.h" />

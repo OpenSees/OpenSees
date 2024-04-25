@@ -222,6 +222,7 @@
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
 #include "Series3DMaterial.h"
+#include "Parallel3DMaterial.h"
 #include "PlaneStressRebarMaterial.h"
 #include "PlaneStressLayeredMaterial.h"
 //start Yuli Huang & Xinzheng L
@@ -264,6 +265,7 @@
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
+#include "InitStrainNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 #include "OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.h" // M. J. Nunez
 #include "SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.h" // M. J. Nunez
@@ -367,9 +369,11 @@
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ShellNLDKGQ.h" //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ASDShellQ4.h" // Massimo Petracca
+#include "shell/ASDShellT3.h" // Massimo Petracca
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
+#include "joint/Inno3DPnPJoint.h" // Cristian Miculas
 #include "twoNodeLink/TwoNodeLink.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
@@ -1001,11 +1005,17 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_ASDShellQ4:   // Massimo Petracca
       return new ASDShellQ4(); // Massimo Petracca
     
+    case ELE_TAG_ASDShellT3:   // Massimo Petracca
+      return new ASDShellT3(); // Massimo Petracca
+    
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
             
     case ELE_TAG_Joint2D:				// Arash
       return new Joint2D();			// Arash
+	  
+    case ELE_TAG_Inno3DPnPJoint:	// Cristian Miculas
+      return new Inno3DPnPJoint();	// Cristian Miculas
       
     case ELE_TAG_TwoNodeLink:				
       return new TwoNodeLink();			
@@ -1928,6 +1938,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_Series3DMaterial:
     return new Series3DMaterial();
 
+  case ND_TAG_Parallel3DMaterial:
+    return new Parallel3DMaterial();
+
   case ND_TAG_PlaneStressRebarMaterial:
     return new PlaneStressRebarMaterial();
 
@@ -2043,6 +2056,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitStressNDMaterial:
       return new InitStressNDMaterial();
+
+  case ND_TAG_InitStrainNDMaterial:
+      return new InitStrainNDMaterial();
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();
