@@ -293,6 +293,7 @@ int OPS_eleNodes();
 int OPS_getNDMM();
 int OPS_getNDFF();
 int OPS_eleType();
+int OPS_classType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
