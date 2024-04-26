@@ -32,7 +32,6 @@
 // What: "@(#) Ratchet.h, revA"
 
 #include <UniaxialMaterial.h>
-#define MAT_TAG_Ratchet 2017
 
 class Ratchet : public UniaxialMaterial
 {
