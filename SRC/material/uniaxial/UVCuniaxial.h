@@ -24,6 +24,7 @@ public:
   UVCuniaxial(int tag, double E, double sy0, double qInf, double b,
     double dInf, double a,
     std::vector<double> cK, std::vector<double> gammaK);
+  UVCuniaxial();
   //! Destructor
   ~UVCuniaxial();
 

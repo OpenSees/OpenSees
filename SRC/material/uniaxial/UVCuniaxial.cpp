@@ -157,7 +157,32 @@ UVCuniaxial::UVCuniaxial(int tag, double E, double sy0, double qInf, double b,
     alphaKTrial.push_back(0.);
     alphaKConverged.push_back(0.);
   }
-};
+}
+
+UVCuniaxial::UVCuniaxial()
+  : UniaxialMaterial(0, MAT_TAG_UVCuniaxial),
+  elasticModulus(0.),
+  yieldStress(0.),
+  qInf(0.),
+  bIso(0.),
+  dInf(0.),
+  aIso(0.),
+  cK(0.),
+  gammaK(0.),
+  strainConverged(0.),
+  strainTrial(0.),
+  strainPEqConverged(0.),
+  strainPEqTrial(0.),
+  stressConverged(0.),
+  stressTrial(0.),
+  stiffnessInitial(0.),
+  stiffnessConverged(0.),
+  stiffnessTrial(0.),
+  flowDirection(0.),
+  plasticLoading(false)
+{
+
+}
 
 /* ------------------------------------------------------------------------ */
 
@@ -433,7 +458,7 @@ UniaxialMaterial* UVCuniaxial::getCopy() {
  */
 int UVCuniaxial::sendSelf(int commitTag, Channel& theChannel) {
 
-  static Vector data(14 + 2*MAX_BACKSTRESSES);  // enough space for 8 backstresses
+  static Vector data(15 + 2*MAX_BACKSTRESSES);  // enough space for 8 backstresses
   // Material properties
   data(0) = elasticModulus;
   data(1) = yieldStress;
@@ -452,9 +477,10 @@ int UVCuniaxial::sendSelf(int commitTag, Channel& theChannel) {
   data(12) = plasticLoading ? 1.0 : -1.0;
 
   data(13) = this->getTag();
-
+  data(14) = nBackstresses;
+  
   // Kinematic hardening related, 12 total spaces required
-  int cKStart = 14;  // starts at index 14
+  int cKStart = 15;  // start index
   int gammaKStart = cKStart + nBackstresses;
   int alpha_k_start = gammaKStart + nBackstresses;
   for (int i = 0; i < nBackstresses; ++i) {
@@ -481,7 +507,7 @@ int UVCuniaxial::sendSelf(int commitTag, Channel& theChannel) {
  */
 int UVCuniaxial::recvSelf(int commitTag, Channel& theChannel,
   FEM_ObjectBroker& theBroker) {
-  static Vector data(14 + 2*MAX_BACKSTRESSES);
+  static Vector data(15 + 2*MAX_BACKSTRESSES);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "UVCuniaxial::recvSelf() - failed to recvSelf\n";
@@ -506,9 +532,13 @@ int UVCuniaxial::recvSelf(int commitTag, Channel& theChannel,
   plasticLoading = data(12) > 0.0 ? true : false;
 
   this->setTag(int(data(13)));
+  nBackstresses = int(data(14));
+  cK.resize(nBackstresses);
+  gammaK.resize(nBackstresses);
+  alphaKConverged.resize(nBackstresses);
   
   // Kinematic hardening related, 12 total spaces required
-  int cKStart = 14;  // starts at index 14
+  int cKStart = 15;  // start index 
   int gammaKStart = cKStart + nBackstresses;
   int alpha_k_start = gammaKStart + nBackstresses;
   for (int i = 0; i < nBackstresses; ++i) {
