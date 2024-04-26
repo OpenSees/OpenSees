@@ -42,6 +42,8 @@ class Ratchet : public UniaxialMaterial
 
     ~Ratchet();
 
+    const char *getClassType(void) const {return "Ratchet";}
+
     int setTrialStrain(double strain, double strainRate = 0.0); 
     double getStrain(void);          
     double getStress(void);
