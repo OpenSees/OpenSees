@@ -110,8 +110,12 @@
 #include "CableMaterial.h"
 #include "ENTMaterial.h"
 #include "GNGMaterial.h"
+#include "Ratchet.h"
 #include "MinMaxMaterial.h"
 #include "ModIMKPeakOriented.h"
+#include "IMKBilin.h"
+#include "IMKPeakOriented.h"
+#include "IMKPinching.h"
 #include "snap/Clough.h"
 #include "limitState/LimitStateMaterial.h"
 #include "InitStressMaterial.h"
@@ -1599,6 +1603,15 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ModIMKPeakOriented:
 		return new ModIMKPeakOriented();
 
+	case MAT_TAG_IMKBilin:
+		return new IMKBilin();
+
+	case MAT_TAG_IMKPeakOriented:
+		return new IMKPeakOriented();
+
+    case MAT_TAG_IMKPinching:
+      return new IMKPinching();
+
 	case MAT_TAG_SnapClough:
 		return new Clough();
 
@@ -1633,7 +1646,10 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		return new ENTMaterial();
 
 	case MAT_TAG_GNG:
-		return new GNGMaterial();		
+		return new GNGMaterial();
+		
+	case MAT_TAG_Ratchet:
+		return new Ratchet();				
 #if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
