@@ -43,14 +43,6 @@
 #include "DowelType.h"
 
 
-#ifdef _USRDLL
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
-#endif
-
 #define PRECISION 1.0e-12
 #define PI 3.14159265358979323846
 #define MAX_ITER 2000
@@ -1151,6 +1143,16 @@ int DowelType::revertToStart(void)
     tDmax = cDmax = 0.0;
     tFdmax = cFdmax = 0.0;
     tPath = cPath = 1;
+
+    isPHC = true;
+    ePHC_p = ePHC_n = 0.0;
+    eFHC_p = eFHC_n = 0.0;
+
+    for (int i=0; i < 20; i++) {
+      pxs[i] = 0.0;
+      pys[i] = 0.0;
+    }
+    
     return 0;
 }
 
@@ -1224,6 +1226,10 @@ UniaxialMaterial *DowelType::getCopy(void)
     theCopy->ePHC_n = ePHC_n;
     theCopy->eFHC_p = eFHC_p;
     theCopy->eFHC_n = eFHC_n;
+    for (int i=0; i < 20; i++) {
+      theCopy->pxs[i] = pxs[i];
+      theCopy->pys[i] = pys[i];
+    }
     return theCopy;
 }
 
