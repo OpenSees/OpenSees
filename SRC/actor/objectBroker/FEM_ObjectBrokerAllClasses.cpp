@@ -117,6 +117,7 @@
 #include "IMKPeakOriented.h"
 #include "IMKPinching.h"
 #include "UVCuniaxial.h"
+#include "SLModel.h"
 #include "snap/Clough.h"
 #include "limitState/LimitStateMaterial.h"
 #include "InitStressMaterial.h"
@@ -1615,6 +1616,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_UVCuniaxial:
 	    return new UVCuniaxial();
+
+	case MAT_TAG_SLModel:
+	    return new SLModel();
 	    
 	case MAT_TAG_SnapClough:
 		return new Clough();
