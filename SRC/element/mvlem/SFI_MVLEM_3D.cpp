@@ -413,10 +413,10 @@ SFI_MVLEM_3D::SFI_MVLEM_3D()
 	theMaterial(0), theLoad(0),
 	SFI_MVLEM_3DStrainX(0), SFI_MVLEM_3DStrainY(0), SFI_MVLEM_3DStrainXY(0), SFI_MVLEM_3DStrain(0),
 	x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), Kh(0), Fx(0), Fy(0), Fxy(0), Dx(0), Dy(0), Dxy(0),
-	SFI_MVLEM_3DK(24 + m, 24 + m), SFI_MVLEM_3DR(24 + m), SFI_MVLEM_3DD(24 + m, 24 + m), SFI_MVLEM_3DM(24 + m, 24 + m),
+	m(1), SFI_MVLEM_3DK(24 + m, 24 + m), SFI_MVLEM_3DR(24 + m), SFI_MVLEM_3DD(24 + m, 24 + m), SFI_MVLEM_3DM(24 + m, 24 + m),
 	SFI_MVLEM_3DKlocal(24 + m, 24 + m), SFI_MVLEM_3DDlocal(24 + m, 24 + m), SFI_MVLEM_3DRlocal(24 + m), SFI_MVLEM_3DMlocal(24 + m, 24 + m),
 	P_24DOF(24), P_24DOF_local(24),
-	m(m), c(c), NUelastic(NUelastic), Tfactor(Tfactor),
+	c(0.4), NUelastic(0.0), Tfactor(0.0),
 	T(24 + m, 24 + m), Tt(3, 3), T6(6, 6),
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {

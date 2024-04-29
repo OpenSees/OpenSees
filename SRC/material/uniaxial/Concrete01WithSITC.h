@@ -61,6 +61,8 @@ class Concrete01WithSITC : public UniaxialMaterial
   Concrete01WithSITC ();
   ~Concrete01WithSITC();
 
+  const char *getClassType(void) const {return "Concrete01WithSITC";}
+
       int setTrialStrain(double strain, double strainRate = 0.0); 
       int setTrial (double strain, double &stress, double &tangent, double strainRate = 0.0);
       double getStrain(void);      
