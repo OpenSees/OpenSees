@@ -119,6 +119,7 @@ void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
 void* OPS_ShellNLDKGT();
 void* OPS_ASDShellQ4();
+void* OPS_ASDShellT3();
 void* OPS_CoupledZeroLength();
 void* OPS_BeamContact2D();
 void* OPS_BeamContact2Dp();
@@ -257,7 +258,7 @@ void* OPS_PML2D_5(void);
 void* OPS_PML2D_12(void);
 void* OPS_PML2DVISCOUS(void);
 void* OPS_PML3D(void);
-
+void* OPS_Inno3DPnPJoint();
 
 namespace {
 
@@ -450,7 +451,7 @@ namespace {
 	    return OPS_BeamColumnJoint3d();
 	}
     }
-
+	
     static void* OPS_FlatSliderBearing()
     {
 	int ndm = OPS_GetNDM();
@@ -615,6 +616,8 @@ namespace {
 	functionMap.insert(std::make_pair("Joint3d", &OPS_Joint3D));
 	functionMap.insert(std::make_pair("Joint2D", &OPS_Joint2D));
 	functionMap.insert(std::make_pair("Joint2d", &OPS_Joint2D));
+	functionMap.insert(std::make_pair("Inno3DPnPJoint", &OPS_Inno3DPnPJoint));
+	functionMap.insert(std::make_pair("inno3dpnpjoint", &OPS_Inno3DPnPJoint));
 	functionMap.insert(std::make_pair("LehighJoint2D", &OPS_LehighJoint2d));
 	functionMap.insert(std::make_pair("LehighJoint2d", &OPS_LehighJoint2d));
 	functionMap.insert(std::make_pair("zeroLengthContact2D", &OPS_ZeroLengthContact2D));
@@ -738,6 +741,7 @@ namespace {
 	functionMap.insert(std::make_pair("ShellNLDKGT", &OPS_ShellNLDKGT));
 	functionMap.insert(std::make_pair("shellNLDKGT", &OPS_ShellNLDKGT));	
 	functionMap.insert(std::make_pair("ASDShellQ4", &OPS_ASDShellQ4));
+	functionMap.insert(std::make_pair("ASDShellT3", &OPS_ASDShellT3));
 	functionMap.insert(std::make_pair("CoupledZeroLength", &OPS_CoupledZeroLength));
 	functionMap.insert(std::make_pair("ZeroLengthCoupled", &OPS_CoupledZeroLength));
 	functionMap.insert(std::make_pair("BeamContact2d", &OPS_BeamContact2D));

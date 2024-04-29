@@ -665,6 +665,9 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp">
       <Filter>shell</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C">
       <Filter>HUelements</Filter>
     </ClCompile>
@@ -968,8 +971,12 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp">
+      <Filter>joint</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
       <Filter>mefi</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
       <Filter>elasticBeamColumn</Filter>
     </ClCompile>
@@ -1440,6 +1447,9 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h">
       <Filter>shell</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h">
+      <Filter>shell</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h">
       <Filter>HUelements</Filter>
     </ClInclude>
@@ -1737,8 +1747,12 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h">
+      <Filter>joint</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
       <Filter>mefi</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
       <Filter>elasticBeamColumn</Filter>
     </ClInclude>

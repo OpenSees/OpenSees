@@ -135,7 +135,7 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
 	 double v0_, 
 	 double k_,
 	 double useBuck_)
- :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),fpc1(fpc1), fpc2(fpc2), epsc0(epsc0), CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
+ :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
    CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(false) ,CConfRat(1.0) ,CConfStrain(epsc0),CLBuck(0.0)
 {
   fpc1 = fpc1_;
