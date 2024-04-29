@@ -437,6 +437,9 @@ int Pinching4Material::revertToStart(void)
 	Cstrain = 0.0;
 	Cstress = 0.0;
 	CstrainRate = 0.0;
+
+	this->SetEnvelope();
+	
 	lowCstateStrain = envlpNegStrain(0);
 	lowCstateStress = envlpNegStress(0);
 	hghCstateStrain = envlpPosStrain(0);
@@ -448,12 +451,23 @@ int Pinching4Material::revertToStart(void)
 	CgammaD = 0.0;
 	CgammaF = 0.0;
 	CnCycle = 0.0;
-
+	
+	TnCycle = CnCycle;
+	Tstrain = Cstrain;
+	Tstress = Cstress;
 	Ttangent = envlpPosStress(0)/envlpPosStrain(0);
 	dstrain = 0.0;       
 	gammaKUsed = 0.0;
 	gammaFUsed = 0.0;
-	
+
+	state3Stress.Zero();
+	state3Strain.Zero();
+	state4Stress.Zero();
+	state4Strain.Zero();	
+
+	envlpPosDamgdStress = envlpPosStress;
+	envlpNegDamgdStress = envlpNegStress;	
+
 	kElasticPosDamgd = kElasticPos;
 	kElasticNegDamgd = kElasticNeg;
 	uMaxDamgd = CmaxStrainDmnd;

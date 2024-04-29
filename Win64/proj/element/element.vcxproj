@@ -33,12 +33,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -239,6 +239,7 @@
     <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell.cpp" />
     <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp" />
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp" />
     <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp" />
@@ -487,6 +488,7 @@
     <ClCompile Include="..\..\..\SRC\element\shell\R3vectors.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.cpp" />
@@ -543,6 +545,7 @@
     <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell.h" />
     <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h" />
     <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h" />
     <ClInclude Include="..\..\..\SRC\element\masonry\BeamGT.h" />
     <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan12.h" />
@@ -759,6 +762,7 @@
     <ClInclude Include="..\..\..\SRC\element\shell\R3vectors.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DBubble.h" />
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2DCompressible.h" />
