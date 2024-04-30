@@ -302,14 +302,14 @@ if (flag == OPS_PRINT_PRINTMODEL_JSON) {
 	s<<",\"sectionRepr\": [\n";
 	for (int patchCtr=0;patchCtr<nPatches;patchCtr++) {
 		patch[patchCtr]->Print(s,flag);
-		if (patchCtr < nPatches-1)
+		if (patchCtr < nPatches-1 || nReinfLayers>0 || numFibers>0)
 			s << ",\n";
 		else
 			s << "\n";	
     }
     for (int layerCtr=0;layerCtr<nReinfLayers;layerCtr++) {
 		reinfLayer[layerCtr]->Print(s,flag);
-		if (layerCtr < nReinfLayers-1)
+		if (layerCtr < nReinfLayers-1 || numFibers>0)
 			s << ",\n";
 		else
 			s << "\n";	
