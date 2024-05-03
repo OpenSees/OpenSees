@@ -94,6 +94,7 @@
 #include "Steel4.h"
 #include "AxialSp.h"
 #include "AxialSpHD.h"
+#include "SelfCenteringMaterial.h"
 #include "SteelFractureDI.h"
 #include "FatigueMaterial.h"
 #include "ReinforcingSteel.h"
@@ -1583,6 +1584,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_AxialSpHD:
 	    return new AxialSpHD();
+
+	case MAT_TAG_SelfCentering:
+	    return new SelfCenteringMaterial();
 	    
     case MAT_TAG_TzLiq1:
 		return new TzLiq1();
