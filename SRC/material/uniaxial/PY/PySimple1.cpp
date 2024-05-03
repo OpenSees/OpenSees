@@ -112,7 +112,7 @@ PySimple1::PySimple1(int tag, int classtag, int soil, double p_ult, double y_50,
 //	Default constructor
 
 PySimple1::PySimple1()
-:UniaxialMaterial(0,0),
+:UniaxialMaterial(0,MAT_TAG_PySimple1),
  soilType(0), pult(0.0), y50(0.0), drag(0.0), dashpot(0.0)
 {
 }
