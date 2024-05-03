@@ -101,7 +101,7 @@ Ratchet::Ratchet(int tag, double e, double fTravel, double fTravelInit, int iRat
 	:UniaxialMaterial(tag, MAT_TAG_Ratchet),
 	commitStrain(0.0), commitStress(0.0), commitTangent(e), commitEngageStrain(0.0),
 	trialStrain(0.0), trialStress(0.0), trialTangent(e),
-	E(e), freeTravel(fTravel), fTravelInitial(fTravelInit), RatType(iRatType), engageStrain(fTravelInitial), currentStrain(0.0),
+	E(e), freeTravel(fTravel), fTravelInitial(fTravelInit), RatType(iRatType), engageStrain(fTravelInit), currentStrain(0.0),
 	nratchet(0), commitNratchet(0)
 {
 	if (E <= 0.0) {
