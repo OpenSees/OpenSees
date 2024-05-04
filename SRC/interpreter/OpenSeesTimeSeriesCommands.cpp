@@ -52,8 +52,10 @@ void* OPS_ConstantSeries();
 void* OPS_LinearSeries();
 void* OPS_TriangleSeries();
 void* OPS_TrigSeries();
+void* OPS_RampSeries();
 void* OPS_RectangularSeries();
 void* OPS_PulseSeries();
+void* OPS_MPAccSeries();   //Tang.S
 
 namespace {
     
@@ -210,6 +212,8 @@ namespace {
     {
 	functionMap.insert(std::make_pair("Constant", &OPS_ConstantSeries));
 	functionMap.insert(std::make_pair("ConstantSeries", &OPS_ConstantSeries));
+	functionMap.insert(std::make_pair("RampSeries", &OPS_RampSeries));
+	functionMap.insert(std::make_pair("Ramp", &OPS_RampSeries));
 	functionMap.insert(std::make_pair("Trig", &OPS_TrigSeries));
 	functionMap.insert(std::make_pair("TrigSeries", &OPS_TrigSeries));
 	functionMap.insert(std::make_pair("Sine", &OPS_TrigSeries));
@@ -223,6 +227,8 @@ namespace {
 	functionMap.insert(std::make_pair("TriangleSeries", &OPS_TriangleSeries));
 	functionMap.insert(std::make_pair("Path", &OPS_PathSeries));
 	functionMap.insert(std::make_pair("Series", &OPS_PathSeries));
+	functionMap.insert(std::make_pair("MPAcc", &OPS_MPAccSeries));  //Tang.S
+	functionMap.insert(std::make_pair("MPAccSeries", &OPS_MPAccSeries));
       
 	return 0;
     }

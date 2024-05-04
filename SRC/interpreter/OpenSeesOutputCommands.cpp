@@ -73,6 +73,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <BackgroundMesh.h>
 #include <Parameter.h>
 #include <ParameterIter.h>
+#include <UniaxialMaterial.h>
 
 void* OPS_NodeRecorder();
 void* OPS_EnvelopeNodeRecorder();
@@ -86,8 +87,8 @@ void* OPS_MPCORecorder();
 #endif
 BackgroundMesh& OPS_getBgMesh();
 
-//void* OPS_DriftRecorder();
-//void* OPS_PatternRecorder();
+void* OPS_DriftRecorder();
+void* OPS_EnvelopeDriftRecorder();
 
 namespace {
 
@@ -113,6 +114,8 @@ namespace {
 	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
+	recordersMap.insert(std::make_pair("EnvelopeDrift", &OPS_EnvelopeDriftRecorder));
 #ifdef _HDF5
 	recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
 #endif
@@ -2009,6 +2012,44 @@ int OPS_getNDFF()
 	}
 
     return 0;
+}
+
+int OPS_classType()
+{
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr << "ERROR want - classType objectType tag?\n";
+    return -1;
+  }
+  
+  std::string type = OPS_GetString();
+  int tag;
+  int numdata = 1;
+  
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR classType objectType tag? - unable to read tag" << endln;
+    return -1;
+  }
+  
+  if (type == "uniaxialMaterial") {
+    UniaxialMaterial *theMaterial = OPS_GetUniaxialMaterial(tag);
+    if (theMaterial == 0) {
+      opserr << "ERROR classType - uniaxialMaterial with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theMaterial->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+  
+  else {
+    opserr << "WARNING classType - " << type.c_str() << " not yet supported" << endln;
+    return -1;
+  }
+
+  return 0;
 }
 
 int OPS_eleType()

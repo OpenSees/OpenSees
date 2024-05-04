@@ -87,6 +87,7 @@ extern  void *OPS_J2CyclicBoundingSurfaceMaterial(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
 extern  void *OPS_InitStressNDMaterial(void);
+extern  void *OPS_InitStrainNDMaterial(void);
 extern  void *OPS_StressDensityMaterial(void);
 extern  void *OPS_SimplifiedJ2(void);
 extern  void *OPS_PlaneStressSimplifiedJ2(void);
@@ -116,7 +117,9 @@ extern void* OPS_UVCplanestress(void);
 extern  void *OPS_SAniSandMSMaterial(void);
 extern void* OPS_OrthotropicMaterial(void);
 extern void* OPS_Series3DMaterial(void);
+extern void* OPS_Parallel3DMaterial(void);
 extern void* OPS_ASDConcrete3DMaterial(void);
+extern void* OPS_AllASDPlasticMaterials(void);
 extern  void *OPS_ConcreteMcftNonlinear5(void);
 extern  void *OPS_ConcreteMcftNonlinear7(void);
 extern  void *OPS_ConcreteS(void);
@@ -132,6 +135,8 @@ extern void *OPS_NewConcreteMaterial(void);
 #endif
 
 extern  void *OPS_FSAMMaterial(void); // K Kolozvari      
+extern void *OPS_OrthotropicRotatingAngleConcreteT2DMaterial01(void); // M. J. Nunez - UChile
+extern void *OPS_SmearedSteelDoubleLayerT2DMaterial01(void);		  // M. J. Nunez - UChile
 
 #ifdef _HAVE_Damage2p
 extern void *OPS_Damage2p(void);
@@ -215,6 +220,14 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
     else if ((strcmp(argv[1],"InitStressMaterial") == 0) || (strcmp(argv[1],"InitStress") == 0)) {
       void *theMat = OPS_InitStressNDMaterial();
+      if (theMat != 0) 
+        theMaterial = (NDMaterial *)theMat;
+      else 
+        return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1],"InitStrain") == 0) {
+      void *theMat = OPS_InitStrainNDMaterial();
       if (theMat != 0) 
         theMaterial = (NDMaterial *)theMat;
       else 
@@ -586,6 +599,22 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
       else 
 	return TCL_ERROR;
     }
+
+	else if ((strcmp(argv[1], "OrthotropicRotatingAngleConcreteT2DMaterial01") == 0) || (strcmp(argv[1], "OrthotropicRAConcrete") == 0)) {
+		void* theMat = OPS_OrthotropicRotatingAngleConcreteT2DMaterial01();
+		if (theMat != 0)
+			theMaterial = (NDMaterial*)theMat;
+		else
+			return TCL_ERROR;
+	}
+
+	else if ((strcmp(argv[1], "SmearedSteelDoubleLayerT2DMaterial01") == 0) || (strcmp(argv[1], "SmearedSteelDoubleLayer") == 0)) {
+		void* theMat = OPS_SmearedSteelDoubleLayerT2DMaterial01();
+		if (theMat != 0)
+			theMaterial = (NDMaterial*)theMat;
+		else
+			return TCL_ERROR;
+	}
 
     // Check argv[1] for J2PlaneStrain material type
     else if ((strcmp(argv[1],"J2Plasticity") == 0)  ||
@@ -1207,7 +1236,16 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 		else 
 			return TCL_ERROR;
 	}
-	
+
+	else if(strcmp(argv[1], "Parallel3D") == 0) {
+		void *theMat = OPS_Parallel3DMaterial();
+		if (theMat != 0)  {
+			theMaterial = (NDMaterial *)theMat;
+		}
+		else 
+			return TCL_ERROR;
+	}
+
 	else if(strcmp(argv[1], "ASDConcrete3D") == 0) {
 		void *theMat = OPS_ASDConcrete3DMaterial();
 		if (theMat != 0)  {
@@ -1216,7 +1254,14 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 		else 
 			return TCL_ERROR;
 	}
-
+    else if(strcmp(argv[1], "ASDPlasticMaterial") == 0) {
+    void *theMat = OPS_AllASDPlasticMaterials();
+    if (theMat != 0)  {
+      theMaterial = (NDMaterial *)theMat;
+    }
+    else 
+      return TCL_ERROR;
+  }
     else if (strcmp(argv[1],"PlaneStressMaterial") == 0 ||
  	     strcmp(argv[1],"PlaneStress") == 0) {
       void *theMat = OPS_PlaneStress();

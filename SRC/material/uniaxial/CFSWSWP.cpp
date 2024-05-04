@@ -131,7 +131,6 @@ CFSWSWP::CFSWSWP(int tag,
 }
 
 void CFSWSWP :: lateralShearStrength(void) {
-	Precision=100;				  
 	E=203000.00;
     int nstud=0;
 	int nstude=0;
@@ -414,8 +413,8 @@ static int getIndexNeg(Vector v,double value)
  void CFSWSWP::SetSpline(void)
  {
 			
-			int Size = 5;
-			double *X = new double[Size], *Y = new double[Size];
+			const int Size = 5;
+			double X[Size]; double Y [Size];
 			
 			int fifth = getIndexNeg(envlpNegStrain,state3Strain(0));
 			if(fifth == -1)
@@ -767,8 +766,8 @@ static int getIndexNeg(Vector v,double value)
  
 		 // BSpline Adds
 
-		 int Size = 9;
-		 double *X = new double[Size], *Y = new double[Size];
+		 const int Size = 9;
+		 double X [Size]; double Y[Size];
 
 		 for(int i = 0;i < 2;i++)
 		 {
@@ -783,8 +782,9 @@ static int getIndexNeg(Vector v,double value)
 			 X[i + 2] = envlpPosStrain(i);
 			 Y[i + 2] = envlpPosStress(i);
 		 }
-		 double *XFit = new double[(Size-3)*Precision+2],*YFit = new double[(Size-3)*Precision+2];
-		 double *a = new double[4], *b = new double[4];
+		 //double *XFit = new double[(Size-3)*Precision+2],*YFit = new double[(Size-3)*Precision+2];
+		 double XFit[(Size-3)*Precision+2]; double YFit[(Size-3)*Precision+2];
+		 double a[4]; double b[4];
 			 
 		
 		double p1X,p1Y,p2X,p2Y,p3X,p3Y,p4X,p4Y;

@@ -3812,7 +3812,8 @@ namespace mpco {
 				*/
 				else if (
 					// ./shell
-					elem_class_tag == ELE_TAG_ShellANDeS
+					elem_class_tag == ELE_TAG_ShellANDeS ||
+					elem_class_tag == ELE_TAG_ASDShellT3
 					) {
 					geom_type = ElementGeometryType::Triangle_3N;
 					int_type = ElementIntegrationRuleType::Triangle_GaussLegendre_2B;
@@ -3823,8 +3824,7 @@ namespace mpco {
 				else if (
 					// ./shell
 					elem_class_tag == ELE_TAG_ShellDKGT ||
-					elem_class_tag == ELE_TAG_ShellNLDKGT ||
-					elem_class_tag == ELE_TAG_ASDShellT3
+					elem_class_tag == ELE_TAG_ShellNLDKGT
 					) {
 					geom_type = ElementGeometryType::Triangle_3N;
 					int_type = ElementIntegrationRuleType::Triangle_GaussLegendre_2C;

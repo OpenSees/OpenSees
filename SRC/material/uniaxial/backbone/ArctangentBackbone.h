@@ -39,6 +39,7 @@ class ArctangentBackbone : public HystereticBackbone
 {
  public:
   ArctangentBackbone(int tag, double K1, double gammaY, double alpha);
+  ArctangentBackbone(int tag, double E, double Fy);
   ArctangentBackbone();
   ~ArctangentBackbone();
   

@@ -16,6 +16,7 @@ void* OPS_PlateFiberMaterial();
 void* OPS_PlateFiberMaterialThermal();
 void* OPS_ReinforcedConcretePlaneStressMaterial();
 void* OPS_InitStressNDMaterial();
+void* OPS_InitStrainNDMaterial();
 void* OPS_J2BeamFiber2dMaterial();
 void* OPS_J2BeamFiber3dMaterial();
 void* OPS_J2PlateFibreMaterial();
@@ -61,6 +62,7 @@ void* OPS_PlateRebarMaterialThermal();
 void* OPS_PlateFromPlaneStressMaterial();
 void* OPS_OrthotropicMaterial();
 void* OPS_Series3DMaterial();
+void* OPS_Parallel3DMaterial();
 void* OPS_PlateFromPlaneStressMaterialThermal();
 void* OPS_ConcreteS();
 void* OPS_PlaneStressUserMaterial();
@@ -72,6 +74,7 @@ void* OPS_PM4SiltMaterial();
 void* OPS_UVCplanestress();
 void* OPS_UVCmultiaxial();
 void* OPS_PressureDependMultiYield03();
+void* OPS_NewPlasticDamageConcrete3d();
 void* OPS_NewPlasticDamageConcretePlaneStress();
 void* OPS_ElasticPlaneStress();
 void* OPS_ElasticOrthotropicPlaneStress();
@@ -79,6 +82,9 @@ void* OPS_VonPapaDamage();
 void* OPS_ConcreteMcftNonlinear5();
 void* OPS_ConcreteMcftNonlinear7();
 void* OPS_ASDConcrete3DMaterial();
+void* OPS_OrthotropicRotatingAngleConcreteT2DMaterial01();	// M. J. Nunez - UChile
+void* OPS_SmearedSteelDoubleLayerT2DMaterial01();			// M. J. Nunez - UChile
+void* OPS_AllASDPlasticMaterials();
 
 namespace {
 
@@ -111,6 +117,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("InitStressNDMaterial", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStressND", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStress", &OPS_InitStressNDMaterial));
+	nDMaterialsMap.insert(std::make_pair("InitStrain", &OPS_InitStrainNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("J2BeamFiber", &J2BeamFiber2Dor3D));
 	nDMaterialsMap.insert(std::make_pair("J2PlateFibre", &OPS_J2PlateFibreMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAReinforcedConcretePlaneStress", &OPS_FAReinforcedConcretePlaneStressMaterial));
@@ -177,6 +184,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("PlateFromPlaneStress", &OPS_PlateFromPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("Orthotropic", &OPS_OrthotropicMaterial));
 	nDMaterialsMap.insert(std::make_pair("Series3D", &OPS_Series3DMaterial));
+	nDMaterialsMap.insert(std::make_pair("Parallel3D", &OPS_Parallel3DMaterial));
 	nDMaterialsMap.insert(std::make_pair("PlateFromPlaneStressThermal", &OPS_PlateFromPlaneStressMaterialThermal));
 	nDMaterialsMap.insert(std::make_pair("ConcreteS", &OPS_ConcreteS));
 	nDMaterialsMap.insert(std::make_pair("PlaneStressUserMaterial", &OPS_PlaneStressUserMaterial));
@@ -189,6 +197,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("UVCplanestress", &OPS_UVCplanestress));
 	nDMaterialsMap.insert(std::make_pair("UVCmultiaxial", &OPS_UVCmultiaxial));
 	nDMaterialsMap.insert(std::make_pair("PressureDependMultiYield03", &OPS_PressureDependMultiYield03));
+	nDMaterialsMap.insert(std::make_pair("PlasticDamageConcrete3d", &OPS_NewPlasticDamageConcrete3d));
 	nDMaterialsMap.insert(std::make_pair("PlasticDamageConcretePlaneStress", &OPS_NewPlasticDamageConcretePlaneStress));
 	nDMaterialsMap.insert(std::make_pair("ElasticPlaneStress", &OPS_ElasticPlaneStress));
 	nDMaterialsMap.insert(std::make_pair("ElasticOrthotropicPlaneStress", &OPS_ElasticOrthotropicPlaneStress));
@@ -196,6 +205,9 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("ConcreteMcftNonlinear5", &OPS_ConcreteMcftNonlinear5));
 	nDMaterialsMap.insert(std::make_pair("ConcreteMcftNonlinear7", &OPS_ConcreteMcftNonlinear7));
 	nDMaterialsMap.insert(std::make_pair("ASDConcrete3D", &OPS_ASDConcrete3DMaterial));
+	nDMaterialsMap.insert(std::make_pair("OrthotropicRAConcrete", &OPS_OrthotropicRotatingAngleConcreteT2DMaterial01));
+	nDMaterialsMap.insert(std::make_pair("SmearedSteelDoubleLayer", &OPS_SmearedSteelDoubleLayerT2DMaterial01));
+	nDMaterialsMap.insert(std::make_pair("ASDPlasticMaterial", &OPS_AllASDPlasticMaterials));
 
 	return 0;
     }

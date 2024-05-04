@@ -27,17 +27,172 @@
 //
 // Description: This file contains the class definition for EnvelopeDriftRecorder.
 
-#include <math.h>
-
-#include <EnvelopeDriftRecorder.h>
+#include <BinaryFileStream.h>
+#include <Channel.h>
+#include <DataFileStream.h>
 #include <Domain.h>
-#include <Node.h>
-#include <Vector.h>
+#include <EnvelopeDriftRecorder.h>
+#include <FEM_ObjectBroker.h>
 #include <ID.h>
 #include <Matrix.h>
+#include <Node.h>
+#include <StandardStream.h>
+#include <Vector.h>
+#include <XmlFileStream.h>
+#include <elementAPI.h>
+#include <math.h>
 #include <string.h>
-#include <Channel.h>
-#include <FEM_ObjectBroker.h>
+
+enum outputMode {
+  STANDARD_STREAM,
+  DATA_STREAM,
+  XML_STREAM,
+  DATABASE_STREAM,
+  BINARY_STREAM,
+  DATA_STREAM_CSV,
+  TCP_STREAM,
+  DATA_STREAM_ADD
+};
+
+void *OPS_EnvelopeDriftRecorder() {
+  outputMode eMode = STANDARD_STREAM;
+  bool echoTimeFlag = false;
+  ID iNodes(0, 16);
+  ID jNodes(0, 16);
+  int dof = 1;
+  int perpDirn = 2;
+  int pos = 2;
+  double dT = 0.0;
+  double rTolDt = 0.00001;
+  int precision = 6;
+  bool doScientific = false;
+  bool closeOnWrite = false;
+  const char *filename = 0;
+  OPS_Stream *theOutputStream = 0;
+  Domain *domain = OPS_GetDomain();
+  if (domain == 0) {
+    opserr << "WARNING: no domain is defined\n";
+    return 0;
+  }
+
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *opt = OPS_GetString();
+    if (strcmp(opt, "-file") == 0) {
+      eMode = DATA_STREAM;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        filename = OPS_GetString();
+      }
+    } else if (strcmp(opt, "-xml") == 0) {
+      eMode = XML_STREAM;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        filename = OPS_GetString();
+      }
+    } else if (strcmp(opt, "-fileCSV") == 0) {
+      eMode = DATA_STREAM_CSV;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        filename = OPS_GetString();
+      }
+    } else if (strcmp(opt, "-binary") == 0) {
+      eMode = BINARY_STREAM;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        filename = OPS_GetString();
+      }
+    } else if (strcmp(opt, "-closeOnWrite") == 0) {
+      closeOnWrite = true;
+    } else if (strcmp(opt, "-scientific") == 0) {
+      doScientific = true;
+    } else if (strcmp(opt, "-precision") == 0) {
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        if (OPS_GetIntInput(&num, &precision) < 0) {
+          opserr << "WARNING: failed to get precision\n";
+          return 0;
+        }
+      }
+    } else if (strcmp(opt, "-iNode") < 0) {
+      while (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        int nd;
+        if (OPS_GetIntInput(&num, &nd) < 0) {
+          OPS_ResetCurrentInputArg(-1);
+          break;
+        }
+        iNodes[iNodes.Size()] = nd;
+      }
+    } else if (strcmp(opt, "-jNode") < 0) {
+      while (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        int nd;
+        if (OPS_GetIntInput(&num, &nd) < 0) {
+          OPS_ResetCurrentInputArg(-1);
+          break;
+        }
+        jNodes[iNodes.Size()] = nd;
+      }
+    } else if (strcmp(opt, "-dof")) {
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        if (OPS_GetIntInput(&num, &dof) < 0) {
+          opserr << "WARNING: failed to get dof\n";
+          return 0;
+        }
+      }
+    } else if (strcmp(opt, "-perpDirn")) {
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        if (OPS_GetIntInput(&num, &perpDirn) < 0) {
+          opserr << "WARNING: failed to get perpDirn\n";
+          return 0;
+        }
+      }
+    } else if (strcmp(opt, "-time") == 0) {
+      echoTimeFlag = true;
+    } else if (strcmp(opt, "-dT")) {
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        if (OPS_GetDoubleInput(&num, &dT) < 0) {
+          opserr << "WARNING: failed to get dT\n";
+          return 0;
+        }
+      }
+    } else if (strcmp(opt, "-rTolDt")) {
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+        int num = 1;
+        if (OPS_GetDoubleInput(&num, &rTolDt) < 0) {
+          opserr << "WARNING: failed to get rTolDt\n";
+          return 0;
+        }
+      }
+    }
+  }
+
+  if (iNodes.Size() != jNodes.Size()) {
+    opserr << "WARNING recorder Drift - the number of iNodes and "
+              "jNodes must be the same "
+           << iNodes << " " << jNodes << "\n";
+    return 0;
+  }
+
+  if (eMode == DATA_STREAM && filename != 0) {
+    theOutputStream =
+        new DataFileStream(filename, OVERWRITE, 2, 0, closeOnWrite,
+                           precision, doScientific);
+  } else if (eMode == DATA_STREAM_CSV && filename != 0) {
+    theOutputStream =
+        new DataFileStream(filename, OVERWRITE, 2, 1, closeOnWrite,
+                           precision, doScientific);
+  } else if (eMode == XML_STREAM && filename != 0) {
+    theOutputStream = new XmlFileStream(filename);
+  } else if (eMode == BINARY_STREAM) {
+    theOutputStream = new BinaryFileStream(filename);
+  } else {
+    theOutputStream = new StandardStream();
+  }
+
+  return new EnvelopeDriftRecorder(iNodes, jNodes, dof - 1,
+                                   perpDirn - 1, *domain,
+                                   *theOutputStream, echoTimeFlag);
+}
 
 EnvelopeDriftRecorder::EnvelopeDriftRecorder()
   :Recorder(RECORDER_TAGS_EnvelopeDriftRecorder),

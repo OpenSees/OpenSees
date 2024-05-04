@@ -45,9 +45,8 @@
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_PenaltyMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
@@ -57,7 +56,7 @@ OPS_PenaltyMaterial(void)
 
   int argc = OPS_GetNumRemainingInputArgs();
   if (argc < 2) {
-    opserr << "WARNING insufficient args, uniaxialMaterial Penalty $tag $otherTag $penalty" << endln;
+    opserr << "WARNING insufficient args, uniaxialMaterial Penalty $tag $otherTag $penalty <-noStress>" << endln;
     return 0;
   }
 
@@ -80,8 +79,16 @@ OPS_PenaltyMaterial(void)
     return 0;
   }
 
+  bool addStress = true;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    const char *argvLoc = OPS_GetString();
+    if (strcmp(argvLoc,"-noStress") == 0) {
+      addStress = false;
+    }
+  }
+  
   // Parsing was successful, allocate the material
-  theMaterial = new PenaltyMaterial(iData[0], *theOtherMaterial, penalty);
+  theMaterial = new PenaltyMaterial(iData[0], *theOtherMaterial, penalty, addStress);
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type PenaltyMaterial\n";
@@ -91,8 +98,8 @@ OPS_PenaltyMaterial(void)
   return theMaterial;
 }
 
-PenaltyMaterial::PenaltyMaterial(int tag, UniaxialMaterial &material, double mult)
-  :UniaxialMaterial(tag,MAT_TAG_Penalty), theMaterial(0), penalty(mult), parameterID(0)
+PenaltyMaterial::PenaltyMaterial(int tag, UniaxialMaterial &material, double mult, bool addSig)
+  :UniaxialMaterial(tag,MAT_TAG_Penalty), theMaterial(0), penalty(mult), addStress(addSig), parameterID(0)
 {
   theMaterial = material.getCopy();
 
@@ -103,7 +110,7 @@ PenaltyMaterial::PenaltyMaterial(int tag, UniaxialMaterial &material, double mul
 }
 
 PenaltyMaterial::PenaltyMaterial()
-  :UniaxialMaterial(0,MAT_TAG_Penalty), theMaterial(0), penalty(0.0), parameterID(0)
+  :UniaxialMaterial(0,MAT_TAG_Penalty), theMaterial(0), penalty(0.0), addStress(true), parameterID(0)
 {
 
 }
@@ -137,8 +144,12 @@ PenaltyMaterial::setTrialStrain(double strain, double temp, double strainRate)
 double 
 PenaltyMaterial::getStress(void)
 {
-  if (theMaterial)
-    return theMaterial->getStress() + penalty*theMaterial->getStrain();
+  if (theMaterial) {
+    double sig = theMaterial->getStress();
+    if (addStress)
+      sig += penalty*theMaterial->getStrain();
+    return sig;
+  }
   else
     return 0.0;
 }
@@ -211,7 +222,7 @@ PenaltyMaterial::getCopy(void)
 {
   PenaltyMaterial *theCopy = 0;
   if (theMaterial)
-    theCopy = new PenaltyMaterial(this->getTag(), *theMaterial, penalty);
+    theCopy = new PenaltyMaterial(this->getTag(), *theMaterial, penalty, addStress);
         
   return theCopy;
 }
@@ -240,9 +251,10 @@ PenaltyMaterial::sendSelf(int cTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dataVec(1);
+  static Vector dataVec(2);
   dataVec(0) = penalty;
-
+  dataVec(1) = addStress ? 1.0 : 0.0;
+  
   if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
     opserr << "PenaltyMaterial::sendSelf() - failed to send the Vector\n";
     return -2;
@@ -275,20 +287,21 @@ PenaltyMaterial::recvSelf(int cTag, Channel &theChannel,
     theMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
     if (theMaterial == 0) {
       opserr << "PenaltyMaterial::recvSelf() - failed to create Material with classTag " 
-	   << dataID(0) << endln;
+	   << dataID(1) << endln;
       return -2;
     }
   }
   theMaterial->setDbTag(dataID(2));
 
-  static Vector dataVec(1);
+  static Vector dataVec(2);
   if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
     opserr << "PenaltyMaterial::recvSelf() - failed to get the Vector\n";
     return -3;
   }
 
   penalty = dataVec(0);
-
+  addStress = (dataVec(1) != 0.0) ? true : false;
+  
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "PenaltyMaterial::recvSelf() - failed to get the Material\n";
     return -4;

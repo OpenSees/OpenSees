@@ -14,10 +14,10 @@
     <ClCompile Include="..\..\..\SRC\api\elementAPI_Dummy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\EXAMPLES\Example1\main.cpp">
+    <ClCompile Include="..\..\VC2005errno.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\VC2005errno.cpp">
+    <ClCompile Include="..\..\..\EXAMPLES\Example1\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

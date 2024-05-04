@@ -98,6 +98,7 @@ target_sources(OPS_Material
       ConcreteZBH_smoothed.cpp 
       ConfinedConcrete01.cpp
       ContinuumUniaxial.cpp
+      CreepMaterial.cpp
       CubicSpline.cpp
       DamperMaterial.cpp
       DegradingPinchedBW.cpp
@@ -144,9 +145,11 @@ target_sources(OPS_Material
       Neoprene.cpp
       OOHystereticMaterial.cpp
       PathIndependentMaterial.cpp
+      PenaltyMaterial.cpp      
       Pinching4Material.cpp
       PrestressedSteelMaterial.cpp
       RambergOsgoodSteel.cpp
+      Ratchet.cpp
       ReinforcingSteel.cpp
       ResilienceMaterialHR.cpp
       SAWSMaterial.cpp
@@ -218,6 +221,7 @@ target_sources(OPS_Material
       ConcreteZBH_smoothed.h
       ConfinedConcrete01.h
       ContinuumUniaxial.h
+      CreepMaterial.h
       CubicSpline.h
       DamperMaterial.h
       DegradingPinchedBW.h
@@ -264,9 +268,11 @@ target_sources(OPS_Material
       Neoprene.h
       OOHystereticMaterial.h
       PathIndependentMaterial.h
+      PenaltyMaterial.h
       Pinching4Material.h
       PrestressedSteelMaterial.h
       RambergOsgoodSteel.h
+      Ratchet.h
       ReinforcingSteel.h
       ResilienceMaterialHR.h
       SAWSMaterial.h

@@ -141,6 +141,9 @@
     <Filter Include="damping">
       <UniqueIdentifier>{d9c89d0b-b0ee-498a-bc11-9303c8b7338b}</UniqueIdentifier>
     </Filter>
+    <Filter Include="mefi">
+      <UniqueIdentifier>{433d184e-6963-4d36-8e44-f5345a43fc5f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -270,6 +273,18 @@
       <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_12.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp">
       <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\fourNodeQuad\TclFourNodeQuadCommand.cpp">
@@ -668,6 +683,9 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp">
       <Filter>shell</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.cpp">
       <Filter>pfem</Filter>
     </ClCompile>
@@ -1039,6 +1057,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulumX.cpp">
+      <Filter>frictionBearing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp">
+      <Filter>joint</Filter>
+     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
+      <Filter>mefi</Filter>
+     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
+      <Filter>elasticBeamColumn</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1498,6 +1531,9 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h">
       <Filter>shell</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h">
+      <Filter>shell</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PFEMElement\PFEMElement2D.h">
       <Filter>pfem</Filter>
     </ClInclude>
@@ -1774,6 +1810,15 @@
     <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
       <Filter>PML</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_3.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h">
+      <Filter>PML</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h">
       <Filter>RockingBC</Filter>
     </ClInclude>
@@ -1824,6 +1869,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h">
+      <Filter>joint</Filter>
+     </ClCompile>
+    <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
+      <Filter>mefi</Filter>
+      </ClCompile>
+    <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
+      <Filter>elasticBeamColumn</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

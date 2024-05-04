@@ -75,6 +75,14 @@ BWBN::BWBN(int tag,
   this->revertToStart();
 }
 
+BWBN::BWBN()
+ :UniaxialMaterial(0,MAT_TAG_BWBN),
+  alpha(0.0), ko(0.0), n(0.0), gamma(0.0), beta(0.0), Ao(0.0), q(0.0), 
+  zetas(0.0), p(0.0), Shi(0.0), deltaShi(0.0), lamda(0.0), tolerance(0.0),
+  maxNumIter(0)
+{
+
+}
 
 BWBN::~BWBN()
 {
@@ -293,13 +301,79 @@ BWBN::getCopy(void)
 int 
 BWBN::sendSelf(int cTag, Channel &theChannel)
 {
-  return 0;
+    int res = 0;
+
+    static Vector data(18);
+    data(0) = this->getTag();
+    
+    data(1) = alpha;
+    data(2) = ko;
+    data(3) = n;
+    data(4) = gamma;
+    data(5) = beta;
+    data(6) = Ao;
+    data(7) = q;
+    data(8) = zetas;
+    data(9) = p;
+    data(10) = Shi;
+    data(11) = deltaShi;
+    data(12) = lamda;
+    data(13) = tolerance;
+    data(14) = maxNumIter;
+    
+    data(15) = Cstrain;
+    data(16) = Cz;
+    data(17) = Ce;
+    
+    // Data is only sent after convergence, so no trial variables
+    // need to be sent through data vector
+    res = theChannel.sendVector(this->getDbTag(), cTag, data);
+    if (res < 0)
+      opserr << "BWBN::sendSelf() - failed to send data" << endln;
+    
+    return res;
 }
 
 int 
 BWBN::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-  return 0;
+  int res = 0;
+
+  static Vector data(18);
+  res = theChannel.recvVector(this->getDbTag(), cTag, data);
+  if (res < 0) {
+    opserr << "BWBN::recvSelf() - failed to receive Vector" << endln;
+    return res;
+  }
+  
+  this->setTag(int(data(0)));
+
+  alpha = data(1);
+  ko = data(2);
+  n = data(3);
+  gamma = data(4);
+  beta = data(5);
+  Ao = data(6);
+  q = data(7);
+  zetas = data(8);
+  p = data(9);
+  Shi = data(10);
+  deltaShi = data(11);
+  lamda = data(12);
+  tolerance = data(13);
+  maxNumIter = (int)data(14);
+
+  Cstrain = data(15);
+  Cz = data(16);
+  Ce = data(17);
+  
+  Tstrain = Cstrain;
+  Tz = Cz;
+  Te = Ce;
+  
+  this->revertToLastCommit();
+    
+  return res;
 }
 
 void 
