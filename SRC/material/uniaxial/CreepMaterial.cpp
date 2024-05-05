@@ -164,6 +164,7 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
   //wrappedMaterial = new ElasticMaterial(0,Ec);
 
   ecminP = 0.0;
+  ecmaxP = 0.0;
   deptP = 0.0;
   
   //sigCr = fabs(sigCr);
@@ -349,7 +350,7 @@ CreepMaterial::getInitialTangent(void)
 double
 CreepMaterial::getCurrentTime(void)
 {
-  double currentTime;
+  double currentTime = 0.0;
   Domain * theDomain = ops_TheActiveDomain;
   
   if (theDomain != 0) {
