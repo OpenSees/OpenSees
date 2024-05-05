@@ -1597,7 +1597,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) -= VyI;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= VzI;
+	    sp(ii) += VzI;
 	    break;	    
 	  default:
 	    break;
@@ -1615,7 +1615,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += VyJ;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += VzJ;	    
+	    sp(ii) -= VzJ;	    
 	    break;
 	  default:
 	    break;
@@ -1636,7 +1636,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += -VyI + wy*(x-a);
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += -VzI + wz*(x-a);	    
+	    sp(ii) -= -VzI + wz*(x-a);	    
 	    break;
 	  default:
 	    break;
