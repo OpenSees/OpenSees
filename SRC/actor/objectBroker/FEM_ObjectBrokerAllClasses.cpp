@@ -119,6 +119,7 @@
 #include "IMKPinching.h"
 #include "UVCuniaxial.h"
 #include "SLModel.h"
+#include "Cast.h"
 #include "snap/Clough.h"
 #include "limitState/LimitStateMaterial.h"
 #include "InitStressMaterial.h"
@@ -1631,7 +1632,10 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_SLModel:
 	    return new SLModel();
-	    
+
+	case MAT_TAG_Cast:
+	    return new Cast();
+
 	case MAT_TAG_SnapClough:
 		return new Clough();
 
