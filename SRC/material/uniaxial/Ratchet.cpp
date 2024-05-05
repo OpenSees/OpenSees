@@ -240,7 +240,7 @@ Ratchet::revertToStart(void)
 {
 	commitStrain = 0.0;
 	commitStress = 0.0;
-	commitTangent = 0.0;
+	commitTangent = E;
 	commitEngageStrain = 0.0;
 	trialStrain = 0.0;
 	trialStress = 0.0;
