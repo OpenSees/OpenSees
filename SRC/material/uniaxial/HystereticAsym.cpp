@@ -145,17 +145,11 @@ HystereticAsym::HystereticAsym(int tag, double K1, double K2, double FBAR, doubl
 }
 
 HystereticAsym::HystereticAsym():UniaxialMaterial(0, MAT_TAG_HystereticAsym),
- ka(0.0), kb(0.0), fo(0.0), b1(0.0), b2(0.0), g(0.0)
+				 ka(0.0), kb(0.0), fo(0.0), b1(0.0), b2(0.0), g(0.0),
+				 a(0.0), InitTangent(0.0),
+				 parameterID(0), SHVs(0)
 {
-	InitTangent = 0.0;
-
 	this->revertToStart();
-	
-// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-// AddingSensitivity:END //////////////////////////////////////
-
 }
 
 HystereticAsym::~HystereticAsym ()
@@ -401,23 +395,30 @@ int
 HystereticAsym::setParameter(const char **argv, int argc, Parameter &param)
 {
 
-  if (strcmp(argv[0],"ka") == 0 )
+  if (strcmp(argv[0],"ka") == 0 ) {
+    param.setValue(ka);
     return param.addObject(1, this);
-  
-  if (strcmp(argv[0],"kb") == 0)
+  }
+  if (strcmp(argv[0],"kb") == 0) {
+    param.setValue(kb);
     return param.addObject(2, this);
-  
-  if (strcmp(argv[0],"fo") == 0)
+  }
+  if (strcmp(argv[0],"fo") == 0) {
+    param.setValue(fo);
     return param.addObject(3, this);
-  
-  if (strcmp(argv[0],"b1") == 0)
+  }
+  if (strcmp(argv[0],"b1") == 0) {
+    param.setValue(b1);
     return param.addObject(4, this);
-  
-  if (strcmp(argv[0],"b2") == 0)
+  }
+  if (strcmp(argv[0],"b2") == 0) {
+    param.setValue(b2);
     return param.addObject(5, this);
-
-  if (strcmp(argv[0], "gamma") == 0)
-	  return param.addObject(6, this);
+  }
+  if (strcmp(argv[0], "gamma") == 0) {
+    param.setValue(g);
+    return param.addObject(6, this);
+  }
   
   return -1;
 }
@@ -491,9 +492,9 @@ HystereticAsym::getStressSensitivity(int gradIndex, bool conditional)
 
 
 	// Pick up sensitivity history variables
-	Duc = 0.0;
-	Dfc = 0.0;
-	Dut = 0.0;
+	double Duc = 0.0;
+	double Dfc = 0.0;
+	double Dut = 0.0;
 	if (SHVs != 0) {
 		Duc = (*SHVs)(0,gradIndex);
 		Dfc = (*SHVs)(1,gradIndex);
@@ -501,12 +502,12 @@ HystereticAsym::getStressSensitivity(int gradIndex, bool conditional)
 
 
 	// Assign values to parameter derivatives (depending on what's random)
-	Dka = 0.0;
-	Dkb = 0.0;
-	Dfo = 0.0;
-	Db1 = 0.0;
-	Db2 = 0.0;
-	Dg = 0.0;
+	double Dka = 0.0;
+	double Dkb = 0.0;
+	double Dfo = 0.0;
+	double Db1 = 0.0;
+	double Db2 = 0.0;
+	double Dg = 0.0;
 
 	if (parameterID == 1) {
 		Dka = 1.0;
@@ -559,18 +560,18 @@ HystereticAsym::getInitialTangentSensitivity(int gradIndex)
 
 
 	// Pick up sensitivity history variables
-	Duc = 0.0;
-	Dfc = 0.0;
-	Dut = 0.0;
+	double Duc = 0.0;
+	double Dfc = 0.0;
+	double Dut = 0.0;
 
 
 	// Assign values to parameter derivatives (depending on what's random)
-	Dka = 0.0;
-	Dkb = 0.0;
-	Dfo = 0.0;
-	Db1 = 0.0;
-	Db2 = 0.0;
-	Dg = 0.0;
+	double Dka = 0.0;
+	double Dkb = 0.0;
+	double Dfo = 0.0;
+	double Db1 = 0.0;
+	double Db2 = 0.0;
+	double Dg = 0.0;
 
 	if (parameterID == 1) {
 		Dka = 1.0;
@@ -613,9 +614,9 @@ HystereticAsym::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 
 
 	// Pick up sensitivity history variables
-	Duc = 0.0;
-	Dfc = 0.0;
-	Dut = TstrainSensitivity;
+	double Duc = 0.0;
+	double Dfc = 0.0;
+	double Dut = TstrainSensitivity;
 	if (SHVs != 0) {
 		Duc = (*SHVs)(0, gradIndex);
 		Dfc = (*SHVs)(1, gradIndex);
@@ -623,12 +624,12 @@ HystereticAsym::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 
 
 	// Assign values to parameter derivatives (depending on what's random)
-	Dka = 0.0;
-	Dkb = 0.0;
-	Dfo = 0.0;
-	Db1 = 0.0;
-	Db2 = 0.0;
-	Dg = 0.0;
+	double Dka = 0.0;
+	double Dkb = 0.0;
+	double Dfo = 0.0;
+	double Db1 = 0.0;
+	double Db2 = 0.0;
+	double Dg = 0.0;
 
 	if (parameterID == 1) {
 		Dka = 1.0;
