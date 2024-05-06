@@ -69,6 +69,8 @@ class DowelType : public UniaxialMaterial
     DowelType();
     ~DowelType();
 
+    const char *getClassType(void) const { return "DowelType"; };
+
     // Rewrite base class methods
     int setTrialStrain(double strain, double strainRate = 0.0);
     double getStrain(void);

@@ -147,7 +147,10 @@ HystereticAsym::HystereticAsym(int tag, double K1, double K2, double FBAR, doubl
 HystereticAsym::HystereticAsym():UniaxialMaterial(0, MAT_TAG_HystereticAsym),
  ka(0.0), kb(0.0), fo(0.0), b1(0.0), b2(0.0), g(0.0)
 {
+	InitTangent = 0.0;
 
+	this->revertToStart();
+	
 // AddingSensitivity:BEGIN /////////////////////////////////////
 	parameterID = 0;
 	SHVs = 0;
