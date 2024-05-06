@@ -43,6 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NodalLoad.h>
 #include <Beam2dPartialUniformLoad.h>
 #include <Beam2dUniformLoad.h>
+#include <Beam3dPartialUniformLoad.h>
 #include <Beam3dUniformLoad.h>
 #include <Beam2dPointLoad.h>
 #include <Beam3dPointLoad.h>
@@ -324,20 +325,23 @@ int OPS_ElementalLoad()
 	}
 
 	else if (ndm == 3) {
-	    // wy, wz, wx
-	    double data[3] = {0.0, 0.0, 0.0};
+	    // wy, wz, wx, aL, bL
+	    double data[5] = { 0.0, 0.0, 0.0, 0.0, 1.0 };
 	    int numdata = OPS_GetNumRemainingInputArgs();
 	    if (numdata < 2) {
 		opserr<<"WARNING eleLoad - beamUniform want Wy Wz <Wx>\n";
 		return -1;
 	    }
-	    if (numdata > 3) numdata = 3;
+	    if (numdata > 5) numdata = 5;
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
 		opserr<<"WARNING eleLoad - invalid value for beamUniform\n";
 		return -1;
 	    }
 	    for (int i=0; i<theEleTags.Size(); i++) {
-		theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
+		if (numdata > 3)
+	  	    theLoad = new Beam3dPartialUniformLoad(eleLoadTag, data[0], data[1], data[2], data[3], data[4], theEleTags(i));
+		else
+		    theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
 
 		if (theLoad == 0) {
 		    opserr << "WARNING eleLoad - out of memory creating load of type " << type;

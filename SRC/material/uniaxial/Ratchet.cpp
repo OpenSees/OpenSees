@@ -97,11 +97,11 @@ OPS_Ratchet()
 
 
 //full constructor
-Ratchet::Ratchet(int tag, double e, double fTravel, double fTravelInitial, int iRatType)//, int accum)
+Ratchet::Ratchet(int tag, double e, double fTravel, double fTravelInit, int iRatType)//, int accum)
 	:UniaxialMaterial(tag, MAT_TAG_Ratchet),
 	commitStrain(0.0), commitStress(0.0), commitTangent(e), commitEngageStrain(0.0),
 	trialStrain(0.0), trialStress(0.0), trialTangent(e),
-	E(e), freeTravel(fTravel), RatType(iRatType), engageStrain(fTravelInitial), currentStrain(0.0),
+	E(e), freeTravel(fTravel), fTravelInitial(fTravelInit), RatType(iRatType), engageStrain(fTravelInit), currentStrain(0.0),
 	nratchet(0), commitNratchet(0)
 {
 	if (E <= 0.0) {
@@ -115,7 +115,7 @@ Ratchet::Ratchet()
 	:UniaxialMaterial(0, MAT_TAG_Ratchet),
 	commitStrain(0.0), commitStress(0.0), commitTangent(0.0), commitEngageStrain(0.0),
 	trialStrain(0.0), trialStress(0.0), trialTangent(0.0),
-	E(0.0), freeTravel(0.0), RatType(1), engageStrain(0.0), currentStrain(0.0),
+	E(0.0), freeTravel(0.0), fTravelInitial(0.0), RatType(1), engageStrain(0.0), currentStrain(0.0),
 	nratchet(0), commitNratchet(0)
 {
 
@@ -240,7 +240,7 @@ Ratchet::revertToStart(void)
 {
 	commitStrain = 0.0;
 	commitStress = 0.0;
-	commitTangent = 0.0;
+	commitTangent = E;
 	commitEngageStrain = 0.0;
 	trialStrain = 0.0;
 	trialStress = 0.0;
