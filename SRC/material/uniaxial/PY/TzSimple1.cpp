@@ -58,10 +58,6 @@
 #include <math.h>
 #include <elementAPI.h>
 
-// Controls on internal iteration between spring components
-const int TZmaxIterations = 20;
-const double TZtolerance = 1.0e-12;
-
 void* OPS_TzSimple1()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -87,7 +83,7 @@ void* OPS_TzSimple1()
     }
     
     UniaxialMaterial *theMaterial = 0;
-    theMaterial = new TzSimple1(idata[0], MAT_TAG_PySimple1, idata[1], ddata[0], ddata[1],
+    theMaterial = new TzSimple1(idata[0], MAT_TAG_TzSimple1, idata[1], ddata[0], ddata[1],
     				ddata[2]);
     
     return theMaterial;
@@ -109,8 +105,15 @@ TzSimple1::TzSimple1(int tag,int classtag, int tz_type,double t_ult,double z_50,
 /////////////////////////////////////////////////////////////////////
 //	Default constructor
 
+TzSimple1::TzSimple1(int tag, int classtag)
+  :UniaxialMaterial(tag, classtag),
+ tzType(0), tult(0.0), z50(0.0), dashpot(0.0)
+{
+
+}
+
 TzSimple1::TzSimple1()
-:UniaxialMaterial(0,0),
+:UniaxialMaterial(0,MAT_TAG_TzSimple1),
  tzType(0), tult(0.0), z50(0.0), dashpot(0.0)
 {
   // Initialize variables .. WILL NOT WORK AS NOTHING SET
@@ -152,7 +155,8 @@ void TzSimple1::getNearField(double zlast, double dz, double dz_old)
 	//	
 	TNF_z = zlast + dz;
 	double dzTotal = TNF_z - CNF_z;
-
+	const double TZtolerance = this->getTolerance();
+	
 	// Treat as elastic if dzTotal is below TZtolerance
 	//
 	if(fabs(dzTotal*TNF_tang/tult) < 10.0*TZtolerance) 
@@ -238,7 +242,9 @@ TzSimple1::setTrialStrain (double newz, double zRate)
 	if(numSteps > 100) numSteps = 100;
 
 	dz = stepSize * dz;
-
+	const int TZmaxIterations = 20;
+	const double TZtolerance = this->getTolerance();
+	
 	// Main loop over the required number of substeps
 	//
 	for(int istep=1; istep <= numSteps; istep++)
@@ -310,6 +316,8 @@ TzSimple1::getStress(void)
 	}
 	double dashForce = dashpot * TzRate * ratio_disp;
 
+	const double TZtolerance = this->getTolerance();
+	
 	// Limit the combined force to tult.
 	//
 	if(fabs(Tt + dashForce) >= (1.0-TZtolerance)*tult)
