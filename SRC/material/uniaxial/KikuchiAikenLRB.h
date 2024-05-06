@@ -73,6 +73,8 @@ class KikuchiAikenLRB : public UniaxialMaterial
 
  private:
 
+  void setType(int Tp);
+  
   // input values
   int    Type; // type  =1:LRB
   double Ar;   // area (rubber) [m^2]

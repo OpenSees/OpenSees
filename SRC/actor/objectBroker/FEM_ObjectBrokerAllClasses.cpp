@@ -90,8 +90,10 @@
 #include "OriginCentered.h"
 #include "Steel01.h"
 #include "Steel02.h"
+#include "SteelMPF.h"
 #include "Steel2.h"
 #include "Steel4.h"
+#include "RambergOsgoodSteel.h"
 #include "AxialSp.h"
 #include "AxialSpHD.h"
 #include "SelfCenteringMaterial.h"
@@ -172,6 +174,8 @@
 #include "ViscoelasticGap.h"
 #include "Pinching4Material.h"
 #include "SAWSMaterial.h"
+#include "KikuchiAikenHDR.h"
+#include "KikuchiAikenLRB.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -1552,11 +1556,17 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
 
+	case MAT_TAG_SteelMPF:  
+	     return new SteelMPF();	     
+
 	case MAT_TAG_Steel2:  
 	     return new Steel2();
 
 	case MAT_TAG_Steel4:  
-	     return new Steel4();	     
+	     return new Steel4();
+
+	case MAT_TAG_RambergOsgoodSteel:  
+	     return new RambergOsgoodSteel();	     	     
 
 	case MAT_TAG_SteelFractureDI:
 		return new SteelFractureDI();
@@ -1780,6 +1790,11 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_SAWSMaterial:
 		return new SAWSMaterial();
 
+    case MAT_TAG_KikuchiAikenHDR:
+      return new KikuchiAikenHDR();
+
+    case MAT_TAG_KikuchiAikenLRB:
+      return new KikuchiAikenLRB();      
 
 	default:
 
