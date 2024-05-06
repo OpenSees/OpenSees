@@ -59,7 +59,7 @@ public:
 	virtual ~SteelFractureDI();
 
 
-	const char *getClassType(void) const { return "SteelFracture"; };
+	const char *getClassType(void) const { return "SteelFractureDI"; };
 
 	double getInitialTangent(void);
 	UniaxialMaterial *getCopy(void);
