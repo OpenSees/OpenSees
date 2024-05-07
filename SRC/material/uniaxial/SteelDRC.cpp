@@ -669,7 +669,7 @@ SteelDRC::sendSelf(int cTag, Channel &theChannel)
 {
 	int res = 0;
 	int index = 0;
-	static Vector data(70);
+	static Vector data(83);
 	
 	data(index++) = this->getTag();
 	data(index++) = Teps;
@@ -771,7 +771,7 @@ SteelDRC::recvSelf(int cTag, Channel &theChannel,
 FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(70);
+	static Vector data(83);
 	res = theChannel.recvVector(this->getDbTag(), cTag, data);
 	if (res < 0)
 		opserr << "SteelDRC::recvSelf() - failed to recv data\n";
