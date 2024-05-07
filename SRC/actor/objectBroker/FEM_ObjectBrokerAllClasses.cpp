@@ -121,6 +121,7 @@
 #include "IMKPinching.h"
 #include "UVCuniaxial.h"
 #include "SLModel.h"
+#include "SteelDRC.h"
 #include "Cast.h"
 #include "snap/Clough.h"
 #include "limitState/LimitStateMaterial.h"
@@ -1643,6 +1644,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_SLModel:
 	    return new SLModel();
 
+	case MAT_TAG_SteelDRC:
+	    return new SteelDRC();
+	    
 	case MAT_TAG_Cast:
 	    return new Cast();
 
