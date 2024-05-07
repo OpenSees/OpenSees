@@ -298,10 +298,10 @@ else()
    set (LAPACK_FOUND TRUE CACHE BOOL "providing own lapack lib")
 endif()
 
-if (NOT DEFINED PYTHON_LIBRARIES) 
+if (NOT DEFINED Python_LIBRARIES) 
    find_package(Python COMPONENTS Interpreter Development)
 else()
-   set (LAPACK_FOUND TRUE CACHE BOOL "providing own python lib")
+   set (PYTHON_FOUND TRUE CACHE BOOL "providing own python lib")
 endif()
 
 
