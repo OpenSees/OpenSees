@@ -63,6 +63,10 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Vector.h>
 #include <string.h>
 
+
+extern void* OPS_APDVFD(void);
+extern void* OPS_APDMD(void);
+extern void* OPS_APDFMD(void);
 extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_TDConcreteEXP(void); // ntosic
 extern void *OPS_TDConcrete(void); // ntosic
@@ -511,6 +515,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
+    }
+    if ((strcmp(argv[1], "APDVFD") == 0)) {
+        void* theMat = OPS_APDVFD();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if ((strcmp(argv[1], "APDMD") == 0)) {
+        void* theMat = OPS_APDMD();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if ((strcmp(argv[1], "APDFMD") == 0)) {
+        void* theMat = OPS_APDFMD();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
     }
     if (strcmp(argv[1],"DamperMaterial") == 0 || strcmp(argv[1],"Damper") == 0) {
       void *theMat = OPS_DamperMaterial();
