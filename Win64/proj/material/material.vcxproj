@@ -191,6 +191,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial2dPS.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear5.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear7.cpp" />
