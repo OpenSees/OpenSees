@@ -473,7 +473,7 @@ APDMD::revertToStart(void)
 int
 APDMD::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(19);
+  static Vector data(20);
   data(0) = Fy1;
   data(1) = E1;
   data(2) = Fy2;
@@ -506,7 +506,7 @@ int
 APDMD::recvSelf(int commitTag, Channel &theChannel,
              FEM_ObjectBroker &theBroker)
 {
-  static Vector data(19);
+  static Vector data(20);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "APDMD::recvSelf() - failed to recvSelf\n";
