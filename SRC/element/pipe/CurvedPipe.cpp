@@ -54,7 +54,7 @@ void *OPS_CurvedPipeElement() {
         opserr << "Invalid #args,  want: element CurvedPipe "
                   "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
                   "xC? yC? zC?"
-                  "<-T0 T0? -p p? -cMass? -tolWall? tolWall?>\n";
+                  "<-T0 T0? -p p? -tolWall? tolWall?>\n";
         return 0;
     }
 
@@ -79,7 +79,6 @@ void *OPS_CurvedPipeElement() {
     // get data
     double T0 = 0.0, pressure = 0.0;
     double tolWall = 0.1;
-    int cMass = 0;
     numData = 1;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char *theType = OPS_GetString();
@@ -112,8 +111,6 @@ void *OPS_CurvedPipeElement() {
                 opserr << "WARNING: tolWall < 0 or > 1\n";
                 return 0;
             }
-        } else if (strcmp(theType, "-cMass") == 0) {
-            cMass = 1;
         }
     }
 
@@ -133,8 +130,9 @@ void *OPS_CurvedPipeElement() {
         return 0;
     }
 
-    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2], *theMat,
-                               *theSect, center, T0, pressure, cMass);
+    auto *ele =
+        new CurvedPipe(iData[0], iData[1], iData[2], *theMat,
+                       *theSect, center, T0, pressure, tolWall);
 
     return ele;
 }
@@ -152,7 +150,7 @@ CurvedPipe::CurvedPipe()
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
                        PipeSection &sect, const Vector &c, double to,
-                       double pre, int cm, double tol)
+                       double pre, double tol)
     : Pipe(tag, ELE_TAG_CurvedPipe),
       center(3),
       radius(0.0),
@@ -162,7 +160,7 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       Length(0.0),
       alg(),
       abl() {
-    if (Pipe::createPipe(nd1, nd2, mat, sect, cm, 0, 0, pre) < 0) {
+    if (Pipe::createPipe(nd1, nd2, mat, sect, 0, 0, 0, pre) < 0) {
         opserr << "WARNING: failed to create curved pipe element\n";
         exit(-1);
     }
@@ -287,6 +285,28 @@ const Matrix &CurvedPipe::getInitialStiff() {
     return ElasticBeam3d::K;
 }
 
+const Matrix &CurvedPipe::getMass() {
+    K.Zero();
+
+    if (rho <= 0) {
+        return K;
+    }
+
+    // get half curve length
+    double s = theta0 * radius;
+
+    // lumped mass matrix
+    double m = rho * s;
+    K(0, 0) = m;
+    K(1, 1) = m;
+    K(2, 2) = m;
+    K(6, 6) = m;
+    K(7, 7) = m;
+    K(8, 8) = m;
+
+    return K;
+}
+
 void CurvedPipe::zeroLoad(void) {
     // update section data
     if (updateSectionData() < 0) {
@@ -356,27 +376,21 @@ int CurvedPipe::addInertiaLoadToUnbalance(const Vector &accel) {
     }
 
     // want to add ( - fact * M R * accel ) to unbalance
-    if (cMass == 0) {
-        // take advantage of lumped mass matrix
-        double L = Length;
-        double m = 0.5 * rho * L;
+    // take advantage of lumped mass matrix
 
-        Q(0) -= m * Raccel1(0);
-        Q(1) -= m * Raccel1(1);
-        Q(2) -= m * Raccel1(2);
+    // get half curve length
+    double s = theta0 * radius;
 
-        Q(6) -= m * Raccel2(0);
-        Q(7) -= m * Raccel2(1);
-        Q(8) -= m * Raccel2(2);
-    } else {
-        // use matrix vector multip. for consistent mass matrix
-        static Vector Raccel(12);
-        for (int i = 0; i < 6; i++) {
-            Raccel(i) = Raccel1(i);
-            Raccel(i + 6) = Raccel2(i);
-        }
-        Q.addMatrixVector(1.0, this->getMass(), Raccel, -1.0);
-    }
+    // lumped mass matrix
+    double m = rho * s;
+
+    Q(0) -= m * Raccel1(0);
+    Q(1) -= m * Raccel1(1);
+    Q(2) -= m * Raccel1(2);
+
+    Q(6) -= m * Raccel2(0);
+    Q(7) -= m * Raccel2(1);
+    Q(8) -= m * Raccel2(2);
 
     return 0;
 }
@@ -396,27 +410,20 @@ const Vector &CurvedPipe::getResistingForceIncInertia() {
     const Vector &accel1 = theNodes[0]->getTrialAccel();
     const Vector &accel2 = theNodes[1]->getTrialAccel();
 
-    if (cMass == 0) {
-        // take advantage of lumped mass matrix
-        double L = Length;
-        double m = 0.5 * rho * L;
+    // take advantage of lumped mass matrix
+    // get half curve length
+    double s = theta0 * radius;
 
-        P(0) += m * accel1(0);
-        P(1) += m * accel1(1);
-        P(2) += m * accel1(2);
+    // lumped mass matrix
+    double m = rho * s;
 
-        P(6) += m * accel2(0);
-        P(7) += m * accel2(1);
-        P(8) += m * accel2(2);
-    } else {
-        // use matrix vector multip. for consistent mass matrix
-        static Vector accel(12);
-        for (int i = 0; i < 6; i++) {
-            accel(i) = accel1(i);
-            accel(i + 6) = accel2(i);
-        }
-        P.addMatrixVector(1.0, this->getMass(), accel, 1.0);
-    }
+    P(0) += m * accel1(0);
+    P(1) += m * accel1(1);
+    P(2) += m * accel1(2);
+
+    P(6) += m * accel2(0);
+    P(7) += m * accel2(1);
+    P(8) += m * accel2(2);
 
     return P;
 }
