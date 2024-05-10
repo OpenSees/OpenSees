@@ -63,10 +63,6 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Vector.h>
 #include <string.h>
 
-
-extern void* OPS_APDVFD(void);
-extern void* OPS_APDMD(void);
-extern void* OPS_APDFMD(void);
 extern void *OPS_SPSW02(void);		// SAJalali
 extern void *OPS_TDConcreteEXP(void); // ntosic
 extern void *OPS_TDConcrete(void); // ntosic
@@ -128,6 +124,9 @@ extern void *OPS_InitStressMaterial(void);
 extern void *OPS_pyUCLA(void);
 extern void *OPS_Maxwell(void);
 extern void *OPS_ViscousDamper(void);
+extern void* OPS_APDVFD(void);
+extern void* OPS_APDMD(void);
+extern void* OPS_APDFMD(void);
 extern void *OPS_DamperMaterial(void);
 extern void *OPS_BilinearOilDamper(void);
 extern void *OPS_Cast(void);
