@@ -189,6 +189,9 @@
 #define MAT_TAG_PinchingLimitStateMaterial      69	
 #define MAT_TAG_BraceMaterial                   70	
 #define MAT_TAG_ViscousDamper                   71
+#define MAT_TAG_APDVFD                          711
+#define MAT_TAG_APDMD                           712
+#define MAT_TAG_APDFMD                          713
 #define MAT_TAG_ConcretewBeta                   72
 #define MAT_TAG_WrapperUniaxialMaterial         73
 #define MAT_TAG_UniaxialJ2Plasticity            74
