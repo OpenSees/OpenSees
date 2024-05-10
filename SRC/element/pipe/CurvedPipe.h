@@ -46,7 +46,7 @@ class CurvedPipe : public Pipe {
     CurvedPipe();
     CurvedPipe(int tag, int Nd1, int Nd2, PipeMaterial &mat,
                PipeSection &sect, const Vector &c, double to = 0.0,
-               double pre = 0.0, int cMass = 0, double tol = 0.1);
+               double pre = 0.0, double tol = 0.1);
 
     ~CurvedPipe();
 
@@ -64,6 +64,7 @@ class CurvedPipe : public Pipe {
 
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
+    const Matrix &getMass();
     const Vector &getResistingForce();
     const Vector &getResistingForceIncInertia();
     const Vector &getDampingForce();
