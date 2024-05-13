@@ -51,10 +51,11 @@ std::vector<double> CurvedPipe::gaussPts = {
 void *OPS_CurvedPipeElement() {
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 8) {
-        opserr << "Invalid #args,  want: element CurvedPipe "
-                  "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
-                  "xC? yC? zC?"
-                  "<-T0 T0? -p p? -tolWall? tolWall?>\n";
+        opserr
+            << "Invalid #args,  want: element CurvedPipe "
+               "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
+               "xC? yC? zC?"
+               "<-T0 T0? -p p? -tolWall? tolWall? -intersection?>\n";
         return 0;
     }
 
@@ -80,6 +81,7 @@ void *OPS_CurvedPipeElement() {
     double T0 = 0.0, pressure = 0.0;
     double tolWall = 0.1;
     numData = 1;
+    bool inter = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char *theType = OPS_GetString();
         if (strcmp(theType, "-T0") == 0) {
@@ -111,6 +113,8 @@ void *OPS_CurvedPipeElement() {
                 opserr << "WARNING: tolWall < 0 or > 1\n";
                 return 0;
             }
+        } else if (strcmp(theType, "-intersection") == 0) {
+            inter = true;
         }
     }
 
@@ -130,9 +134,9 @@ void *OPS_CurvedPipeElement() {
         return 0;
     }
 
-    auto *ele =
-        new CurvedPipe(iData[0], iData[1], iData[2], *theMat,
-                       *theSect, center, T0, pressure, tolWall);
+    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2], *theMat,
+                               *theSect, center, T0, pressure,
+                               tolWall, inter);
 
     return ele;
 }
@@ -145,12 +149,13 @@ CurvedPipe::CurvedPipe()
       tolWall(0.1),
       kp(1.0),
       Length(0.0),
+      intersection(false),
       alg(),
       abl() {}
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
                        PipeSection &sect, const Vector &c, double to,
-                       double pre, double tol)
+                       double pre, double tol, bool inter)
     : Pipe(tag, ELE_TAG_CurvedPipe),
       center(3),
       radius(0.0),
@@ -158,6 +163,7 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       tolWall(tol),
       kp(1.0),
       Length(0.0),
+      intersection(inter),
       alg(),
       abl() {
     if (Pipe::createPipe(nd1, nd2, mat, sect, 0, 0, 0, pre) < 0) {
@@ -522,9 +528,60 @@ int CurvedPipe::updateParameter(int parameterID, Information &info) {
 }
 
 int CurvedPipe::getTheta0() {
-    // transformation matrix alg
+    // nodes
     const auto &crdsI = theNodes[0]->getCrds();
     const auto &crdsJ = theNodes[1]->getCrds();
+    double thk = theSect->WALL();
+
+    // check intersection point
+    if (intersection) {
+        // get T
+        Vector crdsT = center;
+
+        // I->T
+        Vector IT = crdsT;
+
+        // J->T
+        Vector JT = crdsT;
+
+        // out of plane direction
+        Vector N(crdsT.Size());
+
+        IT -= crdsI;
+        JT -= crdsJ;
+        if (crossProduct(IT, JT, N) < 0) {
+            return -1;
+        }
+        N.Normalize();
+
+        if (N.Norm() < tolWall * thk) {
+            opserr << "The intersection point is too close to the "
+                      "chord\n";
+            return -1;
+        }
+
+        // system to solve for center
+        Matrix tempC(center.Size(), center.Size());
+        for (int j = 0; j < center.Size(); ++j) {
+            tempC(0, j) = IT(j);
+            tempC(1, j) = JT(j);
+            tempC(2, j) = N(j);
+        }
+
+        Vector rhs(center.Size());
+        rhs(0) = IT^crdsI;
+        rhs(1) = JT^crdsJ;
+        rhs(2) = N^crdsT;
+
+        if (tempC.Solve(rhs, center) < 0) {
+            opserr << "WANRING: failed to compute center from tangent intersection\n";
+            return -1;
+        }
+
+        intersection = false;
+    }
+
+    // transformation matrix alg
     Vector yAxis = crdsI;
     yAxis += crdsJ;
     yAxis *= 0.5;
@@ -585,7 +642,6 @@ int CurvedPipe::getTheta0() {
         return -1;
     }
 
-    double thk = theSect->WALL();
     if (fabs(R1 - R2) > tolWall * thk) {
         opserr << "WARNING: the computed radius from node I is "
                   "different to "
