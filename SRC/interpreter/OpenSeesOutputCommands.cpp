@@ -74,6 +74,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Parameter.h>
 #include <ParameterIter.h>
 #include <UniaxialMaterial.h>
+#include <SectionForceDeformation.h>
 
 void* OPS_NodeRecorder();
 void* OPS_EnvelopeNodeRecorder();
