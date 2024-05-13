@@ -35,10 +35,11 @@ class CurvedPipe : public Pipe {
     double radius;
     double theta0;
     double tolWall;
-    double kp;  // flexibility factor
-    double Length;
-    Matrix alg;  // local-global transformation
-    Matrix abl;  // basic-local transformation
+    double kp;          // flexibility factor
+    double Length;      // length of chord
+    bool intersection;  // if center is an intersection point
+    Matrix alg;         // local-global transformation
+    Matrix abl;         // basic-local transformation
 
     static std::vector<double> gaussPts;
 
@@ -46,7 +47,8 @@ class CurvedPipe : public Pipe {
     CurvedPipe();
     CurvedPipe(int tag, int Nd1, int Nd2, PipeMaterial &mat,
                PipeSection &sect, const Vector &c, double to = 0.0,
-               double pre = 0.0, double tol = 0.1);
+               double pre = 0.0, double tol = 0.1,
+               bool inter = false);
 
     ~CurvedPipe();
 
