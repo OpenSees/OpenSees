@@ -2044,6 +2044,20 @@ int OPS_classType()
     }      
   }
   
+  if (type == "section") {
+    SectionForceDeformation *theSection = OPS_getSectionForceDeformation(tag);
+    if (theSection == 0) {
+      opserr << "ERROR classType - section with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theSection->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+
   else {
     opserr << "WARNING classType - " << type.c_str() << " not yet supported" << endln;
     return -1;
