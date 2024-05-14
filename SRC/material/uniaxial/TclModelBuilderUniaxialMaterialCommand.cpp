@@ -53,6 +53,9 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <KikuchiAikenLRB.h>
 #include <AxialSp.h>
 #include <AxialSpHD.h>
+#include <APDVFD.h>
+#include <APDMD.h>
+#include <APDFMD.h>
 
 #include <SMAMaterial.h>     // Davide Fugazza
 #include <Masonry.h>
