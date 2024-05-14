@@ -936,15 +936,15 @@ void* OPS_ASDCoupledHinge3D() {
 
     // Create pinching4 material for My
     double EI;
-    if (OPS_EvalDoubleTclStringExpression(theInitialStiffnessExpressionY.c_str(), EI) < 0) {
+    if (OPS_EvalDoubleStringExpression(theInitialStiffnessExpressionY.c_str(), EI) < 0) {
         opserr << "Error evaluating expression:\n" << theInitialStiffnessExpressionY.c_str() << "\n";
     }
     double th_cap;
-    if (OPS_EvalDoubleTclStringExpression(theThetaPExpressionY.c_str(), th_cap) < 0) {
+    if (OPS_EvalDoubleStringExpression(theThetaPExpressionY.c_str(), th_cap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPExpressionY.c_str() << "\n";
     }
     double th_pcap;
-    if (OPS_EvalDoubleTclStringExpression(theThetaPCExpressionY.c_str(), th_pcap) < 0) {
+    if (OPS_EvalDoubleStringExpression(theThetaPCExpressionY.c_str(), th_pcap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPCExpressionY.c_str() << "\n";
     }
     
@@ -1007,13 +1007,13 @@ void* OPS_ASDCoupledHinge3D() {
 #endif
     
     // Create pinching4 material for Mz
-    if (OPS_EvalDoubleTclStringExpression(theInitialStiffnessExpressionZ.c_str(), EI) < 0) {
+    if (OPS_EvalDoubleStringExpression(theInitialStiffnessExpressionZ.c_str(), EI) < 0) {
         opserr << "Error evaluating expression:\n" << theInitialStiffnessExpressionZ.c_str() << "\n";
     }
-    if (OPS_EvalDoubleTclStringExpression(theThetaPExpressionZ.c_str(), th_cap) < 0) {
+    if (OPS_EvalDoubleStringExpression(theThetaPExpressionZ.c_str(), th_cap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPExpressionZ.c_str() << "\n";
     }
-    if (OPS_EvalDoubleTclStringExpression(theThetaPCExpressionZ.c_str(), th_pcap) < 0) {
+    if (OPS_EvalDoubleStringExpression(theThetaPCExpressionZ.c_str(), th_pcap) < 0) {
         opserr << "Error evaluating expression:\n" << theThetaPCExpressionZ.c_str() << "\n";
     }
 #ifdef _DBG_COUPLEDSEC3D
@@ -1615,7 +1615,7 @@ ASDCoupledHinge3D::updateLaws(void)
 
     // update My material
     double EI;
-    if (OPS_EvalDoubleTclStringExpression(initialStiffnessExpressionY.c_str(), EI) < 0) {
+    if (OPS_EvalDoubleStringExpression(initialStiffnessExpressionY.c_str(), EI) < 0) {
         opserr << "\n\nError evaluating expression:\n" << initialStiffnessExpressionY.c_str() << "\n";
         opserr << "Raw string: " << rawInitialStiffnessExpressionY.c_str() << "\n";
         opserr << "N Value = " << N << "\n";
@@ -1624,11 +1624,11 @@ ASDCoupledHinge3D::updateLaws(void)
         replacePlaceholderWithValue(initialStiffnessExpressionY, "__N__", N);
     }
     double th_cap_p;
-    if (OPS_EvalDoubleTclStringExpression(thetaPExpressionY.c_str(), th_cap_p) < 0) {
+    if (OPS_EvalDoubleStringExpression(thetaPExpressionY.c_str(), th_cap_p) < 0) {
         opserr << "Error evaluating expression:\n" << thetaPExpressionY.c_str() << "\n";
     }
     double th_pcap_p;
-    if (OPS_EvalDoubleTclStringExpression(thetaPCExpressionY.c_str(), th_pcap_p) < 0) {
+    if (OPS_EvalDoubleStringExpression(thetaPCExpressionY.c_str(), th_pcap_p) < 0) {
         opserr << "Error evaluating expression:\n" << thetaPCExpressionY.c_str() << "\n";
     }
 
@@ -1669,13 +1669,13 @@ ASDCoupledHinge3D::updateLaws(void)
 #endif
 
     // update Mz material
-    if (OPS_EvalDoubleTclStringExpression(initialStiffnessExpressionZ.c_str(), EI) < 0) {
+    if (OPS_EvalDoubleStringExpression(initialStiffnessExpressionZ.c_str(), EI) < 0) {
         opserr << "Error evaluating expression:\n" << initialStiffnessExpressionZ.c_str() << "\n";
     }
-    if (OPS_EvalDoubleTclStringExpression(thetaPExpressionZ.c_str(), th_cap_p) < 0) {
+    if (OPS_EvalDoubleStringExpression(thetaPExpressionZ.c_str(), th_cap_p) < 0) {
         opserr << "Error evaluating expression:\n" << thetaPExpressionZ.c_str() << "\n";
     }
-    if (OPS_EvalDoubleTclStringExpression(thetaPCExpressionZ.c_str(), th_pcap_p) < 0) {
+    if (OPS_EvalDoubleStringExpression(thetaPCExpressionZ.c_str(), th_pcap_p) < 0) {
         opserr << "Error evaluating expression:\n" << thetaPCExpressionZ.c_str() << "\n";
     }
 #ifdef _DBG_COUPLEDSEC3D
