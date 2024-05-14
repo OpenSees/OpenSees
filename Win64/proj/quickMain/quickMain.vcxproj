@@ -108,7 +108,7 @@
       <AdditionalDependencies>reliability.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;OpenGL32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin/quickMain.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\msdev\lib;c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\msdev\lib;c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\compiler\lib\ia32_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\..\..\bin/quickMain.pdb</ProgramDatabaseFile>
@@ -147,7 +147,7 @@
       <AdditionalDependencies>reliability.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;ifconsol.lib;libifcoremt.lib;libmmt.lib;odbc32.lib;odbccp32.lib;OpenGL32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin/quickMain.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\msdev\lib;c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\msdev\lib;c:\Program Files\tcl\lib;..\..\lib;..\..\lib\debug;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\compiler\lib\intel64_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <ProgramDatabaseFile>.\..\..\bin/quickMain.pdb</ProgramDatabaseFile>
@@ -185,7 +185,7 @@
       <AdditionalDependencies>reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;ifconsol.lib;libifcoremt.lib;libm.lib;odbc32.lib;odbccp32.lib;OpenGL32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin/quickMain.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\msdev\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\msdev\lib;..\..\lib;..\..\lib\release;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\compiler\lib\ia32_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>.\..\..\bin/quickMain.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
@@ -222,7 +222,7 @@
       <AdditionalDependencies>reliability.lib;database.lib;renderer.lib;blas.lib;lapack.lib;feap.lib;arpack.lib;umfpack.lib;actor.lib;analysis.lib;cblas.lib;convergence.lib;domain.lib;element.lib;graph.lib;material.lib;matrix.lib;modelbuilder.lib;recorder.lib;superLU.lib;system.lib;tagged.lib;utility.lib;ifconsol.lib;libifcoremt.lib;libmmt.lib;odbc32.lib;odbccp32.lib;OpenGL32.lib;glu32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin/quickMain.exe</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\msdev\lib;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\msdev\lib;..\..\lib;..\..\lib\release;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\compiler\lib\intel64_win;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <IgnoreSpecificDefaultLibraries>libc.lib;%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
       <ProgramDatabaseFile>.\..\..\bin/quickMain.pdb</ProgramDatabaseFile>
       <SubSystem>Console</SubSystem>
