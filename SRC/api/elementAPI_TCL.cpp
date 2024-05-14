@@ -358,9 +358,9 @@ int OPS_GetDoubleListInput(int* size, Vector* data)
 }
 
 extern "C"
-int OPS_EvalDoubleTclStringExpression(const char* theExpression, double& current_val) {
+int OPS_EvalDoubleStringExpression(const char* theExpression, double& current_val) {
     if (Tcl_ExprDouble(theInterp, theExpression, &current_val) != TCL_OK) {
-        opserr << "OPS_EvalDoubleTclStringExpression::evaluateExpression -- expression \"" << theExpression;
+        opserr << "OPS_EvalDoubleStringExpression::evaluateExpression -- expression \"" << theExpression;
         opserr << "\" caused error:" << endln << Tcl_GetStringResult(theInterp) << endln;
         return -1;
     }
