@@ -298,7 +298,11 @@ else()
    set (LAPACK_FOUND TRUE CACHE BOOL "providing own lapack lib")
 endif()
 
-find_package (Python COMPONENTS Interpreter Development)
+if (NOT DEFINED Python_LIBRARIES) 
+   find_package(Python COMPONENTS Interpreter Development)
+else()
+   set (PYTHON_FOUND TRUE CACHE BOOL "providing own python lib")
+endif()
 
 
 find_package(MPI)
@@ -319,8 +323,8 @@ endif()
 
 if(PYTHON_FOUND)
   message("Python_FOUND:${Python_FOUND}")
-  message("Python_VERSION:${Python_VERSION}")
-  message("Python_Development_FOUND:${Python_Development_FOUND}")
+  #message("Python_VERSION:${Python_VERSION}")
+  #message("Python_Development_FOUND:${Python_Development_FOUND}")
   message("Python_LIBRARIES:${Python_LIBRARIES}")
   message("Python_INCLUDES:${Python_INCLUDE_DIRS}")  
 else()
