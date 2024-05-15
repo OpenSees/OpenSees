@@ -68,7 +68,7 @@ jobs:
 # #            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
   build-mac:
     name: Mac Build
-    runs-on: macos-13
+    runs-on: macos-12
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@v3
@@ -82,8 +82,8 @@ jobs:
          brew upgrade
          # brew install gcc
          # brew install gfortran
-         brew link --overwrite gcc
-         ln -s /usr/local/bin/gfortran-13 /usr/local/bin/gfortran
+         # brew link --overwrite gcc
+         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
          ls -all /usr/local/bin
          brew install hdf5
          brew install open-mpi
