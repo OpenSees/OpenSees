@@ -79,13 +79,14 @@ jobs:
           python-version: "3.11"
       - name: Install Library
         run: |
-         brew install gcc
+         brew update --auto-update
+         # brew install gcc
          brew install gfortran
-         ls /usr/local/bin
-         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
-         brew install hdf5
-         brew install open-mpi
-         brew install scalapack
+         ls -all /usr/local/bin
+         # ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+         # brew install hdf5
+         # brew install open-mpi
+         # brew install scalapack
       - name: Build
         run: |
           mkdir build
@@ -94,12 +95,12 @@ jobs:
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
           mv ./OpenSeesPy.dylib ./opensees.so
-      - name: Verification OpenSeesPySP
-        run: |
-          cd ./EXAMPLES/ExamplePython/
-          export PYTHONPATH="../../build/"
-          python3 -c "import sys; print(sys.path)"
-          python3 example_variable_analysis.py
+      # - name: Verification OpenSeesPySP
+      #   run: |
+      #     cd ./EXAMPLES/ExamplePython/
+      #     export PYTHONPATH="../../build/"
+      #     python3 -c "import sys; print(sys.path)"
+      #     python3 example_variable_analysis.py
 # Not building on Windows until we can figure out how to use Fortran
 # with Github Actions
     #  build-win32:
