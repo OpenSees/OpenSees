@@ -82,6 +82,7 @@ jobs:
          brew upgrade
          # brew install gcc
          # brew install gfortran
+         brew link --overwrite gcc
          ln -s /usr/local/bin/gfortran-13 /usr/local/bin/gfortran
          ls -all /usr/local/bin
          brew install hdf5
