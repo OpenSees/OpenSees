@@ -85,9 +85,6 @@ jobs:
          brew install hdf5
          brew install open-mpi
          brew install scalapack
-         ls -all /usr/local/bin
-         ls -all /opt/homebrew/bin
-         git submodule init
          git submodule update 
       - name: Build
         run: |
