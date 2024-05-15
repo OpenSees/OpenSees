@@ -79,15 +79,17 @@ jobs:
           python-version: "3.11"
       - name: Install Library
         run: |
-         brew upgrade
+         where gfortran-13
+         where gcc-13
+         # brew upgrade
          # brew install gcc
          # brew install gfortran
          # brew link --overwrite gcc
-         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
-         ls -all /usr/local/bin
-         brew install hdf5
-         brew install open-mpi
-         brew install scalapack
+         # ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+         # ls -all /usr/local/bin
+         # brew install hdf5
+         # brew install open-mpi
+         # brew install scalapack
       - name: Build
         run: |
           mkdir build
