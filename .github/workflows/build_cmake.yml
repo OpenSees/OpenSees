@@ -86,7 +86,8 @@ jobs:
          brew install open-mpi
          brew install scalapack
          git submodule update
-         ls -all /usr/local/include
+         ls -all /usr/local
+         ls -all /opt/homebrew
          ln -sf /usr/local/include/eigen3/Eigen /usr/local/include/Eigen
       - name: Build
         run: |
