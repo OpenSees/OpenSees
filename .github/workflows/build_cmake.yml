@@ -14,58 +14,58 @@ on:
   workflow_dispatch:
 
 jobs:
-#   build-ubuntu:
-#     name: Ubuntu bundled build
-#     runs-on: ubuntu-latest
-#     timeout-minutes: 30
-#     steps:
-#     - uses: actions/checkout@v2
-#     - uses: actions/setup-python@v4
-#       with:
-#         python-version: "3.11"
+  build-ubuntu:
+    name: Ubuntu bundled build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v4
+      with:
+        python-version: "3.11"
 
-#     - name: Install conan
-#       run: python3 -m pip install conan==1.60.0
+    - name: Install conan
+      run: python3 -m pip install conan==1.60.0
 
-#     - name: Detect Conan Defaults
-#       run: |
-#         conan --version
+    - name: Detect Conan Defaults
+      run: |
+        conan --version
 
-#     - name: Build
-#       run: |
-#         mkdir build
-#         cd build
-#         conan install .. --build missing
-#         cmake ..
-#         cmake --build . -j8
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        conan install .. --build missing
+        cmake ..
+        cmake --build . -j8
 
-#         #- name: Verification
-#         #  run: |
-#         #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
-#     - name: Build OpenSeesPy
-#       run: |
-#         cd ./build
-#         cmake ..
-#         make -j 4
-#         make OpenSeesPy
-#         mkdir fake_folder
-#     - name: Rename OpenSeesPy
-#       run: |
-#         cd ./build
-#         mv lib/OpenSeesPy.so lib/opensees.so
+        #- name: Verification
+        #  run: |
+        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+    - name: Build OpenSeesPy
+      run: |
+        cd ./build
+        cmake ..
+        make -j 4
+        make OpenSeesPy
+        mkdir fake_folder
+    - name: Rename OpenSeesPy
+      run: |
+        cd ./build
+        mv lib/OpenSeesPy.so lib/opensees.so
 
-# # Simple sanity test
-#     - name: Verification OpenSeesPySP
-#       run: |
-#         cd ./build
-#         cd ../EXAMPLES/ExamplePython/
-#         export PYTHONPATH="../../build/lib/"
-#         python3 -c "import sys; print(sys.path)"
-#         python3 example_variable_analysis.py
-# #        # Simple MP sanity test
-# #        - name: Verification OpenSeesPyMP
-# #          run: |
-# #            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
+# Simple sanity test
+    - name: Verification OpenSeesPySP
+      run: |
+        cd ./build
+        cd ../EXAMPLES/ExamplePython/
+        export PYTHONPATH="../../build/lib/"
+        python3 -c "import sys; print(sys.path)"
+        python3 example_variable_analysis.py
+#        # Simple MP sanity test
+#        - name: Verification OpenSeesPyMP
+#          run: |
+#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
   build-mac:
     name: Mac Build
     runs-on: macos-latest
