@@ -78,6 +78,7 @@ jobs:
         with:
           python-version: "3.11"
       - name: Install Library
+        shell: zsh {0}
         run: |
          where gfortran-13
          where gcc-13
