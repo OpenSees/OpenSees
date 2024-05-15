@@ -90,10 +90,13 @@
 #include "OriginCentered.h"
 #include "Steel01.h"
 #include "Steel02.h"
+#include "SteelMPF.h"
 #include "Steel2.h"
 #include "Steel4.h"
+#include "RambergOsgoodSteel.h"
 #include "AxialSp.h"
 #include "AxialSpHD.h"
+#include "SelfCenteringMaterial.h"
 #include "SteelFractureDI.h"
 #include "FatigueMaterial.h"
 #include "ReinforcingSteel.h"
@@ -103,6 +106,7 @@
 #include "EPPGapMaterial.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
+#include "BilinearOilDamper.h"
 #include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
 #include "BackboneMaterial.h"
@@ -110,8 +114,16 @@
 #include "CableMaterial.h"
 #include "ENTMaterial.h"
 #include "GNGMaterial.h"
+#include "Ratchet.h"
 #include "MinMaxMaterial.h"
 #include "ModIMKPeakOriented.h"
+#include "IMKBilin.h"
+#include "IMKPeakOriented.h"
+#include "IMKPinching.h"
+#include "UVCuniaxial.h"
+#include "SLModel.h"
+#include "SteelDRC.h"
+#include "Cast.h"
 #include "snap/Clough.h"
 #include "limitState/LimitStateMaterial.h"
 #include "InitStressMaterial.h"
@@ -164,6 +176,8 @@
 #include "ViscoelasticGap.h"
 #include "Pinching4Material.h"
 #include "SAWSMaterial.h"
+#include "KikuchiAikenHDR.h"
+#include "KikuchiAikenLRB.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -222,6 +236,7 @@
 #include "PlateFiberMaterial.h"
 #include "OrthotropicMaterial.h"
 #include "Series3DMaterial.h"
+#include "Parallel3DMaterial.h"
 #include "PlaneStressRebarMaterial.h"
 #include "PlaneStressLayeredMaterial.h"
 //start Yuli Huang & Xinzheng L
@@ -264,6 +279,7 @@
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
+#include "InitStrainNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 #include "OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.h" // M. J. Nunez
 #include "SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.h" // M. J. Nunez
@@ -366,10 +382,14 @@
 #include "shell/ShellMITC9.h"
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ShellNLDKGQ.h" //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
+#include "shell/ShellDKGT.h"
+#include "shell/ShellNLDKGT.h"
 #include "shell/ASDShellQ4.h" // Massimo Petracca
+#include "shell/ASDShellT3.h" // Massimo Petracca
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
+#include "joint/Inno3DPnPJoint.h" // Cristian Miculas
 #include "twoNodeLink/TwoNodeLink.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
@@ -997,15 +1017,27 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ShellNLDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellNLDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-    
+
+    case ELE_TAG_ShellDKGT:
+      return new ShellDKGT();
+      
+    case ELE_TAG_ShellNLDKGT:
+      return new ShellNLDKGT();
+	    
     case ELE_TAG_ASDShellQ4:   // Massimo Petracca
       return new ASDShellQ4(); // Massimo Petracca
+    
+    case ELE_TAG_ASDShellT3:   // Massimo Petracca
+      return new ASDShellT3(); // Massimo Petracca
     
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
             
     case ELE_TAG_Joint2D:				// Arash
       return new Joint2D();			// Arash
+	  
+    case ELE_TAG_Inno3DPnPJoint:	// Cristian Miculas
+      return new Inno3DPnPJoint();	// Cristian Miculas
       
     case ELE_TAG_TwoNodeLink:				
       return new TwoNodeLink();			
@@ -1526,11 +1558,17 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
 
+	case MAT_TAG_SteelMPF:  
+	     return new SteelMPF();	     
+
 	case MAT_TAG_Steel2:  
 	     return new Steel2();
 
 	case MAT_TAG_Steel4:  
-	     return new Steel4();	     
+	     return new Steel4();
+
+	case MAT_TAG_RambergOsgoodSteel:  
+	     return new RambergOsgoodSteel();	     	     
 
 	case MAT_TAG_SteelFractureDI:
 		return new SteelFractureDI();
@@ -1567,6 +1605,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_AxialSpHD:
 	    return new AxialSpHD();
+
+	case MAT_TAG_SelfCentering:
+	    return new SelfCenteringMaterial();
 	    
     case MAT_TAG_TzLiq1:
 		return new TzLiq1();
@@ -1589,6 +1630,27 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ModIMKPeakOriented:
 		return new ModIMKPeakOriented();
 
+	case MAT_TAG_IMKBilin:
+		return new IMKBilin();
+
+	case MAT_TAG_IMKPeakOriented:
+		return new IMKPeakOriented();
+
+    case MAT_TAG_IMKPinching:
+      return new IMKPinching();
+
+	case MAT_TAG_UVCuniaxial:
+	    return new UVCuniaxial();
+
+	case MAT_TAG_SLModel:
+	    return new SLModel();
+
+	case MAT_TAG_SteelDRC:
+	    return new SteelDRC();
+	    
+	case MAT_TAG_Cast:
+	    return new Cast();
+
 	case MAT_TAG_SnapClough:
 		return new Clough();
 
@@ -1604,6 +1666,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ViscousDamper:
 		return new ViscousDamper();
 
+	case MAT_TAG_BilinearOilDamper:
+	    return new BilinearOilDamper();
+	    
 	case MAT_TAG_ContinuumUniaxial:
 		return new ContinuumUniaxial();
 
@@ -1623,7 +1688,10 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		return new ENTMaterial();
 
 	case MAT_TAG_GNG:
-		return new GNGMaterial();		
+		return new GNGMaterial();
+		
+	case MAT_TAG_Ratchet:
+		return new Ratchet();				
 #if defined(OPSDEF_UNIAXIAL_FEDEAS)
 	case MAT_TAG_FedeasBond1:
 		return new FedeasBond1Material();
@@ -1730,6 +1798,11 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_SAWSMaterial:
 		return new SAWSMaterial();
 
+    case MAT_TAG_KikuchiAikenHDR:
+      return new KikuchiAikenHDR();
+
+    case MAT_TAG_KikuchiAikenLRB:
+      return new KikuchiAikenLRB();      
 
 	default:
 
@@ -1928,6 +2001,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_Series3DMaterial:
     return new Series3DMaterial();
 
+  case ND_TAG_Parallel3DMaterial:
+    return new Parallel3DMaterial();
+
   case ND_TAG_PlaneStressRebarMaterial:
     return new PlaneStressRebarMaterial();
 
@@ -2043,6 +2119,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitStressNDMaterial:
       return new InitStressNDMaterial();
+
+  case ND_TAG_InitStrainNDMaterial:
+      return new InitStrainNDMaterial();
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();

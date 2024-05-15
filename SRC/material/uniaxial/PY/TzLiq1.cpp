@@ -41,10 +41,6 @@
 #include <UP-ucsd/Nine_Four_Node_QuadUP.h>
 #include <TimeSeries.h>
 
-// Control on internal iteration between spring components
-const int TZmaxIterations = 20;
-const double TZtolerance = 1.0e-12;
-
 int TzLiq1::loadStage = 0;
 Vector TzLiq1::stressV3(3);
 int TzConstructorType = 0;
@@ -139,7 +135,7 @@ theDomain(the_Domain), theSeries(the_Series)
 //	Default constructor
 
 TzLiq1::TzLiq1()
-:TzSimple1(), solidElem1(0), solidElem2(0), theDomain(0)
+  :TzSimple1(0, MAT_TAG_TzLiq1), solidElem1(0), solidElem2(0), theDomain(0)
 {
 }
 /////////////////////////////////////////////////////////////////////
@@ -255,6 +251,8 @@ TzLiq1::setTrialStrain (double newz, double zRate)
 double 
 TzLiq1::getStress(void)
 {
+  const double TZtolerance = 1.0e-12;
+
 	double dashForce = getStrainRate()*this->getDampTangent();
 
 	// Limit the combined force to tult*(1-ru).

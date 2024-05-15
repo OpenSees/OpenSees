@@ -73,6 +73,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <BackgroundMesh.h>
 #include <Parameter.h>
 #include <ParameterIter.h>
+#include <UniaxialMaterial.h>
+#include <SectionForceDeformation.h>
 
 void* OPS_NodeRecorder();
 void* OPS_EnvelopeNodeRecorder();
@@ -2011,6 +2013,58 @@ int OPS_getNDFF()
 	}
 
     return 0;
+}
+
+int OPS_classType()
+{
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr << "ERROR want - classType objectType tag?\n";
+    return -1;
+  }
+  
+  std::string type = OPS_GetString();
+  int tag;
+  int numdata = 1;
+  
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR classType objectType tag? - unable to read tag" << endln;
+    return -1;
+  }
+  
+  if (type == "uniaxialMaterial") {
+    UniaxialMaterial *theMaterial = OPS_GetUniaxialMaterial(tag);
+    if (theMaterial == 0) {
+      opserr << "ERROR classType - uniaxialMaterial with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theMaterial->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+  
+  if (type == "section") {
+    SectionForceDeformation *theSection = OPS_getSectionForceDeformation(tag);
+    if (theSection == 0) {
+      opserr << "ERROR classType - section with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theSection->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+
+  else {
+    opserr << "WARNING classType - " << type.c_str() << " not yet supported" << endln;
+    return -1;
+  }
+
+  return 0;
 }
 
 int OPS_eleType()

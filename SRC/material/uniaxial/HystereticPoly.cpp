@@ -110,6 +110,11 @@ HystereticPoly::HystereticPoly(int tag, double K1, double K2, double A, double C
 {
    // Sets all history and state variables to initial values
 
+   // History variables
+
+   sc = 1.0;
+   st = 1.0;
+	
 	// Parameters:
 
 	uo = 0.5*(pow((k1-k2)/tol, (1/a))-1);
@@ -123,10 +128,6 @@ HystereticPoly::HystereticPoly(int tag, double K1, double K2, double A, double C
 
 	uj = Uo - pow(a1 / k12*(  k12*am1*Uoa / st - Fbar), am1);
 
-   // History variables
-
-   sc = 1.0;
-   st = 1.0;
 
    
 

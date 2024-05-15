@@ -7,13 +7,12 @@ on:
 
   pull_request:
     branches: [master]
-    
-  workflow_dispatch:
 
 jobs:
-  build-mac:
-    name: Mac Build
-    runs-on: macos-latest
+  build-ubuntu:
+    name: Ubuntu bundled build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
     - uses: actions/checkout@v2
     - uses: actions/setup-python@v4
@@ -56,8 +55,8 @@ jobs:
         cd ./build
         cd ../EXAMPLES/ExamplePython/
         export PYTHONPATH="../../build/lib/"
-        python -c "import sys; print(sys.path)"
-        python example_variable_analysis.py
+        python3 -c "import sys; print(sys.path)"
+        python3 example_variable_analysis.py
 #        # Simple MP sanity test
 #        - name: Verification OpenSeesPyMP
 #          run: |

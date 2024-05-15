@@ -74,7 +74,7 @@ public:
 	// A class for performing stress decomposition
 	struct StressDecomposition {
 		StressDecomposition() = default;
-		int compute(const Vector& S);
+		int compute(const Vector& S, double cdf);
 		void recompose(const Vector& S, Vector& Sv) const;
 		void recompose(Vector& Sv) const;
 		Vector Si = Vector(3); // principal stressess 0>1>2
@@ -83,6 +83,7 @@ public:
 		Matrix PC = Matrix(6, 6); // compressive projector
 		Vector ST = Vector(6); // tensile stress
 		Vector SC = Vector(6); // compressive stress
+		double R = 0.0;
 	};
 
 	// A point in the hardening law
@@ -136,6 +137,8 @@ public:
 		void deRegularize();
 		// evaluate the hardening law at a certain strain
 		HardeningLawPoint evaluateAt(double x) const;
+		// get max stress value
+		double computeMaxStress() const;
 		// serialization
 		int serializationDataSize() const;
 		void serialize(Vector& data, int& pos);
@@ -288,6 +291,7 @@ public:
 		double _lch_ref,
 		const HardeningLaw& _ht,
 		const HardeningLaw& _hc,
+		double _cdf,
 		int _nct,
 		int _ncc,
 		double _smoothing_angle);
@@ -349,6 +353,8 @@ private:
 	const Vector& getAvgEquivalentPlasticStrain() const;
 	const Vector& getMaxCrackWidth() const;
 	const Vector& getAvgCrackWidth() const;
+	const Vector& getMaxCrushWidth() const;
+	const Vector& getAvgCrushWidth() const;
 	const Vector& getCrackPattern() const;
 	const Vector& getCrushPattern() const;
 	const Vector& getImplexError() const;
@@ -386,6 +392,10 @@ private:
 	HardeningLaw ht;
 	// The hardening law for the compressive response
 	HardeningLaw hc;
+	// Compression/Tension peak ratio
+	double fcft_ratio = 10;
+	// cross-damage factor
+	double cdf = 0.0;
 	// number of normals and smoothing angle ( 0 means isotropic internal variables )
 	int nct = 0;
 	int ncc = 0;
@@ -406,6 +416,7 @@ private:
 	bool commit_done = false;
 	double implex_error = 0.0;
 	Matrix PT_commit = Matrix(6, 6);
+	double R_commit = 0.0;
 	// strain, stress and tangent
 	Vector strain = Vector(6);
 	Vector strain_commit = Vector(6);

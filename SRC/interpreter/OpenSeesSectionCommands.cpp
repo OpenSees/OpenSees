@@ -428,9 +428,11 @@ int OPS_Fiber()
 
     }
 
+    if (theFiber != 0)
+       delete theFiber;
+	
     if (res < 0) {
 	opserr << "WARNING failed to add fiber to section\n";
-	delete theFiber;
 	return -1;
     }
 
@@ -524,7 +526,8 @@ int OPS_Patch()
 		delete thePatch;
 		return -1;
 	    }
-	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    double dval = cells[j]->getdValue();
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos,dval);
 	    theActiveFiberSectionWarping3d->addFiber(*theFiber);	
 
 	} else if (theActiveFiberSectionAsym3d != 0) {

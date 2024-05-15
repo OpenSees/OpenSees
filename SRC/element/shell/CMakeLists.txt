@@ -8,6 +8,7 @@
 target_sources(OPS_Element
     PRIVATE
         ASDShellQ4.cpp
+        ASDShellT3.cpp
         R3vectors.cpp
         ShellANDeS.cpp
         ShellDKGQ.cpp
@@ -25,6 +26,10 @@ target_sources(OPS_Element
         ASDShellQ4.h
         ASDShellQ4LocalCoordinateSystem.h
         ASDShellQ4Transformation.h
+        ASDShellT3CorotationalTransformation.h
+        ASDShellT3.h
+        ASDShellT3LocalCoordinateSystem.h
+        ASDShellT3Transformation.h
         R3vectors.h
         ShellANDeS.h
         ShellDKGQ.h
