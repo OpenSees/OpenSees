@@ -79,7 +79,7 @@ jobs:
           python-version: "3.11"
       - name: Install Library
         run: |
-         ln - s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
+         ln -s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
          ln -s /opt/homebrew/bin/gfortran-13 /usr/local/bin/gfortran
          brew install hdf5
          brew install open-mpi
