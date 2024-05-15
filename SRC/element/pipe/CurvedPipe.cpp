@@ -55,7 +55,7 @@ void *OPS_CurvedPipeElement() {
             << "Invalid #args,  want: element CurvedPipe "
                "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
                "xC? yC? zC?"
-               "<-T0 T0? -p p? -tolWall? tolWall? -intersection?>\n";
+               "<-T0 T0? -p p? -tolWall? tolWall? -TI?>\n";
         return 0;
     }
 
@@ -113,7 +113,7 @@ void *OPS_CurvedPipeElement() {
                 opserr << "WARNING: tolWall < 0 or > 1\n";
                 return 0;
             }
-        } else if (strcmp(theType, "-intersection") == 0) {
+        } else if (strcmp(theType, "-TI") == 0) {
             inter = true;
         }
     }
