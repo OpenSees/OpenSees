@@ -98,7 +98,7 @@ CFSWSWP::CFSWSWP(int tag,
                   double Ifi, double ts,
                   double np, double ds, double Vs,
                   double sc, double nc, double type, double A, double L):
-                  UniaxialMaterial(tag, MAT_TAG_Pinching4),
+                  UniaxialMaterial(tag, MAT_TAG_CFSWSWP),
                   hight(H), width(B), fuf(fuf),
                   tf(tf), Ife(Ife), Ifi(Ifi), ts(ts), np(np), ds(ds),
                   Vs(Vs),screw_Spacing(sc), nc(nc),type(type), A(A), L(L),
@@ -294,7 +294,7 @@ void CFSWSWP :: lateralShearStrength(void) {
 }
 
  CFSWSWP::CFSWSWP():
-   UniaxialMaterial(0, MAT_TAG_Pinching4),
+   UniaxialMaterial(0, MAT_TAG_CFSWSWP),
    stress1p(0.0), strain1p(0.0), stress2p(0.0), strain2p(0.0),
    stress3p(0.0), strain3p(0.0), stress4p(0.0), strain4p(0.0),
    stress1n(0.0), strain1n(0.0), stress2n(0.0), strain2n(0.0),
