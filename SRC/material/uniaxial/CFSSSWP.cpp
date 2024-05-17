@@ -388,7 +388,7 @@ getIndexNeg(Vector v,double value)
 			if(X[3] - X[0] < 0)
 			{
 				printf("erreur2\n");
-				while(1);
+				//while(1);
 			}
 			
 			a0 = GetTangentFromCurve(state4Strain(0));
@@ -1407,7 +1407,7 @@ double CFSSSWP::posEnvlpStress(double u)
   if(isnan(f))
     {
       printf("erreur3");
-      while(1);
+      //while(1);
     }
   if(f != 10e8)
     {
@@ -1435,7 +1435,7 @@ double CFSSSWP::posEnvlpStress(double u)
   printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
   if(u > s3Strain(3))
     {
-      while(1);
+      //while(1);
     }
   return f;
 }
@@ -1449,7 +1449,7 @@ double CFSSSWP::Envlp4Stress(Vector s4Strain, Vector s4Stress, double u)
   if(isnan(f))
     {
 										 printf("erreur4");
-										 while(1);
+										 //while(1);
     }
   if(f != 10e8)
 								 {
@@ -1477,7 +1477,7 @@ double CFSSSWP::Envlp4Stress(Vector s4Strain, Vector s4Stress, double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s4Strain(0),s4Strain(3));
 								 if(u > s4Strain(3))
 								 {
-									 while(1);
+									 //while(1);
 								 }
                                  return f;
                          }
