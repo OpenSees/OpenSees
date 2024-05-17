@@ -133,6 +133,7 @@
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
 #include "FRPConfinedConcrete.h"
+#include "ConcreteCM.h"
 
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 #include <HystereticSmooth.h>					// Salvatore Sessa Apr-19-2022
@@ -1777,6 +1778,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_FRPConfinedConcrete:
 	    return new FRPConfinedConcrete();
+
+	case MAT_TAG_ConcreteCM:
+	    return new ConcreteCM();
 	    
 	case MAT_TAG_HystereticPoly:			// Salvatore Sessa
 	    return new HystereticPoly();
