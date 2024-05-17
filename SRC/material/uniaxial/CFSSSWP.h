@@ -46,7 +46,9 @@
    
    CFSSSWP();
    ~CFSSSWP();
-   
+
+   const char *getClassType(void) const {return "CFSSSWP";};
+
    double GetTangentFromCurve(double Strain);
    double GetTangentFromCurve3(double Strain);
    double GetTangentFromCurve4(double Strain);
