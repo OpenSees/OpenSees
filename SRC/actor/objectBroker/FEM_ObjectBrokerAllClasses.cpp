@@ -180,6 +180,8 @@
 #include "SAWSMaterial.h"
 #include "KikuchiAikenHDR.h"
 #include "KikuchiAikenLRB.h"
+#include "CFSSSWP.h"
+#include "CFSWSWP.h"
 
 // Sections
 #include "ElasticSection2d.h"
@@ -1802,6 +1804,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Pinching4:
 		return new Pinching4Material();
+	
+	case MAT_TAG_CFSSSWP:
+	    return new CFSSSWP();
+
+	case MAT_TAG_CFSWSWP:
+	    return new CFSWSWP();
 
 	case MAT_TAG_SAWSMaterial:
 		return new SAWSMaterial();
