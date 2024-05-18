@@ -104,8 +104,9 @@ ViscoelasticGap::ViscoelasticGap(int tag, double k, double c, double gap0)
  K(k), C(c), gap(gap0)
 {
 	if (gap >= 0) {
-	  opserr << "ViscoelasticGap::ViscoelasticGap -- Initial gap size must be negative for compression-only material\n";
-	  exit(-1);
+	  opserr << "ViscoelasticGap::ViscoelasticGap -- Initial gap size should be negative for compression-only material\n";
+	  gap = -gap;
+	  opserr << "Setting gap to negative value, " << gap << endln;
 	}
 	this->revertToStart(); // initialize state variables
 	printFlag = 0; // initialize print flag for impact event
