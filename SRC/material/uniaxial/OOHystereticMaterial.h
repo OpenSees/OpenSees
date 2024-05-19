@@ -44,8 +44,6 @@ class StrengthDegradation;
 
 class SectionForceDeformation;
 
-#define MAT_TAG_OOHysteretic 1976
-
 class OOHystereticMaterial : public UniaxialMaterial
 {
  public:
