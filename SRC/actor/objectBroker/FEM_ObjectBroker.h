@@ -80,7 +80,11 @@ class SectionForceDeformation;
 class NDMaterial;
 class Fiber;
 class FrictionModel;
+
 class HystereticBackbone;
+class UnloadingRule;
+class StiffnessDegradation;
+class StrengthDegradation;
 
 class ConvergenceTest;
 class GroundMotion;
@@ -128,6 +132,9 @@ class FEM_ObjectBroker
     virtual FrictionModel *getNewFrictionModel(int classTag);
 
   virtual HystereticBackbone *getNewHystereticBackbone(int classTag);
+  virtual UnloadingRule *getNewUnloadingRule(int classTag);
+  virtual StiffnessDegradation *getNewStiffnessDegradation(int classTag);
+  virtual StrengthDegradation *getNewStrengthDegradation(int classTag);    
   
     virtual ConvergenceTest *getNewConvergenceTest(int classTag);
     virtual LoadPattern *getNewLoadPattern(int classTag);
