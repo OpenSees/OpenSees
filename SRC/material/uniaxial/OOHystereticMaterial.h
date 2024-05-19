@@ -67,7 +67,9 @@ class OOHystereticMaterial : public UniaxialMaterial
 		       double pinchX = 0.0, double pinchY = 1.0);
   OOHystereticMaterial();
   ~OOHystereticMaterial();
-  
+
+  const char *getClassType(void) const {return "OOHystereticMaterial";}
+
   int setTrialStrain(double strain, double strainRate = 0.0);
   double getStrain(void);
   double getStress(void);
