@@ -82,7 +82,6 @@ class HardeningMaterial : public UniaxialMaterial
     double sigmaY;	// Yield stress
     double Hiso;	// Isotropic hardening parameter
     double Hkin;	// Kinematic hardening parameter
-    double eta;
 	
     // Committed history variables
     double CplasticStrain;	// Committed plastic strain
