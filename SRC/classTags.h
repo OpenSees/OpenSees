@@ -189,9 +189,6 @@
 #define MAT_TAG_PinchingLimitStateMaterial      69	
 #define MAT_TAG_BraceMaterial                   70	
 #define MAT_TAG_ViscousDamper                   71
-#define MAT_TAG_APDVFD                          711
-#define MAT_TAG_APDMD                           712
-#define MAT_TAG_APDFMD                          713
 #define MAT_TAG_ConcretewBeta                   72
 #define MAT_TAG_WrapperUniaxialMaterial         73
 #define MAT_TAG_UniaxialJ2Plasticity            74
@@ -310,7 +307,9 @@
 #define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
 
 #define MAT_TAG_GMG_CyclicReinforcedConcrete    9999    // Rasool Ghorbani
-
+#define MAT_TAG_APDVFD                          711
+#define MAT_TAG_APDMD                           712
+#define MAT_TAG_APDFMD                          713
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
