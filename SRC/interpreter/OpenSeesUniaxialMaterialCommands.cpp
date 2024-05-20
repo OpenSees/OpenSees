@@ -115,9 +115,6 @@ void* OPS_FRPConfinedConcrete();
 void* OPS_ConcreteCM();
 void* OPS_Cast();
 void* OPS_ViscousDamper();
-void* OPS_APDVFD(void);
-void* OPS_APDMD(void);
-void* OPS_APDFMD(void);
 void* OPS_DamperMaterial();
 void* OPS_BilinearOilDamper();
 void* OPS_Bilin();
@@ -278,7 +275,9 @@ void *OPS_Trilinwp2(void);
 void *OPS_Masonryt(void);
 
 void* OPS_Ratchet(void); // Yi Xiao
-
+void* OPS_APDVFD(void);
+void* OPS_APDMD(void);
+void* OPS_APDFMD(void);
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
