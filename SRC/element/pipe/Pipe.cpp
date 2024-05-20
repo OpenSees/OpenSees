@@ -22,6 +22,7 @@
 
 // Minjie
 #include <CrdTransf.h>
+#include <ElementResponse.h>
 #include <ElementalLoad.h>
 #include <LinearCrdTransf3d.h>
 #include <Node.h>
@@ -34,8 +35,7 @@ void *OPS_PipeElement() {
     if (OPS_GetNumRemainingInputArgs() < 5) {
         opserr << "Invalid #args,  want: element pipe "
                   "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
-                  "<-T0 T0? -p p? -cMass? -releasey releasey? "
-                  "-releasez releasez?>\n";
+                  "<-T0 T0? -p p?>\n";
         return 0;
     }
 
@@ -49,9 +49,6 @@ void *OPS_PipeElement() {
 
     // get data
     double T0 = 0.0, pressure = 0.0;
-    int cMass = 0;
-    int releasez = 0;
-    int releasey = 0;
     numData = 1;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char *theType = OPS_GetString();
@@ -67,22 +64,6 @@ void *OPS_PipeElement() {
                 if (OPS_GetDoubleInput(&numData, &pressure) < 0) {
                     opserr << "WARNING: failed to read internal "
                               "pressure\n";
-                    return 0;
-                }
-            }
-        } else if (strcmp(theType, "-cMass") == 0) {
-            cMass = 1;
-        } else if (strcmp(theType, "-releasez") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                if (OPS_GetIntInput(&numData, &releasez) < 0) {
-                    opserr << "WARNING: failed to get releasez";
-                    return 0;
-                }
-            }
-        } else if (strcmp(theType, "-releasey") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                if (OPS_GetIntInput(&numData, &releasey) < 0) {
-                    opserr << "WARNING: failed to get releasey";
                     return 0;
                 }
             }
@@ -105,44 +86,81 @@ void *OPS_PipeElement() {
         return 0;
     }
 
-    auto *ele =
-        new Pipe(iData[0], iData[1], iData[2], *theMat, *theSect, T0,
-                 pressure, cMass, releasez, releasey);
+    auto *ele = new Pipe(iData[0], iData[1], iData[2], *theMat,
+                         *theSect, T0, pressure);
 
     return ele;
 }
 
 Pipe::Pipe()
-    : ElasticBeam3d(),
+    : Element(0, ELE_TAG_Pipe),
       theMat(0),
       theSect(0),
-      alp(0.0),
-      nu(0.0),
       T0(0.0),
-      pressure(0.0) {}
-
-Pipe::Pipe(int tag, int classTag)
-    : ElasticBeam3d(tag, classTag),
-      theMat(0),
-      theSect(0),
-      alp(0.0),
-      nu(0.0),
-      T0(0.0),
-      pressure(0.0) {}
+      pressure(0.0),
+      K(12, 12),
+      P(12),
+      Q(12),
+      kb(12, 12),
+      q(6),
+      wx(0.0),
+      wy(0.0),
+      wz(0.0),
+      connectedExternalNodes(2),
+      theCoordTransf(0) {
+    theNodes[0] = 0;
+    theNodes[1] = 0;
+    for (int i = 0; i < 5; ++i) {
+        q0[i] = 0.0;
+        p0[i] = 0.0;
+    }
+}
 
 Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
-           PipeSection &sect, double t0, double pre, int cm, int rz,
-           int ry)
-    : ElasticBeam3d(tag, ELE_TAG_Pipe),
+           PipeSection &sect, double t0, double pre)
+    : Element(tag, ELE_TAG_Pipe),
       theMat(0),
       theSect(0),
-      alp(0.0),
-      nu(0.0),
       T0(t0),
-      pressure(pre) {
-    if (createPipe(nd1, nd2, mat, sect, cm, rz, ry, pre) < 0) {
-        opserr << "WARNING: failed to create pipe element\n";
+      pressure(pre),
+      K(12, 12),
+      P(12),
+      Q(12),
+      kb(12, 12),
+      q(6),
+      wx(0.0),
+      wy(0.0),
+      wz(0.0),
+      connectedExternalNodes(2),
+      theCoordTransf(0) {
+    // nodes
+    connectedExternalNodes(0) = nd1;
+    connectedExternalNodes(1) = nd2;
+    theNodes[0] = 0;
+    theNodes[1] = 0;
+
+    // section
+    theSect = dynamic_cast<PipeSection *>(sect.getCopy());
+    if (theSect == 0) {
+        opserr << "Pipe element - failed to "
+                  "get a copy of section "
+               << sect.getTag() << "\n";
         exit(-1);
+    }
+
+    // material
+    theMat = dynamic_cast<PipeMaterial *>(mat.getCopy());
+    if (theMat == 0) {
+        opserr << "Pipe element - failed to get a copy of "
+                  "material with tag "
+               << mat.getTag() << "\n";
+        exit(-1);
+    }
+
+    // q0 - pb0, q - pb, p0 - plw
+    for (int i = 0; i < 5; ++i) {
+        q0[i] = 0.0;
+        p0[i] = 0.0;
     }
 }
 
@@ -153,9 +171,20 @@ Pipe::~Pipe() {
     if (theSect != 0) {
         delete theSect;
     }
+    if (theCoordTransf != 0) {
+        delete theCoordTransf;
+    }
 }
 
 const char *Pipe::getClassType(void) const { return "Pipe"; };
+
+int Pipe::getNumExternalNodes() const { return 2; }
+
+const ID &Pipe::getExternalNodes() { return connectedExternalNodes; }
+
+Node **Pipe::getNodePtrs() { return theNodes; }
+
+int Pipe::getNumDOF() { return 12; }
 
 void Pipe::setDomain(Domain *theDomain) {
     // check domain
@@ -188,6 +217,28 @@ void Pipe::setDomain(Domain *theDomain) {
         exit(-1);
     }
 
+    // check DOFs
+    int dofNd1 = theNodes[0]->getNumberDOF();
+    int dofNd2 = theNodes[1]->getNumberDOF();
+
+    if (dofNd1 != 6) {
+        opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag()
+               << " -- Node 1: " << connectedExternalNodes(0)
+               << " has incorrect number of DOF\n";
+        exit(-1);
+    }
+
+    if (dofNd2 != 6) {
+        opserr << "ElasticBeam3d::setDomain  tag: " << this->getTag()
+               << " -- Node 2: " << connectedExternalNodes(1)
+               << " has incorrect number of DOF\n";
+        exit(-1);
+    }
+
+    // copy domain
+    this->DomainComponent::setDomain(theDomain);
+
+    // create transf
     const auto &crdsI = theNodes[0]->getCrds();
     const auto &crdsJ = theNodes[1]->getCrds();
 
@@ -212,123 +263,285 @@ void Pipe::setDomain(Domain *theDomain) {
         zAxis(2) = 1.0;
     }
 
-    if (ElasticBeam3d::theCoordTransf != 0) {
-        delete ElasticBeam3d::theCoordTransf;
-        ElasticBeam3d::theCoordTransf = 0;
+    if (theCoordTransf != 0) {
+        delete theCoordTransf;
+        theCoordTransf = 0;
     }
-    ElasticBeam3d::theCoordTransf =
-        new LinearCrdTransf3d(nextTransfTag(), zAxis);
-    if (ElasticBeam3d::theCoordTransf == 0) {
+    theCoordTransf = new LinearCrdTransf3d(nextTransfTag(), zAxis);
+    if (theCoordTransf == 0) {
         opserr << "WARNING: failed to crete Transformation object -- "
-                  "CurvedPipe\n";
+                  "Pipe\n";
+        exit(-1);
+    }
+
+    if (theCoordTransf->initialize(theNodes[0], theNodes[1]) != 0) {
+        opserr
+            << "WARNING: Pipe::setDomain  tag: " << this->getTag()
+            << " -- Error initializing coordinate transformation\n";
+        exit(-1);
+    }
+
+    double L = theCoordTransf->getInitialLength();
+
+    if (L == 0.0) {
+        opserr << "WARNING: Pipe::setDomain  tag: " << this->getTag()
+               << " -- Element has zero length\n";
         exit(-1);
     }
 
     // update section data
-    if (updateSectionData() < 0) {
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
         opserr << "Pipe::setDomain failed to update section data\n";
         return;
     }
 
     // update material data
-    if (updateMaterialData() < 0) {
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
         opserr << "Pipe::setDomain failed to update material data\n";
         return;
     }
-
-    // set domain
-    this->ElasticBeam3d::setDomain(theDomain);
 }
 
-double Pipe::aveTemp() {
-    // get average element temperature
-    double Ti = theNodes[0]->getTemp();
-    double Tj = theNodes[1]->getTemp();
-    double Tavg = 0.5 * (Ti + Tj);
-    return Tavg - T0;
-}
-
-int Pipe::updateMaterialData() {
-    // select point based on temperature
+int Pipe::commitState() {
     int retVal = 0;
-    auto Tpt = theMat->selectPoint(aveTemp(), retVal);
-    if (retVal < 0) {
-        return retVal;
+    // call element commitState to do any base class stuff
+    if ((retVal = this->Element::commitState()) != 0) {
+        opserr
+            << "ElasticBeam3d::commitState () - failed in base class";
     }
-
-    // set ElasticBeam3d data
-    ElasticBeam3d::E = Tpt.E;
-    nu = Tpt.xnu;
-    ElasticBeam3d::G = ElasticBeam3d::E / (2 * (1.0 + nu));
-    alp = Tpt.alp;
-    if (E <= 0) {
-        opserr << "E <= 0\n";
-        return -1;
+    if (theCoordTransf != 0) {
+        retVal += theCoordTransf->commitState();
     }
-    if (G <= 0) {
-        opserr << "G <= 0\n";
-        return -1;
-    }
-    if (alp <= 0) {
-        opserr << "alp <= 0\n";
-        return -1;
-    }
-
     return retVal;
 }
 
-int Pipe::updateSectionData() {
-    ElasticBeam3d::A = theSect->AREA();
-    ElasticBeam3d::Jx = theSect->JX();
-    ElasticBeam3d::Iy = theSect->IY();
-    ElasticBeam3d::Iz = theSect->IZ();
-    ElasticBeam3d::rho = theSect->RHO();
-    double alphaV = theSect->ALFAV();
-    if (alphaV > 99) {
-        alphaV = 0.0;
+int Pipe::revertToLastCommit() {
+    int retVal = 0;
+    if (theCoordTransf != 0) {
+        retVal += theCoordTransf->revertToLastCommit();
     }
-    ElasticBeam3d::alphaVz = alphaV;
-    ElasticBeam3d::alphaVy = alphaV;
+    return retVal;
+}
+
+int Pipe::revertToStart() {
+    int retVal = 0;
+    if (theCoordTransf != 0) {
+        retVal += theCoordTransf->revertToStart();
+    }
+    return retVal;
+}
+
+int Pipe::update() {
+    if (theCoordTransf != 0) {
+        return theCoordTransf->update();
+    }
     return 0;
 }
 
-void Pipe::zeroLoad(void) {
+const Matrix &Pipe::getTangentStiff() {
+    K.Zero();
+    if (theCoordTransf == 0) {
+        return K;
+    }
+
+    const Vector &v = theCoordTransf->getBasicTrialDisp();
+
     // update section data
-    if (updateSectionData() < 0) {
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::getInitialStiff failed to update section "
+                  "data\n";
+        return K;
+    }
+
+    // update material data
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::getInitialStiff failed to update material "
+                  "data\n";
+        return K;
+    }
+
+    double L = theCoordTransf->getInitialLength();
+    double oneOverL = 1.0 / L;
+    double EoverL = E * oneOverL;
+    double EAoverL = A * EoverL;         // EA/L
+    double GJoverL = G * Jx * oneOverL;  // GJ/L
+    double B1, B2, C1, C2;               // shear coefficients
+    shearCoefficients(B1, B2, C1, C2);
+
+    q(0) = EAoverL * v(0);
+    q(5) = GJoverL * v(5);
+    kb.Zero();
+    kb(0, 0) = EAoverL;
+    kb(5, 5) = GJoverL;
+
+    double EIzoverL2 = 2.0 * Iz * EoverL;  // 2EIz/L
+    double EIzoverL4 = 2.0 * EIzoverL2;    // 4EIz/L
+    q(1) = B1 * EIzoverL4 * v(1) + C1 * EIzoverL2 * v(2);
+    q(2) = C1 * EIzoverL2 * v(1) + B1 * EIzoverL4 * v(2);
+    kb(1, 1) = kb(2, 2) = B1 * EIzoverL4;
+    kb(2, 1) = kb(1, 2) = C1 * EIzoverL2;
+
+    double EIyoverL2 = 2.0 * Iy * EoverL;  // 2EIy/L
+    double EIyoverL4 = 2.0 * EIyoverL2;    // 4EIy/L
+    q(3) = B2 * EIyoverL4 * v(3) + C2 * EIyoverL2 * v(4);
+    q(4) = C2 * EIyoverL2 * v(3) + B2 * EIyoverL4 * v(4);
+    kb(3, 3) = kb(4, 4) = B2 * EIyoverL4;
+    kb(4, 3) = kb(3, 4) = C2 * EIyoverL2;
+
+    q(0) += q0[0];
+    q(1) += q0[1];
+    q(2) += q0[2];
+    q(3) += q0[3];
+    q(4) += q0[4];
+
+    return theCoordTransf->getGlobalStiffMatrix(kb, q);
+}
+
+const Matrix &Pipe::getInitialStiff() {
+    K.Zero();
+    if (theCoordTransf == 0) {
+        return K;
+    }
+
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::getInitialStiff failed to update section "
+                  "data\n";
+        return K;
+    }
+
+    // update material data
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::getInitialStiff failed to update material "
+                  "data\n";
+        return K;
+    }
+
+    double L = theCoordTransf->getInitialLength();
+    double oneOverL = 1.0 / L;
+    double EoverL = E * oneOverL;
+    double EAoverL = A * EoverL;         // EA/L
+    double GJoverL = G * Jx * oneOverL;  // GJ/L
+    double B1, B2, C1, C2;               // shear coefficients
+    shearCoefficients(B1, B2, C1, C2);
+
+    kb.Zero();
+    kb(0, 0) = EAoverL;
+    kb(5, 5) = GJoverL;
+    double EIzoverL2 = 2.0 * Iz * EoverL;  // 2EIz/L
+    double EIzoverL4 = 2.0 * EIzoverL2;    // 4EIz/L
+    kb(1, 1) = kb(2, 2) = B1 * EIzoverL4;
+    kb(2, 1) = kb(1, 2) = C1 * EIzoverL2;
+
+    double EIyoverL2 = 2.0 * Iy * EoverL;  // 2EIy/L
+    double EIyoverL4 = 2.0 * EIyoverL2;    // 4EIy/L
+    kb(3, 3) = kb(4, 4) = B2 * EIyoverL4;
+    kb(4, 3) = kb(3, 4) = C2 * EIyoverL2;
+
+    return theCoordTransf->getInitialGlobalStiffMatrix(kb);
+}
+const Matrix &Pipe::getMass() {
+    K.Zero();
+    if (theCoordTransf == 0) {
+        return K;
+    }
+
+    double rho = theSect->RHO();
+
+    if (rho <= 0.0) {
+        return K;
+    }
+
+    // get initial element length
+    double L = theCoordTransf->getInitialLength();
+
+    // lumped mass matrix
+    double m = 0.5 * rho * L;
+    K(0, 0) = m;
+    K(1, 1) = m;
+    K(2, 2) = m;
+    K(6, 6) = m;
+    K(7, 7) = m;
+    K(8, 8) = m;
+
+    return K;
+}
+
+void Pipe::initLoad() {
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
         opserr << "Pipe::zeroLoad failed to update section data\n";
         return;
     }
 
     // update material data
-    if (updateMaterialData() < 0) {
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::zeroLoad failed to update material data\n";
+        return;
+    }
+    
+    // zero pb0(q0) and plw(p0)
+    Q.Zero();
+    for (int i = 0; i < 5; ++i) {
+        q0[i] = 0.0;
+        p0[i] = 0.0;
+    }
+
+    wx = 0.0;
+    wy = 0.0;
+    wz = 0.0;
+}
+
+void Pipe::zeroLoad(void) {
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::zeroLoad failed to update section data\n";
+        return;
+    }
+
+    // update material data
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
         opserr << "Pipe::zeroLoad failed to update material data\n";
         return;
     }
 
-    this->ElasticBeam3d::zeroLoad();
+    // init load
+    initLoad();
 
-    // due to thermal
+    // q0 due to thermal
     double temp = aveTemp();
     if (temp > 0) {
-        ElasticBeam3d::q0[0] -= E * A * alp * temp;
+        q0[0] -= E * A * alp * temp;
     }
 
-    // due to internal pressure
+    // q0 due to internal pressure
     if (pressure != 0) {
         double dout = theSect->DOUT();
         double thk = theSect->WALL();
 
-        ElasticBeam3d::q0[0] -=
+        q0[0] -=
             0.25 * pressure * (dout - thk) * (1. - 2 * nu) * A / thk;
     }
 }
 
 int Pipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
+    if (theCoordTransf == 0) {
+        return 0;
+    }
+
     int type;
     const Vector &data = theLoad->getData(type, loadFactor);
     double L = theCoordTransf->getInitialLength();
-    double B1, B2, C1, C2;  // shear coefficients
-    shearCoefficients(B1, B2, C1, C2);
 
     if (type == LOAD_TAG_Beam3dUniformLoad) {
         // transformation matrix
@@ -368,87 +581,436 @@ int Pipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
         double Mz = Vy * L / 6.0;  // wy*L*L/12
         double Vz = 0.5 * wz * L;
         double My = Vz * L / 6.0;  // wz*L*L/12
-        double P = wx * L;
+        double Pw = wx * L;
 
         // Reactions in basic system
-        p0[0] -= P;
-        p0[1] -= Vy;
-        p0[2] -= Vy;
-        p0[3] -= Vz;
-        p0[4] -= Vz;
+        p0[0] -= Pw;  // plw1
+        p0[1] -= Vy;  // plw2
+        p0[2] -= Vy;  // plw8
+        p0[3] -= Vz;  // plw3
+        p0[4] -= Vz;  // plw9
 
         // Fixed end forces in basic system
-        q0[0] -= 0.5 * P;
-        if (releasez == 0) {
-            q0[1] -= Mz * (2 * B1 - C1);
-            q0[2] += Mz * (2 * B1 - C1);
-        }
-        if (releasez == 1) {
-            q0[2] += wy * L * L / 8;
-        }
-        if (releasez == 2) {
-            q0[1] -= wy * L * L / 8;
-        }
-
-        if (releasey == 0) {
-            q0[3] += My * (2 * B2 - C2);
-            q0[4] -= My * (2 * B2 - C2);
-        }
-        if (releasey == 1) {
-            q0[4] -= wz * L * L / 8;
-        }
-        if (releasey == 2) {
-            q0[3] += wz * L * L / 8;
-        }
+        q0[0] -= 0.5 * Pw;  // pb0_1
+        q0[1] -= Mz;        // pb0_2
+        q0[2] += Mz;        // pb0_3
+        q0[3] += My;        // pb0_4
+        q0[4] -= My;        // pb0_5
 
     } else {
         opserr << "Pipe::addLoad()  -- load type unknown "
                   "for element with tag: "
-               << this->getTag() << endln;
+               << this->getTag() << "\n";
         return -1;
     }
 
     return 0;
 }
 
-int Pipe::createPipe(int nd1, int nd2, PipeMaterial &mat,
-                     PipeSection &sect, int cm, int rz, int ry,
-                     double pre) {
-    // nodes
-    connectedExternalNodes(0) = nd1;
-    connectedExternalNodes(1) = nd2;
+int Pipe::addInertiaLoadToUnbalance(const Vector &accel) {
+    // rho
+    double rho = theSect->RHO();
+    if (rho <= 0.0) {
+        return 0;
+    }
+    if (theCoordTransf == 0) {
+        return 0;
+    }
 
-    cMass = cm;
+    // get R * accel from the nodes
+    const Vector &Raccel1 = theNodes[0]->getRV(accel);
+    const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
-    // section
-    theSect = dynamic_cast<PipeSection *>(sect.getCopy());
-    if (theSect == 0) {
-        opserr << "Pipe element - failed to "
-                  "get a copy of section "
-               << sect.getTag() << "\n";
+    if (6 != Raccel1.Size() || 6 != Raccel2.Size()) {
+        opserr << "Pipe::addInertiaLoadToUnbalance matrix "
+                  "and vector sizes are incompatible\n";
         return -1;
     }
 
-    // material
-    theMat = dynamic_cast<PipeMaterial *>(mat.getCopy());
-    if (theMat == 0) {
-        opserr << "Pipe element - failed to get a copy of "
-                  "material with tag "
-               << mat.getTag() << "\n";
+    // want to add ( - fact * M R * accel ) to unbalance
+    double L = theCoordTransf->getInitialLength();
+    double m = 0.5 * rho * L;
+
+    Q(0) -= m * Raccel1(0);
+    Q(1) -= m * Raccel1(1);
+    Q(2) -= m * Raccel1(2);
+
+    Q(6) -= m * Raccel2(0);
+    Q(7) -= m * Raccel2(1);
+    Q(8) -= m * Raccel2(2);
+
+    return 0;
+}
+
+const Vector &Pipe::getResistingForce() {
+    P.Zero();
+    if (theCoordTransf == 0) {
+        return P;
+    }
+
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::getResistingForce failed to update section "
+                  "data\n";
+        return P;
+    }
+
+    // update material data
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::getResistingForce failed to update material "
+                  "data\n";
+        return P;
+    }
+
+    const Vector &v = theCoordTransf->getBasicTrialDisp();
+
+    double L = theCoordTransf->getInitialLength();
+    double oneOverL = 1.0 / L;
+    double EoverL = E * oneOverL;
+    double EAoverL = A * EoverL;         // EA/L
+    double GJoverL = G * Jx * oneOverL;  // GJ/L
+    double B1, B2, C1, C2;               // shear coefficients
+    shearCoefficients(B1, B2, C1, C2);
+
+    q(0) = EAoverL * v(0);
+    q(5) = GJoverL * v(5);
+
+    double EIzoverL2 = 2.0 * Iz * EoverL;  // 2EIz/L
+    double EIzoverL4 = 2.0 * EIzoverL2;    // 4EIz/L
+    q(1) = B1 * EIzoverL4 * v(1) + C1 * EIzoverL2 * v(2);
+    q(2) = C1 * EIzoverL2 * v(1) + B1 * EIzoverL4 * v(2);
+
+    double EIyoverL2 = 2.0 * Iy * EoverL;  // 2EIy/L
+    double EIyoverL4 = 2.0 * EIyoverL2;    // 4EIy/L
+    q(3) = B2 * EIyoverL4 * v(3) + C2 * EIyoverL2 * v(4);
+    q(4) = C2 * EIyoverL2 * v(3) + B2 * EIyoverL4 * v(4);
+
+    q(0) += q0[0];
+    q(1) += q0[1];
+    q(2) += q0[2];
+    q(3) += q0[3];
+    q(4) += q0[4];
+
+    Vector p0Vec(p0, 5);
+    P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
+
+    // subtract external load P = P - Q
+    if (rho > 0) {
+        P.addVector(1.0, Q, -1.0);
+    }
+
+    return P;
+}
+const Vector &Pipe::getResistingForceIncInertia() {
+    P.Zero();
+    if (theCoordTransf == 0) {
+        return P;
+    }
+
+    // static force
+    P = this->getResistingForce();
+
+    // add the damping forces if rayleigh damping
+    if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 ||
+        betaKc != 0.0) {
+        P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
+    }
+
+    // add inertia forces from element mass
+    const Vector &accel1 = theNodes[0]->getTrialAccel();
+    const Vector &accel2 = theNodes[1]->getTrialAccel();
+
+    double L = theCoordTransf->getInitialLength();
+    double rho = theSect->RHO();
+    if (rho > 0) {
+        double m = 0.5 * rho * L;
+
+        P(0) += m * accel1(0);
+        P(1) += m * accel1(1);
+        P(2) += m * accel1(2);
+
+        P(6) += m * accel2(0);
+        P(7) += m * accel2(1);
+        P(8) += m * accel2(2);
+    }
+
+    return P;
+}
+
+int Pipe::sendSelf(int commitTag, Channel &theChannel) { return 0; }
+
+int Pipe::recvSelf(int commitTag, Channel &theChannel,
+                   FEM_ObjectBroker &theBroker) {
+    return 0;
+}
+
+void Pipe::Print(OPS_Stream &s, int flag) {}
+
+int Pipe::displaySelf(Renderer &theViewer, int displayMode,
+                      float fact, const char **modes, int numModes) {
+    return 0;
+}
+
+Response *Pipe::setResponse(const char **argv, int argc,
+                            OPS_Stream &output) {
+    Response *theResponse = 0;
+
+    output.tag("ElementOutput");
+    output.attr("eleType", "Pipe");
+    output.attr("eleTag", this->getTag());
+    output.attr("node1", connectedExternalNodes[0]);
+    output.attr("node2", connectedExternalNodes[1]);
+
+    // global forces
+    if (strcmp(argv[0], "force") == 0 ||
+        strcmp(argv[0], "forces") == 0 ||
+        strcmp(argv[0], "globalForce") == 0 ||
+        strcmp(argv[0], "globalForces") == 0) {
+        output.tag("ResponseType", "Px_1");
+        output.tag("ResponseType", "Py_1");
+        output.tag("ResponseType", "Pz_1");
+        output.tag("ResponseType", "Mx_1");
+        output.tag("ResponseType", "My_1");
+        output.tag("ResponseType", "Mz_1");
+        output.tag("ResponseType", "Px_2");
+        output.tag("ResponseType", "Py_2");
+        output.tag("ResponseType", "Pz_2");
+        output.tag("ResponseType", "Mx_2");
+        output.tag("ResponseType", "My_2");
+        output.tag("ResponseType", "Mz_2");
+
+        theResponse = new ElementResponse(this, 2, P);
+
+    } else if (strcmp(argv[0], "localForce") == 0 ||
+               strcmp(argv[0], "localForces") == 0) {
+        output.tag("ResponseType", "N_1");
+        output.tag("ResponseType", "Vy_1");
+        output.tag("ResponseType", "Vz_1");
+        output.tag("ResponseType", "T_1");
+        output.tag("ResponseType", "My_1");
+        output.tag("ResponseType", "Mz_1");
+        output.tag("ResponseType", "N_2");
+        output.tag("ResponseType", "Vy_2");
+        output.tag("ResponseType", "Vz_2");
+        output.tag("ResponseType", "T_2");
+        output.tag("ResponseType", "My_2");
+        output.tag("ResponseType", "Mz_2");
+
+        theResponse = new ElementResponse(this, 3, P);
+
+    } else if (strcmp(argv[0], "basicForce") == 0 ||
+               strcmp(argv[0], "basicForces") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Mz_1");
+        output.tag("ResponseType", "Mz_2");
+        output.tag("ResponseType", "My_1");
+        output.tag("ResponseType", "My_2");
+        output.tag("ResponseType", "T");
+
+        theResponse = new ElementResponse(this, 4, Vector(6));
+
+    } else if (strcmp(argv[0], "basicStiffness") == 0) {
+        theResponse = new ElementResponse(this, 19, Matrix(6, 6));
+
+    } else if (strcmp(argv[0], "stiffness") == 0) {
+        theResponse = new ElementResponse(this, 1, Matrix(12, 12));
+
+    } else if (strcmp(argv[0], "deformations") == 0 ||
+               strcmp(argv[0], "basicDeformations") == 0) {
+        output.tag("ResponseType", "eps");
+        output.tag("ResponseType", "theta11");
+        output.tag("ResponseType", "theta12");
+        output.tag("ResponseType", "theta21");
+        output.tag("ResponseType", "theta22");
+        output.tag("ResponseType", "phi");
+        theResponse = new ElementResponse(this, 5, Vector(6));
+
+    } else if (strcmp(argv[0], "sectionX") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Mz");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        if (argc > 2) {
+            float xL = atof(argv[1]);
+            if (xL < 0.0) xL = 0.0;
+            if (xL > 1.0) xL = 1.0;
+            if (strcmp(argv[2], "forces") == 0) {
+                theResponse = new ElementResponse(this, 6, Vector(6));
+                Information &info = theResponse->getInformation();
+                info.theDouble = xL;
+            }
+        }
+    }
+
+    // ElementOutput
+    output.endTag();
+
+    // no response found, send to transformation
+    if (theResponse == 0 && theCoordTransf != 0) {
+        theResponse = theCoordTransf->setResponse(argv, argc, output);
+    }
+
+    return theResponse;
+}
+
+int Pipe::getResponse(int responseID, Information &info) {
+    if (theCoordTransf == 0) {
+        return 0;
+    }
+
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::getResistingForce failed to update section "
+                  "data\n";
         return -1;
     }
 
-    // Make no release if input not 0, 1, 2, or 3
-    releasez = rz;
-    releasey = ry;
-    if (releasez < 0 || releasez > 3) {
-        releasez = 0;
-    }
-    if (releasey < 0 || releasey > 3) {
-        releasey = 0;
+    // update material data
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::getResistingForce failed to update material "
+                  "data\n";
+        return -1;
     }
 
-    pressure = pre;
+    double L = theCoordTransf->getInitialLength();
+    double oneOverL = 1.0 / L;
+
+    switch (responseID) {
+        case 1:
+            // stiffness
+            return info.setMatrix(this->getTangentStiff());
+        case 2:
+            // global forces
+            return info.setVector(this->getResistingForce());
+        case 3:
+            // local forces
+            P(0) = -q(0) + p0[0];  // -pb1+plw1
+            P(1) =
+                (q(1) + q(2)) * oneOverL + p0[1];  // (pb2+pb3)/L+plw2
+            P(2) = -(q(3) + q(4)) * oneOverL +
+                   p0[3];  // -(pb4+pb5)/L+plw3
+            P(3) = -q(5);  // -pb6
+            P(4) = q(3);   // pb4
+            P(5) = q(1);   // pb2
+            P(6) = q(0);   // pb1
+            P(7) = -(q(1) + q(2)) * oneOverL +
+                   p0[2];  // -(pb2+pb3)/L+plw8
+            P(8) =
+                (q(3) + q(4)) * oneOverL + p0[4];  // (pb4+pb5)/L+plw9
+            P(9) = q(5);                           // pb6
+            P(10) = q(4);                          // pb5
+            P(11) = q(2);                          // pb3
+            return info.setVector(P);
+        case 4:
+            // basic forces
+            return info.setVector(q);
+        case 5:
+            // basic deformations
+            return info.setVector(
+                theCoordTransf->getBasicTrialDisp());
+        case 6: {
+            // section forces
+            double xL = info.theDouble;
+            double x = xL * L;
+
+            Vector s(6);
+            s(0) = q(0) + wx * (L - x);  // N(x)
+            s(1) = (xL - 1.0) * q(1) + xL * q(2) +
+                   0.5 * wy * x * (x - L);  // Mz(x)
+            s(2) = (xL - 1.0) * q(3) + xL * q(4) +
+                   0.5 * wz * x * (L - x);  // My(x)
+            s(3) = q(5);                    // T(x)
+            s(4) =
+                (q(1) + q(2)) * oneOverL + wy * (x - 0.5 * L);  // Vy
+            s(5) =
+                (q(3) + q(4)) * oneOverL + wz * (0.5 * L - x);  // Vz
+            return info.setVector(s);
+        }
+
+        case 19:
+            // basic stiffness
+            double B1, B2, C1, C2;
+            shearCoefficients(B1, B2, C1, C2);
+            kb.Zero();
+            kb(0, 0) = E * A / L;
+            kb(1, 1) = kb(2, 2) = B1 * 4 * E * Iz / L;
+            kb(1, 2) = kb(2, 1) = C1 * 2 * E * Iz / L;
+            kb(3, 3) = kb(4, 4) = B2 * 4 * E * Iy / L;
+            kb(3, 4) = kb(4, 3) = C2 * 2 * E * Iy / L;
+            kb(5, 5) = G * Jx / L;
+            return info.setMatrix(kb);
+
+        default:
+            break;
+    }
+}
+
+int Pipe::setParameter(const char **argv, int argc,
+                       Parameter &param) {
+    if (argc < 1) {
+        return -1;
+    }
+    return 0;
+}
+int Pipe::updateParameter(int parameterID, Information &info) {
+    return 0;
+}
+
+double Pipe::aveTemp() {
+    // get average element temperature
+    double Ti = theNodes[0]->getTemp();
+    double Tj = theNodes[1]->getTemp();
+    double Tavg = 0.5 * (Ti + Tj);
+    return Tavg - T0;
+}
+
+int Pipe::updateMaterialData(double &E, double &nu, double &G,
+                             double &alp) {
+    // select point based on temperature
+    int retVal = 0;
+    auto Tpt = theMat->selectPoint(aveTemp(), retVal);
+    if (retVal < 0) {
+        return retVal;
+    }
+
+    // set data
+    E = Tpt.E;
+    nu = Tpt.xnu;
+    G = E / (2 * (1.0 + nu));
+    alp = Tpt.alp;
+    if (E <= 0) {
+        opserr << "E <= 0\n";
+        return -1;
+    }
+    if (G <= 0) {
+        opserr << "G <= 0\n";
+        return -1;
+    }
+    if (alp <= 0) {
+        opserr << "alp <= 0\n";
+        return -1;
+    }
+
+    return retVal;
+}
+
+int Pipe::updateSectionData(double &A, double &Jx, double &Iy,
+                            double &Iz, double &rho, double &alphaV) {
+    A = theSect->AREA();
+    Jx = theSect->JX();
+    Iy = theSect->IY();
+    Iz = theSect->IZ();
+    rho = theSect->RHO();
+    alphaV = theSect->ALFAV();
+    if (alphaV > 99) {
+        alphaV = 0.0;
+    }
 
     return 0;
 }
@@ -486,4 +1048,48 @@ int Pipe::nextTransfTag() {
     }
 
     return maxTag + gap;
+}
+
+void Pipe::shearCoefficients(double &B1, double &B2, double &C1,
+                             double &C2) {
+    if (theCoordTransf == 0) {
+        return;
+    }
+    double a1 = 1.0;
+    double a2 = 1.0;
+    double b1 = 1.0;
+    double b2 = 1.0;
+
+    double L = theCoordTransf->getInitialLength();
+
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::setDomain failed to update section data\n";
+        return;
+    }
+
+    // update material data
+    double E, nu, G, alp;
+    if (updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return;
+    }
+
+    if (alphaV > 0.0 && G > 0 && E > 0 && Iz > 0) {
+        double Avy = A / alphaV;
+        a1 += 3.0 * E * Iz / (G * Avy * L * L);
+        b1 -= 6.0 * E * Iz / (G * Avy * L * L);
+    }
+
+    if (alphaV > 0.0 && G > 0 && E > 0 && Iy > 0) {
+        double Avz = A / alphaV;
+        a2 += 3.0 * E * Iy / (G * Avz * L * L);
+        b2 -= 6.0 * E * Iy / (G * Avz * L * L);
+    }
+
+    B1 = 3 * a1 / (4 * a1 * a1 - b1 * b1);
+    C1 = 3 * b1 / (4 * a1 * a1 - b1 * b1);
+    B2 = 3 * a2 / (4 * a2 * a2 - b2 * b2);
+    C2 = 3 * b2 / (4 * a2 * a2 - b2 * b2);
 }

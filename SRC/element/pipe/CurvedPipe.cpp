@@ -23,9 +23,9 @@
 // Minjie
 #include "CurvedPipe.h"
 
-#include <CrdTransf.h>
+#include <Domain.h>
 #include <ElementalLoad.h>
-#include <LinearCrdTransf3d.h>
+#include <Node.h>
 
 #include <cmath>
 
@@ -51,11 +51,10 @@ std::vector<double> CurvedPipe::gaussPts = {
 void *OPS_CurvedPipeElement() {
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 8) {
-        opserr
-            << "Invalid #args,  want: element CurvedPipe "
-               "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
-               "xC? yC? zC?"
-               "<-T0 T0? -p p? -tolWall? tolWall? -TI?>\n";
+        opserr << "Invalid #args,  want: element CurvedPipe "
+                  "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
+                  "xC? yC? zC?"
+                  "<-T0 T0? -p p? -tolWall? tolWall? -TI?>\n";
         return 0;
     }
 
@@ -142,7 +141,8 @@ void *OPS_CurvedPipeElement() {
 }
 
 CurvedPipe::CurvedPipe()
-    : Pipe(),
+    : Element(0, ELE_TAG_CurvedPipe),
+      pipeEle(0),
       center(3),
       radius(0.0),
       theta0(0.0),
@@ -151,12 +151,15 @@ CurvedPipe::CurvedPipe()
       Length(0.0),
       intersection(false),
       alg(),
-      abl() {}
+      abl() {
+    pipeEle = new Pipe();
+}
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
                        PipeSection &sect, const Vector &c, double to,
                        double pre, double tol, bool inter)
-    : Pipe(tag, ELE_TAG_CurvedPipe),
+    : Element(tag, ELE_TAG_CurvedPipe),
+      pipeEle(0),
       center(3),
       radius(0.0),
       theta0(0.0),
@@ -166,10 +169,15 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       intersection(inter),
       alg(),
       abl() {
-    if (Pipe::createPipe(nd1, nd2, mat, sect, 0, 0, 0, pre) < 0) {
-        opserr << "WARNING: failed to create curved pipe element\n";
+    // pipe element
+    pipeEle = new Pipe(tag, nd1, nd2, mat, sect, to, pre);
+    if (pipeEle == 0) {
+        opserr << "WARNING: failed to create an internal pipe "
+                  "element -- CurvedPipe\n";
         exit(-1);
     }
+
+    // center
     if (center.Size() != 3) {
         center.resize(3);
     }
@@ -181,11 +189,27 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
     }
 }
 
-CurvedPipe::~CurvedPipe() {}
+CurvedPipe::~CurvedPipe() {
+    if (pipeEle != 0) {
+        delete pipeEle;
+    }
+}
 
 const char *CurvedPipe::getClassType(void) const {
     return "CurvedPipe";
 };
+
+int CurvedPipe::getNumExternalNodes() const {
+    return pipeEle->getNumExternalNodes();
+}
+
+const ID &CurvedPipe::getExternalNodes() {
+    return pipeEle->getExternalNodes();
+}
+
+Node **CurvedPipe::getNodePtrs() { return pipeEle->getNodePtrs(); }
+
+int CurvedPipe::getNumDOF() { return pipeEle->getNumDOF(); }
 
 void CurvedPipe::setDomain(Domain *theDomain) {
     if (theDomain == 0) {
@@ -199,6 +223,8 @@ void CurvedPipe::setDomain(Domain *theDomain) {
         exit(-1);
     }
 
+    auto theNodes = pipeEle->getNodePtrs();
+    const auto &connectedExternalNodes = pipeEle->getExternalNodes();
     theNodes[0] = theDomain->getNode(connectedExternalNodes(0));
     theNodes[1] = theDomain->getNode(connectedExternalNodes(1));
 
@@ -236,13 +262,15 @@ void CurvedPipe::setDomain(Domain *theDomain) {
     this->DomainComponent::setDomain(theDomain);
 
     // update section data
-    if (updateSectionData() < 0) {
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (pipeEle->updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
         opserr << "Pipe::setDomain failed to update section data\n";
         return;
     }
 
     // update material data
-    if (updateMaterialData() < 0) {
+    double E, nu, G, alp;
+    if (pipeEle->updateMaterialData(E, nu, G, alp) < 0) {
         opserr << "Pipe::setDomain failed to update material data\n";
         return;
     }
@@ -254,19 +282,15 @@ void CurvedPipe::setDomain(Domain *theDomain) {
     }
 }
 
-int CurvedPipe::commitState() {
-    // call element commitState to do any base class stuff
-    if ((this->Element::commitState()) != 0) {
-        opserr << "CurvedPipe::commitState () - failed in base class";
-    }
-    return 0;
+int CurvedPipe::commitState() { return pipeEle->commitState(); }
+
+int CurvedPipe::revertToLastCommit() {
+    return pipeEle->revertToLastCommit();
 }
 
-int CurvedPipe::revertToLastCommit() { return 0; }
+int CurvedPipe::revertToStart() { return pipeEle->revertToStart(); }
 
-int CurvedPipe::revertToStart() { return 0; }
-
-int CurvedPipe::update() { return 0; }
+int CurvedPipe::update() { return pipeEle->update(); }
 
 const Matrix &CurvedPipe::getTangentStiff() {
     return getInitialStiff();
@@ -276,24 +300,26 @@ const Matrix &CurvedPipe::getInitialStiff() {
     // kb and pb0
     Matrix kbm;
     Vector pb0;
+    auto &K = pipeEle->refK();
+    K.Zero();
     if (kb(kbm, pb0) < 0) {
         opserr
             << "WARNING: failed to compute kb -- getInitialStiff\n";
-        ElasticBeam3d::K.Zero();
-        return ElasticBeam3d::K;
+        return K;
     }
 
     Matrix kl(12, 12);
     kl.addMatrixTripleProduct(0.0, abl, kbm, 1.0);
-    ElasticBeam3d::K.resize(12, 12);
-    ElasticBeam3d::K.addMatrixTripleProduct(0.0, alg, kl, 1.0);
+    K.addMatrixTripleProduct(0.0, alg, kl, 1.0);
 
-    return ElasticBeam3d::K;
+    return K;
 }
 
 const Matrix &CurvedPipe::getMass() {
+    auto &K = pipeEle->refK();
     K.Zero();
 
+    double rho = pipeEle->getSection()->RHO();
     if (rho <= 0) {
         return K;
     }
@@ -313,23 +339,7 @@ const Matrix &CurvedPipe::getMass() {
     return K;
 }
 
-void CurvedPipe::zeroLoad(void) {
-    // update section data
-    if (updateSectionData() < 0) {
-        opserr << "CurvedPipe::zeroLoad failed to update section "
-                  "data\n";
-        return;
-    }
-
-    // update material data
-    if (updateMaterialData() < 0) {
-        opserr << "CurvedPipe::zeroLoad failed to update material "
-                  "data\n";
-        return;
-    }
-
-    this->ElasticBeam3d::zeroLoad();
-}
+void CurvedPipe::zeroLoad(void) { pipeEle->initLoad(); }
 
 int CurvedPipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
     int type;
@@ -353,10 +363,10 @@ int CurvedPipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
         Vector local_w(3);
         local_w.addMatrixVector(0.0, T, global_w, 1.0);
 
-        ElasticBeam3d::wx +=
+        pipeEle->refwx() +=
             local_w(0);  // Axial (+ve from node I to J)
-        ElasticBeam3d::wy += local_w(1);  // Transverse
-        ElasticBeam3d::wz += local_w(2);  // Transverse
+        pipeEle->refwy() += local_w(1);  // Transverse
+        pipeEle->refwz() += local_w(2);  // Transverse
 
     } else {
         opserr << "CurvedPipe::addLoad()  -- load type unknown for "
@@ -369,9 +379,11 @@ int CurvedPipe::addLoad(ElementalLoad *theLoad, double loadFactor) {
 }
 
 int CurvedPipe::addInertiaLoadToUnbalance(const Vector &accel) {
+    double rho = pipeEle->getSection()->RHO();
     if (rho == 0.0) return 0;
 
     // get R * accel from the nodes
+    auto theNodes = pipeEle->getNodePtrs();
     const Vector &Raccel1 = theNodes[0]->getRV(accel);
     const Vector &Raccel2 = theNodes[1]->getRV(accel);
 
@@ -390,6 +402,7 @@ int CurvedPipe::addInertiaLoadToUnbalance(const Vector &accel) {
     // lumped mass matrix
     double m = rho * s;
 
+    auto &Q = pipeEle->refQ();
     Q(0) -= m * Raccel1(0);
     Q(1) -= m * Raccel1(1);
     Q(2) -= m * Raccel1(2);
@@ -402,6 +415,7 @@ int CurvedPipe::addInertiaLoadToUnbalance(const Vector &accel) {
 }
 
 const Vector &CurvedPipe::getResistingForceIncInertia() {
+    auto &P = pipeEle->refP();
     P = this->getResistingForce();
 
     // add the damping forces if rayleigh damping
@@ -410,9 +424,11 @@ const Vector &CurvedPipe::getResistingForceIncInertia() {
         P.addVector(1.0, this->getRayleighDampingForces(), 1.0);
     }
 
+    double rho = pipeEle->getSection()->RHO();
     if (rho == 0.0) return P;
 
     // add inertia forces from element mass
+    auto theNodes = pipeEle->getNodePtrs();
     const Vector &accel1 = theNodes[0]->getTrialAccel();
     const Vector &accel2 = theNodes[1]->getTrialAccel();
 
@@ -435,18 +451,21 @@ const Vector &CurvedPipe::getResistingForceIncInertia() {
 }
 
 const Vector &CurvedPipe::getResistingForce() {
+    auto &P = pipeEle->refP();
+
     // kb and pb0
     Matrix kbm;
     Vector pb0;
+    P.Zero();
     if (kb(kbm, pb0) < 0) {
         opserr << "WARNING: failed to compute kb -- "
                   "getResistingForce\n ";
-        ElasticBeam3d::P.Zero();
-        return ElasticBeam3d::P;
+        return P;
     }
 
     // ug
     Vector ug(12);
+    auto theNodes = pipeEle->getNodePtrs();
     const Vector &disp1 = theNodes[0]->getTrialDisp();
     const Vector &disp2 = theNodes[1]->getTrialDisp();
     for (int i = 0; i < 6; i++) {
@@ -480,16 +499,13 @@ const Vector &CurvedPipe::getResistingForce() {
     P.addMatrixTransposeVector(0.0, alg, pl, 1.0);
 
     // subtract external load P = P - Q
+    double rho = pipeEle->getSection()->RHO();
     if (rho != 0) {
+        auto &Q = pipeEle->refQ();
         P.addVector(1.0, Q, -1.0);
     }
 
     return P;
-}
-
-const Vector &CurvedPipe::getDampingForce() {
-    static Vector dum(12);
-    return dum;
 }
 
 int CurvedPipe::sendSelf(int cTag, Channel &theChannel) { return 0; }
@@ -529,9 +545,10 @@ int CurvedPipe::updateParameter(int parameterID, Information &info) {
 
 int CurvedPipe::getTheta0() {
     // nodes
+    auto theNodes = pipeEle->getNodePtrs();
     const auto &crdsI = theNodes[0]->getCrds();
     const auto &crdsJ = theNodes[1]->getCrds();
-    double thk = theSect->WALL();
+    double thk = pipeEle->getSection()->WALL();
 
     // check intersection point
     if (intersection) {
@@ -549,7 +566,7 @@ int CurvedPipe::getTheta0() {
 
         IT -= crdsI;
         JT -= crdsJ;
-        if (crossProduct(IT, JT, N) < 0) {
+        if (pipeEle->crossProduct(IT, JT, N) < 0) {
             return -1;
         }
         N.Normalize();
@@ -569,12 +586,13 @@ int CurvedPipe::getTheta0() {
         }
 
         Vector rhs(center.Size());
-        rhs(0) = IT^crdsI;
-        rhs(1) = JT^crdsJ;
-        rhs(2) = N^crdsT;
+        rhs(0) = IT ^ crdsI;
+        rhs(1) = JT ^ crdsJ;
+        rhs(2) = N ^ crdsT;
 
         if (tempC.Solve(rhs, center) < 0) {
-            opserr << "WANRING: failed to compute center from tangent intersection\n";
+            opserr << "WANRING: failed to compute center from "
+                      "tangent intersection\n";
             return -1;
         }
 
@@ -598,7 +616,7 @@ int CurvedPipe::getTheta0() {
     xAxis.Normalize();
 
     Vector zAxis;
-    if (crossProduct(xAxis, yAxis, zAxis) < 0) {
+    if (pipeEle->crossProduct(xAxis, yAxis, zAxis) < 0) {
         return -1;
     }
 
@@ -659,17 +677,26 @@ int CurvedPipe::getTheta0() {
     }
     theta0 = asin(Lhalf / radius);
 
+    // update material data
+    double E, nu, G, alp;
+    if (pipeEle->updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return -1;
+    }
+
     // compute kp
-    double dout = theSect->DOUT();
+    opserr << "pressue = " << pipeEle->getPressure() << "\n";
+    double dout = pipeEle->getSection()->DOUT();
     double RM = (dout - thk) * 0.5;
     double h = thk * radius / (RM * RM);
     double DUM2 = pow(radius / thk, 4.0 / 3);
-    double DUM = 6 * pressure / (E * h);
+    double DUM = 6 * pipeEle->getPressure() / (E * h);
     DUM = 1.0 + DUM * DUM2;
     this->kp = 1.65 / h / DUM;
     if (this->kp < 1) {
         this->kp = 1.0;
     }
+    opserr << "kp = " << kp << "\n";
 
     return 0;
 }
@@ -706,9 +733,9 @@ void CurvedPipe::bx(double theta, Matrix &mat) {
 void CurvedPipe::Spx(double theta, Vector &vec) {
     vec.resize(6);
     vec.Zero();
-    double wx = ElasticBeam3d::wx;
-    double wy = ElasticBeam3d::wy;
-    double wz = ElasticBeam3d::wz;
+    double wx = pipeEle->refwx();
+    double wy = pipeEle->refwy();
+    double wz = pipeEle->refwz();
     double c = cos(theta);
     double s = sin(theta);
     double L = Length;
@@ -743,12 +770,25 @@ void CurvedPipe::fs(double theta, Matrix &mat) {
         kp = 1;
     }
 
+    // update section data
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (pipeEle->updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
+        opserr << "Pipe::setDomain failed to update section data\n";
+        return;
+    }
+
+    // update material data
+    double E, nu, G, alp;
+    if (pipeEle->updateMaterialData(E, nu, G, alp) < 0) {
+        opserr << "Pipe::setDomain failed to update material data\n";
+        return;
+    }
+
     mat(0, 0) = 1.0 / (E * A);
     mat(1, 1) = kp / (E * Iz);
     mat(2, 2) = kp / (E * Iy);
     mat(3, 3) = 1.0 / (G * Jx);
 
-    double alphaV = theSect->ALFAV();
     if (alphaV > 99) {
         alphaV = 0.0;
     }
@@ -790,13 +830,15 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
     Vector ubnovec;
 
     // update section data
-    if (updateSectionData() < 0) {
+    double A, Jx, Iy, Iz, rho, alphaV;
+    if (pipeEle->updateSectionData(A, Jx, Iy, Iz, rho, alphaV) < 0) {
         opserr << "Pipe::setDomain failed to update section data\n";
         return -1;
     }
 
     // update material data
-    if (updateMaterialData() < 0) {
+    double E, nu, G, alp;
+    if (pipeEle->updateMaterialData(E, nu, G, alp) < 0) {
         opserr << "Pipe::setDomain failed to update material data\n";
         return -1;
     }
@@ -808,15 +850,16 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
     integrateGauss(-theta0, theta0, fbmat, ubnovec);
 
     // ub0 due to thermal
-    double dT = aveTemp();
+    double dT = pipeEle->aveTemp();
     if (dT > 0) {
         ubnovec(0) += 2 * R * alp * dT * sin(theta0);
     }
 
     // ub0 due to internal pressure
+    double pressure = pipeEle->getPressure();
     if (pressure != 0) {
-        double dout = theSect->DOUT();
-        double thk = theSect->WALL();
+        double dout = pipeEle->getSection()->DOUT();
+        double thk = pipeEle->getSection()->WALL();
 
         // strain due to pressure converted from SAP 5
         double RM = (dout - thk) * 0.5;
@@ -893,9 +936,9 @@ void CurvedPipe::plw(Vector &vec) {
     vec.Zero();
 
     // member load
-    double wx = ElasticBeam3d::wx;
-    double wy = ElasticBeam3d::wy;
-    double wz = ElasticBeam3d::wz;
+    double wx = pipeEle->refwx();
+    double wy = pipeEle->refwy();
+    double wz = pipeEle->refwz();
     double R = radius;
     double H0 = R * cos(theta0);
     double L = Length;
