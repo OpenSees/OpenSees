@@ -53,9 +53,7 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <KikuchiAikenLRB.h>
 #include <AxialSp.h>
 #include <AxialSpHD.h>
-#include <APDVFD.h>
-#include <APDMD.h>
-#include <APDFMD.h>
+
 
 #include <SMAMaterial.h>     // Davide Fugazza
 #include <Masonry.h>
@@ -127,9 +125,6 @@ extern void *OPS_InitStressMaterial(void);
 extern void *OPS_pyUCLA(void);
 extern void *OPS_Maxwell(void);
 extern void *OPS_ViscousDamper(void);
-extern void* OPS_APDVFD(void);
-extern void* OPS_APDMD(void);
-extern void* OPS_APDFMD(void);
 extern void *OPS_DamperMaterial(void);
 extern void *OPS_BilinearOilDamper(void);
 extern void *OPS_Cast(void);
@@ -209,6 +204,9 @@ extern void *OPS_KikuchiAikenHDR(void);
 extern void *OPS_KikuchiAikenLRB(void);
 extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
 extern void* OPS_Ratchet(void); // Yi Xiao
+extern void* OPS_APDVFD(void);
+extern void* OPS_APDMD(void);
+extern void* OPS_APDFMD(void);
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -517,27 +515,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;
 
-    }
-    if ((strcmp(argv[1], "APDVFD") == 0)) {
-        void* theMat = OPS_APDVFD();
-        if (theMat != 0)
-            theMaterial = (UniaxialMaterial*)theMat;
-        else
-            return TCL_ERROR;
-    }
-    if ((strcmp(argv[1], "APDMD") == 0)) {
-        void* theMat = OPS_APDMD();
-        if (theMat != 0)
-            theMaterial = (UniaxialMaterial*)theMat;
-        else
-            return TCL_ERROR;
-    }
-    if ((strcmp(argv[1], "APDFMD") == 0)) {
-        void* theMat = OPS_APDFMD();
-        if (theMat != 0)
-            theMaterial = (UniaxialMaterial*)theMat;
-        else
-            return TCL_ERROR;
     }
     if (strcmp(argv[1],"DamperMaterial") == 0 || strcmp(argv[1],"Damper") == 0) {
       void *theMat = OPS_DamperMaterial();
@@ -2134,7 +2111,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 			return TCL_ERROR;
 
 	}
-
+     
     if (strcmp(argv[1], "Ratchet") == 0) {
         void* theMat = OPS_Ratchet();
         if (theMat != 0)
@@ -2143,7 +2120,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             return TCL_ERROR;
 
     }
-
+     if ((strcmp(argv[1], "APDVFD") == 0)) {
+        void* theMat = OPS_APDVFD();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if ((strcmp(argv[1], "APDMD") == 0)) {
+        void* theMat = OPS_APDMD();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if ((strcmp(argv[1], "APDFMD") == 0)) {
+        void* theMat = OPS_APDFMD();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)
