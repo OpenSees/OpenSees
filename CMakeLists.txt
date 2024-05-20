@@ -94,6 +94,7 @@ if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    MESSAGE("USING CONAN")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
+   set (Eigen3_FOUND TRUE)
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
@@ -113,7 +114,6 @@ else()
   find_package(TCL REQUIRED)
   find_package(Eigen3 REQUIRED)
   include_directories(${TCL_INCLUDE_DIR})
-  include_directories(${Eigen3_INCLUDE_DIR})
   set(TCL_LIBRARY ${TCL_LIBRARIES})
 
 endif()
@@ -845,6 +845,15 @@ else()
    message(STATUS "OPS >>> Could not find HDF5")
 endif()
 
+#----------------------------
+# Eigen3
+#----------------------------
+if(Eigen3_FOUND)
+   include_directories(${Eigen3_INCLUDE_DIR})
+   add_compile_definitions(_EIGEN3)
+else()
+   message(STATUS "OPS >>> Could not find Eigen3")
+endif()
 
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
