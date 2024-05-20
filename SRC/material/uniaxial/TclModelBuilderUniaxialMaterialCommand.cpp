@@ -935,7 +935,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
     }
     if (strcmp(argv[1],"FRPConfinedConcrete") == 0) {
-      void *theMat = OPS_FRPConfinedConcrete();
+      void *theMat = 0; //OPS_FRPConfinedConcrete();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
