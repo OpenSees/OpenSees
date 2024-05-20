@@ -2045,7 +2045,7 @@ int OPS_classType()
     }      
   }
   
-  if (type == "section") {
+  else if (type == "section") {
     SectionForceDeformation *theSection = OPS_getSectionForceDeformation(tag);
     if (theSection == 0) {
       opserr << "ERROR classType - section with tag " << tag << " not found" << endln;
@@ -2061,7 +2061,7 @@ int OPS_classType()
 
   else {
     opserr << "WARNING classType - " << type.c_str() << " not yet supported" << endln;
-    return -1;
+    return 0;
   }
 
   return 0;
