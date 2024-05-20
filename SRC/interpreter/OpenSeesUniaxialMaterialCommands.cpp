@@ -370,12 +370,6 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("ViscousDamper", &OPS_ViscousDamper));
   uniaxialMaterialsMap.insert(
-      std::make_pair("APDVFD", &OPS_APDVFD));
-  uniaxialMaterialsMap.insert(
-      std::make_pair("APDMD", &OPS_APDMD));
-  uniaxialMaterialsMap.insert(
-      std::make_pair("APDFMD", &OPS_APDFMD));
-  uniaxialMaterialsMap.insert(
       std::make_pair("Damper", &OPS_DamperMaterial));	
   uniaxialMaterialsMap.insert(
       std::make_pair("DamperMaterial", &OPS_DamperMaterial));	
@@ -623,6 +617,12 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
 	  "GMG_CyclicReinforcedConcrete", &OPS_GMG_CyclicReinforcedConcrete));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDVFD", &OPS_APDVFD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDMD", &OPS_APDMD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDFMD", &OPS_APDFMD));
   uniaxialMaterialsMap.insert(
       std::make_pair("Hertzdamp", &OPS_Hertzdamp));
   uniaxialMaterialsMap.insert(
