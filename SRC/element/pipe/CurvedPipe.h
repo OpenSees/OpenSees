@@ -24,13 +24,22 @@
 #ifndef CurvedPipe_h
 #define CurvedPipe_h
 
-#include "Pipe.h"
+#include <Element.h>
+#include <Matrix.h>
+#include <Pipe.h>
+#include <PipeMaterial.h>
+#include <PipeSection.h>
+#include <Vector.h>
+
+#include <vector>
 
 class Node;
 
 // CurvedPipe element
-class CurvedPipe : public Pipe {
-   protected:
+class CurvedPipe : public Element {
+   private:
+    Pipe *pipeEle;
+
     Vector center;
     double radius;
     double theta0;
@@ -54,22 +63,28 @@ class CurvedPipe : public Pipe {
 
     const char *getClassType() const;
 
+    int getNumExternalNodes(void) const;
+    const ID &getExternalNodes(void);
+    Node **getNodePtrs(void);
+
+    int getNumDOF(void);
     void setDomain(Domain *theDomain);
+
     int commitState();
     int revertToLastCommit();
     int revertToStart();
+
     int update();
+    const Matrix &getTangentStiff(void);
+    const Matrix &getInitialStiff(void);
+    const Matrix &getMass(void);
 
     void zeroLoad();
     int addLoad(ElementalLoad *theLoad, double loadFactor);
     int addInertiaLoadToUnbalance(const Vector &accel);
 
-    const Matrix &getTangentStiff();
-    const Matrix &getInitialStiff();
-    const Matrix &getMass();
     const Vector &getResistingForce();
     const Vector &getResistingForceIncInertia();
-    const Vector &getDampingForce();
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel,
