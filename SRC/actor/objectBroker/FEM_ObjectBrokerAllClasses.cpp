@@ -106,6 +106,9 @@
 #include "EPPGapMaterial.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
+#include "APDVFD.h"
+#include "APDMD.h"
+#include "APDFMD.h"
 #include "BilinearOilDamper.h"
 #include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
@@ -1665,6 +1668,15 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ViscousDamper:
 		return new ViscousDamper();
+
+        case MAT_TAG_APDVFD:
+		return new APDVFD();
+	    
+	case MAT_TAG_APDMD:
+		return new APDMD();
+	    
+	case MAT_TAG_APDFMD:
+		return new APDFMD();
 
 	case MAT_TAG_BilinearOilDamper:
 	    return new BilinearOilDamper();
