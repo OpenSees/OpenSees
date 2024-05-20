@@ -102,14 +102,12 @@ MultilinearBackbone::MultilinearBackbone(int tag, int num,
   
   bool error = false;
   
-  int i;
-  
-  for (i = 1; i <= numPoints; i++) {
+  for (int i = 1; i <= numPoints; i++) {
     e[i] = def(i-1);
     s[i] = force(i-1);
   }
   
-  for (i = 1; i <= numPoints; i++)
+  for (int i = 1; i <= numPoints; i++)
     if (e[i] < e[i-1])
       error = true;
   
@@ -121,10 +119,11 @@ MultilinearBackbone::MultilinearBackbone(int tag, int num,
     
     opserr << "MultilinearBackbone::MultilinearBackbone -- input backbone is not unique (one-to-one)" << endln;
   }
-  
-  for (i = 1; i <= numPoints; i++) {
-    E[i-1] = (s[i]-s[i-1])/(e[i]-e[i-1]);
-    c[i] = c[i-1] + 0.5*(s[i]-s[i-1])*(e[i]-e[i-1]);
+  else {
+    for (int i = 1; i <= numPoints; i++) {
+      E[i-1] = (s[i]-s[i-1])/(e[i]-e[i-1]);
+      c[i] = c[i-1] + 0.5*(s[i]-s[i-1])*(e[i]-e[i-1]);
+    }
   }
 }
 

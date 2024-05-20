@@ -19,8 +19,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-    - uses: actions/checkout@v2
-    - uses: actions/setup-python@v4
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
@@ -71,20 +71,21 @@ jobs:
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v4
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.11"
       - name: Install Library
         run: |
-         brew install gcc
-         brew install gfortran
-         ln -s /usr/local/bin/gfortran-11 /usr/local/bin/gfortran
+         ln -s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
+         ln -s /opt/homebrew/bin/gfortran-13 /usr/local/bin/gfortran
+         brew install eigen
          brew install hdf5
          brew install open-mpi
          brew install scalapack
+         sudo ln -sf /opt/homebrew/include/eigen3/Eigen /opt/homebrew/include/Eigen
       - name: Build
         run: |
           mkdir build
@@ -99,24 +100,3 @@ jobs:
           export PYTHONPATH="../../build/"
           python3 -c "import sys; print(sys.path)"
           python3 example_variable_analysis.py
-# Not building on Windows until we can figure out how to use Fortran
-# with Github Actions
-    #  build-win32:
-    #    name: Build on Windows
-    #    runs-on: [windows-latest]
-    #    steps:
-    #    - name: Checkout sources
-    #      uses: actions/checkout@v2
-    #      with: {ref: cmake-build}
-    #
-    #    - name: Install Conan
-    #      uses: turtlebrowser/get-conan@main
-    #
-    #    - name: Build
-    #      run: |
-    #        mkdir build
-    #        cd build
-    #        cmake ..
-    #        cmake --build . --target OpenSeesTcl -j5
-
-
