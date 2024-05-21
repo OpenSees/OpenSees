@@ -872,8 +872,7 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
             double DUM = 3.14159265 * pow(RM, 4) * pressure;
             DUM *= 0.5 / (E * Iz);
             double DU2 = RM / R;
-            double BTA =
-                DUM * (2 - 2 * nu + (3 + 1.5 * nu) * DU2 * DU2);
+            BTA = DUM * (2 - 2 * nu + (3 + 1.5 * nu) * DU2 * DU2);
             BTA = -BTA / R;
 
         } else {
@@ -882,7 +881,7 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
             double DUM = pressure * RM * 0.5 / (E * thk);
             double DU3 =
                 1.0 + DUM * (1 - nu * (2 * DU2 - 1) / (DU2 - 1));
-            double BTA = DU3 / (1.0 + DUM * (2 - nu));
+            BTA = DU3 / (1.0 + DUM * (2 - nu));
             BTA = -(1.0 - BTA) / R;
         }
 
