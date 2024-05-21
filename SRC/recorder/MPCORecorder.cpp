@@ -759,11 +759,20 @@ namespace utils {
 		void bufferNodeResponseVec3u(size_t node_counter, int ndim, const Vector &iresponse, std::vector<double> &buffer)
 		{
 			size_t j = node_counter * ndim;
-			buffer[j] = iresponse[0];
+			if (iresponse.Size() > 0)
+				buffer[j] = iresponse[0];
+			else
+				buffer[j] = 0.0;
 			if (ndim > 1) {
-				buffer[j + 1] = iresponse[1];
+				if (iresponse.Size() > 1)
+					buffer[j + 1] = iresponse[1];
+				else
+					buffer[j + 1] = 0.0;
 				if (ndim > 2) {
-					buffer[j + 2] = iresponse[2];
+					if (iresponse.Size() > 2)
+						buffer[j + 2] = iresponse[2];
+					else
+						buffer[j + 2] = 0.0;
 				}
 			}
 		}
@@ -3729,6 +3738,9 @@ namespace mpco {
 					// ./adapter actuators
 					elem_class_tag == ELE_TAG_Actuator ||
 					elem_class_tag == ELE_TAG_ActuatorCorot ||
+					// ./absorbentBoundaries
+					elem_class_tag == ELE_TAG_FSIInterfaceElement2D ||
+					elem_class_tag == ELE_TAG_FSIFluidBoundaryElement2D ||
 					// ./truss
 					elem_class_tag == ELE_TAG_Truss ||
 					elem_class_tag == ELE_TAG_Truss2 ||
@@ -3837,7 +3849,8 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_SSPquad ||
 					elem_class_tag == ELE_TAG_SSPquadUP ||
 					// ./absorbentBoundaries
-					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary2D
+					elem_class_tag == ELE_TAG_ASDAbsorbingBoundary2D ||
+					elem_class_tag == ELE_TAG_FSIFluidElement2D
 					)
 				{
 					geom_type = ElementGeometryType::Quadrilateral_4N;

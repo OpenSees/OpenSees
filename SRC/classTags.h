@@ -875,6 +875,9 @@
 #define ELE_TAG_PML2DVISCOUS              262
 #define ELE_TAG_Inno3DPnPJoint			  263 // Cristian Miculas
 #define ELE_TAG_MEFI        			  264 // C. N. Lopez
+#define ELE_TAG_FSIFluidElement2D          265  // Massimo Petracca (ASDEA)
+#define ELE_TAG_FSIInterfaceElement2D      266  // Massimo Petracca (ASDEA)
+#define ELE_TAG_FSIFluidBoundaryElement2D  267  // Massimo Petracca (ASDEA)
 
 
 #define FRN_TAG_Coulomb            1
