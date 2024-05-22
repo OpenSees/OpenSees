@@ -26,9 +26,11 @@
 #define TripleFrictionPendulumX_h
 
 // Header file for TripleFrictionPendulumX element
-// Extended from TripleFrictionPendulum element
+// Extended from TripleFrictionPendulum element 
 // Written by Hyunmyung Kim (hkim59@buffalo.edu) and Michael C. Constantinou (constan1@buffalo.edu)
-
+// Created: 2021/11
+// Last update: 2023/05
+// Version: 2.0
 
 #include <Element.h>
 #include <Matrix.h>
@@ -44,7 +46,7 @@ class TripleFrictionPendulumX : public Element
 public:
     // constructors
     TripleFrictionPendulumX(int tag,
-        int Nd1, int Nd2, int tag1,
+        int Nd1, int Nd2, int tag1, int tag2,
         UniaxialMaterial** theMaterials,
         int kpFactor, int kTFactor, int kvFactor,
         double Mu_ref1,
@@ -59,6 +61,8 @@ public:
         double B1,
         double B2,
         double B3,
+        double PLATE2,
+        double PLATE3,
         double W,
         double Uy,
         double Kvt,
@@ -73,7 +77,8 @@ public:
         double rateParam,
         double tempParam,
         double unit);
-       
+
+
 
     TripleFrictionPendulumX();
 
@@ -124,7 +129,8 @@ private:
     void TFPElement(bool& Conv, Vector& ep1tmp, Vector& ep3tmp, Vector& ep5tmp, Vector& q1tmp, Vector& q3tmp, Vector& q5tmp, Matrix& K, Vector& f, Matrix& k12, Matrix& k34, Matrix& k56, Vector& d1, Vector& d3, Vector& d5, Vector ep1, Vector ep3, Vector ep5, Vector q1, Vector q3, Vector q5, Vector u, Vector dusub, double Fy1, double Fy3, double Fy5, double E1, double E3, double E5, double H1, double H3, double H5, double E2, double E4, double E6, double Gap2, double Gap4, double Gap6, double Tol, int Niter);
     void StiffnessForm(Matrix& K, Matrix k12, Matrix k34, Matrix k56);
     double sgn(double x);
-     UniaxialMaterial* theMaterials[4];  // array of uniaxial materials
+    double dTdt_FINITE(double Diffu, double Conduc, double SlabL, double depthzz, double tauu); 
+    UniaxialMaterial* theMaterials[4];  // array of uniaxial materials
 
     double kTF1, kpF1, kvF1; // Dependency factors on COF1
     double kTF2, kpF2, kvF2; // Dependency factors on COF2
@@ -144,7 +150,9 @@ private:
     double Temperature0;
     double Temperature_Surface1, Temperature_Surface2, Temperature_Surface3;
     double Temperature_Change1, Temperature_Change2, Temperature_Change3;
- 
+    double Temperature_Depth2, Temperature_Depth3;
+    double Temperature_Depth_Change2, Temperature_Depth_Change3;
+
     double DtAnalysis;
     double tau;
     double PI;
@@ -153,7 +161,7 @@ private:
     double p_Unit_Convert; //To convert to MPa for pressure factor
     double v_Unit_Convert; //To convert velocity for velocity factor
     double initialTemperature; // Initial temperature
-    
+
     double disp1, disp2, disp3; // Displacements used for calculating temperature
     double vel1, vel2, vel3; // Velocities used for calculating temerature
     double disp1pr, disp2pr, disp3pr;
@@ -164,11 +172,15 @@ private:
     Vector DomainTimeTemp; //To be used to save data while resizing DomainTime
     Vector DomainHeatFlux1, DomainHeatFlux2, DomainHeatFlux3; //History of heat flux
     Vector DomainHeatFluxTemp1, DomainHeatFluxTemp2, DomainHeatFluxTemp3; //To be used to save data while resizing DomainHeatFlux	
-    
+
     Vector kTFTemp1, kTFTemp2, kTFTemp3;
     Vector kpFTemp1, kpFTemp2, kpFTemp3;
     Vector kvFTemp1, kvFTemp2, kvFTemp3;
     Vector TemperatureCenter1, TemperatureCenter2, TemperatureCenter3;
+
+    Vector TemperatureDepth2, TemperatureDepth3; 
+    double dTdt2_surface, dTdt2_depth, dTdt3_surface, dTdt3_depth; 
+
     Vector HeatFluxCenter1, HeatFluxCenter2, HeatFluxCenter3;
 
     int kpFactor;		//If friction is pressure dependent 1, 0 otherwise
@@ -177,8 +189,10 @@ private:
     double rateParam;	//rate parameter for velocity dependence
     double tempParam;   //Parameter for friction model (1: kT = 1/3, 2: kT = 1/2, 3: kT = 2/3)
     double unit;			//Units of force,displacement etc. 1: N,m,s,C; 2: kN,m,s,C; 3: N,mm,s,C; 4: kN,mm,s,C; 5: lb,in,s,C; 6: kip,in,s,C; 7: lb,ft,s,C; 8: kip,ft,s,C           
-    
-    int tag1; 
+
+
+    int tag1; // temperature dependent friction
+    int tag2; // Heat conduction theories (Indefinite or Finite plate thickness)
     double L1;
     double L2;
     double L3;
@@ -188,13 +202,16 @@ private:
     double B1;
     double B2;
     double B3;
+    double PLATE2;
+    double PLATE3;
     double W;
     double Uy;
     double Kvt;
     double MinFv;
     double TOL;
     int Niter;
-    
+
+
     Matrix K;
     Matrix Kpr;
     Vector f;
@@ -207,13 +224,13 @@ private:
     Matrix k56pr;
     Vector d1;
     Vector d1pr;
-    Vector d1ppr;
+    Vector d1ppr; //(for velocity calc)
     Vector d3;
     Vector d3pr;
-    Vector d3ppr;
+    Vector d3ppr;//(for velocity calc)
     Vector d5;
     Vector d5pr;
-    Vector d5ppr;
+    Vector d5ppr;//(for velocity calc)
     Vector v1;
     Vector v3;
     Vector v5;
@@ -237,23 +254,24 @@ private:
     Vector q3tmp;
     Vector q5tmp;
 
-    double resultantV, resultantVpr, resultantV_AVG ,Dxpr, Dypr, Dxppr, Dyppr, Dxpppr, Dypppr; 
-    
     double v1Fact, v3Fact, v5Fact;
     double Gap2, Gap4, Gap6;
     double Vel1Avg, Vel3Avg, Vel5Avg;
     double u23xx_storedpr, u23yy_storedpr, D1prAvg, D3prAvg, D5prAvg; // (for velocity calc)
     double Disp1Avg, Disp3Avg, Disp5Avg;
     double Vx, Vy, Vz;
-        
+
     double Dx_stored, Dy_stored;
     double dispSlope_x, dispSlope_y;
-    
-    double uxx, uyy; 
-    double u23yy, u23xx,u23sum; 
-    double v23yy, v23xx,v23sum; 
-    double u23yy_stored, u23xx_stored; 
-     
+
+    double uxx, uyy;
+    double u23yy, u23xx, u23sum;
+    double v23yy, v23xx, v23sum;
+    double u23yy_stored, u23xx_stored;
+
+
+
+
     // Parameters for displacement and velocity histories
     double fx, fy; // Forces
     double u_star, u_star2, udr1, udr4; // Displacement limit states
@@ -262,10 +280,10 @@ private:
     // Signs for capturing loading and unloading phases
     double forceSlope_x, forceSlope_y; // To capture the change of phases
     double forceSlope_x_stored, forceSlope_y_stored;
-    
+
     double sign_fx, sign_fy, changeSignX, changeSignY; // To capture the first direction of loading 
     double loading_x, loading_y, unloading_x, unloading_y; // Tag for not allowing to go back to first cycle
-    
+
     // Displacement parameters in the loop
     // X direction
     double u1_ref, u4_ref, F_ref; // Reference point when phase change
@@ -276,6 +294,7 @@ private:
     double u2_tr, u2_tr_u, u3_tr, u3_tr_u; // Stored points for reference point
     double u2, u2_stored, u3, u3_stored, u2_stored2, u3_stored2; // Displacement histories
     double u23, v23;//for series element
+
 
     // Y direction
     double u1y_ref, u4y_ref, Fy_ref; // Reference point when phase change
@@ -294,7 +313,7 @@ private:
     // Resultant histories
     double u23t, u1t, u4t;
     double v23t, v1t, v4t;
-        
+
     double Fy1pr, Fy3pr, Fy5pr;
     double Wpr, Wcr, Wavg;
     double Fy1, Fy3, Fy5;

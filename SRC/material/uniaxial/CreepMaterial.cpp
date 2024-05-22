@@ -164,6 +164,7 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
   //wrappedMaterial = new ElasticMaterial(0,Ec);
 
   ecminP = 0.0;
+  ecmaxP = 0.0;
   deptP = 0.0;
   
   //sigCr = fabs(sigCr);
@@ -269,7 +270,7 @@ CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, doubl
 
   // Set initial tangent
   Ec = wrappedMaterial->getInitialTangent();
-  
+    
   ecminP = 0.0;
   deptP = 0.0;
   
@@ -349,7 +350,7 @@ CreepMaterial::getInitialTangent(void)
 double
 CreepMaterial::getCurrentTime(void)
 {
-  double currentTime;
+  double currentTime = 0.0;
   Domain * theDomain = ops_TheActiveDomain;
   
   if (theDomain != 0) {
@@ -557,9 +558,11 @@ CreepMaterial::commitState(void)
   epsP_sh = eps_sh;
   epsP_cr = eps_cr;
   epsP_m = eps_m;
-  if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
-    double s = fabs(eps_m/fc)*Ec;
-    s = 0.5*fabs(fc/Ec);
+  double fcOverEc = (wrappedMaterial == 0) ? fc/Ec : 0.002; // Assumed by MHS
+  if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fcOverEc)) {
+    //double s = fabs(eps_m/fc)*Ec;
+    double s = fabs(eps_m/fcOverEc);    
+    s = 0.5*fabs(fcOverEc);
     //opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
   }
   
@@ -649,7 +652,7 @@ CreepMaterial::sendSelf(int commitTag, Channel &theChannel)
 
   int dbTag = this->getDbTag();
 
-  static ID classTags(3);
+  static ID classTags(4);
 
   classTags(0) = wrappedMaterial->getClassTag();
 
@@ -661,26 +664,69 @@ CreepMaterial::sendSelf(int commitTag, Channel &theChannel)
   }
   classTags(1) = matDbTag;
   classTags(2) = this->getTag();
-
+  classTags(3) = maxSize;
+  
   res = theChannel.sendID(dbTag, commitTag, classTags);
   if (res < 0) {
     opserr << "CreepMaterial::sendSelf -- could not send ID" << endln;
     return res;
   }
 
-  static Vector data(11);
-  data(0) =ft;    
-  data(1) =Ec; 
-  data(2) =beta;   
-  data(3) =age; 
-  data(4) =epsshu;   
-  data(5) =epssha;    
-  data(6) =tcr;   
-  data(7) =epscru;
-  data(8) =epscra; 
-  data(9) =epscrd;     
-  data(10) = this->getTag();
+  Vector data(16 + 6 + 21 + maxSize*5);
+  data(0) = fc;    
+  data(1) = epsc0; 
+  data(2) = fcu;   
+  data(3) = epscu; 
+  data(4) = tcr;   
+  data(5) = ft;    
+  data(6) = Ets;   
+  data(7) = Ec;
+  data(8) = age; 
+  data(9) = epsshu;
+  data(10) = epssha;
+  data(11) = epscra;
+  data(12) = epscru;
+  data(13) = beta;
+  data(14) = epscrd;
+  data(15) = tcast;
 
+  data(16) = ecminP;
+  data(17) = ecmaxP;
+  data(18) = deptP;
+  data(19) = epsP;
+  data(20) = sigP;
+  data(21) = eP;
+
+  data(22) = count;
+  data(23) = epsInit;
+  data(24) = sigInit;
+  data(25) = eps_cr;
+  data(26) = eps_sh;
+  data(27) = eps_T;
+  data(28) = eps_m;
+  data(29) = epsP_m;    
+  data(30) = epsP_cr;
+  data(31) = epsP_sh;
+  data(32) = eps_total;
+  data(33) = epsP_total;
+  data(34) = e_total;
+  data(35) = eP_total;
+  data(36) = t;
+  data(37) = t_load;
+  data(38) = phi_i;
+  data(39) = Et;
+  data(40) = crack_flag;
+  data(41) = crackP_flag;
+  data(42) = iter;
+  
+  for (int i = 0; i < maxSize; i++) {
+    data(43             + i) = PHI_i[i];
+    data(43 +   maxSize + i) = E_i[i];
+    data(43 + 2*maxSize + i) = DSIG_i[i];
+    data(43 + 3*maxSize + i) = TIME_i[i];
+    data(43 + 4*maxSize + i) = DTIME_i[i];            
+  }
+  
   res = theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
     opserr << "CreepMaterial::sendSelf - failed to send Vector" << endln;
@@ -702,41 +748,96 @@ CreepMaterial::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(3);
+  static ID idata(4);
   int dbTag = this->getDbTag();
 
-  res = theChannel.recvID(dbTag, commitTag, data);
+  res = theChannel.recvID(dbTag, commitTag, idata);
   if (res < 0) {
     opserr << "CreepMaterial::recvSelf() - failed to receive data\n";
     return res;
   }
 
-  static Vector vdata(11);
+  this->setTag(idata(2));  
+  maxSize = idata(3);
+  Vector data(16 + 6 + 21 + maxSize*5);
 
-  if (theChannel.recvVector(this->getDbTag(), commitTag, vdata) < 0) {
+  if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "CreepMaterial::recvSelf() - failed to recvSelf\n";
     return -1;
   }
   
-  ft = vdata(0);   
-  Ec = vdata(1);
-  beta = vdata(2);   
-  age = vdata(3); 
-  epsshu = vdata(4);   
-  epssha = vdata(5);    
-  tcr = vdata(6);   
-  epscru = vdata(7);
-  epscra = vdata(8); 
-  epscrd = vdata(9);   
-  this->setTag(vdata(10));
+  fc = data(0);
+  epsc0 = data(1);
+  fcu = data(2);
+  epscu = data(3);
+  tcr = data(4);
+  ft = data(5);
+  Ets = data(6);
+  Ec = data(7);
+  age = data(8);
+  epsshu = data(9);
+  epssha = data(10);
+  epscra = data(11);
+  epscru = data(12);
+  beta = data(13);
+  epscrd = data(14);
+  tcast = data(15);
+
+  ecminP = data(16);
+  ecmaxP = data(17);
+  deptP = data(18);
+  epsP = data(19);
+  sigP = data(20);
+  eP = data(21);
+
+  count = data(22);
+  epsInit = data(23);
+  sigInit = data(24);
+  eps_cr = data(25);
+  eps_sh = data(26);
+  eps_T = data(27);
+  eps_m = data(28);
+  epsP_m = data(29);
+  epsP_cr = data(30);
+  epsP_sh = data(31);
+  eps_total = data(32);
+  epsP_total = data(33);
+  e_total = data(34);
+  eP_total = data(35);
+  t = data(36);
+  t_load = data(37);
+  phi_i = data(38);
+  Et = data(39);
+  crack_flag = data(40);
+  crackP_flag = data(41);
+  iter = data(42);
+
+  if (PHI_i != 0) delete [] PHI_i;
+  PHI_i = new float [maxSize];
+  if (E_i != 0) delete [] E_i;
+  E_i = new float [maxSize];
+  if (DSIG_i != 0) delete [] DSIG_i;
+  DSIG_i = new float [maxSize];
+  if (TIME_i != 0) delete [] TIME_i;
+  TIME_i = new float [maxSize];
+  if (DTIME_i != 0) delete [] DTIME_i;
+  DTIME_i = new float [maxSize];  
+  
+  for (int i = 0; i < maxSize; i++) {
+    PHI_i[i]   = data(43             + i);
+    E_i[i]     = data(43 +   maxSize + i);
+    DSIG_i[i]  = data(43 + 2*maxSize + i);
+    TIME_i[i]  = data(43 + 3*maxSize + i);
+    DTIME_i[i] = data(43 + 4*maxSize + i);
+  }
 
   e = eP;
   sig = sigP;
   eps = epsP;
   
   
-  this->setTag(int(data(2)));
-  int matClassTag = data(0);
+
+  int matClassTag = idata(0);
   
   // Check if material is null
   if (wrappedMaterial == 0) {
@@ -747,7 +848,7 @@ CreepMaterial::recvSelf(int commitTag, Channel &theChannel,
     }
   }
 
-  dbTag = data(1);
+  dbTag = idata(1);
   if (wrappedMaterial->getClassTag() != matClassTag) {
     delete wrappedMaterial;
     wrappedMaterial = theBroker.getNewUniaxialMaterial(matClassTag);

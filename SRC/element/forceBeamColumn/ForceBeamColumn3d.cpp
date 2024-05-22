@@ -1597,7 +1597,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) -= VyI;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= VzI;
+	    sp(ii) += VzI;
 	    break;	    
 	  default:
 	    break;
@@ -1615,7 +1615,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += VyJ;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += VzJ;	    
+	    sp(ii) -= VzJ;	    
 	    break;
 	  default:
 	    break;
@@ -1636,7 +1636,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += -VyI + wy*(x-a);
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += -VzI + wz*(x-a);	    
+	    sp(ii) -= -VzI + wz*(x-a);	    
 	    break;
 	  default:
 	    break;
@@ -3187,7 +3187,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 	//by SAJalali
 	else if (strcmp(argv[0], "energy") == 0)
 	{
-		theResponse = new ElementResponse(this, 10, 0.0);
+		theResponse = new ElementResponse(this, 2000, 0.0);
 	}
 
     if (theResponse == 0) {
@@ -3638,7 +3638,7 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return -1;
   }
   //by SAJalali
-  else if (responseID == 10) {
+  else if (responseID == 2000) {
 	  double xi[maxNumSections];
 	  double L = crdTransf->getInitialLength();
 	  beamIntegr->getSectionWeights(numSections, L, xi);

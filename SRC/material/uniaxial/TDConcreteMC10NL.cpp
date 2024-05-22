@@ -75,16 +75,6 @@
 #include <Vector.h>
 
 
-//Added by AMK to use dylib:
-//-----------------------------------------------------------------------
-	#ifdef _USRDLL
-	#define OPS_Export extern "C" _declspec(dllexport)
-	#elif _MACOSX
-	#define OPS_Export extern "C" __attribute__((visibility("default")))
-	#else
-	#define OPS_Export extern "C"
-	#endif
-
 	static int numTDConcreteMC10NL = 0;
 
 //	OPS_Export void * //ntosic: eliminated AMK code
@@ -220,7 +210,7 @@ TDConcreteMC10NL::getInitialTangent(void)
 double
 TDConcreteMC10NL::getCurrentTime(void)
 {
-	double currentTime;
+	double currentTime = 0.0;
 	Domain * theDomain = ops_TheActiveDomain;
 
 	if (theDomain != 0) {

@@ -102,6 +102,9 @@ void* OPS_RCTunnelSection();
 void* OPS_UniaxialSection();
 void* OPS_RCTBeamSection2d();
 void* OPS_RCTBeamSectionUniMat2d();
+void* OPS_ReinforcedConcreteLayeredMembraneSection();	// M. J. Nunez - UChile
+void* OPS_LayeredMembraneSection();	// M. J. Nunez - UChile
+void* OPS_ElasticMembraneSection();	// M. J. Nunez - UChile
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
@@ -283,6 +286,12 @@ namespace {
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
 	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
+	functionMap.insert(std::make_pair("ReinforcedConcreteLayeredMembraneSection", &OPS_ReinforcedConcreteLayeredMembraneSection));
+	functionMap.insert(std::make_pair("RCLayeredMembraneSection", &OPS_ReinforcedConcreteLayeredMembraneSection));
+	functionMap.insert(std::make_pair("RCLMS", &OPS_ReinforcedConcreteLayeredMembraneSection));
+	functionMap.insert(std::make_pair("LayeredMembraneSection", &OPS_LayeredMembraneSection));
+	functionMap.insert(std::make_pair("LMS", &OPS_LayeredMembraneSection));
+	functionMap.insert(std::make_pair("ElasticMembraneSection", &OPS_ElasticMembraneSection));
 
 	return 0;
     }
@@ -419,9 +428,11 @@ int OPS_Fiber()
 
     }
 
+    if (theFiber != 0)
+       delete theFiber;
+	
     if (res < 0) {
 	opserr << "WARNING failed to add fiber to section\n";
-	delete theFiber;
 	return -1;
     }
 
@@ -515,7 +526,8 @@ int OPS_Patch()
 		delete thePatch;
 		return -1;
 	    }
-	    theFiber = new UniaxialFiber3d(j,*material,area,cPos);
+	    double dval = cells[j]->getdValue();
+	    theFiber = new UniaxialFiber3d(j,*material,area,cPos,dval);
 	    theActiveFiberSectionWarping3d->addFiber(*theFiber);	
 
 	} else if (theActiveFiberSectionAsym3d != 0) {

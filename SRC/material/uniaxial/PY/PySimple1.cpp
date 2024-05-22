@@ -59,10 +59,6 @@
 #include <Channel.h>
 #include <elementAPI.h>
 
-// Controls on internal iteration between spring components
-const int PYmaxIterations = 20;
-const double PYtolerance = 1.0e-12;
-
 void* OPS_PySimple1()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -111,8 +107,14 @@ PySimple1::PySimple1(int tag, int classtag, int soil, double p_ult, double y_50,
 /////////////////////////////////////////////////////////////////////
 //	Default constructor
 
+PySimple1::PySimple1(int tag, int classtag)
+:UniaxialMaterial(tag,classtag),
+ soilType(0), pult(0.0), y50(0.0), drag(0.0), dashpot(0.0)
+{
+}
+
 PySimple1::PySimple1()
-:UniaxialMaterial(0,0),
+:UniaxialMaterial(0,MAT_TAG_PySimple1),
  soilType(0), pult(0.0), y50(0.0), drag(0.0), dashpot(0.0)
 {
 }
@@ -127,6 +129,8 @@ PySimple1::~PySimple1()
 /////////////////////////////////////////////////////////////////////
 void PySimple1::getGap(double ylast, double dy, double dy_old)
 {
+  	const double PYtolerance = this->getTolerance();
+	
 	// For stability in Closure spring, may limit "dy" step size to avoid
 	// overshooting on the closing of this gap.
 	//
@@ -202,7 +206,8 @@ void PySimple1::getDrag(double ylast, double dy)
 	TDrag_y = ylast + dy;
 	double pmax=drag*pult;
 	double dyTotal=TDrag_y - CDrag_y;
-
+	const double PYtolerance = this->getTolerance();
+	
 	// Treat as elastic if dyTotal is below PYtolerance
 	//
 	if(fabs(dyTotal*TDrag_tang/pult) < 10.0*PYtolerance) 
@@ -265,6 +270,8 @@ void PySimple1::getDrag(double ylast, double dy)
 /////////////////////////////////////////////////////////////////////
 void PySimple1::getNearField(double ylast, double dy, double dy_old)
 {
+  	const double PYtolerance = this->getTolerance();
+	
 	// Limit "dy" step size if it is oscillating in sign and not shrinking
 	//
 	if(dy*dy_old < 0.0 && fabs(dy/dy_old) > 0.5) dy = -dy_old/2.0;
@@ -397,6 +404,9 @@ PySimple1::setTrialStrain (double newy, double yRate)
 
 	dy = stepSize * dy;
 
+	const int PYmaxIterations = 20;
+	const double PYtolerance = this->getTolerance();
+	
 	// Main loop over the required number of substeps
 	//
 	for(int istep=1; istep <= numSteps; istep++)
@@ -466,6 +476,8 @@ PySimple1::setTrialStrain (double newy, double yRate)
 double 
 PySimple1::getStress(void)
 {
+	const double PYtolerance = this->getTolerance();
+	
 	// Dashpot force is only due to velocity in the far field.
 	// If converged, proportion by Tangents.
 	// If not converged, proportion by ratio of displacements in components.
@@ -500,6 +512,8 @@ PySimple1::getInitialTangent(void)
 double 
 PySimple1::getDampTangent(void)
 {
+  	const double PYtolerance = this->getTolerance();
+	
 	// Damping tangent is produced only by the far field component.
 	// If converged, proportion by Tangents.
 	// If not converged, proportion by ratio of displacements in components.
@@ -627,7 +641,8 @@ PySimple1::revertToLastCommit(void)
 int 
 PySimple1::revertToStart(void)
 {
-
+	const double PYtolerance = this->getTolerance();
+	
 	// If soilType = 0, then it is entering with the default constructor.
 	// To avoid division by zero, set small nonzero values for terms.
 	//

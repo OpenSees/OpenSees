@@ -386,6 +386,9 @@
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HarmonicSteadyState.cpp">
       <Filter>integrator</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\SDFAnalysis.cpp">
+      <Filter>analysis</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h">

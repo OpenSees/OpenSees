@@ -83,6 +83,7 @@
 #include <Vector.h>
 #include <Matrix.h>
 #include <Damping.h>
+#include <vector>
 
 class SectionForceDeformation;
 class ASDShellQ4Transformation;
@@ -90,6 +91,29 @@ class ASDShellQ4LocalCoordinateSystem;
 
 class ASDShellQ4 : public Element
 {
+public:
+    enum DrillingDOFMode {
+        DrillingDOF_Elastic = 0,
+        DrillingDOF_NonLinear = 1,
+    };
+    class NLDrillingData {
+    public:
+        std::vector<Vector> strain_comm = { Vector(8), Vector(8), Vector(8), Vector(8) };
+        std::vector<Vector> stress_comm = { Vector(8), Vector(8), Vector(8), Vector(8) };
+        std::vector<double> damage = { 0.0, 0.0, 0.0, 0.0 };
+        std::vector<double> damage_comm = { 0.0, 0.0, 0.0, 0.0 };
+    };
+    class EASData {
+    public:
+        Vector Q = Vector(4);
+        Vector Q_converged = Vector(4);
+        Vector U = Vector(24);
+        Vector U_converged = Vector(24);
+        Vector Q_residual = Vector(4);
+        Matrix KQQ_inv = Matrix(4, 4);
+        Matrix KQU = Matrix(4, 24); // L = G'*C*B
+        Matrix KUQ = Matrix(24, 4); // L^T = B'*C'*G
+    };
 
 public:
 
@@ -102,7 +126,11 @@ public:
         int node3,
         int node4,
         SectionForceDeformation* section,
+        const Vector& local_x,
         bool corotational = false,
+        bool use_eas = true,
+        DrillingDOFMode drill_mode = DrillingDOF_Elastic,
+        double drilling_stab = 0.01,
         Damping *theDamping = 0);
     virtual ~ASDShellQ4();
 
@@ -151,6 +179,9 @@ public:
 
     int setParameter(const char** argv, int argc, Parameter& param);
 
+    // calculate the characteristic length for this element
+    double getCharacteristicLength(void);
+
     // display -ambaker1
     int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
 
@@ -162,8 +193,6 @@ private:
     void AGQIinitialize();
     void AGQIupdate(const Vector& UL);
     void AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs);
-
-
 
 private:
 
@@ -181,23 +210,22 @@ private:
     Vector* m_load = nullptr;
 
     // drilling strain for the independent rotation field (Hughes-Brezzi)
-    double m_drill_strain[4] = { 0.0, 0.0, 0.0, 0.0 };
+    DrillingDOFMode m_drill_mode = DrillingDOF_Elastic;
+    std::vector<double> m_drill_strain = { 0.0, 0.0, 0.0, 0.0 };
     double m_drill_stiffness = 0.0;
+    double m_drill_stab = 0.01;
+    NLDrillingData* m_nldrill = nullptr;
 
     // section orientation with respect to the local coordinate system
+    Vector* m_local_x = nullptr;
     double m_angle = 0.0;
 
     // members for non-linear treatment of AGQI internal DOFs:
     // it has 24 displacement DOFs
     // and 4 internal DOFs for membrane enhancement
-    Vector m_Q = Vector(4);
-    Vector m_Q_converged = Vector(4);
-    Vector m_U = Vector(24);
-    Vector m_U_converged = Vector(24);
-    Vector m_Q_residual = Vector(4);
-    Matrix m_KQQ_inv = Matrix(4, 4);
-    Matrix m_KQU = Matrix(4, 24); // L = G'*C*B
-    Matrix m_KUQ = Matrix(24, 4); // L^T = B'*C'*G
+    EASData* m_eas = nullptr;
+
+    // damping
     Damping *m_damping[4] = { nullptr, nullptr, nullptr, nullptr };
 
     // initialization flag
