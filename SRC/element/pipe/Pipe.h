@@ -136,6 +136,7 @@ class Pipe : public Element {
     double getT0() { return T0; }
     double getPressure() { return pressure; }
     void initLoad();
+    void getSectionForce(double xL, Vector &s);
 };
 
 #endif

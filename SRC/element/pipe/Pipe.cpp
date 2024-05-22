@@ -487,7 +487,7 @@ void Pipe::initLoad() {
         opserr << "Pipe::zeroLoad failed to update material data\n";
         return;
     }
-    
+
     // zero pb0(q0) and plw(p0)
     Q.Zero();
     for (int i = 0; i < 5; ++i) {
@@ -829,11 +829,11 @@ Response *Pipe::setResponse(const char **argv, int argc,
 
     } else if (strcmp(argv[0], "sectionX") == 0) {
         output.tag("ResponseType", "N");
-        output.tag("ResponseType", "Mz");
-        output.tag("ResponseType", "My");
-        output.tag("ResponseType", "T");
         output.tag("ResponseType", "Vy");
         output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
         if (argc > 2) {
             float xL = atof(argv[1]);
             if (xL < 0.0) xL = 0.0;
@@ -844,6 +844,32 @@ Response *Pipe::setResponse(const char **argv, int argc,
                 info.theDouble = xL;
             }
         }
+    } else if (strcmp(argv[0], "sectionI") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        theResponse = new ElementResponse(this, 7, Vector(6));
+
+    } else if (strcmp(argv[0], "sectionJ") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        theResponse = new ElementResponse(this, 8, Vector(6));
+
+    } else if (strcmp(argv[0], "sectionC") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        theResponse = new ElementResponse(this, 9, Vector(6));
     }
 
     // ElementOutput
@@ -917,19 +943,29 @@ int Pipe::getResponse(int responseID, Information &info) {
         case 6: {
             // section forces
             double xL = info.theDouble;
-            double x = xL * L;
-
             Vector s(6);
-            s(0) = q(0) + wx * (L - x);  // N(x)
-            s(1) = (xL - 1.0) * q(1) + xL * q(2) +
-                   0.5 * wy * x * (x - L);  // Mz(x)
-            s(2) = (xL - 1.0) * q(3) + xL * q(4) +
-                   0.5 * wz * x * (L - x);  // My(x)
-            s(3) = q(5);                    // T(x)
-            s(4) =
-                (q(1) + q(2)) * oneOverL + wy * (x - 0.5 * L);  // Vy
-            s(5) =
-                (q(3) + q(4)) * oneOverL + wz * (0.5 * L - x);  // Vz
+            getSectionForce(xL, s);
+            return info.setVector(s);
+        }
+
+        case 7: {
+            // section forces at I
+            Vector s(6);
+            getSectionForce(0.0, s);
+            return info.setVector(s);
+        }
+
+        case 8: {
+            // section forces at J
+            Vector s(6);
+            getSectionForce(1.0, s);
+            return info.setVector(s);
+        }
+
+        case 9: {
+            // section forces at Center
+            Vector s(6);
+            getSectionForce(0.5, s);
             return info.setVector(s);
         }
 
@@ -1092,4 +1128,21 @@ void Pipe::shearCoefficients(double &B1, double &B2, double &C1,
     C1 = 3 * b1 / (4 * a1 * a1 - b1 * b1);
     B2 = 3 * a2 / (4 * a2 * a2 - b2 * b2);
     C2 = 3 * b2 / (4 * a2 * a2 - b2 * b2);
+}
+
+void Pipe::getSectionForce(double xL, Vector &s) {
+    double L = theCoordTransf->getInitialLength();
+    double oneOverL = 1.0 / L;
+    double x = xL * L;
+
+    // section forces
+    s.resize(6);
+    s(0) = q(0) + wx * (L - x);                            // N(x)
+    s(1) = (q(1) + q(2)) * oneOverL + wy * (x - 0.5 * L);  // Vy
+    s(2) = (q(3) + q(4)) * oneOverL + wz * (0.5 * L - x);  // Vz
+    s(3) = q(5);                                           // T(x)
+    s(4) = (xL - 1.0) * q(3) + xL * q(4) +
+           0.5 * wz * x * (L - x);  // My(x)
+    s(5) = (xL - 1.0) * q(1) + xL * q(2) +
+           0.5 * wy * x * (x - L);  // Mz(x)
 }
