@@ -685,7 +685,6 @@ int CurvedPipe::getTheta0() {
     }
 
     // compute kp
-    opserr << "pressue = " << pipeEle->getPressure() << "\n";
     double dout = pipeEle->getSection()->DOUT();
     double RM = (dout - thk) * 0.5;
     double h = thk * radius / (RM * RM);
@@ -696,7 +695,6 @@ int CurvedPipe::getTheta0() {
     if (this->kp < 1) {
         this->kp = 1.0;
     }
-    opserr << "kp = " << kp << "\n";
 
     return 0;
 }
