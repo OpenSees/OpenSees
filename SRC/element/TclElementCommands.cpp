@@ -136,6 +136,10 @@ extern void *OPS_Truss2(void);
 #ifdef _HAVE_PML
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
+extern void *OPS_PML2D_3(void);
+extern void *OPS_PML2D_5(void);
+extern void *OPS_PML2D_12(void);
+extern void *OPS_PML2DVISCOUS(void);
 #endif
 
 extern void *OPS_CorotTruss2(void);
@@ -145,13 +149,14 @@ extern void *OPS_LeadRubberX(void);
 extern void *OPS_ElastomericX(void);
 extern void *OPS_N4BiaxialTruss(void);
 extern void *OPS_AC3D8HexWithSensitivity(void);
-extern void *OPS_ASID8QuadWithSensitivity(void);
+extern void *OPS_ASI3D8QuadWithSensitivity(void);
 extern void *OPS_AV3D4QuadWithSensitivity(void);
 extern void *OPS_VS3D4WuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);       // Kristijan Kolozvari
 extern void *OPS_SFI_MVLEM(void);   // Kristijan Kolozvari
 extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
 extern void* OPS_SFI_MVLEM_3D(void);// Kristijan Kolozvari
+extern void* OPS_E_SFI_MVLEM_3D(void);// Kristijan Kolozvari
 extern void *OPS_E_SFI(void);   	// C. N. Lopez
 extern void *OPS_AxEqDispBeamColumn2d(void);
 extern void *OPS_ElastomericBearingBoucWenMod3d(void);
@@ -543,6 +548,44 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     }
   }
 #ifdef _HAVE_PML
+  else if ((strcmp(argv[1],"PML2D_3") == 0) || (strcmp(argv[1],"pml2d_3")) == 0) {
+    Element *theEle = (Element *)OPS_PML2D_3();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if ((strcmp(argv[1],"PML2D_5") == 0) || (strcmp(argv[1],"pml2d_5")) == 0) {
+    Element *theEle = (Element *)OPS_PML2D_5();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if ((strcmp(argv[1],"PML2D_12") == 0) || (strcmp(argv[1],"pml2d_12")) == 0) {
+    Element *theEle = (Element *)OPS_PML2D_12();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+  } else if ((strcmp(argv[1],"PMLVISCOUS") == 0) || (strcmp(argv[1],"pmlviscous")) == 0) {
+    Element *theEle = 0;
+    ID info;
+    if (OPS_GetNDM() == 2)
+      theEle = (Element *)OPS_PML2DVISCOUS();
+    // else
+    //   theEle = (Element *)OPS_PML3DVISCOUS();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    } 
+  }
   else if ((strcmp(argv[1], "PML") == 0) || (strcmp(argv[1], "pml")) == 0) {
       Element* theEle = 0;
       ID info;
@@ -558,7 +601,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 #endif
-  /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+/*} else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
@@ -847,7 +890,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
         return TCL_ERROR;
     }
   }
-  
+  else if (strcmp(argv[1], "E_SFI_MVLEM_3D") == 0) {    // Kristijan Kolozvari
+
+      void* theEle = OPS_E_SFI_MVLEM_3D();
+      if (theEle != 0)
+          theElement = (Element*)theEle;
+      else {
+          opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+          return TCL_ERROR;
+      }
+  }
+
   else if (strcmp(argv[1], "E_SFI") == 0) {    // C. N. Lopez
 
     void* theEle = OPS_E_SFI();
@@ -1209,7 +1262,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "ASI3D8") == 0) {
     
-    void *theEle = OPS_ASID8QuadWithSensitivity();
+    void *theEle = OPS_ASI3D8QuadWithSensitivity();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {

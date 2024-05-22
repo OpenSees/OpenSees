@@ -41,17 +41,17 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 
-DiagonalSOE::DiagonalSOE(DiagonalSolver &the_Solver)
-:LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE),
- size(0), A(0), B(0), X(0), vectX(0), vectB(0), isAfactored(false)
+DiagonalSOE::DiagonalSOE(DiagonalSolver &the_Solver, bool ld)
+:LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE), lumpDiagonal(ld),
+ size(0), A(0), B(0), X(0), vectX(0), vectB(0), matA(0), isAfactored(false)
 {
     the_Solver.setLinearSOE(*this);
 }
 
 
-DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver)
-:LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE),
- size(0), A(0), B(0), X(0), vectX(0), vectB(0), isAfactored(false)
+  DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver, bool ld)
+:LinearSOE(the_Solver, LinSOE_TAGS_DiagonalSOE), lumpDiagonal(ld),
+ size(0), A(0), B(0), X(0), vectX(0), vectB(0), matA(0), isAfactored(false)
 {
   if (size > 0) {
     size = N;
@@ -70,8 +70,9 @@ DiagonalSOE::DiagonalSOE(int N, DiagonalSolver &the_Solver)
     
     vectX = new Vector(X,size);
     vectB = new Vector(B,size);
+    matA = new Matrix(A,size,1);
     
-    if (vectB == 0 || vectX == 0) {
+    if (vectB == 0 || vectX == 0 || matA == 0) {
       opserr << "ERROR DiagonalSOE::DiagonalSOE :";
       opserr << " ran out of memory for size: " << size << endln;
       if (A != 0) delete [] A;
@@ -96,7 +97,8 @@ DiagonalSOE::~DiagonalSOE()
   if (B != 0) delete [] B;
   if (X != 0) delete [] X;
   if (vectX != 0) delete vectX;    
-  if (vectB != 0) delete vectB;    
+  if (vectB != 0) delete vectB;
+  if (matA  != 0) delete matA;
 }
 
 
@@ -138,10 +140,12 @@ DiagonalSOE::setSize(Graph &theGraph)
   if (size != oldSize && size != 0) {
     if (vectX != 0) delete vectX; vectX = 0;
     if (vectB != 0) delete vectB; vectB = 0;
+    if (matA  != 0) delete matA;  matA = 0;
     vectX = new Vector(X,size);
     vectB = new Vector(B,size);
+    matA  = new Matrix(A,size,1);
     
-    if (vectB == 0 || vectX == 0) {
+    if (vectB == 0 || vectX == 0 || matA == 0) {
       opserr << "ERROR DiagonalSOE::setSize() - ";
       opserr << " ran out of memory for size: " << size << endln;
       if (A != 0) delete [] A;
@@ -176,10 +180,10 @@ DiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
 {
   // check for a quick return 
   if (fact == 0.0)  return 0;
-  
+
+  int idSize = id.Size();      
 #ifdef _G3DEBUG
   // check that m and id are of similar size
-  int idSize = id.Size();    
   if (idSize != m.noRows() && idSize != m.noCols()) {
     opserr << "FullGenLinSOE::addA()	- Matrix and ID not of similar sizes\n";
     return -1;
@@ -187,22 +191,43 @@ DiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
 #endif
 
   if (fact == 1.0) { // do not need to multiply if fact == 1.0
-    for (int i=0; i<id.Size(); i++) {
+    for (int i=0; i<idSize; i++) {
       int pos = id(i);
-      if (pos <size && pos >= 0)
+      if (pos <size && pos >= 0) {
 	A[pos] += m(i,i);
+	if (lumpDiagonal) {
+	  for (int j = 0; j < i; j++)
+	    A[pos] += m(j,i);
+	  for (int j = i+1; j < idSize; j++)
+	    A[pos] += m(j,i);
+	}
+      }
     }
   } else if (fact == -1.0) { // do not need to multiply if fact == -1.0
-    for (int i=0; i<id.Size(); i++) {
+    for (int i=0; i<idSize; i++) {
       int pos = id(i);
-      if (pos <size && pos >= 0)
+      if (pos <size && pos >= 0) {
 	A[pos] -= m(i,i);
+	if (lumpDiagonal) {
+	  for (int j = 0; j < i; j++)
+	    A[pos] -= m(j,i);
+	  for (int j = i+1; j < idSize; j++)
+	    A[pos] -= m(j,i);
+	}
+      }
     }
   } else {
-    for (int i=0; i<id.Size(); i++) {
+    for (int i=0; i<idSize; i++) {
       int pos = id(i);
-      if (pos <size && pos >= 0)
+      if (pos <size && pos >= 0) {
 	A[pos] += m(i,i) * fact;
+	if (lumpDiagonal) {
+	  for (int j = 0; j < i; j++)
+	    A[pos] += m(j,i) * fact;
+	  for (int j = i+1; j < idSize; j++)
+	    A[pos] += m(j,i) * fact;
+	}
+      }
     }
   }	
 
@@ -338,6 +363,16 @@ DiagonalSOE::getB(void)
     exit(-1);
   }        
   return *vectB;
+}
+
+const Matrix *
+DiagonalSOE::getA(void)
+{
+  if (matA == 0) {
+    opserr << "FATAL DiagonalSOE::getA - matA == 0";
+    exit(-1);
+  }        
+  return matA;
 }
 
 double 

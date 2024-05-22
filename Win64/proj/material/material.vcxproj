@@ -302,6 +302,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CubicSpline.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp" />
@@ -372,6 +373,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Ratchet.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ReinforcingSteel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceLow.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ResilienceMaterialHR.cpp" />

@@ -656,6 +656,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
 	$(FE)/element/mvlem/MVLEM_3D.o \
 	$(FE)/element/mvlem/SFI_MVLEM_3D.o \
+	$(FE)/element/mvlem/E_SFI_MVLEM_3D.o \
 	$(FE)/element/mvlem/E_SFI.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
@@ -674,6 +675,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PML/PML3D.o \
 	$(FE)/element/PML/pml_2d.o \
 	$(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML2D_3.o \
+	$(FE)/element/PML/PML2D_5.o \
+	$(FE)/element/PML/PML2D_12.o \
+	$(FE)/element/PML/PML2DVISCOUS.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
@@ -822,6 +827,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Dodd_Restrepo.o \
 	$(FE)/material/uniaxial/DoddRestr.o \
 	$(FE)/material/uniaxial/STEELDR.o \
+	$(FE)/material/uniaxial/ContinuumUniaxial.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
 	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
@@ -857,6 +863,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ViscoelasticGap.o \
 	$(FE)/material/uniaxial/SteelBRB.o \
 	$(FE)/material/uniaxial/GNGMaterial.o \
+	$(FE)/material/uniaxial/Ratchet.o \
 	$(FE)/material/uniaxial/GMG_CyclicReinforcedConcrete.o \
 	$(FE)/material/uniaxial/SMAMaterial.o \
 	$(FE)/material/uniaxial/SelfCenteringMaterial.o \
@@ -866,6 +873,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/TDConcreteEXP.o \
 	$(FE)/material/uniaxial/TDConcreteMC10.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
+	$(FE)/material/uniaxial/CreepMaterial.o \
 	$(FE)/material/uniaxial/DegradingPinchedBW.o \
 	$(FE)/material/uniaxial/HystereticPoly.o \
 	$(FE)/material/uniaxial/HystereticSmooth.o \
@@ -946,6 +954,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/element/PML/PML3D.o \
 	$(FE)/element/PML/pml_2d.o \
 	$(FE)/element/PML/PML2D.o \
+	$(FE)/element/PML/PML2D_3.o \
+	$(FE)/element/PML/PML2D_5.o \
+	$(FE)/element/PML/PML2D_12.o \
+	$(FE)/element/PML/PML2DVISCOUS.o \
 	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
@@ -1305,6 +1317,8 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/RectangularSeries.o \
 	$(FE)/domain/pattern/ConstantSeries.o \
 	$(FE)/domain/pattern/TrigSeries.o \
+	$(FE)/domain/pattern/MPAccSeries.o \
+	$(FE)/domain/pattern/RampSeries.o \
 	$(FE)/domain/pattern/PathSeries.o \
 	$(FE)/domain/pattern/PeerMotion.o \
 	$(FE)/domain/pattern/PeerNGAMotion.o \
@@ -1346,6 +1360,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/analysis/TransientDomainDecompositionAnalysis.o \
 	$(FE)/analysis/analysis/SubstructuringAnalysis.o \
 	$(FE)/analysis/analysis/ResponseSpectrumAnalysis.o \
+	$(FE)/analysis/analysis/SDFAnalysis.o \
 	$(FE)/analysis/algorithm/SolutionAlgorithm.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/EquiSolnAlgo.o \
 	$(FE)/analysis/algorithm/equiSolnAlgo/Linear.o \

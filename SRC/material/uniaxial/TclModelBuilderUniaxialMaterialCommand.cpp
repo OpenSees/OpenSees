@@ -41,6 +41,24 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * inter
 #include <Pinching4Material.h>   // NM
 #include <ShearPanelMaterial.h>  // NM
 #include <BarSlipMaterial.h>     // NM
+#include <Bond_SP01.h>	// JZ
+#include <FRCC.h> // FLK + ARB
+#include <SteelMP.h>             //Quan & Michele
+#include <SteelBRB.h>             //Quan & Michele
+#include <SmoothPSConcrete.h>      //Quan & Michele
+#include <SelfCenteringMaterial.h> //JAE
+#include <ASD_SMA_3K.h> //LA
+
+#include <KikuchiAikenHDR.h>
+#include <KikuchiAikenLRB.h>
+#include <AxialSp.h>
+#include <AxialSpHD.h>
+
+#include <SMAMaterial.h>     // Davide Fugazza
+#include <Masonry.h>
+#include <Trilinwp.h>
+#include <Trilinwp2.h>
+#include <Masonryt.h>
 
 #include <Vector.h>
 #include <string.h>
@@ -60,6 +78,7 @@ extern void *OPS_EPPGapMaterial(void);
 extern void *OPS_ParallelMaterial(void);
 extern void *OPS_SeriesMaterial(void);
 extern void *OPS_PathIndependentMaterial(void);
+extern void *OPS_ContinuumUniaxialMaterial(void);
 extern void *OPS_BackboneMaterial(void);
 extern void *OPS_FatigueMaterial(void);
 extern void *OPS_HardeningMaterial(void);
@@ -164,7 +183,6 @@ extern void *OPS_BoucWenOriginal(void);
 extern void *OPS_GNGMaterial(void);
 extern void *OPS_OOHystereticMaterial(void);
 extern void *OPS_ElasticPowerFunc(void);
-extern void *OPS_UVCuniaxial(void);
 extern void *OPS_DegradingPinchedBW(void);
 extern void* OPS_BoucWenInfill(void);  // S. Sirotti  18-January-2022  e-mail: stefano.sirotti@unimore.it
 extern void *OPS_SLModel(void);
@@ -184,6 +202,7 @@ extern void *OPS_AxialSpHD(void);
 extern void *OPS_KikuchiAikenHDR(void);
 extern void *OPS_KikuchiAikenLRB(void);
 extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
+extern void* OPS_Ratchet(void); // Yi Xiao
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -586,13 +605,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       void* theMat = OPS_ElasticPowerFunc();
       if (theMat != 0)
         theMaterial = (UniaxialMaterial*)theMat;
-      else
-        return TCL_ERROR;
-    }
-    if (strcmp(argv[1], "UVCuniaxial") == 0) {
-      void *theMat = OPS_UVCuniaxial();
-      if (theMat != 0)
-        theMaterial = (UniaxialMaterial *)theMat;
       else
         return TCL_ERROR;
     }
@@ -1098,6 +1110,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else 
 	return TCL_ERROR;      
     }
+    if (strcmp(argv[1],"Continuum") == 0) {
+
+      void *theMat = OPS_ContinuumUniaxialMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;      
+    }
     if (strcmp(argv[1],"Backbone") == 0) {
 
       void *theMat = OPS_BackboneMaterial();
@@ -1177,13 +1197,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;
-    }
-    if (strcmp(argv[1], "UVCuniaxial") == 0) {
-      void* theMat = OPS_UVCuniaxial();
-      if (theMat != 0)
-        theMaterial = (UniaxialMaterial*)theMat;
-      else
-        return TCL_ERROR;
     }
     if (strcmp(argv[1],"Pinching4") == 0) {
 		if (argc != 42 && argc != 31 ) {
@@ -2094,6 +2107,16 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 			return TCL_ERROR;
 
 	}
+
+    if (strcmp(argv[1], "Ratchet") == 0) {
+        void* theMat = OPS_Ratchet();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+
+    }
+
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)

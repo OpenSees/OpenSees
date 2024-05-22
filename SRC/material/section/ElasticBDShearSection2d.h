@@ -33,8 +33,6 @@ class Channel;
 class FEM_ObjectBroker;
 class Information;
 
-#define SEC_TAG_ElasticBDShear2d 1976
-
 class ElasticBDShearSection2d: public SectionForceDeformation
 {
  public:

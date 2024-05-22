@@ -257,7 +257,8 @@ MultiFP2d::MultiFP2d(int tag,
 MultiFP2d::MultiFP2d()
  :Element(0, ELE_TAG_MultiFP2d), 
   externalNodes(2),
-  numDOF(0), theMatrix(0), theVector(0)
+  numDOF(0), theMatrix(0), theVector(0),
+theFrictionModel(0), theVerticalModel(0)
 {
   theNodes[0] = 0; 
   theNodes[1] = 0;

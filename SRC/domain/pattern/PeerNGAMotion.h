@@ -69,6 +69,7 @@ class PeerNGAMotion : public TimeSeries
   // method to get factor
   double getFactor(double pseudoTime);
   double getDuration ();
+  double getStartTime ();
   double getPeakFactor ();
   double getTimeIncr (double pseudoTime);
   double getDt();

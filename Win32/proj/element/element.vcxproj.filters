@@ -719,6 +719,9 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
+      <Filter>mvlem</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
       <Filter>componentElement</Filter>
     </ClCompile>
@@ -949,6 +952,24 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp">
       <Filter>crdTransf</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
+      <Filter>PML</Filter>  
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2D_12.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp">
+      <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
@@ -1525,6 +1546,9 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
+	<ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
+      <Filter>mvlem</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
       <Filter>componentElement</Filter>
     </ClInclude>
@@ -1755,6 +1779,24 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h">
       <Filter>crdTransf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_3.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
+      <Filter>PML</Filter>
+    </ClInclude>    
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h">
+      <Filter>PML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>

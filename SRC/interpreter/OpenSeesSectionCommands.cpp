@@ -92,6 +92,7 @@ void* OPS_Bidirectional();
 void* OPS_Elliptical2();
 void* OPS_Isolator2spring();
 void* OPS_FiberSection2dThermal();
+void* OPS_FiberSection3dThermal();
 void* OPS_HSSSection();
 void* OPS_TubeSection();
 void* OPS_RCSection2d();
@@ -152,56 +153,6 @@ namespace {
 	return theSec;
     }
 
-    static void* OPS_FiberSection3dThermal(bool& isTorsion)
-    {
-	int numData = OPS_GetNumRemainingInputArgs();
-	if(numData < 1) {
-	    opserr<<"insufficient arguments for FiberSection3dThermal\n";
-	    return 0;
-	}
-
-	numData = 1;
-	int tag;
-	if (OPS_GetIntInput(&numData, &tag) < 0) {
-	    opserr<<"WARNING: failed to read tag\n";
-	    return 0;
-	}
-
-	UniaxialMaterial *torsion = 0;
-	const char* opt = OPS_GetString();
-	numData = 1;
-	bool deleteTorsion = false;
-	if (strcmp(opt, "-GJ") == 0) {
-	  double GJ;
-	  if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
-	    opserr << "WARNING: failed to read GJ\n";
-	    return 0;
-	  }
-	  torsion = new ElasticMaterial(0,GJ);
-	  deleteTorsion = true;
-	}
-	if (strcmp(opt, "-torsion") == 0) {
-	  int torsionTag;
-	  if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
-	    opserr << "WARNING: failed to read torsion\n";
-	    return 0;
-	  }
-	  torsion = OPS_getUniaxialMaterial(torsionTag);
-	}
-	if (torsion == 0) {
-	  opserr << "WARNING torsion not speified for FiberSection\n";
-	  opserr << "\nFiberSection3dThermal section: " << tag << endln;
-	  return 0;
-	}
-
-	int num = 30;
-
-	SectionForceDeformation *theSec = new FiberSection3dThermal(tag,num);
-	if (deleteTorsion)
-	  delete torsion;
-	return theSec;
-    }
-
     static void* OPS_FiberSection()
     {
 	void* theSec = 0;
@@ -259,8 +210,7 @@ namespace {
 	    theSec = OPS_FiberSection2dThermal();
 	    theActiveFiberSection2dThermal = (FiberSection2dThermal*)theSec;
 	} else if(ndm == 3) {
-	    bool isTorsion = false;
-	    theSec = OPS_FiberSection3dThermal(isTorsion);
+	    theSec = OPS_FiberSection3dThermal();
 	    theActiveFiberSection3dThermal = (FiberSection3dThermal*)theSec;
 	}
 
