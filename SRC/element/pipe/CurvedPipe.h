@@ -100,7 +100,7 @@ class CurvedPipe : public Element {
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
 
-   protected:
+   private:
     int getTheta0();
 
     void plw(Vector &vec);
@@ -112,6 +112,7 @@ class CurvedPipe : public Element {
     int kb(Matrix &mat, Vector &vec);
     void integrateGauss(double a, double b, Matrix &res,
                         Vector &resv);
+    int getSectionForce(double theta, Vector &s);
 };
 
 #endif
