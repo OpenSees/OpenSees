@@ -834,15 +834,13 @@ Response *Pipe::setResponse(const char **argv, int argc,
         output.tag("ResponseType", "T");
         output.tag("ResponseType", "My");
         output.tag("ResponseType", "Mz");
-        if (argc > 2) {
+        if (argc > 1) {
             float xL = atof(argv[1]);
             if (xL < 0.0) xL = 0.0;
             if (xL > 1.0) xL = 1.0;
-            if (strcmp(argv[2], "forces") == 0) {
-                theResponse = new ElementResponse(this, 6, Vector(6));
-                Information &info = theResponse->getInformation();
-                info.theDouble = xL;
-            }
+            theResponse = new ElementResponse(this, 6, Vector(6));
+            Information &info = theResponse->getInformation();
+            info.theDouble = xL;
         }
     } else if (strcmp(argv[0], "sectionI") == 0) {
         output.tag("ResponseType", "N");
