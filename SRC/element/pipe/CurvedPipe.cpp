@@ -24,6 +24,7 @@
 #include "CurvedPipe.h"
 
 #include <Domain.h>
+#include <ElementResponse.h>
 #include <ElementalLoad.h>
 #include <Node.h>
 
@@ -525,10 +526,101 @@ int CurvedPipe::displaySelf(Renderer &theViewer, int displayMode,
 
 Response *CurvedPipe::setResponse(const char **argv, int argc,
                                   OPS_Stream &output) {
-    return 0;
+    Response *theResponse = 0;
+    output.tag("ElementOutput");
+    output.attr("eleType", "CurvedPipe");
+    output.attr("eleTag", this->getTag());
+    auto &nodes = pipeEle->getExternalNodes();
+    output.attr("node1", nodes(0));
+    output.attr("node2", nodes(1));
+
+    if (strcmp(argv[0], "sectionX") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        if (argc > 2) {
+            float xL = atof(argv[1]);
+            if (xL < -1.0) xL = -.0;
+            if (xL > 1.0) xL = 1.0;
+            if (strcmp(argv[2], "forces") == 0) {
+                theResponse = new ElementResponse(this, 1, Vector(6));
+                Information &info = theResponse->getInformation();
+                info.theDouble = xL;
+            }
+        }
+    } else if (strcmp(argv[0], "sectionI") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        theResponse = new ElementResponse(this, 2, Vector(6));
+
+    } else if (strcmp(argv[0], "sectionJ") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        theResponse = new ElementResponse(this, 3, Vector(6));
+
+    } else if (strcmp(argv[0], "sectionC") == 0) {
+        output.tag("ResponseType", "N");
+        output.tag("ResponseType", "Vy");
+        output.tag("ResponseType", "Vz");
+        output.tag("ResponseType", "T");
+        output.tag("ResponseType", "My");
+        output.tag("ResponseType", "Mz");
+        theResponse = new ElementResponse(this, 4, Vector(6));
+    }
+    return theResponse;
 }
 
-int CurvedPipe::getResponse(int responseID, Information &eleInfo) {
+int CurvedPipe::getResponse(int responseID, Information &info) {
+    if (responseID == 1) {
+        // section forces
+        double xL = info.theDouble;
+        double theta = xL * theta0;
+        Vector s(6);
+
+        if (getSectionForce(theta, s) < 0) {
+            opserr << "WARNING: failed to get section force\n";
+            return -1;
+        }
+        return info.setVector(s);
+    } else if (responseID == 2) {
+        // section forces at I
+        Vector s(6);
+        if (getSectionForce(-theta0, s) < 0) {
+            opserr << "WARNING: failed to get section force at I\n";
+            return -1;
+        }
+        return info.setVector(s);
+
+    } else if (responseID == 3) {
+        // section forces at J
+        Vector s(6);
+        if (getSectionForce(theta0, s) < 0) {
+            opserr << "WARNING: failed to get section force at J\n";
+            return -1;
+        }
+        return info.setVector(s);
+
+    } else if (responseID == 4) {
+        // section forces at C
+        Vector s(6);
+        if (getSectionForce(0.0, s) < 0) {
+            opserr
+                << "WARNING: failed to get section force at center\n";
+            return -1;
+        }
+        return info.setVector(s);
+    }
     return 0;
 }
 
@@ -957,4 +1049,62 @@ void CurvedPipe::plw(Vector &vec) {
 
     // plw4
     vec(3) = wz * R * (L - 2 * theta0 * H0);
+}
+
+int CurvedPipe::getSectionForce(double theta, Vector &s) {
+    // b
+    Matrix b;
+    this->bx(theta, b);
+
+    // sp
+    this->Spx(theta, s);
+
+    // kb and pb0
+    Matrix kbm;
+    Vector pb0;
+    if (kb(kbm, pb0) < 0) {
+        opserr << "WARNING: failed to compute kb -- "
+                  "getSectionForce\n ";
+        return -1;
+    }
+
+    // ug
+    Vector ug(12);
+    auto theNodes = pipeEle->getNodePtrs();
+    const Vector &disp1 = theNodes[0]->getTrialDisp();
+    const Vector &disp2 = theNodes[1]->getTrialDisp();
+    for (int i = 0; i < 6; i++) {
+        ug[i] = disp1(i);
+        ug[i + 6] = disp2(i);
+    }
+
+    // ul
+    Vector ul(12);
+    ul.addMatrixVector(0.0, alg, ug, 1.0);
+
+    // ub
+    Vector ub(6);
+    ub.addMatrixVector(0.0, abl, ul, 1.0);
+
+    // vector pb
+    Vector pb(6);
+    pb.addMatrixVector(0.0, kbm, ub, 1.0);
+    pb += pb0;
+
+    // s = bpb +sp
+    s.addMatrixVector(1.0, b, pb, 1.0);
+
+    // from: s = [N, Mz, My, T, Vy, Vz]
+    double Vy = s[4];
+    double Vz = s[5];
+    double My = s[2];
+    double Mz = s[1];
+
+    // to: s = [N, Vy, Vz, T, My, Mz]
+    s[1] = Vy;
+    s[2] = Vz;
+    s[4] = My;
+    s[5] = Mz;
+    
+    return 0;
 }
