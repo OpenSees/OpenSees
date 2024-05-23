@@ -11,19 +11,20 @@ target_sources(OPS_Domain
         LinearSeries.cpp
         LoadPattern.cpp
         LoadPatternIter.cpp
+		MPAccSeries.cpp
         MultiSupportPattern.cpp
         PathSeries.cpp
         PathTimeSeries.cpp
         PulseSeries.cpp
         RectangularSeries.cpp
         SimpsonTimeSeriesIntegrator.cpp
+		SocketSeries.cpp
         TimeSeries.cpp
         TimeSeriesIntegrator.cpp
         TrapezoidalTimeSeriesIntegrator.cpp
         TriangleSeries.cpp
         TrigSeries.cpp
         RampSeries.cpp
-	MPAccSeries.cpp
         UniformExcitation.cpp
     PUBLIC
         ConstantSeries.h
@@ -31,19 +32,20 @@ target_sources(OPS_Domain
         LinearSeries.h
         LoadPattern.h
         LoadPatternIter.h
+		MPAccSeries.h
         MultiSupportPattern.h
         PathSeries.h
         PathTimeSeries.h
         PulseSeries.h
         RectangularSeries.h
         SimpsonTimeSeriesIntegrator.h
+		SocketSeries.h
         TimeSeries.h
         TimeSeriesIntegrator.h
         TrapezoidalTimeSeriesIntegrator.h
         TriangleSeries.h
         TrigSeries.h
         RampSeries.h
-	MPAccSeries.h
         UniformExcitation.h
 )
 
