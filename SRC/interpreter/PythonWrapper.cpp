@@ -43,7 +43,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "OpenSeesCommands.h"
 #include <OPS_Globals.h>
 
-#define OPS_PYVERSION "3.5.1.12"
+#define OPS_PYVERSION "3.6.0.1"
 
 static PythonWrapper* wrapper = 0;
 
