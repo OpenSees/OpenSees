@@ -279,6 +279,7 @@ GGD_LIBS = $(FE)/element/joint/MP_Joint2D.o \
 	$(FE)/element/joint/MP_Joint3D.o \
 	$(FE)/element/joint/Joint2D.o \
 	$(FE)/element/joint/Joint3D.o \
+	$(FE)/element/joint/Inno3DPnPJoint.o \
 	$(FE)/element/joint/LehighJoint2d.o \
 	$(FE)/element/joint/BeamColumnJoint2d.o \
 	$(FE)/element/joint/BeamColumnJoint3d.o \
@@ -535,6 +536,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/dispBeamColumnInt/LinearCrdTransf2dInt.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam2d.o \
 	$(FE)/element/elasticBeamColumn/ModElasticBeam2d.o \
+	$(FE)/element/elasticBeamColumn/ModElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeam3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticBeamWarping3d.o \
 	$(FE)/element/elasticBeamColumn/ElasticTimoshenkoBeam2d.o \
@@ -566,6 +568,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ShellNLDKGT.o \
 	$(FE)/element/shell/ShellNLDKGQThermal.o \
 	$(FE)/element/shell/ASDShellQ4.o \
+	$(FE)/element/shell/ASDShellT3.o \
 	$(FE)/element/shell/R3vectors.o \
 	$(FE)/element/shell/ShellANDeS.o \
 	$(FE)/element/brick/Brick.o \
@@ -657,6 +660,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/SFI_MVLEM_3D.o \
 	$(FE)/element/mvlem/E_SFI_MVLEM_3D.o \
 	$(FE)/element/mvlem/E_SFI.o \
+	$(FE)/element/mefi/MEFI.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
@@ -666,6 +670,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary3D.o \
+	$(FE)/element/absorbentBoundaries/FSIFluidElement2D.o \
+	$(FE)/element/absorbentBoundaries/FSIInterfaceElement2D.o \
+	$(FE)/element/absorbentBoundaries/FSIFluidBoundaryElement2D.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceL.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
@@ -826,6 +833,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Dodd_Restrepo.o \
 	$(FE)/material/uniaxial/DoddRestr.o \
 	$(FE)/material/uniaxial/STEELDR.o \
+	$(FE)/material/uniaxial/ContinuumUniaxial.o \
 	$(FE)/material/uniaxial/PathIndependentMaterial.o \
 	$(FE)/material/uniaxial/MultiplierMaterial.o \
 	$(FE)/material/uniaxial/BackboneMaterial.o \
@@ -877,6 +885,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HystereticSmooth.o \
 	$(FE)/material/uniaxial/HystereticAsym.o \
 	$(FE)/material/uniaxial/SLModel.o \
+	$(FE)/material/uniaxial/APDFMD.o \
+	$(FE)/material/uniaxial/APDMD.o \
+	$(FE)/material/uniaxial/APDVFD.o \
 	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/CoulombDamperMaterial.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \
@@ -945,6 +956,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear5.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
 	$(FE)/material/nD/InitStressNDMaterial.o \
+	$(FE)/material/nD/InitStrainNDMaterial.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
@@ -1010,6 +1022,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/ElasticOrthotropicThreeDimensional.o \
 	$(FE)/material/nD/OrthotropicMaterial.o \
 	$(FE)/material/nD/Series3DMaterial.o \
+	$(FE)/material/nD/Parallel3DMaterial.o \
 	$(FE)/material/nD/PlaneStressMaterial.o \
 	$(FE)/material/nD/PlaneStrainMaterial.o \
 	$(FE)/material/nD/PlateFiberMaterial.o \
@@ -1050,8 +1063,11 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlateFromPlaneStressMaterial.o \
 	$(FE)/material/nD/PlateRebarMaterial.o \
 	$(FE)/material/nD/ASDConcrete3DMaterial.o \
+	$(FE)/material/nD/ASDPlasticMaterial/OPS_AllASDPlasticMaterials.o \
 	$(FE)/material/nD/stressDensityModel/stressDensity.o \
-	$(FE)/material/nD/stressDensityModel/SDM-UC.o
+	$(FE)/material/nD/stressDensityModel/SDM-UC.o \
+	$(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.o \
+	$(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.o
 
 FEDEAS_LIBS = $(FE)/material/uniaxial/FedeasMaterial.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHardeningMaterial.o \
@@ -1146,7 +1162,10 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/yieldSurface/YieldSurfaceSection2d.o \
 	$(FE)/material/section/yieldSurface/YS_Section2D01.o \
 	$(FE)/material/section/yieldSurface/YS_Section2D02.o \
-	$(FE)/material/section/yieldSurface/SoilFootingSection2d.o
+	$(FE)/material/section/yieldSurface/SoilFootingSection2d.o \
+	$(FE)/material/section/LayeredMembraneSection/ReinforcedConcreteLayeredMembraneSection.o \
+	$(FE)/material/section/LayeredMembraneSection/LayeredMembraneSection.o \
+	$(FE)/material/section/LayeredMembraneSection/ElasticMembraneSection.o
 
 
 SUPER_LU_OBJ = $(FE)/system_of_eqn/linearSOE/sparseGEN/SuperLU.o 
@@ -1315,6 +1334,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/pattern/RectangularSeries.o \
 	$(FE)/domain/pattern/ConstantSeries.o \
 	$(FE)/domain/pattern/TrigSeries.o \
+	$(FE)/domain/pattern/MPAccSeries.o \
 	$(FE)/domain/pattern/RampSeries.o \
 	$(FE)/domain/pattern/PathSeries.o \
 	$(FE)/domain/pattern/PeerMotion.o \

@@ -28,6 +28,7 @@ class SimplifiedJ2 : public NDMaterial
 		double sigmaY0,
 		double H_kin,
 		double H_iso);
+  SimplifiedJ2();
   
   SimplifiedJ2 (const SimplifiedJ2 &);
   virtual ~SimplifiedJ2 ();

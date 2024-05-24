@@ -52,12 +52,42 @@ OPS_SeriesMaterial(void)
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
+  int maxIter = 1;
+  double tol = 1e-10;
+  
+  // Read optional args first
+  int numOptionalArgs = 0;  
   int numArgs = OPS_GetNumRemainingInputArgs();
-  if (numArgs < 3) {
-    opserr << "Invalid #args,  want: uniaxialMaterial Series $tag $tag1 $tag2 ... " << endln;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    std::string type = OPS_GetString();
+    if (type == "-iter") {
+      numOptionalArgs++;
+      int numData = 1;
+      if (OPS_GetNumRemainingInputArgs() > 1) {
+	if (OPS_GetIntInput(&numData, &maxIter) < 0) {
+	  opserr << "WARNING: failed to get maxIter" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;
+	if (OPS_GetDoubleInput(&numData, &tol) < 0) {
+	  opserr << "WARNING: failed to get tol" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;	  
+      }
+    }
+  }
+
+  if (numArgs > 0) {
+    OPS_ResetCurrentInputArg(-numArgs);
+  }
+  numArgs = numArgs - numOptionalArgs;
+    
+  if (numArgs < 2) {
+    opserr << "Invalid #args,  want: uniaxialMaterial Series $tag $tag1 $tag2 ... $tagN <-iter maxIter tol>" << endln;
     return 0;
   }
-  
+
   int *iData = new int[numArgs];
   UniaxialMaterial **theMats = new UniaxialMaterial *[numArgs-1];
     
@@ -79,7 +109,7 @@ OPS_SeriesMaterial(void)
   }
 
   // Parsing was successful, allocate the material
-  theMaterial = new SeriesMaterial(iData[0], numArgs-1, theMats);
+  theMaterial = new SeriesMaterial(iData[0], numArgs-1, theMats, maxIter, tol);
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Series" << endln;
     return 0;
@@ -207,7 +237,7 @@ SeriesMaterial::setTrialStrain(double newStrain, double strainRate)
 			// Strain increment
 			double de = flex[i]*ds;
 
-			if (initialFlag == true)
+			if (true || initialFlag == true)
 				strain[i] += de;
 
 			// Update material i
@@ -355,10 +385,14 @@ SeriesMaterial::revertToStart(void)
 
 	Cstrain = 0.0;
 	Cstress = 0.0;
-	Ctangent = 0.0;
+	Ctangent = this->getInitialTangent();
+
+        Tstrain = 0.0;
+        Tstress = 0.0;
+        Ttangent = Ctangent;
 
 	for (int i = 0; i < numMaterials; i++) {
-		err += theModels[i]->revertToLastCommit();
+		err += theModels[i]->revertToStart();
 
 		strain[i] = 0.0;
 		stress[i] = 0.0;
@@ -400,13 +434,16 @@ SeriesMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int dataTag = this->getDbTag();
   
-  static Vector data(5);
+  static Vector data(8);
   
   data(0) = this->getTag();
   data(1) = numMaterials;
   data(2) = (initialFlag) ? 1.0 : 0.0;
   data(3) = maxIterations;
   data(4) = tolerance;
+  data(5) = Cstrain;
+  data(6) = Cstress;
+  data(7) = Ctangent;
   
   if (theChannel.sendVector(dataTag, cTag, data) < 0) {
     opserr << "SeriesMaterial::sendSelf -- failed to send data Vector" << endln;
@@ -462,7 +499,7 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
 {
   int dataTag = this->getDbTag();
 
-  static Vector data(5);
+  static Vector data(8);
 
   if (theChannel.recvVector(dataTag, cTag, data) < 0) {
     opserr << "SeriesMaterial::recvSelf -- failed to receive data Vector" << endln;
@@ -473,7 +510,14 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
   initialFlag = (data(2) == 1.0) ? true : false;
   maxIterations = (int)data(3);
   tolerance = data(4);
+  Cstrain = data(5);
+  Cstress = data(6);
+  Ctangent = data(7);
 
+  Tstrain = Cstrain;
+  Tstress = Cstress;
+  Ttangent = Ctangent;
+  
   // if number of materials != new number we must alolocate space for data
   if (numMaterials != (int)data(1)) {
     

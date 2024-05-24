@@ -10,6 +10,7 @@ target_sources(OPS_INTERPRETER
     OpenSeesSectionCommands.cpp
     OpenSeesOutputCommands.cpp
     OpenSeesCrdTransfCommands.cpp
+    OpenSeesDampingCommands.cpp
     OpenSeesBeamIntegrationCommands.cpp
     OpenSeesNDMaterialCommands.cpp
     OpenSeesMiscCommands.cpp

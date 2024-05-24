@@ -202,7 +202,7 @@ const double  TenNodeTetrahedron::beta = (5.0 - sqrt(5.0))/20. ;
 
 const double  TenNodeTetrahedron::sg[] = { alpha, beta, beta, beta} ;
 
-const double  TenNodeTetrahedron::wg[] = { 0.25} ;
+const double  TenNodeTetrahedron::wg[] = { 1.0 / 24.0 } ;
 
 
 Matrix TenNodeTetrahedron::B(NumStressComponents, NumDOFsPerNode) ;
@@ -2053,32 +2053,32 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
 	double dN3_dzeta1  = 0          ; double dN4_dzeta1 = 0;
 	double dN5_dzeta1  = 4*zeta[1]  ; double dN6_dzeta1 = 0;
 	double dN7_dzeta1  = 4*zeta[2]  ; double dN8_dzeta1 = 4*zeta4;
-	// double dN10_dzeta1 = 0          ; double dN9_dzeta1 = 0; // *
-	double dN9_dzeta1 = 0; double dN10_dzeta1 = 0;
+	double dN10_dzeta1 = 0          ; double dN9_dzeta1 = 0; // *
+	// double dN9_dzeta1 = 0; double dN10_dzeta1 = 0;
 
 	// dNi/dzeta2
 	double dN1_dzeta2  = 0        ; double dN2_dzeta2 = 4*zeta[1]-1;
 	double dN3_dzeta2  = 0        ; double dN4_dzeta2 = 0;
 	double dN5_dzeta2  = 4*zeta[0]; double dN6_dzeta2 = 4*zeta[2];
 	double dN7_dzeta2  = 0        ; double dN8_dzeta2 = 0;
-	// double dN10_dzeta2 = 4*zeta4  ; double dN9_dzeta2 = 0; // *
-	double dN9_dzeta2 = 4*zeta4; double dN10_dzeta2 = 0;
+	double dN10_dzeta2 = 4*zeta4  ; double dN9_dzeta2 = 0; // *
+	// double dN9_dzeta2 = 4*zeta4; double dN10_dzeta2 = 0;
 
 	// dNi/dzeta3
 	double dN1_dzeta3  = 0          ; double dN2_dzeta3 = 0;
 	double dN3_dzeta3  = 4*zeta[2]-1; double dN4_dzeta3 = 0;
 	double dN5_dzeta3  = 0          ; double dN6_dzeta3 = 4*zeta[1];
 	double dN7_dzeta3  = 4*zeta[0]  ; double dN8_dzeta3 = 0;
-	// double dN10_dzeta3 = 0          ; double dN9_dzeta3 = 4*zeta4; // *
-	double dN9_dzeta3 = 0; double dN10_dzeta3 = 4*zeta4;
+	double dN10_dzeta3 = 0          ; double dN9_dzeta3 = 4*zeta4; // *
+	// double dN9_dzeta3 = 0; double dN10_dzeta3 = 4*zeta4;
 
 	// dNi/dzeta3
 	double dN1_dzeta4  = 0        ; double dN2_dzeta4 = 0;
 	double dN3_dzeta4  = 0        ; double dN4_dzeta4 = 4*zeta4-1;
 	double dN5_dzeta4  = 0        ; double dN6_dzeta4 = 0;
 	double dN7_dzeta4  = 0        ; double dN8_dzeta4 = 4*zeta[0];
-	// double dN10_dzeta4 = 4*zeta[1]; double dN9_dzeta4 = 4*zeta[2]; // *
-	double dN9_dzeta4 = 4*zeta[1]; double dN10_dzeta4 = 4*zeta[2];
+	double dN10_dzeta4 = 4*zeta[1]; double dN9_dzeta4 = 4*zeta[2]; // *
+	// double dN9_dzeta4 = 4*zeta[1]; double dN10_dzeta4 = 4*zeta[2];
 
 	// *
 	double Jx1 = x1*dN1_dzeta1 + x2*dN2_dzeta1 + x3*dN3_dzeta1 + x4*dN4_dzeta1 + x5*dN5_dzeta1 + x6*dN6_dzeta1 + x7*dN7_dzeta1 + x8*dN8_dzeta1 + x9*dN9_dzeta1 + x10*dN10_dzeta1; // *
@@ -2166,10 +2166,10 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
 	shp[3][5] = 4*zeta[1]*zeta[2];
 	shp[3][6] = 4*zeta[2]*zeta[0];
 	shp[3][7] = 4*zeta[0]*zeta4;
-	// shp[3][9] = 4*zeta[1]*zeta4; // *
-	shp[3][8] = 4*zeta[1]*zeta4;
-	// shp[3][8] = 4*zeta[2]*zeta4; // *
-	shp[3][9] = 4*zeta[2]*zeta4;
+	shp[3][9] = 4*zeta[1]*zeta4; // *
+	// shp[3][8] = 4*zeta[1]*zeta4;
+	shp[3][8] = 4*zeta[2]*zeta4; // *
+	// shp[3][9] = 4*zeta[2]*zeta4;
 
 	return ;
 }

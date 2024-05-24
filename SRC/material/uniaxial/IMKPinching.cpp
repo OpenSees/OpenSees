@@ -87,7 +87,7 @@ IMKPinching::IMKPinching(int tag, double p_Ke,
     double p_posUp_0, double p_posUpc_0, double p_posUu_0, double p_posFy_0, double p_posFcapFy_0, double p_posFresFy_0,
     double p_negUp_0, double p_negUpc_0, double p_negUu_0, double p_negFy_0, double p_negFcapFy_0, double p_negFresFy_0,
     double p_LAMBDA_S, double p_LAMBDA_C, double p_LAMBDA_A, double p_LAMBDA_K, double p_c_S, double p_c_C, double p_c_A, double p_c_K, double p_D_pos, double p_D_neg, double p_kappaF, double p_kappaD)
-    : UniaxialMaterial(tag, 0), Ke(p_Ke),
+    : UniaxialMaterial(tag, MAT_TAG_IMKPinching), Ke(p_Ke),
     posUp_0(p_posUp_0), posUpc_0(p_posUpc_0), posUu_0(p_posUu_0), posFy_0(p_posFy_0), posFcapFy_0(p_posFcapFy_0), posFresFy_0(p_posFresFy_0),
     negUp_0(p_negUp_0), negUpc_0(p_negUpc_0), negUu_0(p_negUu_0), negFy_0(p_negFy_0), negFcapFy_0(p_negFcapFy_0), negFresFy_0(p_negFresFy_0),
     LAMBDA_S(p_LAMBDA_S), LAMBDA_C(p_LAMBDA_C), LAMBDA_A(p_LAMBDA_A), LAMBDA_K(p_LAMBDA_K), c_S(p_c_S), c_C(p_c_C), c_A(p_c_A), c_K(p_c_K), D_pos(p_D_pos), D_neg(p_D_neg), kappaF(p_kappaF), kappaD(p_kappaD)
@@ -106,7 +106,7 @@ IMKPinching::IMKPinching(int tag, double p_Ke,
 }
 
 IMKPinching::IMKPinching()
-    :UniaxialMaterial(0, 0), Ke(0),
+    :UniaxialMaterial(0, MAT_TAG_IMKPinching), Ke(0),
     posUp_0(0), posUpc_0(0), posUu_0(0), posFy_0(0), posFcapFy_0(0), posFresFy_0(0),
     negUp_0(0), negUpc_0(0), negUu_0(0), negFy_0(0), negFcapFy_0(0), negFresFy_0(0),
     LAMBDA_S(0), LAMBDA_C(0), LAMBDA_A(0), LAMBDA_K(0), c_S(0), c_C(0), c_A(0), c_K(0), D_pos(0), D_neg(0), kappaF(0), kappaD(0)
@@ -648,93 +648,14 @@ IMKPinching::getCopy(void)
         negUy_0, negUcap_0, negUu_0, negFy_0, negFcapFy_0, negFresFy_0,
         LAMBDA_S, LAMBDA_C, LAMBDA_A, LAMBDA_K, c_S, c_C, c_A, c_K, D_pos, D_neg, kappaF, kappaD);
 
-    //cout << " getCopy" << endln;
-// 12 Positive U and F
-    theCopy->posUy = posUy;
-    theCopy->posFy = posFy;
-    theCopy->posUcap = posUcap;
-    theCopy->posFcap = posFcap;
-    theCopy->posUlocal = posUlocal;
-    theCopy->posFlocal = posFlocal;
-    theCopy->posUglobal = posUglobal;
-    theCopy->posFglobal = posFglobal;
-    theCopy->posUres = posUres;
-    theCopy->posFres = posFres;
-    theCopy->posKp = posKp;
-    theCopy->posKpc = posKpc;
-// 12 Negative U and F
-    theCopy->negUy = negUy;
-    theCopy->negFy = negFy;
-    theCopy->negUcap = negUcap;
-    theCopy->negFcap = negFcap;
-    theCopy->negUlocal = negUlocal;
-    theCopy->negFlocal = negFlocal;
-    theCopy->negUglobal = negUglobal;
-    theCopy->negFglobal = negFglobal;
-    theCopy->negUres = negUres;
-    theCopy->negFres = negFres;
-    theCopy->negKp = negKp;
-    theCopy->negKpc = negKpc;
-// 3 State Values
-    theCopy->Ui = Ui;
-    theCopy->Fi = Fi;
-// 2 Stiffness
-    theCopy->Kreload = Kreload;
-    theCopy->Kunload = Kunload;
-// 2 Energy
-    theCopy->engAcml = engAcml;
-    theCopy->engDspt = engDspt;
-// 2 Flag
-    theCopy->Failure_Flag = Failure_Flag;
-    theCopy->Branch = Branch;
-// 12 Positive U and F
-    theCopy->cPosUy = cPosUy;
-    theCopy->cPosFy = cPosFy;
-    theCopy->cPosUcap = cPosUcap;
-    theCopy->cPosFcap = cPosFcap;
-    theCopy->cPosUlocal = cPosUlocal;
-    theCopy->cPosFlocal = cPosFlocal;
-    theCopy->cPosUglobal= cPosUglobal;
-    theCopy->cPosFglobal= cPosFglobal;
-    theCopy->cPosUres = cPosUres;
-    theCopy->cPosFres = cPosFres;
-    theCopy->cPosKp = cPosKp;
-    theCopy->cPosKpc = cPosKpc;
-// 12 Negative U and F
-    theCopy->cNegUy = cNegUy;
-    theCopy->cNegFy = cNegFy;
-    theCopy->cNegUcap = cNegUcap;
-    theCopy->cNegFcap = cNegFcap;
-    theCopy->cNegUglobal= cNegUglobal;
-    theCopy->cNegFglobal= cNegFglobal;
-    theCopy->cNegUlocal = cNegUlocal;
-    theCopy->cNegFlocal = cNegFlocal;
-    theCopy->cNegUres = cNegUres;
-    theCopy->cNegFres = cNegFres;
-    theCopy->cNegKp = cNegKp;
-    theCopy->cNegKpc = cNegKpc;
-// 3 State
-    theCopy->cUi = cUi;
-    theCopy->cFi = cFi;
-// 2 Stiffness
-    theCopy->cKreload = cKreload;
-    theCopy->cKunload = cKunload;
-// 2 Energy
-    theCopy->cEngAcml = cEngAcml;
-    theCopy->cEngDspt = cEngDspt;
-// 2 Pinching
-    theCopy->cFpinch = cFpinch;
-    theCopy->cUpinch = cUpinch;
-// 2 Flag
-    theCopy->cFailure_Flag = cFailure_Flag;
-    theCopy->cBranch = cBranch;
+    *theCopy = *this;
+
     return theCopy;
 }
 
 int IMKPinching::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    cout << " sendSelf" << endln;
 
     static Vector data(137);
     data(0) = this->getTag();
@@ -780,6 +701,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
     data(43) = engRefA;
     data(44) = engRefK;
 // 12 Positive U and F 51-62
+/*    
     data(51) = posUy;
     data(52) = posFy;
     data(53) = posUcap;
@@ -820,6 +742,7 @@ int IMKPinching::sendSelf(int cTag, Channel &theChannel)
 // 2 Flag 85 86
     data(85) = Failure_Flag;
     data(86) = Branch;
+*/
 // 12 Positive U and F 101-112
     data(101) = cPosUy;
     data(102) = cPosFy;
@@ -878,7 +801,6 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         this->setTag(0);
     }
     else {
-        cout << " recvSelf" << endln;
         this->setTag((int)data(0));
     // 25 Fixed Input Material Parameters
         Ke = data(1);
@@ -922,6 +844,7 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
         engRefA = data(43);
         engRefK = data(44);
     // 12 Positive U and F
+	/*
         posUy = data(51);
         posFy = data(52);
         posUcap = data(53);
@@ -962,6 +885,7 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
     // 2 Flag
         Failure_Flag = data(85);
         Branch = data(86);
+	*/
     // 12 Positive U and F
         cPosUy = data(101);
         cPosFy = data(102);
@@ -1003,6 +927,8 @@ int IMKPinching::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBr
     // 2 Flag
         cFailure_Flag = data(135);
         cBranch = data(136);
+
+	this->revertToLastCommit();
     }
 
     return res;

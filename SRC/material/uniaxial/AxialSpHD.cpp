@@ -136,42 +136,7 @@ AxialSpHD::AxialSpHD(int tag, double sce, double fty, double fcy, double bte,
     opserr << "uniaxialMaterial AxialSpHD: " << tag << endln;
   }
 
-  //initialize
-  trialDeformation = 0.0;
-  trialForce       = 0.0;
-  trialStiffness   = sce;
-  commitDeformation = 0.0;
-  commitForce       = 0.0;
-  commitStiffness   = sce;
-  trialStg = 1;
-  commitStg = 1;
-
-  ste  = bte*sce;
-  sty  = bty*sce;
-  sth  = bth*sce;
-  scy  = bcy*sce;
-  uty  = fty/ste;
-  ucy  = fcy/sce;
-  ucr  = fcr/sce;
-  utr  = (ste*ucr-sty*uty+fty-fcr)/(ste-sty);
-  ftr  = sty*(utr-uty) + fty;
-  uth  = ath*uty;
-  fth  = sty*(uth-uty) + fty;
-  uc0  = 0.0;
-  ur1  = 0.0;
-  fr1  = 0.0;
-  ur2  = 0.0;
-  fr2  = 0.0;
-  ur3  = 0.0;
-  fr3  = 0.0;
-  ur4  = 0.0;
-  fr4  = 0.0;
-  ur5  = 0.0;
-  fr5  = 0.0;
-  ur6  = 0.0;
-  fr6  = 0.0;
-  ur7  = 0.0;
-  fr7  = 0.0;
+  this->revertToStart();
 }
 
 AxialSpHD::AxialSpHD()
@@ -722,6 +687,33 @@ AxialSpHD::revertToStart(void)
   trialStg = 1;
   commitStg = 1;
 
+  ste  = bte*sce;
+  sty  = bty*sce;
+  sth  = bth*sce;
+  scy  = bcy*sce;
+  uty  = fty/ste;
+  ucy  = fcy/sce;
+  ucr  = fcr/sce;
+  utr  = (ste*ucr-sty*uty+fty-fcr)/(ste-sty);
+  ftr  = sty*(utr-uty) + fty;
+  uth  = ath*uty;
+  fth  = sty*(uth-uty) + fty;
+  uc0  = 0.0;
+  ur1  = 0.0;
+  fr1  = 0.0;
+  ur2  = 0.0;
+  fr2  = 0.0;
+  ur3  = 0.0;
+  fr3  = 0.0;
+  ur4  = 0.0;
+  fr4  = 0.0;
+  ur5  = 0.0;
+  fr5  = 0.0;
+  ur6  = 0.0;
+  fr6  = 0.0;
+  ur7  = 0.0;
+  fr7  = 0.0;
+  
   return 0;
 }
 
@@ -755,7 +747,7 @@ AxialSpHD::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(18);
+  static Vector data(18+15);
 
   data(0)  = this->getTag();
   data(1)  = sce;
@@ -776,6 +768,22 @@ AxialSpHD::sendSelf(int cTag, Channel &theChannel)
   data(16) = trialStiffness;
   data(17) = trialStg;
 
+  data(18) = uc0;
+  data(19) = ur1;
+  data(20) = fr1;
+  data(21) = ur2;
+  data(22) = fr2;
+  data(23) = ur3;
+  data(24) = fr3;
+  data(25) = ur4;
+  data(26) = fr4;
+  data(27) = ur5;
+  data(28) = fr5;
+  data(29) = ur6;
+  data(30) = fr6;
+  data(31) = ur7;
+  data(32) = fr7;  
+  
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if ( res < 0 )
     opserr << "AxialSpHD::sendSelf() - failed to send data\n";
@@ -789,7 +797,7 @@ AxialSpHD::recvSelf(int cTag, Channel &theChannel,
 {
   int res = 0;
 
-  static Vector data(18);
+  static Vector data(18+15);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
   if ( res < 0 ) {
@@ -816,6 +824,34 @@ AxialSpHD::recvSelf(int cTag, Channel &theChannel,
     trialForce = data(15);
     trialStiffness = data(16);
     trialStg = (int)data(17);
+
+    ste  = bte*sce;
+    sty  = bty*sce;
+    sth  = bth*sce;
+    scy  = bcy*sce;
+    uty  = fty/ste;
+    ucy  = fcy/sce;
+    ucr  = fcr/sce;
+    utr  = (ste*ucr-sty*uty+fty-fcr)/(ste-sty);
+    ftr  = sty*(utr-uty) + fty;
+    uth  = ath*uty;
+    fth  = sty*(uth-uty) + fty;
+
+    uc0 = data(18);
+    ur1 = data(19);
+    fr1 = data(20);
+    ur2 = data(21);
+    fr2 = data(22);
+    ur3 = data(23);
+    fr3 = data(24);
+    ur4 = data(25);
+    fr4 = data(26);
+    ur5 = data(27);
+    fr5 = data(28);
+    ur6 = data(29);
+    fr6 = data(30);
+    ur7 = data(31);
+    fr7 = data(32);
   }
 
   return res;
