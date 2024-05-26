@@ -75,6 +75,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ParameterIter.h>
 #include <UniaxialMaterial.h>
 #include <SectionForceDeformation.h>
+#include <Damping.h>
 
 void* OPS_NodeRecorder();
 void* OPS_EnvelopeNodeRecorder();
@@ -2059,6 +2060,20 @@ int OPS_classType()
     }      
   }
 
+  else if (type == "damping") {
+    Damping *theDamping = OPS_getDamping(tag);
+    if (theDamping == 0) {
+      opserr << "ERROR classType - damping with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theDamping->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+	  
   else {
     opserr << "WARNING classType - " << type.c_str() << " not yet supported" << endln;
     return 0;
