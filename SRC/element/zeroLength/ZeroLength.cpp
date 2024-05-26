@@ -203,15 +203,14 @@ void* OPS_ZeroLength()
         if (OPS_GetNumRemainingInputArgs() > 0) {
             numdata = 1;
             if (OPS_GetIntInput(&numdata, &dampingTag) < 0) return 0;
-            if (dampingTag)
+            
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0)
             {
-                theDamping = OPS_getDamping(dampingTag);
-                if (theDamping == 0)
-                {
-                    opserr << "damping not found\n";
-                    return 0;
-                }
+                opserr << "damping not found\n";
+                return 0;
             }
+            
         }
 	} 
     else if (strcmp(type,"-orient") == 0) {
