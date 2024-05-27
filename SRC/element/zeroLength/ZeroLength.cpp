@@ -182,36 +182,44 @@ void* OPS_ZeroLength()
 	    }
     }
     else 	if (strcmp(type, "-dampMats") == 0) {
+
+      if (OPS_GetNumRemainingInputArgs() < numMats) {
+	opserr << "ERROR insufficient number of dampMats specified for zeroLength ele: " << idata[0] << endln;
+	opserr << "Expected " << numMats << ", Received " << OPS_GetNumRemainingInputArgs() << endln;
+	return 0;
+      }
+
         doRayleighDamping = 2;
         numdata = 1;
         int matType;
         for (int i = 0; i < numMats; i++) {
-            // the first one not an int
-            if (OPS_GetIntInput(&numdata, &matType) < 0) {
-                UniaxialMaterial* theMat = OPS_getUniaxialMaterial(matType);
-                if (theMat == 0) {
-                    opserr << "WARNING no damp material material " << matType << " for zeroLength ele: " << idata[0] << endln;
-                    return 0;
-                }
-                else {
-                    theDampMats[i] = theMat;
-                }
-            }
-        }
+
+	    if (OPS_GetIntInput(&numdata, &matType) < 0) {
+	      opserr << "Failed to read dampMat material tag for zeroLength ele: " << idata[0] << endln;
+	      return 0;
+	    }
+	    UniaxialMaterial* theMat = OPS_getUniaxialMaterial(matType);
+	    if (theMat == 0) {
+	      opserr << "WARNING no damp material material " << matType << " for zeroLength ele: " << idata[0] << endln;
+	      return 0;
+	    }
+	    else {
+	      theDampMats[i] = theMat;
+	    }
+	}
     }  
     else if (strcmp(type, "-damp") == 0) {
         if (OPS_GetNumRemainingInputArgs() > 0) {
             numdata = 1;
             if (OPS_GetIntInput(&numdata, &dampingTag) < 0) return 0;
-            if (dampingTag)
+            
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0)
             {
-                theDamping = OPS_getDamping(dampingTag);
-                if (theDamping == 0)
-                {
-                    opserr << "damping not found\n";
-                    return 0;
-                }
+                opserr << "damping not found\n";
+                return 0;
             }
+            
         }
 	} 
     else if (strcmp(type,"-orient") == 0) {
