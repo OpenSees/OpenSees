@@ -1,32 +1,13 @@
-# OpenSees Source Code Repository
+# OpenSees Source Code Repository (by Telemachos Panagiotakos)
 
-This git repository contains all revisions to OpenSees source code since Version 2.3.2.
+This git repository contains vesrion 3.6.0 of Opensees for VS2022 (compatible with pip install of openseespy).
 
-Older revisions of the code are available upon request.
+1. Compilation
+   1.1 Repository is ready to be used for both .exe & .pyd !
+   1.2 Required Anaconda3 (for Python 3.11) & VS2022 (see https://www.youtube.com/watch?v=8NFe43bE3hw&t=931s) 
+   1.3 Pyd created at ...\OpenSees-3.6.0\Win64\bin and should be copied at openseespy directory [pip show openseespy] 
 
-If you plan on collaborating or even using OpenSees as your base code it is highly recommended that
-you FORK this repo to your own account and work on it there. We will not allow anybody to write to
-this repo. Only PULL requests will be considered. To fork the repo click on the FORK at the top of this page.
+2. Source Code modifications 
+   1.1 PartialUniformLoad for 3d forceBeamColumn element (OpenSeesPy/SRC/element/forceBeamColumn/ForceBeamColumn3d.cpp)
 
-For a brief outline on forking we suggest:
-https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow
 
-For a brief introduction to using your new FORK we suggest:
-https://www.atlassian.com/git/tutorials/saving-changes
-
-## Documentation
-The documentation for OpenSees is being moved to a parellel github repo:
-https://github.com/OpenSees/OpenSeesDocumentation
-
-The documentation (in its present form) can be viewed in the browser using the following url:
-https://OpenSees.github.io/OpenSeesDocumentation
-
-## Build Instructions
-Steps to build OpenSees on Windows, Linux, and Mac:
-https://opensees.github.io/OpenSeesDocumentation/developer/build.html
-
-## Modeling Questions
-Issues related to modeling questions will be closed. Instead, post your modeling questions on the OpenSees 
-message board or in the OpenSees Facebook group.
-+ https://opensees.berkeley.edu/community
-+ https://facebook.com/groups/opensees

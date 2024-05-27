@@ -59,10 +59,10 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
  set(BUILD_SHARED_LIBS OFF)
  set(CMAKE_EXE_LINKER_FLAGS "-static")
- add_compile_options(-fPIC)
+ # add_compile_options(-fPIC)
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
- MESSAGE("COMPILER: GNU")
+ MESSAGE("COMPILER: Clang")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
  MESSAGE("COMPILER: Intel")
  add_compile_options(-fPIC)
@@ -94,15 +94,12 @@ if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    MESSAGE("USING CONAN")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
-   set (Eigen3_FOUND TRUE)
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
    set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
    set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
-   set(TCL_LIBRARIES ${TCL_LIBRARY})
-   include_directories(${TCL_INCLUDE_PATH})
 
 else()
 
@@ -112,9 +109,6 @@ else()
   set (CONAN_LIBS )
   find_package(HDF5 REQUIRED)
   find_package(TCL REQUIRED)
-  find_package(Eigen3 REQUIRED)
-  include_directories(${TCL_INCLUDE_DIR})
-  set(TCL_LIBRARY ${TCL_LIBRARIES})
 
 endif()
 
@@ -246,7 +240,6 @@ include_directories(
   ${OPS_SRC_DIR}/actor/channel
   ${OPS_SRC_DIR}/actor/objectBroker
   ${OPS_SRC_DIR}/actor/message
-  ${OPS_BUNDLED_DIR}/eigenAPI
 )
 
 # TODO: Temporary fix; include all directories with .h files through glob
@@ -288,8 +281,6 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
 set (TETGEN_LIBRARIES tet)
 add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
 set (TRIANGLE_LIBRARIES triangle)
-# add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/eigenAPI")
-# set (EIGENAPI_LIBRARIES EIGENAPI)
 
 
 if (NOT DEFINED LAPACK_LIBRARIES) 
@@ -298,11 +289,7 @@ else()
    set (LAPACK_FOUND TRUE CACHE BOOL "providing own lapack lib")
 endif()
 
-if (NOT DEFINED Python_LIBRARIES) 
-   find_package(Python COMPONENTS Interpreter Development)
-else()
-   set (PYTHON_FOUND TRUE CACHE BOOL "providing own python lib")
-endif()
+find_package (Python COMPONENTS Interpreter Development)
 
 
 find_package(MPI)
@@ -323,8 +310,8 @@ endif()
 
 if(PYTHON_FOUND)
   message("Python_FOUND:${Python_FOUND}")
-  #message("Python_VERSION:${Python_VERSION}")
-  #message("Python_Development_FOUND:${Python_Development_FOUND}")
+  message("Python_VERSION:${Python_VERSION}")
+  message("Python_Development_FOUND:${Python_Development_FOUND}")
   message("Python_LIBRARIES:${Python_LIBRARIES}")
   message("Python_INCLUDES:${Python_INCLUDE_DIRS}")  
 else()
@@ -391,8 +378,6 @@ message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
 #  message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()  
 
-  
-
 add_library(OPS_Numerics INTERFACE)
 
 target_link_libraries(OPS_Numerics INTERFACE
@@ -405,11 +390,9 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
-       ${EIGENAPI_LIBRARIES}
 )
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})
-
 
 #
 # OpenSees OBJECT LIBRARIES
@@ -440,6 +423,7 @@ add_library(OPS_Database           OBJECT)
 add_library(OPS_INTERPRETER        OBJECT)
 
 
+include_directories(${TCL_INCLUDE_PATH})
 
 #
 # Optional Extensions
@@ -563,11 +547,11 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 else ()
      FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
      add_custom_command(
-       TARGET OpenSees POST_BUILD
-       COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
-       COMMAND ${CMAKE_COMMAND} -E copy
-       ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
-       ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
+      TARGET OpenSees POST_BUILD
+  COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
+      COMMAND ${CMAKE_COMMAND} -E copy
+        ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
+  ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
      )
 endif()
 
@@ -845,15 +829,6 @@ else()
    message(STATUS "OPS >>> Could not find HDF5")
 endif()
 
-#----------------------------
-# Eigen3
-#----------------------------
-if(Eigen3_FOUND)
-   include_directories(${Eigen3_INCLUDE_DIR})
-   add_compile_definitions(_EIGEN3)
-else()
-   message(STATUS "OPS >>> Could not find Eigen3")
-endif()
 
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
