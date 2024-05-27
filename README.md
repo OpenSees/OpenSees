@@ -1,6 +1,6 @@
 # OpenSees Source Code Repository
 
-This git repository contains all revisions to OpenSees source code since Version 2.3.2.
+This git repository contains all revisions to OpenSees source code since Version 2.3.2. ...
 
 Older revisions of the code are available upon request.
 
