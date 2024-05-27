@@ -31,7 +31,6 @@
 #include <Parameter.h>
 
 Vector Beam3dPartialUniformLoad::data(8);
-//TPanagiotakos...
 
 Beam3dPartialUniformLoad::Beam3dPartialUniformLoad(int tag, double wya, double wza, double waa,
 						   double aL, double bL, double wyb, double wzb, double wab, int theElementTag)
