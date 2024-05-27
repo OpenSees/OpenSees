@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+                                                                          
 // $Revision$
 // $Date$
 // $Source$
@@ -34,7 +34,7 @@
 class Beam3dPartialUniformLoad : public ElementalLoad
 {
  public:
-  Beam3dPartialUniformLoad(int tag, double wTransy, double wTransz, double wAxial, double aL, double bL, int eleTag);
+  Beam3dPartialUniformLoad(int tag, double wTransya, double wTransza, double wAxiala, double aL, double bL, double wTransyb, double wTranszb, double wAxialb, int eleTag);
   Beam3dPartialUniformLoad();    
   ~Beam3dPartialUniformLoad();
 
@@ -53,11 +53,14 @@ class Beam3dPartialUniformLoad : public ElementalLoad
  protected:
   
  private:
-  double wTransy;
-  double wTransz;
-  double wAxial;
+  double wTransya;
+  double wTransza;
+  double wAxiala;
   double aOverL;
   double bOverL;
+  double wTransyb;
+  double wTranszb;
+  double wAxialb;
   static Vector data;
   
   int parameterID;
