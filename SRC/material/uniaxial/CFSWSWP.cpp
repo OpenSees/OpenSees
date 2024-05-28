@@ -54,6 +54,11 @@ OPS_CFSWSWP(void)
     numCFSWSWP =1;
   }
 
+  opserr << "Due to known issues and unreliable results, this material" << endln;
+  opserr << "has been removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
+  opserr << "The material source code remains available. Compile at your own risk." << endln;
+  return 0;
+  
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
