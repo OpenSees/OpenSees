@@ -55,8 +55,8 @@ OPS_RambergOsgoodSteel(void)
     numRambergOsgoodSteel++;
   }
 
-  opserr << "Due to known issues and unreliable results, this material" << endln;
-  opserr << "has been removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
+  opserr << "Due to known issues and unreliable results, this material has been" << endln;
+  opserr << "temporarily removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
   opserr << "The material source code remains available. Compile at your own risk." << endln;
   return 0;
   
