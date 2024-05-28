@@ -122,6 +122,7 @@
 #define MAT_TAG_Hardening			 6
 #define MAT_TAG_Hysteretic			 7
 #define MAT_TAG_HystereticSM		1969  // Silvia Mazzoni, 2022
+#define MAT_TAG_OOHysteretic 1976
 #define MAT_TAG_EPPGap				 8
 #define MAT_TAG_Viscous				 9
 #define MAT_TAG_Backbone			10
@@ -307,10 +308,13 @@
 #define MAT_TAG_BoucWenInfill  6666    // Stefano Sirotti 09-Feb-2022 stefano.sirotti@unimore.it
 
 #define MAT_TAG_GMG_CyclicReinforcedConcrete    9999    // Rasool Ghorbani
-
+#define MAT_TAG_APDVFD                          711
+#define MAT_TAG_APDMD                           712
+#define MAT_TAG_APDFMD                          713
 
 // GNG material - J.Cook UCanterbury
 #define MAT_TAG_GNG 7001
+#define MAT_TAG_Ratchet 7002
 
 #define SEC_TAG_Elastic2d                        3
 #define SEC_TAG_Elastic3d                        4
@@ -466,6 +470,7 @@
 #define ND_TAG_BeamFiberMaterial2dPS		2005
 #define ND_TAG_OrthotropicMaterial		2006
 #define ND_TAG_Series3DMaterial		2007
+#define ND_TAG_Parallel3DMaterial		2008
 #define ND_TAG_CompressibleFluid		3001
 #define ND_TAG_GeneralizedPlasticity 3002
 #define ND_TAG_J2Plasticity02  3003
@@ -542,6 +547,10 @@
 
 #define ND_TAG_OrthotropicRotatingAngleConcreteT2DMaterial01 7018 // M. J. Nunez - UChile
 #define ND_TAG_SmearedSteelDoubleLayerT2DMaterial01 7019		  // M. J. Nunez - UChile
+
+#define ND_TAG_InitStrainNDMaterial 7020 // Massimo Petracca ASDEA Software
+#define ND_TAG_ASDPlasticMaterial 10000 // For ASDPlasticity-class material
+
 
 #define FIBER_TAG_Uniaxial2d	1
 #define FIBER_TAG_Uniaxial3d	2
@@ -866,7 +875,11 @@
 #define ELE_TAG_PML2D_5                   260
 #define ELE_TAG_PML2D_12                  261
 #define ELE_TAG_PML2DVISCOUS              262
-#define ELE_TAG_MEFI        			  270 // C. N. Lopez
+#define ELE_TAG_Inno3DPnPJoint			  263 // Cristian Miculas
+#define ELE_TAG_MEFI        			  264 // C. N. Lopez
+#define ELE_TAG_FSIFluidElement2D          265  // Massimo Petracca (ASDEA)
+#define ELE_TAG_FSIInterfaceElement2D      266  // Massimo Petracca (ASDEA)
+#define ELE_TAG_FSIFluidBoundaryElement2D  267  // Massimo Petracca (ASDEA)
 
 
 #define FRN_TAG_Coulomb            1

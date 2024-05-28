@@ -25,7 +25,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -110,6 +110,9 @@
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.cpp" />
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidElement2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIInterfaceElement2D.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidBoundaryElement2D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.cpp" />
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp" />
@@ -136,6 +139,7 @@
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\gradientInelasticBeamColumn\TclGradientInelasticBeamColumnCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\element\Information.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp" />
     <ClCompile Include="..\..\..\SRC\element\joint\LehighJoint2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp" />
@@ -373,6 +377,7 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellMITC4.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQ.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI1.C" />
     <ClCompile Include="..\..\..\SRC\element\HUelements\KikuchiBearing.cpp" />
@@ -393,6 +398,9 @@
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\LysmerTriangle.h" />
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary2D.h" />
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.h" />
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidElement2D.h" />
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIInterfaceElement2D.h" />
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidBoundaryElement2D.h" />
     <ClInclude Include="..\..\..\SRC\element\CEqElement\ASDEmbeddedNodeElement.h" />
     <ClInclude Include="..\..\..\SRC\element\catenaryCable\CatenaryCable.h" />
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h" />
@@ -420,6 +428,7 @@
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\gradientInelasticBeamColumn\GradientInelasticBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\Information.h" />
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h" />
     <ClInclude Include="..\..\..\SRC\element\joint\LehighJoint2d.h" />
     <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.h" />
@@ -633,6 +642,7 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellMITC4.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQ.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h" />
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleNormalSpring.h" />
     <ClInclude Include="..\..\..\SRC\element\HUelements\MultipleShearSpring.h" />

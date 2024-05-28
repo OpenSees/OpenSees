@@ -66,7 +66,7 @@ class BoucWenInfill : public UniaxialMaterial
     BoucWenInfill();
     ~BoucWenInfill();  
 
-    const char *getClassType(void) const {return "BoucWenMaterial";};
+    const char *getClassType(void) const {return "BoucWenInfill";}
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
     double getStrain(void);          

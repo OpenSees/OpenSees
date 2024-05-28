@@ -2004,6 +2004,9 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_FSIFluidElement2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_FSIInterfaceElement2D] = VTK_LINE;
+    vtktypes[ELE_TAG_FSIFluidBoundaryElement2D] = VTK_LINE;
 }
 
 void

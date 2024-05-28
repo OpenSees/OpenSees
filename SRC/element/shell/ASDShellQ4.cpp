@@ -59,7 +59,9 @@ OPS_ASDShellQ4(void)
 
     int numArgs = OPS_GetNumRemainingInputArgs();
     if (numArgs < 6) {
-        opserr << "Want: element ASDShellQ4 $tag $iNode $jNode $kNode $lNode $secTag <-corotational>";
+        opserr << "Want: element ASDShellQ4 $tag $iNode $jNode $kNode $lNode $secTag "
+            "<-corotational> <-noeas> <-drillingStab $drillingStab> <-drillingNL>"
+            "<-local $x1 $x2 $x3>";
         return 0;
     }
 
@@ -69,36 +71,89 @@ OPS_ASDShellQ4(void)
         opserr << "WARNING invalid integer tag: element ASDShellQ4 \n";
         return 0;
     }
-    bool corotational = false;
 
+    bool corotational = false;
+    bool use_eas = true;
+    bool use_drill_stab = false;
+    double drilling_stab = 0.01;
+    ASDShellQ4::DrillingDOFMode drill_mode = ASDShellQ4::DrillingDOF_Elastic;
     int dampingTag = 0;
     Damping *m_damping = 0;
+    Vector local_x(3);
   
-    while(OPS_GetNumRemainingInputArgs() > 0) {
-      const char* type = OPS_GetString();
-      if ((strcmp(type, "-corotational") == 0) || (strcmp(type, "-Corotational") == 0))
-        corotational = true;
-      else if(strcmp(type,"-damp") == 0) {
-  	    if(OPS_GetNumRemainingInputArgs() > 0) {
-  	      numData = 1;
-          if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
-  		    m_damping = OPS_getDamping(dampingTag);
-          if(m_damping == 0) {
-  	        opserr<<"damping not found\n";
-  	        return 0;
-          }
-  	    }
-      } 
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* type = OPS_GetString();
+        if ((strcmp(type, "-corotational") == 0) || (strcmp(type, "-Corotational") == 0)) {
+            corotational = true;
+        }
+        else if (strcmp(type, "-noeas") == 0) {
+            use_eas = false;
+        }
+        else if (strcmp(type, "-drillingStab") == 0) {
+            if (drill_mode != ASDShellQ4::DrillingDOF_Elastic) {
+                opserr << "Error: element ASDShellQ4: -drillingStab and -drillingNL options are mutually exclusive\n";
+                return 0;
+            }
+            if (OPS_GetNumRemainingInputArgs() == 0) {
+                opserr << "Error: element ASDShellQ4: drilling stabilization parameter not provided with -drillingStab option\n";
+                return 0;
+            }
+            numData = 1;
+            if (OPS_GetDoubleInput(&numData, &drilling_stab) == 0) {
+                drilling_stab = std::max(0.0, std::min(1.0, drilling_stab));
+            }
+            else {
+                opserr << "Error: element ASDShellQ4: cannot get drilling stabilization parameter with -drillingStab option\n";
+                return 0;
+            }
+            drill_mode = ASDShellQ4::DrillingDOF_Elastic;
+            use_drill_stab = true;
+        }
+        else if (strcmp(type, "-drillingNL") == 0) {
+            if (use_drill_stab) {
+                opserr << "Error: element ASDShellQ4: -drillingStab and -drillingNL options are mutually exclusive\n";
+                return 0;
+            }
+            drill_mode = ASDShellQ4::DrillingDOF_NonLinear;
+            drilling_stab = 1.0;
+        }
+        else if (strcmp(type, "-local") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 3) {
+                opserr << "Error: element ASDShellQ4: not enough arguments for -local options (3 components are required)\n";
+                return 0;
+            }
+            numData = 1;
+            for (int i = 0; i < 3; ++i) {
+                double local_x_com;
+                if (OPS_GetDoubleInput(&numData, &local_x_com) == 0) {
+                    local_x(i) = local_x_com;
+                }
+                else {
+                    opserr << "Error: element ASDShellQ4: cannot get the component " << i + 1 << " for the local X axis\n";
+                    return 0;
+                }
+            }
+        }
+        else if (strcmp(type, "-damp") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                numData = 1;
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                m_damping = OPS_getDamping(dampingTag);
+                if (m_damping == 0) {
+                    opserr << "Error: element ASDShellQ4: damping not found\n";
+                    return 0;
+                }
+            }
+        }
     }
-
     SectionForceDeformation* section = OPS_getSectionForceDeformation(iData[5]);
 
     if (section == 0) {
-        opserr << "ERROR:  element ASDShellQ4 " << iData[0] << "section " << iData[5] << " not found\n";
+        opserr << "ERROR:  element ASDShellQ4 " << iData[0] << " section " << iData[5] << " not found\n";
         return 0;
     }
-
-    return new ASDShellQ4(iData[0], iData[1], iData[2], iData[3], iData[4], section, corotational, m_damping);
+    
+    return new ASDShellQ4(iData[0], iData[1], iData[2], iData[3], iData[4], section, local_x, corotational, use_eas, drill_mode, drilling_stab, m_damping);
 }
 
 // anonymous namespace for utilities
@@ -371,7 +426,8 @@ namespace
         const AGQIParams& agq,
         const Vector& N,
         const Matrix& dN,
-        Vector& Bd
+        Vector& Bd,
+        bool use_eas
     )
     {
         // cartesian derivatives of standard shape function
@@ -383,35 +439,38 @@ namespace
 
         // AGQI proc ***********************************************************************************************
 
-        // area coordinates of the gauss point (Eq 7)
-        std::array<double, 4> L;
-        L[0] = 0.25 * (1.0 - xi) * (agq.g[1] * (1.0 - eta) + agq.g[2] * (1.0 + eta));
-        L[1] = 0.25 * (1.0 - eta) * (agq.g[3] * (1.0 - xi) + agq.g[2] * (1.0 + xi));
-        L[2] = 0.25 * (1.0 + xi) * (agq.g[0] * (1.0 - eta) + agq.g[3] * (1.0 + eta));
-        L[3] = 0.25 * (1.0 + eta) * (agq.g[0] * (1.0 - xi) + agq.g[1] * (1.0 + xi));
+        if (use_eas) {
 
-        // computed modified shape function gradients for the strain matrix for external dofs
-        // using the area coordinate method as written in the reference paper of the AGQI element
-        static constexpr std::array<double, 4> NXI = { -1.0, 1.0, 1.0, -1.0 };
-        static constexpr std::array<double, 4> NETA = { -1.0, -1.0, 1.0, 1.0 };
-        for (int i = 0; i < 4; i++)
-        {
-            int j = i + 1; if (j > 3) j = 0;
-            int k = j + 1; if (k > 3) k = 0;
-            double SX = 0.0;
-            double SY = 0.0;
-            for (int ii = 0; ii < 4; ii++)
+            // area coordinates of the gauss point (Eq 7)
+            std::array<double, 4> L;
+            L[0] = 0.25 * (1.0 - xi) * (agq.g[1] * (1.0 - eta) + agq.g[2] * (1.0 + eta));
+            L[1] = 0.25 * (1.0 - eta) * (agq.g[3] * (1.0 - xi) + agq.g[2] * (1.0 + xi));
+            L[2] = 0.25 * (1.0 + xi) * (agq.g[0] * (1.0 - eta) + agq.g[3] * (1.0 + eta));
+            L[3] = 0.25 * (1.0 + eta) * (agq.g[0] * (1.0 - xi) + agq.g[1] * (1.0 + xi));
+
+            // computed modified shape function gradients for the strain matrix for external dofs
+            // using the area coordinate method as written in the reference paper of the AGQI element
+            static constexpr std::array<double, 4> NXI = { -1.0, 1.0, 1.0, -1.0 };
+            static constexpr std::array<double, 4> NETA = { -1.0, -1.0, 1.0, 1.0 };
+            for (int i = 0; i < 4; i++)
             {
-                int jj = ii + 1; if (jj > 3) jj = 0;
-                int kk = jj + 1; if (kk > 3) kk = 0;
-                int mm = kk + 1; if (mm > 3) mm = 0;
-                SX = SX + agq.b[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
-                SY = SY + agq.c[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+                int j = i + 1; if (j > 3) j = 0;
+                int k = j + 1; if (k > 3) k = 0;
+                double SX = 0.0;
+                double SY = 0.0;
+                for (int ii = 0; ii < 4; ii++)
+                {
+                    int jj = ii + 1; if (jj > 3) jj = 0;
+                    int kk = jj + 1; if (kk > 3) kk = 0;
+                    int mm = kk + 1; if (mm > 3) mm = 0;
+                    SX = SX + agq.b[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+                    SY = SY + agq.c[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+                }
+                dNdX(i, 0) = (agq.b[i] + agq.b[j]) / agq.A / 2.0 +
+                    NXI[i] * NETA[i] * agq.g[k] * SX / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
+                dNdX(i, 1) = (agq.c[i] + agq.c[j]) / agq.A / 2.0 +
+                    NXI[i] * NETA[i] * agq.g[k] * SY / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
             }
-            dNdX(i, 0) = (agq.b[i] + agq.b[j]) / agq.A / 2.0 +
-                NXI[i] * NETA[i] * agq.g[k] * SX / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
-            dNdX(i, 1) = (agq.c[i] + agq.c[j]) / agq.A / 2.0 +
-                NXI[i] * NETA[i] * agq.g[k] * SY / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
         }
 
         // We use the drilling penalty as defined by hughes and brezzi,
@@ -446,7 +505,8 @@ namespace
         const Matrix& BQ_mean,
         Matrix& B,
         Matrix& BQ,
-        Vector& Bd
+        Vector& Bd,
+        bool use_eas
     )
     {
         // cartesian derivatives of standard shape function
@@ -455,57 +515,60 @@ namespace
 
         // initialize
         B.Zero();
-        BQ.Zero();
         Bd.Zero();
 
         // AGQI proc ***********************************************************************************************
 
-        // area coordinates of the gauss point (Eq 7)
-        std::array<double, 4> L;
-        L[0] = 0.25 * (1.0 - xi) * (agq.g[1] * (1.0 - eta) + agq.g[2] * (1.0 + eta));
-        L[1] = 0.25 * (1.0 - eta) * (agq.g[3] * (1.0 - xi) + agq.g[2] * (1.0 + xi));
-        L[2] = 0.25 * (1.0 + xi) * (agq.g[0] * (1.0 - eta) + agq.g[3] * (1.0 + eta));
-        L[3] = 0.25 * (1.0 + eta) * (agq.g[0] * (1.0 - xi) + agq.g[1] * (1.0 + xi));
+        if (use_eas) {
 
-        // computed modified shape function gradients for the strain matrix for external dofs
-        // using the area coordinate method as written in the reference paper of the AGQI element
-        static constexpr std::array<double, 4> NXI = { -1.0, 1.0, 1.0, -1.0 };
-        static constexpr std::array<double, 4> NETA = { -1.0, -1.0, 1.0, 1.0 };
-        for (int i = 0; i < 4; i++)
-        { 
-            int j = i + 1; if (j > 3) j = 0;
-            int k = j + 1; if (k > 3) k = 0;
-            double SX = 0.0;
-            double SY = 0.0;
-            for (int ii = 0; ii < 4; ii++)
-            { 
-                int jj = ii + 1; if (jj > 3) jj = 0;
-                int kk = jj + 1; if (kk > 3) kk = 0;
-                int mm = kk + 1; if (mm > 3) mm = 0;
-                SX = SX + agq.b[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
-                SY = SY + agq.c[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+            // area coordinates of the gauss point (Eq 7)
+            std::array<double, 4> L;
+            L[0] = 0.25 * (1.0 - xi) * (agq.g[1] * (1.0 - eta) + agq.g[2] * (1.0 + eta));
+            L[1] = 0.25 * (1.0 - eta) * (agq.g[3] * (1.0 - xi) + agq.g[2] * (1.0 + xi));
+            L[2] = 0.25 * (1.0 + xi) * (agq.g[0] * (1.0 - eta) + agq.g[3] * (1.0 + eta));
+            L[3] = 0.25 * (1.0 + eta) * (agq.g[0] * (1.0 - xi) + agq.g[1] * (1.0 + xi));
+
+            // computed modified shape function gradients for the strain matrix for external dofs
+            // using the area coordinate method as written in the reference paper of the AGQI element
+            static constexpr std::array<double, 4> NXI = { -1.0, 1.0, 1.0, -1.0 };
+            static constexpr std::array<double, 4> NETA = { -1.0, -1.0, 1.0, 1.0 };
+            for (int i = 0; i < 4; i++)
+            {
+                int j = i + 1; if (j > 3) j = 0;
+                int k = j + 1; if (k > 3) k = 0;
+                double SX = 0.0;
+                double SY = 0.0;
+                for (int ii = 0; ii < 4; ii++)
+                {
+                    int jj = ii + 1; if (jj > 3) jj = 0;
+                    int kk = jj + 1; if (kk > 3) kk = 0;
+                    int mm = kk + 1; if (mm > 3) mm = 0;
+                    SX = SX + agq.b[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+                    SY = SY + agq.c[ii] * NXI[ii] * NETA[ii] * (3.0 * (L[jj] - L[mm]) + (agq.g[jj] - agq.g[kk]));
+                }
+                dNdX(i, 0) = (agq.b[i] + agq.b[j]) / agq.A / 2.0 +
+                    NXI[i] * NETA[i] * agq.g[k] * SX / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
+                dNdX(i, 1) = (agq.c[i] + agq.c[j]) / agq.A / 2.0 +
+                    NXI[i] * NETA[i] * agq.g[k] * SY / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
             }
-            dNdX(i, 0) = (agq.b[i] + agq.b[j]) / agq.A / 2.0 +
-                NXI[i] * NETA[i] * agq.g[k] * SX / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
-            dNdX(i, 1) = (agq.c[i] + agq.c[j]) / agq.A / 2.0 +
-                NXI[i] * NETA[i] * agq.g[k] * SY / 2.0 / agq.A / (1.0 + agq.g[0] * agq.g[2] + agq.g[1] * agq.g[3]);
-        }
 
-        // compute the BQ matrix for the internal DOFs
-        for (int i = 0; i < 2; i++)
-        {
-            unsigned int j = i + 1; if (j > 3) j = 0;
-            unsigned int k = j + 1; if (k > 3) k = 0;
-            double NQX = (agq.b[i] * L[k] + agq.b[k] * L[i]) / agq.A / 2.0;
-            double NQY = (agq.c[i] * L[k] + agq.c[k] * L[i]) / agq.A / 2.0;
-            unsigned int index1 = i * 2;
-            unsigned int index2 = index1 + 1;
-            BQ(0, index1) += NQX;
-            BQ(1, index2) += NQY;
-            BQ(2, index1) += NQY;
-            BQ(2, index2) += NQX;
+            // compute the BQ matrix for the internal DOFs
+            BQ.Zero();
+            for (int i = 0; i < 2; i++)
+            {
+                unsigned int j = i + 1; if (j > 3) j = 0;
+                unsigned int k = j + 1; if (k > 3) k = 0;
+                double NQX = (agq.b[i] * L[k] + agq.b[k] * L[i]) / agq.A / 2.0;
+                double NQY = (agq.c[i] * L[k] + agq.c[k] * L[i]) / agq.A / 2.0;
+                unsigned int index1 = i * 2;
+                unsigned int index2 = index1 + 1;
+                BQ(0, index1) += NQX;
+                BQ(1, index2) += NQY;
+                BQ(2, index1) += NQY;
+                BQ(2, index2) += NQX;
+            }
+            BQ.addMatrix(1.0, BQ_mean, -1.0);
         }
-        BQ.addMatrix(1.0, BQ_mean, -1.0);
 
         // membrane ************************************************************************************************
         // this is the memebrane part of the compatible standard in-plane displacement field
@@ -645,7 +708,7 @@ ASDShellQ4::ASDShellQ4()
     : Element(0, ELE_TAG_ASDShellQ4)
     , m_transformation(nullptr)
 {
-  for (int i = 0; i < 4; i++) m_damping[i] = nullptr;
+    for (int i = 0; i < 4; i++) m_damping[i] = nullptr;
 }
 
 ASDShellQ4::ASDShellQ4(
@@ -655,10 +718,16 @@ ASDShellQ4::ASDShellQ4(
     int node3,
     int node4,
     SectionForceDeformation* section,
+    const Vector& local_x,
     bool corotational,
+    bool use_eas,
+    DrillingDOFMode drill_mode,
+    double drilling_stab,
     Damping *damping)
     : Element(tag, ELE_TAG_ASDShellQ4)
     , m_transformation(corotational ? new ASDShellQ4CorotationalTransformation() : new ASDShellQ4Transformation())
+    , m_drill_mode(drill_mode)
+    , m_drill_stab(drilling_stab)
 {
     // save node ids
     m_node_ids(0) = node1;
@@ -674,16 +743,34 @@ ASDShellQ4::ASDShellQ4(
             exit(-1);
         }
     }
+
+    // allocate non-linear drilling data
+    if (m_drill_mode == DrillingDOF_NonLinear) {
+        m_nldrill = new NLDrillingData();
+    }
+
+    // allocate local axes if provided
+    if (local_x.Size() == 3 && local_x.Norm() > 0.0) {
+        m_local_x = new Vector(local_x);
+        m_local_x->Normalize();
+    }
+
+    // allocate eas data
+    if (use_eas) {
+        m_eas = new EASData();
+    }
+
+    // damping
     if (damping) {
-      for (int i = 0; i < 4; i++) {
-        m_damping[i] = damping->getCopy();
-        if (!m_damping[i]) {
-          opserr << "ASDShellQ4::constructor - failed to get copy of damping\n";
+        for (int i = 0; i < 4; i++) {
+            m_damping[i] = damping->getCopy();
+            if (!m_damping[i]) {
+                opserr << "ASDShellQ4::constructor - failed to get copy of damping\n";
+            }
         }
-      }
     }
     else {
-      for (int i = 0; i < 4; i++) m_damping[i] = nullptr;
+        for (int i = 0; i < 4; i++) m_damping[i] = nullptr;
     }
 }
 
@@ -701,12 +788,24 @@ ASDShellQ4::~ASDShellQ4( )
     if (m_load)
         delete m_load;
 
+    // clean up non-linear drilling data
+    if (m_nldrill)
+        delete m_nldrill;
+
+    // clean up local axes
+    if (m_local_x)
+        delete m_local_x;
+
+    // clean up eas data
+    if (m_eas)
+        delete m_eas;
+
     // clean up damping
     for (int i = 0; i < 4; i++) {
-      if (m_damping[i]) {
-        delete m_damping[i];
-        m_damping[i] = 0;
-      }
+        if (m_damping[i]) {
+            delete m_damping[i];
+            m_damping[i] = 0;
+        }
     }
 }
 
@@ -733,21 +832,40 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
     // only if not already initialized from recvSelf
     if (!m_initialized) {
 
-        // compute drilling penalty parameter
+        // compute drilling stiffness
         m_drill_stiffness = 0.0;
         for (int i = 0; i < 4; i++)
             m_drill_stiffness += m_sections[i]->getInitialTangent()(2, 2);
-        m_drill_stiffness /= 4.0;
+        m_drill_stiffness /= 4.0; // average in-plane shear modulus
+        m_drill_stiffness *= 0.233; // scale it to get the in-plane roto-distortional modulus
 
         // compute section orientation angle
         ASDShellQ4LocalCoordinateSystem reference_cs = m_transformation->createReferenceCoordinateSystem();
         Vector3Type e1_local = reference_cs.Vx();
-        Vector3Type P1(m_transformation->getNodes()[0]->getCrds());
-        Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
-        Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
-        Vector3Type P4(m_transformation->getNodes()[3]->getCrds());
-        Vector3Type e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
-        e1.normalize();
+        Vector3Type e1;
+        if (m_local_x) {
+            // user-defined (already normalized in c-tor)
+            e1 = Vector3Type(*m_local_x);
+            // make sure it's on the reference x-y plane
+            Vector3Type e3 = reference_cs.Vz();
+            Vector3Type e2 = e3.cross(e1);
+            double e2_norm = e2.normalize();
+            if (e2_norm == 0.0) {
+                opserr << "ASDShellQ4::setDomain Error: The provided local X axis cannot be aligned with the shell normal vector";
+                exit(-1);
+            }
+            e1 = e2.cross(e3);
+            e1.normalize();
+        }
+        else {
+            // default one
+            Vector3Type P1(m_transformation->getNodes()[0]->getCrds());
+            Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
+            Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
+            Vector3Type P4(m_transformation->getNodes()[3]->getCrds());
+            Vector3Type e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
+            e1.normalize();
+        }
         m_angle = std::acos(std::max(-1.0, std::min(1.0, e1.dot(e1_local))));
         if (m_angle != 0.0) {
             // if they are not counter-clock-wise, let's change the sign of the angle
@@ -757,7 +875,8 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
         }
 
         // AGQI internal DOFs
-        AGQIinitialize();
+        if(m_eas)
+            AGQIinitialize();
 
         for (int i = 0; i < 4; i++) {
           if (m_damping[i] && m_damping[i]->setDomain(theDomain, 8)) {
@@ -879,10 +998,19 @@ int  ASDShellQ4::commitState()
     // sections
     for (int i = 0; i < 4; i++)
         success += m_sections[i]->commitState();
+    if (m_drill_mode == DrillingDOF_NonLinear) {
+        for (int i = 0; i < 4; i++) {
+            m_nldrill->stress_comm[i] = m_sections[i]->getStressResultant();
+            m_nldrill->strain_comm[i] = m_sections[i]->getSectionDeformation();
+            m_nldrill->damage_comm[i] = m_nldrill->damage[i];
+        }
+    }
 
     // AGQI internal DOFs
-    m_U_converged = m_U;
-    m_Q_converged = m_Q;
+    if(m_eas) {
+        m_eas->U_converged = m_eas->U;
+        m_eas->Q_converged = m_eas->Q;
+    }
 
     // damping
     for (int i = 0; i < 4; i++ )
@@ -902,10 +1030,19 @@ int  ASDShellQ4::revertToLastCommit()
     // sections
     for (int i = 0; i < 4; i++)
         success += m_sections[i]->revertToLastCommit();
+    if (m_drill_mode == DrillingDOF_NonLinear) {
+        for (int i = 0; i < 4; i++) {
+            m_nldrill->stress_comm[i] = m_sections[i]->getStressResultant();
+            m_nldrill->strain_comm[i] = m_sections[i]->getSectionDeformation();
+            m_nldrill->damage[i] = m_nldrill->damage_comm[i];
+        }
+    }
 
     // AGQI internal DOFs
-    m_U = m_U_converged;
-    m_Q = m_Q_converged;
+    if (m_eas) {
+        m_eas->U = m_eas->U_converged;
+        m_eas->Q = m_eas->Q_converged;
+    }
 
     // damping
     for (int i = 0; i < 4; i++ )
@@ -925,9 +1062,17 @@ int  ASDShellQ4::revertToStart()
     // sections
     for (int i = 0; i < 4; i++)
         success += m_sections[i]->revertToStart();
+    if (m_drill_mode == DrillingDOF_NonLinear) {
+        for (int i = 0; i < 4; i++) {
+            m_nldrill->stress_comm[i].Zero();
+            m_nldrill->strain_comm[i].Zero();
+            m_nldrill->damage[i] = m_nldrill->damage_comm[i] = 0.0;
+        }
+    }
 
     // AGQI internal DOFs
-    AGQIinitialize();
+    if(m_eas)
+        AGQIinitialize();
 
     // damping
     for (int i = 0; i < 4; i++ )
@@ -1107,7 +1252,11 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     // 1 initialization flag
     // 1 has_load_flag
     // 8 -> 4 pairs of (section class tag, mt db tag)
-    static ID idData(18);
+    // 2 -> damping tag + damping db tag
+    // 1 -> EAS flag
+    // 1 -> non-linear drilling flag
+    // 1 -> local_x flag
+    static ID idData(21);
     counter = 0;
     idData(counter++) = getTag();
     for(int i = 0; i < 4; ++i)
@@ -1127,20 +1276,24 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
         }
         idData(counter++) = matDbTag;
     }
-
-    idData(16) = 0;
-    idData(17) = 0;
     if (m_damping[0]) {
-      idData(16) = m_damping[0]->getClassTag();
-      int dbTag = m_damping[0]->getDbTag();
-      if (dbTag == 0) {
-        dbTag = theChannel.getDbTag();
-        if (dbTag != 0)
-          for (int i = 0 ;  i < 4; i++)
-	          m_damping[i]->setDbTag(dbTag);
-	    }
-      idData(17) = dbTag;
+        idData(counter++) = m_damping[0]->getClassTag();
+        int dbTag = m_damping[0]->getDbTag();
+        if (dbTag == 0) {
+            dbTag = theChannel.getDbTag();
+            if (dbTag != 0)
+                for (int i = 0; i < 4; i++)
+                    m_damping[i]->setDbTag(dbTag);
+        }
+        idData(counter++) = dbTag;
     }
+    else {
+        idData(counter++) = 0;
+        idData(counter++) = 0;
+    }
+    idData(counter++) = static_cast<int>(static_cast<bool>(m_eas));
+    idData(counter++) = static_cast<int>(static_cast<bool>(m_nldrill));
+    idData(counter++) = static_cast<int>(static_cast<bool>(m_local_x));
 
     res = theChannel.sendID(dataTag, commitTag, idData);
     if (res < 0) {
@@ -1152,13 +1305,19 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     // 4 damping factors +
     // 4 drilling strain +
     // 1 drilling stiffness +
+    // 1 drilling stabilization parameter +
     // 1 angle +
-    // 268 AGQI internal data + 
-    // 24 if has_load else 0 +
+    // (optional) 3 local_x +
+    // (optional) 268 AGQI internal data + 
+    // (optional) 72 non-linear drilling data +
+    // (optional) 24 load +
     // NT transformation data
+    int Nlocalx = m_local_x ? 3 : 0;
     int NLoad = has_load ? 24 : 0;
+    int Neas = m_eas ? 268 : 0;
+    int Nnldrill = m_nldrill ? 72 : 0;
     int NT = m_transformation->internalDataSize();
-    Vector vectData(4 + 4 + 1 + 1 + 268 + NLoad + NT);
+    Vector vectData(4 + 4 + 1 + 1 + 1 + Nlocalx + Neas + Nnldrill + NLoad + NT);
     counter = 0;
     vectData(counter++) = alphaM;
     vectData(counter++) = betaK;
@@ -1167,26 +1326,45 @@ int  ASDShellQ4::sendSelf(int commitTag, Channel& theChannel)
     for (int i = 0; i < 4; ++i)
         vectData(counter++) = m_drill_strain[i];
     vectData(counter++) = m_drill_stiffness;
+    vectData(counter++) = m_drill_stab;
     vectData(counter++) = m_angle;
-    for (int i = 0; i < 4; ++i)
-        vectData(counter++) = m_Q(i);
-    for (int i = 0; i < 4; ++i)
-        vectData(counter++) = m_Q_converged(i);
-    for (int i = 0; i < 24; ++i)
-        vectData(counter++) = m_U(i);
-    for (int i = 0; i < 24; ++i)
-        vectData(counter++) = m_U_converged(i);
-    for (int i = 0; i < 4; ++i)
-        vectData(counter++) = m_Q_residual(i);
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j)
-            vectData(counter++) = m_KQQ_inv(i, j);
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 24; ++j)
-            vectData(counter++) = m_KQU(i, j);
-    for (int i = 0; i < 24; ++i)
-        for (int j = 0; j < 4; ++j)
-            vectData(counter++) = m_KUQ(i, j);
+    if (m_local_x) {
+        for (int i = 0; i < 3; ++i)
+            vectData(counter++) = (*m_local_x)(i);
+    }
+    if (m_eas) {
+        for (int i = 0; i < 4; ++i)
+            vectData(counter++) = m_eas->Q(i);
+        for (int i = 0; i < 4; ++i)
+            vectData(counter++) = m_eas->Q_converged(i);
+        for (int i = 0; i < 24; ++i)
+            vectData(counter++) = m_eas->U(i);
+        for (int i = 0; i < 24; ++i)
+            vectData(counter++) = m_eas->U_converged(i);
+        for (int i = 0; i < 4; ++i)
+            vectData(counter++) = m_eas->Q_residual(i);
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                vectData(counter++) = m_eas->KQQ_inv(i, j);
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 24; ++j)
+                vectData(counter++) = m_eas->KQU(i, j);
+        for (int i = 0; i < 24; ++i)
+            for (int j = 0; j < 4; ++j)
+                vectData(counter++) = m_eas->KUQ(i, j);
+    }
+    if (m_nldrill) {
+        for (const auto& item : m_nldrill->strain_comm)
+            for (int i = 0; i < 8; ++i)
+                vectData(counter++) = item(i);
+        for (const auto& item : m_nldrill->stress_comm)
+            for (int i = 0; i < 8; ++i)
+                vectData(counter++) = item(i);
+        for (auto item : m_nldrill->damage)
+            vectData(counter++) = item;
+        for (auto item : m_nldrill->damage_comm)
+            vectData(counter++) = item;
+    }
     if (has_load) {
         for (int i = 0; i < 24; ++i)
             vectData(counter++) = (*m_load)(i);
@@ -1239,7 +1417,11 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
     // 1 initialization flag
     // 1 has_load_flag
     // 8 -> 4 pairs of (section class tag, mt db tag)
-    static ID idData(18);
+    // 2 -> damping tag + damping db tag
+    // 1 -> EAS flag
+    // 1 -> non-linear drilling flag
+    // 1 -> local_x flag
+    static ID idData(21);
     res = theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1266,6 +1448,11 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
         }
         m_sections[i]->setDbTag(matDbTag);
     }
+    int dmpTag = idData(counter++);
+    int dmpDbTag = idData(counter++);
+    bool use_eas = static_cast<bool>(idData(counter++));
+    bool use_nldrill = static_cast<bool>(idData(counter++));
+    bool use_local_x = static_cast<bool>(idData(counter++));
     
     // create transformation
     if (m_transformation)
@@ -1283,17 +1470,47 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
         }
     }
 
+    // create eas
+    if (m_eas) {
+        delete m_eas;
+        m_eas = nullptr;
+    }
+    if (use_eas)
+        m_eas = new EASData();
+
+    // create non-linear drilling
+    if (m_nldrill) {
+        delete m_nldrill;
+        m_nldrill = nullptr;
+    }
+    if (use_nldrill)
+        m_nldrill = new NLDrillingData();
+
+    // clear local x
+    if (m_local_x) {
+        delete m_local_x;
+        m_local_x = nullptr;
+    }
+    if (use_local_x)
+        m_local_x = new Vector(3);
+
     // DOUBLE data
     // 4 damping factors +
     // 4 drilling strain +
     // 1 drilling stiffness +
+    // 1 drilling stabilization parameter +
     // 1 angle +
-    // 268 AGQI internal data + 
-    // 24 if has_load else 0 +
+    // (optional) 3 local_x +
+    // (optional) 268 AGQI internal data + 
+    // (optional) 72 non-linear drilling data +
+    // (optional) 24 load +
     // NT transformation data
+    int Nlocalx = use_local_x ? 3 : 0;
     int NLoad = has_load ? 24 : 0;
+    int Neas = use_eas ? 268 : 0;
+    int Nnldrill = use_nldrill ? 72 : 0;
     int NT = m_transformation->internalDataSize();
-    Vector vectData(4 + 4 + 1 + 1 + 268 + NLoad + NT);
+    Vector vectData(4 + 4 + 1 + 1 + 1 + Neas + Nnldrill + NLoad + NT);
     res = theChannel.recvVector(dataTag, commitTag, vectData);
     if (res < 0) {
         opserr << "WARNING ASDShellQ4::recvSelf() - " << this->getTag() << " failed to receive Vector\n";
@@ -1308,26 +1525,45 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
     for (int i = 0; i < 4; ++i)
         m_drill_strain[i] = vectData(counter++);
     m_drill_stiffness = vectData(counter++);
+    m_drill_stab = vectData(counter++);
     m_angle = vectData(counter++);
-    for (int i = 0; i < 4; ++i)
-        m_Q(i) = vectData(counter++);
-    for (int i = 0; i < 4; ++i)
-        m_Q_converged(i) = vectData(counter++);
-    for (int i = 0; i < 24; ++i)
-        m_U(i) = vectData(counter++);
-    for (int i = 0; i < 24; ++i)
-        m_U_converged(i) = vectData(counter++);
-    for (int i = 0; i < 4; ++i)
-        m_Q_residual(i) = vectData(counter++);
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 4; ++j)
-            m_KQQ_inv(i, j) = vectData(counter++);
-    for (int i = 0; i < 4; ++i)
-        for (int j = 0; j < 24; ++j)
-            m_KQU(i, j) = vectData(counter++);
-    for (int i = 0; i < 24; ++i)
-        for (int j = 0; j < 4; ++j)
-            m_KUQ(i, j) = vectData(counter++);
+    if (use_local_x) {
+        for (int i = 0; i < 3; ++i)
+            (*m_local_x)(i) = vectData(counter++);
+    }
+    if (use_eas) {
+        for (int i = 0; i < 4; ++i)
+            m_eas->Q(i) = vectData(counter++);
+        for (int i = 0; i < 4; ++i)
+            m_eas->Q_converged(i) = vectData(counter++);
+        for (int i = 0; i < 24; ++i)
+            m_eas->U(i) = vectData(counter++);
+        for (int i = 0; i < 24; ++i)
+            m_eas->U_converged(i) = vectData(counter++);
+        for (int i = 0; i < 4; ++i)
+            m_eas->Q_residual(i) = vectData(counter++);
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 4; ++j)
+                m_eas->KQQ_inv(i, j) = vectData(counter++);
+        for (int i = 0; i < 4; ++i)
+            for (int j = 0; j < 24; ++j)
+                m_eas->KQU(i, j) = vectData(counter++);
+        for (int i = 0; i < 24; ++i)
+            for (int j = 0; j < 4; ++j)
+                m_eas->KUQ(i, j) = vectData(counter++);
+    }
+    if (use_nldrill) {
+        for (auto& item : m_nldrill->strain_comm)
+            for (int i = 0; i < 8; ++i)
+                item(i) = vectData(counter++);
+        for (auto& item : m_nldrill->stress_comm)
+            for (int i = 0; i < 8; ++i)
+                item(i) = vectData(counter++);
+        for (auto& item : m_nldrill->damage)
+            item = vectData(counter++);
+        for (auto& item : m_nldrill->damage_comm)
+            item = vectData(counter++);
+    }
     if (has_load) {
         for (int i = 0; i < 24; ++i)
             (*m_load)(i) = vectData(counter++);
@@ -1343,7 +1579,6 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
         }
     }
 
-  int dmpTag = (int)idData(16);
   if (dmpTag) {
     for (int i = 0 ;  i < 4; i++) {
       // Check if the Damping is null; if so, get a new one
@@ -1367,7 +1602,7 @@ int  ASDShellQ4::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& 
       }
   
       // Now, receive the Damping
-      m_damping[i]->setDbTag((int)idData(17));
+      m_damping[i]->setDbTag(dmpDbTag);
       res += m_damping[i]->recvSelf(commitTag, theChannel, theBroker);
       if (res < 0) {
         opserr << "ASDShellQ4::recvSelf -- could not receive Damping\n";
@@ -1604,6 +1839,18 @@ int ASDShellQ4::setParameter(const char** argv, int argc, Parameter& param)
     return res;
 }
 
+double ASDShellQ4::getCharacteristicLength(void)
+{
+    // by default we return the min distance between 2 nodes, which should coincide
+    // with lch = sqrt(A) in non-distorted elements.
+    // however, when the EAS is used, the element localizes only in a row of gauss points
+    // so the lch should be half the original one
+    double lch = Element::getCharacteristicLength();
+    if (m_eas)
+        lch /= 2.0;
+    return lch;
+}
+
 int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
 {
     // Check options
@@ -1642,7 +1889,8 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
     auto& mitc = ASDShellQ4Globals::instance().mitc;
     auto& agq = ASDShellQ4Globals::instance().agq;
     mitc.compute(reference_cs);
-    agq.compute(reference_cs);
+    if(m_eas)
+        agq.compute(reference_cs);
 
     // Jacobian
     auto& jac = ASDShellQ4Globals::instance().jac;
@@ -1680,16 +1928,20 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
 
     // Update AGQI internal DOFs
     if (options & OPT_UPDATE)
-        AGQIupdate(UL);
+        if(m_eas)
+            AGQIupdate(UL);
 
     // AGQI begin gauss loop (computes the BQ_mean correction matrix)
-    AGQIbeginGaussLoop(reference_cs);
+    if(m_eas)
+        AGQIbeginGaussLoop(reference_cs);
 
-    // Drilling strain-displacement matrix at center for reduced
-    // integration
+    // Drilling strain-displacement matrix at center for reduced integration
     shapeFunctions(0.0, 0.0, N);
     shapeFunctionsNaturalDerivatives(0.0, 0.0, dN);
-    computeBdrilling(reference_cs, 0.0, 0.0, jac, agq, N, dN, Bd0);
+    computeBdrilling(reference_cs, 0.0, 0.0, jac, agq, N, dN, Bd0, m_eas);
+    static Vector drill_dstrain(8);
+    static Vector drill_dstress(8);
+    static Vector drill_dstress_el(8);
 
     // Gauss loop
     for (int igauss = 0; igauss < 4; igauss++)
@@ -1704,16 +1956,21 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
         double dA = w * jac.detJ;
 
         // Strain-displacement matrix
-        computeBMatrix(reference_cs, xi, eta, jac, agq, mitc, N, dN, BQ_mean, B, BQ, Bd);
+        computeBMatrix(reference_cs, xi, eta, jac, agq, mitc, N, dN, BQ_mean, B, BQ, Bd, m_eas);
 
         // The drilling according to Hughes-Brezzi plays and important role in warped shells and
-        // the stiffness should be equal to the initial (elastic) in-plane shear modulus.
-        // If fully integrated however, locks the membrane response. If under-integrated the element
+        // the stiffness should be proportional to the initial (elastic) in-plane shear modulus.
+        // If fully integrated however, and in case of strain-softening materials,
+        // it can over-stiffen the membrane response. If under-integrated the element
         // has spurious zero-energy modes. Thus here we use the compute the drilling B matrix
         // as a weighted sum of the reduced integrated one (Bd0) and a scaled  version of the fully
         // integrated one, just to suppress spurious zero energy modes.
-        constexpr double sqrt_drill_scale = 1.0e-2; // drill_scale = 1.0e-4
-        Bd.addVector(sqrt_drill_scale, Bd0, 1.0);
+        // Kd0 = Bd0'*Bd0*kdrill*V
+        // Kd = int(Bd'*Bd*kdrill*dV)
+        // K = stab*Kd + (1-stab)*Kd0
+        double drill_alpha = std::sqrt(m_drill_stab);
+        double drill_beta = std::sqrt(1.0 - m_drill_stab);
+        Bd.addVector(drill_alpha, Bd0, drill_beta);
 
         // Update strain strain
         if (options & OPT_UPDATE)
@@ -1722,26 +1979,28 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             if (m_angle != 0.0) {
                 auto& Elocal = ASDShellQ4Globals::instance().Elocal;
                 Elocal.addMatrixVector(0.0, B, UL, 1.0);
-                Elocal.addMatrixVector(1.0, BQ, m_Q, 1.0);
+                if (m_eas)
+                    Elocal.addMatrixVector(1.0, BQ, m_eas->Q, 1.0);
                 E.addMatrixVector(0.0, Re, Elocal, 1.0);
             }
             else {
                 E.addMatrixVector(0.0, B, UL, 1.0);
-                E.addMatrixVector(1.0, BQ, m_Q, 1.0);
+                if (m_eas)
+                    E.addMatrixVector(1.0, BQ, m_eas->Q, 1.0);
             }
 
             // Update section
             result += m_sections[igauss]->setTrialSectionDeformation(E);
 
             // Drilling strain Ed = Bd*UL
-            double& Ed = m_drill_strain[igauss];
-            Ed = 0.0;
+            double Ed = 0.0;
             for (int i = 0; i < 24; i++)
                 Ed += Bd(i) * UL(i);
+            m_drill_strain[igauss] = Ed;
         }
 
         // Invert bending terms for correct statement of equilibrium
-        if((options & OPT_RHS) || (options & OPT_LHS))
+        if ((options & OPT_RHS) || (options & OPT_LHS))
             invertBBendingTerms(B, B1);
 
         // Integrate RHS
@@ -1752,34 +2011,60 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
                 auto& Ssection = m_sections[igauss]->getStressResultant();
                 S.addMatrixVector(0.0, Rs, Ssection, 1.0);
                 if (m_damping[igauss]) {
-                  m_damping[igauss]->update(Ssection);
-                  auto& Sdsection = m_damping[igauss]->getDampingForce();
-                  S.addMatrixVector(1.0, Rs, Sdsection, 1.0);
+                    m_damping[igauss]->update(Ssection);
+                    auto& Sdsection = m_damping[igauss]->getDampingForce();
+                    S.addMatrixVector(1.0, Rs, Sdsection, 1.0);
                 }
             }
             else {
                 S = m_sections[igauss]->getStressResultant();
                 if (m_damping[igauss]) {
-                  m_damping[igauss]->update(S);
-                  S += m_damping[igauss]->getDampingForce();
+                    m_damping[igauss]->update(S);
+                    S += m_damping[igauss]->getDampingForce();
                 }
             }
 
             // Add current integration point contribution (RHS)
             RHS.addMatrixTransposeVector(1.0, B1, S, dA);
 
+            // Compute drilling damages
+            if (m_drill_mode == DrillingDOF_NonLinear) {
+                drill_dstrain = m_sections[igauss]->getSectionDeformation();
+                drill_dstrain.addVector(1.0, m_nldrill->strain_comm[igauss], -1.0);
+                if (drill_dstrain.Norm() > 1.0e-10) {
+                    drill_dstress = m_sections[igauss]->getStressResultant();
+                    drill_dstress.addVector(1.0, m_nldrill->stress_comm[igauss], -1.0);
+                    const Matrix& C0 = m_sections[igauss]->getInitialTangent();
+                    drill_dstress_el.addMatrixVector(0.0, C0, drill_dstrain, 1.0);
+                    double drill_damage = m_nldrill->damage_comm[igauss];
+                    for (int j = 0; j < 8; ++j) {
+                        double dx = drill_dstrain(j);
+                        if (dx > 0.0) {
+                            double dy = drill_dstress(j);
+                            double dy0 = drill_dstress_el(j);
+                            drill_damage = std::max(drill_damage, 1.0 - dy / dy0);
+                        }
+                    }
+                    drill_damage = std::max(0.0, std::min(0.999, drill_damage));
+                    m_nldrill->damage[igauss] = drill_damage;
+                }
+            }
+
             // Add drilling stress = Bd'*Sd * dA (RHS)
             double Sd = m_drill_stiffness * m_drill_strain[igauss];
+            if (m_drill_mode == DrillingDOF_NonLinear)
+                Sd *= (1.0 - m_nldrill->damage_comm[igauss]);
             for (int i = 0; i < 24; i++)
                 RHS(i) += Bd(i) * Sd * dA;
 
             // AGQI: update residual for internal DOFs
-            m_Q_residual.addMatrixTransposeVector(1.0, BQ, S, -dA);
+            if(m_eas)
+                m_eas->Q_residual.addMatrixTransposeVector(1.0, BQ, S, -dA);
         }
 
         // AGQI: due to the static condensation, the following items
         // must be computed if we need either the RHS or the LHS, or both of them
-        if ((options & OPT_RHS) || (options & OPT_LHS))
+        if (((options & OPT_RHS) && m_eas) || (options & OPT_LHS))
         {
             // Section tangent
             if (m_angle != 0.0) {
@@ -1801,11 +2086,13 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             }
 
             // Matrices for AGQI static condensation of internal DOFs
-            BQTD.addMatrixTransposeProduct(0.0, BQ, D, dA);
-            DBQ.addMatrixProduct(0.0, D, BQ, dA);
-            m_KQQ_inv.addMatrixProduct(1.0, BQTD, BQ, 1.0);
-            m_KQU.addMatrixProduct(1.0, BQTD, B, 1.0);
-            m_KUQ.addMatrixTransposeProduct(1.0, B1, DBQ, 1.0);
+            if (m_eas) {
+                BQTD.addMatrixTransposeProduct(0.0, BQ, D, dA);
+                DBQ.addMatrixProduct(0.0, D, BQ, dA);
+                m_eas->KQQ_inv.addMatrixProduct(1.0, BQTD, BQ, 1.0);
+                m_eas->KQU.addMatrixProduct(1.0, BQTD, B, 1.0);
+                m_eas->KUQ.addMatrixTransposeProduct(1.0, B1, DBQ, 1.0);
+            }
         }
 
         // Integrate LHS
@@ -1816,25 +2103,28 @@ int ASDShellQ4::calculateAll(Matrix& LHS, Vector& RHS, int options)
             LHS.addMatrixProduct(1.0, B1TD, B, 1.0);
 
             // Add drilling stiffness = Bd'*Kd*Bd * dA (LHS)
+            double drill_tang = m_drill_stiffness;
+            if (m_drill_mode == DrillingDOF_NonLinear) 
+                drill_tang *= (1.0 - m_nldrill->damage_comm[igauss]);
             for (int i = 0; i < 24; i++)
                 for (int j = 0; j < 24; j++)
-                    LHS(i, j) += Bd(i) * m_drill_stiffness * Bd(j) * dA;
+                    LHS(i, j) += Bd(i) * drill_tang * Bd(j) * dA;
         }
 
     } // End of Gauss Loop
 
     // AGQI: static condensation
-    if ((options & OPT_RHS) || (options & OPT_LHS))
+    if (((options & OPT_RHS) || (options & OPT_LHS)) && m_eas)
     {
         static Matrix KQQ = Matrix(4, 4);
         static Matrix KUQ_KQQ_inv = Matrix(24, 4);
-        KQQ = m_KQQ_inv;
-        int inv_res = KQQ.Invert(m_KQQ_inv);
-        KUQ_KQQ_inv.addMatrixProduct(0.0, m_KUQ, m_KQQ_inv, 1.0);
+        KQQ = m_eas->KQQ_inv;
+        int inv_res = KQQ.Invert(m_eas->KQQ_inv);
+        KUQ_KQQ_inv.addMatrixProduct(0.0, m_eas->KUQ, m_eas->KQQ_inv, 1.0);
         if (options & OPT_RHS)
-            RHS.addMatrixVector(1.0, KUQ_KQQ_inv, m_Q_residual, 1.0);
+            RHS.addMatrixVector(1.0, KUQ_KQQ_inv, m_eas->Q_residual, 1.0);
         if (options & OPT_LHS)
-            LHS.addMatrixProduct(1.0, KUQ_KQQ_inv, m_KQU, -1.0);
+            LHS.addMatrixProduct(1.0, KUQ_KQQ_inv, m_eas->KQU, -1.0);
     }
 
     // Transform LHS to global coordinate system
@@ -1861,10 +2151,10 @@ void ASDShellQ4::AGQIinitialize()
     m_transformation->calculateLocalDisplacements(local_cs, UG, UL);
 
     // Initialize internal DOFs members
-    m_Q.Zero();
-    m_Q_converged.Zero();
-    m_U = UL;
-    m_U_converged = UL;
+    m_eas->Q.Zero();
+    m_eas->Q_converged.Zero();
+    m_eas->U = UL;
+    m_eas->U_converged = UL;
 }
 
 void ASDShellQ4::AGQIupdate(const Vector& UL)
@@ -1872,26 +2162,26 @@ void ASDShellQ4::AGQIupdate(const Vector& UL)
     // Compute incremental displacements
     static Vector dUL(24);
     dUL = UL;
-    dUL.addVector(1.0, m_U, -1.0);
+    dUL.addVector(1.0, m_eas->U, -1.0);
 
     // Save current trial displacements
-    m_U = UL;
+    m_eas->U = UL;
 
     // Update internal DOFs
     static Vector temp(4);
-    temp.addMatrixVector(0.0, m_KQU, dUL, 1.0);
-    temp.addVector(1.0, m_Q_residual, -1.0);
-    m_Q.addMatrixVector(1.0, m_KQQ_inv, temp, -1.0);
+    temp.addMatrixVector(0.0, m_eas->KQU, dUL, 1.0);
+    temp.addVector(1.0, m_eas->Q_residual, -1.0);
+    m_eas->Q.addMatrixVector(1.0, m_eas->KQQ_inv, temp, -1.0);
 }
 
 void ASDShellQ4::AGQIbeginGaussLoop(const ASDShellQ4LocalCoordinateSystem& reference_cs)
 {
     // set to zero vectors and matrices for the static condensation
     // of internal DOFs before proceeding with gauss integration
-    m_KQU.Zero();
-    m_KUQ.Zero();
-    m_KQQ_inv.Zero();
-    m_Q_residual.Zero();
+    m_eas->KQU.Zero();
+    m_eas->KUQ.Zero();
+    m_eas->KQQ_inv.Zero();
+    m_eas->Q_residual.Zero();
 
     // Some matrices/vectors
     auto& N = ASDShellQ4Globals::instance().N;
