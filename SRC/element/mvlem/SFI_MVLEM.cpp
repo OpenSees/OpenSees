@@ -809,13 +809,13 @@ int SFI_MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	  return -2;	
 	}
 	
-	Vector data(3 + 2*m);
-	data(3*m) = density;
+	Vector data(3 + 3*m);
 	data(3*m+1) = c;
 	data(3*m+2) = h;
 	for (int i = 0; i < m; i++) {
 	  data(i) = b[i];
 	  data(i+m) = t[i];
+	  //data(i+2*m) = density[i];
 	}	
 	
 	res = theChannel.sendVector(dataTag, commitTag, data);
@@ -933,15 +933,11 @@ int SFI_MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &th
 	  delete [] t;
 	t = new double[m];
 
-	//if (rho != 0)
-	//  delete [] rho;
-	//rho = new double[m];	
-
 	Lw = 0.0;
 	for (int i = 0; i < m; i++) {
 	  b[i] = data(i);
 	  t[i] = data(i+m);
-	  //rho[i] = data(i+2*m);
+	  //density[i] = data(i+2*m);
 	  Lw += b[i];
 	}
 
