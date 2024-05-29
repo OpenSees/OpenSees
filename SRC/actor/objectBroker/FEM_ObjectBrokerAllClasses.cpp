@@ -105,8 +105,12 @@
 #include "HystereticSMMaterial.h"
 #include "OOHystereticMaterial.h"
 #include "EPPGapMaterial.h"
+#include "HookGap.h"
 #include "ViscousMaterial.h"
 #include "ViscousDamper.h"
+#include "APDVFD.h"
+#include "APDMD.h"
+#include "APDFMD.h"
 #include "BilinearOilDamper.h"
 #include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
@@ -470,6 +474,9 @@
 
 #include "absorbentBoundaries/ASDAbsorbingBoundary2D.h"
 #include "absorbentBoundaries/ASDAbsorbingBoundary3D.h"
+#include "absorbentBoundaries/FSIFluidElement2D.h"
+#include "absorbentBoundaries/FSIInterfaceElement2D.h"
+#include "absorbentBoundaries/FSIFluidBoundaryElement2D.h"
 
 #include "LinearCrdTransf2d.h"
 #include "LinearCrdTransf3d.h"
@@ -1190,6 +1197,15 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_ASDAbsorbingBoundary3D:
       return new ASDAbsorbingBoundary3D();
 
+    case ELE_TAG_FSIFluidElement2D:
+      return new FSIFluidElement2D();
+
+    case ELE_TAG_FSIInterfaceElement2D:
+      return new FSIInterfaceElement2D();
+
+    case ELE_TAG_FSIFluidBoundaryElement2D:
+      return new FSIFluidBoundaryElement2D();
+
     default:
       opserr << "FEM_ObjectBrokerAllClasses::getNewElement - ";
       opserr << " - no Element type exists for class tag " ;
@@ -1829,11 +1845,23 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_EPPGap:
 		return new EPPGapMaterial();
 
+	case MAT_TAG_HookGap:
+	    return new HookGap();
+	    
 	case MAT_TAG_Viscous:
 		return new ViscousMaterial();
 
 	case MAT_TAG_ViscousDamper:
 		return new ViscousDamper();
+
+        case MAT_TAG_APDVFD:
+		return new APDVFD();
+	    
+	case MAT_TAG_APDMD:
+		return new APDMD();
+	    
+	case MAT_TAG_APDFMD:
+		return new APDFMD();
 
 	case MAT_TAG_BilinearOilDamper:
 	    return new BilinearOilDamper();
