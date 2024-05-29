@@ -945,7 +945,7 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 
 	
 	int matDbTag;
-	// Send the connected nodes (2) and material class/db tags (4m flex, 2 shear)
+	// send material class/db tags (4m flex, 2 shear)
 	ID idData(2 + 4*m);
 	for (int i = 0; i < m; i++) {
 	  idData(i) = theMaterialsConcrete[i]->getClassTag();
@@ -993,7 +993,6 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	  data(i+2*m) = rho[i];
 	}
 
-	// MVLEM then sends the tags of it's two end nodes
 	res = theChannel.sendVector(dataTag, commitTag, data);
 	if (res < 0) {
 	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
