@@ -96,7 +96,7 @@ OPS_CFSSSWP(void)
 CFSSSWP::CFSSSWP(int tag, double H, int B, double fuf, double fyf,
                           double tf,double Af,double fus, double fys, double ts,
 						  double np, double ds, double Vs,double sc, double A, double L): 
-             UniaxialMaterial(tag, MAT_TAG_Pinching4), hight(H), width(B), fuf(fuf),
+             UniaxialMaterial(tag, MAT_TAG_CFSSSWP), hight(H), width(B), fuf(fuf),
              fyf(fyf), tf(tf),
 	         Af(Af), fus(fus), fys(fys), ts(ts),
              np(np), ds(ds), Vs(Vs),
@@ -217,7 +217,7 @@ void CFSSSWP :: lateralShearStrength(void)
 }
 
  CFSSSWP::CFSSSWP():
-   UniaxialMaterial(0, MAT_TAG_Pinching4),
+   UniaxialMaterial(0, MAT_TAG_CFSSSWP),
    stress1p(0.0), strain1p(0.0), stress2p(0.0), strain2p(0.0),
    stress3p(0.0), strain3p(0.0), stress4p(0.0), strain4p(0.0),
    stress1n(0.0), strain1n(0.0), stress2n(0.0), strain2n(0.0),
@@ -388,7 +388,7 @@ getIndexNeg(Vector v,double value)
 			if(X[3] - X[0] < 0)
 			{
 				printf("erreur2\n");
-				while(1);
+				//while(1);
 			}
 			
 			a0 = GetTangentFromCurve(state4Strain(0));
@@ -1407,7 +1407,7 @@ double CFSSSWP::posEnvlpStress(double u)
   if(isnan(f))
     {
       printf("erreur3");
-      while(1);
+      //while(1);
     }
   if(f != 10e8)
     {
@@ -1435,7 +1435,7 @@ double CFSSSWP::posEnvlpStress(double u)
   printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
   if(u > s3Strain(3))
     {
-      while(1);
+      //while(1);
     }
   return f;
 }
@@ -1449,7 +1449,7 @@ double CFSSSWP::Envlp4Stress(Vector s4Strain, Vector s4Stress, double u)
   if(isnan(f))
     {
 										 printf("erreur4");
-										 while(1);
+										 //while(1);
     }
   if(f != 10e8)
 								 {
@@ -1477,7 +1477,7 @@ double CFSSSWP::Envlp4Stress(Vector s4Strain, Vector s4Stress, double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s4Strain(0),s4Strain(3));
 								 if(u > s4Strain(3))
 								 {
-									 while(1);
+									 //while(1);
 								 }
                                  return f;
                          }

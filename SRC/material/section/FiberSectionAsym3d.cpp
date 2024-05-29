@@ -181,8 +181,8 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, Fiber **fibers, Uniaxia
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
-  code(3) = SECTION_RESPONSE_T;
-  code(4) = SECTION_RESPONSE_W;
+  code(3) = SECTION_RESPONSE_W;
+  code(4) = SECTION_RESPONSE_T;
 }
 
 FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial *torsion, double yss, double zss):    //Xinlong 
@@ -235,8 +235,8 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial *torsi
     code(0) = SECTION_RESPONSE_P;
     code(1) = SECTION_RESPONSE_MZ;
     code(2) = SECTION_RESPONSE_MY;
-    code(3) = SECTION_RESPONSE_T;
-    code(4) = SECTION_RESPONSE_W;
+    code(3) = SECTION_RESPONSE_W;
+    code(4) = SECTION_RESPONSE_T;
 }
 
 FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial **mats,
@@ -309,8 +309,8 @@ FiberSectionAsym3d::FiberSectionAsym3d(int tag, int num, UniaxialMaterial **mats
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
-  code(3) = SECTION_RESPONSE_T;
-  code(4) = SECTION_RESPONSE_W;
+  code(3) = SECTION_RESPONSE_W;
+  code(4) = SECTION_RESPONSE_T;
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
@@ -334,8 +334,8 @@ FiberSectionAsym3d::FiberSectionAsym3d():
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
-  code(3) = SECTION_RESPONSE_T;
-  code(4) = SECTION_RESPONSE_W;
+  code(3) = SECTION_RESPONSE_W;
+  code(4) = SECTION_RESPONSE_T;
 }
 
 int

@@ -237,7 +237,7 @@ SeriesMaterial::setTrialStrain(double newStrain, double strainRate)
 			// Strain increment
 			double de = flex[i]*ds;
 
-			if (initialFlag == true)
+			if (true || initialFlag == true)
 				strain[i] += de;
 
 			// Update material i
@@ -385,10 +385,14 @@ SeriesMaterial::revertToStart(void)
 
 	Cstrain = 0.0;
 	Cstress = 0.0;
-	Ctangent = 0.0;
+	Ctangent = this->getInitialTangent();
+
+        Tstrain = 0.0;
+        Tstress = 0.0;
+        Ttangent = Ctangent;
 
 	for (int i = 0; i < numMaterials; i++) {
-		err += theModels[i]->revertToLastCommit();
+		err += theModels[i]->revertToStart();
 
 		strain[i] = 0.0;
 		stress[i] = 0.0;
@@ -430,13 +434,16 @@ SeriesMaterial::sendSelf(int cTag, Channel &theChannel)
 {
   int dataTag = this->getDbTag();
   
-  static Vector data(5);
+  static Vector data(8);
   
   data(0) = this->getTag();
   data(1) = numMaterials;
   data(2) = (initialFlag) ? 1.0 : 0.0;
   data(3) = maxIterations;
   data(4) = tolerance;
+  data(5) = Cstrain;
+  data(6) = Cstress;
+  data(7) = Ctangent;
   
   if (theChannel.sendVector(dataTag, cTag, data) < 0) {
     opserr << "SeriesMaterial::sendSelf -- failed to send data Vector" << endln;
@@ -492,7 +499,7 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
 {
   int dataTag = this->getDbTag();
 
-  static Vector data(5);
+  static Vector data(8);
 
   if (theChannel.recvVector(dataTag, cTag, data) < 0) {
     opserr << "SeriesMaterial::recvSelf -- failed to receive data Vector" << endln;
@@ -503,7 +510,14 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
   initialFlag = (data(2) == 1.0) ? true : false;
   maxIterations = (int)data(3);
   tolerance = data(4);
+  Cstrain = data(5);
+  Cstress = data(6);
+  Ctangent = data(7);
 
+  Tstrain = Cstrain;
+  Tstress = Cstress;
+  Ttangent = Ctangent;
+  
   // if number of materials != new number we must alolocate space for data
   if (numMaterials != (int)data(1)) {
     
