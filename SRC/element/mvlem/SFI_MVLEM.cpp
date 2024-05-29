@@ -790,6 +790,7 @@ int SFI_MVLEM::sendSelf(int commitTag, Channel &theChannel)
 
 	
 	int matDbTag;
+	// send material class/db tags (2m)
 	ID idData(2*m);
 	for (int i = 0; i < m; i++) {
 	  idData(i) = theMaterial[i]->getClassTag();
@@ -808,17 +809,15 @@ int SFI_MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	  return -2;	
 	}
 	
-	Vector data(3 + 3*m);
-	//data(3*m) = density;
+	Vector data(3 + 2*m);
+	data(3*m) = density;
 	data(3*m+1) = c;
 	data(3*m+2) = h;
 	for (int i = 0; i < m; i++) {
 	  data(i) = b[i];
 	  data(i+m) = t[i];
-	  //data(i+2*m) = rho[i];
 	}	
 	
-	// SFI_MVLEM then sends the tags of it's nodes
 	res = theChannel.sendVector(dataTag, commitTag, data);
 	if (res < 0) {
 	  opserr << "WARNING SFI_MVLEM::sendSelf() - failed to send Vector\n";
