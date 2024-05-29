@@ -1047,7 +1047,6 @@ MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	
 	ID idData(2 + 4*m);
 	
-	// MVLEM now receives the tags of it's two external nodes
 	res = theChannel.recvID(dataTag, commitTag, idData);
 	if (res < 0) {
 	  opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";
