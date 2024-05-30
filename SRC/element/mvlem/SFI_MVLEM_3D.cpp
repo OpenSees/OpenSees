@@ -767,7 +767,8 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	char aa[80] = "getInputParameters";
 	const char *argv[1];
 	argv[0] = aa;
-	
+
+	Eave = 0.0;
 	for (int i = 0; i < m; i++)
 	{
 	  //theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
