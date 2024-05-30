@@ -53,7 +53,8 @@ public:
 		int mm,									// number of macro-fibers (RC panels)
 		double cc,								// center of rotation					
 		double nn,								// poisson ratio (for out-of-plane behavior)
-		double tf);								// thickness factor (for out-of-plane behavior)
+		       double tf,								// thickness factor (for out-of-plane behavior)
+		       double Eave); // Average modulus (for out-of-plane behavior)
 
 	E_SFI_MVLEM_3D();
 
