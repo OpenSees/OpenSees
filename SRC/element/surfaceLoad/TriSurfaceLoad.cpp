@@ -121,7 +121,7 @@ TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressu
     myExternalNodes(1) = Nd2;
     myExternalNodes(2) = Nd3;
 
-	GsPts[0][0] = 0.5;
+	GsPts[0][0] = 1.0/3;
 
   my_pressure = pressure;
   rhoH = rhoH_;
@@ -140,7 +140,7 @@ TriSurfaceLoad::TriSurfaceLoad()
    	dcrd2(SL_NUM_NDF),
    	dcrd3(SL_NUM_NDF)
 {
-  GsPts[0][0] = 0;
+  GsPts[0][0] = 1.0/3;
   my_pressure = 0;
   rhoH = 0;
   mLoadFactor = 0;
@@ -232,10 +232,10 @@ TriSurfaceLoad::UpdateBase(double Xi, double Eta)
     g1 = (dcrd2 - dcrd1);
     g2 = (dcrd3 - dcrd1);
 
-  	// shape functions
-  	myNI(0) = 0.5;
-  	myNI(1) = 0.5;
-  	myNI(2) = 0.5;
+  	// shape functions - CST shape functions (triangular coordinates)
+  	myNI(0) = Xi;
+  	myNI(1) = Eta;
+  	myNI(2) = 1 - Xi - Eta;
 
 	  // normal vector to primary surface as cross product of g1 and g2
     myNhat(0) = g1(1)*g2(2) - g1(2)*g2(1);

@@ -92,8 +92,6 @@ class ASD_SMA_3K : public UniaxialMaterial
     // Extra Calculated Material Parameters
     double ActDef;	// Actvation Strain/Deformation
     
-    double diffStrain;		// Difference of strain from last step
-    
     // Committed history variables
     double CactivStrainPos;	// Committed activation strain (Pos Quad)
     double CactivStrainNeg;	// Committed activation strain (Neg Quad)
@@ -132,10 +130,15 @@ class ASD_SMA_3K : public UniaxialMaterial
     double Cstress;		// Committed Strain
     double Ctangent;		// Committed Strain
 
+    int CNo_k2_Pos;
+    int CNo_k2_Neg;
+    int CNo_Y_Pos;
+    int CNo_Y_Neg;
+
     int No_k2_Pos;
     int No_k2_Neg;
     int No_Y_Pos;
-    int No_Y_Neg;
+    int No_Y_Neg;  
 
 };
 

@@ -31,7 +31,7 @@
 // Oil Damper Model Relationship of the form  before relief valve ==> F = K*u_s = C*V_d  after relief valve ==> F= K*u_s = Fr + p*C*(V_d-Fr/C)
 //
 // References: 
-// Akcelyan, S., and Lignos, D.G. (2015), ìAdaptive Numerical Method Algorithms for Nonlinear Viscous and Bilinear Oil Damper Models Under Random Vibrationsî, ASCE Journal of Engineering Mechanics, (under review)
+// Akcelyan, S., and Lignos, D.G. (2015), ‚ÄúAdaptive Numerical Method Algorithms for Nonlinear Viscous and Bilinear Oil Damper Models Under Random Vibrations‚Äù, ASCE Journal of Engineering Mechanics, (under review)
 // Kasai, K., Takahashi, O., and Sekiguchi, Y. (2004). "JSSI manual for building passive control technology part-10 time-history analysis model for nonlinear oil dampers." Proc., The 13th World Conference on Earthquake Engineering, Vancouver, B.C., Canada.
 
 // Variables:
@@ -57,8 +57,8 @@ class BilinearOilDamper : public UniaxialMaterial
     BilinearOilDamper(int tag, double K, double C, double Fr, double p, double LGap, double NM, double RelTol, double AbsTol, double MaxHalf);    
     BilinearOilDamper(); 
     ~BilinearOilDamper();
-    
-    // const char *getClassType(void) const {return "BilinearOilDamper";};
+
+    const char *getClassType(void) const {return "BilinearOilDamper";}
 
     int setTrialStrain(double strain, double strainRate = 0.0); 
     double getStrain(void); 
