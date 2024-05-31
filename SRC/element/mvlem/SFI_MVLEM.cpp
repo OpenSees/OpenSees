@@ -163,17 +163,17 @@ SFI_MVLEM::SFI_MVLEM(int tag,
 		     int mm,
 		     double cc)
   :Element(tag,ELE_TAG_SFI_MVLEM),  
-   externalNodes(2+mm),
    theNd1(0),
    theNd2(0),
    theNodesX(0),
    theNodesALL(0),
    theMaterial(0), theLoad(0),
+   m(mm),c(cc),
+   externalNodes(2+m),
    SFI_MVLEMStrainX(0),SFI_MVLEMStrainY(0),SFI_MVLEMStrainXY(0),SFI_MVLEMStrain(0),
    x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), kh(0), Fx(0), Fy(0), Fxy(0), Dens(0), Dx(0), Dy(0), Dxy(0), 
    SFI_MVLEMK(6+m,6+m), SFI_MVLEMR(6+m), SFI_MVLEMD(6+m,6+m), SFI_MVLEMM(6+m,6+m),
-   P_6DOF(6),
-   m(mm),c(cc)
+   P_6DOF(6)
    
 {	
   // Fill with ZEROs all element matrices
