@@ -463,7 +463,7 @@ E_SFI_MVLEM_3D::~E_SFI_MVLEM_3D()
 	if (Dxy != 0)
 		delete[]Dxy;
 	if (rhox != 0)
-		delete rhox;
+		delete[] rhox;
 	if (E_SFI_MVLEM_3DStrainX != 0)
 		delete[]E_SFI_MVLEM_3DStrainX;
 	if (E_SFI_MVLEM_3DStrainY != 0)
