@@ -12,6 +12,7 @@ target_sources(OPS_Element
         ElasticTubularJoint.cpp
         Joint2D.cpp
         Joint3D.cpp
+		Inno3DPnPJoint.cpp
         LehighJoint2d.cpp
         MP_Joint2D.cpp
         MP_Joint3D.cpp
@@ -24,6 +25,7 @@ target_sources(OPS_Element
         ElasticTubularJoint.h
         Joint2D.h
         Joint3D.h
+		Inno3DPnPJoint.h
         LehighJoint2d.h
         MP_Joint2D.h
         MP_Joint3D.h

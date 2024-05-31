@@ -60,10 +60,11 @@ class TzSimple1 : public UniaxialMaterial
 {
   public:
     TzSimple1(int tag, int classtag, int tzType, double tult, double z50, double dashpot);
+  TzSimple1(int tag, int classtag);
     TzSimple1();
     ~TzSimple1();
 
-    const char *getClassType(void) const {return "TzSimple1";};
+    virtual const char *getClassType(void) const {return "TzSimple1";};
 
     int setTrialStrain(double y, double yRate); 
     double getStrain(void);          
@@ -96,6 +97,8 @@ class TzSimple1 : public UniaxialMaterial
 	double np;			// exponent for hardening shape of Near Field Spring
 	double dashpot;     // dashpot on the far-field (elastic) component
 
+  double getTolerance() {return 1.0e-12;}
+  
   private:
 
 	// Functions to get t & z for elastic & plastic components

@@ -86,7 +86,7 @@ IMKBilin::IMKBilin(int tag, double p_Ke,
     double p_posUp_0, double p_posUpc_0, double p_posUu_0, double p_posFy_0, double p_posFcapFy_0, double p_posFresFy_0,
     double p_negUp_0, double p_negUpc_0, double p_negUu_0, double p_negFy_0, double p_negFcapFy_0, double p_negFresFy_0,
     double p_LAMBDA_S, double p_LAMBDA_C, double p_LAMBDA_K, double p_c_S, double p_c_C, double p_c_K, double p_D_pos, double p_D_neg)
-    :UniaxialMaterial(tag, 0), Ke(p_Ke),
+    :UniaxialMaterial(tag, MAT_TAG_IMKBilin), Ke(p_Ke),
     posUp_0(p_posUp_0), posUpc_0(p_posUpc_0), posUu_0(p_posUu_0), posFy_0(p_posFy_0), posFcapFy_0(p_posFcapFy_0), posFresFy_0(p_posFresFy_0),
     negUp_0(p_negUp_0), negUpc_0(p_negUpc_0), negUu_0(p_negUu_0), negFy_0(p_negFy_0), negFcapFy_0(p_negFcapFy_0), negFresFy_0(p_negFresFy_0),
     LAMBDA_S(p_LAMBDA_S), LAMBDA_C(p_LAMBDA_C), LAMBDA_K(p_LAMBDA_K), c_S(p_c_S), c_C(p_c_C), c_K(p_c_K), D_pos(p_D_pos), D_neg(p_D_neg)
@@ -105,7 +105,7 @@ IMKBilin::IMKBilin(int tag, double p_Ke,
 }
 
 IMKBilin::IMKBilin()
-    :UniaxialMaterial(0, 0), Ke(0),
+    :UniaxialMaterial(0, MAT_TAG_IMKBilin), Ke(0),
     posUp_0(0), posUpc_0(0), posUu_0(0), posFy_0(0), posFcapFy_0(0), posFresFy_0(0),
     negUp_0(0), negUpc_0(0), negUu_0(0), negFy_0(0), negFcapFy_0(0), negFresFy_0(0),
     LAMBDA_S(0), LAMBDA_C(0), LAMBDA_K(0), c_S(0), c_C(0), c_K(0), D_pos(0), D_neg(0)
@@ -492,72 +492,16 @@ IMKBilin::getCopy(void)
         negUp_0, negUpc_0, negUu_0, negFy_0, negFcapFy_0, negFresFy_0,
         LAMBDA_S, LAMBDA_C, LAMBDA_K, c_S, c_C, c_K, D_pos, D_neg);
 
-    //cout << " getCopy" << endln;
-// 7 Positive U and F
-    theCopy->posUy      = posUy;
-    theCopy->posFy      = posFy;
-    theCopy->posUcap    = posUcap;
-    theCopy->posFcap    = posFcap;
-    theCopy->posFres    = posFres;
-    theCopy->posKp      = posKp;
-    theCopy->posKpc     = posKpc;
-// 7 Negative U and F
-    theCopy->negUy      = negUy;
-    theCopy->negFy      = negFy;
-    theCopy->negUcap    = negUcap;
-    theCopy->negFcap    = negFcap;
-    theCopy->negFres    = negFres;
-    theCopy->negKp      = negKp;
-    theCopy->negKpc     = negKpc;
-// 3 State Values
-    theCopy->U          = U;
-    theCopy->Ui         = Ui;
-    theCopy->Fi         = Fi;
-// 1 Stiffness
-    theCopy->Kunload    = Kunload;
-// 2 Energy
-    theCopy->engAcml    = engAcml;
-    theCopy->engDspt    = engDspt;
-// 2 Flag
-    theCopy->Failure_State	= Failure_State;
-    theCopy->onBackbone     = onBackbone;
-// 7 Positive U and F
-    theCopy->cPosUy     = cPosUy;
-    theCopy->cPosFy     = cPosFy;
-    theCopy->cPosUcap   = cPosUcap;
-    theCopy->cPosFcap   = cPosFcap;
-    theCopy->cPosFres   = cPosFres;
-    theCopy->cPosKp     = cPosKp;
-    theCopy->cPosKpc    = cPosKpc;
-// 7 Negative U and F
-    theCopy->cNegUy     = cNegUy;
-    theCopy->cNegFy     = cNegFy;
-    theCopy->cNegUcap   = cNegUcap;
-    theCopy->cNegFcap   = cNegFcap;
-    theCopy->cNegFres   = cNegFres;
-    theCopy->cNegKp     = cNegKp;
-    theCopy->cNegKpc    = cNegKpc;
-// 3 State
-    theCopy->cU         = cU;
-    theCopy->cUi        = cUi;
-    theCopy->cFi        = cFi;
-// 1 Stiffness
-    theCopy->cKunload   = cKunload;
-// 2 Energy
-    theCopy->cEngAcml   = cEngAcml;
-    theCopy->cEngDspt   = cEngDspt;
-// 2 Flag
-    theCopy->cFailure_State = cFailure_State;
-    theCopy->cOnBackbone    = onBackbone;
+    *theCopy = *this;
+
     return theCopy;
 }
 
 int IMKBilin::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    cout << " sendSelf" << endln;
 
-    static Vector data(137);
+    static Vector data(57);
     data(0) = this->getTag();
 // 21 Fixed Input Material Parameters 1-25
     data(1)  	= Ke;
@@ -575,33 +519,34 @@ int IMKBilin::sendSelf(int cTag, Channel &theChannel)
     data(13) 	= negFresFy_0;
     data(14) 	= LAMBDA_S;
     data(15) 	= LAMBDA_C;
-    data(17) 	= LAMBDA_K;
-    data(18) 	= c_S;
-    data(19) 	= c_C;
-    data(21) 	= c_K;
-    data(22) 	= D_pos;
-    data(23) 	= D_neg;
+    data(16) 	= LAMBDA_K;
+    data(17) 	= c_S;
+    data(18) 	= c_C;
+    data(19) 	= c_K;
+    data(20) 	= D_pos;
+    data(21) 	= D_neg;
 // 13 Initial Values 31-44
-    data(31)	= posUy_0;
-    data(32)	= posUcap_0;
-    data(33)	= posFcap_0;
-    data(34)	= posKp_0;
-    data(35)	= posKpc_0;
-    data(36)	= negUy_0;
-    data(37)	= negUcap_0;
-    data(38)	= negFcap_0;
-    data(39)	= negKp_0;
-    data(40)	= negKpc_0;
-    data(41)	= engRefS;
-    data(42)	= engRefC;
-    data(44)	= engRefK;
+    data(22)	= posUy_0;
+    data(23)	= posUcap_0;
+    data(24)	= posFcap_0;
+    data(25)	= posKp_0;
+    data(26)	= posKpc_0;
+    data(27)	= negUy_0;
+    data(28)	= negUcap_0;
+    data(29)	= negFcap_0;
+    data(30)	= negKp_0;
+    data(31)	= negKpc_0;
+    data(32)	= engRefS;
+    data(33)	= engRefC;
+    data(34)	= engRefK;
 // 7 Positive U and F 51-62
+    /*
     data(51) 	= posUy;
     data(52) 	= posFy;
     data(53) 	= posUcap;
     data(54) 	= posFcap;
     data(60) 	= posFres;
-    data(51) 	= posKp;
+    data(61) 	= posKp;
     data(62) 	= posKpc;
 // 3 State Variables 63-65
     data(63)    = U;
@@ -623,34 +568,35 @@ int IMKBilin::sendSelf(int cTag, Channel &theChannel)
 // 2 Flag 85 86
     data(85)	= Failure_State;
     data(86) 	= onBackbone;
+    */
 // 7 Positive U and F 101-112
-    data(101)	= cPosUy;
-    data(102)	= cPosFy;
-    data(103)	= cPosUcap;
-    data(104)	= cPosFcap;
-    data(110)	= cPosFres;
-    data(111)	= cPosKp;
-    data(112)	= cPosKpc;
+    data(35)	= cPosUy;
+    data(36)	= cPosFy;
+    data(37)	= cPosUcap;
+    data(38)	= cPosFcap;
+    data(39)	= cPosFres;
+    data(40)	= cPosKp;
+    data(41)	= cPosKpc;
 // 3 State Variables 113-115
-    data(113)   = cU;
-    data(114)	= cUi;
-    data(115)	= cFi;
+    data(42)   = cU;
+    data(43)	= cUi;
+    data(44)	= cFi;
 // 2 Stiffness 116 117
-    data(117)	= cKunload;
+    data(45)	= cKunload;
 // 2 Energy 118 119
-    data(118)   = cEngAcml;
-    data(119)   = cEngDspt;
+    data(46)   = cEngAcml;
+    data(47)   = cEngDspt;
 // 7 Negative U and F 121-132
-    data(121)	= cNegUy;
-    data(122)	= cNegFy;
-    data(123)	= cNegUcap;
-    data(124)	= cNegFcap;
-    data(130)	= cNegFres;
-    data(131)	= cNegKp;
-    data(132)	= cNegKpc;
+    data(48)	= cNegUy;
+    data(49)	= cNegFy;
+    data(50)	= cNegUcap;
+    data(51)	= cNegFcap;
+    data(52)	= cNegFres;
+    data(53)	= cNegKp;
+    data(54)	= cNegKpc;
 // 2 Flag 135 136
-    data(135)	= cFailure_State;
-    data(136)	= cOnBackbone;
+    data(55)	= cFailure_State;
+    data(56)	= cOnBackbone ? 1.0 : -1.0 ;
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0)
         opserr << "IMKBilin::sendSelf() - failed to send data\n";
@@ -661,7 +607,7 @@ int IMKBilin::sendSelf(int cTag, Channel &theChannel)
 int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector data(137);
+    static Vector data(57);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
     if (res < 0) {
@@ -669,7 +615,6 @@ int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroke
         this->setTag(0);
     }
     else {
-        cout << " recvSelf" << endln;
         this->setTag((int)data(0));
     // 21 Fixed Input Material Parameters
         Ke				= data(1);
@@ -687,32 +632,33 @@ int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroke
         negFresFy_0		= data(13);
         LAMBDA_S		= data(14);
         LAMBDA_C		= data(15);
-        LAMBDA_K		= data(17);
-        c_S				= data(18);
-        c_C				= data(19);
-        c_K				= data(21);
-        D_pos			= data(22);
-        D_neg			= data(23);
+        LAMBDA_K		= data(16);
+        c_S				= data(17);
+        c_C				= data(18);
+        c_K				= data(19);
+        D_pos			= data(20);
+        D_neg			= data(21);
     // 13 Initial Values
-        posUy_0			= data(25);
-        posUcap_0		= data(26);
-        posFcap_0		= data(27);
-        posKp_0			= data(28);
-        posKpc_0		= data(29);
-        negUy_0			= data(30);
-        negUcap_0		= data(31);
-        negFcap_0		= data(32);
-        negKp_0			= data(33);
-        negKpc_0		= data(34);
-        engRefS			= data(35);
-        engRefC			= data(36);
-        engRefK			= data(38);
+        posUy_0			= data(22);
+        posUcap_0		= data(23);
+        posFcap_0		= data(24);
+        posKp_0			= data(25);
+        posKpc_0		= data(26);
+        negUy_0			= data(27);
+        negUcap_0		= data(28);
+        negFcap_0		= data(29);
+        negKp_0			= data(30);
+        negKpc_0		= data(31);
+        engRefS			= data(32);
+        engRefC			= data(33);
+        engRefK			= data(34);
+	/*
     // 3 State Variables
-        U               = data(41);
-        Ui				= data(42);
-        Fi				= data(43);
+        U               = data(63);
+        Ui				= data(64);
+        Fi				= data(65);
     // 1 Stiffness
-        Kunload	    	= data(46);
+        Kunload	    	= data(67);
     // 7 Positive U and F
         posUy			= data(51);
         posFy			= data(52);
@@ -722,47 +668,50 @@ int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroke
         posKp			= data(61);
         posKpc		    = data(62);
     // 7 Negative U and F
-        negUy			= data(65);
-        negFy			= data(65);
-        negUcap		    = data(67);
-        negFcap		   	= data(68);
-        negFres		    = data(74);
-        negKp			= data(75);
-        negKpc		    = data(76);
+        negUy			= data(71);
+        negFy			= data(72);
+        negUcap		    = data(73);
+        negFcap		   	= data(74);
+        negFres		    = data(80);
+        negKp			= data(81);
+        negKpc		    = data(82);
     // 2 Flag
-        Failure_State	= data(80);
-        onBackbone		= data(81);
+        Failure_State	= data(85);
+        onBackbone		= data(86);
     // 2 Energy
-        engAcml			= data(85);
-        engDspt		    = data(86);
-    // 3 State Variables
-        cU              = data(91);
-        cUi				= data(92);
-        cFi				= data(93);
-    // 1 Stiffness
-        cKunload		= data(96);
+        engAcml			= data(68);
+        engDspt		    = data(69);
+	*/
     // 7 Positive U and F
-        cPosUy			= data(101);
-        cPosFy			= data(102);
-        cPosUcap		= data(103);
-        cPosFcap		= data(104);
-        cPosFres		= data(110);
-        cPosKp			= data(111);
-        cPosKpc			= data(112);
-    // 7 Negative U and F
-        cNegUy			= data(115);
-        cNegFy			= data(116);
-        cNegUcap		= data(117);
-        cNegFcap		= data(118);
-        cNegFres		= data(124);
-        cNegKp			= data(125);
-        cNegKpc			= data(126);
-    // 2 Flag
-        cFailure_State	= data(130);
-        cOnBackbone		= data(131);
+        cPosUy			= data(35);
+        cPosFy			= data(36);
+        cPosUcap		= data(37);
+        cPosFcap		= data(38);
+        cPosFres		= data(39);
+        cPosKp			= data(40);
+        cPosKpc			= data(41);
+    // 3 State Variables
+        cU              = data(42);
+        cUi				= data(43);
+        cFi				= data(44);
+    // 1 Stiffness
+        cKunload		= data(45);
     // 2 Energy
-        cEngAcml        = data(135);
-        cEngDspt        = data(136);
+        cEngAcml        = data(46);
+        cEngDspt        = data(47);
+    // 7 Negative U and F
+        cNegUy			= data(48);
+        cNegFy			= data(49);
+        cNegUcap		= data(50);
+        cNegFcap		= data(51);
+        cNegFres		= data(52);
+        cNegKp			= data(53);
+        cNegKpc			= data(54);
+    // 2 Flag
+        cFailure_State	= int(data(55));
+        cOnBackbone		= data(56) > 0.0 ? true : false;
+
+	this->revertToLastCommit();
     }
 
     return res;
