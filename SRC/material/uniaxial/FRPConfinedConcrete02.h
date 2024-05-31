@@ -31,7 +31,6 @@
 #define FRPConfinedConcrete02_h
 
 #include <UniaxialMaterial.h>
-#define MAT_TAG_FRPConfinedConcrete02 5010
 
 class FRPConfinedConcrete02 : public UniaxialMaterial
 {
