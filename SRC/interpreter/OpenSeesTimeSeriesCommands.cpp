@@ -56,6 +56,7 @@ void* OPS_RampSeries();
 void* OPS_RectangularSeries();
 void* OPS_PulseSeries();
 void* OPS_MPAccSeries();   //Tang.S
+void* OPS_SocketSeries();
 
 namespace {
     
@@ -229,7 +230,9 @@ namespace {
 	functionMap.insert(std::make_pair("Series", &OPS_PathSeries));
 	functionMap.insert(std::make_pair("MPAcc", &OPS_MPAccSeries));  //Tang.S
 	functionMap.insert(std::make_pair("MPAccSeries", &OPS_MPAccSeries));
-      
+	functionMap.insert(std::make_pair("Socket", &OPS_SocketSeries));
+	functionMap.insert(std::make_pair("SocketSeries", &OPS_SocketSeries));
+
 	return 0;
     }
 }

@@ -398,12 +398,15 @@
 #include "SurfaceLoad.h"
 #include "TriSurfaceLoad.h"
 
+#ifdef _HAVE_PML
 #include "PML/PML2D.h"
 #include "PML/PML3D.h"
+#include "PML/PML2D_3.h"
 #include "PML/PML2D_3.h"
 #include "PML/PML2D_5.h"
 #include "PML/PML2D_12.h"
 #include "PML/PML2DVISCOUS.h"
+#endif
 
 
 #include "UP-ucsd/Nine_Four_Node_QuadUP.h"
@@ -1005,7 +1008,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_Quad4FiberOverlay:
       return new Quad4FiberOverlay(); //Amin Pakzad
-	
+
 	case ELE_TAG_Brick8FiberOverlay:
       return new Brick8FiberOverlay(); //Amin Pakzad
 
@@ -1015,6 +1018,8 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     case ELE_TAG_FourNodeTetrahedron:
       return new FourNodeTetrahedron();
       
+
+#ifdef _HAVE_PML
 	case ELE_TAG_PML2D:
 	  return new PML2D();
 
@@ -1032,6 +1037,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_PML2DVISCOUS:
 	  return new PML2DVISCOUS(); // Amin Pakzad
+#endif
 	
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();

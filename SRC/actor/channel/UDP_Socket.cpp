@@ -129,7 +129,7 @@ UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
 // to an address given by other_InetAddr and other_Port. This is to allow
 // a shadow object to find address of the actor it initiatites.
 UDP_Socket::UDP_Socket(unsigned int other_Port,
-    char *other_InetAddr, bool checkendianness)
+    const char *other_InetAddr, bool checkendianness)
     : myPort(0), connectType(1),
     checkEndianness(checkendianness), endiannessProblem(false)
 {
