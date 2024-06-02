@@ -113,6 +113,8 @@ private:
 	Vector getResistingForce_24DOF(void);
 	Vector getResistingForce_24DOF_local(void);
 
+	int m;								// no. of RC panels 
+  
 	// Private attributes - a copy for each object of the class
 	ID externalNodes;					// contains the id's of end nodes
 
@@ -128,7 +130,6 @@ private:
 	NDMaterial **theMaterial;			// array of ND materials
 	Vector *theLoad;					// pointer to element load
 	double c;							// center of rotation
-	int m;								// no. of RC panels 
 	double NUelastic;					// Poisson ratio
 	double Tfactor;						// Thickness factor
 
