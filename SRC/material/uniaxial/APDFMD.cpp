@@ -16,6 +16,11 @@ OPS_APDFMD(void)
         numAPDFMD++;
     }
 
+    opserr << "Due to known issues and unreliable results, this material has been" << endln;
+    opserr << "temporarily removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
+    opserr << "The material source code remains available. Compile at your own risk." << endln;
+    return 0;
+  
     UniaxialMaterial* theMaterial = 0;
 
     int    iData[1];
