@@ -2070,9 +2070,10 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       return 0;
     }
     else if (ndm == 3) {
-      double wy, wz;
+      double wy, wz, wyb, wzb;
       double wx = 0.0;
-      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
+	  double wxb = 0.0;
+	  if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
 	opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
 	return TCL_ERROR;
       }
@@ -2101,7 +2102,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 
       for (int i=0; i<theEleTags.Size(); i++) {
 	if (aL > 0.0 || bL < 1.0)
-	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, theEleTags(i));
+	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, wyb, wzb, wxb, theEleTags(i));
 	else 
 	  theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));    	
 
