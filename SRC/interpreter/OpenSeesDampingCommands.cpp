@@ -403,7 +403,7 @@ int OPS_Damping()
 
     //create it
     Damping* damping = 0;
-    if (strcmp(type, "uniform") == 0) {
+    if (strcmp(type, "Uniform") == 0) {
         damping = (Damping*)OPS_UniformDamping();
     }
     else if (strcmp(type, "SecStif") == 0) {

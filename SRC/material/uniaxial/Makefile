@@ -163,6 +163,9 @@ OBJS       = UniaxialMaterial.o \
 	FlagShapeMaterial.o \
 	GMG_CyclicReinforcedConcrete.o \
 	CreepMaterial.o \
+	APDFMD.o \
+	APDMD.o \
+	APDVFD.o \
     TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

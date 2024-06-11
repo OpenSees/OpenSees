@@ -55,6 +55,11 @@ OPS_FRPConfinedConcrete(void)
     opserr << "FRPConfinedConcrete uniaxial material - Developed by Konstantinos G. Megalooikonomou University of Roma Tre Copyright 2009";
   }
 
+  opserr << "Due to known issues and unreliable results, this material has been" << endln;
+  opserr << "temporarily removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
+  opserr << "The material source code remains available. Compile at your own risk." << endln;
+  return 0;
+
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
@@ -135,7 +140,7 @@ Es = Steel's Elastic modulus, vo = Poisson's coefficient for concrete, k = reduc
 	 double v0_, 
 	 double k_,
 	 double useBuck_)
- :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),fpc1(fpc1), fpc2(fpc2), epsc0(epsc0), CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
+ :UniaxialMaterial(tag, MAT_TAG_FRPConfinedConcrete),CminStrain(0.0), CendStrain(0.0),Cstrain(0.0), Cstress(0.0), CaLatstress(0.0) ,
    CbLatstress(0.00001),CLatStrain(0.0) ,CConvFlag(false) ,CConfRat(1.0) ,CConfStrain(epsc0),CLBuck(0.0)
 {
   fpc1 = fpc1_;

@@ -577,6 +577,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\InitStressNDMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -668,6 +671,9 @@
       <Filter>nD\wrappers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\Series3DMaterial.cpp">
+      <Filter>nD\wrappers</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\Parallel3DMaterial.cpp">
       <Filter>nD\wrappers</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.cpp">
@@ -1523,6 +1529,18 @@
     <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.cpp">
       <Filter>section\LayeredMembraneSection</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDFMD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDMD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDVFD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -1954,6 +1972,9 @@
     <ClInclude Include="..\..\..\SRC\material\nD\InitStressNDMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h">
       <Filter>nD</Filter>
     </ClInclude>
@@ -2036,6 +2057,9 @@
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\Series3DMaterial.h">
+      <Filter>nD\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\Parallel3DMaterial.h">
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.h">
