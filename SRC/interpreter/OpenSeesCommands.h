@@ -501,6 +501,7 @@ void* OPS_PlainHandler();
 void* OPS_PenaltyConstraintHandler();
 void* OPS_LagrangeConstraintHandler();
 void* OPS_TransformationConstraintHandler();
+void* OPS_AutoConstraintHandler();
 
 void* OPS_CTestNormUnbalance();
 void* OPS_CTestNormDispIncr();
