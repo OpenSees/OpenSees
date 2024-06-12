@@ -93,7 +93,6 @@ extern void *OPS_Bilin(void);
 extern void *OPS_Bilin02(void);
 extern void *OPS_Steel01(void);
 extern void *OPS_SteelMP(void);
-extern void *OPS_FRPConfinedConcrete02(void);
 extern void *OPS_Steel02(void);
 extern void *OPS_Steel03(void);
 extern void *OPS_SteelFractureDI(void); // galvisf
@@ -940,7 +939,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
     }
     if (strcmp(argv[1],"FRPConfinedConcrete") == 0) {
-      void *theMat = 0; //OPS_FRPConfinedConcrete();
+      void *theMat = OPS_FRPConfinedConcrete();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
