@@ -262,6 +262,9 @@
     <ClCompile Include="..\..\..\SRC\material\section\TimoshenkoSection3d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\WFFiberSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\WSection2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDFMD.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDMD.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDVFD.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSp.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\AxialSpHD.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\backbone\CappedBackbone.cpp" />

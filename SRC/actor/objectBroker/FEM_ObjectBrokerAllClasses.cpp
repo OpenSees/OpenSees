@@ -112,6 +112,7 @@
 #include "APDMD.h"
 #include "APDFMD.h"
 #include "BilinearOilDamper.h"
+#include "Maxwell.h"
 #include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
 #include "BackboneMaterial.h"
@@ -1866,6 +1867,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_BilinearOilDamper:
 	    return new BilinearOilDamper();
+
+	case MAT_TAG_Maxwell:
+	    return new Maxwell();
 	    
 	case MAT_TAG_ContinuumUniaxial:
 		return new ContinuumUniaxial();
