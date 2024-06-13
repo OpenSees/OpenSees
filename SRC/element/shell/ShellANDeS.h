@@ -106,6 +106,8 @@ public:
 
     ~ShellANDeS();
 
+    const char *getClassType(void) const {return "ShellANDeS";}
+    
     int getNumExternalNodes () const;
     const ID &getExternalNodes ();
     Node **getNodePtrs(void);

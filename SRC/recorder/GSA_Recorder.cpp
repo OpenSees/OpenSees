@@ -240,7 +240,10 @@ GSA_Recorder::restart(void)
   return 0;
 }
 
-
+int GSA_Recorder::flush() {
+    theFile.flush();
+    return 0;
+}
 
 
 

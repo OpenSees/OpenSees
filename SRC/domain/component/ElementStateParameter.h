@@ -33,7 +33,7 @@ class Domain;
 class ElementStateParameter : public Parameter
 {
  public:
-  ElementStateParameter(double value, 
+  ElementStateParameter(int tag, double value, 
 			const char **argv, 
 			int argc, 
 			int flag, 

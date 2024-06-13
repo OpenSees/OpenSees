@@ -680,10 +680,12 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
 TclModelBuilder::~TclModelBuilder()
 {
+
   OPS_clearAllTimeSeries();
   //  OPS_clearAllUniaxialMaterial();
   //  OPS_clearAllNDMaterial();
   //  OPS_clearAllSectionForceDeformation();
+
   OPS_clearAllCrdTransf();
   OPS_clearAllDamping();
   OPS_clearAllFrictionModel();
@@ -692,15 +694,15 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
   //  OPS_clearAllNDMaterial();
+
   OPS_clearAllBeamIntegrationRule();
 
-  theSections->clearAll(); 
+  theSections->clearAll();
   theSectionRepresents->clearAll();
   theYieldSurface_BCs->clearAll();
   theYS_EvolutionModels->clearAll();
   thePlasticMaterials->clearAll();
   theCycModels->clearAll();//!!
-
   // free up memory allocated in the constructor
   delete theSections;
   delete theSectionRepresents;
@@ -715,7 +717,7 @@ TclModelBuilder::~TclModelBuilder()
   theTclLoadPattern =0;
   theTclMultiSupportPattern = 0;  
   TCL_OPS_setModelBuilder(0);
-  
+
   // may possibly invoke Tcl_DeleteCommand() later
   Tcl_DeleteCommand(theInterp, "parameter");
   Tcl_DeleteCommand(theInterp, "addToParameter");
@@ -768,7 +770,7 @@ TclModelBuilder::~TclModelBuilder()
   Tcl_DeleteCommand(theInterp, "damageModel");
 
   Tcl_DeleteCommand(theInterp, "loadPackage");
-    Tcl_DeleteCommand(theInterp, "generateInterfacePoints"); // Added by Alborz Ghofrani - U.Washington
+  Tcl_DeleteCommand(theInterp, "generateInterfacePoints"); // Added by Alborz Ghofrani - U.Washington
 }
 
 
@@ -1440,6 +1442,8 @@ extern void* OPS_HingeMidpointBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeRadauBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeRadauTwoBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_ConcentratedPlasticityBeamIntegration(int&, ID&);
+extern void* OPS_ConcentratedCurvatureBeamIntegration(int&, ID&);
 
 int
 TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1484,6 +1488,10 @@ TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int arg
 	bi = (BeamIntegration*)OPS_HingeRadauTwoBeamIntegration(iTag,secTags);
     } else if (strcmp(argv[1],"HingeEndpoint") == 0) {
 	bi = (BeamIntegration*)OPS_HingeEndpointBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"ConcentratedPlasticity") == 0) {
+	bi = (BeamIntegration*)OPS_ConcentratedPlasticityBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"ConcentratedCurvature") == 0) {
+	bi = (BeamIntegration*)OPS_ConcentratedCurvatureBeamIntegration(iTag,secTags);		
     } else {
 	opserr<<"WARNING: integration type "<<argv[1]<<" is unknown\n";
 	return TCL_ERROR;
@@ -2062,9 +2070,10 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       return 0;
     }
     else if (ndm == 3) {
-      double wy, wz;
+      double wy, wz, wyb, wzb;
       double wx = 0.0;
-      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
+	  double wxb = 0.0;
+	  if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
 	opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
 	return TCL_ERROR;
       }
@@ -2093,7 +2102,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 
       for (int i=0; i<theEleTags.Size(); i++) {
 	if (aL > 0.0 || bL < 1.0)
-	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, theEleTags(i));
+	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, wyb, wzb, wxb, theEleTags(i));
 	else 
 	  theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));    	
 

@@ -289,7 +289,7 @@ OPS_EnvelopeElementRecorder()
     if (domain == 0)
         return 0;
     EnvelopeElementRecorder* recorder = new EnvelopeElementRecorder(&elements,
-        data, nargrem, *domain, *theOutputStream, dT, echoTimeFlag, &dofs);
+        data, nargrem, *domain, *theOutputStream, dT, rTolDt, echoTimeFlag, &dofs);
 
     return recorder;
 }
@@ -1034,4 +1034,11 @@ double EnvelopeElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool
 	if (reset)
 		first = true;
 	return res;
+}
+
+int EnvelopeElementRecorder::flush(void) {
+  if (theHandler != 0) {
+    return theHandler->flush();
+  }
+  return 0;
 }

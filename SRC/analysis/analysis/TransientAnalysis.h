@@ -45,7 +45,7 @@ class TransientAnalysis: public Analysis
 {
   public:
     TransientAnalysis(Domain &theDomain);
-    virtual int analyze(int numSteps, double dT) = 0;
+    virtual int analyze(int numSteps, double dT, bool flush=true) = 0;
     
     virtual ~TransientAnalysis();
     

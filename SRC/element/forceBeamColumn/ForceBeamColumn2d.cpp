@@ -90,6 +90,8 @@ Vector ForceBeamColumn2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2d()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";
 	return 0;
@@ -111,8 +113,8 @@ void* OPS_ForceBeamColumn2d()
     }
 
     // options
-    double mass = 0.0, tol=1e-12;
-    int maxIter = 10;
+    double mass = 0.0, tol=1e-12, subFac=10.0;
+    int maxIter = 10, numSub = 4;
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
@@ -127,6 +129,17 @@ void* OPS_ForceBeamColumn2d()
 		    return 0;
 		}
 	    }
+	} else if(strcmp(type,"-subdivide") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&numSub) < 0) {
+		    opserr << "WARNING invalid numSubdivide\n";
+		    return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&subFac) < 0) {
+		    opserr << "WARNING invalid subdivideFactor\n";
+		    return 0;
+		}
+	    }
 	} else if(strcmp(type,"-mass") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
 		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
@@ -135,6 +148,18 @@ void* OPS_ForceBeamColumn2d()
 		}
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -169,7 +194,7 @@ void* OPS_ForceBeamColumn2d()
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
@@ -179,8 +204,10 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     // data
     int iData[5];
     int numData;
-    double mass = 0.0, tol=1e-12;
-    int maxIter = 10;
+    double mass = 0.0, tol=1e-12, subFac=10.0;
+    int maxIter = 10, numSub = 4;
+    int dampingTag = 0;
+    Damping* theDamping = 0;
 
     // regular element, not in a mesh, get tags
     if (info.Size() == 0) {
@@ -232,7 +259,19 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 			return 0;
 		    }
 		}
-	    } else if(strcmp(type,"-mass") == 0) {
+	    } else if(strcmp(type,"-subdivide") == 0) {
+	      if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&numSub) < 0) {
+		  opserr << "WARNING invalid numSubdivide\n";
+		  return 0;
+		}
+		if(OPS_GetDoubleInput(&numData,&subFac) < 0) {
+		  opserr << "WARNING invalid subdivideFactor\n";
+		  return 0;
+		}
+	      }
+	    }
+	    else if(strcmp(type,"-mass") == 0) {
 		if(OPS_GetNumRemainingInputArgs() > 0) {
 		    if(OPS_GetDoubleInput(&numData,&mass) < 0) {
 			opserr << "WARNING invalid mass\n";
@@ -240,6 +279,18 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 		    }
 		}
 	    }
+        //Tang.S
+        else if (strcmp(type, "-damp") == 0) {
+
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0) {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
 	}
     }
 
@@ -253,12 +304,14 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 
 	// save the data for a mesh
 	Vector& mdata = meshdata[info(1)];
-	mdata.resize(5);
+	mdata.resize(7);
 	mdata(0) = iData[3];
 	mdata(1) = iData[4];
 	mdata(2) = mass;
 	mdata(3) = tol;
 	mdata(4) = maxIter;
+	mdata(5) = numSub;
+	mdata(6) = subFac;
 	return &meshdata;
 
     } else if (info.Size()>0 && info(0)==2) {
@@ -279,6 +332,8 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 	mass = mdata(2);
 	tol = mdata(3);
 	maxIter = mdata(4);
+	numSub = mdata(5);
+	subFac = mdata(6);
     }
 
     // check transf
@@ -313,13 +368,16 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
 
 int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
+
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient arguments:transfTag,integrationTag\n";
 	return -1;
@@ -331,8 +389,8 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     if(OPS_GetIntInput(&numData,&iData[0]) < 0) return -1;
 
     // options
-    double mass = 0.0, tol=1e-12;
-    int maxIter = 10;
+    double mass = 0.0, tol=1e-12, subFac=10.0;
+    int maxIter = 10, numSub = 4;
     numData = 1;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
@@ -341,11 +399,29 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 		if(OPS_GetIntInput(&numData,&maxIter) < 0) return -1;
 		if(OPS_GetDoubleInput(&numData,&tol) < 0) return -1;
 	    }
+	} else if(strcmp(type,"-subdivide") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 1) {
+		if(OPS_GetIntInput(&numData,&numSub) < 0) return -1;
+		if(OPS_GetDoubleInput(&numData,&subFac) < 0) return -1;
+	    }
+
 	} else if(strcmp(type,"-mass") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
 		if(OPS_GetDoubleInput(&numData,&mass) < 0) return -1;
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -389,7 +465,7 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     eletags.resize(elenodes.Size()/2);
     for (int i=0; i<elenodes.Size()/2; i++) {
 	theEle = new ForceBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
-				       sections,*bi,*theTransf,mass,maxIter,tol);
+				       sections,*bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
 	if (theEle == 0) {
 	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
@@ -425,7 +501,7 @@ OPS_BeamWithHinges(void)
     
   // Read optional arguments first
   double mass = 0.0;
-  int maxIter = 10; double tol = 1e-12; bool defaultIter = true;
+  int maxIter = 10, numSub = 4; double tol = 1e-12, subFac = 10.0; bool defaultIter = true;
   int numOptionalArgs = 0;
   int numData = 1;
   while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -446,6 +522,22 @@ OPS_BeamWithHinges(void)
 	defaultIter = false;
       }
     }
+    if(strcmp(type,"-subdivide") == 0) {
+      numOptionalArgs++;
+      if(OPS_GetNumRemainingInputArgs() > 1) {
+	if(OPS_GetIntInput(&numData,&numSub) < 0) {
+	  opserr << "WARNING invalid numSubdivide\n";
+	  return 0;
+	}
+	numOptionalArgs++;
+	if(OPS_GetDoubleInput(&numData,&subFac) < 0) {
+	  opserr << "WARNING invalid subdivideFactor\n";
+	  return 0;
+	}
+	numOptionalArgs++;
+	defaultIter = false;
+      }
+    }     
     if (strcmp(type,"-mass") == 0) {
       numOptionalArgs++;
       if(OPS_GetNumRemainingInputArgs() > 0) {
@@ -458,7 +550,9 @@ OPS_BeamWithHinges(void)
     }
   }
 
-  OPS_ResetCurrentInputArg(-numArgs);
+  if (numArgs > 0) {
+    OPS_ResetCurrentInputArg(-numArgs);
+  }
   numArgs = numArgs - numOptionalArgs;
 
   if (ndm == 2 && numArgs < 11) {
@@ -523,7 +617,7 @@ OPS_BeamWithHinges(void)
     opserr << "ERROR beamWithHinges - sectionI not found" << endln;
     return 0;
   }
-  sections[numSections-1] = OPS_getSectionForceDeformation(iData[3]);
+  sections[numSections-1] = OPS_getSectionForceDeformation(iData[4]);
   if (sections[numSections-1] == 0) {
     opserr << "ERROR beamWithHinges - sectionJ not found" << endln;
     return 0;
@@ -559,7 +653,7 @@ OPS_BeamWithHinges(void)
       theEle = new ForceBeamColumn2d(iData[0], iData[1], iData[2],
 				     numSections, sections,
 				     *theBeamIntegr, *theTransf,
-				     mass, maxIter, tol);
+				     mass, maxIter, tol, numSub, subFac);
   }
   if (ndm == 3)  {
     if (defaultIter)
@@ -571,7 +665,7 @@ OPS_BeamWithHinges(void)
       theEle = new ForceBeamColumn3d(iData[0], iData[1], iData[2],
 				     numSections, sections,
 				     *theBeamIntegr, *theTransf,
-				     mass, maxIter, tol);
+				     mass, maxIter, tol, numSub, subFac);
   }
   
   return theEle;
@@ -589,7 +683,7 @@ ForceBeamColumn2d::ForceBeamColumn2d():
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0), Ssr(0), vscommit(0), 
   numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(6),
-  Ki(0), parameterID(0),
+  Ki(0), maxSubdivisions(1), subdivideFactor(1.0), parameterID(0),
   theDamping(0)
 {
   load.Zero();
@@ -606,6 +700,7 @@ ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
 				      BeamIntegration &bi,
 				      CrdTransf &coordTransf, double massDensPerUnitLength,
 				      int maxNumIters, double tolerance,
+				      int maxNumSub, double subFac,
 				      Damping *damping):
   Element(tag,ELE_TAG_ForceBeamColumn2d), connectedExternalNodes(2),
   beamIntegr(0), numSections(0), sections(0), crdTransf(0),
@@ -615,9 +710,14 @@ ForceBeamColumn2d::ForceBeamColumn2d (int tag, int nodeI, int nodeJ,
   kvcommit(NEBD,NEBD), Secommit(NEBD),
   fs(0), vs(0),Ssr(0), vscommit(0), 
   numEleLoads(0), sizeEleLoads(0), eleLoads(0), eleLoadFactors(0), load(6),
-  Ki(0), parameterID(0),
+  Ki(0), maxSubdivisions(maxNumSub), subdivideFactor(subFac), parameterID(0),
   theDamping(0)
 {
+  if (maxSubdivisions < 1)
+    maxSubdivisions = 1;
+  if (subdivideFactor < 1.0)
+    subdivideFactor = 1.0;
+  
   load.Zero();
   
   theNodes[0] = 0;
@@ -1181,9 +1281,9 @@ ForceBeamColumn2d::update()
   dvToDo = dv;
   dvTrial = dvToDo;
 
-  static double factor = 10;
-
-  maxSubdivisions = 4;
+  //static double factor = 10;
+  double factor = subdivideFactor;
+  //maxSubdivisions = 4;
 
   // fmk - modification to get compatible ele forces and deformations 
   //   for a change in deformation dV we try first a newton iteration, if
@@ -1228,23 +1328,6 @@ ForceBeamColumn2d::update()
 	  f.Zero();
 	  vr.Zero();
 
-	  if (beamIntegr->addElasticFlexibility(L, f) < 0) {
-	    vr(0) += f(0,0)*SeTrial(0);
-	    vr(1) += f(1,1)*SeTrial(1) + f(1,2)*SeTrial(2);
-	    vr(2) += f(2,1)*SeTrial(1) + f(2,2)*SeTrial(2);
-	  }
-
-	  double v0[3];
-	  v0[0] = 0.0; v0[1] = 0.0; v0[2] = 0.0;
-
-	  for (int ie = 0; ie < numEleLoads; ie++) 
-	    beamIntegr->addElasticDeformations(eleLoads[ie], eleLoadFactors[ie], L, v0);
-
-	  // Add effects of element loads
-	  vr(0) += v0[0];
-	  vr(1) += v0[1];
-	  vr(2) += v0[2];
-	  
 	  for (i=0; i<numSections; i++) {
 
 	    int order      = sections[i]->getOrder();
@@ -1964,7 +2047,8 @@ ForceBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
   idData(3) = numSections;
   idData(4) = maxIters;
   idData(5) = initialFlag;
-
+  idData(10) = maxSubdivisions;
+  
   idData(6) = crdTransf->getClassTag();
   int crdTransfDbTag  = crdTransf->getDbTag();
   if (crdTransfDbTag  == 0) {
@@ -2057,12 +2141,13 @@ ForceBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
      secDefSize   += size;
   }
 
-  Vector dData(1+1+NEBD+NEBD*NEBD+secDefSize+4); 
+  Vector dData(1+1+1+NEBD+NEBD*NEBD+secDefSize+4); 
   loc = 0;
 
   // place double variables into Vector
   dData(loc++) = rho;
   dData(loc++) = tol;
+  dData(loc++) = subdivideFactor;
   
   // put  distrLoadCommit into the Vector
   //  for (i=0; i<NL; i++) 
@@ -2123,6 +2208,7 @@ ForceBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
   connectedExternalNodes(1) = idData(2);
   maxIters = idData(4);
   initialFlag = idData(5);
+  maxSubdivisions = idData(10);
   
   int crdTransfClassTag = idData(6);
   int crdTransfDbTag = idData(7);
@@ -2327,7 +2413,7 @@ ForceBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
      secDefSize   += size;
   }
   
-  Vector dData(1+1+NEBD+NEBD*NEBD+secDefSize+4);   
+  Vector dData(1+1+1+NEBD+NEBD*NEBD+secDefSize+4);   
   
   if (theChannel.recvVector(dbTag, commitTag, dData) < 0)  {
     opserr << "ForceBeamColumn2d::sendSelf() - failed to send Vector data\n";
@@ -2339,7 +2425,8 @@ ForceBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker
   // place double variables into Vector
   rho = dData(loc++);
   tol = dData(loc++);
-
+  subdivideFactor = dData(loc++);
+  
   // put  distrLoadCommit into the Vector
   //for (i=0; i<NL; i++) 
   // distrLoad(i) = dData(loc++);
@@ -2419,9 +2506,6 @@ ForceBeamColumn2d::getInitialFlexibility(Matrix &fe)
   
   double L = crdTransf->getInitialLength();
   double oneOverL  = 1.0/L;  
-  
-  // Flexibility from elastic interior
-  beamIntegr->addElasticFlexibility(L, fe);
   
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);
@@ -3152,8 +3236,6 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
       d2 += (wts[i]*L)*kappa*b;
     }
     
-    d2 += beamIntegr->getTangentDriftI(L, LI, Se(1), Se(2));
-    
     for (i = numSections-1; i >= 0; i--) {
       double x = pts[i]*L;
       if (x < LI)
@@ -3168,8 +3250,6 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
       d3 += (wts[i]*L)*kappa*b;
     }
     
-    d3 += beamIntegr->getTangentDriftJ(L, LI, Se(1), Se(2));
-
     static Vector d(2);
     d(0) = d2;
     d(1) = d3;
@@ -3859,9 +3939,6 @@ ForceBeamColumn2d::computedqdh(int gradNumber)
   static Matrix dfedh(3,3);
   dfedh.Zero();
 
-  if (beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh) < 0)
-    dvdh.addMatrixVector(1.0, dfedh, Se, -1.0);
-  
   //opserr << "dfedh: " << dfedh << endln;
 
   static Vector dqdh(3);
@@ -3884,8 +3961,6 @@ ForceBeamColumn2d::computedfedh(int gradNumber)
 
   double dLdh = crdTransf->getdLdh();
   double d1oLdh = crdTransf->getd1overLdh();
-
-  beamIntegr->addElasticFlexDeriv(L, dfedh, dLdh);
 
   double xi[maxNumSections];
   beamIntegr->getSectionLocations(numSections, L, xi);

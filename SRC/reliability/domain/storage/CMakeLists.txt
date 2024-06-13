@@ -6,5 +6,5 @@ target_sources(OPS_Reliability
         FORMStorage.h
         ReliabilityStorage.h
 )
-target_include_directories(OPS_Reliability PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Reliability PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

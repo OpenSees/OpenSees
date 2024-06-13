@@ -111,8 +111,7 @@ UserDefinedHingeIntegration::UserDefinedHingeIntegration(int npL,
   BeamIntegration(BEAM_INTEGRATION_TAG_UserHinge),
   ptsL(npL), wtsL(npL), ptsR(npR), wtsR(npR)
 {
-  int i;
-  for (i = 0; i < npL; i++) {
+  for (int i = 0; i < npL; i++) {
     if (ptL(i) < 0.0 || ptL(i) > 1.0)
       opserr << "UserDefinedHingeIntegration::UserDefinedHingeIntegration -- point lies outside [0,1]" << endln;
     if (wtL(i) < 0.0 || wtL(i) > 1.0)
@@ -121,7 +120,7 @@ UserDefinedHingeIntegration::UserDefinedHingeIntegration(int npL,
     wtsL(i) = wtL(i);
   }
 
-  for (i = 0; i < npR; i++) {
+  for (int i = 0; i < npR; i++) {
     if (ptR(i) < 0.0 || ptR(i) > 1.0)
       opserr << "UserDefinedHingeIntegration::UserDefinedHingeIntegration -- point lies outside [0,1]" << endln;
     if (wtR(i) < 0.0 || wtR(i) > 1.0)
@@ -210,14 +209,79 @@ UserDefinedHingeIntegration::getCopy(void)
 int
 UserDefinedHingeIntegration::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int res = 0;
+  
+  int dbTag = this->getDbTag();
+
+  int npL = ptsL.Size();
+  int npR = ptsR.Size();
+  
+  static ID idata(2);
+  idata(0) = npL;
+  idata(1) = npR;
+  res = theChannel.sendID(dbTag, cTag, idata);
+  if (res < 0) {
+    opserr << "UserDefinedHingeIntegration::sendSelf - failed to send ID data" << endln;
+    return res;
+  }
+
+  Vector data(2*(npL+npR));
+  for (int i = 0; i < npL; i++) {
+    data(i)     = ptsL(i);
+    data(i+npL) = wtsL(i);
+  }
+  for (int i = 0; i < npR; i++) {
+    data(2*npL + i)     = ptsR(i);
+    data(2*npL+npR + i) = wtsR(i);    
+  }
+  res = theChannel.sendVector(dbTag, cTag, data);
+  if (res < 0) {
+    opserr << "UserDefinedHingeIntegration::sendSelf - failed to send Vector data" << endln;
+    return res;
+  }
+  
+  return res;
 }
 
 int
 UserDefinedHingeIntegration::recvSelf(int cTag, Channel &theChannel,
 				      FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int res = 0;
+  
+  int dbTag = this->getDbTag();
+
+  static ID idata(2);
+  res = theChannel.recvID(dbTag, cTag, idata);
+  if (res < 0) {
+    opserr << "UserDefinedHingeIntegration::recvSelf - failed to recv ID data" << endln;
+    return res;
+  }
+  int npL = idata(0);
+  int npR = idata(1);
+
+  ptsL.resize(npL);
+  wtsL.resize(npL);
+  ptsR.resize(npR);
+  wtsR.resize(npR);
+
+  Vector data(2*(npL+npR));
+  res = theChannel.recvVector(dbTag, cTag, data);
+  if (res < 0) {
+    opserr << "UserDefinedHingeIntegration::recvSelf - failed to recv Vector data" << endln;
+    return res;
+  }
+
+  for (int i = 0; i < npL; i++) {
+    ptsL(i) = data(i);
+    wtsL(i) = data(i+npL);
+  }
+  for (int i = 0; i < npR; i++) {
+    ptsR(i) = data(2*npL + i);
+    wtsR(i) = data(2*npL+npR + i);
+  }
+
+  return res;
 }
 
 void

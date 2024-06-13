@@ -31,6 +31,7 @@
 #include <Channel.h>
 #include <Message.h>
 #include <Matrix.h>
+#include <string.h>
 
 using std::cerr;
 using std::ios;
@@ -878,5 +879,13 @@ BinaryFileStream::setOrder(const ID &orderData)
     //opserr << printMapping;
   }
 
+  return 0;
+}
+
+int
+BinaryFileStream::flush() {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
   return 0;
 }

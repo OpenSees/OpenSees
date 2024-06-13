@@ -1278,3 +1278,10 @@ RemoveRecorder::updateNodalMasses(int theEleTag, double theEleMass)
 	  }
 	  return 0;
 }
+
+int RemoveRecorder::flush(void) {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
+  return 0;
+}

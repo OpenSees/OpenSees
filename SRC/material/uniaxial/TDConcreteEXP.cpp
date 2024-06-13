@@ -69,23 +69,11 @@
 #include <float.h>
 #include <Channel.h>
 #include <Information.h>
-#include <iostream> //Added by AMK for debugging
 #include <elementAPI.h> //Added by AMK to use methods for parsing data line;
 #include <Domain.h> //Added by AMK to get current Domain time;
-using namespace std; //Added by AMK for debugging
 #include <MaterialResponse.h>
 #include <Vector.h>
 
-
-//Added by AMK to use dylib:
-//-----------------------------------------------------------------------
-	#ifdef _USRDLL
-	#define OPS_Export extern "C" _declspec(dllexport)
-	#elif _MACOSX
-	#define OPS_Export extern "C" __attribute__((visibility("default")))
-	#else
-	#define OPS_Export extern "C"
-	#endif
 
 	static int numTDConcrete = 0;
 
@@ -149,9 +137,10 @@ TDConcreteEXP::TDConcreteEXP(int tag, double _fc, double _ft, double _Ec, double
   fc(_fc), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), sigCr(_sigCr), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
 {
   ecminP = 0.0;
+  ecmaxP = 0.0;
   deptP = 0.0;
 
-	sigCr = fabs(sigCr);
+  sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -177,9 +166,9 @@ TDConcreteEXP::TDConcreteEXP(int tag, double _fc, double _ft, double _Ec, double
     iter = 0;
 	
 	//Change inputs into the proper sign convention:
-		fc = -1.0*fabs(fc); 
-		epsshu = -1.0*fabs(epsshu);
-		epscru = 1.0*fabs(epscru); 
+		fc = -fabs(fc); 
+		epsshu = -fabs(epsshu);
+		epscru = fabs(epscru); 
 }
 
 TDConcreteEXP::TDConcreteEXP(void):
@@ -210,7 +199,7 @@ TDConcreteEXP::getInitialTangent(void)
 double
 TDConcreteEXP::getCurrentTime(void)
 {
-	double currentTime;
+	double currentTime = 0.0;
 	Domain * theDomain = ops_TheActiveDomain;
 
 	if (theDomain != 0) {
@@ -447,7 +436,8 @@ TDConcreteEXP::commitState(void)
 	epsP_m = eps_m;
     if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
         double s = fabs(eps_m/fc)*Ec;
-        cout<<"\n          Strain Compression Limit Exceeded: "<<s<<"fc'";
+	s = 0.5*fabs(fc/Ec);
+	opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
     }
 	
 	//Cracking flags:
@@ -520,7 +510,7 @@ TDConcreteEXP::revertToStart(void)
 int 
 TDConcreteEXP::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(11);
+  static Vector data(14);
   data(0) =ft;    
   data(1) =Ec; 
   data(2) =beta;   
@@ -532,6 +522,9 @@ TDConcreteEXP::sendSelf(int commitTag, Channel &theChannel)
   data(8) =epscra; 
   data(9) =epscrd;     
   data(10) = this->getTag();
+  data(11) = fc;
+  data(12) = tcast;
+  data(13) = count;
 
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteEXP::sendSelf() - failed to sendSelf\n";
@@ -545,7 +538,7 @@ TDConcreteEXP::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(11);
+  static Vector data(14);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteEXP::recvSelf() - failed to recvSelf\n";
@@ -563,7 +556,10 @@ TDConcreteEXP::recvSelf(int commitTag, Channel &theChannel,
   epscra = data(8); 
   epscrd = data(9);   
   this->setTag(data(10));
-
+  fc = data(11);
+  tcast = data(12);
+  count = (int)data(13);
+  
   e = eP;
   sig = sigP;
   eps = epsP;

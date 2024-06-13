@@ -1316,3 +1316,10 @@ double NodeRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
 	res = response(clmnId);
 	return res;
 }
+
+int NodeRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
+}

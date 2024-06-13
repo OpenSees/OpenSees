@@ -792,6 +792,8 @@ int SPSW02::recvSelf(int commitTag, Channel & theChannel, FEM_ObjectBroker & the
 	excurEnerg = excurEnergP;
 	totalEnerg = totalEnergP;
 	beta = betaP;
+
+	return res;
 }
 
 void SPSW02::Print(OPS_Stream & s, int flag)

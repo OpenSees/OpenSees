@@ -35,14 +35,17 @@
 #include <UniaxialMaterial.h>
 #include <ElasticMaterial.h>
 #include <FiberSection3d.h>
+#include <FiberSection2d.h>
 
 void* OPS_RCCircularSection()
 {
-  if (OPS_GetNumRemainingInputArgs() < 13) {
+  if (OPS_GetNumRemainingInputArgs() < 11) {
     opserr << "WARNING insufficient arguments\n";
-    opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover? Nwedges? Nsteel? -GJ GJ <or> -torsion matTag\n";
+    opserr << "Want: section RCCircularSection tag? coreTag? coverTag? steelTag? d? cover? As? NringsCore? NringsCover? Nwedges? Nsteel? <-GJ GJ?> <or> <-torsion matTag?>\n";
     return 0;
   }
+
+  int ndm = OPS_GetNDM();
   
   int idata[8];
   double ddata[3];
@@ -105,40 +108,41 @@ void* OPS_RCCircularSection()
   rcsect.arrangeFibers(theMats, theCore, theCover, theSteel);
   
   UniaxialMaterial *torsion = 0;
-  if (OPS_GetNumRemainingInputArgs() < 2) {
-    opserr << "WARNING torsion not specified for RCCircularSection\n";
-    opserr << "Use either -GJ $GJ or -torsion $matTag\n";
-    opserr << "\nRCCircularSection: " << tag << endln;
-    return 0;
-  }
-  const char* opt = OPS_GetString();
   numdata = 1;
   bool deleteTorsion = false;
-  if (strcmp(opt, "-GJ") == 0) {
-    double GJ;
-    if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
-      opserr << "WARNING: failed to read GJ\n";
-      return 0;
+  while (OPS_GetNumRemainingInputArgs() > 0) {
+    const char* opt = OPS_GetString();
+    if (strcmp(opt, "-GJ") == 0) {
+      double GJ;
+      if (OPS_GetDoubleInput(&numdata, &GJ) < 0) {
+	opserr << "WARNING: failed to read GJ\n";
+	return 0;
+      }
+      torsion = new ElasticMaterial(0,GJ);
+      deleteTorsion = true;
     }
-    torsion = new ElasticMaterial(0,GJ);
-    deleteTorsion = true;
-  }
-  if (strcmp(opt, "-torsion") == 0) {
-    int torsionTag;
-    if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
-      opserr << "WARNING: failed to read torsion\n";
-      return 0;
+    if (strcmp(opt, "-torsion") == 0) {
+      int torsionTag;
+      if (OPS_GetIntInput(&numdata, &torsionTag) < 0) {
+	opserr << "WARNING: failed to read torsion\n";
+	return 0;
+      }
+      torsion = OPS_getUniaxialMaterial(torsionTag);
     }
-    torsion = OPS_getUniaxialMaterial(torsionTag);
   }
-  if (torsion == 0) {
+  if (ndm == 3 && torsion == 0) {
     opserr << "WARNING torsion not specified for RCCircularSection\n";
     opserr << "\nRCCircularSection section: " << tag << endln;
     return 0;
   }
   
   // Parsing was successful, allocate the section
-  SectionForceDeformation* theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
+  SectionForceDeformation* theSection = 0;
+  if (ndm == 2)
+    theSection = new FiberSection2d(tag, numFibers, theMats, rcsect);
+  if (ndm == 3)
+    theSection = new FiberSection3d(tag, numFibers, theMats, rcsect, *torsion);
+  
   if (deleteTorsion)
     delete torsion;
   
@@ -249,7 +253,8 @@ RCCircularSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       yi[loc] = xbar*cos(angle);
-      zi[loc] = xbar*sin(angle);
+      if (zi != 0)
+	zi[loc] = xbar*sin(angle);
       //ofs << yi[loc] << ' ' << zi[loc] << endln;
       angle += twoTheta;
       loc++;
@@ -272,7 +277,8 @@ RCCircularSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       yi[loc] = xbar*cos(angle);
-      zi[loc] = xbar*sin(angle);
+      if (zi != 0)
+	zi[loc] = xbar*sin(angle);
       //ofs << yi[loc] << ' ' << zi[loc] << endln;
       angle += twoTheta;
       loc++;
@@ -288,7 +294,8 @@ RCCircularSectionIntegration::getFiberLocations(int nFibers, double *yi, double 
   double angle = theta;
   for (int i = 0; i < Nsteel; i++) {
     yi[loc] = xbar*cos(angle);
-    zi[loc] = xbar*sin(angle);
+    if (zi != 0)
+      zi[loc] = xbar*sin(angle);
     //ofs << yi[loc] << ' ' << zi[loc] << endln;
     angle += twoTheta;
     loc++;
@@ -426,7 +433,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
   else {
     for (int i = 0; i < nFibers; i++) {
       dyidh[i] = 0.0;
-      dzidh[i] = 0.0;
+      if (dzidh != 0)
+	dzidh[i] = 0.0;
     }
     return;
   }
@@ -461,7 +469,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
-      dzidh[loc] = dxbardh*sin(angle);
+      if (dzidh != 0)
+	dzidh[loc] = dxbardh*sin(angle);
       angle += twoTheta;
       loc++;
     }
@@ -493,7 +502,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
     double angle = theta;
     for (int j = 0; j < Nwedges; j++) {
       dyidh[loc] = dxbardh*cos(angle);
-      dzidh[loc] = dxbardh*sin(angle);
+      if (dzidh != 0)
+	dzidh[loc] = dxbardh*sin(angle);
       angle += twoTheta;
       loc++;
     }
@@ -510,7 +520,8 @@ RCCircularSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, doub
   double angle = theta;
   for (int i = 0; i < Nsteel; i++) {
     dyidh[loc] = dxbardh*cos(angle);
-    dzidh[loc] = dxbardh*sin(angle);
+    if (dzidh != 0)
+      dzidh[loc] = dxbardh*sin(angle);
     angle += twoTheta;
     loc++;
   }

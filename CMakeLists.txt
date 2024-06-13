@@ -21,6 +21,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(OpenSeesFramework LANGUAGES C CXX Fortran)
 
+
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
 set(OPS_EXTERNALS_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
@@ -33,23 +34,42 @@ include(OpenSeesFunctions)
 # include user config
 include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 
+#
+# for ubuntu this has to be before the Compiler SPECIFIC stuff below .. go figure!
+#
+
+find_package(MPI)
+
+
+
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
 #
 # Compiler SPECIFIC
 #
 
+
+
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("COMPILER: Clang")
+ # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ set(BUILD_SHARED_LIBS OFF)
+ # set(CMAKE_EXE_LINKER_FLAGS "-static")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
- # add_compile_options(-fPIC)
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ set(BUILD_SHARED_LIBS OFF)
+ set(CMAKE_EXE_LINKER_FLAGS "-static")
+ add_compile_options(-fPIC)
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
- MESSAGE("COMPILER: Clang")
+ set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+ MESSAGE("COMPILER: GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel") 
  MESSAGE("COMPILER: Intel")
  add_compile_options(-fPIC)
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
  MESSAGE("COMPILER: MSVC")
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
+ set(BUILD_SHARED_LIBS OFF)
  set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded")
 else()
   MESSAGE("COMPILER: UKNOWN COMPILER ${CMAKE_CXX_COMPILER_ID}")
@@ -67,19 +87,35 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 # Conan (manages external dependencies for a typical build)
 # 
 
+MESSAGE("${CMAKE_BINARY_DIR}")
+
 if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+
+   MESSAGE("USING CONAN")
    include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
    conan_basic_setup()
+   set (Eigen3_FOUND TRUE)
    set (HDF5_FOUND TRUE)
    set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
    set (HDF5_VERSION "1.12.0")
    set(USING_CONAN TRUE)
+   set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
+   set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
+   set(TCL_LIBRARIES ${TCL_LIBRARY})
+   include_directories(${TCL_INCLUDE_PATH})
+
 else()
+
+  MESSAGE("NOT USING CONAN")
   include(OpenSeesFunctions)
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
   find_package(HDF5 REQUIRED)
   find_package(TCL REQUIRED)
+  find_package(Eigen3 REQUIRED)
+  include_directories(${TCL_INCLUDE_DIR})
+  set(TCL_LIBRARY ${TCL_LIBRARIES})
+
 endif()
 
 # define user-selectable options for end target
@@ -210,6 +246,7 @@ include_directories(
   ${OPS_SRC_DIR}/actor/channel
   ${OPS_SRC_DIR}/actor/objectBroker
   ${OPS_SRC_DIR}/actor/message
+  ${OPS_BUNDLED_DIR}/eigenAPI
 )
 
 # TODO: Temporary fix; include all directories with .h files through glob
@@ -251,6 +288,8 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
 set (TETGEN_LIBRARIES tet)
 add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
 set (TRIANGLE_LIBRARIES triangle)
+# add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/eigenAPI")
+# set (EIGENAPI_LIBRARIES EIGENAPI)
 
 
 if (NOT DEFINED LAPACK_LIBRARIES) 
@@ -259,7 +298,11 @@ else()
    set (LAPACK_FOUND TRUE CACHE BOOL "providing own lapack lib")
 endif()
 
-find_package (Python COMPONENTS Interpreter Development)
+if (NOT DEFINED Python_LIBRARIES) 
+   find_package(Python COMPONENTS Interpreter Development)
+else()
+   set (PYTHON_FOUND TRUE CACHE BOOL "providing own python lib")
+endif()
 
 
 find_package(MPI)
@@ -280,8 +323,8 @@ endif()
 
 if(PYTHON_FOUND)
   message("Python_FOUND:${Python_FOUND}")
-  message("Python_VERSION:${Python_VERSION}")
-  message("Python_Development_FOUND:${Python_Development_FOUND}")
+  #message("Python_VERSION:${Python_VERSION}")
+  #message("Python_Development_FOUND:${Python_Development_FOUND}")
   message("Python_LIBRARIES:${Python_LIBRARIES}")
   message("Python_INCLUDES:${Python_INCLUDE_DIRS}")  
 else()
@@ -327,22 +370,28 @@ endif()
 
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
-  set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  if (NOT DEFINED SCALAPACK_LIBRARIES)
+     set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
+  endif()
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     set (MKL_LPATH ${MKL_ROOT}/lib/intel64)
     set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_ilp64.lib;${MKL_LPATH}/mkl_intel_ilp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_ilp64.lib")
   endif() 
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")     
+
 else()
   message(STATUS "MKL NOT found .. user to provide -DSCALAPACK_LIBRARIES=")
-  message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
+
 endif()
+
+message(STATUS "SCALAPACK_LIBRARIES=${SCALAPACK_LIBRARIES}")
   
 #get_cmake_property(_variableNames VARIABLES)
 #list (SORT _variableNames)
 #foreach (_variableName ${_variableNames})
 #  message(STATUS "${_variableName}=${${_variableName}}")
 #endforeach()  
+
+  
 
 add_library(OPS_Numerics INTERFACE)
 
@@ -356,9 +405,11 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}       
        ${LAPACK_LIBRARIES}
+       ${EIGENAPI_LIBRARIES}
 )
 
 set(TCL_LIBRARIES ${TCL_LIBRARY})
+
 
 #
 # OpenSees OBJECT LIBRARIES
@@ -389,7 +440,6 @@ add_library(OPS_Database           OBJECT)
 add_library(OPS_INTERPRETER        OBJECT)
 
 
-include_directories(${TCL_INCLUDE_PATH})
 
 #
 # Optional Extensions
@@ -513,11 +563,11 @@ if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 else ()
      FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
      add_custom_command(
-      TARGET OpenSees POST_BUILD
-  COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
-      COMMAND ${CMAKE_COMMAND} -E copy
-        ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
-  ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
+       TARGET OpenSees POST_BUILD
+       COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
+       COMMAND ${CMAKE_COMMAND} -E copy
+       ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
+       ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
      )
 endif()
 
@@ -571,10 +621,10 @@ if(MPI_FOUND)
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesSP 
-    	  PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
     endif()
 
     target_link_libraries(OpenSeesSP 
@@ -630,14 +680,14 @@ if(MPI_FOUND)
     
     if (NOT DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
-    endif()			    
+    endif()         
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
     else()
         target_compile_definitions(OpenSeesMP 
-    	  PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
+        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
     endif()
     
     target_link_libraries(OpenSeesMP 
@@ -788,12 +838,22 @@ if(HDF5_FOUND)
    set(_hdf5_libs hdf5 hdf5_cpp)
    if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
          add_compile_definitions(_H5DRM)
+         add_compile_definitions(_HDF5)
          message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")    
    endif()
 else()
    message(STATUS "OPS >>> Could not find HDF5")
 endif()
 
+#----------------------------
+# Eigen3
+#----------------------------
+if(Eigen3_FOUND)
+   include_directories(${Eigen3_INCLUDE_DIR})
+   add_compile_definitions(_EIGEN3)
+else()
+   message(STATUS "OPS >>> Could not find Eigen3")
+endif()
 
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")

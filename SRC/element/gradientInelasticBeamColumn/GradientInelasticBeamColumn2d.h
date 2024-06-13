@@ -56,7 +56,7 @@ public:
 	// Constructors
 	GradientInelasticBeamColumn2d();
 	GradientInelasticBeamColumn2d(int tag, int nodeI, int nodeJ,
-		int numSec, SectionForceDeformation **endSec1, SectionForceDeformation **sec, SectionForceDeformation **endSec2, double R1, double R2,
+		int numSec, SectionForceDeformation &endSec1, SectionForceDeformation &sec, SectionForceDeformation &endSec2, double R1, double R2,
 		BeamIntegration &BI, CrdTransf &CT, double LC,
 		double minTolerance = 1.0e-10, double maxTolerance = 1.0e-8, int maxNumIters = 50,
 		bool constH = false,
@@ -174,6 +174,8 @@ private:
 	// complete the state variables
 
 	// Private Methods
+  void setSectionPointers(void);
+  
 	void assembleMatrix(Matrix &A, const Matrix &B, int rowStart, int rowEnd, int colStart, int colEnd, double fact);
 	void assembleMatrix(Matrix &A, const Vector &B, int col, double fact);
 	void assembleVector(Vector &A, const Vector &B, int rowStart, int rowEnd, double fact);

@@ -448,6 +448,19 @@ DuctileFracture::revertToLastCommit(void)
 int 
 DuctileFracture::revertToStart(void)
 {
+  FI  = 0; // Fracture index
+  FI_VGM	= 0; // Void growth damage component
+  FI_MVC	= 0; // Multi-void coalescence damage component
+  ep_prev	= 0; // Previous plastic strain
+  ep_curr	= 0; // Current plastic strain
+  dep		= 0; // Incremental plastic strain
+  cep_comp	= 0; // Cumulative compressive plastic strain
+  es_local = 0; // Local strain
+  T = 0; // Triaxiality
+  es_max = 0; // The maximum steel strain
+  es_min = 0; // The minimum steel strain
+  e_memo = 0; // The strain memory factor
+	
   fracFailure = false;
   return theMaterial->revertToStart();
 }

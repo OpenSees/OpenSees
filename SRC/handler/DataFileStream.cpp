@@ -28,6 +28,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <string.h>
 #include <ID.h>
 #include <Channel.h>
 #include <Message.h>
@@ -944,5 +945,12 @@ DataFileStream::setOrder(const ID &orderData)
     */
   }
 
+  return 0;
+}
+
+int DataFileStream::flush() {
+  if (theFile.is_open() && theFile.good()) {
+    theFile.flush();
+  }
   return 0;
 }

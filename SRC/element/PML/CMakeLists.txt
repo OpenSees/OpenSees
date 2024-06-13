@@ -12,9 +12,17 @@ target_sources(OPS_Element
   PRIVATE
     PML2D.cpp
     PML3D.cpp
+    PML2DVISCOUS.cpp
+    PML2D_3.cpp
+    PML2D_5.cpp
+    PML2D_12.cpp
   PUBLIC    
     PML3D.h
     PML2D.h
+    PML2DVISCOUS.h
+    PML2D_3.h
+    PML2D_5.h
+    PML2D_12.h
 )
 
 target_sources(OPS_ElementFortran
