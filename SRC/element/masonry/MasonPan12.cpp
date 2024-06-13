@@ -1251,7 +1251,7 @@ MasonPan12::setResponse(const char **argv, int argc, OPS_Stream &output)
 			output.tag("ResponseType",outputData);
 			sprintf(outputData,"P%d",i);
 			output.tag("ResponseType",outputData);
-			theResponse=new ElementResponse(this,15,Vector(2));
+			theResponse=new ElementResponse(this, 15 ,Vector(2));
 			
     // a material quantity
     } else if (strcmp(argv[0],"material") == 0) {
