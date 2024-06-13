@@ -23,6 +23,7 @@ target_sources(OPS_Element
         TFP_Bearing.cpp
         TPB1D.cpp
         TripleFrictionPendulum.cpp
+        TripleFrictionPendulumX.cpp	
     PUBLIC
         FlatSliderSimple2d.h
         FlatSliderSimple3d.h
@@ -36,6 +37,7 @@ target_sources(OPS_Element
         TFP_Bearing.h
         TPB1D.h
         TripleFrictionPendulum.h
+        TripleFrictionPendulumX.h	
 )
 
 add_subdirectory(frictionModel)

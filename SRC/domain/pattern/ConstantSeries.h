@@ -55,7 +55,7 @@ class ConstantSeries : public TimeSeries
     double getDuration () {return 0.0;} // dummy function
     double getPeakFactor () {return cFactor;} // dummy function
     double getTimeIncr (double pseudoTime) {return 1.0;} // dummy function
-    
+    double getStartTime() { return 0.0; } // dummy function
     // methods for output    
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 

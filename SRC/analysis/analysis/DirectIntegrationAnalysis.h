@@ -67,7 +67,7 @@ class DirectIntegrationAnalysis: public TransientAnalysis
 
     void clearAll(void);	    
     
-    int analyze(int numSteps, double dT);
+    int analyze(int numSteps, double dT, bool flush = true);
     int analyzeStep(double dT);
     int analyzeSubLevel(int level, double dT);
     int eigen(int numMode, bool generlzed = true, bool findSmallest = true);

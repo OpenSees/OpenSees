@@ -73,6 +73,9 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <BackgroundMesh.h>
 #include <Parameter.h>
 #include <ParameterIter.h>
+#include <UniaxialMaterial.h>
+#include <SectionForceDeformation.h>
+#include <Damping.h>
 
 void* OPS_NodeRecorder();
 void* OPS_EnvelopeNodeRecorder();
@@ -86,8 +89,8 @@ void* OPS_MPCORecorder();
 #endif
 BackgroundMesh& OPS_getBgMesh();
 
-//void* OPS_DriftRecorder();
-//void* OPS_PatternRecorder();
+void* OPS_DriftRecorder();
+void* OPS_EnvelopeDriftRecorder();
 
 namespace {
 
@@ -113,6 +116,8 @@ namespace {
 	recordersMap.insert(std::make_pair("ElementRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("NodeRemoval", &OPS_RemoveRecorder));
 	recordersMap.insert(std::make_pair("Collapse", &OPS_RemoveRecorder));
+	recordersMap.insert(std::make_pair("Drift", &OPS_DriftRecorder));
+	recordersMap.insert(std::make_pair("EnvelopeDrift", &OPS_EnvelopeDriftRecorder));
 #ifdef _HDF5
 	recordersMap.insert(std::make_pair("mpco", &OPS_MPCORecorder));
 #endif
@@ -1571,6 +1576,29 @@ int OPS_setNodeCoord()
     return 0;
 }
 
+int OPS_getPatterns()
+{
+  Domain* theDomain = OPS_GetDomain();
+  if (theDomain == 0) return -1;
+    
+  LoadPattern *thePattern;
+  LoadPatternIter &thePatterns = theDomain->getLoadPatterns();
+
+  std::vector <int> data;
+  
+  while ((thePattern = thePatterns()) != 0)
+    data.push_back(thePattern->getTag());
+
+  int size = data.size();
+  
+  if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
+    opserr << "WARNING getPatterns - failed to set output\n";
+    return -1;
+  }
+  
+  return 0;
+}
+
 int OPS_getFixedNodes()
 {
     Domain* theDomain = OPS_GetDomain();
@@ -1646,7 +1674,7 @@ int OPS_getConstrainedNodes()
     int rNodeTag;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 2) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &rNodeTag) < 0) {
 		opserr << "WARNING getConstrainedNodes <rNodeTag?> - could not read rNodeTag\n";
 		return -1;
@@ -1770,7 +1798,7 @@ int OPS_getRetainedNodes()
     int cNodeTag;
     int numdata = 1;
 
-    if (OPS_GetNumRemainingInputArgs() > 2) {
+    if (OPS_GetNumRemainingInputArgs() > 0) {
 	  if (OPS_GetIntInput(&numdata, &cNodeTag) < 0) {
 		opserr << "WARNING getRetainedNodes <cNodeTag?> - could not read cNodeTag\n";
 		return -1;
@@ -1986,6 +2014,72 @@ int OPS_getNDFF()
 	}
 
     return 0;
+}
+
+int OPS_classType()
+{
+  if (OPS_GetNumRemainingInputArgs() < 2) {
+    opserr << "ERROR want - classType objectType tag?\n";
+    return -1;
+  }
+  
+  std::string type = OPS_GetString();
+  int tag;
+  int numdata = 1;
+  
+  if (OPS_GetIntInput(&numdata, &tag) < 0) {
+    opserr << "ERROR classType objectType tag? - unable to read tag" << endln;
+    return -1;
+  }
+  
+  if (type == "uniaxialMaterial") {
+    UniaxialMaterial *theMaterial = OPS_GetUniaxialMaterial(tag);
+    if (theMaterial == 0) {
+      opserr << "ERROR classType - uniaxialMaterial with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theMaterial->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+  
+  else if (type == "section") {
+    SectionForceDeformation *theSection = OPS_getSectionForceDeformation(tag);
+    if (theSection == 0) {
+      opserr << "ERROR classType - section with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theSection->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+
+  else if (type == "damping") {
+    Damping *theDamping = OPS_getDamping(tag);
+    if (theDamping == 0) {
+      opserr << "ERROR classType - damping with tag " << tag << " not found" << endln;
+      return -1;
+    }
+    
+    std::string classType = theDamping->getClassType();
+    if (OPS_SetString(classType.c_str()) < 0) {
+      opserr << "ERROR failed to set classType" << endln;
+      return -1;
+    }      
+  }
+	  
+  else {
+    opserr << "WARNING classType - " << type.c_str() << " not yet supported" << endln;
+    return 0;
+  }
+
+  return 0;
 }
 
 int OPS_eleType()

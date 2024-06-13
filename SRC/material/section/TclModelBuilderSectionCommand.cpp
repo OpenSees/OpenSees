@@ -111,6 +111,9 @@ extern void *OPS_DoubleMembranePlateFiberSection(void);
 extern void *OPS_Isolator2spring(void);
 extern void *OPS_ElasticMembranePlateSection(void);
 extern void *OPS_ElasticPlateSection(void);
+extern void *OPS_ReinforcedConcreteLayeredMembraneSection(void); // M. J. Nunez - UChile
+extern void *OPS_LayeredMembraneSection(void); // M. J. Nunez - UChile
+extern void *OPS_ElasticMembraneSection(void); // M. J. Nunez - UChile
 
 int
 TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
@@ -430,6 +433,30 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	}
 	//end L.Jiang [SIF] added based on LayeredShellFiberSectionThermal section created by Yuli Huang & Xinzheng Lu ----
     
+    else if ((strcmp(argv[1], "ReinforcedConcreteLayeredMembraneSection") == 0) || (strcmp(argv[1], "RCLayeredMembraneSection") == 0) || (strcmp(argv[1], "RCLMS") == 0)) {
+        void* theMat = OPS_ReinforcedConcreteLayeredMembraneSection();
+        if (theMat != 0)
+            theSection = (SectionForceDeformation*)theMat;
+        else
+            return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1], "LayeredMembraneSection") == 0) || (strcmp(argv[1], "LMS") == 0)) {
+        void* theMat = OPS_LayeredMembraneSection();
+        if (theMat != 0)
+            theSection = (SectionForceDeformation*)theMat;
+        else
+            return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1], "ElasticMembraneSection") == 0) {
+        void* theMat = OPS_ElasticMembraneSection();
+        if (theMat != 0)
+            theSection = (SectionForceDeformation*)theMat;
+        else
+            return TCL_ERROR;
+    }
+
     else if (strcmp(argv[1],"Bidirectional") == 0) {
       void *theMat = OPS_Bidirectional();
       if (theMat != 0) 

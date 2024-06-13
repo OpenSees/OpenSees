@@ -35,6 +35,8 @@ target_sources(OPS_Element
         FixedLocationBeamIntegration.cpp
         LowOrderBeamIntegration.cpp
         MidDistanceBeamIntegration.cpp
+        ConcentratedPlasticityBeamIntegration.cpp
+        ConcentratedCurvatureBeamIntegration.cpp
         #GaussQBeamIntegration.cpp
 	ChebyshevBeamIntegration.cpp
     PUBLIC
@@ -77,5 +79,5 @@ target_sources(OPS_ElementFortran
 )
 
 #target_link_libraries(OPS_Element_forceBeamColumn PUBLIC OPS_Element_forceBeamColumn_f)
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

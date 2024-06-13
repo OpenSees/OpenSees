@@ -960,3 +960,10 @@ double ElementRecorder::getRecordedValue(int clmnId, int rowOffset, bool reset)
 	res = (*data)(clmnId);
 	return res;
 }
+
+int ElementRecorder::flush(void) {
+  if (theOutputHandler != 0) {
+    return theOutputHandler->flush();
+  }
+  return 0;
+}

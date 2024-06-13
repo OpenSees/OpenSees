@@ -86,6 +86,7 @@ class RemoveRecorder: public Recorder
    int playback(int commitTag);
    
    int restart(void);    
+   int flush(void);    
    // changed
    int checkEleRemoval(Element* theEle, Response *eleResponse, int &theComponent,const Vector &Criteria);
    //	int checkNodeRemoval(Element* theEle, int &theComponent,const Vector Criteria);

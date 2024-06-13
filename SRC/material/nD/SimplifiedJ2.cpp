@@ -102,6 +102,15 @@ SimplifiedJ2::SimplifiedJ2 (int pTag,
 
 }
 
+SimplifiedJ2::SimplifiedJ2():
+  NDMaterial(0,ND_TAG_SimplifiedJ2), stress(6),
+  strain(6), Cstress(6), Cstrain(6),theTangent(6,6),	
+  CplastStrainDev(6),CbackStress(6),plastStrainDev(6),
+  backStress(6)
+{
+
+}
+
 SimplifiedJ2::SimplifiedJ2 (const SimplifiedJ2 &a): NDMaterial(a.getTag(),ND_TAG_SimplifiedJ2), stress(6),
    strain(6), Cstress(6), Cstrain(6),theTangent(6,6),
    CplastStrainDev(6),CbackStress(6),plastStrainDev(6),backStress(6)
@@ -510,26 +519,61 @@ NDMaterial * SimplifiedJ2::getCopy (const char *code)
 }
 
 
-int SimplifiedJ2::sendSelf(int commitTag, Channel &theChannel){
-	// -- to be implemented.
+int SimplifiedJ2::sendSelf(int commitTag, Channel &theChannel)
+{
+  static Vector data(7+6+6+6+6+1);
+  data(0) = this->getTag();
+  data(1) = ndm;
+  data(2) = G;
+  data(3) = K;
+  data(4) = sigmaY0;
+  data(5) = H_kin;
+  data(6) = H_iso;
 
-  /*static ID data(1);
-  data(0) = theTangent;
-  return theChannel.sendID(0, commitTag, data);
-  */
-	return 0;
-};  
+  data(7) = CsigmaY;
 
-int SimplifiedJ2::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker){
-	// -- to be implemented.
+  for (int i = 0; i < 6; i++) {
+    data(8 +      i) = Cstress(i);
+    data(8 + 6 +  i) = Cstrain(i);
+    data(8 + 12 + i) = CplastStrainDev(i);
+    data(8 + 18 + i) = CbackStress(i);
+  }
 
-  /*static ID data(1);
-  int res = theChannel.recvID(0, commitTag, data);
-  theTangent = data(0);
-  return res;
-  */
-	return 0;
-};    
+  if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
+    opserr << "SimplifiedJ2::sendSelf - failed to send vector to channel\n";
+    return -1;
+  }
+
+  return 0;  
+}
+
+int SimplifiedJ2::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
+{
+  static Vector data(7+6+6+6+6+1);
+  if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
+    opserr << "SimplifiedJ2::recvSelf - failed to recv vector from channel\n";
+    return -1;
+  }
+
+  this->setTag((int)data(0));
+  ndm = (int)data(1);
+  G = data(2);
+  K = data(3);
+  sigmaY0 = data(4);
+  H_kin = data(5);
+  H_iso = data(6);
+
+  CsigmaY = data(7);
+
+  for (int i = 0; i < 6; i++) {
+    Cstress(i)         = data(8 +      i);
+    Cstrain(i)         = data(8 + 6 +  i);
+    CplastStrainDev(i) = data(8 + 12 + i);
+    CbackStress(i)     = data(8 + 18 + i);
+  }
+
+  return 0;
+}
 
      
 Response * SimplifiedJ2::setResponse (const char **argv, int argc, OPS_Stream &s){

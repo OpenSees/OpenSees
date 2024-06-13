@@ -35,6 +35,7 @@
 #include <Channel.h>
 #include <elementAPI.h>
 #include <math.h>
+#include <ID.h>
 
 void*
 OPS_Steel4(void)
@@ -790,19 +791,312 @@ Steel4::revertToStart(void)
   }
 
   return 0;
+
 }
 
-int
-Steel4::sendSelf(int commitTag, Channel &theChannel)
-{
-  return -1;
+int Steel4::sendSelf(int commitTag, Channel &theChannel) {
+
+  // Obtain required vector size
+  int numPrevHalfCycles = dir_Par.size();
+
+  int vecSize = 0;
+  vecSize += 91;				       // Non vector variables
+  vecSize += numPrevHalfCycles * 11;   // Vector variables
+
+  // Instantiate a Vector to store the relevant class attributes
+  static Vector data(vecSize);
+
+  // Instantiate a Vector to store the number of previous half-cycles
+  // So that `recvSelf` can determine the size of the data vector to receive
+  static ID dataCycl(1);
+  dataCycl(0) = numPrevHalfCycles;
+
+  // Fill the data Vector with class attributes.
+  int indx = 0;
+
+  data(indx++) = this->getTag();
+
+  data(indx++) = f_y;
+  data(indx++) = E_0;
+  data(indx++) = b_k;
+  data(indx++) = R_0;
+  data(indx++) = r_1;
+  data(indx++) = r_2;
+  data(indx++) = b_kc;
+  data(indx++) = R_0c;
+  data(indx++) = r_1c;
+  data(indx++) = r_2c;
+  data(indx++) = l_yp;
+  data(indx++) = b_i;
+  data(indx++) = R_i;
+  data(indx++) = rho_i;
+  data(indx++) = b_l;
+  data(indx++) = b_ic;
+  data(indx++) = R_ic;
+  data(indx++) = rho_ic;
+  data(indx++) = b_lc;
+  data(indx++) = f_u;
+  data(indx++) = R_u;
+  data(indx++) = f_uc;
+  data(indx++) = R_uc;
+  data(indx++) = sig_init;
+  data(indx++) = cycNum;
+  data(indx++) = eps_y0;
+  data(indx++) = E_t;
+  data(indx++) = E_c;
+  data(indx++) = eps_inc;
+  data(indx++) = dir;
+  data(indx++) = eps;
+  data(indx++) = sig;
+  data(indx++) = eps_min;
+  data(indx++) = eps_max;
+  data(indx++) = eps_l;
+  data(indx++) = eps_y;
+  data(indx++) = sig_y;
+  data(indx++) = eps_0;
+  data(indx++) = sig_0;
+  data(indx++) = eps_0B;
+  data(indx++) = sig_0B;
+  data(indx++) = eps_0Y;
+  data(indx++) = eps_plTot;
+  data(indx++) = eps_pl;
+  data(indx++) = E;
+  data(indx++) = deps_O;
+  data(indx++) = df_yi;
+  data(indx++) = df_yk;
+  data(indx++) = dir_P;
+  data(indx++) = eps_P;
+  data(indx++) = sig_P;
+  data(indx++) = eps_minP;
+  data(indx++) = eps_maxP;
+  data(indx++) = eps_lP;
+  data(indx++) = eps_yP;
+  data(indx++) = sig_yP;
+  data(indx++) = eps_0P;
+  data(indx++) = sig_0P;
+  data(indx++) = eps_0BP;
+  data(indx++) = sig_0BP;
+  data(indx++) = eps_0YP;
+  data(indx++) = eps_plTotP;
+  data(indx++) = eps_plP;
+  data(indx++) = E_P;
+  data(indx++) = deps_OP;
+  data(indx++) = df_yiP;
+  data(indx++) = df_ykP;
+  data(indx++) = parentCount;
+  data(indx++) = eps_01;
+  data(indx++) = sig_01;
+  data(indx++) = eps_01B;
+  data(indx++) = sig_01B;
+  data(indx++) = eps_02;
+  data(indx++) = sig_02;
+  data(indx++) = eps_02B;
+  data(indx++) = sig_02B;
+  data(indx++) = deltaEps;
+  data(indx++) = sig_yD;
+  data(indx++) = eps_yD;
+  data(indx++) = eps_lD;
+  data(indx++) = eps_plD;
+  data(indx++) = sig_D;
+  data(indx++) = eps_ratY;
+  data(indx++) = eps_ratU;
+  data(indx++) = xi;
+  data(indx++) = R_y;
+  data(indx++) = R_uy;
+  data(indx++) = shft;
+  data(indx++) = sig_Par;
+  data(indx++) = sig_inc;
+
+  for (int k = 0; k<numPrevHalfCycles; k++){
+
+    data(indx++) = dir_Par[k];
+	data(indx++) = df_yiPar[k];
+	data(indx++) = df_ykPar[k];
+	data(indx++) = eps_01Par[k];
+	data(indx++) = sig_01Par[k];
+	data(indx++) = eps_01BPar[k];
+	data(indx++) = sig_01BPar[k];
+	data(indx++) = eps_02Par[k];
+	data(indx++) = sig_02Par[k];
+	data(indx++) = eps_02BPar[k];
+	data(indx++) = sig_02BPar[k];
+
+  }
+  
+  // Send the size vector
+  int res = theChannel.sendID(this->getDbTag(), commitTag, dataCycl);
+  if (res < 0) {
+    opserr << "Pinching4Material::sendSelf() - failed to send data\n";
+    return res;
+  }
+
+  // Send the data vector
+  res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+  if (res < 0) {
+    opserr << "Pinching4Material::sendSelf() - failed to send data\n";
+    return res;
+  }
+
+  return 0;
 }
 
-int
-Steel4::recvSelf(int commitTag, Channel &theChannel,
-	     FEM_ObjectBroker &theBroker)
-{
-  return -1;
+int Steel4::recvSelf(int commitTag, Channel &theChannel,
+                     FEM_ObjectBroker &theBroker) {
+
+  // First retrieve the size vector to determine the size of the data vector
+  static ID dataCycl(1);
+  
+  int res = theChannel.recvID(this->getDbTag(), commitTag, dataCycl);
+  if (res < 0) {
+    opserr << "Pinching4Material::recvSelf() - failed to receive data\n";
+    return res;
+  }
+
+  int numPrevHalfCycles = dataCycl(0);
+
+  int vecSize = 0;
+  vecSize += 91;				        // Non vector variables
+  vecSize += numPrevHalfCycles * 11;    // Vector variables
+  
+  
+  // Instantiate a Vector to store the relevant class attributes
+  static Vector data(vecSize);
+
+  res = theChannel.recvVector(this->getDbTag(), commitTag, data);
+  if (res < 0) {
+    opserr << "Pinching4Material::recvSelf() - failed to receive data\n";
+    return res;
+  }
+
+  // Assign the received values to the class attributes
+
+  int indx = 0;
+
+  this->setTag((int)data(indx++));
+
+  f_y = data(indx++);
+  E_0 = data(indx++);
+  b_k = data(indx++);
+  R_0 = data(indx++);
+  r_1 = data(indx++);
+  r_2 = data(indx++);
+  b_kc = data(indx++);
+  R_0c = data(indx++);
+  r_1c = data(indx++);
+  r_2c = data(indx++);
+  l_yp = data(indx++);
+  b_i = data(indx++);
+  R_i = data(indx++);
+  rho_i = data(indx++);
+  b_l = data(indx++);
+  b_ic = data(indx++);
+  R_ic = data(indx++);
+  rho_ic = data(indx++);
+  b_lc = data(indx++);
+  f_u = data(indx++);
+  R_u = data(indx++);
+  f_uc = data(indx++);
+  R_uc = data(indx++);
+  sig_init = data(indx++);
+  cycNum = (int)data(indx++);
+  eps_y0 = data(indx++);
+  E_t = data(indx++);
+  E_c = data(indx++);
+  eps_inc = data(indx++);
+  dir = (int)data(indx++);
+  eps = data(indx++);
+  sig = data(indx++);
+  eps_min = data(indx++);
+  eps_max = data(indx++);
+  eps_l = data(indx++);
+  eps_y = data(indx++);
+  sig_y = data(indx++);
+  eps_0 = data(indx++);
+  sig_0 = data(indx++);
+  eps_0B = data(indx++);
+  sig_0B = data(indx++);
+  eps_0Y = data(indx++);
+  eps_plTot = data(indx++);
+  eps_pl = data(indx++);
+  E = data(indx++);
+  deps_O = data(indx++);
+  df_yi = data(indx++);
+  df_yk = data(indx++);
+  dir_P = (int)data(indx++);
+  eps_P = data(indx++);
+  sig_P = data(indx++);
+  eps_minP = data(indx++);
+  eps_maxP = data(indx++);
+  eps_lP = data(indx++);
+  eps_yP = data(indx++);
+  sig_yP = data(indx++);
+  eps_0P = data(indx++);
+  sig_0P = data(indx++);
+  eps_0BP = data(indx++);
+  sig_0BP = data(indx++);
+  eps_0YP = data(indx++);
+  eps_plTotP = data(indx++);
+  eps_plP = data(indx++);
+  E_P = data(indx++);
+  deps_OP = data(indx++);
+  df_yiP = data(indx++);
+  df_ykP = data(indx++);
+  parentCount = (int)data(indx++);
+  eps_01 = data(indx++);
+  sig_01 = data(indx++);
+  eps_01B = data(indx++);
+  sig_01B = data(indx++);
+  eps_02 = data(indx++);
+  sig_02 = data(indx++);
+  eps_02B = data(indx++);
+  sig_02B = data(indx++);
+  deltaEps = data(indx++);
+  sig_yD = data(indx++);
+  eps_yD = data(indx++);
+  eps_lD = data(indx++);
+  eps_plD = data(indx++);
+  sig_D = data(indx++);
+  eps_ratY = data(indx++);
+  eps_ratU = data(indx++);
+  xi = data(indx++);
+  R_y = data(indx++);
+  R_uy = data(indx++);
+  shft = data(indx++);
+  sig_Par = data(indx++);
+  sig_inc = data(indx++);
+
+  // resize vector variables
+  dir_Par.resize(numPrevHalfCycles);
+  df_yiPar.resize(numPrevHalfCycles);
+  df_ykPar.resize(numPrevHalfCycles);
+  eps_01Par.resize(numPrevHalfCycles);
+  sig_01Par.resize(numPrevHalfCycles);
+  eps_01BPar.resize(numPrevHalfCycles);
+  sig_01BPar.resize(numPrevHalfCycles);
+  eps_02Par.resize(numPrevHalfCycles);
+  sig_02Par.resize(numPrevHalfCycles);
+  eps_02BPar.resize(numPrevHalfCycles);
+  sig_02BPar.resize(numPrevHalfCycles);
+
+  // populate vector variables
+  for (int k = 0; k < numPrevHalfCycles; k++) {
+
+    dir_Par[k] = (int)data(indx++);
+	df_yiPar[k] = data(indx++);
+	df_ykPar[k] = data(indx++);
+	eps_01Par[k] = data(indx++);
+	sig_01Par[k] = data(indx++);
+	eps_01BPar[k] = data(indx++);
+	sig_01BPar[k] = data(indx++);
+	eps_02Par[k] = data(indx++);
+	sig_02Par[k] = data(indx++);
+	eps_02BPar[k] = data(indx++);
+	sig_02BPar[k] = data(indx++);
+
+  }
+
+  return 0;
+
 }
 
 void

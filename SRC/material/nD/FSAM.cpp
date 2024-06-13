@@ -232,7 +232,7 @@ FSAM::FSAM (int tag,
 	CStrainStressSteel1(2), CStrainStressSteel2(2), TStrainStressSteel1(2), TStrainStressSteel2(2),
 	CStrainStressConc1(2), CStrainStressConc2(2), TStrainStressConc1(2), TStrainStressConc2(2), 
 	CStrainStressInterlock1(2), CStrainStressInterlock2(2), TStrainStressInterlock1(2), TStrainStressInterlock2(2),
-	CCrackingAngles(2), pi(3.1415926535)
+	CCrackingAngles(2)
 {
 
 	TeTaSt = 0.0; // Direction of horizontal reinforcement (fixed for now)
@@ -481,9 +481,7 @@ FSAM::FSAM (int tag,
 
 // Blank constructor
 FSAM::FSAM():NDMaterial(0, ND_TAG_FSAM), 
-	strain_vec(3), stress_vec(3), tangent_matrix(3,3),
-	pi(3.1415926535)
-
+	strain_vec(3), stress_vec(3), tangent_matrix(3,3)
 {
 	theMaterial = 0;
 	theResponses = 0;

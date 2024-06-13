@@ -37,7 +37,7 @@
  */
 void *OPS_LiquefiedSand() {
   // check inputs
-  if (OPS_GetNumRemainingInputArgs() < 4) {
+  if (OPS_GetNumRemainingInputArgs() < 5) {
     opserr << "WARNING: need hystereticBackbone LiquefiedSand "
            << "tag X D kN m\n";
   }
@@ -66,6 +66,11 @@ void *OPS_LiquefiedSand() {
               "LiquefiedSand -- X < 0\n";
     return 0;
   }
+  if (data[1] < 0.0) {
+    opserr << "WARNING: hystereticBackbone "
+              "LiquefiedSand -- D < 0\n";
+    return 0;
+  }
   if (data[2] < 0.0) {
     opserr << "WARNING: hystereticBackbone "
               "LiquefiedSand -- kN < 0\n";
@@ -74,17 +79,6 @@ void *OPS_LiquefiedSand() {
   if (data[3] < 0.0) {
     opserr << "WARNING: hystereticBackbone "
               "LiquefiedSand -- m < 0\n";
-    return 0;
-  }
-  double m = data[3];
-  if (data[1] < 0.3 * m) {
-    opserr << "WARNING: hystereticBackbone "
-              "LiquefiedSand -- D < 0.3 m\n";
-    return 0;
-  }
-  if (data[1] > 2.6 * m) {
-    opserr << "WARNING: hystereticBackbone "
-              "LiquefiedSand -- D > 2.6 m\n";
     return 0;
   }
 
@@ -111,7 +105,15 @@ LiquefiedSand::LiquefiedSand(int tag, double x, double d, double kn,
       D(d),
       kN(kn),
       meter(m),
-      yu(0.15 * m) {}
+      yu(0.15 * m) {
+  double A = 3e-7 * pow(X + 1, 6.05);
+  double B = 2.8 * pow(X + 1, 0.11);
+  double C = 2.85 * pow(X + 1, -0.41);
+  double y15 = pow(15.0 / A, 1.0 / C) / B;
+  if (y15 < 0.15 * m) {
+    yu = y15;
+  }
+}
 
 /**
  * @brief Default Construct
@@ -134,10 +136,17 @@ LiquefiedSand::~LiquefiedSand() {}
  * @return double
  */
 double LiquefiedSand::getTangent(double strain) {
+  strain = fabs(strain);
+
   double A = 3e-7 * pow(X + 1, 6.05);
   double B = 2.8 * pow(X + 1, 0.11);
   double C = 2.85 * pow(X + 1, -0.41);
-  double Pd = 3.81 * log(D) + 5.6;
+  double Pd = 9.24;
+  if (D < 0.3 * meter) {
+    Pd = (D / (0.3 * meter)) * (3.81 * log(0.3 * meter) + 5.6);
+  } else if (D < 2.6 * meter) {
+    Pd = 3.81 * log(D) + 5.6;
+  }
 
   double k0 = Pd * A * B * C * pow(B * 0.001 * yu, C - 1);
 
@@ -159,32 +168,33 @@ double LiquefiedSand::getTangent(double strain) {
  * @return double
  */
 double LiquefiedSand::getStress(double strain) {
+  int signStrain = (strain > 0.0) ? 1 : -1;
+  strain = signStrain * strain;
+  double stress = 0.0;
+
   double A = 3e-7 * pow(X + 1, 6.05);
   double B = 2.8 * pow(X + 1, 0.11);
   double C = 2.85 * pow(X + 1, -0.41);
-  double Pd = 3.81 * log(D) + 5.6;
+  double Pd = 9.24;
+  if (D < 0.3 * meter) {
+    Pd = (D / (0.3 * meter)) * (3.81 * log(0.3 * meter) + 5.6);
+  } else if (D < 2.6 * meter) {
+    Pd = 3.81 * log(D) + 5.6;
+  }
 
   if (strain < 0.001 * yu) {
     double k0 = Pd * A * B * C * pow(B * 0.001 * yu, C - 1);
-    return k0 * strain;
-  }
-
-  if (strain < yu) {
+    stress = k0 * strain;
+  } else if (strain < yu) {
     double P03m = A * pow(B * strain, C);
-    if (P03m > 15 * kN / meter) {
-      opserr << "WARNING: P0.3m > 15 kN/m\n";
-    }
-    return Pd * P03m;
+    stress = Pd * P03m;
+  } else {
+    double P03m = A * pow(B * yu, C);
+    stress = Pd * P03m;
   }
 
-  double P03m = A * pow(B * yu, C);
-  if (P03m > 15 * kN / meter) {
-    opserr << "WARNING: P0.3m > 15 kN/m\n";
-  }
-  return Pd * P03m;
+  return signStrain * stress;
 }
-
-double LiquefiedSand::getEnergy(double strain) { return 0.0; }
 
 double LiquefiedSand::getYieldStrain(void) { return 0.0; }
 
@@ -205,7 +215,9 @@ void LiquefiedSand::Print(OPS_Stream &s, int flag) {
 
 int LiquefiedSand::setVariable(char *argv) { return -1; }
 
-int LiquefiedSand::getVariable(int varID, double &theValue) { return -1; }
+int LiquefiedSand::getVariable(int varID, double &theValue) {
+  return -1;
+}
 
 int LiquefiedSand::sendSelf(int commitTag, Channel &theChannel) {
   int res = 0;

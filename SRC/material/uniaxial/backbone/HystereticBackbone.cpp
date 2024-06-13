@@ -67,6 +67,24 @@ HystereticBackbone::~HystereticBackbone()
   
 }
 
+double
+HystereticBackbone::getEnergy (double strain)
+{
+  if (strain <= 0.0)
+    return 0.0;
+  
+  const int N = 100;
+
+  double incr = strain/N;
+  double energy = 0.0;
+  
+  // Mid-point integration
+  for (double x = 0.5*incr; x < strain; x += incr)
+    energy += this->getStress(x);
+  
+  return energy*incr;
+}
+
 int 
 HystereticBackbone::setVariable (char *argv)
 {

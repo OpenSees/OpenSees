@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = TclBeamWithHingesBuilder.o
+OBJS       = 
 
 all:         $(OBJS)
 

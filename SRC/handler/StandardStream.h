@@ -41,6 +41,7 @@ class StandardStream : public OPS_Stream
   int setFloatField(floatField);
   int precision(int precision) {return 0;};
   int width(int width) {return 0;};
+  int flush();
 
   // xml stuff
   int tag(const char *);

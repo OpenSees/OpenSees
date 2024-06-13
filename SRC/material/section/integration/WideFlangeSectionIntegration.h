@@ -34,7 +34,7 @@ class WideFlangeSectionIntegration : public SectionIntegration
 {
  public:
   WideFlangeSectionIntegration(double d, double tw, double bf, double tf,
-			       int Nfdw, int Nftf);
+			       int Nfdw, int Nftf, int Nfbf = 1, int Nftw = 1);
   WideFlangeSectionIntegration();
   ~WideFlangeSectionIntegration();
 
@@ -42,7 +42,9 @@ class WideFlangeSectionIntegration : public SectionIntegration
 
   void getFiberLocations(int nFibers, double *yi, double *zi = 0);
   void getFiberWeights(int nFibers, double *wt);
-
+  void getFiberSectorials(int nFibers, double *omega);
+  
+  const char* getClassType(void) const {return "WideFlangeSectionIntegration";}
   SectionIntegration *getCopy(void);
 
   int sendSelf(int cTag, Channel &theChannel);
@@ -70,7 +72,9 @@ class WideFlangeSectionIntegration : public SectionIntegration
 
   int Nfdw;
   int Nftf;
-
+  int Nfbf;
+  int Nftw;
+  
   int parameterID;
 };
 

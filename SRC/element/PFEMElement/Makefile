@@ -5,7 +5,8 @@ OBJS = PFEMElement2D.o PFEMElement2DFIC.o PFEMElement3D.o TclModelBuilder_addPFE
        tetgen.o predicates.o triangle.o PFEMElement2Dmini.o TriangleMeshGenerator.o TetMeshGenerator.o \
        BackgroundMesh.o  Particle.o ParticleGroup.o BackgroundDef.o TaylorHood2D.o TriGaussPoints.o \
        HigherOrder.o MINI.o Mesh.o LineMeshGenerator.o LineMesh.o TriMesh.o TetMesh.o \
-       QuadMeshGenerator.o QuadMesh.o PFEMContact2D.o BNode.o BCell.o
+       QuadMeshGenerator.o QuadMesh.o PFEMContact2D.o PFEMContact3D.o BNode.o BCell.o \
+			 Flume.o BeamBrick.o BeamDisk.o
 
 all: $(OBJS)
 

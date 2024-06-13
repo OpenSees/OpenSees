@@ -81,13 +81,13 @@ void* OPS_PFEMElement2DBubble(const ID &info)
     // regular element, or save data
     if (info.Size()==0 || info(0)==1) {
         if(OPS_GetNumRemainingInputArgs() < 4) {
-            opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa,minJ)\n";
+            opserr<<"insufficient arguments: rho, mu, b1, b2, (thinknes,kappa)\n";
             return 0;
         }
 
-        // rho, mu, b1, b2, (thinknes,kappa,minJ)
+        // rho, mu, b1, b2, thinknes,kappa
         numdata = OPS_GetNumRemainingInputArgs();
-        if(numdata > 7) numdata = 7;
+        if(numdata > 6) numdata = 6;
         if(OPS_GetDoubleInput(&numdata,data) < 0) {
             opserr << "WARNING: failed to get fluid properties\n";
             return 0;

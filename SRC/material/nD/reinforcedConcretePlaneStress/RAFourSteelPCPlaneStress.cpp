@@ -183,7 +183,7 @@ RAFourSteelPCPlaneStress::RAFourSteelPCPlaneStress ( int      tag,
   NDMaterial(tag, ND_TAG_RAFourSteelPCPlaneStress), rho(RHO), 
   angle1(ANGLE1), angle2(ANGLE2), angle3(ANGLE3), angle4(ANGLE4), 
   rou1(ROU1), rou2(ROU2), rou3(ROU3), rou4(ROU4),pstrain1(PSTRAIN1), pstrain2(PSTRAIN2),
-  fpc(FPC), fy1(FY1), fy2(fy2), E0(E), epsc0(EPSC0), strain_vec(3), stress_vec(3),tangent_matrix(3,3)
+  fpc(FPC), fy1(FY1), fy2(FY2), E0(E), epsc0(EPSC0), strain_vec(3), stress_vec(3),tangent_matrix(3,3)
 {
   steelStatus = 0;
   dirStatus = 0;

@@ -74,6 +74,9 @@ class FEM_ObjectBrokerAllClasses : public FEM_ObjectBroker
     FrictionModel *getNewFrictionModel(int classTag);
 
   HystereticBackbone *getNewHystereticBackbone(int classTag);
+  UnloadingRule *getNewUnloadingRule(int classTag);  
+  StiffnessDegradation *getNewStiffnessDegradation(int classTag);
+  StrengthDegradation *getNewStrengthDegradation(int classTag);
   
     ConvergenceTest       *getNewConvergenceTest(int classTag);
     LoadPattern           *getNewLoadPattern(int classTag);

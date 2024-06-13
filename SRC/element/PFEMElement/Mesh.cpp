@@ -46,10 +46,13 @@ int Mesh::startNodeTag = 1;
 #endif
 
 void *OPS_ElasticBeam2d(const ID &info);
+void *OPS_ElasticBeam3d(const ID &info);
 
 void *OPS_ForceBeamColumn2d(const ID &info);
+void *OPS_ForceBeamColumn3d(const ID &info);
 
 void *OPS_DispBeamColumn2d(const ID &info);
+void *OPS_DispBeamColumn3d(const ID &info);
 
 void *OPS_PFEMElement2DCompressible(const ID &info);
 
@@ -65,9 +68,19 @@ void *OPS_FourNodeTetrahedron(const ID &info);
 
 void *OPS_ShellMITC4(const ID &info);
 
+void *OPS_FourNodeQuad(const ID& info);
+
+void *OPS_ConstantPressureVolumeQuad(const ID& info);
+
+void *OPS_EnhancedQuad(const ID& info);
+
+void *OPS_SSPquad(const ID& info);
+
 void *OPS_ShellNLDKGQ(const ID &info);
+void *OPS_ShellNLDKGT(const ID &info);
 
 void *OPS_ShellDKGQ(const ID &info);
+void *OPS_ShellDKGT(const ID &info);
 
 void *OPS_CorotTrussElement(const ID &info);
 
@@ -268,6 +281,13 @@ Mesh::setEleArgs() {
                 return -1;
             }
             numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_ElasticBeam3d;
+            if (OPS_ElasticBeam3d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
         }
 
     } else if (strcmp(type, "forceBeamColumn") == 0) {
@@ -278,12 +298,26 @@ Mesh::setEleArgs() {
                 return -1;
             }
             numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_ForceBeamColumn3d;
+            if (OPS_ForceBeamColumn3d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
         }
 
     } else if (strcmp(type, "dispBeamColumn") == 0) {
         if (ndm == 2) {
             eleType = ELE_TAG_DispBeamColumn2d;
             if (OPS_DispBeamColumn2d(info) == 0) {
+                opserr << "WARNING: failed to read eleArgs\n";
+                return -1;
+            }
+            numelenodes = 2;
+        } else if (ndm == 3) {
+            eleType = ELE_TAG_DispBeamColumn3d;
+            if (OPS_DispBeamColumn3d(info) == 0) {
                 opserr << "WARNING: failed to read eleArgs\n";
                 return -1;
             }
@@ -354,6 +388,37 @@ Mesh::setEleArgs() {
             return -1;
         }
         numelenodes = 4;
+    } else if (strcmp(type, "quad") == 0 || strcmp(type, "stdQuad") == 0) {
+        eleType = ELE_TAG_FourNodeQuad;
+        if (OPS_FourNodeQuad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
+    } else if (strcmp(type, "bbarQuad") == 0 || strcmp(type,"mixedQuad") == 0) {
+        eleType = ELE_TAG_ConstantPressureVolumeQuad;
+        if (OPS_ConstantPressureVolumeQuad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
+    } else if (strcmp(type, "enhancedQuad") == 0) {
+        eleType = ELE_TAG_EnhancedQuad;
+        if (OPS_EnhancedQuad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
+
+    } else if (strcmp(type, "SSPquad") == 0 || strcmp(type, "SSPQuad") == 0) {
+        eleType = ELE_TAG_SSPquad;
+        if (OPS_SSPquad(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 4;
 
     } else if (strcmp(type, "ShellNLDKGQ") == 0) {
         eleType = ELE_TAG_ShellNLDKGQ;
@@ -363,6 +428,14 @@ Mesh::setEleArgs() {
         }
         numelenodes = 4;
 
+    } else if (strcmp(type, "ShellNLDKGT") == 0) {
+        eleType = ELE_TAG_ShellNLDKGT;
+        if (OPS_ShellNLDKGT(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 3;
+	
     } else if (strcmp(type, "ShellDKGQ") == 0) {
         eleType = ELE_TAG_ShellDKGQ;
         if (OPS_ShellDKGQ(info) == 0) {
@@ -371,6 +444,14 @@ Mesh::setEleArgs() {
         }
         numelenodes = 4;		
 
+    } else if (strcmp(type, "ShellDKGT") == 0) {
+        eleType = ELE_TAG_ShellDKGT;
+        if (OPS_ShellDKGT(info) == 0) {
+            opserr << "WARNING: failed to read eleArgs\n";
+            return -1;
+        }
+        numelenodes = 3;		
+	
     } else if (strcmp(type, "corotTruss") == 0) {
         eleType = ELE_TAG_CorotTruss;
         if (OPS_CorotTrussElement(info) == 0) {
@@ -438,6 +519,9 @@ Mesh::newElements(const ID &elends) {
     if (elends.Size() < numelenodes) {
         return 0;
     }
+    if (numelenodes <= 0) {
+        return 0;
+    }
 
     // function to call
     void *(*OPS_Func)(const ID &info) = 0;
@@ -445,11 +529,20 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ElasticBeam2d:
             OPS_Func = OPS_ElasticBeam2d;
             break;
+        case ELE_TAG_ElasticBeam3d:
+            OPS_Func = OPS_ElasticBeam3d;
+            break;
         case ELE_TAG_ForceBeamColumn2d:
             OPS_Func = OPS_ForceBeamColumn2d;
             break;
+        case ELE_TAG_ForceBeamColumn3d:
+            OPS_Func = OPS_ForceBeamColumn3d;
+            break;
         case ELE_TAG_DispBeamColumn2d:
             OPS_Func = OPS_DispBeamColumn2d;
+            break;
+        case ELE_TAG_DispBeamColumn3d:
+            OPS_Func = OPS_DispBeamColumn3d;
             break;
         case ELE_TAG_PFEMElement2DBubble:
             OPS_Func = OPS_PFEMElement2DBubble;
@@ -472,12 +565,30 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_ShellMITC4:
             OPS_Func = OPS_ShellMITC4;
             break;
+        case ELE_TAG_FourNodeQuad:
+            OPS_Func = OPS_FourNodeQuad;
+            break;
+        case ELE_TAG_ConstantPressureVolumeQuad:
+            OPS_Func = OPS_ConstantPressureVolumeQuad;
+            break;
+        case ELE_TAG_EnhancedQuad:
+            OPS_Func = OPS_EnhancedQuad;
+            break;
+        case ELE_TAG_SSPquad:
+            OPS_Func = OPS_SSPquad;
+            break;
         case ELE_TAG_ShellNLDKGQ:
 	  OPS_Func = OPS_ShellNLDKGQ;
             break;
+        case ELE_TAG_ShellNLDKGT:
+	  OPS_Func = OPS_ShellNLDKGT;
+            break;
         case ELE_TAG_ShellDKGQ:
 	  OPS_Func = OPS_ShellDKGQ;
-            break;	    	    
+            break;
+        case ELE_TAG_ShellDKGT:
+	  OPS_Func = OPS_ShellDKGT;
+            break;	    	    	    
         case ELE_TAG_CorotTruss:
             OPS_Func = OPS_CorotTrussElement;
             break;

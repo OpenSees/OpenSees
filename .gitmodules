@@ -1,0 +1,5 @@
+[submodule "Win64/s3hark"]
+	url = https://github.com/pjhughes16/OpenSees
+[submodule "OTHER/eigenAPI/eigen"]
+	path = OTHER/eigenAPI/eigen
+	url = https://gitlab.com/libeigen/eigen.git
