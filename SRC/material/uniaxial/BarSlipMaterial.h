@@ -59,6 +59,8 @@ public :
 	BarSlipMaterial();
 	~BarSlipMaterial();
 
+    const char *getClassType(void) const {return "BarSlipMaterial";}
+
 	int setTrialStrain(double strain, double strainRate = 0.0);
 	double getStrain(void);
 	double getStress(void);
@@ -80,7 +82,6 @@ public :
 protected:
 
 private:
-	int tagMat;
 	// bond strength flag
    int bsflag;   // 1 --- weak or 0 --- strong bond strength
 

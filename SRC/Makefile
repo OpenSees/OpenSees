@@ -670,6 +670,9 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary3D.o \
+	$(FE)/element/absorbentBoundaries/FSIFluidElement2D.o \
+	$(FE)/element/absorbentBoundaries/FSIInterfaceElement2D.o \
+	$(FE)/element/absorbentBoundaries/FSIFluidBoundaryElement2D.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceL.o \
 	$(FE)/element/UWelements/EmbeddedBeamInterfaceP.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
@@ -882,6 +885,9 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HystereticSmooth.o \
 	$(FE)/material/uniaxial/HystereticAsym.o \
 	$(FE)/material/uniaxial/SLModel.o \
+	$(FE)/material/uniaxial/APDFMD.o \
+	$(FE)/material/uniaxial/APDMD.o \
+	$(FE)/material/uniaxial/APDVFD.o \
 	$(FE)/material/uniaxial/MaterialState.o \
 	$(FE)/material/uniaxial/CoulombDamperMaterial.o \
 	$(FE)/material/uniaxial/backbone/HystereticBackbone.o \

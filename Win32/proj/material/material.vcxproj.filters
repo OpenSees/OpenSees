@@ -730,6 +730,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\reinforcedConcretePlaneStress\TendonL01.cpp">
       <Filter>nD\reinforcedConcretePlaneStress</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\Src\material\section\Bidirectional.cpp">
       <Filter>section</Filter>
     </ClCompile>

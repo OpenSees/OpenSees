@@ -24,6 +24,8 @@
 //
 // Fully general templated material class for plasticity modeling
 
+#ifdef _EIGEN3
+
 #include <FEM_ObjectBroker.h>
 #include <OPS_Globals.h>
 #include <elementAPI.h>
@@ -394,3 +396,6 @@ void populate_ASDPlasticMaterial(T* instance)
 
     instance->set_constitutive_integration_method(method, tangent, f_relative_tol, stress_relative_tol, n_max_iterations, return_to_yield_surface);
 }
+
+
+#endif // _EIGEN3
