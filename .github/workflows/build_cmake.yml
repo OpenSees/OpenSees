@@ -157,7 +157,7 @@ jobs:
       - name: Build
         shell: pwsh
         run: |
-          & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+          & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 vs2019
           ifort /QV
           cd D:\a\OpenSees\OpenSees
           mkdir build
