@@ -136,20 +136,20 @@ jobs:
           vsversion: 2019
 # At this time, latest awvwgk/setup-fortran works well, but it's not released to github actions.
 # Until the next release, the source will be directly fetched and used.
-      - uses: fortran-lang/setup-fortran@v1
-        id: setup-fortan
-        with:
-          compiler: intel-classic
-          version: 2021.9
-      # - name: Clone Setup-Fortran
-      #   run: |
-      #     git clone https://github.com/z-ichinohe/setup-fortran
-      # - name: Setup Fortran
-      #   id: setup-fortran
-      #   uses: ./setup-fortran
+      # - uses: fortran-lang/setup-fortran@v1
+      #   id: setup-fortan
       #   with:
-      #     compiler: intel
-      #     version: 2022.1
+      #     compiler: intel-classic
+      #     version: 2021.9
+      - name: Clone Setup-Fortran
+        run: |
+          git clone https://github.com/z-ichinohe/setup-fortran
+      - name: Setup Fortran
+        id: setup-fortran
+        uses: ./setup-fortran
+        with:
+          compiler: intel
+          version: 2022.1
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
