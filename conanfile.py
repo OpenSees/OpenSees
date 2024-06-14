@@ -9,7 +9,7 @@ class OpenSeesDependencies(ConanFile):
     author = "fmk fmckenna@berkeley.edu"
     settings = {"os": None, "build_type": None, "compiler": None, "arch": ["x86_64"]}
     options = {"shared": [True, False]}
-    default_options = {"mkl-static:threaded": False, "ipp-static:simcenter_backend": True}    
+    default_options = {"mkl-static:threaded": False, "ipp-static:simcenter_backend": True}
     generators = "cmake", "cmake_find_package"
     build_policy = "missing"
     requires = "hdf5/1.14.0", \
@@ -19,7 +19,7 @@ class OpenSeesDependencies(ConanFile):
     _source_subfolder = "source_subfolder"
     _build_subfolder = "build_subfolder"
     # Set short paths for Windows
-    short_paths = True    
+    short_paths = True
     scm = {
         "type": "git",  # Use "type": "svn", if local repo is managed using SVN
         "subfolder": _source_subfolder,
@@ -35,7 +35,7 @@ class OpenSeesDependencies(ConanFile):
         cmake = CMake(self)
         cmake.configure(source_folder=self._source_subfolder)
         return cmake
-    
+
     def build(self):
         cmake = self.configure_cmake()
         cmake.build()

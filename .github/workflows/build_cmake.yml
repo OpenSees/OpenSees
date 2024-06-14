@@ -149,7 +149,7 @@ jobs:
         uses: ./setup-fortran
         with:
           compiler: intel
-          version: 2022.2.0
+          version: 2022.1.0
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
