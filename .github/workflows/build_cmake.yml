@@ -155,17 +155,17 @@ jobs:
         run: |
             pip install conan==1.59.0
       - name: Build
-        shell: pwsh
+        shell: cmd
         run: |
-          & "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 vs2019
-          ifort /QV
           cd D:\a\OpenSees\OpenSees
           mkdir build
           cd build
           conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
-          cmake ..
+          %ComSpec% /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
+          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
+          pwsh
           mv ./bin/OpenSeesPy.dll ./bin/opensees.pyd
       - name: Verification OpenSeesPySP
         shell: pwsh
