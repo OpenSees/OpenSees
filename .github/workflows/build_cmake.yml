@@ -114,15 +114,16 @@ jobs:
         with:
           vsversion: 2019
       - name: Install Intel oneAPI
+        shell: pwsh
         env:
           WINDOWS_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7dff44ba-e3af-4448-841c-0d616c8da6e7/w_BaseKit_p_2024.1.0.595_offline.exe
-          WINDOWS_BASEKIT_COMPONENTS: intel.onapi.win.mkl.devel
+          WINDOWS_BASEKIT_COMPONENTS: intel.oneapi.win.mkl.devel
           WINDOWS_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c95a3b26-fc45-496c-833b-df08b10297b9/w_HPCKit_p_2024.1.0.561_offline.exe
-          WINDOWS_HPCKIT_COMPONENTS: "intel.onapi.win.mpi.devel:intel.oneapi.win.ifort-compiler"
+          WINDOWS_HPCKIT_COMPONENTS: "intel.oneapi.win.mpi.devel:intel.oneapi.win.ifort-compiler"
         run: |
           git clone https://github.com/z-ichinohe/oneapi-ci.git
-          ./oneapi-ci/scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_HPCKIT_COMPONENTS
-          ./oneapi-ci/scripts/install_windows.bat $WINDOWS_BASEKIT_URL $WINDOWS_BASEKIT_COMPONENTS
+          ./oneapi-ci/scripts/install_windows.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
+          ./oneapi-ci/scripts/install_windows.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
       - name: Setup Fortran
         id: setup-fortran
         uses: ./setup-fortran
