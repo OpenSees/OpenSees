@@ -96,30 +96,9 @@ jobs:
           mv ./OpenSeesPy.dylib ./opensees.so
       - name: Verification OpenSeesPySP
         run: |
-          cd ./EXAMPLES/ExamplePython/
-          export PYTHONPATH="../../build/"
+          export PYTHONPATH="./build/"
           python3 -c "import sys; print(sys.path)"
-          python3 example_variable_analysis.py
-# Not building on Windows until we can figure out how to use Fortran
-# with Github Actions
-    #  build-win32:
-    #    name: Build on Windows
-    #    runs-on: [windows-latest]
-    #    steps:
-    #    - name: Checkout sources
-    #      uses: actions/checkout@v2
-    #      with: {ref: cmake-build}
-    #
-    #    - name: Install Conan
-    #      uses: turtlebrowser/get-conan@main
-    #
-    #    - name: Build
-    #      run: |
-    #        mkdir build
-    #        cd build
-    #        cmake ..
-    #        cmake --build . --target OpenSeesTcl -j5
-
+          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
 
   build-win:
     name: Win Build
@@ -134,16 +113,16 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           vsversion: 2019
-# At this time, latest awvwgk/setup-fortran works well, but it's not released to github actions.
-# Until the next release, the source will be directly fetched and used.
-      # - uses: fortran-lang/setup-fortran@v1
-      #   id: setup-fortan
-      #   with:
-      #     compiler: intel-classic
-      #     version: 2021.9
-      - name: Clone Setup-Fortran
+      - name: Install Intel oneAPI
+        env:
+          WINDOWS_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7dff44ba-e3af-4448-841c-0d616c8da6e7/w_BaseKit_p_2024.1.0.595_offline.exe
+          WINDOWS_BASEKIT_COMPONENTS: intel.onapi.win.mkl.devel
+          WINDOWS_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c95a3b26-fc45-496c-833b-df08b10297b9/w_HPCKit_p_2024.1.0.561_offline.exe
+          WINDOWS_HPCKIT_COMPONENTS: "intel.onapi.win.mpi.devel:intel.oneapi.win.ifort-compiler"
         run: |
-          git clone https://github.com/z-ichinohe/setup-fortran
+          git clone https://github.com/z-ichinohe/oneapi-ci.git
+          ./oneapi-ci/scripts/install_windows.bat $WINDOWS_HPCKIT_URL $WINDOWS_HPCKIT_COMPONENTS
+          ./oneapi-ci/scripts/install_windows.bat $WINDOWS_BASEKIT_URL $WINDOWS_BASEKIT_COMPONENTS
       - name: Setup Fortran
         id: setup-fortran
         uses: ./setup-fortran
@@ -153,6 +132,14 @@ jobs:
       - name: Install MUMPS and CONAN
         shell: pwsh
         run: |
+            &"C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+            git clone https://github.com/OpenSees/mumps.git
+            cd mumps
+            mkdir build
+            cd build
+            cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
+            cmake --build . --config Release --parallel 4
+            cd ..\..
             pip install conan==1.59.0
       - name: Build
         shell: cmd
@@ -165,12 +152,10 @@ jobs:
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
-          pwsh
-          mv ./bin/OpenSeesPy.dll ./bin/opensees.pyd
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          cd ./EXAMPLES/ExamplePython/
-          $env:PYTHONPATH = "../../build/bin/"
+          mv ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
+          $env:PYTHONPATH = "./build/bin/"
           python -c "import sys; print(sys.path)"
-          python example_variable_analysis.py
+          python ./EXAMPLES/ExamplePython/example_variable_analysis.py
