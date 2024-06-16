@@ -124,10 +124,14 @@ jobs:
           git clone https://github.com/z-ichinohe/oneapi-ci.git
           ./oneapi-ci/scripts/install_windows.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
           ./oneapi-ci/scripts/install_windows.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
-      - name: Install MUMPS and CONAN
+      - name: Check Environment Variables
         shell: pwsh
         run: |
-            &"C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+          Get-ChildItem env:
+      - name: Install MUMPS and CONAN
+        shell: cmd
+        run: |
+            "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
             git clone https://github.com/OpenSees/mumps.git
             cd mumps
             mkdir build
@@ -143,7 +147,7 @@ jobs:
           mkdir build
           cd build
           conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
-          %ComSpec% /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
+          "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
