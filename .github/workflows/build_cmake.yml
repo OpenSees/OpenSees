@@ -120,11 +120,6 @@ jobs:
           git clone https://github.com/z-ichinohe/oneapi-ci.git
           ./oneapi-ci/scripts/install_windows.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
           ./oneapi-ci/scripts/install_windows.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
-      - name: Check Environment Variables
-        shell: pwsh
-        run: |
-          C:\Program Files\PowerShell\7;C:\Program Files (x86)\Intel\oneAPI\mpi\latest\bin\;C:\Program Files (x86)\Intel\oneAPI\mpi\latest\bin\release\;C:\Program Files (x86)\Intel\oneAPI\mpi\latest\libfabric\bin\;C:\Program Files (x86)\Intel\oneAPI\mpi\latest\libfabric\bin\utils\;C:\Program Files (x86)\Intel\oneAPI\tbb\latest\redist\intel64\vc_mt\;C:\Program Files (x86)\Intel\oneAPI\tbb\latest\redist\ia32\vc_mt\;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\ia32_win\compiler;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\ProgramData\chocolatey\bin;C:\Program Files\Git\cmd;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler;C:\Program Files (x86)\Intel\oneAPI\mkl\2022.1.0\redist\intel64;C:\Program Files\nodejs\;C:\Program Files\PowerShell\7\;C:\Users\zichi\AppData\Local\Programs\Python\Python311\Scripts\;C:\Users\zichi\AppData\Local\Programs\Python\Python311\;C:\Users\zichi\AppData\Local\Programs\Microsoft VS Code\bin;C:\Program Files\CMake\bin;C:\Users\zichi\AppData\Roaming\npm;C:\Windows\System32;C:\Program Files (x86)\Intel\oneAPI\compiler\latest\windows\redist\intel64_win\compiler; >> $env:Path
-          Get-ChildItem env:
       - name: Install MUMPS and CONAN
         shell: cmd
         run: |
@@ -139,9 +134,6 @@ jobs:
             pip install conan==1.59.0
       - name: Build
         shell: cmd
-        env:
-          I_MPI_ONEAPI_ROOT: C:\Program Files (x86)\Intel\oneAPI\mpi\2021.6.0
-          IFORT_COMPILER24: C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1.0\windows\
         run: |
           cd D:\a\OpenSees\OpenSees
           mkdir build
