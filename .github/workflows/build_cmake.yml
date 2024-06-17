@@ -100,10 +100,12 @@ jobs:
     name: Win Build
     runs-on: windows-2019
     steps:
-      - uses: actions/cache@v4
+      - name: Restore Cache
+        id: restore-oneapi
+        uses: actions/cache/restore@v4
         with:
           path: "C:/Program Files (x86)/Intel/oneAPI"
-          key: intel-oneapi
+          key: restore-intel-oneapi-cache
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -114,6 +116,7 @@ jobs:
         with:
           vsversion: 2019
       - name: Install Intel oneAPI
+        if: steps.restore-intel-oneapi-cache.outputs.cache-hit != 'true'
         shell: pwsh
         env:
           WINDOWS_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7dff44ba-e3af-4448-841c-0d616c8da6e7/w_BaseKit_p_2024.1.0.595_offline.exe
@@ -122,9 +125,14 @@ jobs:
           WINDOWS_HPCKIT_COMPONENTS: "intel.oneapi.win.mpi.devel:intel.oneapi.win.ifort-compiler"
         run: |
           cd D:\a\OpenSees\OpenSees\.github\workflows
-          git clone https://github.com/z-ichinohe/oneapi-ci.git
           ./install_fortran.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
           ./install_fortran.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
+      - name: Save Cache
+        id: save-cache
+        uses: actions/cache/save@v4
+        with:
+          path: "C:/Program Files (x86)/Intel/oneAPI"
+          key: intel-oneapi
       - name: Install MUMPS and CONAN
         shell: cmd
         run: |
@@ -134,7 +142,7 @@ jobs:
             cd mumps
             mkdir build
             cd build
-            "C:\Program Files (x86)\Intel\oneAPI\setVars" intel64 mod
+            C:\Windows\System32\cmd.exe /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
             cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
             cmake --build . --config Release --parallel 4
             cd ..\..
@@ -145,7 +153,7 @@ jobs:
           mkdir build
           cd build
           conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
-          "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
+          C:\Windows\System32\cmd.exe /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
