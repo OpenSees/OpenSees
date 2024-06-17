@@ -24,8 +24,8 @@
 
 // Massimo Petracca - ASDEA Software, Italy
 //
-// Description: This file contains the class implementation for ASDConcrete1DMaterial.
 // A Simple and robust plastic-damage model for concrete and masonry
+//
 
 #ifndef ASDConcrete1DMaterial_h
 #define ASDConcrete1DMaterial_h
