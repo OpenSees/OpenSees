@@ -100,6 +100,10 @@ jobs:
     name: Win Build
     runs-on: windows-2019
     steps:
+      - uses: actions/cache@v4
+        with:
+          path: "C:/Program Files (x86)/Intel/oneAPI"
+          key: intel-oneapi
       - uses: actions/checkout@v3
         with:
           fetch-depth: 0
@@ -119,8 +123,8 @@ jobs:
         run: |
           cd D:\a\OpenSees\OpenSees\.github\workflows
           git clone https://github.com/z-ichinohe/oneapi-ci.git
-          ./install_fortran.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
           ./install_fortran.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
+          ./install_fortran.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
       - name: Install MUMPS and CONAN
         shell: cmd
         run: |
