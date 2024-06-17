@@ -73,6 +73,7 @@
 #include "MultiplierMaterial.h"
 #include "TensionOnlyMaterial.h"
 #include "ASD_SMA_3K.h"
+#include "ASDConcrete1DMaterial.h"
 #include "Concrete01.h"
 #include "Concrete01WithSITC.h"
 #include "Concrete02.h"
@@ -1692,6 +1693,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ASD_SMA_3K:  
 	     return new ASD_SMA_3K();
+
+	case MAT_TAG_ASDConcrete1DMaterial:  
+	     return new ASDConcrete1DMaterial();
 
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
