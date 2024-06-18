@@ -2,7 +2,10 @@ include ../../../Makefile.def
 
 OBJS       = LysmerTriangle.o \
 	ASDAbsorbingBoundary2D.o \
-	ASDAbsorbingBoundary3D.o
+	ASDAbsorbingBoundary3D.o \
+	FSIFluidElement2D.o \
+	FSIInterfaceElement2D.o \
+	FSIFluidBoundaryElement2D.o
 
 all:         $(OBJS)
 
