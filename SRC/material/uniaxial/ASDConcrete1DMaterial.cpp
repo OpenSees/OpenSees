@@ -173,7 +173,8 @@ void* OPS_ASDConcrete1DMaterial()
 		opserr <<
 			"nDMaterial ASDConcrete1D Error: Few arguments (< 2).\n"
 			"nDMaterial ASDConcrete1D $tag $E "
-			"-Te $Te -Ts $Ts <-Td $Td> -Ce $Ce -Cs $Cs <-Cd $Cd> "
+			"<-fc $fc> <-ft $ft> "
+			"<-Te $Te -Ts $Ts <-Td $Td>> <-Ce $Ce -Cs $Cs <-Cd $Cd>> "
 			"<-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-implexAlpha $alpha>"
 			"<-eta $eta> <-tangent> <-autoRegularization $lch_ref>\n";
 		return nullptr;
