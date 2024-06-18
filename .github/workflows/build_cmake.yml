@@ -121,15 +121,15 @@ jobs:
           WINDOWS_BASEKIT_COMPONENTS: intel.oneapi.win.mkl.devel
           WINDOWS_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c95a3b26-fc45-496c-833b-df08b10297b9/w_HPCKit_p_2024.1.0.561_offline.exe
           WINDOWS_HPCKIT_COMPONENTS: "intel.oneapi.win.mpi.devel:intel.oneapi.win.ifort-compiler"
+        working-directory: D:\a\OpenSees\OpenSees\.github\workflows
         run: |
-          cd D:\a\OpenSees\OpenSees\.github\workflows
           ./install_fortran.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
           ./install_fortran.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
       - name: Install MUMPS and CONAN
         shell: cmd
+        working-directory: D:\a\OpenSees
         run: |
             pip install conan==1.59.0
-            cd D:\a\OpenSees
             git clone https://github.com/OpenSees/mumps.git
             cd mumps
             mkdir build
@@ -137,11 +137,10 @@ jobs:
             call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
             cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
             cmake --build . --config Release --parallel 4
-            cd ..\..
       - name: Build
         shell: cmd
+        working-directory: D:\a\OpenSees\OpenSees
         run: |
-          cd D:\a\OpenSees\OpenSees
           mkdir build
           cd build
           conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
@@ -151,9 +150,10 @@ jobs:
           cmake --build . --config Release --target OpenSeesPy -j8
       - name: Verification OpenSeesPySP
         shell: pwsh
+        working-directory: D:\a\OpenSees\OpenSees
         run: |
           mv ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
-          cp C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll ./build/bin/
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/bin/
           $env:PYTHONPATH = "./build/bin/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
