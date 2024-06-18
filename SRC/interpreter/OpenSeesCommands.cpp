@@ -1043,6 +1043,19 @@ int OPS_GetDoubleInput(int *numData, double *data)
     return interp->getDouble(data, *numData);
 }
 
+int OPS_GetDoubleListInput(int* size, Vector* data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->getDoubleList(size, data);
+}
+
+int OPS_EvalDoubleStringExpression(const char* theExpression, double& current_val) {
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->evalDoubleStringExpression(theExpression, current_val);
+}
+
 int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
 {
     if (cmds == 0) return 0;

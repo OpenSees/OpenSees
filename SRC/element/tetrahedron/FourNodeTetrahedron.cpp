@@ -53,7 +53,7 @@ void* OPS_FourNodeTetrahedron()
     if (OPS_GetNumRemainingInputArgs() < 6) 
     {
       opserr << "WARNING insufficient arguments\n";
-      opserr << "Want: element FourNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? matTag?\n";
+      opserr << "Want: element FourNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? matTag? (doInitDisp?)\n";
       return 0;
     }
 
@@ -73,6 +73,7 @@ void* OPS_FourNodeTetrahedron()
       opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
     }
 
+    // Get the body forces
     double data[3] = {0,0,0};
     num = OPS_GetNumRemainingInputArgs();
 
@@ -88,7 +89,36 @@ void* OPS_FourNodeTetrahedron()
         return 0;
       }     
     }
-    return new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
+
+    //Get init disp flag
+
+    num = OPS_GetNumRemainingInputArgs();
+    
+    int do_init_disp_int = 0;
+    bool do_init_disp = false;
+
+
+    while (OPS_GetNumRemainingInputArgs() > 0) 
+    {
+        const char* type = OPS_GetString(); // Fetch the next string from input
+        if (strcmp(type, "-doInitDisp") == 0) 
+        {
+            num = 1;
+            OPS_GetIntInput(&num, &do_init_disp_int); 
+        }
+    }
+
+    do_init_disp = (bool) do_init_disp_int; 
+
+    Element* the_new_element_ptr = new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2], do_init_disp);
+
+    if (the_new_element_ptr == NULL)
+    {
+      opserr << "OPS_TenNodeTetrahedron() - Could not create pointer to new TenNodeTetrahedron object" << endln;
+      return 0;
+    }
+
+    return the_new_element_ptr;
 }
 
 void* OPS_FourNodeTetrahedron(const ID& info)
@@ -203,7 +233,7 @@ Matrix FourNodeTetrahedron::B(NumStressComponents,NumDOFsPerNode) ;
 //null constructor
 FourNodeTetrahedron::FourNodeTetrahedron( ) 
 :Element( 0, ELE_TAG_FourNodeTetrahedron ),
- connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0)
+ connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false)
 {
   B.Zero();
 
@@ -222,7 +252,7 @@ FourNodeTetrahedron::FourNodeTetrahedron( )
     initDisp[i] = Vector(3);
     initDisp[i].Zero();
   }
-  do_update = 1;
+  do_update = true;
 }
 
 
@@ -234,12 +264,12 @@ FourNodeTetrahedron::FourNodeTetrahedron(int tag,
        int node3,
        int node4,
        NDMaterial &theMaterial,
-       double b1, double b2, double b3)
+       double b1, double b2, double b3, bool do_init_disp_)
   :Element(tag, ELE_TAG_FourNodeTetrahedron),
-   connectedExternalNodes(4), applyLoad(0), load(0), Ki(0)
+   connectedExternalNodes(4), applyLoad(0), load(0), Ki(0), do_init_disp(do_init_disp_)
 {
   B.Zero();
-  do_update = 1;
+  do_update = true;
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
   connectedExternalNodes(2) = node3 ;
@@ -298,7 +328,12 @@ void  FourNodeTetrahedron::setDomain( Domain *theDomain )
   for ( i=0; i<NumNodes; i++ ) 
   {
       nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
-      initDisp[i] = nodePointers[i]->getDisp();
+
+
+      if(do_init_disp)
+      {
+        initDisp[i] = nodePointers[i]->getDisp();
+      }
   }
 
   this->DomainComponent::setDomain(theDomain);
@@ -817,7 +852,7 @@ void   FourNodeTetrahedron::formInertiaTerms( int tangFlag )
   //zero mass 
   mass.Zero( ) ;
 
-  if(do_update == 0)
+  if(!do_update)
   {
     return ;
   }
@@ -937,8 +972,7 @@ int
 FourNodeTetrahedron::update(void) 
 {
 
-  if(do_update == 0)
-  {
+  if(!do_update ) {
     stiff.Zero();
     resid.Zero();
     mass.Zero();
@@ -1177,7 +1211,7 @@ void  FourNodeTetrahedron::formResidAndTangent( int tang_flag )
   stiff.Zero( ) ;
   resid.Zero( ) ;
 
-  if (do_update == 0)
+  if (!do_update)
   {
     return ;
   }
@@ -1450,7 +1484,7 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(27);
+  static ID idData(28);
 
   idData(24) = this->getTag();
   if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0) 
@@ -1480,7 +1514,8 @@ int  FourNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
   idData(17) = connectedExternalNodes(1);
   idData(18) = connectedExternalNodes(2);
   idData(19) = connectedExternalNodes(3);
-  idData(26) = do_update;
+  idData(26) = (int) do_update;
+  idData(27) = (int) do_init_disp;
   // idData(20) = connectedExternalNodes(4);
   // idData(21) = connectedExternalNodes(5);
   // idData(22) = connectedExternalNodes(6);
@@ -1528,7 +1563,7 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(27);
+  static ID idData(28);
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
     opserr << "WARNING FourNodeTetrahedron::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1555,7 +1590,8 @@ int  FourNodeTetrahedron::recvSelf (int commitTag,
   connectedExternalNodes(1) = idData(17);
   connectedExternalNodes(2) = idData(18);
   connectedExternalNodes(3) = idData(19);
-  do_update = idData(26);
+  do_update = (bool) idData(26);
+  do_init_disp = (bool) idData(27);
   // connectedExternalNodes(4) = idData(20);
   // connectedExternalNodes(5) = idData(21);
   // connectedExternalNodes(6) = idData(22);
@@ -1900,10 +1936,10 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     }
     else if (parameterID == 1414)
     {
-      int new_do_update = info.theDouble;
-      if (do_update == 0 && new_do_update == 1)
+      bool new_do_update = info.theDouble;
+      if (!do_update  && new_do_update )
       {
-        do_update = 1;
+        do_update = true;
         Domain * mydomain = this->getDomain();
         opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - sets to update and init disp ";
         for ( int i = 0; i < NumNodes; i++ ) 
@@ -1914,7 +1950,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
         }
         opserr << endln;
       }
-      if(new_do_update == 0)
+      if(!new_do_update)
       {
         opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - will not update\n";
       }

@@ -359,6 +359,7 @@
 #define SEC_TAG_BiaxialHysteretic 36
 #define SEC_TAG_ElasticTube3d 37
 #define SEC_TAG_CreepSection 38
+#define SEC_TAG_ASDCoupledHinge3D 39
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
