@@ -307,7 +307,9 @@ UniformExcitation::applyLoad(double time)
         int ndm = crds.Size();
         
         if (ndm == 1) {
-            theNode->setR(theDof, 0, fact);
+	    if (theDof < 1) {
+                theNode->setR(theDof, 0, fact);
+	    }
         }
         else if (ndm == 2) {
             if (theDof < 2) {

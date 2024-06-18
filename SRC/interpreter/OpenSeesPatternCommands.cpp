@@ -33,7 +33,7 @@ PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
-
+  
 // Written: Minjie
 
 // Description: command to create pattern
@@ -44,6 +44,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Beam2dPartialUniformLoad.h>
 #include <Beam2dUniformLoad.h>
 #include <Beam3dUniformLoad.h>
+#include <Beam3dPartialUniformLoad.h>
 #include <Beam2dPointLoad.h>
 #include <Beam3dPointLoad.h>
 #include <BrickSelfWeight.h>
@@ -278,7 +279,6 @@ int OPS_ElementalLoad()
     const char* type = OPS_GetString();
     if (strcmp(type,"-beamUniform") == 0 ||
 	strcmp(type,"beamUniform") == 0) {
-
 	if (ndm == 2) {
 	    // wta, waa, aL, bL, wtb, wab
         double data[6] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
@@ -298,7 +298,7 @@ int OPS_ElementalLoad()
 		  data[5] = data[1];
 		}
 		if (data[2] > 0.0 || data[3] < 1.0 || numdata > 4)
-		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0], data[4], data[1], data[5], data[2], data[3], theEleTags(i));
+		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0],data[4], data[1], data[5], data[2], data[3], theEleTags(i));
 		else
 		    theLoad = new Beam2dUniformLoad(eleLoadTag, data[0], data[1], theEleTags(i));
 
@@ -306,10 +306,8 @@ int OPS_ElementalLoad()
 		    opserr << "WARNING eleLoad - out of memory creating load of type " << type;
 		    return -1;
 		}
-
 		// get the current pattern tag if no tag given in i/p
 		int loadPatternTag = theActiveLoadPattern->getTag();
-
 		// add the load to the domain
 		if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
 		    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
@@ -319,34 +317,37 @@ int OPS_ElementalLoad()
 		}
 		eleLoadTag++;
 	    }
-
 	    return 0;
 	}
-
 	else if (ndm == 3) {
-	    // wy, wz, wx
-	    double data[3] = {0.0, 0.0, 0.0};
-	    int numdata = OPS_GetNumRemainingInputArgs();
-	    if (numdata < 2) {
-		opserr<<"WARNING eleLoad - beamUniform want Wy Wz <Wx>\n";
-		return -1;
-	    }
-	    if (numdata > 3) numdata = 3;
-	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
-		opserr<<"WARNING eleLoad - invalid value for beamUniform\n";
-		return -1;
-	    }
-	    for (int i=0; i<theEleTags.Size(); i++) {
-		theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
-
-		if (theLoad == 0) {
-		    opserr << "WARNING eleLoad - out of memory creating load of type " << type;
-		    return -1;
+		// wy, wz, wx, aL, bL, wyb, wzb, wxb,
+		double data[8] = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 };
+		int numdata = OPS_GetNumRemainingInputArgs();
+		if (numdata < 2) {
+			opserr << "WARNING eleLoad - beamUniform want Wy Wz <Wx>\n";
+			return -1;
 		}
-
+		if (numdata > 8) numdata = 8;
+		if (OPS_GetDoubleInput(&numdata, data) < 0) {
+			opserr << "WARNING eleLoad - invalid value for beamUniform\n";
+			return -1;
+		}
+		for (int i = 0; i < theEleTags.Size(); i++) {
+			if (numdata == 4 || numdata == 5) {
+				data[5] = data[0];
+				data[6] = data[1];
+				data[7] = data[2];
+			}
+			if (numdata > 3)
+				theLoad = new Beam3dPartialUniformLoad(eleLoadTag, data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7], theEleTags(i));
+			else
+			    theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
+			if (theLoad == 0) {
+				opserr << "WARNING eleLoad - out of memory creating load of type " << type;
+				return -1;
+			}
 		// get the current pattern tag if no tag given in i/p
 		int loadPatternTag = theActiveLoadPattern->getTag();
-
 		// add the load to the domain
 		if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
 		    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
@@ -356,9 +357,7 @@ int OPS_ElementalLoad()
 		}
 		eleLoadTag++;
 	    }
-
 	    return 0;
-
 	}
 	else {
 	    opserr << "WARNING eleLoad beamUniform currently only valid only for ndm=2 or 3\n";

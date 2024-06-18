@@ -93,27 +93,27 @@ class HystereticAsym : public UniaxialMaterial
     double b1;	// Hardening parameter
     double b2;   // Hardening parameter
 	double g;	// modulating parameter
-	double tol; // Tolerance on u00 (default 1.0e-20)
+  //double tol; // Tolerance on u00 (default 1.0e-20)
 
-	double uo; // Auxiliary parameter depending on (k1, k2 and a).
+  //double uo; // Auxiliary parameter depending on (k1, k2 and a).
 	double a; // Auxiliary parameter
 	double InitTangent;		//initial tangent;
 
 	// constant aux vars:
-	double kab;
-	double delta1;
-	double expauo;
+	//double kab;
+	//double delta1;
+	//double expauo;
 
 	// aux vars:
 	double delta2;
 	double delta3; 
-	double delta4;
-	double exputujuo;
+  //double delta4;
+  //double exputujuo;
 	double fe;
 
     
     /*** CONVERGED History Variables ***/
-	double Cuj;
+  //double Cuj;
 
 
 	double st;			// Sign of the trial velocity
@@ -143,19 +143,19 @@ class HystereticAsym : public UniaxialMaterial
     int parameterID;
 	Matrix *SHVs;
 
-	double Dka;
-	double Dkb;
-	double Dfo;
-	double Db1;
-	double Db2;
-	double Dg;
-	double Dtol;
+  //double Dka;
+  //double Dkb;
+  //	double Dfo;
+  //	double Db1;
+  //	double Db2;
+  //	double Dg;
+  //	double Dtol;
 	
 
 	
-	double Dut;
-	double Dfc = 0.0;
-	double Duc;
+  //	double Dut;
+  //	double Dfc = 0.0;
+  //	double Duc;
 
 // AddingSensitivity:END ///////////////////////////////////////////
 
