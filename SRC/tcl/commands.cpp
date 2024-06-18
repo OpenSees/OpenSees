@@ -3773,8 +3773,9 @@ specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
   }    
 
   else if (strcmp(argv[1],"Auto") == 0) {
-    theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
-  }    
+      OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+      theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
+  }
 
   else {
     opserr << "WARNING No ConstraintHandler type exists (Plain, Penalty,\n";
