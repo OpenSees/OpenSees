@@ -3775,6 +3775,8 @@ specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
   else if (strcmp(argv[1],"Auto") == 0) {
       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
       theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
+      if (theHandler == 0)
+          return TCL_ERROR;
   }
 
   else {
