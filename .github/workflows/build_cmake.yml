@@ -133,10 +133,11 @@ jobs:
         with:
           path: "C:/Program Files (x86)/Intel/oneAPI"
           key: intel-oneapi
-      - name:
+      - name: Check Path
         shell: cmd
         run: |
           C:\Windows\System32\cmd.exe /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
           set
       - name: Install MUMPS and CONAN
         shell: cmd
@@ -148,6 +149,7 @@ jobs:
             mkdir build
             cd build
             C:\Windows\System32\cmd.exe /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
+            call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
             cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
             cmake --build . --config Release --parallel 4
             cd ..\..
@@ -159,6 +161,7 @@ jobs:
           cd build
           conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
           C:\Windows\System32\cmd.exe /E:ON /K ""C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019"
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 vs2019
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
