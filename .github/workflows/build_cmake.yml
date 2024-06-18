@@ -62,7 +62,10 @@ jobs:
         export PYTHONPATH="../../build/lib/"
         python3 -c "import sys; print(sys.path)"
         python3 example_variable_analysis.py
-
+#        # Simple MP sanity test
+#        - name: Verification OpenSeesPyMP
+#          run: |
+#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
   build-mac:
     name: Mac Build
     runs-on: macos-latest
@@ -93,9 +96,10 @@ jobs:
           mv ./OpenSeesPy.dylib ./opensees.so
       - name: Verification OpenSeesPySP
         run: |
-          export PYTHONPATH="./build/"
+          cd ./EXAMPLES/ExamplePython/
+          export PYTHONPATH="../../build/"
           python3 -c "import sys; print(sys.path)"
-          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+          python3 example_variable_analysis.py
 
   build-win:
     name: Win Build
