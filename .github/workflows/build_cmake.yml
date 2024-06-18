@@ -6,7 +6,7 @@ env:
 
 on:
   push:
-    # branches: [master]
+    branches: [master]
 
   pull_request:
     branches: [master]
@@ -14,87 +14,88 @@ on:
   workflow_dispatch:
 
 jobs:
-#   build-ubuntu:
-#     name: Ubuntu bundled build
-#     runs-on: ubuntu-latest
-#     timeout-minutes: 30
-#     steps:
-#     - uses: actions/checkout@v4
-#     - uses: actions/setup-python@v5
-#       with:
-#         python-version: "3.11"
+  build-ubuntu:
+    name: Ubuntu bundled build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
 
-#     - name: Install conan
-#       run: python3 -m pip install conan==1.60.0
+    - name: Install conan
+      run: python3 -m pip install conan==1.60.0
 
-#     - name: Detect Conan Defaults
-#       run: |
-#         conan --version
+    - name: Detect Conan Defaults
+      run: |
+        conan --version
 
-#     - name: Build
-#       run: |
-#         mkdir build
-#         cd build
-#         conan install .. --build missing
-#         cmake ..
-#         cmake --build . -j8
+    - name: Build
+      run: |
+        mkdir build
+        cd build
+        conan install .. --build missing
+        cmake ..
+        cmake --build . -j8
 
-#         #- name: Verification
-#         #  run: |
-#         #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
-#     - name: Build OpenSeesPy
-#       run: |
-#         cd ./build
-#         cmake ..
-#         make -j 4
-#         make OpenSeesPy
-#         mkdir fake_folder
-#     - name: Rename OpenSeesPy
-#       run: |
-#         cd ./build
-#         mv lib/OpenSeesPy.so lib/opensees.so
+        #- name: Verification
+        #  run: |
+        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
+    - name: Build OpenSeesPy
+      run: |
+        cd ./build
+        cmake ..
+        make -j 4
+        make OpenSeesPy
+        mkdir fake_folder
+    - name: Rename OpenSeesPy
+      run: |
+        cd ./build
+        mv lib/OpenSeesPy.so lib/opensees.so
 
-# # Simple sanity test
-#     - name: Verification OpenSeesPySP
-#       run: |
-#         cd ./build
-#         cd ../EXAMPLES/ExamplePython/
-#         export PYTHONPATH="../../build/lib/"
-#         python3 -c "import sys; print(sys.path)"
-#         python3 example_variable_analysis.py
-#   build-mac:
-#     name: Mac Build
-#     runs-on: macos-latest
-#     timeout-minutes: 30
-#     steps:
-#       - uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-#       - uses: actions/setup-python@v5
-#         with:
-#           python-version: "3.11"
-#       - name: Install Library
-#         run: |
-#          ln -s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
-#          ln -s /opt/homebrew/bin/gfortran-13 /usr/local/bin/gfortran
-#          brew install eigen
-#          brew install hdf5
-#          brew install open-mpi
-#          brew install scalapack
-#          sudo ln -sf /opt/homebrew/include/eigen3/Eigen /opt/homebrew/include/Eigen
-#       - name: Build
-#         run: |
-#           mkdir build
-#           cd build
-#           cmake .. -DMUMPS_DIR=$PWD/../../mumps/build
-#           cmake --build . --target OpenSees -j8
-#           cmake --build . --target OpenSeesPy -j8
-#           mv ./OpenSeesPy.dylib ./opensees.so
-#       - name: Verification OpenSeesPySP
-#         run: |
-#           export PYTHONPATH="./build/"
-#           python3 -c "import sys; print(sys.path)"
-#           python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+# Simple sanity test
+    - name: Verification OpenSeesPySP
+      run: |
+        cd ./build
+        cd ../EXAMPLES/ExamplePython/
+        export PYTHONPATH="../../build/lib/"
+        python3 -c "import sys; print(sys.path)"
+        python3 example_variable_analysis.py
+
+  build-mac:
+    name: Mac Build
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install Library
+        run: |
+         ln -s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
+         ln -s /opt/homebrew/bin/gfortran-13 /usr/local/bin/gfortran
+         brew install eigen
+         brew install hdf5
+         brew install open-mpi
+         brew install scalapack
+         sudo ln -sf /opt/homebrew/include/eigen3/Eigen /opt/homebrew/include/Eigen
+      - name: Build
+        run: |
+          mkdir build
+          cd build
+          cmake .. -DMUMPS_DIR=$PWD/../../mumps/build
+          cmake --build . --target OpenSees -j8
+          cmake --build . --target OpenSeesPy -j8
+          mv ./OpenSeesPy.dylib ./opensees.so
+      - name: Verification OpenSeesPySP
+        run: |
+          export PYTHONPATH="./build/"
+          python3 -c "import sys; print(sys.path)"
+          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
 
   build-win:
     name: Win Build
@@ -110,7 +111,6 @@ jobs:
         with:
           vsversion: 2019
       - name: Install Intel oneAPI
-        if: steps.restore-intel-oneapi-cache.outputs.cache-hit != 'true'
         shell: pwsh
         env:
           WINDOWS_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7dff44ba-e3af-4448-841c-0d616c8da6e7/w_BaseKit_p_2024.1.0.595_offline.exe
