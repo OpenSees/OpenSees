@@ -1531,6 +1531,9 @@ int OPS_ConstraintHandler()
     } else if (strcmp(type,"Transformation") == 0) {
     	theHandler = (ConstraintHandler*)OPS_TransformationConstraintHandler();
 
+    } else if (strcmp(type,"Auto") == 0) {
+    	theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
+
     } else {
     	opserr<<"WARNING unknown ConstraintHandler type "<<type<<"\n";
     	return -1;

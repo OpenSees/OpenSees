@@ -183,6 +183,8 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <LagrangeConstraintHandler.h>
 #include <TransformationConstraintHandler.h>
 
+extern void* OPS_AutoConstraintHandler(void);
+
 // numberers
 #include <PlainNumberer.h>
 #include <DOF_Numberer.h>
@@ -3778,6 +3780,13 @@ specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
   else if (strcmp(argv[1],"Transformation") == 0) {
     theHandler = new TransformationConstraintHandler();
   }    
+
+  else if (strcmp(argv[1],"Auto") == 0) {
+      OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+      theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
+      if (theHandler == 0)
+          return TCL_ERROR;
+  }
 
   else {
     opserr << "WARNING No ConstraintHandler type exists (Plain, Penalty,\n";
