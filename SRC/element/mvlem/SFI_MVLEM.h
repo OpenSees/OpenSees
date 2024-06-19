@@ -107,7 +107,8 @@ private:
 	double getShearDef(void);
 	double getCurvature(void);
 	Vector getResistingForce_6DOF(void);
-
+  int setupMacroFibers();
+  
 	// private attributes - a copy for each object of the class
 
 	// input variables
@@ -118,8 +119,8 @@ private:
 	Node *theNd2;						// pointer to top node
 	NDMaterial **theMaterial;			// array of ND materials
 	Vector *theLoad;					// pointer to element load
-	const double c;						// center of rotation
-	const int m;						// no. of RC panels
+	double c;						// center of rotation
+	int m;						// no. of RC panels
 
 	// calculated element parameters
 	ID externalNodes;					// contains the id's of end nodes

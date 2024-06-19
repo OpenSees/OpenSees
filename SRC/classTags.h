@@ -181,6 +181,7 @@
 #define MAT_TAG_Pinching                        60
 #define MAT_TAG_HookGap 			61
 #define MAT_TAG_FRPConfinedConcrete             62
+#define MAT_TAG_FRPConfinedConcrete02 5010
 #define MAT_TAG_Steel01Thermal		        63
 #define MAT_TAG_Steel02Thermal			64
 #define MAT_TAG_Concrete02Thermal		65
@@ -358,6 +359,7 @@
 #define SEC_TAG_BiaxialHysteretic 36
 #define SEC_TAG_ElasticTube3d 37
 #define SEC_TAG_CreepSection 38
+#define SEC_TAG_ASDCoupledHinge3D 39
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
@@ -975,6 +977,7 @@
 #define HANDLER_TAG_PenaltyConstraintHandler    	3
 #define HANDLER_TAG_TransformationConstraintHandler    	4
 #define HANDLER_TAG_PenaltyHandlerNoHomoSPMultipliers   5
+#define HANDLER_TAG_AutoConstraintHandler    6
 
 #define NUMBERER_TAG_DOF_Numberer      	1
 #define NUMBERER_TAG_PlainNumberer 	2
