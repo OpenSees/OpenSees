@@ -1489,6 +1489,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/handler/PenaltyConstraintHandler.o \
 	$(FE)/analysis/handler/LagrangeConstraintHandler.o \
 	$(FE)/analysis/handler/TransformationConstraintHandler.o \
+	$(FE)/analysis/handler/AutoConstraintHandler.o \
 	$(FE)/analysis/numberer/DOF_Numberer.o \
 	$(FE)/analysis/numberer/PlainNumberer.o \
 	$(FE)/analysis/numberer/ParallelNumberer.o \
