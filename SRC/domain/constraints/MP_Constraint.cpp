@@ -200,7 +200,7 @@ int OPS_EqualDOF_Mixed()
 // constructor for FEM_ObjectBroker			// Arash
 MP_Constraint::MP_Constraint(int clasTag )		
 :DomainComponent(nextTag++, clasTag),
- nodeRetained(0),nodeConstrained(0),constraint(0),constrDOF(0),retainDOF(0),
+ nodeRetained(0),nodeConstrained(0),constraint(0),constrDOF(0),retainDOF(0), initialized(false),
  dbTag1(0), dbTag2(0)
 {
   numMPs++;
@@ -212,7 +212,7 @@ MP_Constraint::MP_Constraint(int nodeRetain, int nodeConstr,
 			     ID &retainedDOF, int clasTag)
 :DomainComponent(nextTag++, clasTag),
  nodeRetained(nodeRetain), nodeConstrained(nodeConstr), 
- constraint(0), constrDOF(0), retainDOF(0),  dbTag1(0), dbTag2(0)
+ constraint(0), constrDOF(0), retainDOF(0), initialized(false), dbTag1(0), dbTag2(0)
 {
   numMPs++;
   
@@ -237,7 +237,7 @@ MP_Constraint::MP_Constraint(int nodeRetain, int nodeConstr, Matrix &constr,
 			     ID &constrainedDOF, ID &retainedDOF)
 :DomainComponent(nextTag++, CNSTRNT_TAG_MP_Constraint), 
  nodeRetained(nodeRetain), nodeConstrained(nodeConstr), 
- constraint(0), constrDOF(0), retainDOF(0), dbTag1(0), dbTag2(0)
+ constraint(0), constrDOF(0), retainDOF(0), initialized(false), dbTag1(0), dbTag2(0)
 {
   numMPs++;    
   constrDOF = new ID(constrainedDOF);
@@ -282,33 +282,36 @@ void MP_Constraint::setDomain(Domain* theDomain)
 {
     // store initial state
     if (theDomain) {
-        Node* theRetainedNode = theDomain->getNode(nodeRetained);
-        Node* theConstrainedNode = theDomain->getNode(nodeConstrained);
-        if (theRetainedNode == 0 || theConstrainedNode == 0) {
-            opserr << "FATAL MP_Constraint::setDomain() - Constrained or Retained";
-            opserr << " Node does not exist in Domain\n";
-            opserr << nodeRetained << " " << nodeConstrained << endln;
-            exit(-1);
-        }
-        const Vector& Uc = theConstrainedNode->getTrialDisp();
-        const Vector& Ur = theRetainedNode->getTrialDisp();
-        const ID& idc = getConstrainedDOFs();
-        const ID& idr = getRetainedDOFs();
-        for (int i = 0; i < idc.Size(); ++i) {
-            int cdof = idc(i);
-            if (cdof < 0 || cdof >= Uc.Size()) {
-                opserr << "MP_Constraint::setDomain FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
+        if (!initialized) { // don't do it if setDomain called after recvSelf when already initialized!
+            Node* theRetainedNode = theDomain->getNode(nodeRetained);
+            Node* theConstrainedNode = theDomain->getNode(nodeConstrained);
+            if (theRetainedNode == 0 || theConstrainedNode == 0) {
+                opserr << "FATAL MP_Constraint::setDomain() - Constrained or Retained";
+                opserr << " Node does not exist in Domain\n";
+                opserr << nodeRetained << " " << nodeConstrained << endln;
                 exit(-1);
             }
-            Uc0(i) = Uc(cdof);
-        }
-        for (int i = 0; i < idr.Size(); ++i) {
-            int rdof = idr(i);
-            if (rdof < 0 || rdof >= Ur.Size()) {
-                opserr << "MP_Constraint::setDomain FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
-                exit(-1);
+            const Vector& Uc = theConstrainedNode->getTrialDisp();
+            const Vector& Ur = theRetainedNode->getTrialDisp();
+            const ID& idc = getConstrainedDOFs();
+            const ID& idr = getRetainedDOFs();
+            for (int i = 0; i < idc.Size(); ++i) {
+                int cdof = idc(i);
+                if (cdof < 0 || cdof >= Uc.Size()) {
+                    opserr << "MP_Constraint::setDomain FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
+                    exit(-1);
+                }
+                Uc0(i) = Uc(cdof);
             }
-            Ur0(i) = Ur(rdof);
+            for (int i = 0; i < idr.Size(); ++i) {
+                int rdof = idr(i);
+                if (rdof < 0 || rdof >= Ur.Size()) {
+                    opserr << "MP_Constraint::setDomain FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
+                    exit(-1);
+                }
+                Ur0(i) = Ur(rdof);
+            }
+            initialized = true;
         }
     }
 
@@ -397,7 +400,7 @@ const Vector& MP_Constraint::getRetainedDOFsInitialDisplacement(void) const
 int 
 MP_Constraint::sendSelf(int cTag, Channel &theChannel)
 {
-    static ID data(10);
+    static ID data(11);
     int dataTag = this->getDbTag();
 
     data(0) = this->getTag(); 
@@ -417,6 +420,7 @@ MP_Constraint::sendSelf(int cTag, Channel &theChannel)
     data(7) = dbTag1;
     data(8) = dbTag2;
     data(9) = nextTag;
+    data(10) = static_cast<int>(initialized);
 
     int result = theChannel.sendID(dataTag, cTag, data);
     if (result < 0) {
@@ -480,7 +484,7 @@ MP_Constraint::recvSelf(int cTag, Channel &theChannel,
 			FEM_ObjectBroker &theBroker)
 {
     int dataTag = this->getDbTag();
-    static ID data(10);
+    static ID data(11);
     int result = theChannel.recvID(dataTag, cTag, data);
     if (result < 0) {
 	opserr << "WARNING MP_Constraint::recvSelf - error receiving ID data\n";
@@ -495,6 +499,7 @@ MP_Constraint::recvSelf(int cTag, Channel &theChannel,
     dbTag1 = data(7);
     dbTag2 = data(8);
     nextTag = data(9);
+    initialized = static_cast<bool>(data(10));
 
     if (numRows != 0 && numCols != 0) {
 	constraint = new Matrix(numRows,numCols);
