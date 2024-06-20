@@ -99,6 +99,7 @@ class MP_Constraint : public DomainComponent
     ID *retainDOF;           // ID of related DOF at retained node
     Vector Uc0;              // initial displacement at constrained DOFs (same size as constrDOF)
     Vector Ur0;              // initial displacement at retained node  (same size as retainDOF)
+    bool initialized;        // a flag to avoid recomputing the intial values in setDomain if already initialized
     int dbTag1, dbTag2;      // need a dbTag for the two ID's
 };
 

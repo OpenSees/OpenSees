@@ -76,6 +76,7 @@ class SP_Constraint : public DomainComponent
     double valueC;   // if constant = the reference value, if not constant =
 	             // the reference value * load factor
     double initialValue; // the value of the dof when the sp constrain is added to the domain
+    bool initialized; // a flag to avoid recomputing the intial value in setDomain if already initialized
     bool isConstant; // flag indicating if constant
     int  loadPatternTag;    
 };
