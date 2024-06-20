@@ -588,6 +588,7 @@
 #include "PenaltyConstraintHandler.h"
 #include "LagrangeConstraintHandler.h"
 #include "TransformationConstraintHandler.h"
+#include "AutoConstraintHandler.h"
 
 // dof numberer header files
 #include "DOF_Numberer.h"   
@@ -2708,7 +2709,10 @@ FEM_ObjectBrokerAllClasses::getNewConstraintHandler(int classTag)
 
 	case HANDLER_TAG_TransformationConstraintHandler:  
 	     return new TransformationConstraintHandler();
-	     
+
+	case HANDLER_TAG_AutoConstraintHandler:  
+	     return new AutoConstraintHandler();
+
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewConstraintHandler - ";
 	     opserr << " - no ConstraintHandler type exists for class tag ";
