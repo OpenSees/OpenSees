@@ -257,7 +257,7 @@ int SP_Constraint_GetNextTag(void) {
 // constructor for FEM_ObjectBroker
 SP_Constraint::SP_Constraint(int clasTag)
 :DomainComponent(0,clasTag),
- nodeTag(0), dofNumber(0), valueR(0.0), valueC(0.0), initialValue(0.0), isConstant(true), 
+ nodeTag(0), dofNumber(0), valueR(0.0), valueC(0.0), initialValue(0.0), initialized(false), isConstant(true), 
  loadPatternTag(-1)
 {
   numSPs++;
@@ -266,7 +266,7 @@ SP_Constraint::SP_Constraint(int clasTag)
 // constructor for a subclass to use
 SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 :DomainComponent(nextTag++, clasTag),
- nodeTag(node), dofNumber(ndof), valueR(0.0), valueC(0.0), initialValue(0.0), isConstant(true), 
+ nodeTag(node), dofNumber(ndof), valueR(0.0), valueC(0.0), initialValue(0.0), initialized(false), isConstant(true), 
  loadPatternTag(-1)
  // valueC is set to 1.0 so that homo will be false when recvSelf() invoked
  // should be ok as valueC cannot be used by subclasses and subclasses should
@@ -278,7 +278,7 @@ SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 // constructor for object of type SP_Constraint
 SP_Constraint::SP_Constraint(int node, int ndof, double value, bool ISconstant)
 :DomainComponent(nextTag++, CNSTRNT_TAG_SP_Constraint),
- nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0), isConstant(ISconstant),
+ nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0), initialized(false), isConstant(ISconstant),
  loadPatternTag(-1)
 {
   numSPs++;
@@ -357,19 +357,22 @@ SP_Constraint::setDomain(Domain* theDomain)
 {
     // store initial state
     if (theDomain) {
-        Node* theNode = theDomain->getNode(nodeTag);
-        if (theNode == 0) {
-            opserr << "FATAL SP_Constraint::setDomain() - Constrained";
-            opserr << " Node does not exist in Domain\n";
-            opserr << nodeTag << endln;
-            exit(-1);
+        if (!initialized) { // don't do it if setDomain called after recvSelf when already initialized!
+            Node* theNode = theDomain->getNode(nodeTag);
+            if (theNode == 0) {
+                opserr << "FATAL SP_Constraint::setDomain() - Constrained";
+                opserr << " Node does not exist in Domain\n";
+                opserr << nodeTag << endln;
+                exit(-1);
+            }
+            const Vector& U = theNode->getTrialDisp();
+            if (dofNumber < 0 || dofNumber >= U.Size()) {
+                opserr << "SP_Constraint::setDomain FATAL Error: Constrained DOF " << dofNumber << " out of bounds [0-" << U.Size() << "]\n";
+                exit(-1);
+            }
+            initialValue = U(dofNumber);
+            initialized = true;
         }
-        const Vector& U = theNode->getTrialDisp();
-        if (dofNumber < 0 || dofNumber >= U.Size()) {
-            opserr << "SP_Constraint::setDomain FATAL Error: Constrained DOF " << dofNumber << " out of bounds [0-" << U.Size() << "]\n";
-            exit(-1);
-        }
-        initialValue = U(dofNumber);
     }
 
     // call base class implementation
@@ -379,7 +382,7 @@ SP_Constraint::setDomain(Domain* theDomain)
 int 
 SP_Constraint::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(9);  // we send as double to avoid having 
+    static Vector data(10);  // we send as double to avoid having 
                      // to send two messages.
     data(0) = this->getTag(); 
     data(1) = nodeTag;
@@ -394,6 +397,7 @@ SP_Constraint::sendSelf(int cTag, Channel &theChannel)
 
     data(7) = nextTag;
     data(8) = initialValue;
+    data(9) = static_cast<double>(initialized);
 
     int result = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (result != 0) {
@@ -408,7 +412,7 @@ int
 SP_Constraint::recvSelf(int cTag, Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-    static Vector data(9);  // we sent the data as double to avoid having to send
+    static Vector data(10);  // we sent the data as double to avoid having to send
                      // two messages
     int result = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (result < 0) {
@@ -432,6 +436,7 @@ SP_Constraint::recvSelf(int cTag, Channel &theChannel,
 
     nextTag = (int)data(7);
     initialValue = data(8);
+    initialized = static_cast<bool>(data(9));
 
     return 0;
 }
