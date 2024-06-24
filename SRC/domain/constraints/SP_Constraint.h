@@ -56,10 +56,13 @@ class SP_Constraint : public DomainComponent
     virtual int getDOF_Number(void) const;
     virtual int applyConstraint(double loadFactor);    
     virtual double getValue(void);
+    virtual double getInitialValue(void);
     virtual bool isHomogeneous(void) const;
     virtual void setLoadPatternTag(int loadPaternTag);
     virtual int  getLoadPatternTag(void) const;
     
+    void setDomain(Domain* theDomain);
+
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, 
 			 FEM_ObjectBroker &theBroker);
@@ -72,6 +75,8 @@ class SP_Constraint : public DomainComponent
     double valueR;   // the reference value
     double valueC;   // if constant = the reference value, if not constant =
 	             // the reference value * load factor
+    double initialValue; // the value of the dof when the sp constrain is added to the domain
+    bool initialized; // a flag to avoid recomputing the intial value in setDomain if already initialized
     bool isConstant; // flag indicating if constant
     int  loadPatternTag;    
 };
