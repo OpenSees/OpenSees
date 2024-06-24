@@ -1142,6 +1142,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/Elliptical2.o \
 	$(FE)/material/section/Isolator2spring.o \
 	$(FE)/material/section/BiaxialHysteretic.o \
+	$(FE)/material/section/ASDCoupledHinge3D.o \
 	$(FE)/material/section/LayeredShellFiberSection.o \
 	$(FE)/material/section/integration/SectionIntegration.o \
 	$(FE)/material/section/integration/RCSectionIntegration.o \
@@ -1492,6 +1493,7 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/handler/PenaltyConstraintHandler.o \
 	$(FE)/analysis/handler/LagrangeConstraintHandler.o \
 	$(FE)/analysis/handler/TransformationConstraintHandler.o \
+	$(FE)/analysis/handler/AutoConstraintHandler.o \
 	$(FE)/analysis/numberer/DOF_Numberer.o \
 	$(FE)/analysis/numberer/PlainNumberer.o \
 	$(FE)/analysis/numberer/ParallelNumberer.o \

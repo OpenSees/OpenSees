@@ -145,7 +145,7 @@ PFEMElement3DBubble::PFEMElement3DBubble()
      nodes(), thePCs(),
      rho(0), mu(0), bx(0), by(0), bz(0), J(0.0), numDOFs(),
      kappa(-1), parameterID(0),dNdx(),dNdy(),dNdz(),
-     M(), D(), F(), Fp()
+     M(), D(), F(), Fp(), Q()
 {
 }
 
@@ -157,7 +157,7 @@ PFEMElement3DBubble::PFEMElement3DBubble(int tag, int nd1, int nd2, int nd3, int
      nodes(8), thePCs(4),
      rho(r), mu(m), bx(b1), by(b2), bz(b3), J(0.0), numDOFs(),
      kappa(ka), parameterID(0), dNdx(4),dNdy(4),dNdz(4),
-     M(), D(), F(), Fp()
+     M(), D(), F(), Fp(), Q()
 {
     ntags(0)=nd1; ntags(2)=nd2; ntags(4)=nd3; ntags(6)=nd4;
     ntags(1)=nd1; ntags(3)=nd2; ntags(5)=nd3; ntags(7)=nd4;
@@ -361,9 +361,25 @@ PFEMElement3DBubble::getInitialStiff()
     return K;
 }
 
-int
-PFEMElement3DBubble::addInertiaLoadToUnbalance(const Vector &accel)
-{
+void PFEMElement3DBubble::zeroLoad() {
+    int ndf = this->getNumDOF();
+    Q.resize(ndf);
+    Q.Zero();
+}
+
+int PFEMElement3DBubble::addInertiaLoadToUnbalance(
+    const Vector& accel) {
+    double m = getM();
+    if (m == 0) return 0;
+
+    // mass
+    for (int a = 0; a < (int)thePCs.size(); a++) {
+        const Vector& Raccel = nodes[2 * a]->getRV(accel);
+        Q(numDOFs(2 * a)) -= m * Raccel(0);
+        Q(numDOFs(2 * a) + 1) -= m * Raccel(1);
+        Q(numDOFs(2 * a) + 2) -= m * Raccel(2);
+    }
+
     return 0;
 }
 
@@ -430,7 +446,8 @@ PFEMElement3DBubble::getResistingForceIncInertia()
         P(numDOFs(2*i+1)) -= Fp(i);
     }
 
-    //opserr<<"F = "<<F;
+    P.addVector(1.0, Q, -1.0);
+
     return P;
 }
 
