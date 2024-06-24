@@ -377,6 +377,7 @@ int PFEMElement3DBubble::addInertiaLoadToUnbalance(
         const Vector& Raccel = nodes[2 * a]->getRV(accel);
         Q(numDOFs(2 * a)) -= m * Raccel(0);
         Q(numDOFs(2 * a) + 1) -= m * Raccel(1);
+        Q(numDOFs(2 * a) + 2) -= m * Raccel(2);
     }
 
     return 0;
