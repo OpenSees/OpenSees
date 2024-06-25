@@ -61,6 +61,8 @@ public:
 	// Destructor
 	~E_SFI_MVLEM_3D();
 
+  const char *getClassType(void) const {return "E_SFI_MVLEM3d";}
+  
 	// Public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID& getExternalNodes(void);
