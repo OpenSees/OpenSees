@@ -240,11 +240,22 @@ QuadPatch::getCopy (void) const
  
 void QuadPatch::Print(OPS_Stream &s, int flag) const
 {
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
    s << "\nPatch Type: QuadPatch";
    s << "\nMaterial Id: " << matID;
    s << "\nNumber of subdivisions in the IJ direction: " << nDivIJ;
    s << "\nNumber of subdivisions in the JK direction: " << nDivJK;
    s << "\nVertex Coordinates: " << vertCoord;
+}
+if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	 s << "\t\t\t\t{\"type\": \"quad\", \"material\": "<<matID<<", \"divisions\":[" << nDivIJ << ","<< nDivJK<<"], ";
+	 s << "\"vertices\": [";
+	 s << "["<<vertCoord(0,0)<<","<<vertCoord(0,1)<<"], ";
+	 s << "["<<vertCoord(1,0)<<","<<vertCoord(1,1)<<"], ";
+	 s << "["<<vertCoord(2,0)<<","<<vertCoord(2,1)<<"], ";
+	 s << "["<<vertCoord(3,0)<<","<<vertCoord(3,1)<<"]";
+	 s <<"]}";
+}
 }
 
 
