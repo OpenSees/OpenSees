@@ -136,7 +136,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          $HOME/.local/bin/conan install .. --build missing
+          conan install .. --build missing # conan executables location is different.
           cmake ..
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
