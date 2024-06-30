@@ -39,8 +39,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - name: conan 1.60.0
-        run: pip install conan==1.60.0
+      - name: Conan 1.x
+        run: pip install conan<2.0
       - name: MUMPS
         shell: cmd
         run: |
@@ -131,9 +131,9 @@ jobs:
         with:
           python-version: "3.11"
       # - name: Needed Applications and Libraries are already satisfied.
-      - name: Conan
+      - name: Conan 1.x
         run: |
-          pip install conan==1.60.0
+          pip install conan<2.0
       - name: 2.4.2. Building the OpenSees Applications and Python module
         run: |
           mkdir build
