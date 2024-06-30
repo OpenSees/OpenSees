@@ -39,8 +39,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - name: conan 1.59.0
-        run: pip install conan==1.59.0
+      - name: conan 1.60.0
+        run: pip install conan==1.60.0
       - name: MUMPS
         shell: cmd
         run: |
