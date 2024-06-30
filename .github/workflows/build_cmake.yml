@@ -61,11 +61,13 @@ jobs:
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
-          move .\bin\OpenSeesPy.dll .\bin\opensees.pyd
+          copy .\bin\OpenSeesPy.dll .\bin\opensees.pyd
           copy "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./bin
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
+          cp ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/bin/
           $env:PYTHONPATH = "./build/bin/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
