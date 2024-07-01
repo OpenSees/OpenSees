@@ -133,7 +133,7 @@ jobs:
       # - name: Needed Applications and Libraries are already satisfied.
       - name: Conan 1.x
         run: |
-          pip install conan<2.0
+          pip install "conan<2.0"
       - name: 2.4.2. Building the OpenSees Applications and Python module
         run: |
           mkdir build
