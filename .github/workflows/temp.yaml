@@ -67,8 +67,8 @@ jobs:
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          # cp ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
-          # cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
+          cp ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
           $env:PYTHONPATH = "./build/Release/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
@@ -144,8 +144,15 @@ jobs:
           cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          mv ./Release/OpenSeesPy.so ./Release/opensees.so
-
+          # mv ./Release/OpenSeesPy.so ./Release/opensees.so
+      - name: find opensees.so
+        run: ls -all build
+      - name: find Release/OpenSeesPy.so
+        run: ls -all build/Release
+      - name: find bin/OpenSeesPy.so
+        run: ls -all build/bin
+      - name: find lib/OpenSeesPy.so
+        run: ls -all build/lib
       - name: Verification OpenSeesPySP   # Simple Sanity Test
         run: |
           export PYTHONPATH="./build/Release/"
