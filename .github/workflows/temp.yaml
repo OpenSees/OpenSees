@@ -144,9 +144,7 @@ jobs:
           cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          make -j 4
-          make OpenSeesPy
-          mv lib/OpenSeesPy.so lib/opensees.so
+          mv ./Release/OpenSeesPy.so ./Release/opensees.so
 
       - name: Verification OpenSeesPySP   # Simple Sanity Test
         run: |
