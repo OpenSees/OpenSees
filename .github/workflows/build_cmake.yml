@@ -39,8 +39,8 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
-      - name: Conan 1.x
-        run: pip install conan<2.0
+      - name: Conan
+        run: pip install conan
       - name: MUMPS
         shell: cmd
         run: |
@@ -56,9 +56,10 @@ jobs:
         run: |
           mkdir build
           cd build
-          conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
+          conan profile detect
+          conan install .. --output-folder=conan --build=missing --settings compiler.runtime="static"
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
-          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
+          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
           copy .\bin\OpenSeesPy.dll .\bin\opensees.pyd
@@ -66,9 +67,9 @@ jobs:
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          cp ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/bin/
-          $env:PYTHONPATH = "./build/bin/"
+          mv ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
+          $env:PYTHONPATH = "./build/Release/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
 
@@ -131,24 +132,21 @@ jobs:
         with:
           python-version: "3.11"
       # - name: Needed Applications and Libraries are already satisfied.
-      - name: Conan 1.x
-        run: |
-          pip install "conan<2.0"
+      - name: Conan
+        run: pip install conan
       - name: 2.4.2. Building the OpenSees Applications and Python module
         run: |
           mkdir build
           cd build
-          conan install .. --build missing # conan executables location is different.
-          cmake ..
+          conan profile detect
+          conan install .. --output-folder=conan --build=missing
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          make -j 4
-          make OpenSeesPy
-          mv lib/OpenSeesPy.so lib/opensees.so
-
+          mv ./OpenSeesPy.so ./opensees.so
       - name: Verification OpenSeesPySP   # Simple Sanity Test
         run: |
-          export PYTHONPATH="./build/lib/"
+          export PYTHONPATH="./build/"
           python3 -c "import sys; print(sys.path)"
           python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
 #        # Simple MP sanity test
