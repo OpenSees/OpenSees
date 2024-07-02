@@ -62,12 +62,10 @@ jobs:
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
-          copy .\Release\OpenSeesPy.dll .\Release\opensees.pyd
-          copy "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./bin
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          cp ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
+          mv ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
           cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
           $env:PYTHONPATH = "./build/Release/"
           python -c "import sys; print(sys.path)"
@@ -144,18 +142,10 @@ jobs:
           cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          # mv ./Release/OpenSeesPy.so ./Release/opensees.so
-      - name: find opensees.so
-        run: ls -all build
-      - name: find Release/OpenSeesPy.so
-        run: ls -all build/Release
-      - name: find bin/OpenSeesPy.so
-        run: ls -all build/bin
-      - name: find lib/OpenSeesPy.so
-        run: ls -all build/lib
+          mv ./OpenSeesPy.so ./opensees.so
       - name: Verification OpenSeesPySP   # Simple Sanity Test
         run: |
-          export PYTHONPATH="./build/Release/"
+          export PYTHONPATH="./build/"
           python3 -c "import sys; print(sys.path)"
           python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
 #        # Simple MP sanity test
