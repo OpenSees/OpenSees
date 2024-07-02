@@ -62,13 +62,13 @@ jobs:
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
-          copy .\bin\OpenSeesPy.dll .\bin\opensees.pyd
+          copy .\Release\OpenSeesPy.dll .\Release\opensees.pyd
           copy "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./bin
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          cp ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/bin/
+          cp ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
           $env:PYTHONPATH = "./build/bin/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
@@ -141,7 +141,7 @@ jobs:
           cd build
           conan profile detect
           conan install .. --output-folder=conan --build=missing
-          cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
+          cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
           make -j 4
