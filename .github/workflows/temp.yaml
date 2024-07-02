@@ -67,9 +67,9 @@ jobs:
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          cp ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
-          $env:PYTHONPATH = "./build/bin/"
+          # cp ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
+          # cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
+          $env:PYTHONPATH = "./build/Release/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
 
@@ -148,7 +148,7 @@ jobs:
 
       - name: Verification OpenSeesPySP   # Simple Sanity Test
         run: |
-          export PYTHONPATH="./build/lib/"
+          export PYTHONPATH="./build/Release/"
           python3 -c "import sys; print(sys.path)"
           python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
 #        # Simple MP sanity test
