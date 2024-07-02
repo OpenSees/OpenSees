@@ -56,7 +56,8 @@ jobs:
         run: |
           mkdir build
           cd build
-          conan install .. --output-folder=conan --build=missing
+          conan profile detect
+          conan install .. --output-folder=conan --build=missing --settings compiler.runtime="static"
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
           cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
           cmake --build . --config Release --target OpenSees -j8
@@ -138,7 +139,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          # conan install .. --build missing # conan executables location is different.
+          conan profile detect
           conan install .. --output-folder=conan --build=missing
           cmake .. -DCMAKE_TOOLCHAIN_FILE=conan/conan_toolchain.cmake
           cmake --build . --target OpenSees -j8
