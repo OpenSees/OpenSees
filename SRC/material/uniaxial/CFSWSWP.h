@@ -44,11 +44,12 @@
 	   double Ifi, double ts,
 	   double np,double ds,double Vs,
 	   double screw_Spacing, double nc,double type, double A, double L);
-   
-   
+    
    CFSWSWP();
    ~CFSWSWP();
-   
+
+   const char *getClassType(void) const {return "CFSWSWP";};
+
    double GetTangentFromCurve(double Strain);
    double GetTangentFromCurve3(double Strain);
    double GetTangentFromCurve4(double Strain);

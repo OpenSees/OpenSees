@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+                                                                         
 // $Revision: 1.33 $
 // $Date: 2010-09-13 21:26:10 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/forceBeamColumn/ForceBeamColumn3d.cpp,v $
@@ -787,20 +787,29 @@ ForceBeamColumn3d::computeReactions(double *p0)
       p0[4] -= V;
     }
     else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
-      double wa = data(2)*loadFactor;  // Axial
-      double wy = data(0)*loadFactor;  // Transverse
-      double wz = data(1)*loadFactor;  // Transverse
-      double a = data(3)*L;
-      double b = data(4)*L;
-
-      p0[0] -= wa*(b-a);
-      double Fy = wy*(b-a);
-      double c = a + 0.5*(b-a);
-      p0[1] -= Fy*(1-c/L);
-      p0[2] -= Fy*c/L;
-      double Fz = wz*(b-a);
-      p0[3] -= Fz*(1-c/L);
-      p0[4] -= Fz*c/L;      
+      double wy = data(0) * loadFactor;  // Transverse Y at start
+      double wz = data(1) * loadFactor;  // Transverse Z at start
+      double wa = data(2) * loadFactor;  // Axial at start
+      double a = data(3) * L;
+      double b = data(4) * L;
+      double wyb = data(5) * loadFactor;  // Transverse Y at end
+      double wzb = data(6) * loadFactor;  // Transverse Z at end
+      double wab = data(7) * loadFactor;  // Axial at end
+      p0[0] -= wa * (b - a) + 0.5 * (wab - wa) * (b - a);
+      double c = a + 0.5 * (b - a);
+      double Fy = wy * (b - a); // resultant transverse load Y (uniform part)
+      p0[1] -= Fy * (1 - c / L);
+      p0[2] -= Fy * c / L;
+      double Fz = wz * (b - a); // resultant transverse load Z (uniform part)
+      p0[3] -= Fz * (1 - c / L);
+      p0[4] -= Fz * c / L;
+      c = a + 2.0 / 3.0 * (b - a);
+      Fy = 0.5 * (wyb - wy) * (b - a); // resultant transverse load Y (triang. part)
+      p0[1] -= Fy * (1 - c / L);
+      p0[2] -= Fy * c / L;
+      Fz = 0.5 * (wzb - wz) * (b - a); // resultant transverse load Z (triang. part)
+      p0[3] -= Fz * (1 - c / L);
+      p0[4] -= Fz * c / L;
     }
     else if (type == LOAD_TAG_Beam3dPointLoad) {
       double Py = data(0)*loadFactor;
@@ -1565,23 +1574,31 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
       }
     }
     else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
-      double wa = data(2)*loadFactor;  // Axial
-      double wy = data(0)*loadFactor;  // Transverse
-      double wz = data(1)*loadFactor;  // Transverse
+      double wy = data(0) * loadFactor;  // Transverse Y at start
+      double wz = data(1) * loadFactor;  // Transverse Z at start
+      double wa = data(2) * loadFactor;  // Axial at start
       double a = data(3)*L;
       double b = data(4)*L;
-
-      double Fa = wa*(b-a); // resultant axial load
-      double Fy = wy*(b-a); // resultant transverse load
-      double Fz = wz*(b-a); // resultant transverse load
-      double c = a + 0.5*(b-a);
-      double VyI = Fy*(1-c/L);
-      double VyJ = Fy*c/L;
-      double VzI = Fz*(1-c/L);
-      double VzJ = Fz*c/L;      
-
+      double wyb = data(5) * loadFactor;  // Transverse Y at end
+      double wzb = data(6) * loadFactor;  // Transverse Z at end
+      double wab = data(7) * loadFactor;  // Axial at end
+      double Fa = wa * (b - a) + 0.5 * (wab - wa) * (b - a); // resultant axial load
+      double Fy = wy * (b - a); // resultant transverse load
+      double Fz = wz * (b - a); // resultant transverse load
+      double c = a + 0.5 * (b - a);
+      double VyI = Fy * (1 - c / L);
+      double VyJ = Fy * c / L;
+      double VzI = Fz * (1 - c / L);
+      double VzJ = Fz * c / L;
+      Fy = 0.5 * (wyb - wy) * (b - a); // resultant transverse load
+      Fz = 0.5 * (wzb - wz) * (b - a); // resultant transverse load
+      c = a + 2.0 / 3.0 * (b - a);
+      VyI += Fy * (1 - c / L);
+      VyJ += Fy * c / L;
+      VzI += Fz * (1 - c / L);
+      VzJ += Fz * c / L;
+     
       for (int ii = 0; ii < order; ii++) {
-	
 	if (x <= a) {
 	  switch(code(ii)) {
 	  case SECTION_RESPONSE_P:
@@ -1597,7 +1614,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) -= VyI;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= VzI;
+        sp(ii) += VzI;
 	    break;	    
 	  default:
 	    break;
@@ -1615,33 +1632,35 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += VyJ;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += VzJ;	    
+	    sp(ii) -= VzJ;	    
 	    break;
 	  default:
 	    break;
 	  }
 	}
 	else {
+      double wyy = wy + (wyb - wy) / (b - a) * (x - a);
+      double wzz = wz + (wzb - wz) / (b - a) * (x - a);
 	  switch(code(ii)) {
 	  case SECTION_RESPONSE_P:
-	    sp(ii) += Fa-wa*(x-a);
+	    sp(ii) += Fa - wa * (x - a) - 0.5 * (wab - wa) / (b - a) * (x - a) * (x - a);
 	    break;
 	  case SECTION_RESPONSE_MZ:
-	    sp(ii) += -VyI*x + 0.5*wy*x*x + wy*a*(0.5*a-x);
+        sp(ii) += -VyI * x + 0.5 * wy * (x - a) * (x - a) + 0.5 * (wyy - wy) * (x - a) * (x - a) / 3.0;
 	    break;
 	  case SECTION_RESPONSE_MY:
-	    sp(ii) += VzI*x - 0.5*wz*x*x - wz*a*(0.5*a-x);
+          sp(ii) += VzI * x - 0.5 * wz * (x - a) * (x - a) - 0.5 * (wzz - wz) * (x - a) * (x - a) / 3.0;
 	    break;	    
 	  case SECTION_RESPONSE_VY:
-	    sp(ii) += -VyI + wy*(x-a);
-	    break;
-	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += -VzI + wz*(x-a);	    
-	    break;
+        sp(ii) += -VyI + wy * (x - a) + 0.5 * (wyy - wy) * (x - a);
+        break;
+	  case SECTION_RESPONSE_VZ:	   
+        sp(ii) -= -VzI + wz * (x - a) - 0.5 * (wzz - wz) * (x - a);
+        break;
 	  default:
 	    break;
 	  }
-	}
+    }
       }
     }
     else if (type == LOAD_TAG_Beam3dPointLoad) {

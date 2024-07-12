@@ -46,7 +46,7 @@ void* OPS_HardeningMaterial()
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {
 	opserr << "WARNING insufficient arguments\n";
-	opserr << "Want: uniaxialMaterial Hardening tag? E? sigmaY? H_iso? H_kin? <eta?>" << endln;
+	opserr << "Want: uniaxialMaterial Hardening tag? E? sigmaY? H_iso? H_kin?" << endln;
 	return 0;
     }
 
@@ -86,16 +86,19 @@ void* OPS_HardeningMaterial()
 HardeningMaterial::HardeningMaterial(int tag, double e, double s,
 				     double hi, double hk, double n)
 :UniaxialMaterial(tag,MAT_TAG_Hardening),
- E(e), sigmaY(s), Hiso(hi), Hkin(hk), eta(n),
+ E(e), sigmaY(s), Hiso(hi), Hkin(hk),
  parameterID(0), SHVs(0)
 {
+  if (n > 0.0)
+    opserr << "Viscous parameter eta not used in HardeningMaterial" << endln;
+
   // Initialize variables
   this->revertToStart();
 }
 
 HardeningMaterial::HardeningMaterial()
 :UniaxialMaterial(0,MAT_TAG_Hardening),
- E(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0), eta(0.0),
+ E(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0),
  parameterID(0), SHVs(0)
 {
   // Initialize variables
@@ -138,13 +141,9 @@ HardeningMaterial::setTrialStrain (double strain, double strainRate)
 
     // Plastic step ... perform return mapping algorithm
     else {
-      double etadt = 0.0;
-
-      if (eta != 0.0 || ops_Dt != 0)
-	  etadt = eta/ops_Dt;
-
+     
       // Compute consistency parameter
-      double dGamma = f / (E+Hiso+Hkin+etadt);
+      double dGamma = f / (E+Hiso+Hkin);
 
       // Find sign of xsi
       int sign = (xsi < 0) ? -1 : 1;
@@ -159,7 +158,7 @@ HardeningMaterial::setTrialStrain (double strain, double strainRate)
       Thardening = Chardening + dGamma;
 	
       // Set trial tangent
-      Ttangent = E*(Hkin+Hiso+etadt) / (E+Hkin+Hiso+etadt);
+      Ttangent = E*(Hkin+Hiso) / (E+Hkin+Hiso);
     }
 
     return 0;
@@ -227,7 +226,7 @@ UniaxialMaterial *
 HardeningMaterial::getCopy(void)
 {
     HardeningMaterial *theCopy =
-	new HardeningMaterial(this->getTag(), E, sigmaY, Hiso, Hkin, eta);
+	new HardeningMaterial(this->getTag(), E, sigmaY, Hiso, Hkin);
 
     // Copy committed history variables
     theCopy->CplasticStrain = CplasticStrain;
@@ -260,7 +259,7 @@ HardeningMaterial::sendSelf(int cTag, Channel &theChannel)
   data(2) = sigmaY;
   data(3) = Hiso;
   data(4) = Hkin;
-  data(5) = eta;
+  //data(5) = eta;
   data(6) = CplasticStrain;
   data(7) = Chardening;
   data(8) = Tstrain;
@@ -308,7 +307,7 @@ HardeningMaterial::recvSelf(int cTag, Channel &theChannel,
   sigmaY = data(2);
   Hiso = data(3);
   Hkin = data(4);
-  eta = data(5);
+  //eta = data(5);
   CplasticStrain = data(6);
   Chardening = data(7);
   Tstrain = data(8);
@@ -349,7 +348,6 @@ HardeningMaterial::Print(OPS_Stream &s, int flag)
 		s << "  sigmaY: " << sigmaY << endln;
 		s << "  Hiso: " << Hiso << endln;
 		s << "  Hkin: " << Hkin << endln;
-		s << "  eta: " << eta << endln;
 	}
     
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {
@@ -360,7 +358,6 @@ HardeningMaterial::Print(OPS_Stream &s, int flag)
 		s << "\"fy\": " << sigmaY << ", ";
 		s << "\"Hiso\": " << Hiso << ", ";
 		s << "\"Hkin\": " << Hkin << ", ";
-		s << "\"eta\": " << eta << "}";
 	}
 }
 
@@ -384,10 +381,6 @@ HardeningMaterial::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"H_iso") == 0 || strcmp(argv[0],"Hiso") == 0) {
     param.setValue(Hiso);
     return param.addObject(4, this);
-  }
-  if (strcmp(argv[0],"eta") == 0) {
-    param.setValue(eta);
-    return param.addObject(5, this);
   }  
   return -1;
 }
@@ -409,10 +402,7 @@ HardeningMaterial::updateParameter(int parameterID, Information &info)
 		break;
 	case 4:
 		this->Hiso = info.theDouble;
-		break;
-	case 5:
-		this->eta = info.theDouble;
-		break;		
+		break;	
 	default:
 		return -1;
 	}

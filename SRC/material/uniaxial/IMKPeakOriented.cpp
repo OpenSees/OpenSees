@@ -87,7 +87,7 @@ IMKPeakOriented::IMKPeakOriented(int tag, double p_Ke,
     double p_posUp_0, double p_posUpc_0, double p_posUu_0, double p_posFy_0, double p_posFcapFy_0, double p_posFresFy_0,
     double p_negUp_0, double p_negUpc_0, double p_negUu_0, double p_negFy_0, double p_negFcapFy_0, double p_negFresFy_0,
     double p_LAMBDA_S, double p_LAMBDA_C, double p_LAMBDA_A, double p_LAMBDA_K, double p_c_S, double p_c_C, double p_c_A, double p_c_K, double p_D_pos, double p_D_neg)
-    : UniaxialMaterial(tag, 0), Ke(p_Ke),
+    : UniaxialMaterial(tag, MAT_TAG_IMKPeakOriented), Ke(p_Ke),
     posUp_0(p_posUp_0), posUpc_0(p_posUpc_0), posUu_0(p_posUu_0), posFy_0(p_posFy_0), posFcapFy_0(p_posFcapFy_0), posFresFy_0(p_posFresFy_0),
     negUp_0(p_negUp_0), negUpc_0(p_negUpc_0), negUu_0(p_negUu_0), negFy_0(p_negFy_0), negFcapFy_0(p_negFcapFy_0), negFresFy_0(p_negFresFy_0),
     LAMBDA_S(p_LAMBDA_S), LAMBDA_C(p_LAMBDA_C), LAMBDA_A(p_LAMBDA_A), LAMBDA_K(p_LAMBDA_K), c_S(p_c_S), c_C(p_c_C), c_A(p_c_A), c_K(p_c_K), D_pos(p_D_pos), D_neg(p_D_neg)
@@ -106,7 +106,7 @@ IMKPeakOriented::IMKPeakOriented(int tag, double p_Ke,
 }
 
 IMKPeakOriented::IMKPeakOriented()
-    :UniaxialMaterial(0, 0), Ke(0),
+    :UniaxialMaterial(0, MAT_TAG_IMKPeakOriented), Ke(0),
     posUp_0(0), posUpc_0(0), posUu_0(0), posFy_0(0), posFcapFy_0(0), posFresFy_0(0),
     negUp_0(0), negUpc_0(0), negUu_0(0), negFy_0(0), negFcapFy_0(0), negFresFy_0(0),
     LAMBDA_S(0), LAMBDA_C(0), LAMBDA_A(0), LAMBDA_K(0), c_S(0), c_C(0), c_A(0), c_K(0), D_pos(0), D_neg(0)
@@ -585,92 +585,16 @@ IMKPeakOriented::getCopy(void)
         negUy_0, negUcap_0, negUu_0, negFy_0, negFcapFy_0, negFresFy_0,
         LAMBDA_S, LAMBDA_C, LAMBDA_A, LAMBDA_K, c_S, c_C, c_A, c_K, D_pos, D_neg);
 
-    //cout << " getCopy" << endln;
-// 12 Positive U and F
-    theCopy->posUy = posUy;
-    theCopy->posFy = posFy;
-    theCopy->posUcap = posUcap;
-    theCopy->posFcap = posFcap;
-    theCopy->posUlocal = posUlocal;
-    theCopy->posFlocal = posFlocal;
-    theCopy->posUglobal = posUglobal;
-    theCopy->posFglobal = posFglobal;
-    theCopy->posUres = posUres;
-    theCopy->posFres = posFres;
-    theCopy->posKp = posKp;
-    theCopy->posKpc = posKpc;
-// 12 Negative U and F
-    theCopy->negUy = negUy;
-    theCopy->negFy = negFy;
-    theCopy->negUcap = negUcap;
-    theCopy->negFcap = negFcap;
-    theCopy->negUlocal = negUlocal;
-    theCopy->negFlocal = negFlocal;
-    theCopy->negUglobal = negUglobal;
-    theCopy->negFglobal = negFglobal;
-    theCopy->negUres = negUres;
-    theCopy->negFres = negFres;
-    theCopy->negKp = negKp;
-    theCopy->negKpc = negKpc;
-// 3 State Values
-    theCopy->Ui = Ui;
-    theCopy->Fi = Fi;
-// 2 Stiffness
-    theCopy->Kreload = Kreload;
-    theCopy->Kunload = Kunload;
-// 2 Energy
-    theCopy->engAcml = engAcml;
-    theCopy->engDspt = engDspt;
-// 2 Flag
-    theCopy->Failure_Flag = Failure_Flag;
-    theCopy->Branch = Branch;
-// 12 Positive U and F
-    theCopy->cPosUy = cPosUy;
-    theCopy->cPosFy = cPosFy;
-    theCopy->cPosUcap = cPosUcap;
-    theCopy->cPosFcap = cPosFcap;
-    theCopy->cPosUlocal = cPosUlocal;
-    theCopy->cPosFlocal = cPosFlocal;
-    theCopy->cPosUglobal= cPosUglobal;
-    theCopy->cPosFglobal= cPosFglobal;
-    theCopy->cPosUres = cPosUres;
-    theCopy->cPosFres = cPosFres;
-    theCopy->cPosKp = cPosKp;
-    theCopy->cPosKpc = cPosKpc;
-// 12 Negative U and F
-    theCopy->cNegUy = cNegUy;
-    theCopy->cNegFy = cNegFy;
-    theCopy->cNegUcap = cNegUcap;
-    theCopy->cNegFcap = cNegFcap;
-    theCopy->cNegUglobal= cNegUglobal;
-    theCopy->cNegFglobal= cNegFglobal;
-    theCopy->cNegUlocal = cNegUlocal;
-    theCopy->cNegFlocal = cNegFlocal;
-    theCopy->cNegUres = cNegUres;
-    theCopy->cNegFres = cNegFres;
-    theCopy->cNegKp = cNegKp;
-    theCopy->cNegKpc = cNegKpc;
-// 3 State
-    theCopy->cUi = cUi;
-    theCopy->cFi = cFi;
-// 2 Stiffness
-    theCopy->cKreload = cKreload;
-    theCopy->cKunload = cKunload;
-// 2 Energy
-    theCopy->cEngAcml = cEngAcml;
-    theCopy->cEngDspt = cEngDspt;
-// 2 Flag
-    theCopy->cFailure_Flag = cFailure_Flag;
-    theCopy->cBranch = cBranch;
+    *theCopy = *this;
+
     return theCopy;
 }
 
 int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    cout << " sendSelf" << endln;
 
-    static Vector data(137);
+    static Vector data(70);
     data(0) = this->getTag();
 // 23 Fixed Input Material Parameters 1-25
     data(1) = Ke;
@@ -697,21 +621,22 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
     data(22) = D_pos;
     data(23) = D_neg;
 // 14 Initial Values 31-44
-    data(31) = posUy_0;
-    data(32) = posUcap_0;
-    data(33) = posFcap_0;
-    data(34) = posKp_0;
-    data(35) = posKpc_0;
-    data(36) = negUy_0;
-    data(37) = negUcap_0;
-    data(38) = negFcap_0;
-    data(39) = negKp_0;
-    data(40) = negKpc_0;
-    data(41) = engRefS;
-    data(42) = engRefC;
-    data(43) = engRefA;
-    data(44) = engRefK;
+    data(24) = posUy_0;
+    data(25) = posUcap_0;
+    data(26) = posFcap_0;
+    data(27) = posKp_0;
+    data(28) = posKpc_0;
+    data(29) = negUy_0;
+    data(30) = negUcap_0;
+    data(31) = negFcap_0;
+    data(32) = negKp_0;
+    data(33) = negKpc_0;
+    data(34) = engRefS;
+    data(35) = engRefC;
+    data(36) = engRefA;
+    data(37) = engRefK;
 // 12 Positive U and F 51-62
+    /*
     data(51) = posUy;
     data(52) = posFy;
     data(53) = posUcap;
@@ -749,44 +674,46 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 // 2 Flag 85 86
     data(85) = Failure_Flag;
     data(86) = Branch;
+    */
 // 12 Positive U and F 101-112
-    data(101) = cPosUy;
-    data(102) = cPosFy;
-    data(103) = cPosUcap;
-    data(104) = cPosFcap;
-    data(105) = cPosUlocal;
-    data(106) = cPosFlocal;
-    data(107) = cPosUglobal;
-    data(108) = cPosFglobal;
-    data(109) = cPosUres;
-    data(110) = cPosFres;
-    data(111) = cPosKp;
-    data(112) = cPosKpc;
+    data(38) = cPosUy;
+    data(39) = cPosFy;
+    data(40) = cPosUcap;
+    data(41) = cPosFcap;
+    data(42) = cPosUlocal;
+    data(43) = cPosFlocal;
+    data(44) = cPosUglobal;
+    data(45) = cPosFglobal;
+    data(46) = cPosUres;
+    data(47) = cPosFres;
+    data(48) = cPosKp;
+    data(49) = cPosKpc;
 // 3 State Variables 113-115
-    data(114) = cUi;
-    data(115) = cFi;
+    data(50) = cUi;
+    data(51) = cFi;
 // 2 Stiffness 116 117
-    data(116) = cKreload;
-    data(117) = cKunload;
+    data(52) = cKreload;
+    data(53) = cKunload;
 // 2 Energy 118 119
-    data(118) = cEngAcml;
-    data(119) = cEngDspt;
+    data(54) = cEngAcml;
+    data(55) = cEngDspt;
 // 12 Negative U and F 121-132
-    data(121) = cNegUy;
-    data(122) = cNegFy;
-    data(123) = cNegUcap;
-    data(124) = cNegFcap;
-    data(125) = cNegUlocal;
-    data(126) = cNegFlocal;
-    data(127) = cNegUglobal;
-    data(128) = cNegFglobal;
-    data(129) = cNegUres;
-    data(130) = cNegFres;
-    data(131) = cNegKp;
-    data(132) = cNegKpc;
+    data(56) = cNegUy;
+    data(57) = cNegFy;
+    data(58) = cNegUcap;
+    data(59) = cNegFcap;
+    data(60) = cNegUlocal;
+    data(61) = cNegFlocal;
+    data(62) = cNegUglobal;
+    data(63) = cNegFglobal;
+    data(64) = cNegUres;
+    data(65) = cNegFres;
+    data(66) = cNegKp;
+    data(67) = cNegKpc;
 // 2 Flag 135 136
-    data(135) = cFailure_Flag;
-    data(136) = cBranch;
+    data(68) = cFailure_Flag;
+    data(69) = cBranch;
+
     res = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (res < 0)
         opserr << "IMKPeakOriented::sendSelf() - failed to send data\n";
@@ -796,7 +723,7 @@ int IMKPeakOriented::sendSelf(int cTag, Channel &theChannel)
 int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector data(137);
+    static Vector data(70);
     res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
     if (res < 0) {
@@ -804,7 +731,6 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         this->setTag(0);
     }
     else {
-        cout << " recvSelf" << endln;
         this->setTag((int)data(0));
     // 23 Fixed Input Material Parameters
         Ke = data(1);
@@ -831,21 +757,22 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
         D_pos = data(22);
         D_neg = data(23);
     // 14 Initial Values
-        posUy_0 = data(31);
-        posUcap_0 = data(32);
-        posFcap_0 = data(33);
-        posKp_0 = data(34);
-        posKpc_0 = data(35);
-        negUy_0 = data(36);
-        negUcap_0 = data(37);
-        negFcap_0 = data(38);
-        negKp_0 = data(39);
-        negKpc_0 = data(40);
-        engRefS = data(41);
-        engRefC = data(42);
-        engRefA = data(43);
-        engRefK = data(44);
+        posUy_0 = data(24);
+        posUcap_0 = data(25);
+        posFcap_0 = data(26);
+        posKp_0 = data(27);
+        posKpc_0 = data(28);
+        negUy_0 = data(29);
+        negUcap_0 = data(30);
+        negFcap_0 = data(31);
+        negKp_0 = data(32);
+        negKpc_0 = data(33);
+        engRefS = data(34);
+        engRefC = data(35);
+        engRefA = data(36);
+        engRefK = data(37);
     // 12 Positive U and F
+	/*
         posUy = data(51);
         posFy = data(52);
         posUcap = data(53);
@@ -883,44 +810,47 @@ int IMKPeakOriented::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &t
     // 2 Flag
         Failure_Flag = data(85);
         Branch = data(86);
+	*/
     // 12 Positive U and F
-        cPosUy = data(101);
-        cPosFy = data(102);
-        cPosUcap = data(103);
-        cPosFcap = data(104);
-        cPosUlocal = data(105);
-        cPosFlocal = data(106);
-        cPosUglobal = data(107);
-        cPosFglobal = data(108);
-        cPosUres = data(109);
-        cPosFres = data(110);
-        cPosKp = data(111);
-        cPosKpc = data(112);
+        cPosUy = data(38);
+        cPosFy = data(39);
+        cPosUcap = data(40);
+        cPosFcap = data(41);
+        cPosUlocal = data(42);
+        cPosFlocal = data(43);
+        cPosUglobal = data(44);
+        cPosFglobal = data(45);
+        cPosUres = data(46);
+        cPosFres = data(47);
+        cPosKp = data(48);
+        cPosKpc = data(49);
     // 3 State Variables
-        cUi = data(114);
-        cFi = data(115);
+        cUi = data(50);
+        cFi = data(51);
     // 2 Stiffness
-        cKreload = data(116);
-        cKunload = data(117);
+        cKreload = data(52);
+        cKunload = data(53);
     // 2 Energy
-        cEngAcml = data(118);
-        cEngDspt = data(119);
+        cEngAcml = data(54);
+        cEngDspt = data(55);
     // 12 Negative U and F
-        cNegUy = data(121);
-        cNegFy = data(122);
-        cNegUcap = data(123);
-        cNegFcap = data(124);
-        cNegUlocal = data(125);
-        cNegFlocal = data(126);
-        cNegUglobal = data(127);
-        cNegFglobal = data(128);
-        cNegUres = data(129);
-        cNegFres = data(130);
-        cNegKp = data(131);
-        cNegKpc = data(132);
+        cNegUy = data(56);
+        cNegFy = data(57);
+        cNegUcap = data(58);
+        cNegFcap = data(59);
+        cNegUlocal = data(60);
+        cNegFlocal = data(61);
+        cNegUglobal = data(62);
+        cNegFglobal = data(63);
+        cNegUres = data(64);
+        cNegFres = data(65);
+        cNegKp = data(66);
+        cNegKpc = data(67);
     // 2 Flag
-        cFailure_Flag = data(135);
-        cBranch = data(136);
+        cFailure_Flag = data(68);
+        cBranch = data(69);
+
+	this->revertToLastCommit();
     }
 
     return res;

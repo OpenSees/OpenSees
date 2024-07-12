@@ -29,6 +29,7 @@ OBJS       = SectionForceDeformation.o \
 	Isolator2spring.o \
 	BiaxialHysteretic.o \
 	McftSection2dfiber.o \
+	ASDCoupledHinge3D.o \
 	LayeredShellFiberSection.o \
 	LayeredShellFiberSectionThermal.o \
 	FiberSection3dThermal.o \
@@ -40,6 +41,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/material/section/fiber; $(MAKE);
 	@$(CD) $(FE)/material/section/yieldSurface; $(MAKE);
 	@$(CD) $(FE)/material/section/integration; $(MAKE);
+	@$(CD) $(FE)/material/section/LayeredMembraneSection; $(MAKE);
 
 test: main.o
 	@$(LINKER) $(LINKFLAGS) main.o $(INTERPRETER_LIBS_MPI) \
@@ -62,5 +64,6 @@ wipe: spotless
 	@$(CD) $(FE)/material/section/fiber; $(MAKE) wipe;
 	@$(CD) $(FE)/material/section/yieldSurface; $(MAKE) wipe;
 	@$(CD) $(FE)/material/section/integration; $(MAKE) wipe;
+	@$(CD) $(FE)/material/section/LayeredMembraneSection; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depends on it.

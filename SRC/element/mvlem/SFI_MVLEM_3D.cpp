@@ -105,6 +105,7 @@ void* OPS_SFI_MVLEM_3D(void)
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 
+	double Eave = 0.0;
 	while (numArgs > 0) {
 		//OPS_GetStringCopy(&str);
 		str = OPS_GetString();
@@ -167,6 +168,13 @@ void* OPS_SFI_MVLEM_3D(void)
 				return 0;
 			}
 		}
+		else if (strcmp(str, "-Eave") == 0) {
+			numData = 1;
+			if (OPS_GetDoubleInput(&numData, &Eave) != 0) {
+				opserr << "Invalid Eave parameter for MVLEM   " << iData[0] << endln;
+				return 0;
+			}
+		}		
 		numArgs = OPS_GetNumRemainingInputArgs();
 
 	}
@@ -176,7 +184,7 @@ void* OPS_SFI_MVLEM_3D(void)
 		theMaterials,
 		theThickness,
 		theWidth,
-		iData[5], dData[0], dData[2], dData[1]);
+				      iData[5], dData[0], dData[2], dData[1], Eave);
 
 	// Cleanup dynamic memory
 	if (theThickness != 0)
@@ -199,23 +207,25 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	NDMaterial **materials,
 	double *thickness,
 	double *width,
-	int mm = 0,
-	double cc = 0.0,
-	double nn = 0.0,
-	double tf = 0.0)
+	int mm,
+	double cc,
+	double nn,
+			   double tf,
+			   double Eave_in)
 
 	:Element(tag, ELE_TAG_SFI_MVLEM_3D),
 	density(Dens),
-	externalNodes(4 + mm),
 	theNodesX(0),
 	theNodesALL(0),
 	theMaterial(0), theLoad(0),
+	 m(mm),c(cc),
+	externalNodes(4 + m),
 	SFI_MVLEM_3DStrainX(0), SFI_MVLEM_3DStrainY(0), SFI_MVLEM_3DStrainXY(0), SFI_MVLEM_3DStrain(0),
 	x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), Kh(0), Fx(0), Fy(0), Fxy(0), Dx(0), Dy(0), Dxy(0),
 	SFI_MVLEM_3DK(24 + m, 24 + m), SFI_MVLEM_3DR(24 + m), SFI_MVLEM_3DD(24 + m, 24 + m), SFI_MVLEM_3DM(24 + m, 24 + m),
 	SFI_MVLEM_3DKlocal(24 + m, 24 + m), SFI_MVLEM_3DDlocal(24 + m, 24 + m), SFI_MVLEM_3DRlocal(24 + m), SFI_MVLEM_3DMlocal(24 + m, 24 + m),
 	P_24DOF(24), P_24DOF_local(24),
-	m(mm), c(cc), NUelastic(nn), Tfactor(tf),
+	 NUelastic(nn), Tfactor(tf), Eave(Eave_in),
 	T(24 + m, 24 + m), Tt(3, 3), T6(6, 6),
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {
@@ -226,7 +236,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	d = 0.0;
 
 	// Out of Plane parameters
-	Eave = 0.0;
+	//Eave = 0.0;
 	Tave = 0.0;
 
 	// Imaginary beam properties
@@ -237,7 +247,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 
 	// Check number of fibers - max is 999 to avoid overlapping in internal node tags
 	if (m > 999) {
-		opserr << "WARNING: Number of fibers assigned is " << m << ". Maximum allowed number of fibers is 999!\n";
+	  opserr << "WARNING: Number of fibers assigned is " << m << ". Maximum allowed number of fibers is 999!" << endln;
 		exit(-1);
 	}
 
@@ -279,13 +289,13 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	// Check thickness and width input
 	if (thickness == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Null thickness array passed.\n";
+		       << "Null thickness array passed." << endln;
 		exit(-1);
 	}
 
 	if (width == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Null width array passed.\n";
+		       << "Null width array passed." << endln;
 		exit(-1);
 	}
 
@@ -317,7 +327,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	// Check material input
 	if (materials == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Null material array passed.\n";
+		       << "Null material array passed." << endln;
 		exit(-1);
 	}
 
@@ -326,7 +336,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 
 	if (theMaterial == 0) {
 		opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-			<< "Failed to allocate pointers for uniaxial materials.\n";
+		       << "Failed to allocate pointers for uniaxial materials." << endln;
 		exit(-1);
 	}
 
@@ -334,7 +344,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	for (int i = 0; i < m; i++) {
 		if (materials[i] == 0) {
 			opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-				"Null ND material pointer passed.\n";
+			       << "Null ND material pointer passed." << endln;
 			exit(-1);
 		}
 
@@ -342,7 +352,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 
 		if (theMaterial[i] == 0) {
 			opserr << "SFI_MVLEM_3D::SFI_MVLEM_3D() - "
-				<< "Failed to copy ND material.\n";
+			       << "Failed to copy ND material." << endln;
 			exit(-1);
 		}
 	}
@@ -413,10 +423,10 @@ SFI_MVLEM_3D::SFI_MVLEM_3D()
 	theMaterial(0), theLoad(0),
 	SFI_MVLEM_3DStrainX(0), SFI_MVLEM_3DStrainY(0), SFI_MVLEM_3DStrainXY(0), SFI_MVLEM_3DStrain(0),
 	x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), Kh(0), Fx(0), Fy(0), Fxy(0), Dx(0), Dy(0), Dxy(0),
-	SFI_MVLEM_3DK(24 + m, 24 + m), SFI_MVLEM_3DR(24 + m), SFI_MVLEM_3DD(24 + m, 24 + m), SFI_MVLEM_3DM(24 + m, 24 + m),
+	m(1), SFI_MVLEM_3DK(24 + m, 24 + m), SFI_MVLEM_3DR(24 + m), SFI_MVLEM_3DD(24 + m, 24 + m), SFI_MVLEM_3DM(24 + m, 24 + m),
 	SFI_MVLEM_3DKlocal(24 + m, 24 + m), SFI_MVLEM_3DDlocal(24 + m, 24 + m), SFI_MVLEM_3DRlocal(24 + m), SFI_MVLEM_3DMlocal(24 + m, 24 + m),
 	P_24DOF(24), P_24DOF_local(24),
-	m(m), c(c), NUelastic(NUelastic), Tfactor(Tfactor),
+	 c(0.4), NUelastic(0.0), Tfactor(0.0), Eave(0.0),
 	T(24 + m, 24 + m), Tt(3, 3), T6(6, 6),
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {
@@ -598,13 +608,13 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 	// Check if element height is zero
 	if ((h1 == 0.0) || (h2 == 0.0)) {
-		opserr << "WARNING: One of the element sides is ZERO. Check geometry";
+	  opserr << "WARNING: One of the element sides is ZERO. Check geometry" << endln;
 		exit(-1);
 	}
 
 	// Check if element has constant height
 	if ((h1 / h2 > 1.01) || (h1 / h2 < 0.99)) {
-		opserr << "WARNING: Element does not have constant height. Check geometry.";
+	  opserr << "WARNING: Element does not have constant height. Check geometry." << endln;
 		exit(-1);
 	}
 
@@ -622,12 +632,12 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 	// Check width of element
 	if ((Lw / b1 > 1.01) || (Lw / b1 < 0.99)) {
-		opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry.";
+	  opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry." << endln;
 		exit(-1);
 	}
 
 	if ((Lw / b2 > 1.01) || (Lw / b2 < 0.99)) {
-		opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry.";
+	  opserr << "WARNING: Element nodes coordinates are not matched with fibers width. Check geometry." << endln;
 		exit(-1);
 	}
 
@@ -665,7 +675,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 
 		if (theNode == 0) {
 			opserr << "WARNING ran out of memory creating node\n";
-			opserr << "node: " << nodeId_temp << " in SFI_MVLEM_3D." << endln; endln;
+			opserr << "node: " << nodeId_temp << " in SFI_MVLEM_3D." << endln;
 			exit(-1);
 		}
 
@@ -756,7 +766,7 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	// Get Concrete Young's Modulus
 	//theResponses = new Response *[1];
 	//if (theResponses == 0) {
-	//	opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed allocate responses array\n";
+	//	opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed allocate responses array" << endln;
 	//	exit(-1);
 	//}
 
@@ -767,15 +777,16 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 	char aa[80] = "getInputParameters";
 	const char *argv[1];
 	argv[0] = aa;
-	
-	for (int i = 0; i < m; i++)
+
+	double Eave_FSAM = 0.0;
+	for (int i = 0; Eave <= 0.0 && i < m; i++)
 	{
 	  //theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
 	  Response *theResponse = theMaterial[i]->setResponse(argv, 1, theDummyStream);
 
 	  //if (theResponses[0] == 0) {
 		if (theResponse == 0) {		  
-			opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed to get input parameters for FSAM material with tag: " << this->getTag() << "\n";
+			opserr << " SFI_MVLEM_3D::SFI_MVLEM_3D - failed to get input parameters for FSAM material with tag: " << this->getTag() << endln;
 			exit(-1);
 		}
 
@@ -787,12 +798,13 @@ void SFI_MVLEM_3D::setDomain(Domain *theDomain)
 		const Vector &InputNDMat = theInfoInput.getData();
 
 		// Calculate out-of-plane modulus of elasticity (average modulus)
-		Eave += AcY[i] * InputNDMat[9] / A;
+		Eave_FSAM += AcY[i] * InputNDMat[9] / A;
 
 		delete theResponse;
-
 	}
-
+	if (Eave <= 0.0) // If not input by user, use the value from materials
+	  Eave = Eave_FSAM;
+	
 	//delete theDummyStream;
 	
 	// Internal beam parameters
@@ -2539,7 +2551,7 @@ int SFI_MVLEM_3D::sendSelf(int commitTag, Channel &theChannel)
 	int res;
 	int dataTag = this->getDbTag();
 
-	static Vector data(6);
+	static Vector data(7);
 
 	data(0) = this->getTag();
 	data(1) = density;
@@ -2547,6 +2559,7 @@ int SFI_MVLEM_3D::sendSelf(int commitTag, Channel &theChannel)
 	data(3) = c;
 	data(4) = NUelastic;
 	data(5) = Tfactor;
+	data(6) = Eave;
 
 	// SFI_MVLEM_3D then sends the tags of it's nodes
 	res = theChannel.sendID(dataTag, commitTag, externalNodes);
@@ -2584,7 +2597,7 @@ int SFI_MVLEM_3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		delete[] theMaterial;
 	}
 
-	Vector data(6); 
+	Vector data(7); 
 	res = theChannel.recvVector(dataTag, commitTag, data);
 	if (res < 0) {
 		opserr << "WARNING SFI_MVLEM_3D::recvSelf() - failed to receive Vector\n";
@@ -2597,7 +2610,8 @@ int SFI_MVLEM_3D::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
 	c = data(3);
 	NUelastic = data(4);
 	Tfactor = data(5);
-
+	Eave = data(6);
+	
 	// SFI_MVLEM_3D now receives the tags of it's four external nodes
 	res = theChannel.recvID(dataTag, commitTag, externalNodes);
 	if (res < 0) {

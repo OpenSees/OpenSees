@@ -918,7 +918,7 @@ SLModel::revertToStart(void)
 UniaxialMaterial *
 SLModel::getCopy(void)
 {
-	SLModel *theCopy = new SLModel(this->getTag(), Dt, E, sgm_ini, c, gamma, q, beta, sigmaCDivSigmaY, epsiCDivEpsiY, Ed1DivE, Ed2DivE, sigmaDMDivSigmaC, aSigma, aE, lambda1Degrad, cDegrad);
+	SLModel *theCopy = new SLModel(this->getTag(), Dt, E, sgm_ini, c, gamma, q, beta, sigmaC, epsiC, Ed1, Ed2, sigmaDM, aSigma, aE, lambda1Degrad, cDegrad);
 
 	//Fixed Model parameters: need to change according to material properties
 	theCopy -> status = status;

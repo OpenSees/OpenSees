@@ -1314,7 +1314,12 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
   }
   //by SAJalali
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
+      output.tag("SectionOutput");
+      output.attr("secType", this->getClassType());
+      output.attr("secTag", this->getTag());
+      output.tag("ResponseType", "energy");
 	  theResponse = new MaterialResponse(this, 10, getEnergy());
+      output.endTag();
   }
   else if (strcmp(argv[0],"centroid") == 0) 
     theResponse = new MaterialResponse(this, 20, Vector(2));
@@ -1642,14 +1647,14 @@ double FiberSection3d::getEnergy() const
 	}
 	else {
 		for (int i = 0; i < numFibers; i++) {
-			fiberArea[i] = matData[2 * i + 1];
+            fiberArea[i] = matData[3 * i + 2];
 		}
 	}
 	double energy = 0;
 	for (int i = 0; i < numFibers; i++)
 	{
 		double A = fiberArea[i];
-		energy += A * theMaterials[i]->getEnergy();
+        energy += A *theMaterials[i]->getEnergy();
 	}
 	return energy;
 }
