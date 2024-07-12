@@ -2632,6 +2632,12 @@ int  ShellNLDKGQ::sendSelf (int commitTag, Channel &theChannel)
     return res;
   }
 
+  res += theChannel.sendVector(dataTag, commitTag, CstrainGauss);
+  if (res < 0) {
+    opserr << "WARNING ShellNLDKGT::sendSelf() - " << this->getTag() << " failed to send committed strains\n";
+    return res;
+  }
+  
   // Finally, quad asks its material objects to send themselves
   for (i = 0; i < 4; i++) {
     res += materialPointers[i]->sendSelf(commitTag, theChannel);
@@ -2690,6 +2696,13 @@ int  ShellNLDKGQ::recvSelf (int commitTag,
   betaK0 = vectData(2);
   betaKc = vectData(3);
 
+  res += theChannel.recvVector(dataTag, commitTag, CstrainGauss);
+  if (res < 0) {
+    opserr << "WARNING ShellNLDKGQ::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    return res;
+  }
+  TstrainGauss = CstrainGauss;
+  
   int i;
 
   if (materialPointers[0] == 0) {
