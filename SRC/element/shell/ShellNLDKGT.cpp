@@ -755,6 +755,19 @@ ShellNLDKGT::getResponse(int responseID, Information &eleInfo)
   //return 0;
 }
 
+int
+ShellNLDKGT::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int res = -1;
+  // Send to all sections
+  for (int i = 0; i < 4; i++) {
+    int secRes = materialPointers[i]->setParameter(argv, argc, param);
+    if (secRes != -1) {
+      res = secRes;
+    }
+  }
+  return res;
+}
 
 //return stiffness matrix 
 const Matrix&  ShellNLDKGT::getTangentStiff( ) 
