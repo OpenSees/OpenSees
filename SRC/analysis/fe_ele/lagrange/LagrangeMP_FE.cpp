@@ -46,11 +46,17 @@
 #include <MP_Constraint.h>
 #include <DOF_Group.h>
 
+// Note 1:
+//    changed by M.Petracca: 2024. should be the constrained dof size.
+//    now it's the same because all MP constraints in opensees are one-to-one.
+//    but in the future we may implement generic constraints of the form:
+//    CDOF = a1*RDOF1 + a2*RDOF2 + ... + an*RDOFn + beta
+
 LagrangeMP_FE::LagrangeMP_FE(int tag, Domain &theDomain, MP_Constraint &TheMP,
 			     DOF_Group &theGroup, double Alpha)
 :FE_Element(tag, 3,(tag, TheMP.getConstrainedDOFs()).Size()+
 	      (TheMP.getRetainedDOFs()).Size() + 
-	      (TheMP.getRetainedDOFs()).Size()),
+	      (TheMP.getConstrainedDOFs()).Size()), // *see note 1
  alpha(Alpha), theMP(&TheMP), 
  theConstrainedNode(0), theRetainedNode(0),
  theDofGroup(&theGroup), tang(0), resid(0)
@@ -104,6 +110,12 @@ LagrangeMP_FE::LagrangeMP_FE(int tag, Domain &theDomain, MP_Constraint &TheMP,
 	exit(-1);	
     }            
     
+    if (theDofGroup->getID().Size() != theConstrainedNodesDOFs->getID().Size()) {
+        opserr << "WARNING LagrangeMP_FE::LagrangeMP_FE()";
+        opserr << " - ConstrainedDOFs size != Lagrange size\n";
+        exit(-1);
+    }
+
     myDOF_Groups(0) = theConstrainedNodesDOFs->getTag();
     myDOF_Groups(1) = theRetainedNodesDOFs->getTag();
     myDOF_Groups(2) = theDofGroup->getTag();
@@ -224,6 +236,54 @@ LagrangeMP_FE::getTangent(Integrator *theNewIntegrator)
 const Vector &
 LagrangeMP_FE::getResidual(Integrator *theNewIntegrator)
 {
+    // get the solution vector [Uc Ur lambda]
+    static Vector UU;
+    const ID& id1 = theMP->getConstrainedDOFs();
+    const ID& id2 = theMP->getRetainedDOFs();
+    const ID& id3 = theDofGroup->getID();
+    int size = id1.Size() + id2.Size() + id3.Size();
+    UU.resize(size);
+    const Vector& Uc = theConstrainedNode->getTrialDisp();
+    const Vector& Ur = theRetainedNode->getTrialDisp();
+    const Vector& Uc0 = theMP->getConstrainedDOFsInitialDisplacement();
+    const Vector& Ur0 = theMP->getRetainedDOFsInitialDisplacement();
+    const Vector& lambda = theDofGroup->getTrialDisp();
+    for (int i = 0; i < id1.Size(); ++i) {
+        int cdof = id1(i);
+        if (cdof < 0 || cdof >= Uc.Size()) {
+            opserr << "PenaltyMP_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
+            exit(-1);
+        }
+        UU(i) = Uc(cdof) - Uc0(i);
+    }
+    for (int i = 0; i < id2.Size(); ++i) {
+        int rdof = id2(i);
+        if (rdof < 0 || rdof >= Ur.Size()) {
+            opserr << "PenaltyMP_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
+            exit(-1);
+        }
+        UU(i + id1.Size()) = Ur(rdof) - Ur0(i);
+    }
+    for (int i = 0; i < id3.Size(); ++i) {
+        UU(i + id1.Size() + id2.Size()) = lambda(i);
+    }
+
+    /*
+    R = -C*U + G
+       .R = generalized residual vector
+       .C = constraint matrix
+       .U = generalized solution vector (displacement, lagrange multipliers)
+       .G = constrain values for non-homogeneous MP constraints (not available now)
+    | Ru |    | 0  A | | u |   | 0 |
+    |    | = -|      |*|   | + |   |
+    | Rl |    | A  0 | | l |   | g |
+    */
+
+    // compute residual
+    const Matrix& KK = getTangent(theNewIntegrator);
+    resid->addMatrixVector(0.0, KK, UU, -1.0);
+
+    // done
     return *resid;
 }
 

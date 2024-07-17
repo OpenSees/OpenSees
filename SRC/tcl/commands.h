@@ -346,6 +346,12 @@ int
 sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 
+sectionTag(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
+sectionDisplacement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int 
 basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int 

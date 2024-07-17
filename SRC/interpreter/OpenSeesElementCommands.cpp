@@ -371,7 +371,17 @@ namespace {
 	if(ndm == 3)
 	    return OPS_SFI_MVLEM_3D();	
 	return 0;
-    }    
+    }
+
+    static void* OPS_E_SFI_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_E_SFI();
+	if(ndm == 3)
+	    return OPS_E_SFI_MVLEM_3D();	
+	return 0;
+    }      
 
     static void* OPS_DispBeamColumn()
     {
@@ -718,11 +728,12 @@ namespace {
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
 	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM2d3d));
-	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
-	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM_3D));
-	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));  
+	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI_MVLEM", &OPS_E_SFI_MVLEM2d3d));  
+	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MEFI", &OPS_MEFI));	
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));

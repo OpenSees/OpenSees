@@ -327,6 +327,47 @@ int OPS_GetDoubleInput(int* numData, double* data)
 }
 
 extern "C"
+int OPS_GetDoubleListInput(int* size, Vector* data)
+{
+    TCL_Char** strings;
+
+    if (Tcl_SplitList(theInterp, currentArgv[currentArg],
+        size, &strings) != TCL_OK) {
+
+        opserr << "ERROR problem splitting list " << currentArgv[currentArg] << " \n";
+        return -1;
+    }
+
+    data->resize(*size);
+    for (int i = 0; i < *size; i++) {
+        double value;
+        if (Tcl_GetDouble(theInterp, strings[i], &value) != TCL_OK) {
+            opserr << "ERROR problem reading data value " << strings[i] << " \n";
+            // free up the array of strings .. see tcl man pages as to why
+            Tcl_Free((char*)strings);
+            return -1;
+        }
+        (*data)(i) = value;
+    }
+    // free up the array of strings .. see tcl man pages as to why
+    Tcl_Free((char*)strings);
+
+    currentArg++;
+
+    return 0;
+}
+
+extern "C"
+int OPS_EvalDoubleStringExpression(const char* theExpression, double& current_val) {
+    if (Tcl_ExprDouble(theInterp, theExpression, &current_val) != TCL_OK) {
+        opserr << "OPS_EvalDoubleStringExpression::evaluateExpression -- expression \"" << theExpression;
+        opserr << "\" caused error:" << endln << Tcl_GetStringResult(theInterp) << endln;
+        return -1;
+    }
+    return 0;
+}
+
+extern "C"
 int OPS_SetDoubleOutput(int* numData, double* data, bool scalar)
 {
     int numArgs = *numData;
