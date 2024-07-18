@@ -80,7 +80,6 @@ OPS_FourNodeQuad3d()
   int numData;
   int matTag = 0;
   int eleTag = 0;
-  const char *pType;
 
   numData = 5;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -95,10 +94,7 @@ OPS_FourNodeQuad3d()
     return 0;
   }
 
-  pType = OPS_GetString();
-  if (pType != 0) {
-    opserr << "WARNING element FourNodeQuad3d : invalid pType for element: " << eleTag << "\n";
-  }
+  const char *pType = OPS_GetString();
 
   numData = 1;
   if (OPS_GetIntInput(&numData, &matTag) != 0) {
