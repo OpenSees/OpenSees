@@ -62,7 +62,7 @@ class PlaneStressLayeredMaterial : public NDMaterial {
     NDMaterial *getCopy (void);
     virtual NDMaterial *getCopy(const char *code);
 
-    const char *getType (void) const {return "PlaneStressLayeredMaterial";};
+    const char *getType (void) const {return "PlaneStress";};
 
     int getOrder (void) const;
 

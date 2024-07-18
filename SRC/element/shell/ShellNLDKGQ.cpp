@@ -47,6 +47,7 @@
 #include <R3vectors.h>
 #include <Renderer.h>
 #include <ElementResponse.h>
+#include <Parameter.h>
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -742,6 +743,19 @@ ShellNLDKGQ::getResponse(int responseID, Information &eleInfo)
   //return 0;
 }
 
+int
+ShellNLDKGQ::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int res = -1;
+  // Send to all sections
+  for (int i = 0; i < 4; i++) {
+    int secRes = materialPointers[i]->setParameter(argv, argc, param);
+    if (secRes != -1) {
+      res = secRes;
+    }
+  }
+  return res;
+}
 
 //return stiffness matrix 
 const Matrix&  ShellNLDKGQ::getTangentStiff( ) 
