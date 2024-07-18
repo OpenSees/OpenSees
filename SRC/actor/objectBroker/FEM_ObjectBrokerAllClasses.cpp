@@ -361,6 +361,7 @@
 //#include "ZeroLengthND.h"
 
 #include "fourNodeQuad/FourNodeQuad.h"
+#include "fourNodeQuad/FourNodeQuad3d.h"
 #include "fourNodeQuad/EnhancedQuad.h"
 #include "fourNodeQuad/NineNodeMixedQuad.h"
 #include "fourNodeQuad/NineNodeQuad.h"
@@ -892,7 +893,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new FourNodeQuadUP(); 	     
       
     case ELE_TAG_FourNodeQuad:  
-      return new FourNodeQuad(); 	     
+      return new FourNodeQuad(); 
+
+    case ELE_TAG_FourNodeQuad3d:  
+      return new FourNodeQuad3d(); 
       
     case ELE_TAG_Tri31:  
       return new Tri31(); 	     
