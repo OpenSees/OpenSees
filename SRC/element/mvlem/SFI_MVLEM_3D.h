@@ -57,13 +57,16 @@ public:
 		int mm,									// number of macro-fibers (RC panels)
 		double cc,								// center of rotation					
 		double nn,								// poisson ratio (for out-of-plane behavior)
-		double tf);								// thickness factor (for out-of-plane behavior)
+		     double tf,								// thickness factor (for out-of-plane behavior)
+		     double Eave = 0.0); // Average modulus (for out-of-plane behavior)
 
 	SFI_MVLEM_3D();
 
 	// Destructor
 	~SFI_MVLEM_3D();
 
+  const char *getClassType(void) const {return "SFI_MVLEM3d";}
+  
 	// Public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
@@ -112,6 +115,8 @@ private:
 	Vector getResistingForce_24DOF(void);
 	Vector getResistingForce_24DOF_local(void);
 
+	int m;								// no. of RC panels 
+  
 	// Private attributes - a copy for each object of the class
 	ID externalNodes;					// contains the id's of end nodes
 
@@ -127,7 +132,6 @@ private:
 	NDMaterial **theMaterial;			// array of ND materials
 	Vector *theLoad;					// pointer to element load
 	double c;							// center of rotation
-	int m;								// no. of RC panels 
 	double NUelastic;					// Poisson ratio
 	double Tfactor;						// Thickness factor
 

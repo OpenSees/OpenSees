@@ -755,6 +755,19 @@ ShellNLDKGT::getResponse(int responseID, Information &eleInfo)
   //return 0;
 }
 
+int
+ShellNLDKGT::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int res = -1;
+  // Send to all sections
+  for (int i = 0; i < 4; i++) {
+    int secRes = materialPointers[i]->setParameter(argv, argc, param);
+    if (secRes != -1) {
+      res = secRes;
+    }
+  }
+  return res;
+}
 
 //return stiffness matrix 
 const Matrix&  ShellNLDKGT::getTangentStiff( ) 
@@ -2509,6 +2522,12 @@ int  ShellNLDKGT::sendSelf (int commitTag, Channel &theChannel)
     return res;
   }
 
+  res += theChannel.sendVector(dataTag, commitTag, CstrainGauss);
+  if (res < 0) {
+    opserr << "WARNING ShellNLDKGT::sendSelf() - " << this->getTag() << " failed to send committed strains\n";
+    return res;
+  }  
+
   // Finally, quad asks its material objects to send themselves
   for (i = 0; i < 4; i++) {
     res += materialPointers[i]->sendSelf(commitTag, theChannel);
@@ -2568,6 +2587,13 @@ int  ShellNLDKGT::recvSelf (int commitTag,
   betaK0 = vectData(2);
   betaKc = vectData(3);
 
+  res += theChannel.recvVector(dataTag, commitTag, CstrainGauss);
+  if (res < 0) {
+    opserr << "WARNING ShellNLDKGT::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    return res;
+  }
+  TstrainGauss = CstrainGauss;
+  
   int i;
 
   if (materialPointers[0] == 0) {

@@ -293,6 +293,7 @@ int OPS_eleNodes();
 int OPS_getNDMM();
 int OPS_getNDFF();
 int OPS_eleType();
+int OPS_classType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
@@ -500,6 +501,7 @@ void* OPS_PlainHandler();
 void* OPS_PenaltyConstraintHandler();
 void* OPS_LagrangeConstraintHandler();
 void* OPS_TransformationConstraintHandler();
+void* OPS_AutoConstraintHandler();
 
 void* OPS_CTestNormUnbalance();
 void* OPS_CTestNormDispIncr();

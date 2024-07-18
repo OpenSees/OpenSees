@@ -148,6 +148,7 @@ void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
+void* OPS_ASDConcrete1DMaterial();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BoucWenOriginal();
@@ -275,7 +276,9 @@ void *OPS_Trilinwp2(void);
 void *OPS_Masonryt(void);
 
 void* OPS_Ratchet(void); // Yi Xiao
-
+void* OPS_APDVFD(void);
+void* OPS_APDMD(void);
+void* OPS_APDFMD(void);
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;
@@ -452,6 +455,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ASDConcrete1D", &OPS_ASDConcrete1DMaterial));
+  uniaxialMaterialsMap.insert(
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
@@ -615,6 +620,12 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
 	  "GMG_CyclicReinforcedConcrete", &OPS_GMG_CyclicReinforcedConcrete));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDVFD", &OPS_APDVFD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDMD", &OPS_APDMD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDFMD", &OPS_APDFMD));
   uniaxialMaterialsMap.insert(
       std::make_pair("Hertzdamp", &OPS_Hertzdamp));
   uniaxialMaterialsMap.insert(

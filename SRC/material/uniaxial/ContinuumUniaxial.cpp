@@ -117,6 +117,8 @@ ContinuumUniaxial::getCopy(void)
   theCopy->Cgamma12  = Cgamma12;
   theCopy->Cgamma23  = Cgamma23;
   theCopy->Cgamma31  = Cgamma31;
+
+  theCopy->initialTangent = initialTangent;
   
   return theCopy;
 }
@@ -306,12 +308,13 @@ ContinuumUniaxial::sendSelf(int commitTag, Channel &theChannel)
   }
 
   // put the strains in a vector and send it
-  static Vector vecData(5);
+  static Vector vecData(6);
   vecData(0) = Cstrain22;
   vecData(1) = Cstrain33;
   vecData(2) = Cgamma12;
   vecData(3) = Cgamma23;
   vecData(4) = Cgamma31;
+  vecData(5) = initialTangent;
 
   res = theChannel.sendVector(this->getDbTag(), commitTag, vecData);
   if (res < 0) {
@@ -358,7 +361,7 @@ ContinuumUniaxial::recvSelf(int commitTag, Channel &theChannel,
   theMaterial->setDbTag(idData(2));
 
   // recv a vector containing strains and set the strains
-  static Vector vecData(5);
+  static Vector vecData(6);
   res = theChannel.recvVector(this->getDbTag(), commitTag, vecData);
   if (res < 0) {
     opserr << "ContinuumUniaxial::sendSelf() - failed to send vector data" << endln;
@@ -370,7 +373,8 @@ ContinuumUniaxial::recvSelf(int commitTag, Channel &theChannel,
   Cgamma12  = vecData(2);
   Cgamma23  = vecData(3);
   Cgamma31  = vecData(4);
-
+  initialTangent = vecData(5);
+  
   Tstrain22 = Cstrain22;
   Tstrain33 = Cstrain33;
   Tgamma12  = Cgamma12;

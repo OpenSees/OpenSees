@@ -70,6 +70,7 @@ target_sources(OPS_Material
 target_sources(OPS_Material
     PRIVATE
       ASD_SMA_3K.cpp
+      ASDConcrete1DMaterial.cpp
       BackboneMaterial.cpp
       BarSlipMaterial.cpp
       BilinearOilDamper.cpp
@@ -187,12 +188,16 @@ target_sources(OPS_Material
       pyUCLA.cpp
       SMAMaterial.cpp
       CoulombDamperMaterial.cpp
-      
+      APDFMD.cpp
+      APDMD.cpp
+      APDVFD.cpp
       TriMatrix.cpp
       DuctileFracture.cpp
+       
 
     PUBLIC
       ASD_SMA_3K.h
+      ASDConcrete1DMaterial.h
       BackboneMaterial.h
       BarSlipMaterial.h
       BilinearOilDamper.h
@@ -308,6 +313,9 @@ target_sources(OPS_Material
       WrapperUniaxialMaterial.h
       pyUCLA.h
       CoulombDamperMaterial.h
+      APDFMD.h
+      APDMD.h
+      APDVFD.h
 
       TriMatrix.h  # move to SRC/matrix ?
       DuctileFracture.h

@@ -151,7 +151,7 @@ BarSlipMaterial::BarSlipMaterial(int tag,
 				 double eh, double dbar, double ljoint, int n, double w, double d, 
 				 int bsf, int typ):
   UniaxialMaterial(tag, MAT_TAG_BarSlip),
-  tagMat(tag), bsflag(bsf), unit(0), type(typ), damage(1), width(w), depth(d),
+  bsflag(bsf), unit(0), type(typ), damage(1), width(w), depth(d),
   envlpPosStress(6), envlpPosStrain(6), envlpNegStress(6), envlpNegStrain(6),
   fc(f), fy(fs), Es(es), fu(fsu), Eh(eh), db(dbar), nbars(n), ld(ljoint), 
   eP(4,2), eN(4,2), envlpPosDamgdStress(6), envlpNegDamgdStress(6), state3Stress(4), 
@@ -163,6 +163,9 @@ BarSlipMaterial::BarSlipMaterial(int tag,
   gammaD1 = 0.6; gammaD2 = 0.0; gammaD3 = 0.2; gammaD4 = 0.0; gammaDLimit = 0.25;
   gammaF1 = 0.7; gammaF2 = 0.3; gammaF3 = 0.5; gammaF4 = 0.1; gammaFLimit = 0.0;
   gammaE = 10.0; 
+
+  if (fc < 0.0)
+    fc = -fc;
 
 	getBondStrength();
 	getBarSlipEnvelope();
@@ -174,7 +177,7 @@ BarSlipMaterial::BarSlipMaterial(int tag,
 				 double eh, double dbar, double ljoint, int n, double w, double d, 
 				 int bsf, int typ, int dam, int unt):
   UniaxialMaterial(tag, MAT_TAG_BarSlip),
-  tagMat(tag), bsflag(bsf), unit(unt), type(typ), damage(dam), width(w), depth(d),
+  bsflag(bsf), unit(unt), type(typ), damage(dam), width(w), depth(d),
   envlpPosStress(6), envlpPosStrain(6), envlpNegStress(6), envlpNegStrain(6),
   fc(f), fy(fs), Es(es), fu(fsu), Eh(eh), db(dbar), nbars(n), ld(ljoint), 
   eP(4,2), eN(4,2), envlpPosDamgdStress(6), envlpNegDamgdStress(6), state3Stress(4), 
@@ -187,6 +190,8 @@ BarSlipMaterial::BarSlipMaterial(int tag,
   gammaF1 = 0.7; gammaF2 = 0.3; gammaF3 = 0.5; gammaF4 = 0.1; gammaFLimit = 0.0;
   gammaE = 10.0; 
 
+  if (fc < 0.0)
+     fc = -fc;
 
 	if (damage == 0)
 	{
@@ -213,7 +218,7 @@ BarSlipMaterial::BarSlipMaterial(int tag,
 
 BarSlipMaterial::BarSlipMaterial():
   UniaxialMaterial(0, MAT_TAG_BarSlip),
-  tagMat(0), bsflag(0), unit(0), type(0), damage(0), width(0.0), depth(0.0),
+  bsflag(0), unit(0), type(0), damage(0), width(0.0), depth(0.0),
   envlpPosStress(6), envlpPosStrain(6), envlpNegStress(6), envlpNegStrain(6),
   fc(0.0), fy(0.0), Es(0.0), fu(0.0), Eh(0.0), db(0.0), nbars(0), ld(0.0),
   eP(4,2), eN(4,2), envlpPosDamgdStress(6), envlpNegDamgdStress(6), state3Stress(4), 
@@ -452,8 +457,6 @@ void BarSlipMaterial::getBarSlipEnvelope(void)
 		eP(2,1) = fu*As;
 //	}
 
-//	opserr << tagMat << " " << eP(2,0) << " " << eP(2,1) << endln;
-
 //eP(3,0) = del_ult;
 		eP(3,0) = 10.0*eP(2,0);
 	eP(3,1) = eP(2,1) + (eP(2,1) - eP(1,1))*(eP(3,0) - eP(2,0))/(eP(2,0) - eP(1,0));
@@ -584,7 +587,7 @@ void BarSlipMaterial::getBarSlipEnvelope(void)
 
 void BarSlipMaterial::createMaterial(void)
 {
-/*	 material = new Pinching4Material (tagMat, eP(0,1), eP(0,0), eP(1,1), eP(1,0), eP(2,1), eP(2,0), eP(3,1), eP(3,0),
+/*	 material = new Pinching4Material (this->getTag(), eP(0,1), eP(0,0), eP(1,1), eP(1,0), eP(2,1), eP(2,0), eP(3,1), eP(3,0),
 		eN(0,1), eN(0,0), eN(1,1), eN(1,0), eN(2,1), eN(2,0), eN(3,1), eN(3,0), rDispP, rForceP, uForceP, rDispN,
 		rForceN, uForceN, gammaK1, gammaK2, gammaK3, gammaK4, gammaKLimit, gammaD1, gammaD2, gammaD3, 
 		gammaD4, gammaDLimit, gammaF1, gammaF2, gammaF3, gammaF4, gammaFLimit, gammaE, 0);
@@ -932,9 +935,6 @@ int BarSlipMaterial::commitState(void)
 	envlpPosDamgdStress = envlpPosStress*(1-gammaFUsed);
 	envlpNegDamgdStress = envlpNegStress*(1-gammaFUsed);
 
-//(*fn) << tagMat << "  " << envlpNegStrain(4) << "  " << envlpNegStrain(3) << "  " << envlpNegStrain(2) << "  " << envlpNegStrain(1) << "  " << envlpPosStrain(1) << "  " << envlpPosStrain(2) << "  " << envlpPosStrain(3) << "  " << envlpPosStrain(4) << "  " << envlpNegDamgdStress(4) << "  " << envlpNegDamgdStress(3) << "  " << envlpNegDamgdStress(2) << "  " << envlpNegDamgdStress(1) << "  " << envlpPosDamgdStress(1) << "  " << envlpPosDamgdStress(2) << "  " << envlpPosDamgdStress(3) << "  " << envlpPosDamgdStress(4) <<  endln;
-//(*fg) << tagMat << "  " << gammaF1 << "  " << gammaF2 << " " << gammaF3 << " " << gammaF4 << " " << gammaK1 << "  " << gammaK2 << " " << gammaK3 << " " << gammaK4 << " "<< gammaD1 << "  " << gammaD2 << " " << gammaD3 << " " << gammaD4 << endln;
-//(*fg) << tagMat << "  " << TgammaF << "  " << TgammaD << " " << TgammaK << " " << CgammaF << " " << CgammaD << "  " << CgammaK << endln;
 	return 0;
 }
 

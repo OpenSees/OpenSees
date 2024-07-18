@@ -43,7 +43,8 @@
 #include <float.h>
 #include <string.h>
 #include <Information.h>
-
+#include <Channel.h>
+#include <FEM_ObjectBroker.h>
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
@@ -1036,14 +1037,337 @@ OOHystereticMaterial::getVariable(int varID, Information &info)
 int
 OOHystereticMaterial::sendSelf(int commitTag, Channel &theChannel)
 {
-  return -1;
+  int dbTag = this->getDbTag();
+
+  ID idata(1 + 2*8 + 6);
+  idata(0) = this->getTag();
+
+  idata(17) = posUnlRuleID;
+  idata(18) = negUnlRuleID;
+  idata(19) = posStfDegrID;
+  idata(20) = negStfDegrID;
+  idata(21) = posStrDegrID;
+  idata(22) = negStrDegrID;    
+  
+  int tmpdbTag;
+
+  // Backbones
+  idata(1) = posEnvelope->getClassTag();
+  tmpdbTag = posEnvelope->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    posEnvelope->setDbTag(tmpdbTag);
+  }
+  idata(2) = tmpdbTag;
+  idata(3) = negEnvelope->getClassTag();
+  tmpdbTag = negEnvelope->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    negEnvelope->setDbTag(tmpdbTag);
+  }
+  idata(4) = tmpdbTag;
+
+  // Unloading rules
+  idata(5) = posUnlRule->getClassTag();
+  tmpdbTag = posUnlRule->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    posUnlRule->setDbTag(tmpdbTag);
+  }
+  idata(6) = tmpdbTag;
+  idata(7) = negUnlRule->getClassTag();
+  tmpdbTag = negUnlRule->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    negUnlRule->setDbTag(tmpdbTag);
+  }
+  idata(8) = tmpdbTag;
+
+  // Stiffness degradations
+  idata(9) = posStfDegr->getClassTag();
+  tmpdbTag = posStfDegr->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    posStfDegr->setDbTag(tmpdbTag);
+  }
+  idata(10) = tmpdbTag;
+  idata(11) = negStfDegr->getClassTag();
+  tmpdbTag = negStfDegr->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    negStfDegr->setDbTag(tmpdbTag);
+  }
+  idata(12) = tmpdbTag;
+
+  // Strength degradations
+  idata(13) = posStrDegr->getClassTag();
+  tmpdbTag = posStrDegr->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    posStrDegr->setDbTag(tmpdbTag);
+  }
+  idata(14) = tmpdbTag;
+  idata(15) = negStrDegr->getClassTag();
+  tmpdbTag = negStrDegr->getDbTag();
+  if (tmpdbTag == 0) {
+    tmpdbTag = theChannel.getDbTag();
+    negStrDegr->setDbTag(tmpdbTag);
+  }
+  idata(16) = tmpdbTag;        
+
+
+  if (theChannel.sendID(dbTag, commitTag, idata) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send ID data" << endln;
+    return -1;
+  }
+
+  if (posEnvelope->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send positive envelope" << endln;
+    return -1;
+  }
+  if (negEnvelope->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send negative envelope" << endln;
+    return -1;
+  }
+  if (posUnlRule->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send positive unloading rule" << endln;
+    return -1;
+  }
+  if (negUnlRule->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send negative unloading rule" << endln;
+    return -1;
+  }
+  if (posStfDegr->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send positive stiffness degradation" << endln;
+    return -1;
+  }
+  if (negStfDegr->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send negative stiffness degradation" << endln;
+    return -1;
+  }
+  if (posStrDegr->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send positive strength degradation" << endln;
+    return -1;
+  }
+  if (negStrDegr->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send negative strength degradation" << endln;
+    return -1;
+  }        
+
+  
+  Vector data(7 + 10);
+  data(0) = pinchX;
+  data(1) = pinchY;
+  data(2) = E1p;
+  data(3) = E1n;
+  data(4) = rot1p;
+  data(5) = rot1n;  
+  data(6) = firstIter ? 1.0 : -1.0;
+
+  data(7) = CrotMax;
+  data(8) = CrotMin;
+  data(9) = CtargMax;
+  data(10) = CtargMin;  
+  data(11) = CrotPu;
+  data(12) = CrotNu;
+  data(13) = CenergyD;
+  data(14) = CloadIndicator;    
+  data(15) = Cstress;
+  data(16) = Cstrain;
+  
+  if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
+    opserr << "OOHystereticMaterial::sendSelf() - failed to send data" << endln;
+    return -1;
+  }
+  
+  return 0;
 }
 
 int
 OOHystereticMaterial::recvSelf(int commitTag, Channel &theChannel, 
 			       FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  ID idata(1 + 2*8 + 6);
+  res = theChannel.recvID(dbTag, commitTag, idata);
+  if (res < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to receive ID data" << endln;
+    return -1;
+  }
+
+  this->setTag(idata(0));
+
+  posUnlRuleID = idata(17);
+  negUnlRuleID = idata(18);
+  posStfDegrID = idata(19);
+  negStfDegrID = idata(20);
+  posStrDegrID = idata(21);
+  negStrDegrID = idata(22);    
+  
+  int tmpdbTag;
+  int tmpClassTag;
+  
+  // Backbones
+  tmpClassTag = idata(1);
+  if (posEnvelope == 0 || posEnvelope->getClassTag() != tmpClassTag) {
+    if (posEnvelope != 0)
+      delete posEnvelope;
+    posEnvelope = theBroker.getNewHystereticBackbone(tmpClassTag);
+    if (posEnvelope == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get positive hysteretic backbone" << endln;
+      return -2;
+    }
+    posEnvelope->setDbTag(idata(2));
+  }
+  tmpClassTag = idata(3);
+  if (negEnvelope == 0 || negEnvelope->getClassTag() != tmpClassTag) {
+    if (negEnvelope != 0)
+      delete negEnvelope;
+    negEnvelope = theBroker.getNewHystereticBackbone(tmpClassTag);
+    if (negEnvelope == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get negative hysteretic backbone" << endln;
+      return -2;
+    }
+    negEnvelope->setDbTag(idata(4));
+  }  
+  
+  // Unloading rules
+  tmpClassTag = idata(5);
+  if (posUnlRule == 0 || posUnlRule->getClassTag() != tmpClassTag) {
+    if (posUnlRule != 0)
+      delete posUnlRule;
+    posUnlRule = theBroker.getNewUnloadingRule(tmpClassTag);
+    if (posUnlRule == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get positive unloading rule" << endln;
+      return -2;
+    }
+    posUnlRule->setDbTag(idata(6));
+  }
+  tmpClassTag = idata(7);
+  if (negUnlRule == 0 || negUnlRule->getClassTag() != tmpClassTag) {
+    if (negUnlRule != 0)
+      delete negUnlRule;
+    negUnlRule = theBroker.getNewUnloadingRule(tmpClassTag);
+    if (negUnlRule == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get negative unloading rule" << endln;
+      return -2;
+    }
+    negUnlRule->setDbTag(idata(8));
+  }
+  
+  // Stiffness degradations
+  tmpClassTag = idata(9);
+  if (posStfDegr == 0 || posStfDegr->getClassTag() != tmpClassTag) {
+    if (posStfDegr != 0)
+      delete posStfDegr;
+    posStfDegr = theBroker.getNewStiffnessDegradation(tmpClassTag);
+    if (posStfDegr == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get positive stiffness degradation" << endln;
+      return -2;
+    }
+    posStfDegr->setDbTag(idata(10));
+  }
+  tmpClassTag = idata(11);
+  if (negStfDegr == 0 || negStfDegr->getClassTag() != tmpClassTag) {
+    if (negStfDegr != 0)
+      delete negStfDegr;
+    negStfDegr = theBroker.getNewStiffnessDegradation(tmpClassTag);
+    if (negStfDegr == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get negative stiffness degradation" << endln;
+      return -2;
+    }
+    negStfDegr->setDbTag(idata(12));
+  }
+  
+  // Strength degradations
+  tmpClassTag = idata(13);
+  if (posStrDegr == 0 || posStrDegr->getClassTag() != tmpClassTag) {
+    if (posStrDegr != 0)
+      delete posStrDegr;
+    posStrDegr = theBroker.getNewStrengthDegradation(tmpClassTag);
+    if (posStrDegr == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get positive strength degradation" << endln;
+      return -2;
+    }
+    posStrDegr->setDbTag(idata(14));
+  }
+  tmpClassTag = idata(15);
+  if (negStrDegr == 0 || negStrDegr->getClassTag() != tmpClassTag) {
+    if (negStrDegr != 0)
+      delete negStrDegr;
+    negStrDegr = theBroker.getNewStrengthDegradation(tmpClassTag);
+    if (negStrDegr == 0) {
+      opserr << "OOHystereticMaterial::recvSelf -- could not get negative strength degradation" << endln;
+      return -2;
+    }
+    negStrDegr->setDbTag(idata(16));
+  }  
+
+  
+  if (posEnvelope->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv positive envelope" << endln;
+    return -1;
+  }
+  if (negEnvelope->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv negative envelope" << endln;
+    return -1;
+  }
+  if (posUnlRule->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv positive unloading rule" << endln;
+    return -1;
+  }
+  if (negUnlRule->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv negative unloading rule" << endln;
+    return -1;
+  }
+  if (posStfDegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv positive stiffness degradation" << endln;
+    return -1;
+  }
+  if (negStfDegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv negative stiffness degradation" << endln;
+    return -1;
+  }
+  if (posStrDegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv positive strength degradation" << endln;
+    return -1;
+  }
+  if (negStrDegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to recv negative strength degradation" << endln;
+    return -1;
+  }
+  
+  Vector data(7 + 10);
+  res = theChannel.recvVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "OOHystereticMaterial::recvSelf() - failed to receive data" << endln;
+    return -1;
+  }
+
+  pinchX = data(0);
+  pinchY = data(1);
+  E1p = data(2);
+  E1n = data(3);
+  rot1p = data(4);
+  rot1n = data(5);  
+  firstIter = data(6) > 0.0 ? true : false;
+
+  CrotMax = data(7);
+  CrotMin = data(8);
+  CtargMax = data(9);
+  CtargMin = data(10);
+  CrotPu = data(11);
+  CrotNu = data(12);
+  CenergyD = data(13);
+  CloadIndicator = int(data(14));
+  Cstress = data(15);
+  Cstrain = data(16);
+  
+  this->revertToLastCommit();
+  
+  return 0;
 }
     
 void
