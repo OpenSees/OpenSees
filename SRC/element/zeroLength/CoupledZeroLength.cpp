@@ -145,6 +145,9 @@ CoupledZeroLength::CoupledZeroLength(int tag,
   dY = 0.0;
   fX = 0.0;
   fY = 0.0;
+
+  // designate to setDomain that this is the initial construction of the element
+  mInitialize = 1;  
 }
 
 
@@ -166,6 +169,9 @@ CoupledZeroLength::CoupledZeroLength(void)
   dY = 0.0;
   fX = 0.0;
   fY = 0.0;
+
+  // designate to setDomain that this is the null construction of the element
+  mInitialize = 0;  
 }
 
 
@@ -330,11 +336,15 @@ CoupledZeroLength::setDomain(Domain *theDomain)
     const Vector& vel2  = theNodes[1]->getTrialVel();
     Vector  diffV = vel2-vel1;
 
-    if (diffD != 0.0)
-      d0 = new Vector(diffD);
+    // to avoid incorrect results, do not set initial disp/vel upon call of null constructor
+    // when using database commands
+    if (mInitialize == 1) {    
+      if (diffD != 0.0)
+	d0 = new Vector(diffD);
 
-    if (diffV != 0)
-      v0 = new Vector(diffV);
+      if (diffV != 0)
+	v0 = new Vector(diffV);
+    }
 }   	 
 
 

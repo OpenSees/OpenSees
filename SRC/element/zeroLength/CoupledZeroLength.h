@@ -130,6 +130,8 @@ class CoupledZeroLength : public Element {
     // vector pointers to initial disp and vel if present
     Vector *d0;
     Vector *v0;
+
+    int mInitialize;  // tag to fix bug in recvSelf/setDomain when using database command  
 };
 
 #endif
