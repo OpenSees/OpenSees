@@ -145,7 +145,7 @@ ConcreteS::getOrder( ) const
 const char*
 ConcreteS::getType( ) const 
 {
-  return "ConcreteS" ; 
+  return "PlaneStress" ; 
 }
 
 
