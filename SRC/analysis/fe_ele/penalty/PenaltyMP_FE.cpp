@@ -210,6 +210,39 @@ const Vector &
 PenaltyMP_FE::getResidual(Integrator *theNewIntegrator)
 {
     // zero residual, CD = 0
+
+    // get the solution vector [Uc Ur]
+    static Vector UU;
+    const ID& id1 = theMP->getConstrainedDOFs();
+    const ID& id2 = theMP->getRetainedDOFs();
+    int size = id1.Size() + id2.Size();
+    UU.resize(size);
+    const Vector& Uc = theConstrainedNode->getTrialDisp();
+    const Vector& Ur = theRetainedNode->getTrialDisp();
+    const Vector& Uc0 = theMP->getConstrainedDOFsInitialDisplacement();
+    const Vector& Ur0 = theMP->getRetainedDOFsInitialDisplacement();
+    for (int i = 0; i < id1.Size(); ++i) {
+        int cdof = id1(i);
+        if (cdof < 0 || cdof >= Uc.Size()) {
+            opserr << "PenaltyMP_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
+            exit(-1);
+        }
+        UU(i) = Uc(cdof) - Uc0(i);
+    }
+    for (int i = 0; i < id2.Size(); ++i) {
+        int rdof = id2(i);
+        if (rdof < 0 || rdof >= Ur.Size()) {
+            opserr << "PenaltyMP_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
+            exit(-1);
+        }
+        UU(i+id1.Size()) = Ur(rdof) - Ur0(i);
+    }
+
+    // compute residual
+    const Matrix& KK = getTangent(theNewIntegrator);
+    resid->addMatrixVector(0.0, KK, UU, -1.0);
+
+    // done
     return *resid;
 }
 

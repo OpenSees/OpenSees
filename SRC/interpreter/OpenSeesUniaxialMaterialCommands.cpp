@@ -148,6 +148,7 @@ void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
+void* OPS_ASDConcrete1DMaterial();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BoucWenOriginal();
@@ -358,8 +359,8 @@ static int setUpUniaxialMaterials(void) {
       "ConfinedConcrete", &OPS_ConfinedConcrete01Material));
   uniaxialMaterialsMap.insert(
       std::make_pair("ConcreteD", &OPS_ConcreteD));
-  //uniaxialMaterialsMap.insert(std::make_pair(
-  //    "FRPConfinedConcrete", &OPS_FRPConfinedConcrete));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "FRPConfinedConcrete", &OPS_FRPConfinedConcrete));
   uniaxialMaterialsMap.insert(std::make_pair(
       "FRPConfinedConcrete02", &OPS_FRPConfinedConcrete02));
   uniaxialMaterialsMap.insert(
@@ -453,6 +454,8 @@ static int setUpUniaxialMaterials(void) {
       "SelfCentering", &OPS_SelfCenteringMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ASDConcrete1D", &OPS_ASDConcrete1DMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(

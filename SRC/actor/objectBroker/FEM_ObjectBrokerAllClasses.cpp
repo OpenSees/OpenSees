@@ -73,6 +73,7 @@
 #include "MultiplierMaterial.h"
 #include "TensionOnlyMaterial.h"
 #include "ASD_SMA_3K.h"
+#include "ASDConcrete1DMaterial.h"
 #include "Concrete01.h"
 #include "Concrete01WithSITC.h"
 #include "Concrete02.h"
@@ -112,6 +113,7 @@
 #include "APDMD.h"
 #include "APDFMD.h"
 #include "BilinearOilDamper.h"
+#include "Maxwell.h"
 #include "ContinuumUniaxial.h"
 #include "PathIndependentMaterial.h"
 #include "BackboneMaterial.h"
@@ -359,6 +361,7 @@
 //#include "ZeroLengthND.h"
 
 #include "fourNodeQuad/FourNodeQuad.h"
+#include "fourNodeQuad/FourNodeQuad3d.h"
 #include "fourNodeQuad/EnhancedQuad.h"
 #include "fourNodeQuad/NineNodeMixedQuad.h"
 #include "fourNodeQuad/NineNodeQuad.h"
@@ -430,6 +433,7 @@
 #include "shell/ShellNLDKGT.h"
 #include "shell/ASDShellQ4.h" // Massimo Petracca
 #include "shell/ASDShellT3.h" // Massimo Petracca
+#include "shell/ShellANDeS.h"
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
@@ -586,6 +590,7 @@
 #include "PenaltyConstraintHandler.h"
 #include "LagrangeConstraintHandler.h"
 #include "TransformationConstraintHandler.h"
+#include "AutoConstraintHandler.h"
 
 // dof numberer header files
 #include "DOF_Numberer.h"   
@@ -888,7 +893,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new FourNodeQuadUP(); 	     
       
     case ELE_TAG_FourNodeQuad:  
-      return new FourNodeQuad(); 	     
+      return new FourNodeQuad(); 
+
+    case ELE_TAG_FourNodeQuad3d:  
+      return new FourNodeQuad3d(); 
       
     case ELE_TAG_Tri31:  
       return new Tri31(); 	     
@@ -1076,7 +1084,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     
     case ELE_TAG_ASDShellT3:   // Massimo Petracca
       return new ASDShellT3(); // Massimo Petracca
-    
+
+    case ELE_TAG_ShellANDeS:
+      return new ShellANDeS();
+	    
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
             
@@ -1692,6 +1703,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ASD_SMA_3K:  
 	     return new ASD_SMA_3K();
 
+	case MAT_TAG_ASDConcrete1DMaterial:  
+	     return new ASDConcrete1DMaterial();
+
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
 
@@ -1865,6 +1879,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_BilinearOilDamper:
 	    return new BilinearOilDamper();
+
+	case MAT_TAG_Maxwell:
+	    return new Maxwell();
 	    
 	case MAT_TAG_ContinuumUniaxial:
 		return new ContinuumUniaxial();
@@ -2700,7 +2717,10 @@ FEM_ObjectBrokerAllClasses::getNewConstraintHandler(int classTag)
 
 	case HANDLER_TAG_TransformationConstraintHandler:  
 	     return new TransformationConstraintHandler();
-	     
+
+	case HANDLER_TAG_AutoConstraintHandler:  
+	     return new AutoConstraintHandler();
+
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewConstraintHandler - ";
 	     opserr << " - no ConstraintHandler type exists for class tag ";

@@ -79,6 +79,11 @@ DL_Interpreter::getDouble(double *, int numArgs)
     return -1;
 }
 
+int DL_Interpreter::getDoubleList(int* size, Vector* data)
+{
+    return -1;
+}
+
 const char*
 DL_Interpreter::getString()
 {
@@ -95,6 +100,11 @@ int
 DL_Interpreter::getStringCopy(char **stringPtr)
 {
     return -1;
+}
+
+int DL_Interpreter::evalDoubleStringExpression(const char* theExpression, double& current_val)
+{
+	return -1;
 }
 
 void

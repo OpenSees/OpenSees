@@ -51,7 +51,8 @@ OPS_ModIMKPinching02(void)
   if (numModIMKPinching02Materials == 0) {
     numModIMKPinching02Materials++;
     opserr << "Modified Ibarra-Medina-Krawinkler Model with Pinched Hysteretic Response\n";
-	opserr << "Implementation and Calibration for CPH and FLPH by F.L.A. Ribeiro and A.R. Barbosa\n";   // Updated: Filipe Ribeiro and Andre Barbosa
+    //opserr << "Implementation and Calibration for CPH and FLPH by F.L.A. Ribeiro and A.R. Barbosa\n";   // Updated: Filipe Ribeiro and Andre Barbosa
+    opserr << "WARNING: DO NOT USE THE \"ModIMKPinching02\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKPinching\" or \"HystereticSM\" INSTEAD.\n";        
   }
  
   // Pointer to a uniaxial material that will be returned
