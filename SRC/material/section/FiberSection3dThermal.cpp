@@ -657,7 +657,7 @@ FiberSection3dThermal::getCopy(void)
 
     theCopy->Fiber_T = new double [numFibers];
     theCopy->Fiber_TMax = new double [numFibers];
-    if (theCopy->Fiber_TMax == 0 || theCopy->Fiber_TMax) {
+    if (theCopy->Fiber_TMax == 0 || theCopy->Fiber_T == 0) {
       opserr << "FiberSection3dThermal::getCopy -- failed to allocate double array for fiber data\n";
       exit(-1);
     }        
