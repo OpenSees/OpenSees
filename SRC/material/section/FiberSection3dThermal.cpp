@@ -218,13 +218,13 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, bool compCentroid
       exit(-1);
     }
 
-    Fiber_T = new double [numFibers];
+    Fiber_T = new double [sizeFibers];
     if (Fiber_T == 0) {
       opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for fiber data\n";
       exit(-1);
     }
 
-    Fiber_TMax = new double [numFibers];
+    Fiber_TMax = new double [sizeFibers];
     if (Fiber_TMax == 0) {
       opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for fiber data\n";
       exit(-1);
