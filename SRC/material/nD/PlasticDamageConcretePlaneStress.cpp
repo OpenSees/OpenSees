@@ -85,7 +85,7 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
 						  double _Ap, 
 						  double _An, 
 						  double _Bn)
-   :NDMaterial(tag,100),
+   :NDMaterial(tag,ND_TAG_PlasticDamageConcretePlaneStress),
     E(_e), nu(_nu), ft(_ft), fc(_fc), beta(_beta), Ap(_Ap), An(_An), Bn(_Bn),
     Ce(3,3), Ce0(3,3),CeCommitted(3,3),
     stress(3),strain(3), Cstress(3), Cstrain(3)
@@ -95,30 +95,9 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
    Cstress.Zero();
    Cstrain.Zero();
    
-   double f2c = 1.16 * fc;
-   double k = 1.4142135623730951 * (f2c - fc) / (2.0 * f2c - fc);
+   double rn0 = this->calculate_rn0();
 
-   //  initial damage threshold
-   double rn0 = (-k + 1.4142135623730951) * fc / 1.7320508075688772;
-
-   //  some useful constants
-   //  shear modulus
-   double G = E / 2.0 / (1.0 + nu);
-
-   // initial tangent
-   Ce0(0,0) = E / (1.0 - nu * nu);
-   Ce0(0,1) = nu * E / (1.0 - nu * nu);
-   Ce0(0,2) = 0.0;
-   Ce0(1,0) = nu * E / (1.0 - nu * nu);
-   Ce0(1,1) = E / (1.0 - nu * nu);
-   Ce0(1,2) = 0.0;
-   Ce0(2,0) = 0.0;
-   Ce0(2,1) = 0.0;
-   Ce0(2,2) = G;  
-
-   for (int i=0; i<3; i++)
-     for (int j=0; j<3; j++)
-       Ce(i,j) = Ce0(i,j);
+   this->setCe();
    
    for (int i=0; i<3; i++) {
      sig[i]=0.;
@@ -135,8 +114,43 @@ OPS_NewPlasticDamageConcretePlaneStress(void)
      this->commitState();
  }
 
+double
+PlasticDamageConcretePlaneStress::calculate_rn0(void)
+{
+  double f2c = 1.16 * fc;
+  double k = 1.4142135623730951 * (f2c - fc) / (2.0 * f2c - fc);
+  
+  //  initial damage threshold
+  double rn0 = (-k + 1.4142135623730951) * fc / 1.7320508075688772;
+
+  return rn0;
+}
+void
+PlasticDamageConcretePlaneStress::setCe(void)
+{
+  //  some useful constants
+  //  shear modulus
+  double G = E / 2.0 / (1.0 + nu);
+  
+  // initial tangent
+  Ce0(0,0) = E / (1.0 - nu * nu);
+  Ce0(0,1) = nu * E / (1.0 - nu * nu);
+  Ce0(0,2) = 0.0;
+  Ce0(1,0) = nu * E / (1.0 - nu * nu);
+  Ce0(1,1) = E / (1.0 - nu * nu);
+  Ce0(1,2) = 0.0;
+  Ce0(2,0) = 0.0;
+  Ce0(2,1) = 0.0;
+  Ce0(2,2) = G;  
+  
+  for (int i=0; i<3; i++)
+    for (int j=0; j<3; j++)
+      Ce(i,j) = Ce0(i,j);
+}
+
  PlasticDamageConcretePlaneStress::PlasticDamageConcretePlaneStress()
-   :NDMaterial (0, 0),
+   :NDMaterial (0, ND_TAG_PlasticDamageConcretePlaneStress),
+    Ce(3,3), Ce0(3,3),CeCommitted(3,3),
     stress(3),strain(3), Cstress(3), Cstrain(3)
  {
 
@@ -1087,6 +1101,23 @@ PlasticDamageConcretePlaneStress::revertToLastCommit (void)
 int
 PlasticDamageConcretePlaneStress::revertToStart (void)
 {
+  for (int i=0; i<3; i++) {
+    Committed_sig[i]=0.;
+    Committed_eps[i]=0.;
+    Deps[i] = 0.;
+    Committed_eps_p[i] = 0;
+  }
+  Committed_eps_p[3] = 0;
+
+  double rn0 = this->calculate_rn0();
+  
+  Committed_rn = rn0;
+  Committed_rp = ft;
+  Committed_dp = 0.;
+  Committed_dn = 0.;
+   
+  this->setCe();
+  
   return 0;
 }
 
@@ -1115,42 +1146,110 @@ PlasticDamageConcretePlaneStress::getCopy (void)
 const char*
 PlasticDamageConcretePlaneStress::getType (void) const
 {
-  return "PlaneStress2d";
+  return "PlaneStress";
 }
 
 int
 PlasticDamageConcretePlaneStress::getOrder (void) const
 {
-  return 6;
+  return 3;
 }
 
 
 int 
 PlasticDamageConcretePlaneStress::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(10);
+  static Vector data(1+8+4 + 3*3 + 2); // 13+9+2 = 24
 
-  int res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+  data(0) = this->getTag();
+
+  data(1) = E;
+  data(2) = nu;
+  data(3) = ft;
+  data(4) = fc;
+  data(5) = beta;
+  data(6) = Ap;
+  data(7) = An;
+  data(8) = Bn;
+
+  data(9)  = Committed_rp;
+  data(10) = Committed_rn;
+  data(11) = Committed_dp;
+  data(12) = Committed_dn;  
+
+  for (int i = 0; i < 3; i++) {
+    data(13+i) = Committed_sig[i];
+    data(13+3+i) = Committed_eps[i];
+    data(13+6+i) = Committed_eps_p[i];
+  }
+  data(22) = Committed_sig[3];
+  data(23) = Committed_eps_p[3];  
+
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  res = theChannel.sendVector(dbTag, commitTag, data);
   if (res < 0) {
-    opserr << "PlasticDamageConcretePlaneStress::sendSelf -- could not send Vector\n";
+    opserr << "PlasticDamageConcretePlaneStress::sendSelf -- could not send Vector" << endln;
     return res;
   }
+
+  res = theChannel.sendMatrix(dbTag, commitTag, CeCommitted);
+  if (res < 0) {
+    opserr << "PlasticDamageConcretePlaneStress::sendSelf -- could not send Ccommit matrix" << endln;
+    return res;
+  }  
   
   return res;
 }
 
 int 
 PlasticDamageConcretePlaneStress::recvSelf(int commitTag, Channel &theChannel, 
-					FEM_ObjectBroker &theBroker)
+					   FEM_ObjectBroker &theBroker)
 {
-  static Vector data(10);
-  
-  int res = theChannel.recvVector(this->getDbTag(), commitTag, data);
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  static Vector data(24);  
+  res = theChannel.recvVector(dbTag, commitTag, data);
   if (res < 0) {
-    opserr << "PlasticDamageConcretePlaneStress::sendSelf -- could not send Vector\n";
+    opserr << "PlasticDamageConcretePlaneStress::recvSelf -- could not receive Vector" << endln;
     return res;
   }
 
+  this->setTag((int)data(0));
+
+  E = data(1);
+  nu = data(2);
+  ft = data(3);
+  fc = data(4);
+  beta = data(5);
+  Ap = data(6);
+  An = data(7);
+  Bn = data(8);
+
+  Committed_rp = data(9);
+  Committed_rn = data(10);
+  Committed_dp = data(11);
+  Committed_dn = data(12);  
+
+  for (int i = 0; i < 3; i++) {
+    Committed_sig[i] = data(13+i);
+    Committed_eps[i] = data(13+3+i);
+    Committed_eps_p[i] = data(13+6+i);
+  }
+  Committed_sig[3] = data(22);
+  Committed_eps_p[3] = data(23);    
+  
+  res = theChannel.recvMatrix(dbTag, commitTag, CeCommitted);
+  if (res < 0) {
+    opserr << "PlasticDamageConcretePlaneStress::recvSelf -- could not receive Ccommit matrix" << endln;
+    return res;
+  }  
+
+  this->revertToLastCommit();
+  this->setCe();
+  
   return res;
 }
 
