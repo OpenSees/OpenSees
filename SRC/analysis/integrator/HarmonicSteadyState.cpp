@@ -227,7 +227,7 @@ int
 HarmonicSteadyState::formEleTangent(FE_Element *theEle)
 {
   static const double twoPi = 2*3.1415926535897932;
-  static double twoPiSquareOverPeriodSquare = twoPi*twoPi/(loadPeriod*loadPeriod);
+  double twoPiSquareOverPeriodSquare = twoPi*twoPi/(loadPeriod*loadPeriod);
   if (statusFlag == CURRENT_TANGENT) {
     theEle->zeroTangent();
     theEle->addKtToTang();

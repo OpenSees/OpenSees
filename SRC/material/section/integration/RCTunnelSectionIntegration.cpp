@@ -63,7 +63,7 @@ void* OPS_RCTunnelSection()
   }
   
   numdata = 4;
-  if (OPS_GetIntInput(&numdata, &idata[4]) < 0) {
+  if (OPS_GetIntInput(&numdata, &idata[3]) < 0) {
     opserr << "WARNING invalid section RCTunnelSection input\n";
     return 0;
   }
