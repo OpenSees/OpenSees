@@ -730,6 +730,7 @@
 #define ELE_TAG_ElastomericBearingPlasticity3d 84
 #define ELE_TAG_ElastomericBearingPlasticity2d 85
 #define ELE_TAG_TwoNodeLink             86
+#define ELE_TAG_TwoNodeLinkSection           86001
 #define ELE_TAG_ActuatorCorot           87
 #define ELE_TAG_Actuator                88
 #define ELE_TAG_Adapter                 89

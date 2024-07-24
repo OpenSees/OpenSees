@@ -445,6 +445,7 @@
 #include "joint/Joint2D.h"		// Arash
 #include "joint/Inno3DPnPJoint.h" // Cristian Miculas
 #include "twoNodeLink/TwoNodeLink.h"
+#include "twoNodeLink/TwoNodeLinkSection.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
 #include "tetrahedron/FourNodeTetrahedron.h"
@@ -1110,7 +1111,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new Inno3DPnPJoint();	// Cristian Miculas
       
     case ELE_TAG_TwoNodeLink:				
-      return new TwoNodeLink();			
+      return new TwoNodeLink();
+
+    case ELE_TAG_TwoNodeLinkSection:				
+      return new TwoNodeLinkSection();			      
       
     case ELE_TAG_LinearElasticSpring:
         return new LinearElasticSpring();
