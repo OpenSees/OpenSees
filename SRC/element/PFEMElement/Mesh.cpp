@@ -564,6 +564,12 @@ Mesh::newElements(const ID &elends) {
         case ELE_TAG_DispBeamColumn3d:
             OPS_Func = OPS_DispBeamColumn3d;
             break;
+        case ELE_TAG_TimoshenkoBeamColumn2d:
+            OPS_Func = OPS_TimoshenkoBeamColumn2d;
+            break;
+        case ELE_TAG_TimoshenkoBeamColumn3d:
+            OPS_Func = OPS_TimoshenkoBeamColumn3d;
+            break;            
         case ELE_TAG_PFEMElement2DBubble:
             OPS_Func = OPS_PFEMElement2DBubble;
             break;
