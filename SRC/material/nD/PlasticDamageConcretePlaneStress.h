@@ -163,6 +163,9 @@ class PlasticDamageConcretePlaneStress : public NDMaterial
   Vector strain;
   Vector Cstress;
   Vector Cstrain;
+
+  void setCe(void);
+  double calculate_rn0();
 };
 
 #endif

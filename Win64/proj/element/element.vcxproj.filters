@@ -527,6 +527,9 @@
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLink.cpp">
       <Filter>twoNodeLink</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.cpp">
+      <Filter>twoNodeLink</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\adapter\Actuator.cpp">
       <Filter>adapter</Filter>
     </ClCompile>
@@ -1385,6 +1388,9 @@
       <Filter>generic</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLink.h">
+      <Filter>twoNodeLink</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.h">
       <Filter>twoNodeLink</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\adapter\Actuator.h">
