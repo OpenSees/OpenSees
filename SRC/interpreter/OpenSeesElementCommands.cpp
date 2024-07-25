@@ -235,6 +235,7 @@ void* OPS_ElastomericBearingUFRP2d();
 void* OPS_Inerter();
 void* OPS_LinearElasticSpring();
 void* OPS_TwoNodeLink();
+void* OPS_TwoNodeLinkSection();
 void* OPS_MultipleShearSpring();
 void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
@@ -607,6 +608,7 @@ namespace {
     functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
     functionMap.insert(std::make_pair("linearElasticSpring", &OPS_LinearElasticSpring));
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
+        functionMap.insert(std::make_pair("twoNodeLinkSection", &OPS_TwoNodeLinkSection));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
 	functionMap.insert(std::make_pair("elastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));

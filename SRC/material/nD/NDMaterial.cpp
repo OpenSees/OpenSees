@@ -44,6 +44,7 @@
 #include <PlaneStressMaterial.h>
 #include <BeamFiberMaterial.h>
 #include <BeamFiberMaterial2d.h>
+#include <BeamFiberMaterial2dPS.h>
 #include <PlateFiberMaterial.h>
 #include <string.h>
 #include <TaggedObject.h>
@@ -146,6 +147,13 @@ NDMaterial::getCopy(const char *type)
     delete copy;
     return clone;
   }
+  else if (strcmp(type,"BeamFiber2dPS") == 0 ||
+          strcmp(type,"TimoshenkoFiber2dPS") == 0) {
+    NDMaterial *copy = this->getCopy("PlaneStress");
+    BeamFiberMaterial2dPS *clone = new BeamFiberMaterial2dPS(this->getTag(),*copy);
+    delete copy;
+    return clone;
+  } 
   else if (strcmp(type,"PlateFiber") == 0) {
     NDMaterial *copy = this->getCopy("ThreeDimensional");
     PlateFiberMaterial *clone = new PlateFiberMaterial(this->getTag(),*copy);

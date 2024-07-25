@@ -118,14 +118,29 @@ void* OPS_TwoNodeLink()
       dirs(i)--;
     
     // options
-    Vector x, y, Mratio, sDistI;
+    Vector x(3);
+    Domain *theDomain = OPS_GetDomain();
+    Node *ndI = theDomain->getNode(idata[1]);
+    Node *ndJ = theDomain->getNode(idata[2]);
+    const Vector &end1Crd = ndI->getCrds();
+    const Vector &end2Crd = ndJ->getCrds();	
+    for (int i = 0; i < ndm; i++)
+      x(i) = end2Crd(i) - end1Crd(i);
+    
+    Vector y(3);
+    y(0) = 0;
+    y(1) = 1;
+    y(2) = 0;
+    
+    Vector Mratio, sDistI;
     int doRayleigh = 0;
     double mass = 0.0;
+    /*
     if (OPS_GetNumRemainingInputArgs() < 1) {
         return new TwoNodeLink(idata[0], ndm, idata[1], idata[2],
-            dirs, &mats[0]);
+			       dirs, &mats[0], y, x);
     }
-    
+    */
     while (OPS_GetNumRemainingInputArgs() > 0) {
         type = OPS_GetString();
         if (strcmp(type, "-orient") == 0) {
@@ -134,14 +149,14 @@ void* OPS_TwoNodeLink()
                 return 0;
             }
             numdata = 3;
-            x.resize(3);
+            //x.resize(3);
             if (OPS_GetDoubleInput(&numdata, &x(0)) < 0) {
                 opserr << "WARNING: invalid -orient values\n";
                 return 0;
             }
             if (OPS_GetNumRemainingInputArgs() < 3) {
                 y = x;
-                x = Vector();
+                //x = Vector();
                 continue;
             }
             y.resize(3);
@@ -211,7 +226,7 @@ void* OPS_TwoNodeLink()
 // by each object and storing the tags of the end nodes.
 TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2, 
     const ID &direction, UniaxialMaterial **materials,
-    const Vector _y, const Vector _x, const Vector Mr,
+    const Vector &_y, const Vector &_x, const Vector Mr,
     const Vector sdI, int addRay, double m)
     : Element(tag, ELE_TAG_TwoNodeLink),
     numDIM(dim), numDOF(0), connectedExternalNodes(2),
@@ -367,7 +382,7 @@ TwoNodeLink::TwoNodeLink(int tag, int dim, int Nd1, int Nd2,
 TwoNodeLink::TwoNodeLink()
     : Element(0, ELE_TAG_TwoNodeLink),
     numDIM(0), numDOF(0), connectedExternalNodes(2),
-    theMaterials(0), numDIR(0), dir(0), trans(3,3), x(0), y(0),
+    theMaterials(0), numDIR(0), dir(0), trans(3,3), x(3), y(3),
     Mratio(0), shearDistI(0), addRayleigh(0), mass(0.0), L(0.0),
     onP0(false), ub(0), ubdot(0), qb(0), ul(0), Tgl(0,0), Tlb(0,0),
     theMatrix(0), theVector(0), theLoad(0)
@@ -832,178 +847,216 @@ const Vector& TwoNodeLink::getResistingForceIncInertia()
 
 int TwoNodeLink::sendSelf(int commitTag, Channel &sChannel)
 {
-    // send element parameters
-    static Vector data(14);
-    data(0) = this->getTag();
-    data(1) = numDIM;
-    data(2) = numDOF;
-    data(3) = numDIR;
-    data(4) = x.Size();
-    data(5) = y.Size();
-    data(6) = Mratio.Size();
-    data(7) = shearDistI.Size();
-    data(8) = addRayleigh;
-    data(9) = mass;
-    data(10) = alphaM;
-    data(11) = betaK;
-    data(12) = betaK0;
-    data(13) = betaKc;
-    sChannel.sendVector(0, commitTag, data);
-    
-    // send the two end nodes
-    sChannel.sendID(0, commitTag, connectedExternalNodes);
-    
-    // send the direction array
-    sChannel.sendID(0, commitTag, *dir);
-    
-    // send the material class tags
-    ID matClassTags(numDIR);
-    for (int i=0; i<numDIR; i++)
-        matClassTags(i) = theMaterials[i]->getClassTag();
-    sChannel.sendID(0, commitTag, matClassTags);
-    
-    // send the material models
-    for (int i=0; i<numDIR; i++)
-        theMaterials[i]->sendSelf(commitTag, sChannel);
-    
-    // send remaining data
-    if (x.Size() == 3)
-        sChannel.sendVector(0, commitTag, x);
-    if (y.Size() == 3)
-        sChannel.sendVector(0, commitTag, y);
-    if (Mratio.Size() == 4)
-        sChannel.sendVector(0, commitTag, Mratio);
-    if (shearDistI.Size() == 2)
-        sChannel.sendVector(0, commitTag, shearDistI);
-    
-    return 0;
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  static ID idData(10); // Add 1 so no conflict below when numMaterials == 3
+  idData(0) = this->getTag();
+  idData(1) = numDIM;
+  idData(2) = numDOF;
+  idData(3) = numDIR;
+  idData(4) = Mratio.Size();
+  idData(5) = shearDistI.Size();
+  idData(6) = addRayleigh;
+  idData(7) = connectedExternalNodes(0);
+  idData(8) = connectedExternalNodes(1);
+  res += sChannel.sendID(dbTag, commitTag, idData);
+  if (res < 0) {
+    opserr << "TwoNodeLink::sendSelf - failed to send ID" << endln;
+    return res;
+  }
+  
+  // send element parameters
+  static Vector data(3+3+5+6);
+  data(0) = mass;
+  data(1) = alphaM;
+  data(2) = betaK;
+  data(3) = betaK0;
+  data(4) = betaKc;
+  for (int i = 0; i < 3; i++) {
+    data(5+i) = x(i);
+    data(8+i) = y(i);    
+  }
+  if (Mratio.Size() == 4) {
+    data(11) = Mratio(0);
+    data(12) = Mratio(1);
+    data(13) = Mratio(2);
+    data(14) = Mratio(3);
+  }
+  if (shearDistI.Size() == 2) {
+    data(15) = shearDistI(0);
+    data(16) = shearDistI(1);    
+  }
+
+  res += sChannel.sendVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "TwoNodeLink::sendSelf - failed to send Vector" << endln;
+    return res;
+  }
+
+  ID classTags(numDIR*3);
+  for (int i = 0; i < numDIR; i++) {
+    int matDbTag = theMaterials[i]->getDbTag();
+    if (matDbTag == 0) {
+      matDbTag = sChannel.getDbTag();
+      if (matDbTag != 0)
+	theMaterials[i]->setDbTag(matDbTag);
+    }
+    classTags(i) = matDbTag;
+    classTags(numDIR+i) = theMaterials[i]->getClassTag();
+    classTags(2*numDIR+i) = (*dir)(i);
+  }
+
+  // send the material tags and direction array
+  res += sChannel.sendID(dbTag, commitTag, classTags);
+  if (res < 0) {
+    opserr << "TwoNodeLink::sendSelf - failed to send tags ID" << endln;
+    return res;
+  }
+  
+  // send the material models
+  for (int i=0; i<numDIR; i++) {
+    res += theMaterials[i]->sendSelf(commitTag, sChannel);
+    if (res < 0) {
+      opserr << "TwoNodeLink::sendSelf - failed to send material " << i << endln;
+      return res;
+    }
+  }
+  
+  return res;
 }
 
 
 int TwoNodeLink::recvSelf(int commitTag, Channel &rChannel,
-    FEM_ObjectBroker &theBroker)
+			  FEM_ObjectBroker &theBroker)
 {
-    // delete dynamic memory
-    if (dir != 0)
-        delete dir;
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  static ID idData(10);
+  res += rChannel.recvID(dbTag, commitTag, idData);
+  if (res < 0) {
+    opserr << "TwoNodeLink::recvSelf - failed to receive ID" << endln;
+    return res;
+  }
+  this->setTag(idData(0));
+  numDIM = idData(1);
+  numDOF = idData(2);
+  //numDIR = idData(3);
+  int MratioSize = idData(4);
+  int shearDistISize = idData(5);
+  addRayleigh = idData(6);
+  connectedExternalNodes(0) = idData(7);
+  connectedExternalNodes(1) = idData(8);
+  
+  static Vector data(17);
+  res += rChannel.recvVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "TwoNodeLink::recvSelf - failed to receive Vector" << endln;
+    return res;
+  }
+  mass = data(0);
+  alphaM = data(1);
+  betaK = data(2);
+  betaK0 = data(3);
+  betaKc = data(4);
+  x.resize(3);
+  y.resize(3);  
+  for (int i = 0; i < 3; i++) {
+    x(i) = data(5+i);
+    y(i) = data(8+i);
+  }
+  if (MratioSize == 4) {
+    Mratio.resize(4);
+    Mratio(0) = data(11);
+    Mratio(1) = data(12);
+    Mratio(2) = data(13);
+    Mratio(3) = data(14);
+  }
+  if (shearDistISize == 2) {
+    shearDistI.resize(2);
+    shearDistI(0) = data(15);
+    shearDistI(1) = data(16);
+  }
+  
+  //
+  if (numDIR != idData(3)) {
     if (theMaterials != 0)  {
-        for (int i=0; i<numDIR; i++)
-            if (theMaterials[i] != 0)
-                delete theMaterials[i];
-        delete [] theMaterials;
+      for (int i=0; i<numDIR; i++)
+	if (theMaterials[i] != 0)
+	  delete theMaterials[i];
+      delete [] theMaterials;
     }
-    
-    // receive element parameters
-    static Vector data(14);
-    rChannel.recvVector(0, commitTag, data);
-    this->setTag((int)data(0));
-    numDIM = (int)data(1);
-    numDOF = (int)data(2);
-    numDIR = (int)data(3);
-    addRayleigh = (int)data(8);
-    mass = data(9);
-    alphaM = data(10);
-    betaK = data(11);
-    betaK0 = data(12);
-    betaKc = data(13);
-   
-    // receive the two end nodes
-    rChannel.recvID(0, commitTag, connectedExternalNodes);
-    
-    // allocate memory for direction array and receive it
+
+    numDIR = idData(3);
+
+    theMaterials = new UniaxialMaterial *[numDIR];
+    if (theMaterials == 0) {
+      opserr << "TwoNodeLink::recvSelf - failed to allocate materials" << endln;
+      return -1;
+    }
+    for (int i = 0; i < numDIR; i++)
+      theMaterials[i] = 0;
+
+    if (dir != 0)
+      delete dir;
     dir = new ID(numDIR);
-    if (dir == 0)  {
-        opserr << "TwoNodeLink::recvSelf() - "
-            << "failed to create direction array\n";
-        return -1;
-    }
-    rChannel.recvID(0, commitTag, *dir);
+    if (dir == 0) {
+      opserr << "TwoNodeLink::recvSelf - failed to allocate ID" << endln;
+      return -2;
+    }    
+  }
+
+  ID classTags(numDIR*3);
+  res += rChannel.recvID(dbTag, commitTag, classTags);
+  if (res < 0) {
+    opserr << "TwoNodeLink::recvSelf - failed to receive tags ID" << endln;
+    return res;
+  }
+
+  for (int i = 0; i < numDIR; i++) {
+    int matClassTag = classTags(numDIR+i);
     
-    // receive the material class tags
-    ID matClassTags(numDIR);
-    rChannel.recvID(0, commitTag, matClassTags);
-    
-    // allocate memory for the uniaxial materials
-    theMaterials = new UniaxialMaterial* [numDIR];
-    if (theMaterials == 0)  {
-        opserr << "TwoNodeLink::recvSelf() - "
-            << "failed to allocate pointers for uniaxial materials.\n";
-        return -2;
+    // If null, get a new one from the broker
+    if (theMaterials[i] == 0)
+      theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+    // Check if allocation failed from broker
+    if (theMaterials[i] == 0) {
+      opserr << "TwoNodeLink::recvSelf - failed to allocate new material " << i << endln;
+      return -3;
     }
-    // receive the material models
-    for (int i=0; i<numDIR; i++)  {
-        theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTags(i));
-        if (theMaterials[i] == 0) {
-            opserr << "TwoNodeLink::recvSelf() - "
-                << "failed to get blank uniaxial material.\n";
-            return -3;
-        }
-        theMaterials[i]->recvSelf(commitTag, rChannel, theBroker);
+
+    // If wrong type, get a new one from the broker
+    if (theMaterials[i]->getClassTag() != matClassTag) {
+      delete theMaterials[i];
+      theMaterials[i] = theBroker.getNewUniaxialMaterial(matClassTag);
+    }
+    // Check if allocation failed from broker
+    if (theMaterials[i] == 0) {
+      opserr << "TwoNodeLink::recvSelf - failed to allocate new material " << i << endln;
+      return -4;
     }
     
-    // receive remaining data
-    if ((int)data(4) == 3)  {
-        x.resize(3);
-        rChannel.recvVector(0, commitTag, x);
+    // Receive the materials
+    theMaterials[i]->setDbTag(classTags(i));
+    res += theMaterials[i]->recvSelf(commitTag, rChannel, theBroker);
+    if (res < 0) {
+      opserr << "TwoNodeLink::recvSelf  -- failed to receive new material " << i << endln;
+      return res;
     }
-    if ((int)data(5) == 3)  {
-        y.resize(3);
-        rChannel.recvVector(0, commitTag, y);
-    }
-    if ((int)data(6) == 4)  {
-        Mratio.resize(4);
-        rChannel.recvVector(0, commitTag, Mratio);
-        // check p-delta moment distribution ratios
-        if (Mratio(0) < 0.0 || Mratio(1) < 0.0 ||
-            Mratio(2) < 0.0 || Mratio(3) < 0.0) {
-            opserr << "TwoNodeLink::recvSelf() - "
-                << "p-delta moment ratios can not be negative\n";
-            return -4;
-        }
-        if (Mratio(0)+Mratio(1) > 1.0)  {
-            opserr << "TwoNodeLink::recvSelf() - "
-                << "incorrect p-delta moment ratios:\nrMy1 + rMy2 = "
-                << Mratio(0)+Mratio(1) << " > 1.0\n";
-            return -4;
-        }
-        if (Mratio(2)+Mratio(3) > 1.0)  {
-            opserr << "TwoNodeLink::recvSelf() - "
-                << "incorrect p-delta moment ratios:\nrMz1 + rMz2 = "
-                << Mratio(2)+Mratio(3) << " > 1.0\n";
-            return -4;
-        }
-    }
-    if ((int)data(7) == 2)  {
-        shearDistI.resize(2);
-        rChannel.recvVector(0, commitTag, shearDistI);
-        // check shear distance ratios
-        if (shearDistI(0) < 0.0 || shearDistI(0) > 1.0)  {
-            opserr << "TwoNodeLink::recvSelf() - "
-                << "incorrect shear distance ratio:\n shearDistIy = "
-                << shearDistI(0) << " < 0.0 or > 1.0\n";
-            return -5;
-        }
-        if (shearDistI(1) < 0.0 || shearDistI(1) > 1.0)  {
-            opserr << "TwoNodeLink::recvSelf() - "
-                << "incorrect shear distance ratio:\n shearDistIz = "
-                << shearDistI(1) << " < 0.0 or > 1.0\n";
-            return -5;
-        }
-    } else  {
-        // initialize shear distance ratios
-        shearDistI.resize(2);
-        shearDistI(0) = 0.5;
-        shearDistI(1) = 0.5;
-    }
-    onP0 = false;
     
-    // initialize response vectors in basic system
-    ub.resize(numDIR);
-    ubdot.resize(numDIR);
-    qb.resize(numDIR);
-    this->revertToStart();
+    // Set material directions
+    (*dir)(i) = classTags(2*numDIR+i);
+  }
     
-    return 0;
+  // initialize response vectors in basic system
+  ub.resize(numDIR);
+  ubdot.resize(numDIR);
+  qb.resize(numDIR);
+
+  this->revertToLastCommit();
+    
+  return 0;
 }
 
 
@@ -1277,9 +1330,50 @@ void TwoNodeLink::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
-    Vector xp = end2Crd - end1Crd;
+    Vector xp(3);
+    for (int i = 0; i < numDIM; i++)
+      xp(i) = end2Crd(i) - end1Crd(i);
     L = xp.Norm();
+    xp /= L;
     
+    x /= x.Norm();
+
+    if (numDIM == 1) {
+      x(0) = 1; y(0) = 0;
+      x(1) = 0; y(1) = 1;
+      x(2) = 0; y(2) = 0;
+    }
+    if (numDIM == 2) {
+      if (L > DBL_EPSILON) {
+	if (x != xp) {
+	  opserr << "WARNING TwoNodeLink::setUp() - " 
+		 << "element: " << this->getTag() << endln
+		 << "ignoring nodes and using specified "
+		 << "local x vector to determine orientation\n";
+	}
+      }
+      else {
+	
+      }
+      y(0) = -x(1);
+      y(1) =  x(0);
+      y(2) =     0;      
+    }
+    if (numDIM == 3) {
+      if (L > DBL_EPSILON) {
+	if (x != xp) {
+	  opserr << "WARNING TwoNodeLink::setUp() - " 
+		 << "element: " << this->getTag() << endln
+		 << "ignoring nodes and using specified "
+		 << "local x vector to determine orientation\n";
+	}
+      }
+      else {
+	
+      }
+    }    
+
+    /*
     // setup x and y orientation vectors
     if (L > DBL_EPSILON)  {
         if (x.Size() == 0)  {
@@ -1320,7 +1414,7 @@ void TwoNodeLink::setUp()
             y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
         }
     }
-    
+    */
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {
         opserr << "TwoNodeLink::setUp() - "
@@ -1328,7 +1422,7 @@ void TwoNodeLink::setUp()
             << "incorrect dimension of orientation vectors\n";
         exit(-1);
     }
-    
+
     // establish orientation of element for the transformation matrix
     // z = x cross yp
     static Vector z(3);
