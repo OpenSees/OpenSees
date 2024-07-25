@@ -440,6 +440,7 @@
     <ClCompile Include="..\..\..\SRC\element\generic\GenericClient.cpp" />
     <ClCompile Include="..\..\..\SRC\element\generic\GenericCopy.cpp" />
     <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLink.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.cpp" />
     <ClCompile Include="..\..\..\SRC\element\adapter\Actuator.cpp" />
     <ClCompile Include="..\..\..\SRC\element\adapter\ActuatorCorot.cpp" />
     <ClCompile Include="..\..\..\SRC\element\adapter\Adapter.cpp" />
@@ -718,6 +719,7 @@
     <ClInclude Include="..\..\..\SRC\element\generic\GenericClient.h" />
     <ClInclude Include="..\..\..\SRC\element\generic\GenericCopy.h" />
     <ClInclude Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLink.h" />
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.h" />
     <ClInclude Include="..\..\..\SRC\element\adapter\Actuator.h" />
     <ClInclude Include="..\..\..\SRC\element\adapter\ActuatorCorot.h" />
     <ClInclude Include="..\..\..\SRC\element\adapter\Adapter.h" />
