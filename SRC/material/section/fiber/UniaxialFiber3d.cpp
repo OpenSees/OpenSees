@@ -360,10 +360,17 @@ UniaxialFiber3d::recvSelf(int commitTag, Channel &theChannel,
 
 void UniaxialFiber3d::Print(OPS_Stream &s, int flag)
 {
+if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
     s << "\nUniaxialFiber3d, tag: " << this->getTag() << endln;
     s << "\tArea: " << area << endln; 
     s << "\tMatrix as: " << 1.0 << " " << as[0] << " " << as[1] << endln; 
     s << "\tMaterial, tag: " << theMaterial->getTag() << endln;
+}
+if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	 s << "\t\t\t\t{\"type\": \"fiber\", \"material\": "<<theMaterial->getTag()<<", ";
+	 s << "\"area\": "<<area<<", \"coord\": [" << as[0] << ", "<<as[1]<<"]}";
+}
+
 }
 
 Response*
