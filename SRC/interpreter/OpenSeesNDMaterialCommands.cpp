@@ -131,7 +131,7 @@ namespace {
 #endif
 	nDMaterialsMap.insert(std::make_pair("PrestressedConcretePlaneStress", &OPS_PrestressedConcretePlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAPrestressedConcretePlaneStress", &OPS_FAPrestressedConcretePlaneStressMaterial));
-	nDMaterialsMap.insert(std::make_pair("RAFourSteetPCPlaneStress", &OPS_RAFourSteelPCPlaneStressMaterial));
+	nDMaterialsMap.insert(std::make_pair("RAFourSteelPCPlaneStress", &OPS_RAFourSteelPCPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAFourSteelPCPlaneStress", &OPS_FAFourSteelPCPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("DruckerPrager", &OPS_DruckerPragerMaterial));
 	nDMaterialsMap.insert(std::make_pair("TruncatedDP", &OPS_LinearCap));
