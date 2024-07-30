@@ -51,7 +51,7 @@ OPS_SteelECThermal(void)
 
 
   int    iData[2];
-  double dData[6];
+  double dData[7];
   const char *typeChar = new char[20];
   int numData = 1;
   
@@ -61,7 +61,7 @@ OPS_SteelECThermal(void)
     return 0;
   }
   
-  if (OPS_GetNumRemainingInputArgs()==3 ||OPS_GetNumRemainingInputArgs()==7)
+  if (OPS_GetNumRemainingInputArgs()==4 ||OPS_GetNumRemainingInputArgs()==8)
   {
     typeChar = OPS_GetString();
 
@@ -83,7 +83,7 @@ OPS_SteelECThermal(void)
 		  }
 	 
   }
-  else if (OPS_GetNumRemainingInputArgs()==2 ||OPS_GetNumRemainingInputArgs()==6) 
+  else if (OPS_GetNumRemainingInputArgs()==3 ||OPS_GetNumRemainingInputArgs()==7) 
   {
     iData[1] = 0;
   }
@@ -92,7 +92,7 @@ OPS_SteelECThermal(void)
 
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 2 && numData != 6) {
+  if (numData != 3 && numData != 7) {
     opserr << "Invalid #args, want: uniaxialMaterial SteelECThermal " << iData[0] << " fy? E? b? <a1? a2? a3? a4?>>" << endln;
     return 0;
   }
@@ -102,16 +102,16 @@ OPS_SteelECThermal(void)
     return 0;
   }
 
-  if (numData == 2) {
-    dData[2] = STEEL_01_DEFAULT_A1;
-    dData[3] = STEEL_01_DEFAULT_A2;
-    dData[4] = STEEL_01_DEFAULT_A3;
-    dData[5] = STEEL_01_DEFAULT_A4;
+  if (numData == 3) {
+    dData[3] = STEEL_01_DEFAULT_A1;
+    dData[4] = STEEL_01_DEFAULT_A2;
+    dData[5] = STEEL_01_DEFAULT_A3;
+    dData[6] = STEEL_01_DEFAULT_A4;
   }
 
   // Parsing was successful, allocate the material
-  theMaterial = new SteelECThermal(iData[0], iData[1], dData[0], dData[1], 
-				   dData[2], dData[3], dData[4], dData[5]);
+  theMaterial = new SteelECThermal(iData[0], iData[1], dData[0], dData[1], dData[2],
+				   dData[3], dData[4], dData[5], dData[6]);
   
   
   if (theMaterial == 0) {
@@ -123,11 +123,10 @@ OPS_SteelECThermal(void)
 }
 
 
-SteelECThermal::SteelECThermal
-(int tag, int TypeTag , double FY, double E,
+SteelECThermal::SteelECThermal(int tag, int TypeTag , double FY, double E, double B,
  double A1, double A2, double A3, double A4):
    UniaxialMaterial(tag,MAT_TAG_SteelECThermal),typeTag(TypeTag),
-   fyT(FY), E0T(E), a1(A1), a2(A2), a3(A3), a4(A4)
+   fyT(FY), E0T(E), b(B), a1(A1), a2(A2), a3(A3), a4(A4)
 {
    // Sets all history and state variables to initial values
    // History variables
@@ -292,7 +291,7 @@ void SteelECThermal::determineTrialState (double dStrain)
 	  double CT = (fy-fp)*(fy-fp)/((EpsiYT-EpsiPT)*E0-2*(fy - fp));
 	  double BT = pow(CT*(EpsiYT-EpsiPT)*E0+CT*CT, 0.5);
 	  double AT = pow((EpsiYT-EpsiPT)*(EpsiYT-EpsiPT+CT/E0),0.5);
-	
+
 	  //Calculating the POSITIVE stress according to EC3
       double fabsTstrain = fabs(Tstrain);
 	 // opserr<<"fabsTstrain is: "<< fabsTstrain <<" at Temp "<<Ttemp<<endln;
@@ -309,12 +308,12 @@ void SteelECThermal::determineTrialState (double dStrain)
 	  }
 	  else if (fabsTstrain <= EpsiT)
 		  {
-		  	Tstress = fy+(fabsTstrain-EpsiYT)*(1E-4)*E0;
-			Ttangent = (1E-4)*E0;
+		  	Tstress = fy+(fabsTstrain-EpsiYT)*b*E0;
+			Ttangent = b*E0;
 		  }	  
 	  else if (fabsTstrain <= EpsiU)
 	 	 {
-		  double fy1 = fy+(EpsiU-EpsiYT)*(1E-4)*E0;// modeified to add hardeding and avoid cinvergence problem
+		  double fy1 = fy+(EpsiU-EpsiYT)*b*E0;// modified to add hardening and avoid convergence problem
 		  Tstress = fy1*(1- (fabsTstrain - EpsiT)/(EpsiU -EpsiT));
           //opserr<<"Error: Stiffness of SteelECthermal is negative"<<endln;
 		  Ttangent = -fy1/(EpsiU-EpsiT);
@@ -455,7 +454,7 @@ SteelECThermal::getElongTangent(double TempT, double &ET, double &Elong, double 
 	else 
 		opserr<<"WARNING SteelECThermal received an invalid typeTag: "<<typeTag<<endln;
 
-   //Now Updating modulus, strengths
+   //Now Updating modulus, strengths - treshold: 80 = 100-20 (20°C ref. temp.)
 	for( int i=0; i<13; i++) {
 		if (TempT <= 80+100*i) 
 		{
@@ -502,7 +501,10 @@ SteelECThermal::getElongTangent(double TempT, double &ET, double &Elong, double 
   //ThermalElongation = 0 ;   //debug  Liming
   Elong = ThermalElongation;
   ET = E0;
-  TemperautreC = TempT;
+  TemperatureC = TempT;
+#ifdef _DEBUG
+   // opserr << "-> TempT:" << TempT << " fy: " << fy << " fp: " << fp << " ET:  " << E0 << " Elong:  " << Elong << endln;
+#endif
   return 0;
 }
 
@@ -578,7 +580,7 @@ int SteelECThermal::revertToStart ()
 
 UniaxialMaterial* SteelECThermal::getCopy ()
 {
-   SteelECThermal* theCopy = new SteelECThermal(this->getTag(), typeTag,fy, E0,
+   SteelECThermal* theCopy = new SteelECThermal(this->getTag(), typeTag,fy, E0, b,
 				  a1, a2, a3, a4);
 
    // Converged history variables
@@ -611,29 +613,30 @@ UniaxialMaterial* SteelECThermal::getCopy ()
 int SteelECThermal::sendSelf (int commitTag, Channel& theChannel)
 {
    int res = 0;
-   static Vector data(16);
+   static Vector data(17);
    data(0) = this->getTag();
 
    // Material properties
    data(1) = typeTag;
    data(2) = fy;
    data(3) = E0;
-   data(4) = a1;
-   data(5) = a2;
-   data(6) = a3;
-   data(7) = a4;
+   data(4) = b;
+   data(5) = a1;
+   data(6) = a2;
+   data(7) = a3;
+   data(8) = a4;
 
    // History variables from last converged state
-   data(8) = CminStrain;
-   data(9) = CmaxStrain;
-   data(10) = CshiftP;
-   data(11) = CshiftN;
-   data(12) = Cloading;
+   data(9) = CminStrain;
+   data(10) = CmaxStrain;
+   data(11) = CshiftP;
+   data(12) = CshiftN;
+   data(13) = Cloading;
 
    // State variables from last converged state
-   data(13) = Cstrain;
-   data(14) = Cstress;
-   data(15) = Ctangent;
+   data(14) = Cstrain;
+   data(15) = Cstress;
+   data(16) = Ctangent;
 
    // Data is only sent after convergence, so no trial variables
    // need to be sent through data vector
@@ -649,7 +652,7 @@ int SteelECThermal::recvSelf (int commitTag, Channel& theChannel,
                                 FEM_ObjectBroker& theBroker)
 {
    int res = 0;
-   static Vector data(16);
+   static Vector data(17);
    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
    if (res < 0) {
@@ -662,18 +665,19 @@ int SteelECThermal::recvSelf (int commitTag, Channel& theChannel,
       // Material properties
       typeTag = data (1);
 	  fy = data(2);
-      E0 = data(3);
-      a1 = data(4);
-      a2 = data(5);
-      a3 = data(6);
-      a4 = data(7);
+	  E0 = data(3);
+	  b = data(4);
+      a1 = data(5);
+      a2 = data(6);
+      a3 = data(7);
+      a4 = data(8);
 
       // History variables from last converged state
-      CminStrain = data(8);
-      CmaxStrain = data(9);
-      CshiftP = data(10);
-      CshiftN = data(11);
-      Cloading = int(data(12));
+      CminStrain = data(9);
+      CmaxStrain = data(10);
+      CshiftP = data(11);
+      CshiftN = data(12);
+      Cloading = int(data(13));
 
       // Copy converged history values into trial values since data is only
       // sent (received) after convergence
@@ -684,9 +688,9 @@ int SteelECThermal::recvSelf (int commitTag, Channel& theChannel,
       Tloading = Cloading;
 
       // State variables from last converged state
-      Cstrain = data(13);
-      Cstress = data(14);
-      Ctangent = data(15);      
+      Cstrain = data(14);
+      Cstress = data(15);
+      Ctangent = data(16);      
 
       // Copy converged state values into trial values
       Tstrain = Cstrain;
