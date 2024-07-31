@@ -94,6 +94,28 @@ PlasticDamageConcrete3d::PlasticDamageConcrete3d(int tag,
   sigeP.Zero();
   Ce.Zero();
 
+  this->setCe();
+  
+  C = Ce;
+  
+  double f2c = 1.16*fc;
+  double k = sqrt(2.0)*(f2c - fc)/(2.*f2c - fc);
+
+  //      % initial damage threshold
+  double rp0 = ft/sqrt(E);
+  double rn0 = sqrt((-k+sqrt(2.0))*fc/sqrt(3.0));
+      
+  rp = rp0;
+  rn = rn0;
+  dp = 0.;
+  dn = 0.;
+
+  this->commitState();
+}
+
+void
+PlasticDamageConcrete3d::setCe(void)
+{
   // additional material parameters
   double G   = E/2/(1+nu);        //shear modulus
   double  K   = E/3/(1-2*nu);     // bulk  modulus
@@ -126,22 +148,6 @@ PlasticDamageConcrete3d::PlasticDamageConcrete3d(int tag,
 
   Ce.addMatrix(0.0, Ivp, K);
   Ce.addMatrix(1.0,  Id, 2.*G);
-  
-  C = Ce;
-  
-  double f2c = 1.16*fc;
-  double k = sqrt(2.0)*(f2c - fc)/(2.*f2c - fc);
-
-  //      % initial damage threshold
-  double rp0 = ft/sqrt(E);
-  double rn0 = sqrt((-k+sqrt(2.0))*fc/sqrt(3.0));
-      
-  rp = rp0;
-  rn = rn0;
-  dp = 0.;
-  dn = 0.;
-
-  this->commitState();
 }
 
 PlasticDamageConcrete3d::PlasticDamageConcrete3d()
@@ -559,6 +565,7 @@ PlasticDamageConcrete3d::getStrain (void)
 int
 PlasticDamageConcrete3d::commitState (void)
 {
+  Ccommit = C;
   rpCommit = rp;
   rnCommit = rn;
   dpCommit = dp;
@@ -597,6 +604,8 @@ PlasticDamageConcrete3d::revertToStart (void)
   sigeP.Zero();
   Ce.Zero();
 
+  this->setCe();
+  
   return 0;
 }
 
@@ -638,29 +647,97 @@ PlasticDamageConcrete3d::getOrder (void) const
 int 
 PlasticDamageConcrete3d::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(10);
+  static Vector data(1+8+4 + 5*6);
 
-  int res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+  data(0) = this->getTag();
+
+  data(1) = E;
+  data(2) = nu;
+  data(3) = ft;
+  data(4) = fc;
+  data(5) = beta;
+  data(6) = Ap;
+  data(7) = An;
+  data(8) = Bn;
+
+  data(9)  = rpCommit;
+  data(10) = rnCommit;
+  data(11) = dpCommit;
+  data(12) = dnCommit;  
+
+  for (int i = 0; i < 6; i++) {
+    data(13+i) = epsCommit(i);
+    data(13+6+i) = sigCommit(i);
+    data(13+12+i) = sigeCommit(i);
+    data(13+18+i) = eps_pCommit(i);
+    data(13+24+i) = sigePCommit(i);    
+  }
+
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  res = theChannel.sendVector(dbTag, commitTag, data);
   if (res < 0) {
     opserr << "PlasticDamageConcrete3d::sendSelf -- could not send Vector\n";
     return res;
   }
+
+  res = theChannel.sendMatrix(dbTag, commitTag, Ccommit);
+  if (res < 0) {
+    opserr << "PlasticDamageConcrete3d::sendSelf -- could not send Ccommit matrix\n";
+    return res;
+  }  
   
   return res;
 }
 
 int 
 PlasticDamageConcrete3d::recvSelf(int commitTag, Channel &theChannel, 
-					FEM_ObjectBroker &theBroker)
+				  FEM_ObjectBroker &theBroker)
 {
-  static Vector data(10);
-  
-  int res = theChannel.recvVector(this->getDbTag(), commitTag, data);
+  int res = 0;
+  int dbTag = this->getDbTag();
+
+  static Vector data(43);  
+  res = theChannel.recvVector(dbTag, commitTag, data);
   if (res < 0) {
-    opserr << "PlasticDamageConcrete3d::sendSelf -- could not send Vector\n";
+    opserr << "PlasticDamageConcrete3d::recvSelf -- could not receive Vector\n";
     return res;
   }
 
+  this->setTag((int)data(0));
+
+  E = data(1);
+  nu = data(2);
+  ft = data(3);
+  fc = data(4);
+  beta = data(5);
+  Ap = data(6);
+  An = data(7);
+  Bn = data(8);
+
+  rpCommit = data(9);
+  rnCommit = data(10);
+  dpCommit = data(11);
+  dnCommit = data(12);
+
+  for (int i = 0; i < 6; i++) {
+    epsCommit(i) = data(13+i);
+    sigCommit(i) = data(13+6+i);
+    sigeCommit(i) = data(13+12+i);
+    eps_pCommit(i) = data(13+18+i);
+    sigePCommit(i) = data(13+24+i);
+  }
+  
+  res = theChannel.recvMatrix(dbTag, commitTag, Ccommit);
+  if (res < 0) {
+    opserr << "PlasticDamageConcrete3d::recvSelf -- could not receive Ccommit matrix\n";
+    return res;
+  }  
+
+  this->revertToLastCommit();
+  this->setCe();
+  
   return res;
 }
 

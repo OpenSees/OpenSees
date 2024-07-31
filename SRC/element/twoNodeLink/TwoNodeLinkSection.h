@@ -18,41 +18,32 @@
 **                                                                    **
 ** ****************************************************************** */
 
-#ifndef LinearElasticSpring_h
-#define LinearElasticSpring_h
-
-// Written: Andreas Schellenberg (andreas.schellenberg@gmail.com)
-// Created: 03/19
-// Revision: A
-//
-// Description: This file contains the class definition for LinearElasticSpring.
-// LinearElasticSpring is an element defined by two nodes and by a stiffness matrix
-// that can be full and does not be symmetric.
-// This LinearElasticSpring element will work in 1d, 2d or 3d problems.
+#ifndef TwoNodeLinkSection_h
+#define TwoNodeLinkSection_h
 
 #include "Element.h"
 #include <Matrix.h>
 
 class Channel;
-class UniaxialMaterial;
+class SectionForceDeformation;
 class Response;
 
-class LinearElasticSpring : public Element
+class TwoNodeLinkSection : public Element
 {
 public:
     // constructors
-    LinearElasticSpring(int tag, int dimension, int Nd1, int Nd2,
-        const ID &direction, const Matrix &stif,
-        const Vector y = 0, const Vector x = 0,
-        const Vector Mratio = 0, int addRayleigh = 0,
-        const Matrix *damp = 0);
-    LinearElasticSpring();
+    TwoNodeLinkSection(int tag, int dimension, int Nd1, int Nd2,
+		       SectionForceDeformation &section,
+		       const Vector y = 0, const Vector x = 0,
+		       const Vector Mratio = 0, const Vector shearDistI = 0,
+		       int addRayleigh = 0, double mass = 0.0);
+    TwoNodeLinkSection();
     
     // destructor
-    ~LinearElasticSpring();
+    ~TwoNodeLinkSection();
     
     // method to get class type
-    const char *getClassType() const {return "LinearElasticSpring";};
+    const char *getClassType() const {return "TwoNodeLinkSection";};
     
     // public methods to obtain information about dof & connectivity
     int getNumExternalNodes() const;
@@ -72,6 +63,7 @@ public:
     const Matrix &getTangentStiff();
     const Matrix &getInitialStiff();
     const Matrix &getDamp();
+    const Matrix &getMass();
     
     void zeroLoad();
     int addLoad(ElementalLoad *theLoad, double loadFactor);
@@ -90,6 +82,8 @@ public:
     Response *setResponse(const char **argv, int argc, OPS_Stream &s);
     int getResponse(int responseID, Information &eleInfo);
     
+    int setParameter(const char **argv, int argc, Parameter &param);
+
 private:
   // Type of dimension of element NxDy has dimension x=1,2,3 and
   // y=2,4,6,12 degrees-of-freedom for the element
@@ -100,28 +94,30 @@ private:
     void setUp();
     void setTranGlobalLocal();
     void setTranLocalBasic();
-    void addPDeltaForces(Vector& pLocal, const Vector& qBasic);
-    void addPDeltaStiff(Matrix& kLocal, const Vector& qBasic);
-
+    void addPDeltaForces(Vector &pLocal, const Vector &qBasic);
+    void addPDeltaStiff(Matrix &kLocal, const Vector& qBasic);
+  int getDirID(int sectionCode);
+      
     // private attributes - a copy for each object of the class
     int numDIM;                         // 1, 2, or 3 dimensions
-    int numDOF;                         // number of dof for LinearElasticSpring
-    ID connectedExternalNodes;          // contains the tag of the end node
-    Node *theNodes[2];                  // pointer to node
+    int numDOF;                         // number of dof for TwoNodeLinkSection
+    ID connectedExternalNodes;          // contains the tags of the end nodes
+    Node *theNodes[2];                  // array of nodes
+  SectionForceDeformation *theSection;
     
     // parameters
-    int numDIR;         // number of directions
-    ID dir;             // array of directions 0-5
-    Matrix kb;          // stiffness matrix in basic system
-    Matrix *cb;         // damping matrix in basic system
+  //int numDIR;         // number of directions
+  //ID *dir;            // array of directions 0-5
+    Matrix trans;       // transformation matrix for orientation
     Vector x;           // local x direction
     Vector y;           // local y direction
     Vector Mratio;      // p-delta moment distribution ratios
+    Vector shearDistI;  // shear distance from node I as fraction of length
     int addRayleigh;    // flag to add Rayleigh damping
+    double mass;        // total mass
     double L;           // element length
     bool onP0;          // flag to indicate if the element is on P0
     
-    Matrix trans;       // transformation matrix for orientation
     Vector ub;          // trial displacements in basic system
     Vector ubdot;       // trial velocities in basic system
     Vector qb;          // resisting forces in basic system
@@ -134,14 +130,14 @@ private:
     Vector *theLoad;    // pointer to the load vector
     
     // static data - single copy for all objects of the class
-    static Matrix LinearElasticSpringM2;   // class wide matrix for 2*2
-    static Matrix LinearElasticSpringM4;   // class wide matrix for 4*4
-    static Matrix LinearElasticSpringM6;   // class wide matrix for 6*6
-    static Matrix LinearElasticSpringM12;  // class wide matrix for 12*12
-    static Vector LinearElasticSpringV2;   // class wide Vector for size 2
-    static Vector LinearElasticSpringV4;   // class wide Vector for size 4
-    static Vector LinearElasticSpringV6;   // class wide Vector for size 6
-    static Vector LinearElasticSpringV12;  // class wide Vector for size 12
+    static Matrix TwoNodeLinkSectionM2;   // class wide matrix for 2*2
+    static Matrix TwoNodeLinkSectionM4;   // class wide matrix for 4*4
+    static Matrix TwoNodeLinkSectionM6;   // class wide matrix for 6*6
+    static Matrix TwoNodeLinkSectionM12;  // class wide matrix for 12*12
+    static Vector TwoNodeLinkSectionV2;   // class wide Vector for size 2
+    static Vector TwoNodeLinkSectionV4;   // class wide Vector for size 4
+    static Vector TwoNodeLinkSectionV6;   // class wide Vector for size 6
+    static Vector TwoNodeLinkSectionV12;  // class wide Vector for size 12
 };
 
 #endif
