@@ -352,7 +352,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-    else if ((strcmp(argv[1],"RAFourSteetPCPlaneStress") == 0)){
+    else if ((strcmp(argv[1],"RAFourSteelPCPlaneStress") == 0)){
 
       void *theMat = OPS_RAFourSteelPCPlaneStressMaterial();
       if (theMat != 0) 
