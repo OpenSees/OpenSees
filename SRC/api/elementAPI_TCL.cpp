@@ -46,6 +46,7 @@
 #include <WrapperNDMaterial.h>
 #include <LimitCurve.h>
 #include <WrapperLimitCurve.h>
+#include <ReliabilityDomain.h>
 
 #include <OPS_Globals.h>
 
@@ -1295,6 +1296,12 @@ ReliabilityDomain*
 OPS_GetReliabilityDomain(void)
 {
   return theReliabilityDomain;
+}
+
+void
+OPS_SetReliabilityDomain(ReliabilityDomain *theDomain)
+{
+  theReliabilityDomain = theDomain;
 }
 
 void
