@@ -89,6 +89,7 @@ static LimitCurveFunction* theLimitCurveFunctions = NULL;
 
 static Tcl_Interp* theInterp = 0;
 static Domain* theDomain = 0;
+static ReliabilityDomain* theReliabilityDomain = 0;
 
 static TclModelBuilder* theModelBuilder = 0;
 
@@ -1288,6 +1289,12 @@ Domain*
 OPS_GetDomain(void)
 {
     return theDomain;
+}
+
+ReliabilityDomain*
+OPS_GetReliabilityDomain(void)
+{
+  return theReliabilityDomain;
 }
 
 void
