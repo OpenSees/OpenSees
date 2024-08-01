@@ -439,7 +439,6 @@
 #include "shell/ShellNLDKGT.h"
 #include "shell/ASDShellQ4.h" // Massimo Petracca
 #include "shell/ASDShellT3.h" // Massimo Petracca
-#include "shell/ShellANDeS.h"
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
@@ -1097,9 +1096,6 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     
     case ELE_TAG_ASDShellT3:   // Massimo Petracca
       return new ASDShellT3(); // Massimo Petracca
-
-    case ELE_TAG_ShellANDeS:
-      return new ShellANDeS();
 	    
     case ELE_TAG_BbarBrick:
       return new BbarBrick();

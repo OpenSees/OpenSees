@@ -1433,7 +1433,6 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_CatenaryCable] = GMSH_LINE;
     gmshtypes[ELE_TAG_FourNodeTetrahedron] = GMSH_TETRA;
     gmshtypes[ELE_TAG_TriSurfaceLoad] = GMSH_TRIANGLE;
-    gmshtypes[ELE_TAG_ShellANDeS] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellNLDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_InertiaTruss] = GMSH_LINE;

@@ -570,7 +570,6 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ASDShellQ4.o \
 	$(FE)/element/shell/ASDShellT3.o \
 	$(FE)/element/shell/R3vectors.o \
-	$(FE)/element/shell/ShellANDeS.o \
 	$(FE)/element/brick/Brick.o \
 	$(FE)/element/brick/BbarBrick.o \
 	$(FE)/element/brick/BbarBrickWithSensitivity.o \

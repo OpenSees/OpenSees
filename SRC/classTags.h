@@ -820,7 +820,7 @@
 #define ELE_TAG_ForceBeamColumn3dThermal  172  //L.Jiang [SIF] //Still testing
 #define ELE_TAG_ShellMITC4Thermal         173   //L.Jiang [SIF]
 #define ELE_TAG_ShellNLDKGQThermal        174   //L.Jiang [SIF]
-#define ELE_TAG_ShellANDeS                175 //by jaabell (UANDES)
+#define ELE_TAG_DeprecatedShell           175 
 #define ELE_TAG_AxEqDispBeamColumn2d      178
 #define ELE_TAG_FourNodeTetrahedron       179 //by jaabell (UANDES)
 #define ELE_TAG_TriSurfaceLoad            180 //by jaabell (UANDES) 
