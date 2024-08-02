@@ -732,7 +732,8 @@ else
 endif
 
 ifdef H5DRM_FLAG
-	H5DRM = $(FE)/domain/pattern/drm/H5DRM.o
+	H5DRM = 
+# 	$(FE)/domain/pattern/drm/H5DRM.o
 else
 	H5DRM = 
 endif
