@@ -439,7 +439,6 @@
 #include "shell/ShellNLDKGT.h"
 #include "shell/ASDShellQ4.h" // Massimo Petracca
 #include "shell/ASDShellT3.h" // Massimo Petracca
-#include "shell/ShellANDeS.h"
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
@@ -696,7 +695,7 @@
 #include "drm/DRMLoadPatternWrapper.h"
 
 #ifdef _H5DRM
-#include "drm/H5DRM.h"
+//#include "drm/H5DRM.h"
 #endif
 
 #include "Parameter.h"
@@ -1097,9 +1096,6 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     
     case ELE_TAG_ASDShellT3:   // Massimo Petracca
       return new ASDShellT3(); // Massimo Petracca
-
-    case ELE_TAG_ShellANDeS:
-      return new ShellANDeS();
 	    
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
@@ -2493,10 +2489,10 @@ FEM_ObjectBrokerAllClasses::getNewLoadPattern(int classTag)
 	case PATTERN_TAG_DRMLoadPattern:
 	     return new DRMLoadPatternWrapper();
 
-#ifdef _H5DRM
-    case PATTERN_TAG_H5DRM:
-         return new H5DRM();
-#endif
+// #ifdef _H5DRM
+//     case PATTERN_TAG_H5DRM:
+//          return new H5DRM();
+// #endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrLoadPattern - ";
 	     opserr << " - no Load type exists for class tag ";

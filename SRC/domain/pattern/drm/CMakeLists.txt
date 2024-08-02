@@ -24,14 +24,14 @@ target_sources(OPS_Domain
     PlaneDRMInputHandler.h
 )
 
-if (HDF5_FOUND)
-target_sources(OPS_Domain
-    PRIVATE
-        H5DRM.cpp
-    PUBLIC
-        H5DRM.h    
-)
-endif()
+# if (HDF5_FOUND)
+# target_sources(OPS_Domain
+#     PRIVATE
+#         H5DRM.cpp
+#     PUBLIC
+#         H5DRM.h    
+# )
+# endif()
 
 target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

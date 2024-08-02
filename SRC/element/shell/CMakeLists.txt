@@ -10,7 +10,6 @@ target_sources(OPS_Element
         ASDShellQ4.cpp
         ASDShellT3.cpp
         R3vectors.cpp
-        ShellANDeS.cpp
         ShellDKGQ.cpp
         ShellDKGT.cpp
         ShellMITC4.cpp
@@ -31,7 +30,6 @@ target_sources(OPS_Element
         ASDShellT3LocalCoordinateSystem.h
         ASDShellT3Transformation.h
         R3vectors.h
-        ShellANDeS.h
         ShellDKGQ.h
         ShellDKGT.h
         ShellMITC4.h
