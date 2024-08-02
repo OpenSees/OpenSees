@@ -41,7 +41,7 @@ class BeamGT : public Element
     BeamGT(int tag, 
               int Nd1, int Nd2,
              UniaxialMaterial &theMaterial, UniaxialMaterial &theMaterial2, UniaxialMaterial &theMaterial3,
-              double LP1, double LP2, double LR, double FC, int NITE, double TOL);
+              double LP1, double LP2, double LR, double FC);
 
 
 
@@ -122,8 +122,7 @@ class BeamGT : public Element
 	double dcur2c;
 	double dgamc;
 	double daxc;
-    int NITE;
-    double TOL;
+
 
 
 	Node *theNodes[2];  // node pointers
