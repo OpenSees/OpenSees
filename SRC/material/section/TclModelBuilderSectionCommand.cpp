@@ -2531,7 +2531,8 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 			//SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 
 			SectionForceDeformation *section = 0;
-			section = new FiberSection3dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
+            section = new FiberSection3dThermal(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid); // GR
+            // section = new FiberSection3dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
 
 			// Delete fibers
 			for (i = 0; i < numFibers; i++)

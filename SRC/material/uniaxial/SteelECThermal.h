@@ -42,7 +42,7 @@
 class SteelECThermal : public UniaxialMaterial
 {
   public:
-    SteelECThermal(int tag, int typeTag, double fy, double E0, 
+    SteelECThermal(int tag, int typeTag, double fy, double E0, double b,
 		   double a1 = STEEL_01_DEFAULT_A1, double a2 = STEEL_01_DEFAULT_A2,
 		   double a3 = STEEL_01_DEFAULT_A3, double a4 = STEEL_01_DEFAULT_A4);
     SteelECThermal();
@@ -97,7 +97,7 @@ class SteelECThermal : public UniaxialMaterial
     double fyT;
     double E0T;
     double fp; 
-    double TemperautreC;
+    double TemperatureC;
     /////For Temperature-dependent properties///////////////////////////////////end 
     
     
