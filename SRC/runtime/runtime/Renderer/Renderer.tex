@@ -1,0 +1,181 @@
+%File: ~/OOP/renderer/Renderer.tex
+%What: "@(#) Renderer.tex, revA"
+
+UNDER CONSTRUCTION .. POLYGONS and COLORMAP NEED A RETHINK.
+
+\noindent {\bf Files}   \\
+\indent \#include $<\tilde{ }$/earthquake/Renderer.h$>$  \\
+
+\noindent {\bf Class Declaration}  \\
+\indent class Renderer   \\
+
+\noindent {\bf Class Hierarchy} \\
+\indent {\bf Renderer} \\
+
+\noindent {\bf Description} \\ 
+\indent 
+The Renderer class is an abstract class which is introduced to allow
+the graphical display of the 3d finite element model. The Renderer class
+is an abstract class, it defines the interface all concrete subclasses
+must provide. In common with most rendering packages, the interface
+allows only for the displaying of a few basic primitive objects, lines
+and polygons (commercial renderers offer others such as cubes,
+circles, cones). By providing only a few basic primitives, the
+interface will allow complicated scenes to be created (much like the
+ten digits 0-9 allows an infinite number of numbers to be created).
+
+Unlike commercial renderers there is no concept of the optical
+properties of materials and light sources in the interface. This is
+because the image the analyst is looking for is not a photo realistic
+image of the model, rather an image indicating the basic model,
+stresses, and nodal displacements.   \\
+
+\noindent {\bf Class Interface} \\
+\indent // Constructor \\ 
+\indent {\em Renderer(ColorMap \&theMap);}\\ \\
+\indent // Destructor \\ 
+\indent {\em virtual $\tilde{ }$Renderer();}\\  \\
+\indent // Public Methods to display the Model\\ 
+\indent // Public Methods invoked at start or end of a rendering\\ 
+\indent {\em virtual int clearImage(void) =0;}\\
+\indent {\em virtual int startImage(void) =0;}\\
+\indent {\em virtual int doneImage(void) =0;}\\ \\
+\indent // Public Methods invoked by the Objects to Display Themselves\\
+\indent {\em virtual int drawLine(const Vector \&, const Vector \&, 
+float V1, float V2) =0;}\\
+\indent {\em virtual int drawLine(const Vector \&, const Vector \&, 
+donst Vector \&rgb1, const Vector \&rgb2) =0;}\\
+\indent {\em virtual int drawPolygon(const Vector *, const Vector \&);} \\
+\indent {\em virtual int drawVector(const Vector \&position, 
+const Vector \&value);}\\
+\indent {\em virtual int drawGText(const Vector \&posGlobal, 
+char *string, int length);}\\
+\indent {\em virtual int drawLText(const Vector \&posLocal, 
+char *string, int length); }\\
+\indent {\em void setColorMap(ColorMap \&theMap);}\\ \\
+\indent // Public Methods invoked to set up the viewing system \\
+\indent {\em virtual int setVRP(float x, float y, float z) =0;}\\
+\indent {\em virtual int setVPN(float x, float y, float z) =0;}\\
+\indent {\em virtual int setVUP(float x, float y, float z) =0;}\\
+\indent {\em virtual int setViewWindow(float uMin, float uMax, float
+vMin, float vMax) =0;}\\
+\indent {\em    virtual int setPlaneDist(float nearPlane, float farPlane) =0;}\\
+\indent {\em    virtual int setProjectionMode(int) =0;}\\ 
+\indent {\em    virtual int setFillMode(int) =0;}\\
+\indent {\em    virtual int setPRP(float u, float v, float n) =0;}\\
+\indent {\em    virtual int setPortWindow(float, float, float, float) =0;}\\
+
+
+\noindent {\bf Constructor} \\ 
+\indent {\em Renderer(Domain \&theDomain, ColorMap \&theMap);}\\ 
+Keeps a pointer to Domain object {\em theDomain} and the ColorMap
+object {\em theMap}. \\
+
+\noindent {\bf Destructor} \\
+\indent {\em virtual $\tilde{ }$Renderer();}\\  
+Does Noting. \\
+
+\noindent {\bf Public Methods} \\
+\indent {\em virtual int clearImage(void) =0;}\\
+Invoked to clear the image. This is required if multiple images can be
+displayed at once for example in a graphic window. \\
+
+\indent {\em virtual int startImage(void) =0;}\\
+Invoked at the start of {\em displayModel()}, when the image is about
+to be displayed. \\
+
+\indent {\em virtual int doneImage(void) =0;}\\
+Invoked at the end of {\em displayModel()}, when the image is finished
+and ready to be displayed. \\
+
+\indent {\em virtual int drawLine(const Vector \&end1, const Vector \&end2, 
+float V1, float V2) =0;}\\
+Invoked to draw a line in the image. The two vectors {\em end1} and
+{\em end2} define the two end points in the 3d coordinate system, the
+values {\em V1} and {\em V2} define the scalar quantity to be
+displayed. To return $0$ if successful, a negative number if not.\\
+
+
+
+\indent {\em virtual int drawPolygon(const Vector *ends, const Vector
+\&values);} \\ 
+Invoked to draw a polygon in the image. The Vectors pointed to in {\em
+ends} define the end points of the polygon and the Vector {\em values}
+define the scalar quantities to be displayed. Note that there must
+be at least {\em values.Size()} Vectors pointed to at the start of
+{\em ends}, otherwise a segmentation fault will occur. To return $0$
+if successful, a negative number if not.\\
+
+\indent {\em virtual int drawVector(const Vector \&position, 
+const Vector \&value);}\\
+Invoked to draw a vector in the image. The vector is to be drawn
+at position {\em position}. The magnitude and direction of the vector
+are given in {\em value}. To return $0$ if successful, a negative
+number if not.\\ 
+
+
+\indent {\em virtual int drawGText(const Vector \&posGlobal, 
+char *string, int length);}\\
+Invoked to draw a string of text in the image at position {\em
+posGlobal}. The position is in the 3d model coordinates. The length of
+the string is {\em length}. To return $0$ if successful, a negative
+number if not.\\ 
+
+
+\indent {\em virtual int drawLText(const Vector \&posLocal, 
+char *string, int length); }\\
+Invoked to draw a string of text in the image at position {\em
+posGlobal}. The position is in the 3d model coordinates. The length of
+the string is {\em length}. To return $0$ if successful, a negative
+number if not.\\ 
+
+\indent {\em void setColorMap(ColorMap \&theMap);}\\
+To set the ColorMap used in the {\em draw()} routines. The ColorMap
+object is used to convert scalar quantities into rgb values. 
+
+
+\indent {\em virtual int setVRP(float x, float y, float z) =0;}\\
+Invoked to set the VRP. The VRP is a point on the viewing plane, which
+is that plane in the global coordinate system on which the 3d image is
+projected. The point is given in the global coordinate system. \\
+
+\indent {\em virtual int setVPN(float x, float y, float z) =0;}\\
+Invoked to set the VPN. The VPN defines the perpendicular to the
+viewing plane. \\
+
+\indent {\em virtual int setVUP(float x, float y, float z) =0;}\\
+Invoked to set the VUP. The VUP defines the up direction of the
+viewing plane. The combination of VRP, VPN and VUP define a new local
+coordinate system centered at VRP, with axis u,v,n, where the
+direction of u is given by $vuv \% vpn$, v by $vpn \% u$ and n
+finishes off the rhs local system. \\
+
+\indent {\em virtual int setViewWindow(float uMin, float uMax, float
+vMin, float vMax) =0;}\\
+Invoked to set the bounds of the image on the view plane which is then
+scaled to fit into the image displayed. The values provided are in the
+local coordinate system. \\
+
+\indent {\em virtual int setPlaneDist(float nearPlane, float farPlane)
+=0;}\\
+Sets the distance to the near and far clipping planes. \\
+
+\indent {\em    virtual int setProjectionMode(int mode) =0;}\\ 
+Sets the projection mode. If mode is $0$ a parallel projection of the
+image onto the viewing plane will be displayed, if $1$ a perspective
+projection. \\
+
+\indent {\em    virtual int setFillMode(int mode) =0;}\\
+Sets the fill mode for solid shapes, i.e. polygons. If {\em mode} is
+$0$ a wire frame image will be displayed, otherwise solid shapes will
+be filled. \\
+
+\indent {\em    virtual int setPRP(float u, float v, float n) =0;}\\
+Sets the PRP. The PRP defines the eye location of the viewer. It is
+important to note that the eye location is specified in the new local
+coordinate system. \\
+
+\indent {\em    virtual int setPortWindow(float, float, float, float)
+=0;}\\ 
+Sets the portwindow. The portwindow is that region of the display
+into which the image is displayed. The range is [-1,1.-1.1]. \\
