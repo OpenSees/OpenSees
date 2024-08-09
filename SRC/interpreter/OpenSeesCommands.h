@@ -376,6 +376,9 @@ int OPS_partition();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
+int OPS_filter();
+int OPS_spectrum();
+int OPS_modulatingFunction();
 int OPS_getRVTags();
 int OPS_getRVParamTag();
 int OPS_getRVValue();
@@ -398,11 +401,13 @@ int OPS_meritFunctionCheck();
 int OPS_stepSizeRule();
 int OPS_rootFinding();
 int OPS_findDesignPoint();
+int OPS_findCurvatures();
 int OPS_functionEvaluator();
 int OPS_gradientEvaluator();
 int OPS_wipeReliability();
 int OPS_runFOSMAnalysis();
 int OPS_runFORMAnalysis();
+int OPS_runSORMAnalysis();
 int OPS_runImportanceSamplingAnalysis();
 ReliabilityDomain* OPS_GetReliabilityDomain();
 
