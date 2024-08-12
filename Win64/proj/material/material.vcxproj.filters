@@ -1547,6 +1547,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\APDVFD.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2818,6 +2821,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.h">
       <Filter>section\LayeredMembraneSection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
