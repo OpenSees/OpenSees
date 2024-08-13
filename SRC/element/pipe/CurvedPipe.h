@@ -57,7 +57,8 @@ class CurvedPipe : public Element {
     CurvedPipe(int tag, int Nd1, int Nd2, PipeMaterial &mat,
                PipeSection &sect, const Vector &c, double to = 0.0,
                double pre = 0.0, double tol = 0.1,
-               bool inter = false);
+               bool inter = false,
+               bool tl = true, bool pl = true);
 
     ~CurvedPipe();
 

@@ -48,8 +48,10 @@ class Pipe : public Element {
     PipeMaterial *theMat;
     PipeSection *theSect;
 
-    double T0;        // stress free temperature
-    double pressure;  // internal pressure
+    double T0;          // stress free temperature
+    double pressure;    // internal pressure
+    bool thermalLoad;   // include thermal load
+    bool pressureLoad;  // include internal pressure load
 
     Matrix K;
     Vector P;
@@ -71,7 +73,8 @@ class Pipe : public Element {
    public:
     Pipe();
     Pipe(int tag, int Nd1, int Nd2, PipeMaterial &mat,
-         PipeSection &sect, double to = 0.0, double pre = 0.0);
+         PipeSection &sect, double to = 0.0, double pre = 0.0,
+         bool tl = true, bool pl = true);
 
     ~Pipe();
 
@@ -135,6 +138,8 @@ class Pipe : public Element {
     PipeSection *getSection() { return theSect; }
     double getT0() { return T0; }
     double getPressure() { return pressure; }
+    bool inclThermalLoad() { return thermalLoad; }
+    bool inclPressureLoad() { return pressureLoad; }
     void initLoad();
     void getSectionForce(double xL, Vector &s);
 };

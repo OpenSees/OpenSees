@@ -55,7 +55,8 @@ void *OPS_CurvedPipeElement() {
         opserr << "Invalid #args,  want: element CurvedPipe "
                   "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
                   "xC? yC? zC?"
-                  "<-T0 T0? -p p? -tolWall? tolWall? -TI?>\n";
+                  "<-T0 T0? -p p? -tolWall? tolWall? -TI? "
+                  "-noThermalLoad? -noPressureLoad?>\n";
         return 0;
     }
 
@@ -79,6 +80,7 @@ void *OPS_CurvedPipeElement() {
 
     // get data
     double T0 = 0.0, pressure = 0.0;
+    bool thermalLoad = true, pressureLoad = true;
     double tolWall = 0.1;
     numData = 1;
     bool inter = false;
@@ -99,6 +101,10 @@ void *OPS_CurvedPipeElement() {
                     return 0;
                 }
             }
+        } else if (strcmp(theType, "-noThermalLoad") == 0) {
+            thermalLoad = false;
+        } else if (strcmp(theType, "-noPressureLoad") == 0) {
+            pressureLoad = false;
         } else if (strcmp(theType, "-tolWall") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
                 if (OPS_GetDoubleInput(&numData, &tolWall) < 0) {
@@ -134,9 +140,9 @@ void *OPS_CurvedPipeElement() {
         return 0;
     }
 
-    auto *ele = new CurvedPipe(iData[0], iData[1], iData[2], *theMat,
-                               *theSect, center, T0, pressure,
-                               tolWall, inter);
+    auto *ele = new CurvedPipe(
+        iData[0], iData[1], iData[2], *theMat, *theSect, center, T0,
+        pressure, tolWall, inter, thermalLoad, pressureLoad);
 
     return ele;
 }
@@ -158,7 +164,8 @@ CurvedPipe::CurvedPipe()
 
 CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
                        PipeSection &sect, const Vector &c, double to,
-                       double pre, double tol, bool inter)
+                       double pre, double tol, bool inter, bool tload,
+                       bool pload)
     : Element(tag, ELE_TAG_CurvedPipe),
       pipeEle(0),
       center(3),
@@ -171,7 +178,8 @@ CurvedPipe::CurvedPipe(int tag, int nd1, int nd2, PipeMaterial &mat,
       alg(),
       abl() {
     // pipe element
-    pipeEle = new Pipe(tag, nd1, nd2, mat, sect, to, pre);
+    pipeEle =
+        new Pipe(tag, nd1, nd2, mat, sect, to, pre, tload, pload);
     if (pipeEle == 0) {
         opserr << "WARNING: failed to create an internal pipe "
                   "element -- CurvedPipe\n";
@@ -939,13 +947,13 @@ int CurvedPipe::kb(Matrix &mat, Vector &vec) {
 
     // ub0 due to thermal
     double dT = pipeEle->aveTemp();
-    if (dT > 0) {
+    if (dT > 0 && pipeEle->inclThermalLoad()) {
         ubnovec(0) += 2 * R * alp * dT * sin(theta0);
     }
 
     // ub0 due to internal pressure
     double pressure = pipeEle->getPressure();
-    if (pressure != 0) {
+    if (pressure != 0 && pipeEle->inclPressureLoad()) {
         double dout = pipeEle->getSection()->DOUT();
         double thk = pipeEle->getSection()->WALL();
 
