@@ -33,9 +33,10 @@
 void *OPS_PipeElement() {
     // check inputs
     if (OPS_GetNumRemainingInputArgs() < 5) {
-        opserr << "Invalid #args,  want: element pipe "
-                  "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
-                  "<-T0 T0? -p p?>\n";
+        opserr
+            << "Invalid #args,  want: element pipe "
+               "tag? nd1? nd2? pipeMatTag? pipeSecTag?"
+               "<-T0 T0? -p p? -noThermalLoad? -noPressureLoad?>\n";
         return 0;
     }
 
@@ -49,6 +50,7 @@ void *OPS_PipeElement() {
 
     // get data
     double T0 = 0.0, pressure = 0.0;
+    bool thermalLoad = true, pressureLoad = true;
     numData = 1;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         const char *theType = OPS_GetString();
@@ -59,14 +61,10 @@ void *OPS_PipeElement() {
                     return 0;
                 }
             }
-        } else if (strcmp(theType, "-p") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                if (OPS_GetDoubleInput(&numData, &pressure) < 0) {
-                    opserr << "WARNING: failed to read internal "
-                              "pressure\n";
-                    return 0;
-                }
-            }
+        } else if (strcmp(theType, "-noThermalLoad") == 0) {
+            thermalLoad = false;
+        } else if (strcmp(theType, "-noPressureLoad") == 0) {
+            pressureLoad = false;
         }
     }
 
@@ -98,6 +96,8 @@ Pipe::Pipe()
       theSect(0),
       T0(0.0),
       pressure(0.0),
+      thermalLoad(true),
+      pressureLoad(true),
       K(12, 12),
       P(12),
       Q(12),
@@ -117,12 +117,15 @@ Pipe::Pipe()
 }
 
 Pipe::Pipe(int tag, int nd1, int nd2, PipeMaterial &mat,
-           PipeSection &sect, double t0, double pre)
+           PipeSection &sect, double t0, double pre, bool tload,
+           bool pload)
     : Element(tag, ELE_TAG_Pipe),
       theMat(0),
       theSect(0),
       T0(t0),
       pressure(pre),
+      thermalLoad(tload),
+      pressureLoad(pload),
       K(12, 12),
       P(12),
       Q(12),
@@ -520,12 +523,11 @@ void Pipe::zeroLoad(void) {
 
     // q0 due to thermal
     double temp = aveTemp();
-    if (temp > 0) {
+    if (temp > 0 && thermalLoad) {
         q0[0] -= E * A * alp * temp;
     }
-
     // q0 due to internal pressure
-    if (pressure != 0) {
+    if (pressure != 0 && pressureLoad) {
         double dout = theSect->DOUT();
         double thk = theSect->WALL();
 
