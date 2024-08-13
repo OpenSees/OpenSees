@@ -358,6 +358,9 @@ Domain::~Domain()
 
   if (theParameters != 0)
     delete theParameters;
+
+  if (paramIndex != 0)
+    delete [] paramIndex;
   
   if (theEleIter != 0)
     delete theEleIter;

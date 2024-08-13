@@ -254,6 +254,7 @@
 #define MAT_TAG_CoulombDamperMaterial 228
 #define MAT_TAG_FlagShapeMaterial 229
 #define MAT_TAG_CreepMaterial 230
+#define MAT_TAG_ASDConcrete1DMaterial 231
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -393,6 +394,7 @@
 #define ND_TAG_Damage2p3D 			24
 #define ND_TAG_Damage2ppstress 			25
 #define ND_TAG_SimplifiedJ2                     26
+#define ND_TAG_PlaneStressSimplifiedJ2                     2626
 #define ND_TAG_CapPlasticity                    27
 #define ND_TAG_PlaneStressUserMaterial          28
 #define ND_TAG_PlateFromPlaneStressMaterial     29
@@ -411,6 +413,7 @@
 #define ND_TAG_MaterialCMM                        42
 #define ND_TAG_FSAM                               43
 #define ND_TAG_PlasticDamageConcrete3d            44
+#define ND_TAG_PlasticDamageConcretePlaneStress            4444
 #define ND_TAG_PlaneStressLayeredMaterial         45
 #define ND_TAG_PlaneStressRebarMaterial           46
 #define ND_TAG_Faria1998PlaneStrain               48
@@ -534,6 +537,7 @@
 #define ND_TAG_PlateFromPlaneStressMaterialThermal 7008   //L.Jiang[SIF]
 
 #define ND_TAG_InitStressNDMaterial 7009
+#define ND_TAG_MinMaxNDMaterial 70091
 
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
@@ -727,6 +731,7 @@
 #define ELE_TAG_ElastomericBearingPlasticity3d 84
 #define ELE_TAG_ElastomericBearingPlasticity2d 85
 #define ELE_TAG_TwoNodeLink             86
+#define ELE_TAG_TwoNodeLinkSection           86001
 #define ELE_TAG_ActuatorCorot           87
 #define ELE_TAG_Actuator                88
 #define ELE_TAG_Adapter                 89

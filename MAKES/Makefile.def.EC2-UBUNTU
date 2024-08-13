@@ -77,7 +77,8 @@ GRAPHIC_FLAG = -D_NOGRAPHICS
 PROGRAMMING_MODE = SEQUENTIAL
 DEBUG_MODE = NO_DEBUG
 RELIABILITY = NO_RELIABILITY
-
+RELIABILITY = YES_RELIABILITY
+RELIABILITY_FLAG = -D_RELIABILITY
 
 # %---------------------------------%
 # |  SECTION 2: PATHS               |
@@ -88,7 +89,6 @@ RELIABILITY = NO_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= ./usr/local
-HOME		= ./home
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD
@@ -134,6 +134,7 @@ AMD_LIBRARY  = $(HOME)/lib/libAMD.a
 UMFPACK_LIBRARY = $(HOME)/lib/libUmfpack.a
 METIS_LIBRARY   = $(HOME)/lib/libMetis.a
 CSPARSE_LIBRARY   = $(HOME)/lib/libCSparse.a
+RELIABILITY_LIBRARY = $(HOME)/lib/libReliability.a
 
 TCL_LIBRARY = /usr/lib/x86_64-linux-gnu/libtcl8.6.so
 
@@ -149,7 +150,8 @@ WIPE_LIBS	= $(FE_LIBRARY) \
 		$(ARPACK_LIBRARY) \
 		$(UMFPACK_LIBRARY) \
 		$(CSPARSE_LIBRARY) \
-	        $(METIS_LIBRARY)
+	        $(METIS_LIBRARY) \
+		$(RELIABILITY_LIBRARY)
 
 # %---------------------------------------------------------%
 # | SECTION 4: COMPILERS                                    |
@@ -181,7 +183,7 @@ RANLIBFLAGS     =
 ifeq ($(INTERPRETER_LANGUAGE), PYTHON)
 
 
-C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
+C++FLAGS         = -Wall -D_LINUX -D_UNIX -D_PYTHON3 -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
 	$(PROGRAMMING_FLAG) -fPIC -ffloat-store 
 CFLAGS          = -Wall -fPIC
@@ -193,11 +195,11 @@ LINKFLAGS       = -g -pg
 
 else
 
-C++FLAGS         = -Wall -D_LINUX -D_UNIX  -D_TCL85  \
+C++FLAGS         = -Wall -D_LINUX -D_UNIX -D_PYTHON3 -D_TCL85  \
 	$(GRAPHIC_FLAG) $(RELIABILITY_FLAG) $(DEBUG_FLAG) \
-	$(PROGRAMMING_FLAG) -O3 -ffloat-store 
-CFLAGS          = -Wall -O2
-FFLAGS          = -Wall -O -fallow-argument-mismatch
+	$(PROGRAMMING_FLAG) -O3 -ffloat-store -fPIC
+CFLAGS          = -Wall -O2 -fPIC
+FFLAGS          = -Wall -O -fallow-argument-mismatch -fPIC
 
 # Linker
 LINKER          = $(CC++)
@@ -261,7 +263,7 @@ SHELL           = /bin/sh
 MACHINE_LINKLIBS  = -L$(BASE)/lib \
 		-L$(HOME)/lib 
 
-MACHINE_NUMERICAL_LIBS  = -lm \
+MACHINE_NUMERICAL_LIBS  = $(RELIABILITY_LIBRARY) -lm \
 		$(ARPACK_LIBRARY) \
 		$(SUPERLU_LIBRARY) \
 		$(UMFPACK_LIBRARY) $(CSPARSE_LIBRARY) \
@@ -289,7 +291,7 @@ include $(FE)/Makefile.incl
 
 #TCL_INCLUDES = -I/usr/includes/tcl-private/generic
 TCL_INCLUDES = -I/usr/include/tcl8.6
-PYTHON_INCLUDES = -I/usr/include/python3.5
+PYTHON_INCLUDES = -I/usr/include/python3.10
 
 INCLUDES = $(TCL_INCLUDES) $(FE_INCLUDES) $(MACHINE_INCLUDES) $(PYTHON_INCLUDES)
 

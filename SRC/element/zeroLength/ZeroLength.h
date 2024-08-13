@@ -47,11 +47,6 @@
 // Tolerance for zero length of element
 #define	LENTOL 1.0e-6
 
-// Type of dimension of element NxDy has dimension x=1,2,3 and
-// y=2,4,6,12 degrees-of-freedom for the element
-enum Etype { D1N2, D2N4, D2N6, D3N6, D3N12 };
-
-
 class Node;
 class Channel;
 class UniaxialMaterial;
@@ -164,7 +159,10 @@ class ZeroLength : public Element
   protected:
     
   private:
-    Etype elemType;
+  // Type of dimension of element NxDy has dimension x=1,2,3 and
+  // y=2,4,6,12 degrees-of-freedom for the element
+  enum Etype { D1N2, D2N4, D2N6, D3N6, D3N12 };
+  Etype elemType;
 
     // private methods
     void   setUp ( int Nd1, int Nd2, const Vector& x, const Vector& y);

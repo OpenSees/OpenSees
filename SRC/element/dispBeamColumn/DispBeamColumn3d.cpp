@@ -233,7 +233,7 @@ void *OPS_DispBeamColumn3d(const ID &info) {
 
         // get the data for a mesh
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 5) return 0;
+        if (mdata.Size() < 4) return 0;
 
         iData[0] = info(2);
         iData[1] = info(3);
