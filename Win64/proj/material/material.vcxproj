@@ -211,6 +211,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\J2ThreeDimensionalThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.cpp" />
@@ -292,6 +293,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CableMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Cast.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02.cpp" />
@@ -686,6 +688,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\J2ThreeDimensionalThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.h" />
@@ -754,6 +757,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CableMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Cast.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02.h" />

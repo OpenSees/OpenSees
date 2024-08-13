@@ -216,6 +216,7 @@ GLF_LIBS = $(FE)/element/zeroLength/ZeroLength.o \
 REMO_LIBS = $(FE)/element/nonlinearBeamColumn/matrixutil/MatrixUtil.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn2dThermal.o \
+        $(FE)/element/forceBeamColumn/ForceBeamColumn3dThermal.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnCBDI2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumnWarping2d.o \
 	$(FE)/element/forceBeamColumn/ForceBeamColumn3d.o \
@@ -612,6 +613,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/frictionBearing/frictionModel/VelDepMultiLinear.o \
 	$(FE)/element/twoNodeLink/LinearElasticSpring.o \
 	$(FE)/element/twoNodeLink/TwoNodeLink.o \
+	$(FE)/element/twoNodeLink/TwoNodeLinkSection.o \
 	$(FE)/element/twoNodeLink/Inerter.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
 	$(FE)/element/triangle/Tri31.o \
@@ -772,6 +774,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/FlagShapeMaterial.o \
 	$(FE)/material/uniaxial/Neoprene.o \
 	$(FE)/material/uniaxial/ASD_SMA_3K.o \
+	$(FE)/material/uniaxial/ASDConcrete1DMaterial.o \
 	$(FE)/material/uniaxial/Concrete01.o \
 	$(FE)/material/uniaxial/Concrete02.o \
 	$(FE)/material/uniaxial/Concrete02IS.o \
@@ -960,6 +963,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
 	$(FE)/material/nD/InitStressNDMaterial.o \
 	$(FE)/material/nD/InitStrainNDMaterial.o \
+	$(FE)/material/nD/MinMaxNDMaterial.o \
 	$(FE)/material/nD/matCMM/MaterialCMM.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \

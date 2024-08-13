@@ -17,6 +17,7 @@ void* OPS_PlateFiberMaterialThermal();
 void* OPS_ReinforcedConcretePlaneStressMaterial();
 void* OPS_InitStressNDMaterial();
 void* OPS_InitStrainNDMaterial();
+void* OPS_MinMaxNDMaterial();
 void* OPS_J2BeamFiber2dMaterial();
 void* OPS_J2BeamFiber3dMaterial();
 void* OPS_J2PlateFibreMaterial();
@@ -120,6 +121,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("InitStressND", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStress", &OPS_InitStressNDMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitStrain", &OPS_InitStrainNDMaterial));
+	nDMaterialsMap.insert(std::make_pair("MinMax", &OPS_MinMaxNDMaterial));	
 	nDMaterialsMap.insert(std::make_pair("J2BeamFiber", &J2BeamFiber2Dor3D));
 	nDMaterialsMap.insert(std::make_pair("J2PlateFibre", &OPS_J2PlateFibreMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAReinforcedConcretePlaneStress", &OPS_FAReinforcedConcretePlaneStressMaterial));
@@ -131,7 +133,7 @@ namespace {
 #endif
 	nDMaterialsMap.insert(std::make_pair("PrestressedConcretePlaneStress", &OPS_PrestressedConcretePlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAPrestressedConcretePlaneStress", &OPS_FAPrestressedConcretePlaneStressMaterial));
-	nDMaterialsMap.insert(std::make_pair("RAFourSteetPCPlaneStress", &OPS_RAFourSteelPCPlaneStressMaterial));
+	nDMaterialsMap.insert(std::make_pair("RAFourSteelPCPlaneStress", &OPS_RAFourSteelPCPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("FAFourSteelPCPlaneStress", &OPS_FAFourSteelPCPlaneStressMaterial));
 	nDMaterialsMap.insert(std::make_pair("DruckerPrager", &OPS_DruckerPragerMaterial));
 	nDMaterialsMap.insert(std::make_pair("TruncatedDP", &OPS_LinearCap));
