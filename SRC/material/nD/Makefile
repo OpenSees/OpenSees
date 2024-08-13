@@ -112,7 +112,7 @@ all: $(OBJS)
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE);
 	@$(CD) $(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01; $(MAKE);
 	@$(CD) $(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01; $(MAKE);
-# 	@$(CD) $(FE)/material/nD/ASDPlasticMaterial; $(MAKE);
+	@$(CD) $(FE)/material/nD/ASDPlasticMaterial3D; $(MAKE);
 
 test: $(OBJS) main.o
 	$(LINKER) $(LINKFLAGS) main.o ../../../SRC/api/elementAPI_Dummy.o $(FE_LIBRARY) \
@@ -141,7 +141,7 @@ spotless: clean
 	@$(CD) $(FE)/material/nD/UANDESmaterials; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01; $(MAKE) wipe;
 	@$(CD) $(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01; $(MAKE) wipe;
-	@$(CD) $(FE)/material/nD/ASDPlasticMaterial; $(MAKE) wipe;
+	@$(CD) $(FE)/material/nD/ASDPlasticMaterial3D; $(MAKE) wipe;
 	
 
 wipe: spotless
