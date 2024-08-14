@@ -554,7 +554,7 @@
 #define ND_TAG_SmearedSteelDoubleLayerT2DMaterial01 7019		  // M. J. Nunez - UChile
 
 #define ND_TAG_InitStrainNDMaterial 7020 // Massimo Petracca ASDEA Software
-#define ND_TAG_ASDPlasticMaterial 10000 // For ASDPlasticity-class material
+#define ND_TAG_ASDPlasticMaterial3D 10000 // For ASDPlasticity-class material
 
 
 #define FIBER_TAG_Uniaxial2d	1

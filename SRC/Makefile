@@ -732,8 +732,7 @@ else
 endif
 
 ifdef H5DRM_FLAG
-	H5DRM = 
-# 	$(FE)/domain/pattern/drm/H5DRM.o
+	H5DRM =  $(FE)/domain/pattern/drm/H5DRMLoadPattern.o
 else
 	H5DRM = 
 endif
@@ -1068,9 +1067,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/stressDensityModel/stressDensity.o \
 	$(FE)/material/nD/stressDensityModel/SDM-UC.o \
 	$(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.o \
-	$(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.o
-
-# 	$(FE)/material/nD/ASDPlasticMaterial/OPS_AllASDPlasticMaterials.o \
+	$(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.o \
+ 	$(FE)/material/nD/ASDPlasticMaterial/OPS_AllASDPlasticMaterials.o
 
 FEDEAS_LIBS = $(FE)/material/uniaxial/FedeasMaterial.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHardeningMaterial.o \

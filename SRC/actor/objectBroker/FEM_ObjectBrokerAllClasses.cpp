@@ -695,7 +695,7 @@
 #include "drm/DRMLoadPatternWrapper.h"
 
 #ifdef _H5DRM
-//#include "drm/H5DRM.h"
+#include "drm/H5DRMLoadPattern.h"
 #endif
 
 #include "Parameter.h"
@@ -2489,10 +2489,10 @@ FEM_ObjectBrokerAllClasses::getNewLoadPattern(int classTag)
 	case PATTERN_TAG_DRMLoadPattern:
 	     return new DRMLoadPatternWrapper();
 
-// #ifdef _H5DRM
-//     case PATTERN_TAG_H5DRM:
-//          return new H5DRM();
-// #endif
+#ifdef _H5DRM
+    case PATTERN_TAG_H5DRM:
+         return new H5DRMLoadPattern();
+#endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrLoadPattern - ";
 	     opserr << " - no Load type exists for class tag ";
