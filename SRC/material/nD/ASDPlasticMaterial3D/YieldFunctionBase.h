@@ -66,7 +66,7 @@ struct yf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<type
         const ParameterStorageType& parameters_storage)
 
 #define YIELD_FUNCTION_XI_STAR_H_STAR template <typename IVStorageType, typename ParameterStorageType> \
-    double xi_star_h_star(const VoigtVector& depsilon, \
+    double hardening(const VoigtVector& depsilon, \
         const VoigtVector& m, \
         const VoigtVector& sigma,\
         const IVStorageType& internal_variables_storage,\

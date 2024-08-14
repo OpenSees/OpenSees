@@ -104,12 +104,7 @@ C++ "Rule of 5"
 using namespace ASDPlasticMaterial3DGlobals;
 
 
-// template <
-//     class ElasticityType,
-//     class YieldFunctionType,
-//     class PlasticFlowType,
-//     int thisClassTag,
-//     class T >
+
 template <
     class ElasticityType,
     class YieldFunctionType,
@@ -276,23 +271,10 @@ public:
         return setTrialStrainIncr( TrialStrain - CommitStrain );
     }
 
-    // Directly sets the trial strain increment and does an explicit or implicit step.
-    // Returns a flag depending on the result of the step.
     int setTrialStrainIncr( const VoigtVector &strain_increment )
     {
-        // using namespace ASDPlasticMaterial3DGlobals;
 
         int exitflag = -1;
-
-        // ==========================================
-        // Check for quick return:
-        // If strain_increment are all zeroes. Return
-        // ==========================================
-        // The quick return is useful for displacement_control.
-        // In displacement_control, we have to do double update.
-        // ==========================================
-
-        // cout << "strain_increment = " << strain_increment << endl;
 
         double max_component = 0.0;
         for (int i = 0; i < 6; ++i)
@@ -300,10 +282,7 @@ public:
             {
                 max_component = abs(strain_increment(i));
             }
-        // ==========================================
-        // We do not use below(eps_norm) because 1E-8 will go to 1E-16. --> False return.
-        // double eps_norm = strain_increment(i, j) * strain_increment(i, j);
-        // ==========================================
+
         if (max_component == 0)
         {
             exitflag = 0;
@@ -358,35 +337,6 @@ public:
 
     const VoigtMatrix &getTangentTensor( void )
     {
-        // using namespace ASDPlasticMaterial3DGlobals;
-
-        // // double yf_val = yf(TrialStress);
-
-        // // VoigtMatrix& Eelastic = et(TrialStress);
-
-
-        // // if (yf_val <= 0.0)
-        // // {
-        // //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
-        // // }
-        // // else
-        // // {
-        // //     const VoigtVector& n = yf.df_dsigma_ij(intersection_stress);
-        // //     const VoigtVector& m = pf(depsilon_elpl, intersection_stress);
-
-        // //     double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, depsilon_elpl,  intersection_stress);
-        // //     double den = n(p, q) * Eelastic(p, q, r, s) * m(r, s) - xi_star_h_star;
-
-        // //     //Compute tangent stiffness
-        // //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m(p, q)) * (n(r, s) * Eelastic(r, s, k, l) ) / den;
-        // // }
-
-        // if (first_step)
-        // {
-        //     VoigtMatrix& Eelastic = et(TrialStress);
-        //     Stiffness(i, j, k, l) = Eelastic(i, j, k, l);
-        //     first_step = false;
-        // }
 
         return Stiffness;
     }
@@ -494,9 +444,9 @@ public:
         //     const VoigtVector& n = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
         //     const VoigtVector& m = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
 
-        //     double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+        //     double hardening = yf.hardening( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
 
-        //     double den_after_corrector = n.transpose() * Eelastic * m - xi_star_h_star;
+        //     double den_after_corrector = n.transpose() * Eelastic * m - hardening;
 
         //     VoigtMatrix Econtinuum = Eelastic - Eelastic * m * (n.transpose() * Eelastic) / den_after_corrector;
         //     Stiffness = Econtinuum;
@@ -508,9 +458,9 @@ public:
         //     const VoigtVector& n = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
         //     const VoigtVector& m = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
 
-        //     double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+        //     double hardening = yf.hardening( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
 
-        //     double den_after_corrector = n.transpose() * Eelastic * m - xi_star_h_star;
+        //     double den_after_corrector = n.transpose() * Eelastic * m - hardening;
 
         //     VoigtMatrix Econtinuum = Eelastic - Eelastic * m * (n.transpose() * Eelastic) / den_after_corrector;
         //     Stiffness = (Econtinuum + Eelastic)/2;
@@ -545,34 +495,15 @@ public:
 //  State commiting and reversion
 //==================================================================================================
 
-    // Forwards the trial variables to commited variables and calls commit state on the
-    // BET classes
+
     int commitState(void)
     {
-        // cout << "Committing!" << endl;
-
-        // cout <<  "CommitStress = " << CommitStress.transpose() << endl;
-        // cout <<  "CommitStrain = " << CommitStrain.transpose() << endl;
-        // cout <<  "TrialStress = " << TrialStress.transpose() << endl;
-        // cout <<  "TrialStrain = " << TrialStrain.transpose() << endl;
-
-        // cout << "Committed!" << endl;
 
         CommitStress = TrialStress;
         CommitStrain = TrialStrain;
         CommitPlastic_Strain = TrialPlastic_Strain;
 
-        // cout <<  "CommitStress = " << CommitStress.transpose() << endl;
-        // cout <<  "CommitStrain = " << CommitStrain.transpose() << endl;
-        // cout <<  "TrialStress = " << TrialStress.transpose() << endl;
-        // cout <<  "TrialStrain = " << TrialStrain.transpose() << endl;
-
-
         iv_storage.commit_all();
-
-        // cout << "Internal model info:";
-        // Print(cout);
-        // cout << "\n" << endl;
 
         if (first_step)
         {
@@ -705,7 +636,6 @@ public:
         return 0;
     }
 
-    // NDMaterial *getCopy(const char *code);
     const char *getType(void) const {return "ThreeDimensional";}
 
     int sendSelf(int commitTag, Channel & theChannel)
@@ -859,8 +789,6 @@ protected:
     }
 
 
-
-
 private:
 
 
@@ -929,11 +857,10 @@ private:
             const VoigtVector& n = yf.df_dsigma_ij(intersection_stress, iv_storage, parameters_storage);
             const VoigtVector& m = pf(depsilon_elpl, intersection_stress, iv_storage, parameters_storage);
 
-            double xi_star_h_star = yf.xi_star_h_star( depsilon_elpl, m,  intersection_stress, iv_storage, parameters_storage);
-            double den = n.transpose() * Eelastic * m - xi_star_h_star;
+            double hardening = yf.hardening( depsilon_elpl, m,  intersection_stress, iv_storage, parameters_storage);
+            double den = n.transpose() * Eelastic * m - hardening;
 
             //Compute the plastic multiplier
-            // Yuan and Boris 10Sep2016, change from "==0"
             if (abs(den) < MACHINE_EPSILON)
             {
                 cout << "CEP - den = 0\n";
@@ -941,7 +868,7 @@ private:
                 cout << "yf_val_end = " << yf_val_end << endl;
                 printTensor1("m", m);
                 printTensor1("n", n);
-                cout << "xi_star_h_star = " << xi_star_h_star << endl;
+                cout << "hardening = " << hardening << endl;
                 cout << "den = " << den << endl;
                 printTensor1("depsilon_elpl", depsilon_elpl);
                 return -1;
@@ -955,7 +882,7 @@ private:
                 cout << "CEP - dLambda = " << dLambda << " <= 0\n";
                 printTensor1("m", m);
                 printTensor1("n", n);
-                cout << "xi_star_h_star = " << xi_star_h_star << endl;
+                cout << "hardening = " << hardening << endl;
                 cout << "den = " << den << endl;
                 printTensor1("depsilon_elpl", depsilon_elpl);
             }
@@ -974,60 +901,30 @@ private:
             // Deal with the APEX if needed
             // if constexpr (yf_has_apex<YieldFunctionType>::value) {
             // {
-            //     static VoigtVector small_stress(3, 3, 0.0);
-            //     small_stress *= 0;
-            //     // The small value 50*Pa refers to the lowest confinement test:
-            //     // http://science.nasa.gov/science-news/science-at-nasa/1998/msad27may98_2/
-            //     double DP_k = yf.get_k();
-            //     double DP_p = 50 ;
-            //     // To make it on the yield surface, the q is equal to k*p.
-            //     double DP_q = DP_k * DP_p ;
-            //     // Assume the triaxial conditions sigma_2 = sigma_3.
-            //     small_stress(0, 0) = DP_p + 2. / 3.0 * DP_q;
-            //     small_stress(1, 1) = DP_p - 1. / 3.0 * DP_q;
-            //     small_stress(2, 2) = DP_p - 1. / 3.0 * DP_q;
-            //     static VoigtVector dstress(3, 3, 0.0);
-            //     dstress(i, j) = small_stress(i, j) - sigma(i, j);
-            //     static VoigtVector depsilon_Inv(3, 3, 0.0);
-            //     depsilon_Inv = depsilon.Inv();
-
-            //     // Return results (member variables) :
-            //     Stiffness(i, j, k, l) = dstress(i, j) * depsilon_Inv(k, l);
-            //     TrialStress(i, j) = small_stress(i, j);
-            //     // plastic_strain and internal variables are already updated.
-            //     return 0;
+            //    // TODO
             // }
 
             //Correct the trial stress
             TrialStress = TrialStress - dLambda * Eelastic * m;
 
 
-            // ============================================================================================
-            // Add the additional step: returning to the yield surface.
-            // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
-            // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
-            // ============================================================================================
+            // Returning to Yield surface as recommended by Crisfield...
             if (INT_OPT_return_to_yield_surface[this->getTag()])
             {
-                // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
-                // Make surface the internal variables are already updated. And then, return to the yield surface.
-                double yf_val_after_corrector = yf(TrialStress, iv_storage, parameters_storage);
-                const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
-                const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
-                // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
-                // double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
-                double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
-                double dLambda_after_corrector = yf_val_after_corrector / (
-                                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
-                                                 );
-                TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
-                TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
+                double yf_val_corr = yf(TrialStress, iv_storage, parameters_storage);
+                const VoigtVector& n_corr = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
+                const VoigtVector& m_corr = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
 
-                //double den_after_corrector = n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector;
-                // Stiffness(i, j, k, l) = Eelastic(i, j, k, l) - (Eelastic(i, j, p, q) * m_after_corrector(p, q)) * (n_after_corrector(r, s) * Eelastic(r, s, k, l) ) / den_after_corrector;
+                double hardening_corr = yf.hardening( depsilon_elpl, m,  TrialStress, iv_storage, parameters_storage);
+                double dLambda_corr = yf_val_corr / (
+                                                     n_corr.transpose() * Eelastic * m_corr - hardening_corr
+                                                 );
+                TrialStress = TrialStress - dLambda_corr * Eelastic * m_corr;
+                TrialPlastic_Strain += dLambda_corr * m_corr;
             }
             else
             {
+                // Do nothing
             }
             // ============================================================================================
             // ============================================================================================
@@ -1047,7 +944,7 @@ private:
                 cout << "yf_val_end = " << yf_val_end << endl;
                 printTensor1("n = " , n );
                 printTensor1("m = " , m );
-                cout << "xi_star_h_star  = " << xi_star_h_star << endl;
+                cout << "hardening  = " << hardening << endl;
                 cout << "den = " << den << endl;
                 cout << "dLambda = " << dLambda << endl;
 
@@ -1087,9 +984,9 @@ private:
         VoigtMatrix Eelastic = et(thisSigma, this_parameters_storage);
         const VoigtVector& n = yf.df_dsigma_ij(thisSigma, this_iv_storage, this_parameters_storage);
         VoigtVector m = pf(depsilon_elpl, thisSigma, this_iv_storage, this_parameters_storage);
-        double xi_star_h_star = yf.xi_star_h_star(depsilon_elpl, m, thisSigma, this_iv_storage, this_parameters_storage);
+        double hardening = yf.hardening(depsilon_elpl, m, thisSigma, this_iv_storage, this_parameters_storage);
 
-        double den = n.transpose() * Eelastic * m - xi_star_h_star;
+        double den = n.transpose() * Eelastic * m - hardening;
         double dLambda = (den != 0) ? (n.transpose() * Eelastic * depsilon_elpl).value() / den : 0;
 
         if (dLambda != dLambda)
@@ -1100,7 +997,7 @@ private:
             cout << "depsilon_elpl = " << depsilon_elpl.transpose() << endl;
             cout << "n = " << n.transpose() << endl;
             cout << "m = " << m.transpose() << endl;
-            cout << "xi_star_h_star = " << xi_star_h_star << endl;
+            cout << "hardening = " << hardening << endl;
             cout << "den = " << den << endl;
             cout << "Eelastic = " << Eelastic << endl;
 
@@ -1384,25 +1281,19 @@ private:
             TrialPlastic_Strain = next_EpsilonPl;
             iv_storage = next_iv_storage;
 
-            // cout << "ASDPlasticMaterial3D::Runge_Kutta_45_Error_Control niter = " << niter << " maxStepError = " << maxStepError << " TolE = " << TolE << endl;;
-
-            // ============================================================================================
-            // Add the additional step: returning to the yield surface.
-            // This algorithm is based on Crisfield(1996). Page 171. Section 6.6.3
-            // After this step, the TrialStress(solution), TrialPlastic_Strain, and Stiffness will be updated to the yield surface.
-            // ============================================================================================
-            if (INT_OPT_return_to_yield_surface[this->getTag()])
+           //Return to Yield
+           if (INT_OPT_return_to_yield_surface[this->getTag()])
             {
                 // In the evolve function, only dLambda and m are used. Other arguments are not used at all.
                 // Make surface the internal variables are already updated. And then, return to the yield surface.
                 double yf_val_after_corrector = yf(TrialStress, iv_storage, parameters_storage);
                 const VoigtVector& n_after_corrector = yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage);
                 const VoigtVector& m_after_corrector = pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage);
-                // In the function below, depsilon_elpl is actually not used at all in xi_star_h_star
-                // double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress);
-                double xi_star_h_star_after_corrector = yf.xi_star_h_star( depsilon_elpl, m_after_corrector,  TrialStress, iv_storage, parameters_storage);
+                // In the function below, depsilon_elpl is actually not used at all in hardening
+                // double hardening_after_corrector = yf.hardening( depsilon_elpl, m_after_corrector,  TrialStress);
+                double hardening_after_corrector = yf.hardening( depsilon_elpl, m_after_corrector,  TrialStress, iv_storage, parameters_storage);
                 double dLambda_after_corrector = yf_val_after_corrector / (
-                                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - xi_star_h_star_after_corrector
+                                                     n_after_corrector.transpose() * Eelastic * m_after_corrector - hardening_after_corrector
                                                  );
                 TrialStress = TrialStress - dLambda_after_corrector * Eelastic * m_after_corrector;
                 TrialPlastic_Strain += dLambda_after_corrector * m_after_corrector;
@@ -1425,7 +1316,7 @@ private:
                 cout << "yf_val_end = " << yf_val_end << endl;
                 printTensor1("n = " , yf.df_dsigma_ij(TrialStress, iv_storage, parameters_storage) );
                 printTensor1("m = " , pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage) );
-                cout << "xi_star_h_star  = " << yf.xi_star_h_star( depsilon_elpl, pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage),  TrialStress, iv_storage, parameters_storage) << endl;
+                cout << "hardening  = " << yf.hardening( depsilon_elpl, pf(depsilon_elpl, TrialStress, iv_storage, parameters_storage),  TrialStress, iv_storage, parameters_storage) << endl;
 
                 errorcode = -1;
 
@@ -1439,7 +1330,7 @@ private:
     }
 
 
-    //More robust brent
+    //Robust Brent algorithm
     double compute_yf_crossing(const VoigtVector & start_stress, const VoigtVector & end_stress, double x1, double x2, double tol) const
     {
         using namespace ASDPlasticMaterial3DGlobals;

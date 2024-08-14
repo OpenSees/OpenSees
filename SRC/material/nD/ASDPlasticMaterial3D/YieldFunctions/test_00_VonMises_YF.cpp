@@ -72,8 +72,8 @@ int main(void)
         auto yf_der = yf.df_dsigma_ij(sigma, iv_storage, parameter_storage);
         cout << "   yf_der = " << yf_der.transpose() << endl;
 
-        auto xi_star_h_star = yf.xi_star_h_star(depsilon, yf_der, sigma, iv_storage, parameter_storage);
-        cout << "   xi_star_h_star = " << xi_star_h_star << endl;
+        auto hardening = yf.hardening(depsilon, yf_der, sigma, iv_storage, parameter_storage);
+        cout << "   hardening = " << hardening << endl;
 
 
     }
