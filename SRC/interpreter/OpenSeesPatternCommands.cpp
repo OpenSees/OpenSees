@@ -651,7 +651,8 @@ int OPS_ElementalLoad()
 
         //finish the temperature arguments
         else {
-            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature arguments,/n looking for 0, 2, 5 or 9 arguments.\n";
+	  opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature arguments,/n looking for 0, 2, 5 or 9 arguments" << endln;
+	    return -1;
         }
 
         for (int i = 0; i<theEleTags.Size(); i++) {
@@ -683,7 +684,6 @@ int OPS_ElementalLoad()
 	  
 	  int numdata = OPS_GetNumRemainingInputArgs();
 	  double data[25];
-	  double Temp[13]; double Loc[13];
 	  if (numdata == 25) {
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
 	      opserr << "WARNING eleLoad - invalid input\n";
@@ -753,7 +753,8 @@ int OPS_ElementalLoad()
 	    t9 = t6 + 3*(t10 - t6) / 4; t14 = t11 + 3*(t15 - t11) / 4;	    
 	  }
 	  else {
-	    opserr << "WARNING eleLoad Beam3dThermalAction: invalid number of temperature arguments,/n looking for arguments for Temperatures and coordinates.\n";
+	    opserr << "WARNING eleLoad Beam3dThermalAction: invalid number of temperature arguments,/n looking for arguments for Temperatures and coordinates" << endln;
+	    return -1;
 	  }
 
 	  for (int i = 0; i<theEleTags.Size(); i++) {
