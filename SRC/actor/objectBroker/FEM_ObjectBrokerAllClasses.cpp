@@ -293,6 +293,7 @@
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
 #include "InitStrainNDMaterial.h"
+#include "MinMaxNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
 #include "PlasticDamageConcrete3d.h"
 #include "PlasticDamageConcretePlaneStress.h"
@@ -2366,6 +2367,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_InitStrainNDMaterial:
       return new InitStrainNDMaterial();
+
+  case ND_TAG_MinMaxNDMaterial:
+      return new MinMaxNDMaterial();      
 
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();

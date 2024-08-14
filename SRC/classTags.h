@@ -537,6 +537,7 @@
 #define ND_TAG_PlateFromPlaneStressMaterialThermal 7008   //L.Jiang[SIF]
 
 #define ND_TAG_InitStressNDMaterial 7009
+#define ND_TAG_MinMaxNDMaterial 70091
 
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 

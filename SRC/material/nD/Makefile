@@ -76,6 +76,7 @@ OBJS       = NDMaterial.o \
 	WrapperNDMaterial.o \
 	InitStressNDMaterial.o \
 	InitStrainNDMaterial.o \
+	MinMaxNDMaterial.o \
 	ConcreteMcftNonLinear5.o \
 	ConcreteMcftNonLinear7.o \
 	CapPlasticity.o \

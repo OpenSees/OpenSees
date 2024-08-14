@@ -157,7 +157,7 @@ void* OPS_ForceBeamColumn2d(const ID& info);
 void* OPS_NonlinearBeamColumn();
 void* OPS_ForceBeamColumn3d();
 void* OPS_ForceBeamColumn2dThermal();
-//void* OPS_ForceBeamColumn3dThermal();
+void* OPS_ForceBeamColumn3dThermal();
 void* OPS_DispBeamColumn2d(const ID& info);
 void* OPS_DispBeamColumnNL2d(const ID& info);
 void* OPS_DispBeamColumn3d();
@@ -315,8 +315,7 @@ namespace {
 	if(ndm == 2) {
 	    return OPS_ForceBeamColumn2dThermal();
 	} else {
-		return 0;
-	  //return OPS_ForceBeamColumn3dThermal();
+	    return OPS_ForceBeamColumn3dThermal();
 	}
     }
   
