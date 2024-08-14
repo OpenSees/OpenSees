@@ -50,27 +50,23 @@ public:
         double E = GET_PARAMETER_VALUE(YoungsModulus);
         double nu = GET_PARAMETER_VALUE(PoissonsRatio);
 
-        ELAST.setZero(); //Zero it. It may have values from another instance with different parameters;
+        EE_MATRIX.setZero(); //Zero it. It may have values from another instance with different parameters;
         double lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
         double mu = E / ( 2.0 * ( 1.0 + nu ) );
 
-        ELAST(0, 0) = ELAST(1, 1) = ELAST(2, 2) = 2*mu + lambda;
-        ELAST(0, 1) = ELAST(1, 0) = ELAST(0, 2) = ELAST(2, 0) = ELAST(1, 2) = ELAST(2, 1) = lambda;
-        ELAST(3, 3) = mu;
-        ELAST(4, 4) = mu;
-        ELAST(5, 5) = mu;
+        EE_MATRIX(0, 0) = EE_MATRIX(1, 1) = EE_MATRIX(2, 2) = 2*mu + lambda;
+        EE_MATRIX(0, 1) = EE_MATRIX(1, 0) = EE_MATRIX(0, 2) = EE_MATRIX(2, 0) = EE_MATRIX(1, 2) = EE_MATRIX(2, 1) = lambda;
+        EE_MATRIX(3, 3) = mu;
+        EE_MATRIX(4, 4) = mu;
+        EE_MATRIX(5, 5) = mu;
 
-        return ELAST;
+        return EE_MATRIX;
     }
 
     using parameters_t = std::tuple<YoungsModulus, PoissonsRatio>;
 
-private:
 
-    static VoigtMatrix ELAST;  
 
 };
-
-VoigtMatrix LinearIsotropic3D_EL::ELAST;
 
 #endif

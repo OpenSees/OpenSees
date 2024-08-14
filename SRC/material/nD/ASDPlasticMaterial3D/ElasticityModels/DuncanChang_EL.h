@@ -69,26 +69,22 @@ public:
         double lambda = ( nu * E ) / ( ( 1.0 + nu ) * ( 1.0 - 2.0 * nu ) );
         double mu = E / ( 2.0 * ( 1.0 + nu ) );
 
-        ELAST *= 0; //Zero it. It may have values from another instance with different parameters;
+        EE_MATRIX *= 0; //Use the base-class static elasticity matrix for return value
 
-        ELAST(0, 0) = ELAST(1, 1) = ELAST(2, 2) = 2*mu + lambda;
-        ELAST(0, 1) = ELAST(1, 0) = ELAST(0, 2) = ELAST(2, 0) = ELAST(1, 2) = ELAST(2, 1) = lambda;
-        ELAST(3, 3) = mu;
-        ELAST(4, 4) = mu;
-        ELAST(5, 5) = mu;
+        EE_MATRIX(0, 0) = EE_MATRIX(1, 1) = EE_MATRIX(2, 2) = 2*mu + lambda;
+        EE_MATRIX(0, 1) = EE_MATRIX(1, 0) = EE_MATRIX(0, 2) = EE_MATRIX(2, 0) = EE_MATRIX(1, 2) = EE_MATRIX(2, 1) = lambda;
+        EE_MATRIX(3, 3) = mu;
+        EE_MATRIX(4, 4) = mu;
+        EE_MATRIX(5, 5) = mu;
 
-        return ELAST;
+        return EE_MATRIX;
     }
 
     using parameters_t = std::tuple<ReferenceYoungsModulus,PoissonsRatio,ReferencePressure,DuncanChang_MaxSigma3,DuncanChang_n>;
 
-private:
-
-    static VoigtMatrix ELAST; 
 
 };
 
-VoigtMatrix DuncanChang_EL::ELAST;
 
 #endif
 

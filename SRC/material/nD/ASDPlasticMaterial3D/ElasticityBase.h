@@ -57,6 +57,14 @@ public:
     {
         return static_cast<T*>(this)->operator()(stress, parameters_storage);
     }
+
+protected:
+
+    static VoigtMatrix EE_MATRIX; 
 };
+
+template <class T>
+VoigtMatrix ElasticityBase<T>::EE_MATRIX;
+
 
 #endif
