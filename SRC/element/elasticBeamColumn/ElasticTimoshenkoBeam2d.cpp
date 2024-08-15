@@ -612,6 +612,9 @@ const Vector& ElasticTimoshenkoBeam2d::getResistingForce()
     // determine resisting forces in global system
     theVector.addMatrixTransposeVector(0.0, Tgl, ql, 1.0);
     
+    if (rho != 0.0)
+      theVector.addVector(1.0, theLoad, -1.0);
+    
     return theVector;
 }
 
