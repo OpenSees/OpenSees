@@ -48,34 +48,34 @@ struct char_cmd {
   const char* name;
   Tcl_CmdProc*  func;
 }  const tcl_analysis_cmds[] =  {
-    {"system",            &specifySysOfEqnTable},
+    {"system",              &specifySysOfEqnTable},
 
-    {"test",              &specifyCTest},
-    {"testIter",          &getCTestIter},
-    {"testNorms",         &getCTestNorms},
-    {"integrator",        &specifyIntegrator},
-    {"constraints",       &specifyConstraintHandler},
+    {"test",                &specifyCTest},
+    {"testIter",            &getCTestIter},
+    {"testNorms",           &getCTestNorms},
+    {"integrator",          &specifyIntegrator},
+    {"constraints",         &specifyConstraintHandler},
 
-    {"eigen",             &eigenAnalysis},
-    {"analysis",          &specifyAnalysis},
+    {"eigen",               &eigenAnalysis},
+    {"analysis",            &specifyAnalysis},
 
-    {"analyze",           &analyzeModel},
-    {"initialize",        &initializeAnalysis},
-    {"modalProperties",   &modalProperties},
-    {"modalDamping",      &modalDamping},
-    {"modalDampingQ",     &modalDamping},
-    {"responseSpectrum",  &responseSpectrum},
-    {"printA",            &printA},
-    {"printB",            &printB},
-    {"reset",             &resetModel},
+    {"analyze",             &analyzeModel},
+    {"initialize",          &initializeAnalysis},
+    {"modalProperties",     &modalProperties},
+    {"modalDamping",        &modalDamping},
+    {"modalDampingQ",       &modalDamping},
+    {"responseSpectrum",    &responseSpectrum},
+    {"printA",              &printA},
+    {"printB",              &printB},
+    {"reset",               &resetModel},
 
   // From algorithm.cpp
-    {"algorithm", &TclCommand_specifyAlgorithm},
-    {"numIter",   &TclCommand_numIter},
-    {"numFact",   &TclCommand_numFact},
-    {"accelCPU",  &TclCommand_accelCPU},
-    {"totalCPU",  &TclCommand_totalCPU},
-    {"solveCPU",  &TclCommand_solveCPU},
+    {"algorithm",           &TclCommand_specifyAlgorithm},
+    {"numIter",             &TclCommand_numIter},
+    {"numFact",             &TclCommand_numFact},
+    {"accelCPU",            &TclCommand_accelCPU},
+    {"totalCPU",            &TclCommand_totalCPU},
+    {"solveCPU",            &TclCommand_solveCPU},
   // recorder.cpp
     {"algorithmRecorder",   &TclCommand_algorithmRecorder},
 };

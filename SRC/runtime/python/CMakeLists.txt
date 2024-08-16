@@ -19,6 +19,7 @@ target_compile_definitions(OpenSeesPyRT PRIVATE USE_TCL_STUBS)
 target_include_directories(OpenSeesPyRT 
   PRIVATE #${Python_INCLUDE_DIRS}
           ${pybind11_INCLUDE_DIRS}
+          ${OPS_SRC_DIR}/domain/pattern/series
 )
 
 # set_target_properties(OpenSeesPyRT PROPERTIES CXX_VISIBILITY_PRESET hidden)

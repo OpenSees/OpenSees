@@ -131,6 +131,9 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
+  //
+  // TODO: Check dimensions
+
   Vector coords(theNode->getCrds());
   coords(dim - 1) = value;
   theNode->setCrds(coords);

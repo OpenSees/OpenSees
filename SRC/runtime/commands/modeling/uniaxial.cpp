@@ -115,9 +115,9 @@ TclCommand_addUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
   UniaxialMaterial *theMaterial = nullptr;
 
   auto tcl_cmd = uniaxial_dispatch.find(std::string(argv[1]));
-  if (tcl_cmd != uniaxial_dispatch.end()) {
+  if (tcl_cmd != uniaxial_dispatch.end())
     return (*tcl_cmd->second)(clientData, interp, argc, &argv[0]);
-  }
+
 
   if (theMaterial == nullptr) {
     char *mat_name;

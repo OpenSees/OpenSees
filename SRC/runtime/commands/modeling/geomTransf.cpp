@@ -53,7 +53,8 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc,
   if ((ndm == 2 && ndf == 3) || (ndm == 2 && ndf == 4)) {
 
     int crdTransfTag;
-    Vector jntOffsetI(2), jntOffsetJ(2);
+    Vector jntOffsetI(2),
+           jntOffsetJ(2);
 
     if (argc < 3) {
       opserr << G3_ERROR_PROMPT << "insufficient arguments\n"
@@ -233,21 +234,21 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc,
     FrameTransform3d *crdTransf3d=nullptr;
 
     if (strcmp(argv[1], "Linear") == 0)
-      if (getenv("CRD"))
+      if (!getenv("CRD"))
         crdTransf3d = new LinearFrameTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
       else
         crdTransf3d = new LinearCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
 
     else if (strcmp(argv[1], "PDelta") == 0 ||
              strcmp(argv[1], "LinearWithPDelta") == 0)
-      if (getenv("CRD"))
+      if (!getenv("CRD"))
         crdTransf3d = new PDeltaFrameTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
       else
         crdTransf3d = new PDeltaCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
 
     else if (strcmp(argv[1], "Corotational") == 0)
       // By default use new faster version
-      if (getenv("CRD"))
+      if (!getenv("CRD"))
         crdTransf3d = new CorotFrameTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
       else
         crdTransf3d = new CorotCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);

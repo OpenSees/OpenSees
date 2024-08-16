@@ -68,10 +68,8 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
                                        TCL_Char ** const argv, Domain *domain);
 
 Tcl_CmdProc TclCommand_clearAnalysis;
+Tcl_CmdProc TclCommand_setNumberer;
 
-DOF_Numberer* G3Parse_newNumberer(G3_Runtime*, int, G3_Char**const);
-// TODO: consolidate
-// int specifyNumberer(ClientData clientData, Tcl_Interp *interp, int argc,TCL_Char ** const argv);
 
 //
 // Add commands to the interpreter that take the AnalysisBuilder as clientData.
@@ -84,10 +82,7 @@ G3_AddTclAnalysisAPI(Tcl_Interp *interp, Domain* domain)
   Tcl_CreateCommand(interp, "wipeAnalysis", &wipeAnalysis, builder, nullptr);
   Tcl_CreateCommand(interp, "_clearAnalysis", &TclCommand_clearAnalysis, builder, nullptr);
 
-  Tcl_CreateCommand(interp, "numberer", [](ClientData builder, Tcl_Interp *i, int ac, G3_Char** const av)->int{
-      ((BasicAnalysisBuilder*)builder)->set(G3Parse_newNumberer(G3_getRuntime(i), ac, av));
-      return TCL_OK;
-  }, builder, nullptr);
+  Tcl_CreateCommand(interp, "numberer",   TclCommand_setNumberer, builder, nullptr);
 
 
   static int ncmd = sizeof(tcl_analysis_cmds)/sizeof(char_cmd);

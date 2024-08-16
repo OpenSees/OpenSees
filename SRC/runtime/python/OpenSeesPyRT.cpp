@@ -13,7 +13,7 @@ namespace py = pybind11;
 
 #include <G3_Runtime.h>
 #include <elementAPI.h> // G3_getRuntime/SafeBuilder
-#include "runtime/BasicModelBuilder.h"
+#include <runtime/runtime/BasicModelBuilder.h>
 
 #include <Domain.h>
 #include <Vector.h>
@@ -35,7 +35,6 @@ namespace py = pybind11;
 
 #include <LoadPattern.h>
 #include <EarthquakePattern.h>
-#include <GroundMotion.h>
 #include <UniformExcitation.h>
 #include <TimeSeries.h>
 #include <PathTimeSeries.h>
@@ -101,7 +100,7 @@ public:
     s << "" << "\n";
   }
   /* Trampoline (need one for each virtual function) */
-  double getStress(void) override {
+  double getStress() override {
       PYBIND11_OVERRIDE_PURE(
           double, 
           UniaxialMaterial, 
@@ -114,33 +113,33 @@ public:
   int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker& broker) override {
     return 0;
   }
-  double getStrain(void) override {
+  double getStrain() override {
       PYBIND11_OVERRIDE_PURE(double, UniaxialMaterial, getStrain);
   }
-  double getTangent(void) override {
+  double getTangent() override {
       PYBIND11_OVERRIDE_PURE(double,UniaxialMaterial, getTangent);
   }
-  double getInitialTangent(void) override {
+  double getInitialTangent() override {
       PYBIND11_OVERRIDE_PURE(double, UniaxialMaterial, getInitialTangent);
   }
-  int commitState (void) override {
+  int commitState() override {
       PYBIND11_OVERRIDE_PURE(
           int,                      // Return type
           UniaxialMaterial,         // Parent class
           commitState               // Name of function in C++ (must match Python name)
       );
   }
-  int revertToLastCommit (void) override {
+  int revertToLastCommit() override {
       PYBIND11_OVERRIDE_PURE(
           int,                      /* Return type */
           UniaxialMaterial,         /* Parent class */
           revertToLastCommit        /* Name of function in C++ (must match Python name) */
       );
   }
-  int revertToStart (void) override {
+  int revertToStart() override {
       PYBIND11_OVERRIDE_PURE(int, UniaxialMaterial, revertToStart);
   }
-  UniaxialMaterial *getCopy (void) override {
+  UniaxialMaterial *getCopy() override {
     py::gil_scoped_acquire acquire;
 
     auto self = py::cast(this);
@@ -162,7 +161,7 @@ public:
           double,                 /* Return type */
           UniaxialMaterial,       /* Parent class */
           setTrialStrain,         /* Name of function in C++ (must match Python name) */
-          strain,                  /* Argument(s) */
+          strain,                 /* Argument(s) */
           strainRate
       );
   }
@@ -188,7 +187,7 @@ public:
 };
 
 
-py::array_t<double>
+static py::array_t<double>
 copy_vector(Vector vector)
 {
   py::array_t<double> array(vector.Size());
@@ -198,7 +197,7 @@ copy_vector(Vector vector)
   return array;
 }
 
-Vector *
+static Vector *
 new_vector(py::array_t<double> array)
 {
   py::buffer_info info = array.request();
@@ -244,7 +243,6 @@ quake2sees_motion(
     groundMotion = new GroundMotion(0, 0, accelSeries, 0);
     return groundMotion;
     // TimeSeries -> Pattern:UniformExcitation
-
 }
 
 GroundMotion*
@@ -521,7 +519,6 @@ init_obj_module(py::module &m)
     .def (py::init([](G3_Runtime *runtime, G3_Config  conf) {
       return *((DirectIntegrationAnalysis*)runtime->newTransientAnalysis(conf));
    }))
-    //.def ("analyze", &TransientAnalysis::analyze)
     .def ("analyze", &DirectIntegrationAnalysis::analyze)
   ;
 
@@ -529,7 +526,6 @@ init_obj_module(py::module &m)
   // Module-Level Functions
   //
   m.def ("get_builder", &get_builder);
-//m.def ("getRuntime",  &getRuntime);
   m.def ("get_domain", [](G3_Runtime *rt)->std::unique_ptr<Domain, py::nodelete>{
       Domain *domain_addr = rt->m_domain;
       return std::unique_ptr<Domain, py::nodelete>((Domain*)domain_addr);

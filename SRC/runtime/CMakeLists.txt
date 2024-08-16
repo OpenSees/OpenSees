@@ -27,7 +27,6 @@ target_link_libraries(OPS_Runtime PRIVATE G3 OPS_Algorithm)
 
 add_subdirectory(commands)
 add_subdirectory(runtime)
-add_subdirectory(contrib)
 
 target_sources(OPS_Runtime PRIVATE
     "runtime/G3_Runtime.cpp"
@@ -81,3 +80,7 @@ if (FALSE) # (MPI_FOUND)
   target_sources(OpenSeesRT_Parallel PRIVATE OpenSeesPRT.cpp)
 endif()
 
+
+if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/packages/UCSD_CompGeoMech/CMakeLists.txt)
+  add_subdirectory(packages/UCSD_CompGeoMech)
+endif ()

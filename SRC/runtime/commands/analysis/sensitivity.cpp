@@ -1,8 +1,16 @@
+//===----------------------------------------------------------------------===//
+//
+//        OpenSees - Open System for Earthquake Engineering Simulation
+//
+//===----------------------------------------------------------------------===//
+//
+#include <tcl.h>
 #include <Integrator.h>
 #include <BasicModelBuilder.h>
 
 
-int OPS_sensitivityAlgorithm()
+int
+TclCommand_sensitivityAlgorithm(ClientData builder, Tcl_Interp* interp, int argc, TCL_Char**const argv)
 {
     if (builder == nullptr)
       return 0;
@@ -10,12 +18,14 @@ int OPS_sensitivityAlgorithm()
     int analysisTypeTag = 1;
 
     Integrator* theIntegrator = nullptr;
+
     if (builder->getStaticIntegrator() != nullptr) {
     	theIntegrator = builder->getStaticIntegrator();
 
     } else if(builder->getTransientIntegrator() != nullptr) {
     	theIntegrator = builder->getTransientIntegrator();
     }
+
 
     // 1: compute at each step (default); 
     // 2: compute by command; 

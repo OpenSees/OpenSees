@@ -412,6 +412,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
   else if (strcmp(argv[1], "DisplFrame") == 0 ||
            strcmp(argv[1], "CubicFrame") == 0 ||
            strcmp(argv[1], "ForceFrame") == 0 ||
+           strcmp(argv[1], "ForceDeltaFrame") == 0 ||
 
            strcmp(argv[1], "ForceBeamColumn") == 0 ||
            strcmp(argv[1], "DispBeamColumn") == 0 ||

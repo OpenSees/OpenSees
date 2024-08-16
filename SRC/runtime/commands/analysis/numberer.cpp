@@ -8,6 +8,8 @@
 // which is used to optimally number the degrees of freedom of a problem.
 //
 #include <tcl.h>
+#include <assert.h>
+#include <BasicAnalysisBuilder.h>
 #include <PlainNumberer.h>
 #include <DOF_Numberer.h>
 #include <RCM.h>
@@ -17,23 +19,22 @@
 #  include <ParallelNumberer.h>
 #endif
 
-class G3_Runtime;
-
 //
-// command invoked to allow the Numberer objects to be built
+// command that sets the Numberer object
 //
-// int
-// specifyNumberer(G3_Runtime* rt, int argc, TCL_Char ** const argv);
-
-DOF_Numberer*
-G3Parse_newNumberer(G3_Runtime* rt, int argc, TCL_Char ** const argv)
+int
+TclCommand_setNumberer(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char ** const argv)
 {
+  BasicAnalysisBuilder *builder = (BasicAnalysisBuilder *)clientData;
+  assert(builder != nullptr);
+
+
   DOF_Numberer *theNumberer = nullptr;
 
   // make sure at least one other argument to contain numberer
   if (argc < 2) {
     opserr << "WARNING need to specify a Numberer type \n";
-    return nullptr;
+    return TCL_ERROR;
   }
 
 #if defined(_PARALLEL_PROCESSING)
@@ -45,7 +46,7 @@ G3Parse_newNumberer(G3_Runtime* rt, int argc, TCL_Char ** const argv)
     theNumberer = new ParallelNumberer(*theRCM);
   } else {
     opserr << "WARNING No Numberer type exists (Plain, RCM only) \n";
-    return nullptr;
+    return TCL_ERROR;
   }
 #else
 
@@ -78,13 +79,17 @@ G3Parse_newNumberer(G3_Runtime* rt, int argc, TCL_Char ** const argv)
     theParallelNumberer->setChannels(numChannels, theChannels);
   }
 #  endif
+#endif
 
   else {
     opserr << "WARNING No Numberer type exists (Plain, RCM only) \n";
-    return nullptr;
+    return TCL_ERROR;
   }
-#endif
 
-  return theNumberer;
+  if (theNumberer == nullptr)
+    return TCL_ERROR;
+
+  builder->set(theNumberer);
+  return TCL_OK;
 }
 
