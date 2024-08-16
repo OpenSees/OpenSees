@@ -31,15 +31,6 @@ add_subdirectory(runtime)
 target_sources(OPS_Runtime PRIVATE
     "runtime/G3_Runtime.cpp"
     "parsing/InterpreterAPI.cpp"
-
-    #
-    # OTHER
-    #
-    # "contrib/uniaxial/TclAxialSp.cpp"
-    # "contrib/uniaxial/fedeas/TclFedeasWrappers.cpp"
-    # "contrib/uniaxial/fedeas/TclFedeasMaterialCommand.cpp"
-    # "contrib/uniaxial/fedeas/TclFedeasMaterialCommand.cpp"
-
 )
 
 if (DEFINED OPENSEESRT_VERSION)
