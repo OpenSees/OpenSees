@@ -274,52 +274,6 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
   }
 
-
-#if 0 // TODO[cmp]: Keep names, but add removal message
-
-  else if (strcmp(argv[1], "ElasticTube") == 0) {
-    void *theMat = OPS_ElasticTubeSection3d(rt, argc, argv);
-    if (theMat != 0)
-      theSection = (SectionForceDeformation *)theMat;
-    else
-      return TCL_ERROR;
-  }
-
-  else if (strcmp(argv[1], "RCSection2d") == 0) {
-    void *theMat = OPS_RCSection2d(rt, argc, argv);
-    if (theMat != 0)
-      theSection = (SectionForceDeformation *)theMat;
-    else
-      return TCL_ERROR;
-  }
-
-  else if (strcmp(argv[1], "RCCircularSection") == 0) {
-    void *theMat = OPS_RCCircularSection(rt, argc, argv);
-    if (theMat != 0)
-      theSection = (SectionForceDeformation *)theMat;
-    else
-      return TCL_ERROR;
-  }
-
-  else if (strcmp(argv[1], "RCTunnelSection") == 0) {
-    void *theMat = OPS_RCTunnelSection(rt, argc, argv);
-    if (theMat != 0)
-      theSection = (SectionForceDeformation *)theMat;
-    else
-      return TCL_ERROR;
-  }
-
-  else if (strcmp(argv[1], "RCTBeamSection2d") == 0 ||
-           strcmp(argv[1], "RCTBeamSectionUniMat2d") == 0) {
-    void *theMat = OPS_RCTBeamSection2d(rt, argc, argv);
-    if (theMat != 0)
-      theSection = (SectionForceDeformation *)theMat;
-    else
-      return TCL_ERROR;
-  }
-#endif
-
-
   else if (strcmp(argv[1], "AddDeformation") == 0 ||
            strcmp(argv[1], "Aggregator") == 0  ||
            strcmp(argv[1], "Aggregate") == 0) 
@@ -458,7 +412,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
     theSection = new MembranePlateFiberSection(tag, h, *theMaterial);
     // Now add the material to the modelBuilder
     if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection; // invoke the material objects destructor, otherwise mem leak
+      delete theSection;
       return TCL_ERROR;
     } else
       return TCL_OK;
@@ -534,14 +488,14 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
     }
 
     theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
-    if (thickness != 0)
+    if (thickness != nullptr)
       delete[] thickness;
     if (theMats != 0)
       delete[] theMats;
 
     // Now add the material to the modelBuilder
     if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection; // invoke the material objects destructor, otherwise mem leak
+      delete theSection;
       return TCL_ERROR;
     } else
       return TCL_OK;
@@ -665,6 +619,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
       delete[] thickness;
     if (theMats != 0)
       delete[] theMats;
+
     // Now add the material to the modelBuilder
     if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
       delete theSection; // invoke the material objects destructor, otherwise mem leak

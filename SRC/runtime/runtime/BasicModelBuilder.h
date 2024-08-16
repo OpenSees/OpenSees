@@ -71,7 +71,7 @@ public:
 
   template<class T> int addTaggedObject(T& obj) {
     int tag = obj.getTag();
-    m_registry[typeid(T).name()][tag] = &obj;
+//  m_registry[typeid(T).name()][tag] = &obj;
     return addRegistryObject(typeid(T).name(), tag, &obj);
   }
 
