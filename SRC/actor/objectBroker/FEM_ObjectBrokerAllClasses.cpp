@@ -243,6 +243,7 @@
 #include "J2AxiSymm.h"
 #include "J2ThreeDimensional.h"
 #include "SimplifiedJ2.h"
+#include "PlaneStressSimplifiedJ2.h"
 #include "PlaneStrainMaterial.h"
 #include "PlaneStressMaterial.h"
 #include "PlateFiberMaterial.h"
@@ -292,7 +293,11 @@
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
 #include "InitStrainNDMaterial.h"
+#include "MinMaxNDMaterial.h"
 #include "ASDConcrete3DMaterial.h"
+#include "PlasticDamageConcrete3d.h"
+#include "PlasticDamageConcretePlaneStress.h"
+#include "ConcreteS.h"
 #include "OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.h" // M. J. Nunez
 #include "SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.h" // M. J. Nunez
 
@@ -353,6 +358,7 @@
 #include "truss/InertiaTruss.h"
 #include "zeroLength/ZeroLength.h"
 #include "zeroLength/ZeroLengthSection.h"
+#include "zeroLength/CoupledZeroLength.h"
 #include "zeroLength/ZeroLengthContact2D.h"
 #include "zeroLength/ZeroLengthContact3D.h"
 #include "zeroLength/ZeroLengthContactNTS2D.h"
@@ -382,6 +388,7 @@
 #include "gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.h"
 #include "gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.h"
 #include "triangle/Tri31.h"
+#include "fourNodeQuad/SixNodeTri.h"
 
 #include "UWelements/SSPquad.h"
 #include "UWelements/SSPquadUP.h"
@@ -433,12 +440,12 @@
 #include "shell/ShellNLDKGT.h"
 #include "shell/ASDShellQ4.h" // Massimo Petracca
 #include "shell/ASDShellT3.h" // Massimo Petracca
-#include "shell/ShellANDeS.h"
 #include "brick/Brick.h"
 #include "brick/BbarBrick.h"
 #include "joint/Joint2D.h"		// Arash
 #include "joint/Inno3DPnPJoint.h" // Cristian Miculas
 #include "twoNodeLink/TwoNodeLink.h"
+#include "twoNodeLink/TwoNodeLinkSection.h"
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
 #include "tetrahedron/FourNodeTetrahedron.h"
@@ -689,7 +696,7 @@
 #include "drm/DRMLoadPatternWrapper.h"
 
 #ifdef _H5DRM
-#include "drm/H5DRM.h"
+#include "drm/H5DRMLoadPattern.h"
 #endif
 
 #include "Parameter.h"
@@ -866,7 +873,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 		return new InertiaTruss();
       
     case ELE_TAG_ZeroLength:  
-      return new ZeroLength(); 	     
+      return new ZeroLength();
+
+    case ELE_TAG_CoupledZeroLength:
+      return new CoupledZeroLength();
       
     case ELE_TAG_ZeroLengthSection:  
       return new ZeroLengthSection(); 	     
@@ -899,7 +909,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new FourNodeQuad3d(); 
       
     case ELE_TAG_Tri31:  
-      return new Tri31(); 	     
+      return new Tri31();
+
+    case ELE_TAG_SixNodeTri:  
+      return new SixNodeTri();      
       
     case ELE_TAG_ElasticBeam2d:
       return new ElasticBeam2d();
@@ -1066,7 +1079,7 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_ShellMITC9:
       return new ShellMITC9();
-      
+
     case ELE_TAG_ShellDKGQ:      //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       return new ShellDKGQ();  //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
       
@@ -1078,15 +1091,12 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_ShellNLDKGT:
       return new ShellNLDKGT();
-	    
+
     case ELE_TAG_ASDShellQ4:   // Massimo Petracca
       return new ASDShellQ4(); // Massimo Petracca
     
     case ELE_TAG_ASDShellT3:   // Massimo Petracca
       return new ASDShellT3(); // Massimo Petracca
-
-    case ELE_TAG_ShellANDeS:
-      return new ShellANDeS();
 	    
     case ELE_TAG_BbarBrick:
       return new BbarBrick();
@@ -1098,7 +1108,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       return new Inno3DPnPJoint();	// Cristian Miculas
       
     case ELE_TAG_TwoNodeLink:				
-      return new TwoNodeLink();			
+      return new TwoNodeLink();
+
+    case ELE_TAG_TwoNodeLinkSection:				
+      return new TwoNodeLinkSection();			      
       
     case ELE_TAG_LinearElasticSpring:
         return new LinearElasticSpring();
@@ -2216,7 +2229,10 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     return new J2ThreeDimensional();
 
   case ND_TAG_SimplifiedJ2:
-    return new SimplifiedJ2();    
+    return new SimplifiedJ2();
+
+  case ND_TAG_PlaneStressSimplifiedJ2:
+    return new PlaneStressSimplifiedJ2();
     
   case ND_TAG_PlaneStressMaterial:
     return new PlaneStressMaterial();
@@ -2246,8 +2262,8 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_PlateFromPlaneStressMaterial:
     return new PlateFromPlaneStressMaterial();
 
-    //case ND_TAG_ConcreteS:
-    //    return new ConcreteS();
+  case ND_TAG_ConcreteS:
+    return new ConcreteS();
 
   case ND_TAG_PlaneStressUserMaterial:
     return new PlaneStressUserMaterial();
@@ -2352,8 +2368,17 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   case ND_TAG_InitStrainNDMaterial:
       return new InitStrainNDMaterial();
 
+  case ND_TAG_MinMaxNDMaterial:
+      return new MinMaxNDMaterial();      
+
   case ND_TAG_ASDConcrete3DMaterial:
       return new ASDConcrete3DMaterial();
+
+  case ND_TAG_PlasticDamageConcrete3d:
+      return new PlasticDamageConcrete3d();
+
+  case ND_TAG_PlasticDamageConcretePlaneStress:
+      return new PlasticDamageConcretePlaneStress();
 
   case ND_TAG_OrthotropicRotatingAngleConcreteT2DMaterial01:
 	  return new OrthotropicRotatingAngleConcreteT2DMaterial01();
@@ -2470,7 +2495,7 @@ FEM_ObjectBrokerAllClasses::getNewLoadPattern(int classTag)
 
 #ifdef _H5DRM
     case PATTERN_TAG_H5DRM:
-         return new H5DRM();
+         return new H5DRMLoadPattern();
 #endif
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getPtrLoadPattern - ";
