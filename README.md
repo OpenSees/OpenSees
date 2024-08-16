@@ -1,32 +1,28 @@
-# OpenSees Source Code Repository
+# OpenSeesPy Repository
 
-This git repository contains all revisions to OpenSees source code since Version 2.3.2.
+This git repository maintains the latest updates to OpenSees source code and version information to OpenSeesPy.
 
-Older revisions of the code are available upon request.
+If you want to make changes to OpenSees source code, please submit
+pull request to [OpenSees repository](https://github.com/OpenSees/OpenSees)
 
-If you plan on collaborating or even using OpenSees as your base code it is highly recommended that
-you FORK this repo to your own account and work on it there. We will not allow anybody to write to
-this repo. Only PULL requests will be considered. To fork the repo click on the FORK at the top of this page.
+OpenSeesPy is free for research, education, and internal use. Commercial redistribution of OpenSeesPy, such as, but not limited to, an application or cloud-based service that uses ``import openseespy``, requires a license similar to that required for commercial redistribution of OpenSees.exe. Contact Dr. Minjie Zhu (zhum@oregonstate.edu) for commercial licensing details.
 
-For a brief outline on forking we suggest:
-https://www.atlassian.com/git/tutorials/comparing-workflows/forking-workflow
-
-For a brief introduction to using your new FORK we suggest:
-https://www.atlassian.com/git/tutorials/saving-changes
 
 ## Documentation
-The documentation for OpenSees is being moved to a parellel github repo:
-https://github.com/OpenSees/OpenSeesDocumentation
+The documentation for OpenSeesPy is in:
 
-The documentation (in its present form) can be viewed in the browser using the following url:
-https://OpenSees.github.io/OpenSeesDocumentation
+https://github.com/zhuminjie/OpenSeesPyDoc
 
-## Build Instructions
-Steps to build OpenSees on Windows, Linux, and Mac:
-https://opensees.github.io/OpenSeesDocumentation/developer/build.html
+The documentation can be viewed at
 
-## Modeling Questions
-Issues related to modeling questions will be closed. Instead, post your modeling questions on the OpenSees 
-message board or in the OpenSees Facebook group.
-+ https://opensees.berkeley.edu/community
-+ https://facebook.com/groups/opensees
+https://openseespydoc.readthedocs.io/en/latest/index.html
+
+## Pip
+
+The pip package is in the subfolder:
+
+https://github.com/zhuminjie/OpenSeesPy/tree/openseespy/pip
+
+The pip install page is at
+
+https://pypi.org/project/openseespy/
