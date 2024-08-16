@@ -50,7 +50,7 @@ Beam3dThermalAction::Beam3dThermalAction(int tag,
                          double t12, double t13, double locZ4, double t14, double t15,double locZ5,
 			             int theElementTag)
   :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),
-  ThermalActionType(LOAD_TAG_Beam3dThermalAction)
+  ThermalActionType(LOAD_TAG_Beam3dThermalAction), theSeries(0)
 {
   Temp[0]=t1; Temp[1] = t2; Temp[2] = t3; Temp[3] = t4; Temp[4] = t5;
   Temp[5]=t6; Temp[6] = t8; Temp[7] = t10; Temp[8] = t12; Temp[9] = t14;
@@ -71,7 +71,7 @@ Beam3dThermalAction::Beam3dThermalAction(int tag,
 					 double t9, double locY9, 
 					 int theElementTag)
   :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag), 
-   ThermalActionType(LOAD_TAG_Beam3dThermalAction)
+   ThermalActionType(LOAD_TAG_Beam3dThermalAction), theSeries(0)
 {
   Temp[0]=t1; Temp[1] = t2; Temp[2] = t3; Temp[3] = t4; Temp[4] = t5;
   Temp[5]=t6; Temp[6] = t7; Temp[7] = t8; Temp[8] = t9; 
@@ -135,7 +135,7 @@ Beam3dThermalAction::Beam3dThermalAction(int tag,
 
 Beam3dThermalAction::Beam3dThermalAction(int tag,  
 					 int theElementTag)
-  :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),ThermalActionType(LOAD_TAG_NodalThermalAction)
+  :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),ThermalActionType(LOAD_TAG_NodalThermalAction), theSeries(0)
 {
 	 Factors.Zero();
 	 for(int i=0 ;i<15;i++) {
