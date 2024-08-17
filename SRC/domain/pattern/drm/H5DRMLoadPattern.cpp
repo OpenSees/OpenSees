@@ -1413,7 +1413,9 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
             {
             	// Get K_be and M_be matrices
             	M_be.resize(boundaryCount, exteriorCount);
+            	M_be.Zero();
             	K_be.resize(boundaryCount, exteriorCount);
+            	K_be.Zero();
 
                 const Matrix& M_ele = theElement->getMass();
                 const Matrix& K_ele = theElement->getTangentStiff();
