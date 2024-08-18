@@ -933,6 +933,7 @@ SectionForceDeformation::getTemperatureStress(const Vector &tData) //PK
 
 const Vector& SectionForceDeformation::getThermalElong(void)
 {
-  errRes.resize(this->getStressResultant().Size());
-  return errRes;
+    opserr << "SectionForceDeformation::getThermalElong() - should not be called\n";
+    errRes.resize(this->getStressResultant().Size());
+    return errRes;
 }
