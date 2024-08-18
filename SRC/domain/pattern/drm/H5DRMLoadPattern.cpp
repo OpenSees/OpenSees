@@ -1492,7 +1492,7 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                     int localPosition = nodetag2local_pos[nodeTag];
                     for (int cj = 0; cj < 3; ++cj)
                     {
-                        DRM_F[3 * localPosition + cj] += Peff_e[3*j+ci];
+                        DRM_F[3 * localPosition + cj] += Peff_e[3*j+cj];
                     }
                 }
 
