@@ -1331,19 +1331,19 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
         H5DRMout << "CalculateBoundaryForces @ t = " << currentTime << "\n";
     }
 
-    constexpr int NDOF = 3;
+    constexpr int NDF = 3;
     constexpr int MaxNodes = 8;
     
-    static Vector Peff_b(MaxNodes * NDOF); 
-    static Vector Peff_e(MaxNodes * NDOF); 
+    static Vector Peff_b(MaxNodes * NDF); 
+    static Vector Peff_e(MaxNodes * NDF); 
     
-    static Vector u_b(MaxNodes * NDOF); 
-    static Vector a_b(MaxNodes * NDOF); 
-    static Vector u_e(MaxNodes * NDOF); 
-    static Vector a_e(MaxNodes * NDOF); 
+    static Vector u_b(MaxNodes * NDF); 
+    static Vector a_b(MaxNodes * NDF); 
+    static Vector u_e(MaxNodes * NDF); 
+    static Vector a_e(MaxNodes * NDF); 
 
-    static Matrix M_be(MaxNodes * NDOF, MaxNodes * NDOF); 
-    static Matrix K_be(MaxNodes * NDOF, MaxNodes * NDOF); 
+    static Matrix M_be(MaxNodes * NDF, MaxNodes * NDF); 
+    static Matrix K_be(MaxNodes * NDF, MaxNodes * NDF); 
 
     static ID BoundaryNodes(MaxNodes); 
     BoundaryNodes.Zero();
@@ -1404,9 +1404,9 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
             if (boundaryCount != 0 && exteriorCount != 0)
             {
                 // Get K_be and M_be matrices
-                M_be.resize(NDOF*boundaryCount, NDOF*exteriorCount);
+                M_be.resize(NDF*boundaryCount, NDF*exteriorCount);
                 M_be.Zero();
-                K_be.resize(NDOF*boundaryCount, NDOF*exteriorCount);
+                K_be.resize(NDF*boundaryCount, NDF*exteriorCount);
                 K_be.Zero();
 
                 const Matrix& M_ele = theElement->getMass();
@@ -1418,25 +1418,25 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                     for (int j = 0; j < exteriorCount; ++j)
                     {
                         int e = ExteriorNodes(j);
-                        for (int ci = 0; ci < NDOF; ++ci)
+                        for (int ci = 0; ci < NDF; ++ci)
                         {
-                            for (int cj = 0; cj < NDOF; ++cj)
+                            for (int cj = 0; cj < NDF; ++cj)
                             {
-		                        M_be(NDOF*i+ci,NDOF*j+cj) = M_ele(NDOF*b+ci,NDOF*e+cj);
-		                        K_be(NDOF*i+ci,NDOF*j+cj) = K_ele(NDOF*b+ci,NDOF*e+cj);
+                                M_be(NDF*i+ci,NDF*j+cj) = M_ele(NDF*b+ci,NDF*e+cj);
+                                K_be(NDF*i+ci,NDF*j+cj) = K_ele(NDF*b+ci,NDF*e+cj);
                             }
                         }
                     }
                 }
 
                 // Get the nodal displacements and accelerations at b and e nodes
-                u_b.resize(NDOF*boundaryCount);
+                u_b.resize(NDF*boundaryCount);
                 u_b.Zero();
-                a_b.resize(NDOF*boundaryCount);
+                a_b.resize(NDF*boundaryCount);
                 a_b.Zero();
-                u_e.resize(NDOF*exteriorCount);
+                u_e.resize(NDF*exteriorCount);
                 u_e.Zero();
-                a_e.resize(NDOF*exteriorCount);
+                a_e.resize(NDF*exteriorCount);
                 a_e.Zero();
 
                 for (int i = 0; i < boundaryCount; ++i)
@@ -1464,12 +1464,12 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                 }
 
                 // Peff_b = -Mbe ae - Kbe ue
-                Peff_b.resize(NDOF*boundaryCount);
+                Peff_b.resize(NDF*boundaryCount);
                 Peff_b.addMatrixVector(0, M_be, a_e, -1.0);
                 Peff_b.addMatrixVector(1, K_be, u_e, -1.0);
 
                 // Peff_e = Meb ab + Keb ub
-                Peff_e.resize(NDOF*exteriorCount);
+                Peff_e.resize(NDF*exteriorCount);
                 Peff_e.addMatrixTransposeVector(0, M_be, a_b, 1.0);
                 Peff_e.addMatrixTransposeVector(1, K_be, u_b, 1.0);
 
@@ -1479,9 +1479,9 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                     int b = BoundaryNodes(i);
                     int nodeTag = elementNodeIDs(b);
                     int localPosition = nodetag2local_pos[nodeTag];
-                    for (int comp = 0; comp < 3; ++comp)
+                    for (int ci = 0; ci < 3; ++ci)
                     {
-                        DRM_F[3 * localPosition + comp] += Peff_b[i];
+                        DRM_F[3 * localPosition + ci] += Peff_b[i];
                     }
                 }
 
@@ -1490,9 +1490,9 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                     int e = ExteriorNodes(j);
                     int nodeTag = elementNodeIDs(e);
                     int localPosition = nodetag2local_pos[nodeTag];
-                    for (int comp = 0; comp < 3; ++comp)
+                    for (int cj = 0; cj < 3; ++cj)
                     {
-                        DRM_F[3 * localPosition + comp] += Peff_e[j];
+                        DRM_F[3 * localPosition + cj] += Peff_e[j];
                     }
                 }
 
