@@ -1433,9 +1433,13 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
 
                 // Get the nodal displacements and accelerations at b and e nodes
                 u_b.resize(boundaryCount);
+                u_b.Zero();
                 a_b.resize(boundaryCount);
+                a_b.Zero();
                 u_e.resize(exteriorCount);
+                u_e.Zero();
                 a_e.resize(exteriorCount);
+                a_e.Zero();
 
                 for (int i = 0; i < boundaryCount; ++i)
                 {
@@ -1445,7 +1449,7 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                 	for (int comp = 0; comp < 3; ++comp)
                     {
                 		u_b(3 * i + comp) = DRM_D[3 * localPosition + comp];
-                		a_b(3 * i + comp) = DRM_D[3 * localPosition + comp];
+                		a_b(3 * i + comp) = DRM_A[3 * localPosition + comp];
                 	}
                 }
 
@@ -1457,7 +1461,7 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                 	for (int comp = 0; comp < 3; ++comp)
                     {
                 		u_e(3 * j + comp) = DRM_D[3 * localPosition + comp];
-                		a_e(3 * j + comp) = DRM_D[3 * localPosition + comp];
+                		a_e(3 * j + comp) = DRM_A[3 * localPosition + comp];
                 	}
                 }
 
