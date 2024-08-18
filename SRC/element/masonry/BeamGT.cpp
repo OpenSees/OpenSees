@@ -66,15 +66,15 @@ void* OPS_BeamGT()
     return theBeam;
   }
 
-  if (numRemainingArgs != 12) {
-    //opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? E? G? A? I? Lp1? Lp2? Lr? fc? Nite? Tol?\n";
-	opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? Lp1? Lp2? Lr? fc? Nite? Tol?\n";
+  if (numRemainingArgs != 10) {
+    //opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? E? G? A? I? Lp1? Lp2? Lr? fc? \n";
+	opserr << "ERROR - BeamGT not enough args provided, want: element BeamGT tag? Node1? Node2?  matTag? matTag2? matTag3? Lp1? Lp2? Lr? fc? \n";
    // numMyBeam++;
   }
 
   // get the id and end nodes 
-  int iData[7];
- double dData[5];
+  int iData[6];
+ double dData[4];
   int numData;
 
   numData = 3;
@@ -127,19 +127,10 @@ void* OPS_BeamGT()
     opserr << "WARNING material with tag " << matID3 << "not found for element " << eleTag << endln;
     return 0;
   }
-	numData = 1;
-   if (OPS_GetIntInput(&numData, &iData[6]) != 0) {
-		   opserr << "WARNING error reading element Iteration number for element " << eleTag << endln;
-	   return 0;
-   }
-   numData = 1;
-   if (OPS_GetDoubleInput(&numData, &dData[4]) != 0) {
-	   opserr << "WARNING error reading element Tolerance for element " << eleTag << endln;
-	   return 0;
-   }
+
     // now create the truss and add it to the Domain
 
-  theBeam = new BeamGT(eleTag, iData[1], iData[2], *theMaterial, *theMaterial2, *theMaterial3, dData[0],dData[1],dData[2],dData[3], iData[6], dData[4]);
+  theBeam = new BeamGT(eleTag, iData[1], iData[2], *theMaterial, *theMaterial2, *theMaterial3, dData[0],dData[1],dData[2],dData[3]);
 
   if (theBeam == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
@@ -157,10 +148,10 @@ void* OPS_BeamGT()
 BeamGT::BeamGT(int tag, 
                    int Nd1, int Nd2,
                    UniaxialMaterial &theMat, UniaxialMaterial &theMat2, UniaxialMaterial &theMat3,
-                    double lp1, double lp2, double lr, double fc, int Nite, double Tol)
+                    double lp1, double lp2, double lr, double fc)
 :Element(tag, ELE_TAG_BeamGT),     
  externalNodes(2),
- trans(4,4),LP1(lp1),LP2(lp2),LR(lr),FC(fc), theMaterial(0),theMaterial2(0),theMaterial3(0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3),NITE(Nite), TOL(Tol)
+ trans(4,4),LP1(lp1),LP2(lp2),LR(lr),FC(fc), theMaterial(0),theMaterial2(0),theMaterial3(0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3)
  {       
     // allocate memory for numMaterials1d uniaxial material models
   theMaterial = new UniaxialMaterial *[2];
@@ -217,7 +208,7 @@ BeamGT::BeamGT()
  theMaterial2(0),
  theMaterial3(0),
  externalNodes(2),
- trans(4,4), LP1(0.0),LP2(0.0), LR(0.0),FC(0.0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3),NITE(0),TOL(0.0)
+ trans(4,4), LP1(0.0),LP2(0.0), LR(0.0),FC(0.0),Tm(6,6),TTm(6,6),Cdefor(3),Tdefor(3),Cdespla(6),Tdespla(6),Stifloc(6,6),Stif0(6,6),Cesf(3),Tesf(3),RR(3)
 {
   theNodes[0] = 0; 
   theNodes[1] = 0;
@@ -534,11 +525,6 @@ BeamGT::update()
 			DV = Am * (v1 - v2) + B * r1 + C * r2;
 			DM1 = (B * (v1 - v2) + fa1 * r1 + fb1 * r2);
 			DM2 = C * (v1 - v2) + fb1 * r1 + fd1 * r2;
-			double MCE1 = DM1 + theMaterial[0]->getStress();
-			double MCE2 = DM2 + theMaterial[1]->getStress();
-			double VCE = DV + theMaterial2->getStress();
-
-
 
 			// incremento de curvaturas
 			double dcur1 = DM1 / theMaterial[0]->getTangent();
@@ -554,34 +540,10 @@ BeamGT::update()
 			ret = theMaterial3->setTrialStrain(daxc);
 			double N = 1.0 * theMaterial3->getStress();
 
-
-			double err = 1;
-			int it = 0;
-			if (NITE == 0) {
 				ret = theMaterial2->setTrialStrain(dgamc, N);
 				ret = theMaterial[0]->setTrialStrain(dcur1c, N);
 				ret = theMaterial[1]->setTrialStrain(dcur2c, N);
-			}
-			else {
-				while (err > TOL && it < NITE) {
-					dcur1c = dcur1c + ddcur1;
-					dcur2c = dcur2c + ddcur2;
-					dgamc = dgamc + ddgam;
 
-					ret = theMaterial2->setTrialStrain(dgamc, N);
-					ret = theMaterial[0]->setTrialStrain(dcur1c, N);
-					ret = theMaterial[1]->setTrialStrain(dcur2c, N);
-					DM1 = MCE1 - theMaterial[0]->getStress();
-					DM2 = MCE2 - theMaterial[1]->getStress();
-					DV = VCE - theMaterial2->getStress();
-					err = sqrt(DM1 * DM1 + DM2 * DM2 + DV * DV);
-					ddcur1 = DM1 / theMaterial[0]->getTangent();
-					ddcur2 = DM2 / theMaterial[1]->getTangent();
-					ddgam = DV / theMaterial2->getTangent();
-					it = it + 1;
-				}
-			}
-			//opserr<< "error : " << err << "iter :"<< it<<"\n";
   return ret;
 }
 
@@ -1014,8 +976,6 @@ BeamGT::Print(OPS_Stream &s, int flag)
   s << "Plastic hinge length end 2 :" << LP2 << "\n";
   s << "Length subjected to shear  :" << LR << "\n";
   s << "Factor for shear correction:" << FC << "\n";
-  s << "Number of iterations:" << NITE << "\n";
-  s << "Tolerance:" << TOL << "\n";
   s << " " << "\n";
 }
 
