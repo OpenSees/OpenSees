@@ -1335,23 +1335,15 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
     constexpr int MaxNodes = 8;
     
     static Vector Peff_b(MaxNodes * NDOF); 
-    Peff_b.Zero();
     static Vector Peff_e(MaxNodes * NDOF); 
-    Peff_e.Zero();
     
     static Vector u_b(MaxNodes * NDOF); 
-    u_b.Zero();
     static Vector a_b(MaxNodes * NDOF); 
-    a_b.Zero();
     static Vector u_e(MaxNodes * NDOF); 
-    u_e.Zero();
     static Vector a_e(MaxNodes * NDOF); 
-    a_e.Zero();
 
     static Matrix M_be(MaxNodes * NDOF, MaxNodes * NDOF); 
-    M_be.Zero();
     static Matrix K_be(MaxNodes * NDOF, MaxNodes * NDOF); 
-    K_be.Zero();
 
     static ID BoundaryNodes(MaxNodes); 
     BoundaryNodes.Zero();
@@ -1452,10 +1444,10 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                     int b = BoundaryNodes(i);
                     int nodeTag = elementNodeIDs(b);
                     int localPosition = nodetag2local_pos[nodeTag];
-                    for (int comp = 0; comp < 3; ++comp)
+                    for (int ci = 0; ci < 3; ++ci)
                     {
-                        u_b(3 * i + comp) = DRM_D[3 * localPosition + comp];
-                        a_b(3 * i + comp) = DRM_A[3 * localPosition + comp];
+                        u_b(3 * i + ci) = DRM_D[3 * localPosition + ci];
+                        a_b(3 * i + ci) = DRM_A[3 * localPosition + ci];
                     }
                 }
 
@@ -1464,20 +1456,20 @@ bool H5DRMLoadPattern::CalculateBoundaryForces(double currentTime)
                     int e = ExteriorNodes(j);
                     int nodeTag = elementNodeIDs(e);
                     int localPosition = nodetag2local_pos[nodeTag];
-                    for (int comp = 0; comp < 3; ++comp)
+                    for (int cj = 0; cj < 3; ++cj)
                     {
-                        u_e(3 * j + comp) = DRM_D[3 * localPosition + comp];
-                        a_e(3 * j + comp) = DRM_A[3 * localPosition + comp];
+                        u_e(3 * j + cj) = DRM_D[3 * localPosition + cj];
+                        a_e(3 * j + cj) = DRM_A[3 * localPosition + cj];
                     }
                 }
 
                 // Peff_b = -Mbe ae - Kbe ue
-                Peff_b.resize(boundaryCount);
+                Peff_b.resize(NDOF*boundaryCount);
                 Peff_b.addMatrixVector(0, M_be, a_e, -1.0);
                 Peff_b.addMatrixVector(1, K_be, u_e, -1.0);
 
                 // Peff_e = Meb ab + Keb ub
-                Peff_e.resize(exteriorCount);
+                Peff_e.resize(NDOF*exteriorCount);
                 Peff_e.addMatrixTransposeVector(0, M_be, a_b, 1.0);
                 Peff_e.addMatrixTransposeVector(1, K_be, u_b, 1.0);
 
