@@ -49,7 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SectionRepres.h>
 #include <TimeSeries.h>
 #include <CrdTransf.h>
-#include <damping.h>
+#include <Damping.h>
 #include <BeamIntegration.h>
 #include <NodalLoad.h>
 #include <AnalysisModel.h>

@@ -79,7 +79,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NDMaterial.h>
 #include <LoadPattern.h>
 #include <CrdTransf.h>
-#include <damping.h>
+#include <Damping.h>
 #include <BeamIntegration.h>
 #include <Newmark.h>
 #include <EigenSOE.h>
