@@ -953,6 +953,9 @@ OpenSeesCommands::wipe()
     // wipe GeomTransf
     OPS_clearAllCrdTransf();
 
+    // wipe damping
+    OPS_clearAllDamping();
+
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();
 

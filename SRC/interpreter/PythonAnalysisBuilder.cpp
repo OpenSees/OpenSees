@@ -750,6 +750,9 @@ PyObject *ops_wipeModel(PyObject *self, PyObject *args)
     // wipe GeomTransf
     OPS_ClearAllCrdTransf();
 
+    // wipe damping
+    OPS_clearAllDamping();
+
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();
     
