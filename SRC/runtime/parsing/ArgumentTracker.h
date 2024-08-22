@@ -10,6 +10,7 @@
 //
 // Written: cmp
 //
+#pragma once
 #include <set>
 #include <array>
 #include <vector>

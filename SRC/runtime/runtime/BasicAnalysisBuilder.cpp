@@ -6,17 +6,12 @@
 //
 // Written: Claudio Perez
 //
-//  ANALYSIS_TRANSIENT
-//  ANALYSIS_UNDEFINED
-//  ANALYSIS_STATIC
-//  ANALYSIS_EIGEN
-//
-#include "BasicAnalysisBuilder.h"
-#include <Domain.h>
 #include <assert.h>
 #include <stdio.h>
 #include <unordered_map>
 
+#include "BasicAnalysisBuilder.h"
+#include <Domain.h>
 #include <G3_Logging.h>
 // Abstract classes
 #include <EquiSolnAlgo.h>
@@ -345,7 +340,7 @@ BasicAnalysisBuilder::analyzeStatic(int numSteps)
       if (result < 0) {
         opserr << "StaticAnalysis::analyze - the AnalysisModel failed\n";
         opserr << " at step: " << i << " with domain at load factor ";
-        opserr << theDomain->getCurrentTime() << endln;
+        opserr << theDomain->getCurrentTime() << "\n";
         theDomain->revertToLastCommit();
         return -2;
       }
@@ -359,15 +354,15 @@ BasicAnalysisBuilder::analyzeStatic(int numSteps)
         domainStamp = stamp;
         result = this->domainChanged();
         if (result < 0) {
-          opserr << "BasicAnalysisBuilder::analyzeStatic - domainChanged failed";
-          opserr << " at step " << i << " of " << numSteps << endln;
+          opserr << "domainChanged failed";
+          opserr << " at step " << i << " of " << numSteps << "\n";
           return -1;
         }
       }
 
       result = theStaticIntegrator->newStep();
       if (result < 0) {
-        opserr << "StaticAnalysis::analyze - the Integrator failed at step: " << i
+        opserr << "The Integrator failed at step: " << i
                << " with domain at load factor " << theDomain->getCurrentTime() << "\n";
         theDomain->revertToLastCommit();
         theStaticIntegrator->revertToLastStep();
@@ -390,7 +385,7 @@ BasicAnalysisBuilder::analyzeStatic(int numSteps)
         opserr << "StaticAnalysis::analyze - ";
         opserr << "the Integrator failed to commit";
         opserr << " at step: " << i << " with domain at load factor ";
-        opserr << theDomain->getCurrentTime() << endln;
+        opserr << theDomain->getCurrentTime() << "\n";
 
         theDomain->revertToLastCommit();
         theStaticIntegrator->revertToLastStep();
@@ -466,7 +461,7 @@ BasicAnalysisBuilder::analyzeStep(double dT)
 
   if (theTransientIntegrator->newStep(dT) < 0) {
     opserr << "DirectIntegrationAnalysis::analyze() - the Integrator failed";
-    opserr << " at time " << theDomain->getCurrentTime() << endln;
+    opserr << " at time " << theDomain->getCurrentTime() << "\n";
     theDomain->revertToLastCommit();
     theTransientIntegrator->revertToLastStep();
     return -2;
@@ -487,7 +482,7 @@ BasicAnalysisBuilder::analyzeStep(double dT)
   if (result < 0) {
     opserr << "DirectIntegrationAnalysis::analyze() - ";
     opserr << "the Integrator failed to commit";
-    opserr << " at time " << theDomain->getCurrentTime() << endln;
+    opserr << " at time " << theDomain->getCurrentTime() << "\n";
     theDomain->revertToLastCommit();
     theTransientIntegrator->revertToLastStep();
     return -4;
@@ -831,7 +826,7 @@ BasicAnalysisBuilder::eigen(int numMode, bool generalized, bool findSmallest)
   }
 
   //
-  // if generalized is true, form M
+  // If generalized is true, form M
   //
   if (generalized == true) {
     FE_EleIter &theEles2 = theAnalysisModel->getFEs();
@@ -858,7 +853,7 @@ BasicAnalysisBuilder::eigen(int numMode, bool generalized, bool findSmallest)
   }
 
   //
-  // solve for the eigen values & vectors
+  // Solve for the eigen values & vectors
   //
   if (theEigenSOE->solve(numMode, generalized, findSmallest) < 0) {
       opserr << G3_WARN_PROMPT << "EigenSOE failed in solve()\n";
@@ -866,7 +861,7 @@ BasicAnalysisBuilder::eigen(int numMode, bool generalized, bool findSmallest)
   }
 
   //
-  // now set the eigenvalues and eigenvectors in the model
+  // Store the eigenvalues and eigenvectors in the model
   //
   theAnalysisModel->setNumEigenvectors(numMode);
   Vector theEigenvalues(numMode);
@@ -910,12 +905,15 @@ BasicAnalysisBuilder::getConvergenceTest()
   return theTest;
 }
 
-void
+int
 BasicAnalysisBuilder::formUnbalance()
 {
-    if (theStaticIntegrator != 0)
-      theStaticIntegrator->formUnbalance();
-    else if (theTransientIntegrator != 0)
-      theTransientIntegrator->formUnbalance();
+    if (theStaticIntegrator != nullptr)
+      return theStaticIntegrator->formUnbalance();
+
+    else if (theTransientIntegrator != nullptr)
+      return theTransientIntegrator->formUnbalance();
+
+    return -1;
 }
 
