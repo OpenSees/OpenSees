@@ -887,16 +887,27 @@ J2PlateFibre::recvSelf (int commitTag, Channel &theChannel,
 }
 
 void
-J2PlateFibre::Print (OPS_Stream &s, int flag)
+J2PlateFibre::Print(OPS_Stream &s, int flag)
 {
-  s << "J2 Plate Fibre Material Model" << endln;
-  s << "\tE:  " << E << endln;
-  s << "\tnu:  " << nu << endln;
-  s << "\tsigmaY:  " << sigmaY << endln;
-  s << "\tHiso:  " << Hiso << endln;
-  s << "\tHkin:  " << Hkin << endln;
-  
-  return;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "J2 Plate Fibre Material Model" << endln;
+        s << "\tE:  " << E << endln;
+        s << "\tnu:  " << nu << endln;
+        s << "\tsigmaY:  " << sigmaY << endln;
+        s << "\tHiso:  " << Hiso << endln;
+        s << "\tHkin:  " << Hkin << endln;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"J2PlateFibre\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << nu << ", ";
+        s << "\"fy\": " << sigmaY << ", ";
+        s << "\"Hiso\": " << Hiso << ", ";
+        s << "\"Hkin\": " << Hkin << "}";
+    }
 }
 
 int
