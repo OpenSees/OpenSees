@@ -334,7 +334,7 @@ getIndexNeg(Vector v,double value)
 
  void CFSSSWP::SetSpline(void)
  {
-			const int Size = 5;
+			constexpr int Size = 5;
 			double X[Size]; double Y[Size];
 			
 			int fifth = getIndexNeg(envlpNegStrain,state3Strain(0));
@@ -682,7 +682,7 @@ getIndexNeg(Vector v,double value)
  
 		 // BSpline Adds
 
-		 const int Size = 9;
+		 constexpr int Size = 9;
 		 double X[Size]; double Y[Size];
 
 		 for(int i = 0;i < 2;i++)
