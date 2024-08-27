@@ -79,6 +79,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NDMaterial.h>
 #include <LoadPattern.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 #include <BeamIntegration.h>
 #include <Newmark.h>
 #include <EigenSOE.h>
@@ -749,6 +750,9 @@ PyObject *ops_wipeModel(PyObject *self, PyObject *args)
 
     // wipe GeomTransf
     OPS_ClearAllCrdTransf();
+
+    // wipe damping
+    OPS_clearAllDamping();
 
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();
