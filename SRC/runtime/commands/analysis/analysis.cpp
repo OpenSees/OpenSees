@@ -623,12 +623,8 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
 
 
     for (int i = 0; i < n; ++i) {
-      for (int j = 0; j < m; j++) {
-//        char buffer[40];
-//        sprintf(buffer, "%.10e ", (*A)(i, j));
-//        Tcl_AppendResult(interp, buffer, NULL);
+      for (int j = 0; j < m; j++)
         Tcl_ListObjAppendElement(interp, list, Tcl_NewDoubleObj((*A)(i, j)));
-      }
     }
     Tcl_SetObjResult(interp, list);
 
