@@ -111,10 +111,9 @@ void* OPS_PVDRecorder()
 	    }
 	    PVDRecorder::EleData edata;
 	    numdata = OPS_GetNumRemainingInputArgs();
-	    edata.resize(numdata);
-	    for(int i=0; i<numdata; i++) {
-		edata[i] = OPS_GetString();
-	    }
+	    edata.resize(1);
+	    edata[0] = OPS_GetString();
+	    // opserr << "WARNING - EDATA[i]="<< edata[0].c_str() << "\n";
 	    eledata.push_back(edata);
 	} else if(strcmp(type, "-dT") == 0) {
 	    numdata = OPS_GetNumRemainingInputArgs();
