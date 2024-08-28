@@ -102,11 +102,29 @@ MinMaxNDMaterial::MinMaxNDMaterial(int tag, NDMaterial& material, double epsmin,
     Tfailed(false), Cfailed(false), myType(ThreeDimensional)
 {
     // get copy of the main material
-    theMaterial = material.getCopy("ThreeDimensional");
+    theMaterial = material.getCopy();
     if (theMaterial == 0) {
         opserr << "MinMaxNDMaterial::MinMaxNDMaterial -- failed to get copy of material (a 3D material is required)\n";
         exit(-1);
     }
+
+    const char *type = theMaterial->getType();
+    if (strncmp(type,"ThreeDimensional",80) == 0)
+      myType = ThreeDimensional;
+    if (strncmp(type,"PlateFiber",80) == 0)
+      myType = PlateFiber;
+    if (strncmp(type,"PlaneStress",80) == 0 ||
+	strncmp(type,"PlaneStress2D",80) == 0)
+      myType = PlaneStress2d;
+    if (strncmp(type,"BeamFiber",80) == 0 ||
+	strncmp(type,"TimoshenkoFiber",80) == 0)
+      myType = BeamFiber;
+    if (strncmp(type,"BeamFiber2d",80) == 0 ||
+	strncmp(type,"TimoshenkoFiber2d",80) == 0)
+      myType = BeamFiber2d;    
+    if (strncmp(type,"BeamFiber2dPS",80) == 0 ||
+	strncmp(type,"TimoshenkoFiber2dPS",80) == 0)
+      myType = BeamFiber2dPS;    
 }
 
 MinMaxNDMaterial::MinMaxNDMaterial()
@@ -250,6 +268,8 @@ MinMaxNDMaterial::commitState(void)
 int
 MinMaxNDMaterial::revertToLastCommit(void)
 {
+  Tfailed = Cfailed;
+  
   // Check if failed at last step
   if (Cfailed)
     return 0;
@@ -290,21 +310,21 @@ MinMaxNDMaterial::getCopy(const char *type)
   MinMaxNDMaterial *theCopy = new MinMaxNDMaterial(this->getTag(), *copy, minStrain, maxStrain);
   delete copy;
 
-  if (strcmp(type,"PlaneStress") == 0 ||
-      strcmp(type,"PlaneStress2D") == 0)
+  if (strncmp(type,"PlaneStress",80) == 0 ||
+      strncmp(type,"PlaneStress2D",80) == 0)
     theCopy->myType = PlaneStress2d;
-  if (strcmp(type,"BeamFiber") == 0 ||
-      strcmp(type,"TimoshenkoFiber") == 0)
+  if (strncmp(type,"BeamFiber",80) == 0 ||
+      strncmp(type,"TimoshenkoFiber",80) == 0)
     theCopy->myType = BeamFiber;
-  if (strcmp(type,"BeamFiber2d") == 0 ||
-      strcmp(type,"TimoshenkoFiber2d") == 0)
+  if (strncmp(type,"BeamFiber2d",80) == 0 ||
+      strncmp(type,"TimoshenkoFiber2d",80) == 0)
     theCopy->myType = BeamFiber2d;    
-  if (strcmp(type,"BeamFiber2dPS") == 0 ||
-      strcmp(type,"TimoshenkoFiber2dPS") == 0)
+  if (strncmp(type,"BeamFiber2dPS",80) == 0 ||
+      strncmp(type,"TimoshenkoFiber2dPS",80) == 0)
     theCopy->myType = BeamFiber2dPS;
-  if (strcmp(type,"PlateFiber") == 0)
+  if (strncmp(type,"PlateFiber",80) == 0)
     theCopy->myType = PlateFiber;
-  if (strcmp(type,"ThreeDimensonal") == 0)
+  if (strncmp(type,"ThreeDimensonal",80) == 0)
     theCopy->myType = ThreeDimensional;      
   
   theCopy->Cfailed = Cfailed;
@@ -334,7 +354,7 @@ MinMaxNDMaterial::sendSelf(int cTag, Channel& theChannel)
 
   int dbTag = this->getDbTag();
   
-  static ID dataID(3);
+  static ID dataID(4);
   dataID(0) = this->getTag();
   dataID(1) = theMaterial->getClassTag();
   int matDbTag = theMaterial->getDbTag();
@@ -347,7 +367,8 @@ MinMaxNDMaterial::sendSelf(int cTag, Channel& theChannel)
     opserr << "MinMaxNDMaterial::sendSelf() - failed to send the ID\n";
     return -1;
   }
-
+  dataID(3) = myType;
+  
   static Vector dataVec(3);
   dataVec(0) = minStrain;
   dataVec(1) = maxStrain;
@@ -375,7 +396,7 @@ MinMaxNDMaterial::recvSelf(int cTag, Channel& theChannel,
 {
   int dbTag = this->getDbTag();
   
-  static ID dataID(3);
+  static ID dataID(4);
   if (theChannel.recvID(dbTag, cTag, dataID) < 0) {
     opserr << "MinMaxNDMaterial::recvSelf() - failed to get the ID\n";
     return -1;
@@ -393,7 +414,8 @@ MinMaxNDMaterial::recvSelf(int cTag, Channel& theChannel,
     }
   }
   theMaterial->setDbTag(dataID(2));
-
+  myType = (type)dataID(3);
+  
   static Vector dataVec(3);
   if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
     opserr << "MinMaxNDMaterial::recvSelf() - failed to get the Vector\n";
@@ -408,12 +430,12 @@ MinMaxNDMaterial::recvSelf(int cTag, Channel& theChannel,
   else
     Cfailed = false;
 
-  Tfailed = Cfailed;
-  
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "MinMaxNDMaterial::recvSelf() - failed to get the Material\n";
     return -4;
   }
+
+  this->revertToLastCommit();
   
   return 0;
 }
@@ -421,10 +443,21 @@ MinMaxNDMaterial::recvSelf(int cTag, Channel& theChannel,
 void
 MinMaxNDMaterial::Print(OPS_Stream& s, int flag)
 {
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\t\t\t{";
+    s << "\"name\": \"" << this->getTag() << "\", ";
+    s << "\"type\": \"MinMaxNDMaterial\", ";    
+    s << "\"material\": \"" << theMaterial->getTag() << "\", ";
+    s << "\"minStrain\": " << minStrain << ", ";
+    s << "\"maxStrain\": " << maxStrain;
+    s << "\t\t\t}";
+  }
+  else {
     s << "MinMaxNDMaterial tag: " << this->getTag() << endln;
     s << "\tMaterial: " << theMaterial->getTag() << endln;
     s << "  min strain: " << minStrain << endln;
     s << "  max strain: " << maxStrain << endln;
+  }
 }
 
 int
