@@ -30,7 +30,6 @@
 #include <CrdTransf.h>
 #include <NDMaterial.h>
 
-class TclBasicBuilder;
 
 #include <UniaxialMaterial.h>
 #include <MultipleShearSpring.h>
@@ -67,16 +66,11 @@ static Tcl_CmdProc TclBasicBuilder_addWheelRail;
 extern OPS_Routine OPS_ElasticBeam3d;
 extern void *OPS_ElasticBeam2d(G3_Runtime *, const ID &);
 
-typedef int (G3_TclElementCommand)(ClientData, Tcl_Interp*, int, const char** const, Domain*, TclBasicBuilder*);
 
-Tcl_CmdProc TclCommand_addFlatSliderBearing;
-// extern OPS_Routine OPS_FlatSliderSimple2d;
-// extern OPS_Routine OPS_FlatSliderSimple3d;
-
-Tcl_CmdProc TclCommand_addSingleFPBearing;
-// extern OPS_Routine OPS_SingleFPSimple2d;
-// extern OPS_Routine OPS_SingleFPSimple3d;
+// Frame
 Tcl_CmdProc TclBasicBuilder_addElasticBeam;
+Tcl_CmdProc TclBasicBuilder_addGradientInelasticBeamColumn;
+Tcl_CmdProc TclBasicBuilder_addForceBeamColumn;
 
 // Zero-length
 Tcl_CmdProc TclCommand_addZeroLength;
@@ -95,23 +89,27 @@ Tcl_CmdProc TclBasicBuilder_addJoint3D;
 Tcl_CmdProc TclBasicBuilder_addBeamColumnJoint;
 
 // Other
-G3_TclElementCommand TclBasicBuilder_addMultipleShearSpring;
-G3_TclElementCommand TclBasicBuilder_addMultipleNormalSpring;
 Tcl_CmdProc TclBasicBuilder_addElement2dYS;
 Tcl_CmdProc TclBasicBuilder_addElastic2dGNL;
 Tcl_CmdProc TclBasicBuilder_addKikuchiBearing;
+
+
+Tcl_CmdProc TclBasicBuilder_addGenericCopy;
+Tcl_CmdProc TclBasicBuilder_addGenericClient;
+
+Tcl_CmdProc TclCommand_addFlatSliderBearing;
+Tcl_CmdProc TclCommand_addSingleFPBearing;
+
+class TclBasicBuilder;
+typedef int (G3_TclElementCommand)(ClientData, Tcl_Interp*, int, const char** const, Domain*, TclBasicBuilder*);
+G3_TclElementCommand TclBasicBuilder_addMultipleShearSpring;
+G3_TclElementCommand TclBasicBuilder_addMultipleNormalSpring;
 G3_TclElementCommand TclBasicBuilder_addYamamotoBiaxialHDR;
 G3_TclElementCommand TclBasicBuilder_addMasonPan12;
 G3_TclElementCommand TclBasicBuilder_addMasonPan3D;
 G3_TclElementCommand TclBasicBuilder_addBeamGT;
 
 
-Tcl_CmdProc TclBasicBuilder_addGradientInelasticBeamColumn;
-
-Tcl_CmdProc TclBasicBuilder_addForceBeamColumn;
-
-Tcl_CmdProc TclBasicBuilder_addGenericCopy;
-Tcl_CmdProc TclBasicBuilder_addGenericClient;
 
 
 // Shells
@@ -126,7 +124,6 @@ Element* TclDispatch_newShellNLDKGQ(ClientData, Tcl_Interp*, int, TCL_Char** con
 Element* TclDispatch_newShellNLDKGQThermal(ClientData, Tcl_Interp*, int, TCL_Char** const);
 Element* TclDispatch_newShellNLDKGT(ClientData, Tcl_Interp*, int, TCL_Char** const);
 
-Element* TclDispatch_newTri31(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv);
 
 
 int
@@ -366,12 +363,6 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
     theEle = TclDispatch_newShellANDeS(clientData, interp, argc, argv);
   }
 
-  else if (strcmp(argv[1], "Tri31") == 0) {
-    // ID info;
-    // theEle = OPS_Tri31(info);
-    theEle = TclDispatch_newTri31(clientData, interp, argc, argv);
-  }
-
 
   // if one of the above worked
   theElement = (Element*)theEle;
@@ -412,6 +403,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
   else if (strcmp(argv[1], "DisplFrame") == 0 ||
            strcmp(argv[1], "CubicFrame") == 0 ||
            strcmp(argv[1], "ForceFrame") == 0 ||
+           strcmp(argv[1], "ExactFrame") == 0 ||
            strcmp(argv[1], "ForceDeltaFrame") == 0 ||
 
            strcmp(argv[1], "ForceBeamColumn") == 0 ||
@@ -2054,71 +2046,5 @@ TclBasicBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc
   }
 
   return 0;
-}
-
-
-#include <Tri31.h>
-Element *
-TclDispatch_newTri31(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **const argv)
-{
-  BasicModelBuilder* builder = static_cast<BasicModelBuilder*>(clientData);
-
-  // Pointer to an element that will be returned
-  Element *theElement = nullptr;
-  
-  if (argc < 7) {
-    opserr << "Invalid #args, want: element element Tri31 eleTag? iNode? jNode? kNode? thk? type? matTag? <pressure? rho? b1? b2?>\n";
-    return nullptr;
-  }
-
-  int iData[5];
-  char *theType;
-  double dData[5];
-  dData[1] = 0.0;
-  dData[2] = 0.0;
-  dData[3] = 0.0;
-  dData[4] = 0.0;
-  
-  int numData = 4;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
-    opserr << "WARNING invalid integer data: element Tri31\n";
-    return 0;
-  }
-  
-  numData = 1;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "WARNING invalid thickness data: element Tri31 " << iData[0] << endln;
-    return 0;
-  }
-  
-  theType = (char*)OPS_GetString();
-  
-  numData = 1;
-  if (OPS_GetIntInput(&numData, &iData[4]) != 0) {
-    opserr << "WARNING invalid integer data: element Tri31\n";
-    return 0;
-  }
-  int matID = iData[4];
-  
-  NDMaterial *theMaterial = builder->getTypedObject<NDMaterial>(matID);
-  if (theMaterial == 0) {
-    opserr << "WARNING element Tri31 " << iData[0] << endln;
-    opserr << " Material: " << matID << "not found\n";
-    return 0;
-  }
-  
-  if (argc == 11) {
-    numData = 4;
-    if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
-      opserr << "WARNING invalid optional data: element Tri31 " << iData[0] << endln;
-      return 0;
-    }
-  }
-  
-  // parsing was successful, allocate the element
-  theElement = new Tri31(iData[0], iData[1], iData[2], iData[3],
-			 *theMaterial, theType, 
-			 dData[0], dData[1], dData[2], dData[3], dData[4]);
-  return theElement;
 }
 

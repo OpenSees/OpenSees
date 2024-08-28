@@ -172,6 +172,7 @@ Tcl_CmdProc TclBasicBuilder_addEightNodeQuad;
 Tcl_CmdProc TclBasicBuilder_addFourNodeQuadUP;
 Tcl_CmdProc TclBasicBuilder_addNineFourNodeQuadUP;
 Tcl_CmdProc TclBasicBuilder_addBBarFourNodeQuadUP;
+Tcl_CmdProc TclDispatch_newTri31;
 // Brick
 Tcl_CmdProc TclBasicBuilder_addBrickUP;
 Tcl_CmdProc TclBasicBuilder_addBBarBrickUP;
@@ -210,7 +211,7 @@ element_dispatch_tcl = {
   {"quad8n",                    TclBasicBuilder_addEightNodeQuad},
 
   {"tri6n",                     TclBasicBuilder_addSixNodeTri},
-
+  {"tri31",                     TclDispatch_newTri31},
   {"quadUP",                    TclBasicBuilder_addFourNodeQuadUP},
 
   {"9_4_QuadUP",                TclBasicBuilder_addNineFourNodeQuadUP},

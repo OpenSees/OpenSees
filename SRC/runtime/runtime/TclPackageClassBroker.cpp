@@ -67,7 +67,7 @@ using namespace OpenSees::Hash::literals;
 #include "Steel2.h"
 #include "Steel4.h"
 #include "FatigueMaterial.h"
-#include "ReinforcingSteel.h"
+#include "ReinforcingSteel/ReinforcingSteel.h"
 #include "HardeningMaterial.h"
 #include "HystereticMaterial.h"
 #include "EPPGapMaterial.h"
@@ -224,8 +224,13 @@ using namespace OpenSees::Hash::literals;
 #include "Frame/Elastic/ModElasticBeam3d.h"
 #include "Frame/Elastic/ElasticTimoshenkoBeam2d.h"
 #include "Frame/Elastic/ElasticTimoshenkoBeam3d.h"
-#include "Frame/ForceInterp/ForceBeamColumn2d.h"
-#include "Frame/ForceInterp/ForceBeamColumn3d.h"
+#include "Frame/Other/Force/ForceBeamColumn2d.h"
+#include "Frame/Other/Force/ForceBeamColumn3d.h"
+#include "Frame/Other/Displ/DispBeamColumn2d.h"
+#include "Frame/Other/Displ/DispBeamColumn3d.h"
+#include "Frame/Other/Displ/DispBeamColumnAsym3d.h"   // Xinlong Du
+#include "Frame/Other/Mixed/MixedBeamColumnAsym3d.h"  // Xinlong Du
+
 
 #include "UWelements/SSPquad.h"
 #include "UWelements/SSPquadUP.h"
@@ -241,11 +246,6 @@ using namespace OpenSees::Hash::literals;
 
 #include "Other/PML/PML2D.h"
 #include "Other/PML/PML3D.h"
-
-#include "Frame/Displ/DispBeamColumn2d.h"
-#include "Frame/Displ/DispBeamColumn3d.h"
-#include "Frame/Displ/DispBeamColumnAsym3d.h"   // Xinlong Du
-#include "Frame/Mixed/MixedBeamColumnAsym3d.h"  // Xinlong Du
 
 #include "Shell/ShellMITC4.h"
 #include "Shell/ShellMITC9.h"
@@ -326,6 +326,9 @@ using namespace OpenSees::Hash::literals;
 
 // node header files
 #include "Node.h"
+#ifdef HEAP_NODE
+#include "HeapNode.h"
+#endif
 
 #include "FileStream.h"
 #include "StandardStream.h"
@@ -742,7 +745,11 @@ TclPackageClassBroker::getNewNode(int classTag)
 {
   switch (classTag) {
   case NOD_TAG_Node:
+#ifdef HEAP_NODE
+    return new HeapNode(classTag);
+#else
     return new Node(classTag);
+#endif
 
   default:
     opserr << "TclPackageClassBroker::getNewNode - ";

@@ -75,10 +75,10 @@ public:
     int  eigen(int numMode, bool generalized, bool findSmallest);
     int  getNumEigen() {return numEigen;};
 
-    void formUnbalance();
+    int formUnbalance();
 
     VariableTimeStepDirectIntegrationAnalysis* getVariableTimeStepDirectIntegrationAnalysis() {
-	return theVariableTimeStepTransientAnalysis;
+      return theVariableTimeStepTransientAnalysis;
     }
 
     EquiSolnAlgo*        getAlgorithm();
@@ -106,12 +106,12 @@ private:
     void fillDefaults(enum CurrentAnalysis flag);
 
     Domain                    *theDomain;
-    ConstraintHandler 	      *theHandler;
-    DOF_Numberer 	      *theNumberer;
-    AnalysisModel 	      *theAnalysisModel;
-    EquiSolnAlgo 	      *theAlgorithm;
-    LinearSOE 		      *theSOE;
-    EigenSOE 		      *theEigenSOE;
+    ConstraintHandler         *theHandler;
+    DOF_Numberer              *theNumberer;
+    AnalysisModel             *theAnalysisModel;
+    EquiSolnAlgo              *theAlgorithm;
+    LinearSOE                 *theSOE;
+    EigenSOE                  *theEigenSOE;
     StaticIntegrator          *theStaticIntegrator;
     TransientIntegrator       *theTransientIntegrator;
     ConvergenceTest           *theTest;

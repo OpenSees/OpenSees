@@ -272,7 +272,7 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc,
 
   } else {
     opserr << G3_ERROR_PROMPT << "ndm = " << ndm << " and ndf = " << ndf
-           << "is imcompatible with available frame elements\n";
+           << " is incompatible with available frame elements\n";
     return TCL_ERROR;
   }
 

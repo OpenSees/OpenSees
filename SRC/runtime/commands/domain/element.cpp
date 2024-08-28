@@ -359,14 +359,11 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc,
   // TODO: Create element response function, remove from domain
   const Vector *data = the_domain->getElementResponse(tag, argv + 2, argc - 2);
   if (data != nullptr) {
-    int size = data->Size();
-    // char buffer[128];
-    Tcl_Obj* listPtr = Tcl_NewListObj(0, nullptr);
-    for (int i = 0; i < size; ++i) {
+    const int size = data->Size();
+    Tcl_Obj* listPtr = Tcl_NewListObj(size, nullptr);
+    for (int i = 0; i < size; ++i)
       Tcl_ListObjAppendElement(interp, listPtr, Tcl_NewDoubleObj((*data)(i)));
-//    sprintf(buffer, "%f ", (*data)(i));
-//    Tcl_AppendResult(interp, buffer, NULL);
-    }
+
     Tcl_SetObjResult(interp,listPtr);	
   }
   return TCL_OK;

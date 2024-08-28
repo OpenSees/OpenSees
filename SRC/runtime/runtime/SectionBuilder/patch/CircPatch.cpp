@@ -1,21 +1,6 @@
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
 ** ****************************************************************** */
 //
 // File: CircPatch.C
@@ -30,15 +15,9 @@
 #include <CircSectionCell.h>
 
 
-CircPatch::CircPatch(): matID(0), nDivCirc(1), nDivRad(1), centerPosit(2),
-                        intRad(0.0), extRad(0.0), initAng(0.0), finalAng(0.0)
-{
-
-}
-
 
 CircPatch::CircPatch(int materialID, int numSubdivCircunf, int numSubdivRadial,
-                     const Vector &centerPosition, double internRadius, 
+                     const VectorND<2> &centerPosition, double internRadius, 
                      double externRadius, double initialAngle, double finalAngle):
                      matID(materialID), 
                      nDivCirc(numSubdivCircunf), nDivRad(numSubdivRadial),
@@ -104,18 +83,19 @@ void CircPatch::getAngles(double &initialAngle, double &finalAngle) const
    finalAngle   = finalAng;
 }
 
-const Vector & CircPatch::getCenterPosition (void) const
+VectorND<2>
+CircPatch::getCenterPosition() const
 {
    return centerPosit;
 }
 
-int CircPatch::getNumCells (void) const
+int CircPatch::getNumCells() const
 {
    return nDivCirc * nDivRad;
 }
 
 Cell **
-CircPatch::getCells (void) const
+CircPatch::getCells() const
 {
    double pi = acos(-1.0);
    double deltaRad, deltaTheta; 
@@ -179,7 +159,7 @@ CircPatch::getCells (void) const
 
 
 Patch * 
-CircPatch::getCopy (void) const
+CircPatch::getCopy() const
 {
    CircPatch *theCopy = new CircPatch (matID, nDivCirc, nDivRad,
                                        centerPosit,  intRad, extRad,
@@ -193,14 +173,8 @@ void CircPatch::Print(OPS_Stream &s, int flag) const
    s << "\nMaterial Id: " << matID;
    s << "\nNumber of subdivisions in the radial direction: " << nDivRad;
    s << "\nNumber of subdivisions in the circunferential direction: " << nDivCirc;
-   s << "\nCenter Position: " << centerPosit;
+// s << "\nCenter Position: " << Vector(centerPosit);
    s << "\nInternal Radius: " << intRad << "\tExternal Radius: " << extRad;
    s << "\nInitial Angle: " << initAng << "\tFinal Angle: " << finalAng;
 }
 
-
-OPS_Stream &operator<<(OPS_Stream &s, CircPatch &CircPatch)
-{
-   CircPatch.Print(s);
-   return s;
-}
