@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SectionRepres.h>
 #include <TimeSeries.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 #include <BeamIntegration.h>
 #include <NodalLoad.h>
 #include <AnalysisModel.h>
@@ -952,6 +953,9 @@ OpenSeesCommands::wipe()
 
     // wipe GeomTransf
     OPS_clearAllCrdTransf();
+
+    // wipe damping
+    OPS_clearAllDamping();
 
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();
