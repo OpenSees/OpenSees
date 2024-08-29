@@ -146,6 +146,9 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 
   if (strcmp(argv[count], "-beamUniform") == 0 ||
       strcmp(argv[count], "beamUniform") == 0) {
+    //
+    // see https://portwooddigital.com/2021/05/05/trapezoidal-beam-loads
+    //
     count++;
     if (ndm == 2) {
       // wy wx a/L  b/L wyb wxb
@@ -208,9 +211,8 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 
     } else if (ndm == 3) {
       // wy wz wx a/L b/L wyb wzb wxb
-      double wy, wz, wyb, wzb;
+      double wy, wz;
       double wx  = 0.0;
-      double wxb = 0.0;
       if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
         return TCL_ERROR;
@@ -242,27 +244,26 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       // Parse values at end "b"; when not supplied, set to value
       // at end "a"
       //
+
+      double wyb = wy;
       count++;
-      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wyb) != TCL_OK) {
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wyb) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
         return TCL_ERROR;
-      } else {
-        wyb = wy;
       }
 
+      double wzb = wz;
       count++;
-      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wzb) != TCL_OK) {
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wzb) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
         return TCL_ERROR;
-      } else {
-        wzb = wz;
       }
+
+      double wxb = wx;
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &wxb) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
         return TCL_ERROR;
-      } else {
-        wxb = wx;
       }
 
       for (int tag : element_tags) {
