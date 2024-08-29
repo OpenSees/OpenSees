@@ -241,7 +241,7 @@ int KRAlphaExplicit::newStep(double _deltaT)
     
     Udot->addVector(1.0, *Utdothat, 1.0);
     
-    // determine the response at t+alpha*deltaT
+    // determine the response at t+(1-alpha)*deltaT
     Ualpha->addVector(0.0, *Ut, (1.0-alphaF));
     Ualpha->addVector(1.0, *U, alphaF);
     
@@ -253,9 +253,9 @@ int KRAlphaExplicit::newStep(double _deltaT)
     // set the trial response quantities
     theModel->setResponse(*Ualpha, *Ualphadot, *Ualphadotdot);
     
-    // increment the time to t+alpha*deltaT and apply the load
+    // increment the time to t+(1-alpha)*deltaT and apply the load
     double time = theModel->getCurrentDomainTime();
-    time += alphaF*deltaT;
+    time += (1-alphaF)*deltaT;
     if (theModel->updateDomain(time, deltaT) < 0)  {
         opserr << "WARNING KRAlphaExplicit::newStep() - failed to update the domain\n";
         return -7;
