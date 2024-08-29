@@ -148,13 +148,14 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       strcmp(argv[count], "beamUniform") == 0) {
     count++;
     if (ndm == 2) {
+      // wy wx a/L  b/L wyb wxb
       double wta;
-      double waa = 0.0;
       if (count >= argc || Tcl_GetDouble(interp, argv[count], &wta) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wt for beamUniform \n";
         return TCL_ERROR;
       }
       count++;
+      double waa = 0.0;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &waa) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wa for beamUniform \n";
         return TCL_ERROR;
@@ -206,8 +207,10 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_OK;
 
     } else if (ndm == 3) {
-      double wy, wz;
-      double wx = 0.0;
+      // wy wz wx a/L b/L wyb wzb wxb
+      double wy, wz, wyb, wzb;
+      double wx  = 0.0;
+      double wxb = 0.0;
       if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
         opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
         return TCL_ERROR;
@@ -234,11 +237,38 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
         opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
         return TCL_ERROR;
       }
+      
+      //
+      // Parse values at end "b"; when not supplied, set to value
+      // at end "a"
+      //
+      count++;
+      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wyb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
+        return TCL_ERROR;
+      } else {
+        wyb = wy;
+      }
+
+      count++;
+      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wzb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
+        return TCL_ERROR;
+      } else {
+        wzb = wz;
+      }
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wxb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
+        return TCL_ERROR;
+      } else {
+        wxb = wx;
+      }
 
       for (int tag : element_tags) {
         ElementalLoad *theLoad = nullptr;
         if (aL > 0.0 || bL < 1.0)
-          theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, tag);
+          theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, wyb, wzb, wxb, tag);
         else
           theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, tag);
 
