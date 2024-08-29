@@ -255,7 +255,7 @@ int KRAlphaExplicit::newStep(double _deltaT)
     
     // increment the time to t+(1-alpha)*deltaT and apply the load
     double time = theModel->getCurrentDomainTime();
-    time += (1-alphaF)*deltaT;
+    time += (1.0-alphaF)*deltaT;
     if (theModel->updateDomain(time, deltaT) < 0)  {
         opserr << "WARNING KRAlphaExplicit::newStep() - failed to update the domain\n";
         return -7;
