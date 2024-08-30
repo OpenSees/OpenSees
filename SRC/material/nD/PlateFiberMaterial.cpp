@@ -453,13 +453,20 @@ PlateFiberMaterial::getInitialTangent()
 void  
 PlateFiberMaterial::Print(OPS_Stream &s, int flag)
 {
-  s << "General Plate Fiber Material \n";
-  s << " Tag: " << this->getTag() << "\n"; 
-  s << "using the 3D material : \n";
-
-  theMaterial->Print(s, flag);
-
-  return;
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+    s << "\t\t\t{";
+    s << "\"name\": \"" << this->getTag() << "\", ";
+    s << "\"type\": \"PlateFiberMaterial\", ";
+    s << "\"material\": \"" << theMaterial->getTag() << "\"";    
+    s << "\t\t\t}";
+  }
+  else {
+    s << "General Plate Fiber Material \n";
+    s << " Tag: " << this->getTag() << "\n"; 
+    s << "using the 3D material : \n";
+    
+    theMaterial->Print(s, flag);
+  }
 }
 
 
