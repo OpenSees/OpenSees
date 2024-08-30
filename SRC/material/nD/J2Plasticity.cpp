@@ -741,16 +741,12 @@ J2Plasticity::getCopy (void)
 const char*
 J2Plasticity::getType (void) const
 {
-    opserr << "J2Plasticity::getType -- subclass responsibility\n";
-    exit(-1);
-    return 0;
+    return "BaseClass";
 }
 
 int
 J2Plasticity::getOrder (void) const
 {
-    opserr << "J2Plasticity::getOrder -- subclass responsibility\n";
-    exit(-1);
     return 0;
 }
 
