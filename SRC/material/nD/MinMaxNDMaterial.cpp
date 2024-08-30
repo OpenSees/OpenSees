@@ -101,30 +101,38 @@ MinMaxNDMaterial::MinMaxNDMaterial(int tag, NDMaterial& material, double epsmin,
     theMaterial(0), minStrain(epsmin), maxStrain(epsmax),
     Tfailed(false), Cfailed(false), myType(ThreeDimensional)
 {
+  // If passed a base class material, get a 3D copy
+  if (strncmp(material.getType(),"BaseClass",80) == 0) {
+    opserr << "MinMaxNDMaterial - base class material passed, assuming 3D" << endln;
+    theMaterial = material.getCopy("ThreeDimensional");
+  }
+  else {
     // get copy of the main material
     theMaterial = material.getCopy();
-    if (theMaterial == 0) {
-        opserr << "MinMaxNDMaterial::MinMaxNDMaterial -- failed to get copy of material (a 3D material is required)\n";
-        exit(-1);
-    }
+  }
 
-    const char *type = theMaterial->getType();
-    if (strncmp(type,"ThreeDimensional",80) == 0)
-      myType = ThreeDimensional;
-    if (strncmp(type,"PlateFiber",80) == 0)
-      myType = PlateFiber;
-    if (strncmp(type,"PlaneStress",80) == 0 ||
-	strncmp(type,"PlaneStress2D",80) == 0)
-      myType = PlaneStress2d;
-    if (strncmp(type,"BeamFiber",80) == 0 ||
-	strncmp(type,"TimoshenkoFiber",80) == 0)
-      myType = BeamFiber;
-    if (strncmp(type,"BeamFiber2d",80) == 0 ||
-	strncmp(type,"TimoshenkoFiber2d",80) == 0)
-      myType = BeamFiber2d;    
-    if (strncmp(type,"BeamFiber2dPS",80) == 0 ||
-	strncmp(type,"TimoshenkoFiber2dPS",80) == 0)
-      myType = BeamFiber2dPS;    
+  if (theMaterial == 0) {
+    opserr << "MinMaxNDMaterial::MinMaxNDMaterial -- failed to get copy of material (a 3D material is required)" << endln;
+    exit(-1);
+  }
+
+  const char *type = theMaterial->getType();
+  if (strncmp(type,"ThreeDimensional",80) == 0)
+    myType = ThreeDimensional;
+  if (strncmp(type,"PlateFiber",80) == 0)
+    myType = PlateFiber;
+  if (strncmp(type,"PlaneStress",80) == 0 ||
+      strncmp(type,"PlaneStress2D",80) == 0)
+    myType = PlaneStress2d;
+  if (strncmp(type,"BeamFiber",80) == 0 ||
+      strncmp(type,"TimoshenkoFiber",80) == 0)
+    myType = BeamFiber;
+  if (strncmp(type,"BeamFiber2d",80) == 0 ||
+      strncmp(type,"TimoshenkoFiber2d",80) == 0)
+    myType = BeamFiber2d;    
+  if (strncmp(type,"BeamFiber2dPS",80) == 0 ||
+      strncmp(type,"TimoshenkoFiber2dPS",80) == 0)
+    myType = BeamFiber2dPS;    
 }
 
 MinMaxNDMaterial::MinMaxNDMaterial()
