@@ -4,10 +4,10 @@
 //
 //===----------------------------------------------------------------------===//
 //
+// Description: This file contains the implementation of Block3D.
+//
 // Written: Ed Love
 // Created: 07/01
-//
-// Description: This file contains the implementation of Block3D.
 //
 #include <Block3D.h>
 
@@ -16,150 +16,145 @@
 Block3D::Block3D(int numx, int numy, int numz,
 		 const ID& nodeID, 
 		 const Matrix& coorArray ) 
-: 
-coor(3), 
-element(8) 
+: nx(numx), ny(numy), nz(numz),
+  coor(3), 
+  element(8) 
 {
-  this->nx = numx;
-  this->ny = numy;
-  this->nz = numz;
-
   this->setUpXl( nodeID, coorArray );
 }
 
 
-//destructor
+// destructor
 Block3D::~Block3D( )
-{ }
+{ 
+}
 
 
 //set up xl array
 void  Block3D::setUpXl( const ID &nodeID, const Matrix &coorArray ) 
 {
 
-  int i, j;
-
-  for ( i=0; i<8; i++ ){
+  for (int i=0; i<8; i++ ){
     if ( nodeID(i) == -1 ) {
       opserr << "Warning : in Block3D, block node " 
 	   << i 
 	   << " is not defined.  No Generation will take place."
 	   << endln;
       break; 
-    }//end if
-  }//end for i
+    }
+  }
 
 
-  //xl = tranpose coorArray(27,3) 
-  for ( i=0; i<3; i++ ) {
-    for (j=0; j<27; j++ )
+  // xl = tranpose coorArray(27,3) 
+  for (int i=0; i<3; i++ ) {
+    for (int j=0; j<27; j++ )
       xl[i][j] = coorArray(j,i);
-  }//end for i
+  }
 
 
   if ( nodeID(8) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][8] = 0.5*( xl[i][0] + xl[i][4] );
-  }//endif
+  }
 
   if ( nodeID(9) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][9] = 0.5*( xl[i][1] + xl[i][5] );
-  }//endif
+  }
 
   if ( nodeID(10) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][10] = 0.5*( xl[i][2] + xl[i][6] );
-  }//endif
+  }
 
   if ( nodeID(11) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][11] = 0.5*( xl[i][3] + xl[i][7] );
-  }//endif
+  }
 
 
   if ( nodeID(12) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][12] = 0.5*( xl[i][0] + xl[i][1] );
-  }//endif
+  }
 
   if ( nodeID(13) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][13] = 0.5*( xl[i][1] + xl[i][2] );
-  }//endif
+  }
 
   if ( nodeID(14) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][14] = 0.5*( xl[i][2] + xl[i][3] );
-  }//endif
+  }
 
   if ( nodeID(15) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][15] = 0.5*( xl[i][0] + xl[i][3] );
-  }//endif
+  }
 
 
   if ( nodeID(16) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][16] = 0.25*( xl[i][0] + xl[i][1] + xl[i][2] + xl[i][3] );
-  }//endif
+  }
 
 
   if ( nodeID(17) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][17] = 0.5*( xl[i][4] + xl[i][5] );
-  }//endif
+  }
 
   if ( nodeID(18) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][18] = 0.5*( xl[i][5] + xl[i][6] );
-  }//endif
+  }
 
   if ( nodeID(19) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][19] = 0.5*( xl[i][6] + xl[i][7] );
-  }//endif
+  }
 
   if ( nodeID(20) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][20] = 0.5*( xl[i][4] + xl[i][7] );
-  }//endif
+  }
 
 
   if ( nodeID(21) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][21] = 0.25*( xl[i][4] + xl[i][5] + xl[i][6] + xl[i][7] );
-  }//endif
+  }
 
 
   if ( nodeID(22) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][22] = 0.25*( xl[i][0] + xl[i][1] + xl[i][5] + xl[i][4] );
-  }//endif
+  }
 
   if ( nodeID(23) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][23] = 0.25*( xl[i][1] + xl[i][2] + xl[i][6] + xl[i][5] );
-  }//endif
+  }
 
 
   if ( nodeID(24) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][24] = 0.25*( xl[i][3] + xl[i][2] + xl[i][6] + xl[i][7] );
-  }//endif
+  }
 
   if ( nodeID(25) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][25] = 0.25*( xl[i][0] + xl[i][3] + xl[i][7] + xl[i][4] );
-  }//endif
+  }
 
 
 
   if ( nodeID(26) == -1 ) {
-    for ( i=0; i<3; i++ )
+    for (int i=0; i<3; i++ )
       xl[i][26] = 0.125*( xl[i][0] + xl[i][1] + xl[i][2] + xl[i][3] +
 		          xl[i][4] + xl[i][5] + xl[i][6] + xl[i][7]   );
-  }//endif
+  }
 
   return;
 }
@@ -246,11 +241,8 @@ Block3D::getElementNodes( int i, int j, int k )
 void  Block3D::transformNodalCoordinates( )
 {
 
-  static double shape[27];
-  
+  double shape[27]; 
   static double natCoor[3];
-
-  int j, dim;
 
   natCoor[0] = coor(0);
   natCoor[1] = coor(1);
@@ -260,12 +252,12 @@ void  Block3D::transformNodalCoordinates( )
 
   this->shape3d( natCoor[0], natCoor[1], natCoor[2], shape );
 
-  for ( j=0; j<27; j++ ) {
+  for (int j=0; j<27; j++ ) {
       
-    for ( dim=0; dim<3; dim++ )
+    for (int dim=0; dim<3; dim++ )
       coor(dim) += shape[j]*xl[dim][j];
 
-  } //end for j
+  }
 
   return;
 
@@ -276,13 +268,23 @@ void  Block3D::transformNodalCoordinates( )
 //shape functions
 void  Block3D::shape3d( double r, double s, double t,
 	                double shape[27]     ) 
+/*
+ * Adapted from:
+      subroutine shp04(shp,glu,glo,gu,eu,to,xjac,detj,r,s,t,xl,ul)
+c-----------------------------------------------------------------------
+c.....compute shape functions and their derivatives for linear,quadratic
+c.....lagrangian and serendipity isoparametric  3-d elements
+c.....global coordinate system x,y,z
+c.....local coordinate system xsi,eta,zeta
+c-----------------------------------------------------------------------
+*/
 {
 
-  static const int ri[] = {-1, 1, 1,-1, -1, 1, 1,-1,  -1, 1, 1,-1,   0, 1, 0,-1, 0, 0, 1, 0,-1, 0,   0, 1, 0,-1, 0};
+  static constexpr int ri[] = {-1, 1, 1,-1, -1, 1, 1,-1,  -1, 1, 1,-1,   0, 1, 0,-1, 0, 0, 1, 0,-1, 0,   0, 1, 0,-1, 0};
 
-  static const int si[] = {-1,-1, 1, 1, -1,-1, 1, 1,  -1,-1, 1, 1,  -1, 0, 1, 0, 0, -1, 0, 1, 0, 0,  -1, 0, 1, 0, 0};
+  static constexpr int si[] = {-1,-1, 1, 1, -1,-1, 1, 1,  -1,-1, 1, 1,  -1, 0, 1, 0, 0, -1, 0, 1, 0, 0,  -1, 0, 1, 0, 0};
 
-  static const int ti[] = {-1,-1,-1,-1,  1, 1, 1, 1,   0, 0, 0, 0,  -1,-1,-1,-1,-1, 1, 1, 1, 1, 1,   0, 0, 0, 0, 0};
+  static constexpr int ti[] = {-1,-1,-1,-1,  1, 1, 1, 1,   0, 0, 0, 0,  -1,-1,-1,-1,-1, 1, 1, 1, 1, 1,   0, 0, 0, 0, 0};
 
 
   static const double d1 = 1.0;
@@ -295,17 +297,16 @@ void  Block3D::shape3d( double r, double s, double t,
   double ss = s*s;
   double tt = t*t;
 
-  double r0, s0, t0;
-  int k, kk;
+  int kk;
 
   //shape functions for 27-node element
-  for ( k=1; k<=27; k++ ) {
+  for (int k=1; k<=27; k++ ) {
 
     kk = k-1; //C-style numbering 
 
-    r0 = r*ri[kk];
-    s0 = s*si[kk];
-    t0 = t*ti[kk];
+    double r0 = r*ri[kk];
+    double s0 = s*si[kk];
+    double t0 = t*ti[kk];
 
     //corner nodes top/bottom
     if ( k>=1 && k<=8 ) 
@@ -338,72 +339,8 @@ void  Block3D::shape3d( double r, double s, double t,
     if ( k==27 )
       shape[kk] = (d1-rr)*(d1-ss)*(d1-tt);
 
-  }//end for k
+  }
 
   return;
 }
 
-
-/*
-      subroutine shp04(shp,glu,glo,gu,eu,to,xjac,detj,r,s,t,xl,ul)
-c-----------------------------------------------------------------------
-c.....compute shape functions and their derivatives for linear,quadratic
-c.....lagrangian and serendipity isoparametric  3-d elements
-c.....global coordinate system x,y,z
-c.....local coordinate system xsi,eta,zeta
-c-----------------------------------------------------------------------
-      implicit double precision (a-h,o-z)
-      dimension shp(4,27),ri(27),si(27),ti(27)
-      dimension xt(3,3),cro(3),to(3,3),
-     +          xl(3,27),ul(3,27),xu(3,27),xjac(3,3),
-     +          glu(3,3),glo(3,3),gu(3,3),gko(3,3),gku(3,3),eu(3,3)
-      common /eldata/ dm,n,ma,mct,iel,nel
-      common /iofile/ ior,iow
-      data ri /-1, 1, 1,-1, -1, 1, 1,-1,  -1, 1, 1,-1,   0, 1, 0,-1, 0,
-     1                                  0, 1, 0,-1, 0,   0, 1, 0,-1, 0/
-      data si /-1,-1, 1, 1, -1,-1, 1, 1,  -1,-1, 1, 1,  -1, 0, 1, 0, 0,
-     1                                 -1, 0, 1, 0, 0,  -1, 0, 1, 0, 0/
-      data ti /-1,-1,-1,-1,  1, 1, 1, 1,   0, 0, 0, 0,  -1,-1,-1,-1,-1,
-     1                                  1, 1, 1, 1, 1,   0, 0, 0, 0, 0/
-
-      d1=1.0d0
-      d2=1.0d0/2.0d0
-      d8=1.0d0/8.0d0
-      d4=1.0d0/4.0d0
-      dz=2.0d0
-      rr=r*r
-      ss=s*s
-      tt=t*t
-
-
-c....   shape functions for 27-node element
-        do l = 1,27
-          r0 = r*ri(l)
-          s0 = s*si(l)
-          t0 = t*ti(l)
-c         corner nodes top/bottom
-          if(l.ge.1.and.l.le.8) then
-            shp(4,l) = d8*(rr+r0)     *(ss+s0)          *(tt+t0)
-c         corner nodes mid-side
-          elseif(l.ge.9.and.l.le.12) then
-            shp(4,l) = d4*(rr+r0)     *(ss+s0)     *(d1-tt)
-c         midside nodes top/bottom  r-dir
-          elseif(l.eq.13.or.l.eq.15.or.l.eq.18.or.l.eq.20) then
-            shp(4,l) = d4*(d1-rr)*(ss+s0)     *(tt+t0)
-c         midside nodes top/bottom  s-dir
-          elseif(l.eq.14.or.l.eq.16.or.l.eq.19.or.l.eq.21) then
-            shp(4,l) = d4*(rr+r0)     *(d1-ss)*(tt+t0)
-c         midside nodes mid plane  r-dir
-          elseif(l.eq.23.or.l.eq.25) then
-            shp(4,l) = d2*(d1-rr)*(ss+s0)     *(d1-tt)
-c         midside nodes mid plane  s-dir
-          elseif(l.eq.24.or.l.eq.26) then
-            shp(4,l) = d2*(rr+r0)     *(d1-ss)*(d1-tt)
-c         central nodes top/bottom
-          elseif(l.eq.17.or.l.eq.22) then
-            shp(4,l) = d2*(d1-rr)*(d1-ss)*(tt+t0)
-          elseif(l.eq.27) then
-            shp(4,l) = (d1-rr)*(d1-ss)*(d1-tt)
-          endif
-        enddo
-*/	
