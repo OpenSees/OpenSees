@@ -103,42 +103,45 @@ TclCommand_addUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
 
   // Make sure there is a minimum number of arguments
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "insufficient number of uniaxial material arguments\n";
-    opserr << "Want: uniaxialMaterial type? tag? <specific material args>"
-           << "\n";
+    opserr << G3_ERROR_PROMPT 
+           << "insufficient number of uniaxial material arguments\n"
+           << "Want: uniaxialMaterial type? tag? <specific material args>\n";
     return TCL_ERROR;
   }
 
   OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theDomain);
 
-  // Pointer to a uniaxial material that will be added to the model builder
-  UniaxialMaterial *theMaterial = nullptr;
 
   auto tcl_cmd = uniaxial_dispatch.find(std::string(argv[1]));
   if (tcl_cmd != uniaxial_dispatch.end())
     return (*tcl_cmd->second)(clientData, interp, argc, &argv[0]);
 
 
-  if (theMaterial == nullptr) {
-    char *mat_name;
-    if ((mat_name = strstr((char *)argv[1], "::"))) {
-      // TODO: clean this up!!!!!!!!!!!!!!
-      char **new_argv = new char*[argc];
-      for (int i=0; i<argc; ++i)
-        new_argv[i] = (char*)argv[i];
-      new_argv[1] = mat_name+2;
-      char pack_name[40];
-      int i = 0;
-      while (argv[1][i] != ':')
-        pack_name[i] = argv[1][i], i++;
+  // Pointer to a uniaxial material that will be added to the model builder
+  UniaxialMaterial *theMaterial = nullptr;
 
-      pack_name[i] = '\0';
-      theMaterial = (*tcl_uniaxial_package_table[pack_name])
-                    (clientData,interp,argc,(const char**)new_argv);
-      delete[] new_argv;
-    }
+  //
+  // Check for packages
+  //
+  char *mat_name;
+  if ((mat_name = strstr((char *)argv[1], "::"))) {
+    // TODO: clean this up!!!!!!!!!!!!!!
+    char **new_argv = new char*[argc];
+    for (int i=0; i<argc; ++i)
+      new_argv[i] = (char*)argv[i];
+    new_argv[1] = mat_name+2;
+    char pack_name[40];
+    int i = 0;
+    while (argv[1][i] != ':')
+      pack_name[i] = argv[1][i], i++;
+
+    pack_name[i] = '\0';
+    theMaterial = (*tcl_uniaxial_package_table[pack_name])
+                  (clientData,interp,argc,(const char**)new_argv);
+    delete[] new_argv;
   }
-    // Fedeas
+
+  // Fedeas
 #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
   if (theMaterial == nullptr)
     theMaterial =
