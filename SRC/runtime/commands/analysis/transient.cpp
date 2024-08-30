@@ -1,3 +1,8 @@
+//===----------------------------------------------------------------------===//
+//
+//        OpenSees - Open System for Earthquake Engineering Simulation    
+//
+//===----------------------------------------------------------------------===//
 //
 // Written: cmp and cc
 //
@@ -10,7 +15,7 @@
 #include <GeneralizedNewmark.h>
 
 TransientIntegrator*
-G3Parse_newNewmarkIntegrator(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char ** const argv)
+TclCommand_newNewmarkIntegrator(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char ** const argv)
 {
 
   if (argc < 4) {
