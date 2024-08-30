@@ -681,9 +681,9 @@ int OPS_ElementalLoad()
 	else {//if (ndm=3)
 	  double t1, locY1, t2, locY2, t3, locY3, t4, locY4, t5, locY5,
 	    t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3, t12, t13, locZ4, t14, t15, locZ5;
-	  
+	  bool useGrid = false;
 	  int numdata = OPS_GetNumRemainingInputArgs();
-	  double data[25];
+	  double data[35];
 	  if (numdata == 25) {
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
 	      opserr << "WARNING eleLoad - invalid input\n";
@@ -700,6 +700,13 @@ int OPS_ElementalLoad()
 	    t10 = data[16]; t11 = data[17]; locZ3 = data[18];
 	    t12 = data[19]; t13 = data[20]; locZ4 = data[21];
 	    t14 = data[22]; t15 = data[23]; locZ5 = data[24];
+	  }
+	  else if (numdata == 35) {
+		  if (OPS_GetDoubleInput(&numdata, data) < 0) {
+			  opserr << "WARNING eleLoad - invalid input\n";
+			  return -1;
+		  }
+		  useGrid = true;
 	  }
 	  else if (numdata == 4) {
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
@@ -758,10 +765,14 @@ int OPS_ElementalLoad()
 	  }
 
 	  for (int i = 0; i<theEleTags.Size(); i++) {
-	    theLoad = new Beam3dThermalAction(eleLoadTag,
-					      t1, locY1, t2, locY2, t3, locY3, t4, locY4,
-					      t5, locY5, t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3,
-					      t12, t13, locZ4, t14, t15, locZ5, theEleTags(i));
+		  if (useGrid) {
+			theLoad = new Beam3dThermalAction(eleLoadTag, data, theEleTags(i));
+		  }else{		  
+			theLoad = new Beam3dThermalAction(eleLoadTag,
+							  t1, locY1, t2, locY2, t3, locY3, t4, locY4,
+							  t5, locY5, t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3,
+							  t12, t13, locZ4, t14, t15, locZ5, theEleTags(i));
+		  }
 	    if (theLoad == 0) {
 	      opserr << "WARNING eleLoad - out of memory creating load of type " << type << endln;
 	      return -1;
@@ -776,7 +787,7 @@ int OPS_ElementalLoad()
             }
             eleLoadTag++;	    
 	  }
-	}
+	} // ndm==3
     }
     //--Adding identifier for Beam2dThermalAction:[END] by UoE OpenSees Group--//
 

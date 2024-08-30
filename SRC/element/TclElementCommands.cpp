@@ -172,6 +172,7 @@ extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
+extern void* OPS_ShellNLDKGTThermal(void);// Giovanni Rinaldin
 extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_FourNodeTetrahedron(void);
@@ -1019,7 +1020,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 	opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
 	return TCL_ERROR;
       }
-      //end of adding thermo-mechanical shell elements by L.Jiang [SIF]  
+    }
+    else if ((strcmp(argv[1], "shellNLDKGTThermal") == 0) || (strcmp(argv[1], "ShellNLDKGTThermal") == 0)) {
+
+    void* theEle = OPS_ShellNLDKGTThermal();
+    if (theEle != 0)
+        theElement = (Element*)theEle;
+    else {
+        opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+        return TCL_ERROR;
+    }
+    //end of adding thermo-mechanical shell elements by L.Jiang [SIF]  
       
   } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0) ||
 	     (strcmp(argv[1],"shellMITC9") == 0) || (strcmp(argv[1],"ShellMITC9") == 0)) {
