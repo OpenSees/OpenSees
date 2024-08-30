@@ -36,6 +36,8 @@ Tcl_CmdProc sectionStiffness;
 Tcl_CmdProc sectionFlexibility;
 Tcl_CmdProc sectionLocation;
 Tcl_CmdProc sectionWeight;
+Tcl_CmdProc sectionTag;
+Tcl_CmdProc sectionDisplacement;
 
 Tcl_CmdProc setLoadConst;
 
