@@ -164,6 +164,8 @@ G3_AddTclDomainCommands(Tcl_Interp *interp, Domain* the_domain)
 
 
   Tcl_CreateCommand(interp, "sectionForce",        &sectionForce,        domain, nullptr);
+  Tcl_CreateCommand(interp, "sectionTag",          &sectionTag,          domain, nullptr);
+  Tcl_CreateCommand(interp, "sectionDisplacement", &sectionDisplacement, domain, nullptr);
   Tcl_CreateCommand(interp, "sectionDeformation",  &sectionDeformation,  domain, nullptr);
   Tcl_CreateCommand(interp, "sectionStiffness",    &sectionStiffness,    domain, nullptr);
   Tcl_CreateCommand(interp, "sectionFlexibility",  &sectionFlexibility,  domain, nullptr);
