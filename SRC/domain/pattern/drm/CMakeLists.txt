@@ -14,6 +14,7 @@ target_sources(OPS_Domain
     DRMLoadPatternWrapper.cpp
     DRMInputHandler.cpp
     PlaneDRMInputHandler.cpp
+    H5DRMLoadPattern.cpp
     PUBLIC
     Mesh3DSubdomain.h
     GeometricBrickDecorator.h
@@ -22,16 +23,17 @@ target_sources(OPS_Domain
     DRMLoadPatternWrapper.h
     DRMInputHandler.h
     PlaneDRMInputHandler.h
+    H5DRMLoadPattern.h
 )
 
-if (HDF5_FOUND)
-target_sources(OPS_Domain
-    PRIVATE
-        H5DRM.cpp
-    PUBLIC
-        H5DRM.h    
-)
-endif()
+# if (HDF5_FOUND)
+# target_sources(OPS_Domain
+#     PRIVATE
+#         H5DRM.cpp
+#     PUBLIC
+#         H5DRM.h    
+# )
+# endif()
 
 target_include_directories(OPS_Domain PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

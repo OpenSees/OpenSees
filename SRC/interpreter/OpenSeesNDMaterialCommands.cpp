@@ -86,7 +86,7 @@ void* OPS_ASDConcrete3DMaterial();
 void* OPS_OrthotropicRotatingAngleConcreteT2DMaterial01();	// M. J. Nunez - UChile
 void* OPS_SmearedSteelDoubleLayerT2DMaterial01();			// M. J. Nunez - UChile
 #ifdef _EIGEN3
-void* OPS_AllASDPlasticMaterials();
+void* OPS_AllASDPlasticMaterial3Ds();
 #endif // _EIGEN3
 
 namespace {
@@ -212,7 +212,8 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("OrthotropicRAConcrete", &OPS_OrthotropicRotatingAngleConcreteT2DMaterial01));
 	nDMaterialsMap.insert(std::make_pair("SmearedSteelDoubleLayer", &OPS_SmearedSteelDoubleLayerT2DMaterial01));
 #ifdef _EIGEN3
-	nDMaterialsMap.insert(std::make_pair("ASDPlasticMaterial", &OPS_AllASDPlasticMaterials));
+	nDMaterialsMap.insert(std::make_pair("ASDPlasticMaterial", &OPS_AllASDPlasticMaterial3Ds));
+	nDMaterialsMap.insert(std::make_pair("ASDPlasticMaterial3D", &OPS_AllASDPlasticMaterial3Ds));
 #endif // _EIGEN3
 
 	return 0;
