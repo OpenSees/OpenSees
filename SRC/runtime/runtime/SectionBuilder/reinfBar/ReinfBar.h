@@ -47,11 +47,11 @@ class ReinfBar
 
     // reinforcing bar inquiring functions
     
-    double getDiameter (void) const;
-    double getArea     (void) const;
-    int    getMaterial (void) const; 
+    double getDiameter() const;
+    double getArea() const;
+    int    getMaterial() const; 
 
-    const Vector & getPosition (void) const;
+    const Vector & getPosition() const;
 
     virtual void Print(OPS_Stream &s, int flag =0) const;   
     friend OPS_Stream &operator<<(OPS_Stream &s, const ReinfBar &reinfBar);    
