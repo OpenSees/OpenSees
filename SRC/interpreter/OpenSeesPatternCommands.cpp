@@ -53,6 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Beam2dThermalAction.h>
 #include <Beam3dThermalAction.h>
 #include <Beam2dTempLoad.h>
+#include <ShellThermalAction.h>
 #include <SP_Constraint.h>
 #include <LoadPattern.h>
 #include <MultiSupportPattern.h>
@@ -790,6 +791,53 @@ int OPS_ElementalLoad()
 	} // ndm==3
     }
     //--Adding identifier for Beam2dThermalAction:[END] by UoE OpenSees Group--//
+    else if (strncmp(type,"-shellThermal",80) == 0) {
+
+      // get the current pattern tag if no tag given in i/p
+      int loadPatternTag = theActiveLoadPattern->getTag();
+      
+      double t1, locY1, t2, locY2; //t3, locY3, t4, locY4, t5, locY5, t6, locY6, t7, locY7, t8, locY8, t9, locY9;
+      // 9 temperature points are given,i.e. 8 layers are defined; Also the 9 corresponding vertical coordinate is given.
+      // the temperature at each fiber is obtained by interpolating of temperatures at the nearby temperature points.
+      
+      int numdata = OPS_GetNumRemainingInputArgs();
+      double data[18];
+      if (numdata == 18) {
+	opserr << "eleLoad -shellThermal -- not yet implemented for 9 data points (see Tcl implementation)" << endln;
+	return -1;
+      }
+      if (numdata == 10) {
+	opserr << "eleLoad -shellThermal -- not yet implemented for 5 data points (see Tcl implementation)" << endln;
+	return -1;
+      }
+      if (numdata == 4) {
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	  opserr << "WARNING eleLoad - invalid input\n";
+	  return -1;
+	}
+	t1 = data[0]; locY1 = data[1];
+	t2 = data[2]; locY2 = data[3];
+
+	for (int i = 0; i < theEleTags.Size(); i++) {
+	  theLoad = new ShellThermalAction(eleLoadTag,
+					   t1, locY1, t2, locY2, theEleTags(i));
+
+	  if (theLoad == 0) {
+	    opserr << "WARNING eleLoad - out of memory creating load of type " << type << endln;
+	    return -1;
+	  }
+	  
+	  // add the load to the domain
+	  if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+	    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+	    opserr << theLoad;
+	    delete theLoad;
+	    return -1;
+	  }
+	  eleLoadTag++;	  
+	}
+      }
+    }
 
 
     // Added by Scott R. Hamilton   - Stanford
