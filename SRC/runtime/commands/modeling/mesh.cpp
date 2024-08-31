@@ -1,3 +1,9 @@
+//===----------------------------------------------------------------------===//
+//
+//        OpenSees - Open System for Earthquake Engineering Simulation    
+//
+//===----------------------------------------------------------------------===//
+//
 //
 extern int OPS_LineMesh(Domain& domain, int ndm);
 extern int OPS_TriMesh(Domain& domain);
