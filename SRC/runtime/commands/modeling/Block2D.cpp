@@ -15,18 +15,16 @@
 #include <Block2D.h>
 
 
-// constructor
 Block2D::Block2D(int numx, int numy, 
-		 const ID& nodeID, 
-		 const Matrix& coorArray,
-		 int numNode) 
+                 const ID& nodeID, 
+                 const Matrix& coorArray,
+                 int numNode) 
 : 
-element(numNode) ,
-numNodesElement(numNode),
-errorFlag(0)
+  element(numNode),
+  numNodesElement(numNode),
+  nx(numx), ny(numy),
+  errorFlag(0)
 {
-  this->nx = numx;
-  this->ny = numy;
 
   if (numNodesElement == 9) {
     if (((numx % 2) != 0) || ((numy % 2) != 0)) {
@@ -62,7 +60,7 @@ Block2D::setUpXl( const ID &nodeID, const Matrix &coorArray )
   for (int i=0; i<4; i++ ){
     if ( nodeID(i) == -1 ) {
       opserr << "Warning : in Block2D, block node " 
-	           << i << " is not defined.\n";
+                   << i << " is not defined.\n";
       return -1;
     }
   }
@@ -137,13 +135,12 @@ Block2D::getElementNodes( int i, int j )
     int nenx = nx + 1;
     // int neny = ny + 1;
 
-    int node1, node2, node3, node4;
 
-    node1 = i + j*nenx;
-    node2 = node1 + 1;
-    
-    node3 = node2 + nenx;
-    node4 = node1 + nenx;
+    int node1 = i + j*nenx;
+    int node2 = node1 + 1;
+
+    int node3 = node2 + nenx;
+    int node4 = node1 + nenx;
     
     element(0) = node1;
     element(1) = node2;
@@ -191,8 +188,7 @@ void
 Block2D::transformNodalCoordinates(Vector3D& coor )
 {
 
-  static double shape[9];
-  
+  static double shape[9]; 
   static double natCoor[2];
 
   natCoor[0] = coor[0];
@@ -214,9 +210,9 @@ Block2D::transformNodalCoordinates(Vector3D& coor )
 }
 
 
-//shape functions
+// shape functions
 void  Block2D::shape2d( double x, double y, 
-	                double shape[9]     ) 
+                        double shape[9]     ) 
 {
   static double Nx[3];
   static double Ny[3];
