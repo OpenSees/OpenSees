@@ -17,12 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.3 $
-// $Date: 2003/05/02 18:34:56 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/cell/QuadCell.cpp,v $
-                                                                        
-                                                                        
+//
 // File: QuadCell.C
 // Written by Remo M. de Souza
 // December 1998
@@ -33,7 +28,7 @@
 #include <QuadCell.h>
 
 
-QuadCell::QuadCell(void):
+QuadCell::QuadCell():
                    vertCoord(4,2), Centroid(2)                 
 {
 
@@ -53,12 +48,12 @@ QuadCell::~QuadCell()
 }
 
 const Matrix &
-QuadCell::getVertCoords (void) const
+QuadCell::getVertCoords() const
 {
    return vertCoord;
 }
 
-double QuadCell::getdValue (void) const
+double QuadCell::getdValue() const
 {
     double dVa = vertCoord(0,0);
     return dVa;
@@ -70,7 +65,7 @@ void QuadCell::setVertCoords (const Matrix &vertexCoords)
 }
 
 
-double QuadCell::getArea (void) const
+double QuadCell::getArea() const
 {
    double area;
    double x0, y0, x1, y1, x2, y2, x3, y3;
@@ -115,7 +110,7 @@ double QuadCell::getArea (void) const
 
 
 const Vector & 
-QuadCell::getCentroidPosition(void)
+QuadCell::getCentroidPosition()
 {
    int i, i1;
    double yi, zi, yi1, zi1, dyi, dzi;
