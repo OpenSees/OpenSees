@@ -17,56 +17,20 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.3 $
-// $Date: 2003-02-14 23:01:37 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/reinfLayer/CircReinfLayer.cpp,v $
-                                                                        
-                                                                        
+//
 // File: CircReinfLayer.C 
 // Written by Remo M. de Souza 
 // December 1998
 
 #include <math.h>
+#include <string>
 #include <Matrix.h>
 #include <Vector.h>
 
 #include <ReinfBar.h>
 #include <CircReinfLayer.h>
-#include <elementAPI.h>
 
-void * OPS_ADD_RUNTIME_VPV(OPS_CircReinfLayer)
-{
-    if(OPS_GetNumRemainingInputArgs() < 6) {
-	opserr<<"insufficient arguments for CircReinfLayer\n";
-	return 0;
-    }
-
-    // get idata
-    int numData = 2;
-    int idata[2];
-    if(OPS_GetIntInput(&numData,&idata[0]) < 0) return 0;
-
-    // get data
-    double data[6] = {0,0,0,0,0,0};
-    numData = OPS_GetNumRemainingInputArgs();
-    if(numData > 6) numData = 6;
-    if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
-    static Vector cpos(2);
-    cpos(0) = data[1];
-    cpos(1) = data[2];
-
-    if(numData < 6) {
-	return new CircReinfLayer(idata[0],idata[1],data[0],
-				  cpos,data[3]);
-    } else {
-	return new CircReinfLayer(idata[0],idata[1],data[0],
-				  cpos,data[3],data[4],data[5]);
-    }
-}
-
-
-CircReinfLayer::CircReinfLayer(void):
+CircReinfLayer::CircReinfLayer():
                         nReinfBars(0), matID(0), barDiam(0.0),
                         area(0.0), centerPosit(2), arcRad(0.0),
                         initAng(0.0), finalAng(0.0)          
@@ -88,15 +52,15 @@ CircReinfLayer::CircReinfLayer(int materialID, int numReinfBars,
 }
 
 CircReinfLayer::CircReinfLayer(int materialID, int numReinfBars, double  reinfBarArea,
-							   const Vector &centerPosition, double radius):
+                                                           const Vector &centerPosition, double radius):
 nReinfBars(numReinfBars), matID(materialID), area(reinfBarArea),
 barDiam(0.0), centerPosit(centerPosition), arcRad(radius),
 initAng(0.0), finalAng(0.0)
 {
-	// Figure out final angle so that complete circle does not put
-	// two bars at the same location
-	if (nReinfBars > 0)
-		finalAng = 360.0 - 360.0/nReinfBars;
+        // Figure out final angle so that complete circle does not put
+        // two bars at the same location
+        if (nReinfBars > 0)
+                finalAng = 360.0 - 360.0/nReinfBars;
 }
 
 CircReinfLayer::~CircReinfLayer()
@@ -128,28 +92,28 @@ void CircReinfLayer::setReinfBarArea(double reinfBarArea)
 }
 
 
-int CircReinfLayer::getNumReinfBars (void) const
+int CircReinfLayer::getNumReinfBars() const
 {
    return nReinfBars;
 }
 
-int CircReinfLayer::getMaterialID (void) const
+int CircReinfLayer::getMaterialID() const
 {
    return matID;
 }
 
-double CircReinfLayer::getReinfBarDiameter (void) const
+double CircReinfLayer::getReinfBarDiameter() const
 {
    return barDiam;
 }
 
-double CircReinfLayer::getReinfBarArea (void) const
+double CircReinfLayer::getReinfBarArea() const
 {
    return area;
 }
 
 ReinfBar * 
-CircReinfLayer::getReinfBars (void) const
+CircReinfLayer::getReinfBars() const
 {
    double theta, dtheta;
    static Vector barPosit(2);
@@ -164,9 +128,9 @@ CircReinfLayer::getReinfBars (void) const
       finalAngRad = pi * finalAng / 180.0;
 
       if (nReinfBars > 1) 
-	dtheta = (finalAngRad - initAngRad) /(nReinfBars - 1);
+        dtheta = (finalAngRad - initAngRad) /(nReinfBars - 1);
       else
-	dtheta = 0.0; // Doesn't really matter what this is
+        dtheta = 0.0; // Doesn't really matter what this is
 
       reinfBars = new ReinfBar [nReinfBars];
 
@@ -188,29 +152,29 @@ CircReinfLayer::getReinfBars (void) const
 
 
 const Vector & 
-CircReinfLayer::getCenterPosition(void) const
+CircReinfLayer::getCenterPosition() const
 {
    return centerPosit;
 }
 
-double CircReinfLayer::getArcRadius(void) const 
+double CircReinfLayer::getArcRadius() const 
 {
    return arcRad;
 }
 
-double CircReinfLayer::getInitAngle(void) const 
+double CircReinfLayer::getInitAngle() const 
 {
    return initAng;
 }
 
-double CircReinfLayer::getFinalAngle(void) const 
+double CircReinfLayer::getFinalAngle() const 
 {
    return finalAng;
 }
 
 
 ReinfLayer * 
-CircReinfLayer::getCopy (void) const
+CircReinfLayer::getCopy() const
 {
    CircReinfLayer *theCopy = new CircReinfLayer (matID, nReinfBars, area,
                                                  centerPosit, arcRad,
