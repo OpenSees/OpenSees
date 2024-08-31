@@ -23,6 +23,7 @@
 // December 1998
 //
 #include <math.h>
+#include <string>
 #include <Matrix.h>
 #include <Vector.h>
 
