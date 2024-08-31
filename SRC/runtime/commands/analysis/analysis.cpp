@@ -694,12 +694,9 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
     if (ret) {
       const int size = b.Size();
       Tcl_Obj* list = Tcl_NewListObj(size, nullptr);
-      for (int i = 0; i < size; ++i) {
-//        char buffer[40];
-//        sprintf(buffer, "%.10e ", b(i));
-//        Tcl_AppendResult(interp, buffer, NULL);
+      for (int i = 0; i < size; ++i)
         Tcl_ListObjAppendElement(interp, list, Tcl_NewDoubleObj(b[i]));
-      }
+
       Tcl_SetObjResult(interp, list);
     } else {
       *output << b;
