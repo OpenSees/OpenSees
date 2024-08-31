@@ -17,24 +17,19 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-// $Revision: 1.1.1.1 $
-// $Date: 2000-09-15 08:23:22 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/cell/Cell.cpp,v $
-                                                                        
-                                                                        
+//
 // File: Cell.C
 // Written by Remo M. de Souza
 // December 1998
 
 #include <Cell.h> 
 
-Cell::Cell(void)
+Cell::Cell()
 {
 
 }
 
-Cell::~Cell(void)
+Cell::~Cell()
 {
 
 }
