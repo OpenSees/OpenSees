@@ -1700,5 +1700,50 @@ FiberSection3dThermal::determineFiberTemperature(const Vector& DataMixed, double
 			}
 		}
 	}
+    else if (DataMixed.Size() == 35) {
+        //---------------GR mod - if temperature Data has 35 elements--------------------
+        double py[5], pz[5];
+        for (int i = 0; i < 5; i++) {
+            py[i] = DataMixed(i);
+            pz[i] = DataMixed(5 + i);
+        }
+        double dataTempe[5][5];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                dataTempe[i][j] = DataMixed(10 + 5 * i + j);
+            }
+        }
+        // check grid corners
+        if (fabs(dataTempe[0][0]) <= 1e-10 && fabs(dataTempe[4][4]) <= 1e-10 && fabs(dataTempe[4][0]) <= 1e-10 && fabs(dataTempe[0][4]) <= 1e-10) // no tempe load
+            return 0;
+
+        // calculate the fiber temperature, weighted with inverse of the distance from grid nodes
+        // check if coords are inside the grid, otherwise first or last temperature is returned
+        if (fiberLocy < py[0] || fiberLocz < pz[0])      return dataTempe[0][0];
+        if (fiberLocy > py[4] || fiberLocz > pz[4])      return dataTempe[4][4];
+        // first, find nearest grid points
+        for (int i = 1; i < 5; i++) {
+            for (int j = 1; j < 5; j++) {
+                if ((fiberLocy >= py[i - 1] && fiberLocy <= py[i]) && (fiberLocz >= pz[j - 1] && fiberLocz <= pz[j])) {
+                    double sy[4], sz[4], sT[4], d[4], dsum = 0, Tdsum = 0;
+                    // selecting the 4 points of the grid, ordered anti-clockwise
+                    sy[0] = py[i - 1]; sy[1] = py[i - 1]; sy[2] = py[i]; sy[3] = py[i];
+                    sz[0] = pz[j - 1]; sz[1] = pz[j]; sz[2] = pz[j]; sz[3] = pz[j - 1];
+                    // select grid temperatures
+                    sT[0] = dataTempe[i - 1][j - 1]; sT[1] = dataTempe[i - 1][j]; sT[2] = dataTempe[i][j]; sT[3] = dataTempe[i][j - 1];
+                    // calculate distance
+                    for (int k = 0; k < 4; k++) {
+                        d[k] = sqrt(pow(fiberLocy - sy[k], 2) + pow(fiberLocz - sz[k], 2));
+                        if (d[k] == 0) d[k] = 1.e-6;
+                        dsum += 1.0 / d[k]; Tdsum += sT[k] / d[k];
+                    }
+                    if (dsum == 0) return 0;
+                    return Tdsum / dsum;
+                } // if
+
+            } //j
+        } //i
+
+    }
 	return FiberTemperature;
 }

@@ -252,18 +252,13 @@ ElasticOrthotropicMaterial::getCopy (void)
 const char*
 ElasticOrthotropicMaterial::getType (void) const
 {
-  opserr << "ElasticOrthotropicMaterial::getType -- subclass responsibility\n";
-  exit(-1);	
-
-  return 0;
+  return "BaseClass";
 }
 
 int
 ElasticOrthotropicMaterial::getOrder (void) const
 {
-  opserr << "ElasticOrthotropicMaterial::getOrder -- subclass responsibility\n";
-  exit(-1);
-  return -1;
+  return 0;
 }
 
 int

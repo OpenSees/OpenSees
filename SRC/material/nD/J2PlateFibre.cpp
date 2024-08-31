@@ -882,6 +882,8 @@ J2PlateFibre::recvSelf (int commitTag, Channel &theChannel,
   epsPn[3] = data(9);
   epsPn[4] = data(10);
   alphan = data(11);
+
+  this->revertToLastCommit();
   
   return res;
 }
