@@ -8,8 +8,10 @@
 // December 1998
 //
 #include <math.h>
+#include <string>
 #include <Matrix.h>
 #include <Patch.h>
+#include <OPS_Stream.h>
 #include <CircPatch.h>
 #include <QuadCell.h>
 #include <CircSectionCell.h>
