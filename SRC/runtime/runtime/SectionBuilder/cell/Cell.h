@@ -34,11 +34,6 @@ class Cell
 {
   public:
 
-    Cell();
-    virtual ~Cell();
-    
-    // edition functions
-
     // reinforcing bar inquiring functions
     
     virtual        double getArea() const = 0;
