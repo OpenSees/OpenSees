@@ -43,10 +43,10 @@ class CircSectionCell: public Cell
 
     // reinforcing bar inquiring functions
     
-    double getArea                     (void) const;
-    double getdValue                   (void) const;    
-    const  Matrix &getVertCoords       (void) const;
-    const  Vector &getCentroidPosition (void);
+    double getArea() const;
+    double getdValue() const;    
+    const  Matrix &getVertCoords() const;
+    const  Vector &getCentroidPosition();
 
     void Print(OPS_Stream &s, int flag =0) const;   
     friend OPS_Stream &operator<<(OPS_Stream &s, const CircSectionCell &quadCell);    
