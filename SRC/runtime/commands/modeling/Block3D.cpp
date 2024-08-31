@@ -14,8 +14,8 @@
 
 //constructor
 Block3D::Block3D(int numx, int numy, int numz,
-		 const ID& nodeID, 
-		 const Matrix& coorArray ) 
+                 const ID& nodeID, 
+                 const Matrix& coorArray ) 
 : nx(numx), ny(numy), nz(numz),
   coor(3), 
   element(8) 
@@ -37,9 +37,9 @@ void  Block3D::setUpXl( const ID &nodeID, const Matrix &coorArray )
   for (int i=0; i<8; i++ ){
     if ( nodeID(i) == -1 ) {
       opserr << "Warning : in Block3D, block node " 
-	   << i 
-	   << " is not defined.  No Generation will take place."
-	   << endln;
+           << i 
+           << " is not defined.  No Generation will take place."
+           << endln;
       break; 
     }
   }
@@ -153,7 +153,7 @@ void  Block3D::setUpXl( const ID &nodeID, const Matrix &coorArray )
   if ( nodeID(26) == -1 ) {
     for (int i=0; i<3; i++ )
       xl[i][26] = 0.125*( xl[i][0] + xl[i][1] + xl[i][2] + xl[i][3] +
-		          xl[i][4] + xl[i][5] + xl[i][6] + xl[i][7]   );
+                          xl[i][4] + xl[i][5] + xl[i][6] + xl[i][7]   );
   }
 
   return;
@@ -169,7 +169,7 @@ Block3D::getNodalCoords( int i, int j, int k )
      for ( k = 0, nz ) {
        for ( j = 0, ny ) {
          for ( i = 0, nx ) 
-	   call getNodalCoords(i,j,k);
+           call getNodalCoords(i,j,k);
        } 
      }
   */
@@ -267,7 +267,7 @@ void  Block3D::transformNodalCoordinates( )
 
 //shape functions
 void  Block3D::shape3d( double r, double s, double t,
-	                double shape[27]     ) 
+                        double shape[27]     ) 
 /*
  * Adapted from:
       subroutine shp04(shp,glu,glo,gu,eu,to,xjac,detj,r,s,t,xl,ul)
