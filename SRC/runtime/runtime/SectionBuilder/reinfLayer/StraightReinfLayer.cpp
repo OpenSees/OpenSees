@@ -24,12 +24,12 @@
 //
 #include <math.h>
 #include <string>
+#include <OPS_Stream.h>
 #include <Matrix.h>
 #include <Vector.h>
 
 #include <ReinfBar.h>
 #include <StraightReinfLayer.h>
-#include <elementAPI.h>
 
 
 StraightReinfLayer::StraightReinfLayer(int materialID, int numReinfBars, 
