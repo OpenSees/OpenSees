@@ -53,6 +53,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Beam2dThermalAction.h>
 #include <Beam3dThermalAction.h>
 #include <Beam2dTempLoad.h>
+#include <ShellThermalAction.h>
 #include <SP_Constraint.h>
 #include <LoadPattern.h>
 #include <MultiSupportPattern.h>
@@ -681,9 +682,9 @@ int OPS_ElementalLoad()
 	else {//if (ndm=3)
 	  double t1, locY1, t2, locY2, t3, locY3, t4, locY4, t5, locY5,
 	    t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3, t12, t13, locZ4, t14, t15, locZ5;
-	  
+	  bool useGrid = false;
 	  int numdata = OPS_GetNumRemainingInputArgs();
-	  double data[25];
+	  double data[35];
 	  if (numdata == 25) {
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
 	      opserr << "WARNING eleLoad - invalid input\n";
@@ -700,6 +701,13 @@ int OPS_ElementalLoad()
 	    t10 = data[16]; t11 = data[17]; locZ3 = data[18];
 	    t12 = data[19]; t13 = data[20]; locZ4 = data[21];
 	    t14 = data[22]; t15 = data[23]; locZ5 = data[24];
+	  }
+	  else if (numdata == 35) {
+		  if (OPS_GetDoubleInput(&numdata, data) < 0) {
+			  opserr << "WARNING eleLoad - invalid input\n";
+			  return -1;
+		  }
+		  useGrid = true;
 	  }
 	  else if (numdata == 4) {
 	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
@@ -758,10 +766,14 @@ int OPS_ElementalLoad()
 	  }
 
 	  for (int i = 0; i<theEleTags.Size(); i++) {
-	    theLoad = new Beam3dThermalAction(eleLoadTag,
-					      t1, locY1, t2, locY2, t3, locY3, t4, locY4,
-					      t5, locY5, t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3,
-					      t12, t13, locZ4, t14, t15, locZ5, theEleTags(i));
+		  if (useGrid) {
+			theLoad = new Beam3dThermalAction(eleLoadTag, data, theEleTags(i));
+		  }else{		  
+			theLoad = new Beam3dThermalAction(eleLoadTag,
+							  t1, locY1, t2, locY2, t3, locY3, t4, locY4,
+							  t5, locY5, t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3,
+							  t12, t13, locZ4, t14, t15, locZ5, theEleTags(i));
+		  }
 	    if (theLoad == 0) {
 	      opserr << "WARNING eleLoad - out of memory creating load of type " << type << endln;
 	      return -1;
@@ -776,9 +788,56 @@ int OPS_ElementalLoad()
             }
             eleLoadTag++;	    
 	  }
-	}
+	} // ndm==3
     }
     //--Adding identifier for Beam2dThermalAction:[END] by UoE OpenSees Group--//
+    else if (strncmp(type,"-shellThermal",80) == 0) {
+
+      // get the current pattern tag if no tag given in i/p
+      int loadPatternTag = theActiveLoadPattern->getTag();
+      
+      double t1, locY1, t2, locY2; //t3, locY3, t4, locY4, t5, locY5, t6, locY6, t7, locY7, t8, locY8, t9, locY9;
+      // 9 temperature points are given,i.e. 8 layers are defined; Also the 9 corresponding vertical coordinate is given.
+      // the temperature at each fiber is obtained by interpolating of temperatures at the nearby temperature points.
+      
+      int numdata = OPS_GetNumRemainingInputArgs();
+      double data[18];
+      if (numdata == 18) {
+	opserr << "eleLoad -shellThermal -- not yet implemented for 9 data points (see Tcl implementation)" << endln;
+	return -1;
+      }
+      if (numdata == 10) {
+	opserr << "eleLoad -shellThermal -- not yet implemented for 5 data points (see Tcl implementation)" << endln;
+	return -1;
+      }
+      if (numdata == 4) {
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	  opserr << "WARNING eleLoad - invalid input\n";
+	  return -1;
+	}
+	t1 = data[0]; locY1 = data[1];
+	t2 = data[2]; locY2 = data[3];
+
+	for (int i = 0; i < theEleTags.Size(); i++) {
+	  theLoad = new ShellThermalAction(eleLoadTag,
+					   t1, locY1, t2, locY2, theEleTags(i));
+
+	  if (theLoad == 0) {
+	    opserr << "WARNING eleLoad - out of memory creating load of type " << type << endln;
+	    return -1;
+	  }
+	  
+	  // add the load to the domain
+	  if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+	    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+	    opserr << theLoad;
+	    delete theLoad;
+	    return -1;
+	  }
+	  eleLoadTag++;	  
+	}
+      }
+    }
 
 
     // Added by Scott R. Hamilton   - Stanford

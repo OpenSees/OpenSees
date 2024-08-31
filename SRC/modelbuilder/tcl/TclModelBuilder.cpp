@@ -3046,10 +3046,45 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 		  //-------------------------end for importing temp data from external files --source -------------------------
 		  else {
 
+			  // GR - new load function for temperatures in 3d beams
+			  if (argc - count == 35) {
+				  double indata[35];
+				  double BufferData;
+
+				  for (int i = 0; i < 35; i++) {
+					  if (Tcl_GetDouble(interp, argv[count], &BufferData) != TCL_OK) {
+						  opserr << "WARNING eleLoad - invalid data " << argv[count] << " for -beamThermal 3D\n";
+						  return TCL_ERROR;
+					  }
+					  indata[i] = BufferData;
+					  count++;
+				  }
+
+				  for (int i = 0; i < theEleTags.Size(); i++) {
+					  theLoad = new Beam3dThermalAction(eleLoadTag, indata, theEleTags(i));
+					  if (theLoad == 0) {
+						  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count];
+						  return TCL_ERROR;
+					  }
+					  // get the current pattern tag if no tag given in i/p
+					  int loadPatternTag = theTclLoadPattern->getTag();
+
+					  // add the load to the domain
+					  if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+						  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+						  opserr << theLoad;
+						  delete theLoad;
+						  return TCL_ERROR;
+					  }
+					  eleLoadTag++;
+				  }
+				  return 0;
+			  }
+
 			  //double t1, locY1, t2, locY2, t3, locY3, t4, locY4, t5, locY5, 
 			  //t6, t7, locZ1, t8, t9, locZ2, t10,t11, locZ3, t12, t13, locZ4, t14,t15, locZ5;
 
-			  if (argc - count == 25) {
+			  else if (argc - count == 25) {
 				  double indata[25];
 				  double BufferData;
 

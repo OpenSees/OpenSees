@@ -8,6 +8,7 @@ OBJS       = ShellMITC4.o \
 	ShellNLDKGT.o \
 	ShellMITC4Thermal.o \
 	ShellNLDKGQThermal.o \
+    ShellNLDKGTThermal.o \
 	ASDShellQ4.o \
 	ASDShellT3.o \
 	R3vectors.o 
