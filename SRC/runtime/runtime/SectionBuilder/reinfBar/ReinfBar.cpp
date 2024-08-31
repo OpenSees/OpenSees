@@ -23,13 +23,14 @@
 // December 1998
 
 #include <math.h>
+#include <string>
 #include <Matrix.h>
 #include <Vector.h>
 #include <OPS_Stream.h>
 #include <ReinfBar.h>
 
 
-ReinfBar::ReinfBar (void):
+ReinfBar::ReinfBar():
                    diameter(0.0), area(0.0), matID(0), posit(2)
 {
 
@@ -69,18 +70,18 @@ void ReinfBar::setPosition (const Vector &position)
    posit = position;
 }
 
-double ReinfBar::getDiameter(void) const
+double ReinfBar::getDiameter() const
 {
    return diameter;
 }
 
-double ReinfBar::getArea (void) const
+double ReinfBar::getArea() const
 {
    return area;
 }
 
 
-const Vector & ReinfBar::getPosition(void) const
+const Vector & ReinfBar::getPosition() const
 {
    return posit;
 }
