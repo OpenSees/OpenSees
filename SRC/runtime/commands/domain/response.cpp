@@ -590,3 +590,149 @@ sectionFlexibility(ClientData clientData, Tcl_Interp *interp, int argc,
   return TCL_OK;
 }
 
+int
+sectionTag(ClientData clientData, Tcl_Interp *interp, int argc,
+                TCL_Char ** const argv)
+{
+    assert(clientData != nullptr);
+    Domain *the_domain = (Domain*)clientData;
+
+    if (argc < 3) {
+      opserr << G3_ERROR_PROMPT << "want - sectionTag eleTag? secNum? \n";
+      return TCL_ERROR;
+    }
+
+    int tag, secNum;
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+      opserr << G3_ERROR_PROMPT << "sectionTag eleTag? secNum? - could not read "
+                "eleTag? \n";
+      return TCL_ERROR;
+    }
+    if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
+      opserr << G3_ERROR_PROMPT << "sectionTag eleTag? secNum? - could not read "
+                "secNum? \n";
+      return TCL_ERROR;
+    }
+
+    Element *theElement = the_domain->getElement(tag);
+    if (theElement == nullptr) {
+      opserr << G3_ERROR_PROMPT << "sectionFlexibility element with tag " << tag
+             << " not found in domain \n";
+      return TCL_ERROR;
+    }
+
+    int argcc = 1;
+    char a[80] = "sectionTags";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == nullptr) {
+        return TCL_ERROR;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const ID &theID = *(info.theID);
+    int Np = theID.Size();
+
+    if (secNum > 0 && secNum <= Np) { // One IP
+      int value = theID(secNum-1);
+      Tcl_SetObjResult(interp, Tcl_NewIntObj(value));
+
+    } else {
+      // All IPs in a list
+      Tcl_Obj* list = Tcl_NewListObj(Np, nullptr);
+
+      for (int i = 0; i < Np; i++)
+        Tcl_ListObjAppendElement(interp, list, Tcl_NewIntObj(theID(i)));
+
+
+      Tcl_SetObjResult(interp, list);
+    }
+
+    delete theResponse;
+
+    return TCL_OK;
+}
+
+int
+sectionDisplacement(ClientData clientData, Tcl_Interp *interp, int argc,
+                TCL_Char ** const argv)
+{
+    assert(clientData != nullptr);
+    Domain *theDomain = (Domain*)clientData;
+
+    if (argc < 3) {
+      opserr << G3_ERROR_PROMPT << "want - sectionLocation eleTag? secNum? \n";
+      return TCL_ERROR;
+    }
+
+    int tag, secNum;
+    if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+      opserr << G3_ERROR_PROMPT << "sectionLocation eleTag? secNum? - could not read "
+                "eleTag? \n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
+      opserr << G3_ERROR_PROMPT << "sectionLocation eleTag? secNum? - could not read "
+                "secNum? \n";
+      return TCL_ERROR;
+    }
+
+
+    bool local = false;
+    if (argc > 4) {
+      if (strstr(argv[4], "local") != 0)
+        local = true;
+    }
+
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == nullptr) {
+        opserr << "WARNING sectionDisplacement element with tag " << tag << " not found in domain \n";
+        return TCL_ERROR;
+    }
+
+    int argcc = 2;
+    char a[80] = "sectionDisplacements";
+    const char *argvv[2];
+    argvv[0] = a;
+    if (local)
+      argvv[1] = "local";
+    else
+      argvv[1] = "global";
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == nullptr) {
+        return TCL_ERROR;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Matrix &theMatrix = *(info.theMatrix);
+    if (secNum <= 0 || secNum > theMatrix.noRows()) {
+        opserr << "WARNING invalid secNum\n";
+        delete theResponse;
+        return TCL_ERROR;
+    }
+
+
+    const int nc = theMatrix.noCols();
+    Tcl_Obj* list = Tcl_NewListObj(nc, nullptr);
+    for (int i=0; i<nc; i++)
+      Tcl_ListObjAppendElement(interp, list, Tcl_NewDoubleObj(theMatrix(secNum-1, i)));
+
+    Tcl_SetObjResult(interp, list);
+
+    delete theResponse;
+
+    return TCL_OK;
+}
