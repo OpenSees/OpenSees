@@ -142,7 +142,9 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc,
     Vector jntOffsetI(3), jntOffsetJ(3); // joint offsets in global coordinates
 
     if (argc < 6) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n    Expected: geomTransf type? tag? "
+      opserr << G3_ERROR_PROMPT 
+             << "insufficient arguments\n"
+             << "    Expected: geomTransf type? tag? "
                 "vecxzPlaneX? vecxzPlaneY? vecxzPlaneZ?  <-jntOffset dXi? dYi? "
                 "dZi? dXj? dYj? dZj? >\n";
       return TCL_ERROR;
