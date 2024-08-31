@@ -843,7 +843,7 @@ initSectionCommands(ClientData clientData, Tcl_Interp *interp,
 
   } else {
     opserr << G3_ERROR_PROMPT << "Model dimension (ndm = " << ndm
-           << ") is imcompatible with available frame elements\n";
+           << ") is incompatible with available frame elements\n";
     return TCL_ERROR;
   }
 
@@ -1408,14 +1408,6 @@ TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
   assert(clientData != nullptr);
   BasicModelBuilder* builder = static_cast<BasicModelBuilder*>(clientData);
 
-//// check if a section is being processed
-//if (builder->currentSectionTag == 0) {
-//  opserr << G3_ERROR_PROMPT << "subcommand 'fiber' is only valid inside a 'section' "
-//            "command\n";
-//  return TCL_ERROR;
-//}
-
-
   if (argc < 5) {
     opserr << G3_ERROR_PROMPT << "invalid num args: fiber yLoc zLoc area matTag\n";
     return TCL_ERROR;
@@ -1450,10 +1442,8 @@ TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   //
+  // Add fiber to section builder
   //
-  //
-  //
-  // add fiber to section representation
   int ndm = builder->getNDM();
   int error = 0;
   if (ndm == 2) {
@@ -2028,7 +2018,7 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
 
     } else {
       opserr << G3_ERROR_PROMPT << "NDM = " << NDM
-             << " is imcompatible with available frame elements\n";
+             << " is incompatible with available frame elements\n";
       return TCL_ERROR;
     }
 
