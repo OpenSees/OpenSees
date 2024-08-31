@@ -5,6 +5,7 @@
 //===----------------------------------------------------------------------===//
 //
 // Description: This file contains the implementation of Block2D.
+//
 // Written: Ed Love
 // Created: 07/01
 //
@@ -12,12 +13,10 @@
 #define Block2D_h
 
 #include <math.h>
-class Matrix;
-class Vector;
-// #include <Vector.h>
-// #include <Matrix.h>
 #include <Vector3D.h>
 #include <ID.h> 
+class Matrix;
+class Vector;
 
 class Block2D {
 
