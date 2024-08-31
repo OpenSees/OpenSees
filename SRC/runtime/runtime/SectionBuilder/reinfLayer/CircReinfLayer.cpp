@@ -24,6 +24,7 @@
 
 #include <math.h>
 #include <string>
+#include <OPS_Stream.h>
 #include <Matrix.h>
 #include <Vector.h>
 
