@@ -7,7 +7,6 @@
 
 target_sources(OPS_Section_Repres
     PRIVATE
-        Cell.cpp
         CircSectionCell.cpp
         QuadCell.cpp
     PUBLIC
