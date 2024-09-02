@@ -236,7 +236,7 @@ void CircReinfLayer::Print(OPS_Stream &s, int flag) const
    s << "\nFinal angle: " << finalAng;
 }
 if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-	 s << "\t\t\t\t{\"type\": \"layerCirc\", \"material\": "<<matID<<", "<<",\"area\": "<<area<<", ";
+	 s << "\t\t\t\t{\"type\": \"layerCirc\", \"material\": "<<matID<<", "<<",\"area\": "<<area<<", \"nReinfBars\": " << nReinfBars<<", ";
 	 s << "\"center\": ["<<centerPosit(0)<<","<<centerPosit(1)<<"], ";
 	 s << "\"radius\": "<<arcRad<<", ";
 	 s << "\"angles\": ["<<initAng<<", "<<finalAng<<"]";
