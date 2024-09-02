@@ -218,9 +218,9 @@ void StraightReinfLayer::Print(OPS_Stream &s, int flag) const
    s << "\nFinal Position: " << finalPosit;
 }
 if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-	 s << "\t\t\t\t{\"type\": \"layerStraight\", \"material\": "<<matID<<", \"area\": "<<area<<", ";
-	 s << "\"initPos\": ["<<initPosit(0)<<","<<initPosit(1)<<"], ";
-	 s << "\"finlPos\": ["<<finalPosit(0)<<","<<finalPosit(1)<<"]";
+	 s << "\t\t\t\t{\"type\": \"layerStraight\", \"material\": "<<matID<<", \"area\": "<<area << ", \"nReinfBars\": " << nReinfBars <<", ";
+	 s << "\"start\": ["<<initPosit(0)<<","<<initPosit(1)<<"], ";
+	 s << "\"end\": ["<<finalPosit(0)<<","<<finalPosit(1)<<"]";
 	 s <<"}";
 }   
 }
