@@ -960,8 +960,8 @@ TclModelBuilder::getPlasticMaterial(int tag)
 int 
 TclModelBuilder::addSectionRepres(SectionRepres &theSectionRepres)
 {
-  bool result = theSectionRepresents->addComponent(&theSectionRepres);
-
+  //bool result = theSectionRepresents->addComponent(&theSectionRepres);
+  bool result = OPS_addSectionRepres(&theSectionRepres);
   if (result == true)
     return 0;
   else {
@@ -974,10 +974,11 @@ TclModelBuilder::addSectionRepres(SectionRepres &theSectionRepres)
 SectionRepres *
 TclModelBuilder::getSectionRepres(int tag)
 {
-  TaggedObject *mc = theSectionRepresents->getComponentPtr(tag);
-  if (mc == 0) return 0;
-  SectionRepres *result = (SectionRepres *)mc;
-  return result;
+	return OPS_getSectionRepres(tag);
+  //TaggedObject *mc = theSectionRepresents->getComponentPtr(tag);
+  //if (mc == 0) return 0;
+  //SectionRepres *result = (SectionRepres *)mc;
+  //return result;
 }
 
 
