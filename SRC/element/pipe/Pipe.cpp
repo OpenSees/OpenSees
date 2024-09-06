@@ -61,6 +61,14 @@ void *OPS_PipeElement() {
                     return 0;
                 }
             }
+        } else if (strcmp(theType, "-p") == 0) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetDoubleInput(&numData, &pressure) < 0) {
+                    opserr << "WARNING: failed to read internal "
+                              "pressure\n";
+                    return 0;
+                }
+            }
         } else if (strcmp(theType, "-noThermalLoad") == 0) {
             thermalLoad = false;
         } else if (strcmp(theType, "-noPressureLoad") == 0) {
