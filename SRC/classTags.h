@@ -892,8 +892,7 @@
 #define ELE_TAG_FSIFluidBoundaryElement2D  267  // Massimo Petracca (ASDEA)
 #define ELE_TAG_ShellNLDKGTThermal		   268 // Giovanni Rinaldin
 #define ELE_TAG_Pipe                      269
-#define ELE_TAG_Pipe                      270
-#define ELE_TAG_CurvedPipe                271
+#define ELE_TAG_CurvedPipe                      270
 
 
 #define FRN_TAG_Coulomb            1
