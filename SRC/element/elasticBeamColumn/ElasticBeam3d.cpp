@@ -68,8 +68,6 @@ void* OPS_ElasticBeam3d(void)
     int releasey = 0;
     int numData = 1;
     int numOptionalArgs = 0;
-    double alphaVz = 0.0;
-    double alphaVy = 0.0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string theType = OPS_GetString();
 	if (theType == "-mass") {
@@ -114,25 +112,7 @@ void* OPS_ElasticBeam3d(void)
 	      return 0;
 	    }
 	  }
-	} else if (theType == "-alphaVz") {
-    numOptionalArgs++;
-    if(OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;
-	    if(OPS_GetDoubleInput(&numData,&alphaVz) < 0) {
-        opserr << "WARNING: failed to read shear factor alphaVz\n";
-        return 0;
-      }
-	  }
-  } else if (theType == "-alphaVy") {
-    numOptionalArgs++;
-    if(OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;
-	    if(OPS_GetDoubleInput(&numData,&alphaVy) < 0) {
-        opserr << "WARNING: failed to read shear factor alphaVy\n";
-        return 0;
-      }
-	  }
-  } 
+	} 
     }
 
     if (numArgs > 0) {
@@ -190,10 +170,10 @@ void* OPS_ElasticBeam3d(void)
     }
     
     if (theSection != 0) {
-      return new ElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping, alphaVz, alphaVy); 
+      return new ElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
     } else {
 	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
-				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping, alphaVz, alphaVy);
+				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping);
     }
 }
 
@@ -207,8 +187,6 @@ void *OPS_ElasticBeam3d(const ID &info) {
     int releasez = 0;
     int releasey = 0;
     int numData = 1;
-    double alphaVz = 0.0;
-    double alphaVy = 0.0;
 
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
@@ -282,22 +260,6 @@ void *OPS_ElasticBeam3d(const ID &info) {
                         return 0;
                     }
                 }
-            } else if (theType == "-alphaVz") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &alphaVz) < 0) {
-                        opserr << "WARNING: failed to read shear "
-                                  "factor alphaVz\n";
-                        return 0;
-                    }
-                }
-            } else if (theType == "-alphaVy") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &alphaVy) < 0) {
-                        opserr << "WARNING: failed to read shear "
-                                  "factor alphaVy\n";
-                        return 0;
-                    }
-                }
             }
         }
     }
@@ -310,7 +272,7 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(13);
+        mdata.resize(11);
         mdata(0) = data[0];
         mdata(1) = data[1];
         mdata(2) = data[2];
@@ -322,8 +284,6 @@ void *OPS_ElasticBeam3d(const ID &info) {
         mdata(8) = releasez;
         mdata(9) = releasey;
         mdata(10) = transfTag;
-        mdata(11) = alphaVz;
-        mdata(12) = alphaVy;
         return &meshdata;
     }
 
@@ -336,7 +296,7 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 13) return 0;
+        if (mdata.Size() < 11) return 0;
         data[0] = mdata(0);
         data[1] = mdata(1);
         data[2] = mdata(2);
@@ -348,8 +308,6 @@ void *OPS_ElasticBeam3d(const ID &info) {
         releasez = (int)mdata(8);
         releasey = (int)mdata(9);
         transfTag = (int)mdata(10);
-        alphaVz = mdata(11);
-        alphaVy = mdata(12);
 
         iData[0] = info(2);
         iData[1] = info(3);
@@ -366,40 +324,12 @@ void *OPS_ElasticBeam3d(const ID &info) {
     return new ElasticBeam3d(iData[0], data[0], data[1], data[2],
                              data[3], data[4], data[5], iData[1],
                              iData[2], *theTrans, mass, cMass,
-                             releasez, releasey, 0, alphaVz, alphaVy);
+                             releasez, releasey);
 }
 
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
-   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), alphaVz(0.0),
-   alphaVy(0.0), rho(0.0), cMass(0),
-   releasez(0), releasey(0),
-   Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
-   connectedExternalNodes(2), theCoordTransf(0),
-   theDamping(0)
-{
-  // does nothing
-  q0[0] = 0.0;
-  q0[1] = 0.0;
-  q0[2] = 0.0;
-  q0[3] = 0.0;
-  q0[4] = 0.0;
-
-  p0[0] = 0.0;
-  p0[1] = 0.0;
-  p0[2] = 0.0;
-  p0[3] = 0.0;
-  p0[4] = 0.0;
-  
-  // set node pointers to NULL
-  for (int i=0; i<2; i++)
-    theNodes[i] = 0;      
-}
-
-ElasticBeam3d::ElasticBeam3d(int tag, int classTag)
-  :Element(tag, classTag), 
-   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), alphaVz(0.0),
-   alphaVy(0.0), rho(0.0), cMass(0),
+   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
    releasez(0), releasey(0),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0),
@@ -426,10 +356,9 @@ ElasticBeam3d::ElasticBeam3d(int tag, int classTag)
 ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g, 
 			     double jx, double iy, double iz, int Nd1, int Nd2, 
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
-			     Damping *damping, double alpvz, double alpvy)
+			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), alphaVz(alpvz),
-   alphaVy(alpvy), rho(r), cMass(cm),
+   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
    releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
@@ -480,10 +409,9 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 
 ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
-			     Damping *damping, double alpvz, double alpvy)
+			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0), 
-      alphaVz(alpvz), alphaVy(alpvy),
+      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0),
    rho(r), cMass(cm), releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
@@ -740,8 +668,6 @@ ElasticBeam3d::getTangentStiff(void)
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
   double GJoverL  = G*Jx*oneOverL;         // GJ/L
-  double B1, B2, C1, C2;    // shear coefficients
-  shearCoefficients(B1, B2, C1, C2);
   
   q(0) = EAoverL*v(0);
   q(5) = GJoverL*v(5);  
@@ -751,10 +677,10 @@ ElasticBeam3d::getTangentStiff(void)
   if (releasez == 0) {
     double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
     double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-    q(1) = B1*EIzoverL4*v(1) + C1*EIzoverL2*v(2);
-    q(2) = C1*EIzoverL2*v(1) + B1*EIzoverL4*v(2);
-    kb(1,1) = kb(2,2) = B1*EIzoverL4;
-    kb(2,1) = kb(1,2) = C1*EIzoverL2;
+    q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
+    q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
+    kb(1,1) = kb(2,2) = EIzoverL4;
+    kb(2,1) = kb(1,2) = EIzoverL2;
   }
   if (releasez == 1) { // release I
     q(1) = 0.0;
@@ -776,10 +702,10 @@ ElasticBeam3d::getTangentStiff(void)
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    q(3) = B2*EIyoverL4*v(3) + C2*EIyoverL2*v(4);
-    q(4) = C2*EIyoverL2*v(3) + B2*EIyoverL4*v(4);    
-    kb(3,3) = kb(4,4) = B2*EIyoverL4;
-    kb(4,3) = kb(3,4) = C2*EIyoverL2;
+    q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
+    q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
+    kb(3,3) = kb(4,4) = EIyoverL4;
+    kb(4,3) = kb(3,4) = EIyoverL2;
   }
   if (releasey == 1) { // release I
     q(3) = 0.0;
@@ -820,8 +746,6 @@ ElasticBeam3d::getInitialStiff(void)
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
   double GJoverL  = G*Jx*oneOverL;         // GJ/L
-  double B1, B2, C1, C2;    // shear coefficients
-  shearCoefficients(B1, B2, C1, C2);
 
   kb.Zero();
   kb(0,0) = EAoverL;
@@ -829,8 +753,8 @@ ElasticBeam3d::getInitialStiff(void)
   if (releasez == 0) {
     double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
     double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-    kb(1,1) = kb(2,2) = B1*EIzoverL4;
-    kb(2,1) = kb(1,2) = C1*EIzoverL2;
+    kb(1,1) = kb(2,2) = EIzoverL4;
+    kb(2,1) = kb(1,2) = EIzoverL2;
   }
   if (releasez == 1) { // release I
     kb(2,2) = 3.0*Iz*EoverL;
@@ -842,8 +766,8 @@ ElasticBeam3d::getInitialStiff(void)
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    kb(3,3) = kb(4,4) = B2*EIyoverL4;
-    kb(4,3) = kb(3,4) = C2*EIyoverL2;
+    kb(3,3) = kb(4,4) = EIyoverL4;
+    kb(4,3) = kb(3,4) = EIyoverL2;
   }
   if (releasey == 1) { // release I
     kb(4,4) = 3.0*Iy*EoverL;
@@ -939,8 +863,6 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
   int type;
   const Vector &data = theLoad->getData(type, loadFactor);
   double L = theCoordTransf->getInitialLength();
-  double B1, B2, C1, C2;    // shear coefficients
-  shearCoefficients(B1, B2, C1, C2);
 
   if (type == LOAD_TAG_Beam3dUniformLoad) {
     double wy = data(0)*loadFactor;  // Transverse
@@ -967,8 +889,8 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
     if (releasez == 0) {
-      q0[1] -= Mz*(2*B1-C1);
-      q0[2] += Mz*(2*B1-C1);
+      q0[1] -= Mz;
+      q0[2] += Mz;
     }
     if (releasez == 1) {
       q0[2] += wy*L*L/8;
@@ -978,8 +900,8 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     }
     
     if (releasey == 0) {
-      q0[3] += My*(2*B2-C2);
-      q0[4] -= My*(2*B2-C2);
+      q0[3] += My;
+      q0[4] -= My;
     }
     if (releasey == 1) {
       q0[4] -= wz*L*L/8;
@@ -1177,8 +1099,6 @@ ElasticBeam3d::getResistingForce()
   double EoverL   = E*oneOverL;
   double EAoverL  = A*EoverL;			// EA/L
   double GJoverL = G*Jx*oneOverL;         // GJ/L
-  double B1, B2, C1, C2;    // shear coefficients
-  shearCoefficients(B1, B2, C1, C2);
   
   q(0) = EAoverL*v(0);
   q(5) = GJoverL*v(5);
@@ -1186,8 +1106,8 @@ ElasticBeam3d::getResistingForce()
   if (releasez == 0) {
     double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
     double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
-    q(1) = B1*EIzoverL4*v(1) + C1*EIzoverL2*v(2);
-    q(2) = C1*EIzoverL2*v(1) + B1*EIzoverL4*v(2);
+    q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
+    q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
   }
   if (releasez == 1) {
     q(1) = 0.0;
@@ -1205,8 +1125,8 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    q(3) = B2*EIyoverL4*v(3) + C2*EIyoverL2*v(4);
-    q(4) = C2*EIyoverL2*v(3) + B2*EIyoverL4*v(4);    
+    q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
+    q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
   }
   if (releasey == 1) {
     q(3) = 0.0;
@@ -1255,7 +1175,7 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
 
-    static Vector data(23);
+    static Vector data(21);
     
     data(0) = A;
     data(1) = E; 
@@ -1299,8 +1219,6 @@ ElasticBeam3d::sendSelf(int cTag, Channel &theChannel)
 	    }
       data(20) = dbTag;
     }
-    data(21) = alphaVz;
-    data(22) = alphaVy;
     
     // Send the data vector
     res += theChannel.sendVector(this->getDbTag(), cTag, data);
@@ -1332,7 +1250,7 @@ int
 ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(23);
+  static Vector data(21);
 
   res += theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0) {
@@ -1358,8 +1276,6 @@ ElasticBeam3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
   betaKc = data(16);
   releasez = (int)data(17);
   releasey = (int)data(18);
-  alphaVz = data(21);
-  alphaVy = data(22);
   
   // Check if the CoordTransf is null; if so, get a new one
   int crdTag = (int)data(11);
@@ -1836,14 +1752,12 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
   }
 
   case 19: // basic stiffness
-    double B1, B2, C1, C2;    // shear coefficients
-    shearCoefficients(B1, B2, C1, C2);
     kb.Zero();
     kb(0,0) = E*A/L;
     kb(5,5) = G*Jx/L;
     if (releasez == 0) {
-      kb(1,1) = kb(2,2) = B1*4*E*Iz/L;
-      kb(1,2) = kb(2,1) = C1*2*E*Iz/L;
+      kb(1,1) = kb(2,2) = 4*E*Iz/L;
+      kb(1,2) = kb(2,1) = 2*E*Iz/L;
     }
     if (releasez == 1)
       kb(2,2) = 3*E*Iz/L;
@@ -1851,8 +1765,8 @@ ElasticBeam3d::getResponse (int responseID, Information &eleInfo)
       kb(1,1) = 3*E*Iz/L;
     
     if (releasey == 0) {
-      kb(3,3) = kb(4,4) = B2*4*E*Iy/L;
-      kb(3,4) = kb(4,3) = C2*2*E*Iy/L;
+      kb(3,3) = kb(4,4) = 4*E*Iy/L;
+      kb(3,4) = kb(4,3) = 2*E*Iy/L;
     }
     if (releasey == 1)
       kb(4,4) = 3*E*Iy/L;
@@ -1954,15 +1868,6 @@ ElasticBeam3d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(releasey);
     return param.addObject(8, this);
   }  
-  // shear factors
-  if (strcmp(argv[0],"alphaVz") == 0) {
-    param.setValue(alphaVz);
-    return param.addObject(9, this);
-  }
-  if (strcmp(argv[0],"alphaVy") == 0) {
-    param.setValue(alphaVy);
-    return param.addObject(10, this);
-  }  
   
   return -1;
 }
@@ -2000,41 +1905,9 @@ ElasticBeam3d::updateParameter (int parameterID, Information &info)
 	  releasey = (int)info.theDouble;
 	  if (releasey < 0 || releasey > 3)
 	    releasey = 0;
-	  return 0;		
-  case 9:
-    alphaVz = info.theDouble;
-    return 0;
-  case 10:
-    alphaVy = info.theDouble;
-    return 0;
+	  return 0;			  
 	default:
 		return -1;
 	}
 }
 
-void ElasticBeam3d::shearCoefficients(double &B1, double &B2,
-                                      double &C1, double &C2) {
-    double a1 = 1.0;
-    double a2 = 1.0;
-    double b1 = 1.0;
-    double b2 = 1.0;
-
-    double L = theCoordTransf->getInitialLength();
-
-    if (alphaVy > 0.0 && G > 0 && E > 0 && Iz > 0) {
-        double Avy = A / alphaVy;
-        a1 += 3.0 * E * Iz / (G * Avy * L * L);
-        b1 -= 6.0 * E * Iz / (G * Avy * L * L);
-    }
-
-    if (alphaVz > 0.0 && G > 0 && E > 0 && Iy > 0) {
-        double Avz = A / alphaVz;
-        a2 += 3.0 * E * Iy / (G * Avz * L * L);
-        b2 -= 6.0 * E * Iy / (G * Avz * L * L);
-    }
-
-    B1 = 3 * a1 / (4 * a1 * a1 - b1 * b1);
-    C1 = 3 * b1 / (4 * a1 * a1 - b1 * b1);
-    B2 = 3 * a2 / (4 * a2 * a2 - b2 * b2);
-    C2 = 3 * b2 / (4 * a2 * a2 - b2 * b2);
-}
