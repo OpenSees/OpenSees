@@ -61,7 +61,7 @@ OPS_getCrdTransf(int tag) {
 
   TaggedObject *theResult = theCrdTransfObjects.getComponentPtr(tag);
   if (theResult == 0) {
-    // opserr << "CrdTransf *getCrdTransf(int tag) - none found with tag: " << tag << endln;
+    opserr << "CrdTransf *getCrdTransf(int tag) - none found with tag: " << tag << endln;
     return 0;
   }
   CrdTransf *theSeries = (CrdTransf *)theResult;
