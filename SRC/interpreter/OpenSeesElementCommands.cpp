@@ -262,6 +262,9 @@ void* OPS_PipeElement();
 void* OPS_CurvedPipeElement();
 
 void* OPS_Inno3DPnPJoint();
+void* OPS_ShellMITC4Thermal();
+void* OPS_ShellNLDKGQThermal();
+void* OPS_ShellNLDKGTThermal();
 
 namespace {
 
@@ -815,6 +818,12 @@ namespace {
 	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
 	functionMap.insert(std::make_pair("pipe", &OPS_PipeElement));
 	functionMap.insert(std::make_pair("CurvedPipe", &OPS_CurvedPipeElement));
+	functionMap.insert(std::make_pair("ShellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
+	functionMap.insert(std::make_pair("shellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
+	functionMap.insert(std::make_pair("ShellNLDKGTThermal", &OPS_ShellNLDKGTThermal));
+	functionMap.insert(std::make_pair("shellNLDKGTThermal", &OPS_ShellNLDKGTThermal));
+	functionMap.insert(std::make_pair("shellMITC4Thermal", &OPS_ShellMITC4Thermal));
+	functionMap.insert(std::make_pair("ShellMITC4Thermal", &OPS_ShellMITC4Thermal));
 	return 0;
     }
 }

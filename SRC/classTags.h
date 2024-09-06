@@ -461,6 +461,7 @@
 #define ND_TAG_J2AxiSymm                      3007
 #define ND_TAG_J2ThreeDimensional             3009
 #define ND_TAG_J2PlateFiber		      3010
+#define ND_TAG_J2PlateFibre 30101
 #define ND_TAG_J2BeamFiber		      3011
 #define ND_TAG_J2BeamFiber2d 91625
 #define ND_TAG_J2BeamFiber3d 92516
@@ -889,8 +890,9 @@
 #define ELE_TAG_FSIFluidElement2D          265  // Massimo Petracca (ASDEA)
 #define ELE_TAG_FSIInterfaceElement2D      266  // Massimo Petracca (ASDEA)
 #define ELE_TAG_FSIFluidBoundaryElement2D  267  // Massimo Petracca (ASDEA)
-#define ELE_TAG_Pipe                      268
-#define ELE_TAG_CurvedPipe                269
+#define ELE_TAG_ShellNLDKGTThermal		   268 // Giovanni Rinaldin
+#define ELE_TAG_Pipe                      269
+#define ELE_TAG_CurvedPipe                270
 
 
 
