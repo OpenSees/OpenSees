@@ -1273,7 +1273,7 @@ Node::setR(int row, int col, double Value)
   }
   
   // ensure row, col in range (matrix assignment will catch this - extra work)
-  if (row < 0 || row > numberDOF || col < 0 || col > R->noCols()) {
+  if (row < 0 || row >= numberDOF || col < 0 || col >= R->noCols()) {
     opserr << "Node:setR() - row, col index out of range\n";
     return -1;
   }
