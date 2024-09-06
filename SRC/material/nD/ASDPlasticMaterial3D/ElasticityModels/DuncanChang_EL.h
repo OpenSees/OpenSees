@@ -34,7 +34,7 @@
 
 #ifndef M_PI
 #define M_PI 3.1415926535897932384626433832795
-#endif // M_P
+#endif // M_PI
 
 class DuncanChang_EL : public ElasticityBase<DuncanChang_EL> // CRTP on ElasticityBase
 {
