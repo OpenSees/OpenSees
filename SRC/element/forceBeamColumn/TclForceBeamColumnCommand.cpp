@@ -46,6 +46,7 @@
 #include <DispBeamColumn2dThermal.h>
 #include <DispBeamColumn3dThermal.h> //L.Jiang [SIF]
 #include <ForceBeamColumn2dThermal.h> //L.Jiang [SIF]
+#include <ForceBeamColumn3dThermal.h> //GR
 
 #include <CrdTransf.h>
 
@@ -515,6 +516,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);      
       else if (strcmp(argv[1], "dispBeamColumnThermal") == 0)
 	theElement = new DispBeamColumn3dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);//added by L.Jiang[SIF]
+      else if (strcmp(argv[1], "forceBeamColumnThermal") == 0)
+    theElement = new ForceBeamColumn3dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol, numSub, subFac, theDamping);//added by GR
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
 	theElement = new DispBeamColumn3dWithSensitivity(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else

@@ -191,7 +191,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\material\nD\AcousticMedium.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\BeamFiberMaterial2dPS.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear5.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\ConcreteMcftNonLinear7.cpp" />
@@ -211,6 +210,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\J2ThreeDimensionalThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.cpp" />
@@ -687,6 +687,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\J2ThreeDimensionalThermal.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\matCMM\MaterialCMM.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressLayeredMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressRebarMaterial.h" />
