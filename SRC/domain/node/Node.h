@@ -166,9 +166,11 @@ class Node : public DomainComponent
     virtual void setCrds(double Crd1, double Crd2, double Crd3);
     virtual void setCrds(const Vector &);
 
-  protected:
+    void setTemp(double t) { temperature = t; }
+    double getTemp() const { return temperature; }
 
-  private:
+   protected:
+   private:
     // priavte methods used to create the Vector objects 
     // for the committed and trial response quantities.
     int createDisp(void);
@@ -216,6 +218,7 @@ class Node : public DomainComponent
 
     Vector *reaction;
     Vector *displayLocation;
+    double temperature; // Minjie
 };
 
 #endif

@@ -39,6 +39,7 @@ target_sources(OPS_Material
     NDFiberSection3d.cpp
     NDFiberSectionWarping2d.cpp
     ParallelSection.cpp
+    PipeSection.cpp
     SectionAggregator.cpp
     SectionForceDeformation.cpp
     TimoshenkoSection3d.cpp
@@ -76,6 +77,7 @@ target_sources(OPS_Material
     NDFiberSection3d.h
     NDFiberSectionWarping2d.h
     ParallelSection.h
+    PipeSection.h
     SectionAggregator.h
     SectionForceDeformation.h
     TimoshenkoSection3d.h
