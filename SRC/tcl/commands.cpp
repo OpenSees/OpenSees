@@ -3115,14 +3115,18 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
 
   else if(strcmp(argv[1], "PFEM") == 0) {
+    
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
           theSOE = new PFEMLinSOE(*theSolver);
       } else if(strcmp(argv[2], "-quasi") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
+
       } else if (strcmp(argv[2],"-mumps") ==0) {
-#ifdef _PARALLEL_INTERPRETERS
+
+#ifdef _MUMPS
+	
 	  int relax = 20;
 	  if (argc > 3) {
 	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
@@ -3132,9 +3136,11 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
           theSOE = new PFEMLinSOE(*theSolver);
-#endif // _PARALLEL_INTERPRETERS
+#endif // _MUMPS
+
       } else if (strcmp(argv[2],"-quasi-mumps")==0) {
-#ifdef _PARALLEL_INTERPRETERS
+
+#ifdef _MUMPS
 	  int relax = 20;
 	  if (argc > 3) {
 	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
@@ -3144,7 +3150,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-#endif // _PARALLEL_INTERPRETERS
+#endif // _MUMPS
       }
   }
 
