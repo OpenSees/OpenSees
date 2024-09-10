@@ -32,8 +32,6 @@
 #ifndef J2PlateFibre_h
 #define J2PlateFibre_h
 
-#define ND_TAG_J2PlateFibre 91625
-
 #include <NDMaterial.h>
 
 #include <Matrix.h>

@@ -100,6 +100,7 @@ int OPS_Node()
     // check options
     Vector disp,vel,mass,dispLoc;
     Matrix ndmass;
+    double T = 0.0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
 	
@@ -140,6 +141,17 @@ int OPS_Node()
 	    for(int i=0; i<ndf; i++) {
 		ndmass(i,i) = data(i);
 	    }
+
+  } else if(strcmp(type,"-temp")==0 || strcmp(type,"-Temp")==0) {
+      if(OPS_GetNumRemainingInputArgs() < 1) {
+        opserr<<"incorrect number of nodal temperature\n";
+        return -1;
+	    }
+      int num = 1;
+      if (OPS_GetDoubleInput(&num, &T) < 0) {
+        opserr << "WARNING: failed to read temperature\n";
+        return -1;
+      }
 
 	} else if(strcmp(type,"-dispLoc")==0 || strcmp(type,"-dispLoc")==0) {
 	    if(OPS_GetNumRemainingInputArgs() < ndm) {
@@ -194,6 +206,7 @@ int OPS_Node()
     if(dispLoc.Size() == ndm) {
 	theNode->setDisplayCrds(dispLoc);
     }
+    theNode->setTemp(T);
     theNode->commitState();
 
     // add node to domain
@@ -215,7 +228,7 @@ Node::Node(int theClassTag)
  incrDeltaDisp(0),
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0), displayLocation(0)
+ index(-1), reaction(0), displayLocation(0), temperature(0)
 {
   // for FEM_ObjectBroker, recvSelf() must be invoked on object
 
@@ -238,7 +251,7 @@ Node::Node(int tag, int theClassTag)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
   R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0), displayLocation(0)
+ index(-1), reaction(0), displayLocation(0), temperature(0)
 {
   // for subclasses - they must implement all the methods with
   // their own data structures.
@@ -261,7 +274,7 @@ Node::Node(int tag, int ndof, double Crd1, Vector *dLoc)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0), displayLocation(0)
+ index(-1), reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -293,7 +306,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0), displayLocation(0)
+ reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -327,7 +340,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0), displayLocation(0)
+ reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -362,7 +375,7 @@ Node::Node(const Node &otherNode, bool copyMass)
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
-   reaction(0), displayLocation(0)
+   reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -435,6 +448,8 @@ Node::Node(const Node &otherNode, bool copyMass)
       exit(-1);
     }
   }
+
+  temperature = otherNode.temperature;
 
   index = -1;
 }
@@ -1273,7 +1288,7 @@ Node::setR(int row, int col, double Value)
   }
   
   // ensure row, col in range (matrix assignment will catch this - extra work)
-  if (row < 0 || row > numberDOF || col < 0 || col > R->noCols()) {
+  if (row < 0 || row >= numberDOF || col < 0 || col >= R->noCols()) {
     opserr << "Node:setR() - row, col index out of range\n";
     return -1;
   }
@@ -1357,9 +1372,11 @@ Node::setNumEigenvectors(int numVectorsToStore)
       opserr << "Node::setNumEigenvectors() - out of memory\n";
       return -2;
     }
-  } else
+  } else {
+
     // zero the eigenvector matrix
     theEigenvectors->Zero();
+  }
   
     return 0;
 }

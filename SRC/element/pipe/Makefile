@@ -1,17 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = ShellMITC4.o \
-	ShellMITC9.o \
-	ShellDKGQ.o \
-	ShellNLDKGQ.o \
-	ShellDKGT.o \
-	ShellNLDKGT.o \
-	ShellMITC4Thermal.o \
-	ShellNLDKGQThermal.o \
-    ShellNLDKGTThermal.o \
-	ASDShellQ4.o \
-	ASDShellT3.o \
-	R3vectors.o 
+OBJS       = Pipe.o CurvedPipe.o
 
 all:         $(OBJS)
 

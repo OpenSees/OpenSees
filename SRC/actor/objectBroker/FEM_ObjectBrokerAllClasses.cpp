@@ -238,6 +238,7 @@
 #include "J2PlaneStrain.h"
 #include "J2PlaneStress.h"
 #include "J2PlateFiber.h"
+#include "J2PlateFibre.h"
 #include "J2BeamFiber2d.h"
 #include "J2BeamFiber3d.h"
 #include "J2AxiSymm.h"
@@ -2218,6 +2219,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
     
   case ND_TAG_J2PlateFiber:
     return new J2PlateFiber();
+
+  case ND_TAG_J2PlateFibre:
+    return new J2PlateFibre();    
 
   case ND_TAG_J2BeamFiber2d:
     return new J2BeamFiber2d();

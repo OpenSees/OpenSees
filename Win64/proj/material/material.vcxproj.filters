@@ -1535,9 +1535,6 @@
     <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.cpp">
       <Filter>section\LayeredMembraneSection</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp">
-      <Filter>nD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\APDFMD.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1549,6 +1546,12 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.cpp">
       <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PipeMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\PipeSection.cpp">
+      <Filter>section</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

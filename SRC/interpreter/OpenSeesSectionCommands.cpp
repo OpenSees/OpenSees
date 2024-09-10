@@ -57,6 +57,7 @@
 //#include <FiberSectionGJThermal.h>
 #include <MembranePlateFiberSectionThermal.h>
 #include <LayeredShellFiberSectionThermal.h>
+#include <PipeSection.h>
 
 void* OPS_ElasticSection2d();
 void* OPS_ElasticSection3d();
@@ -81,6 +82,7 @@ void* OPS_CircReinfLayer();
 void* OPS_RectPatch();
 void* OPS_ElasticMembranePlateSection();
 void* OPS_MembranePlateFiberSection();
+void* OPS_MembranePlateFiberSectionThermal();
 void* OPS_DoubleMembranePlateFiberSection();
 void* OPS_ElasticWarpingShearSection2d();
 void* OPS_ElasticTubeSection3d();
@@ -89,6 +91,7 @@ void* OPS_ASDCoupledHinge3D();
 void* OPS_SectionAggregator();
 void* OPS_ElasticPlateSection();
 void* OPS_LayeredShellFiberSection();
+void* OPS_LayeredShellFiberSectionThermal();
 void* OPS_Bidirectional();
 void* OPS_Elliptical2();
 void* OPS_Isolator2spring();
@@ -106,6 +109,7 @@ void* OPS_RCTBeamSectionUniMat2d();
 void* OPS_ReinforcedConcreteLayeredMembraneSection();	// M. J. Nunez - UChile
 void* OPS_LayeredMembraneSection();	// M. J. Nunez - UChile
 void* OPS_ElasticMembraneSection();	// M. J. Nunez - UChile
+void* OPS_PipeSection();
 
 namespace {
     static FiberSection2d* theActiveFiberSection2d = 0;
@@ -267,6 +271,7 @@ namespace {
 	functionMap.insert(std::make_pair("Generic1d", &OPS_UniaxialSection));
 	functionMap.insert(std::make_pair("ElasticMembranePlateSection", &OPS_ElasticMembranePlateSection));
 	functionMap.insert(std::make_pair("PlateFiber", &OPS_MembranePlateFiberSection));
+	functionMap.insert(std::make_pair("PlateFiberThermal", &OPS_MembranePlateFiberSectionThermal));	
 	functionMap.insert(std::make_pair("DoublePlateFiber", &OPS_DoubleMembranePlateFiberSection));	
 	functionMap.insert(std::make_pair("ElasticWarpingShear", &OPS_ElasticWarpingShearSection2d));
 	functionMap.insert(std::make_pair("ElasticTube", &OPS_ElasticTubeSection3d));
@@ -283,6 +288,7 @@ namespace {
 	functionMap.insert(std::make_pair("AddDeformation", &OPS_SectionAggregator));
 	functionMap.insert(std::make_pair("ElasticPlateSection", &OPS_ElasticPlateSection));
 	functionMap.insert(std::make_pair("LayeredShell", &OPS_LayeredShellFiberSection));
+	functionMap.insert(std::make_pair("LayeredShellThermal", &OPS_LayeredShellFiberSectionThermal));	
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
 	functionMap.insert(std::make_pair("Elliptical", &OPS_Elliptical2));	
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
@@ -294,6 +300,7 @@ namespace {
 	functionMap.insert(std::make_pair("LayeredMembraneSection", &OPS_LayeredMembraneSection));
 	functionMap.insert(std::make_pair("LMS", &OPS_LayeredMembraneSection));
 	functionMap.insert(std::make_pair("ElasticMembraneSection", &OPS_ElasticMembraneSection));
+	functionMap.insert(std::make_pair("Pipe", &OPS_PipeSection));
 
 	return 0;
     }
