@@ -206,20 +206,45 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         
         // switch the SOE back to the user specified one
         this->IncrementalIntegrator::setLinks(*theModel, *theLinSOE, theTest);
-        
-        // get initial unbalance at time t (in case domain changed)
-        // warning: this will use committed stiffness prop. damping
-        // from current step instead of previous step
-        (*Utdotdot) = *Udotdot;
-        alphaM = 1.0;
-        alphaD = alphaR = alphaP = (1.0 - alphaF);
-        Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
-        theModel->setAccel(*Udotdot);
-        this->TransientIntegrator::formUnbalance();
-        (*Put) = theLinSOE->getB();
-        // reset accelerations at t+deltaT
-        (*Udotdot) = *Utdotdot;
-        theModel->setAccel(*Udotdot);
+         
+        // The current code block has the following issues:
+        // (a) `Ut` and `Utdot` are not initialized correctly.
+        // (b) Modal damping forces are not being multiplied by `alphaD`.
+        // (c) `theModel->updateDomain(time, deltaT)` must be called before 
+        //     invoking `this->TransientIntegrator::formUnbalance()`.
+
+        // To fix this, follow the steps below to assemble the right-hand side 
+        // (weighted unbalance) vector:
+
+        // 1. Compute the unbalance at time `t` without multiplying by 
+        //    `(1.0 - alphaF)`. Since the inertial term in the KR-Alpha 
+        //    formulation is not multiplied by `(1.0 - alphaF)`, adjust the 
+        //    acceleration by dividing by `(1.0 - alphaF)`.
+
+        // 2. Update `U` and `Udot` for the next step and set acceleration to 
+        //    zero. Ensure the domain is updated, including advancing the time 
+        //    to `t + deltaT`.
+
+        // 3. Compute the unbalance at time `t + deltaT`.
+
+        // 4. Set the weighted unbalance vector as:
+        //    weightedUnbalance = (1.0 - alphaF) * (unbalance at time t) + 
+        //                        alphaF * (unbalance at time t + deltaT).
+
+        // This does not work for the reasons stated above.
+        // // get initial unbalance at time t (in case domain changed)
+        // // warning: this will use committed stiffness prop. damping
+        // // from current step instead of previous step
+        // (*Utdotdot) = *Udotdot;
+        // alphaM = 1.0;
+        // alphaD = alphaR = alphaP = (1.0 - alphaF);
+        // Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
+        // theModel->setAccel(*Udotdot);
+        // this->TransientIntegrator::formUnbalance();
+        // (*Put) = theLinSOE->getB();
+        // // reset accelerations at t+deltaT
+        // (*Udotdot) = *Utdotdot;
+        // theModel->setAccel(*Udotdot);
         
         // set flag that initializations are done
         initAlphaMatrices = 0;
@@ -230,9 +255,27 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         return -6;
     }
     
+    // set response at t to be that at t+deltaT of previous step
+    (*Ut) = *U;
+    (*Utdot) = *Udot;
+    (*Utdotdot) = *Udotdot;
+
+    // compute the unweighted unbalance at time t using adjusted acceleration
+    alphaD = alphaR = alphaP = alphaM = 1.0; // do not multiply by 1.0 - alphaF
+    Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0 / (1.0 - alphaF));
+    theModel->setAccel(*Udotdot);
+    double time = theModel->getCurrentDomainTime();
+    if (theModel->updateDomain(time, deltaT) < 0)  {
+        opserr << "WARNING KRAlphaExplicit::newStep() - failed to update the domain\n";
+        return -7;
+    }
+    this->TransientIntegrator::formUnbalance();
+    (*Put) = theLinSOE->getB();
+
+    // no longer needed. Compute unweighted balances instead. 
     // set weighting factors for subsequent iterations
-    alphaM = 0.0;
-    alphaD = alphaR = alphaP = alphaF;
+    // alphaM = 0.0;
+    // alphaD = alphaR = alphaP = alphaF;
     
     // determine new response at time t+deltaT
     Utdothat->addMatrixVector(0.0, *alpha1, *Utdotdot, deltaT);
@@ -243,22 +286,29 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
     
     Udot->addVector(1.0, *Utdothat, 1.0);
     
-    // no need to zero accelerations because alphaM = 0
-    //Udotdot->Zero();
-    //theModel->setResponse(*U, *Udot, *Udotdot);
+    // zero accelerations and set trial response quantities
+    Udotdot->Zero();
+    theModel->setResponse(*U, *Udot, *Udotdot);
     
-    // set the trial response quantities
-    theModel->setDisp(*U);
-    theModel->setVel(*Udot);
+    // // set the trial response quantities
+    // theModel->setDisp(*U);
+    // theModel->setVel(*Udot);
     
     // increment the time to t+deltaT and apply the load
-    double time = theModel->getCurrentDomainTime();
     time += deltaT;
     if (theModel->updateDomain(time, deltaT) < 0)  {
         opserr << "WARNING KRAlphaExplicit_TP::newStep() - failed to update the domain\n";
         return -7;
     }
     
+    // compute the unweighted unbalance at time t + deltaT
+    this->TransientIntegrator::formUnbalance();
+    
+    // Set the weighted unbalance vector as:
+    //    weightedUnbalance = (1.0 - alphaF) * (unbalance at time t) + 
+    //                        alphaF * (unbalance at time t + deltaT).
+    Put->addVector(1.0 - alphaF, theLinSOE->getB(), alphaF);
+
     return 0;
 }
 
@@ -318,23 +368,24 @@ int KRAlphaExplicit_TP::formUnbalance()
     
     theLinSOE->setB(*Put);
     
+    // no longer need this since Put is now set to the weighted balance 
     // do modal damping
-    const Vector *modalValues = theModel->getModalDampingFactors();
-    if (modalValues != 0)  {
-        this->addModalDampingForce(modalValues);
-    }
+    // const Vector *modalValues = theModel->getModalDampingFactors();
+    // if (modalValues != 0)  {
+    //     this->addModalDampingForce(modalValues);
+    // }
     
-    if (this->formElementResidual() < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
-        opserr << " - this->formElementResidual failed\n";
-        return -2;
-    }
+    // if (this->formElementResidual() < 0)  {
+    //     opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
+    //     opserr << " - this->formElementResidual failed\n";
+    //     return -2;
+    // }
     
-    if (this->formNodalUnbalance() < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
-        opserr << " - this->formNodalUnbalance failed\n";
-        return -3;
-    }
+    // if (this->formNodalUnbalance() < 0)  {
+    //     opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
+    //     opserr << " - this->formNodalUnbalance failed\n";
+    //     return -3;
+    // }
     
     return 0;
 }
@@ -592,21 +643,22 @@ int KRAlphaExplicit_TP::commit(void)
         return -1;
     }
     
+    // no longer need this. This is handled in newStep() now. 
     // set response at t of next step to be that at t+deltaT
-    (*Ut) = *U;
-    (*Utdot) = *Udot;
-    (*Utdotdot) = *Udotdot;
+    // (*Ut) = *U;
+    // (*Utdot) = *Udot;
+    // (*Utdotdot) = *Udotdot;
     
-    // get unbalance Put and store it for next step
-    alphaM = 1.0;
-    alphaD = alphaR = alphaP = (1.0 - alphaF);
-    Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
-    theModel->setAccel(*Udotdot);
-    this->TransientIntegrator::formUnbalance();
-    (*Put) = theLinSOE->getB();
-    // reset accelerations at t+deltaT
-    (*Udotdot) = *Utdotdot;
-    theModel->setAccel(*Udotdot);
+    // // get unbalance Put and store it for next step
+    // alphaM = 1.0;
+    // alphaD = alphaR = alphaP = (1.0 - alphaF);
+    // Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
+    // theModel->setAccel(*Udotdot);
+    // this->TransientIntegrator::formUnbalance();
+    // (*Put) = theLinSOE->getB();
+    // // reset accelerations at t+deltaT
+    // (*Udotdot) = *Utdotdot;
+    // theModel->setAccel(*Udotdot);
     
     return theModel->commitDomain();
 }
