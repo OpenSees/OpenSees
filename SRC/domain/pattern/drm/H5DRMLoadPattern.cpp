@@ -60,10 +60,10 @@
 
 using namespace std;
 
-#define DEBUG_NODE_MATCHING true
+#define DEBUG_NODE_MATCHING false
 #define DEBUG_DRM_INTEGRATION false
 #define DEBUG_DRM_FORCES false
-#define DEBUG_WITH_GMSH true
+#define DEBUG_WITH_GMSH false
 
 
 Vector H5DRM_calculate_cross_product(const Vector& a, const Vector& b);
@@ -73,6 +73,12 @@ bool read_double_dataset_into_vector(const hid_t& h5drm_dataset, std::string dat
 bool read_double_dataset_into_matrix(const hid_t& h5drm_dataset, std::string dataset_name, Matrix& result);
 bool read_int_dataset_into_array(const hid_t& h5drm_dataset, std::string dataset_name, int *& result);
 
+
+#define HDF5_CLOSE_AND_REPORT(id, close_func, msg)  \
+    if ((id) > 0 && (close_func(id)) < 0)           \
+    {                                               \
+        H5DRMerror << "Error closing " << msg << "." << endl; \
+    }
 
 
 static int numH5DRMpatterns = 0;
@@ -193,19 +199,17 @@ H5DRMLoadPattern::H5DRMLoadPattern()
       DRM_D(100),
       DRM_A(100),
       last_integration_time(0),
+      t1(0), t2(0), tend(0),
+      cFactor(1),
       crd_scale(0),
       distance_tolerance(0),
+      flag_initialized(false),
       station_id2data_pos(100),
+      ih5_fname(0), ih5_vel(0), ih5_vel_ds(0), ih5_dis(0), ih5_dis_ds(0), ih5_acc(0), ih5_acc_ds(0), ih5_one_node_ms(0), ih5_xfer_plist(0),       
       do_coordinate_transformation(true),
       T(3, 3),
       x0(3)
 {
-    flag_initialized = false;
-    t1 =  t2 =  tend = 0;
-    cFactor = 1;
-
-    ih5_vel = ih5_dis = ih5_acc = 0;
-    ih5_vel_ds = ih5_dis_ds = ih5_acc_ds = 0;
 
     T(0, 0) = 1;
     T(0, 1) = 0;
@@ -228,6 +232,8 @@ H5DRMLoadPattern::H5DRMLoadPattern()
     H5DRMout << "H5DRMLoadPattern - empty constructor\n";
 }
 
+
+
 H5DRMLoadPattern::H5DRMLoadPattern(
     int tag,
     std::string dataset_fname_,
@@ -246,20 +252,18 @@ H5DRMLoadPattern::H5DRMLoadPattern(
       DRM_D(100),
       DRM_A(100),
       last_integration_time(0),
+      t1(0), t2(0), tend(0),
+      cFactor(cFactor_),
       crd_scale(crd_scale_),
       distance_tolerance(distance_tolerance_),
+      flag_initialized(false),
       station_id2data_pos(100),
+      ih5_fname(0), ih5_vel(0), ih5_vel_ds(0), ih5_dis(0), ih5_dis_ds(0), ih5_acc(0), ih5_acc_ds(0), ih5_one_node_ms(0), ih5_xfer_plist(0),
       do_coordinate_transformation(do_coordinate_transformation_),
       T(3, 3),
       x0(3)
 {
 
-    ih5_vel = ih5_dis = ih5_acc = 0;
-    ih5_vel_ds = ih5_dis_ds = ih5_acc_ds = 0;
-
-    flag_initialized = false;
-    t1 =  t2 =  tend = 0;
-    cFactor = cFactor_;
     MPI_local_rank = 0;
 #if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
     MPI_Comm_rank(MPI_COMM_WORLD, &MPI_local_rank);
@@ -333,12 +337,11 @@ void H5DRMLoadPattern::do_intitialization()
     hid_t file_access_plist   = H5Pcreate(H5P_FILE_ACCESS);
 
 
-    unsigned flags = H5F_ACC_RDONLY;
-    ih5_fname = H5Fopen(dataset_fname.c_str(), flags, file_access_plist);
+    ih5_fname = H5Fopen(dataset_fname.c_str(), H5F_ACC_RDONLY, file_access_plist);
 
     if (ih5_fname < 0)
     {
-        H5DRMerror << "Unable to open file: " << dataset_fname << endl;
+        H5DRMerror << "Error opening HDF5 file: " << dataset_fname << endl;
         return;
     }
 
@@ -727,89 +730,50 @@ H5DRMLoadPattern::~H5DRMLoadPattern()
 
 void H5DRMLoadPattern::cleanup()
 {
-
+    // Clear mappings
     nodetag2station_id.clear();
     nodetag2local_pos.clear();
 
-    if (ih5_vel > 0 && H5Dclose(ih5_vel) < 0)
-    {
-        H5DRMerror << "Unable to close motion dataset. " << endl;
+    // Close individual HDF5 resources
+    HDF5_CLOSE_AND_REPORT(ih5_vel, H5Dclose, "motion dataset");
+    HDF5_CLOSE_AND_REPORT(ih5_vel_ds, H5Sclose, "motion dataspace");
+    HDF5_CLOSE_AND_REPORT(ih5_one_node_ms, H5Sclose, "one node memspace");
+
+    // Get the number of open objects associated with the file
+    ssize_t num_open_objs = H5Fget_obj_count(ih5_fname, H5F_OBJ_ALL);
+    if (num_open_objs < 0) {
+        printf("H5DRMLoadPattern::cleanup - Error retrieving open HDF5 objects.\n");
+        return;
     }
 
-    if (ih5_vel_ds > 0 && H5Sclose(ih5_vel_ds) < 0)
-    {
-        H5DRMerror << "Unable to close motion dataspace. " << endl;
+    // If there are open objects, retrieve their IDs and close them
+    if (num_open_objs > 0) {
+        // Allocate memory to store object IDs
+        hid_t *obj_ids = (hid_t *)malloc(num_open_objs * sizeof(hid_t));
+        if (!obj_ids) {
+            printf("H5DRMLoadPattern::cleanup - Memory allocation error.\n");
+            return;
+        }
+
+        // Get the object IDs
+        ssize_t num_retrieved = H5Fget_obj_ids(ih5_fname, H5F_OBJ_ALL, num_open_objs, obj_ids);
+        if (num_retrieved < 0) {
+            printf("H5DRMLoadPattern::cleanup - Error retrieving object IDs.\n");
+            free(obj_ids);
+            return;
+        }
+
+        // Close each retrieved object ID
+        for (ssize_t i = 0; i < num_retrieved; i++) {
+            H5Oclose(obj_ids[i]);
+        }
+
+        // Free allocated memory
+        free(obj_ids);
     }
 
-    if (ih5_one_node_ms > 0 && H5Sclose(ih5_one_node_ms) < 0)
-    {
-        H5DRMerror << "Unable to close one node memspace. " << endl;
-    }
-
-    hid_t obj_ih5_list[H5DRM_MAX_RETURN_OPEN_OBJS];
-    hsize_t n_obj_open = 10;
-    while (ih5_fname > 0 && n_obj_open > 0)
-    {
-        int n_objects_closed = 0;
-        n_obj_open = H5Fget_obj_count(ih5_fname, H5F_OBJ_DATASET | H5F_OBJ_GROUP | H5F_OBJ_ATTR | H5F_OBJ_LOCAL );
-        cout << "H5DRM -- N of HDF5 objects open = " << n_obj_open << endl;
-
-        if (n_obj_open <= 0)
-        {
-            break;
-        }
-
-        int N_open_objects;
-
-        //Close datasets
-        N_open_objects = H5Fget_obj_ids( ih5_fname, H5F_OBJ_DATASET | H5F_OBJ_LOCAL, H5DRM_MAX_RETURN_OPEN_OBJS, obj_ih5_list );
-        if (N_open_objects > 0)
-        {
-            cout << "                                   - Closing " <<  N_open_objects << " datasets.\n";
-        }
-        for (int i = 0; i < std::min(N_open_objects, H5DRM_MAX_RETURN_OPEN_OBJS) ; i++ )
-        {
-            H5Dclose(obj_ih5_list[i]);
-            n_objects_closed++;
-        }
-
-        //Close groups
-        N_open_objects = H5Fget_obj_ids( ih5_fname, H5F_OBJ_GROUP | H5F_OBJ_LOCAL, H5DRM_MAX_RETURN_OPEN_OBJS, obj_ih5_list );
-        if (N_open_objects > 0)
-        {
-            cout << "                                   - Closing " <<  N_open_objects << " groups.\n";
-        }
-        for (int i = 0; i < std::min(N_open_objects, H5DRM_MAX_RETURN_OPEN_OBJS) ; i++ )
-        {
-            H5Gclose(obj_ih5_list[i]);
-            n_objects_closed++;
-        }
-
-        //Close groups
-        N_open_objects = H5Fget_obj_ids( ih5_fname, H5F_OBJ_ATTR | H5F_OBJ_LOCAL, H5DRM_MAX_RETURN_OPEN_OBJS, obj_ih5_list );
-        if (N_open_objects > 0)
-        {
-            cout << "                                   - Closing " <<  N_open_objects << " attributes.\n";
-        }
-        for (int i = 0; i < std::min(N_open_objects, H5DRM_MAX_RETURN_OPEN_OBJS) ; i++ )
-        {
-            H5Aclose(obj_ih5_list[i]);
-            n_objects_closed++;
-        }
-
-        if (n_objects_closed == 0)
-        {
-            // This guards against the possibility of H5Fget_obj_count misbehaving
-            // or that the open objects are not datasets, groups or attributes.
-            break;
-        }
-
-    }
-
-    if (ih5_fname > 0 && H5Fclose(ih5_fname) < 0)
-    {
-        H5DRMerror << "Unable to close HDF5 file \"" << dataset_fname << "\"\n";
-    }
+    // Close the HDF5 file itself
+    HDF5_CLOSE_AND_REPORT(ih5_fname, H5Fclose, "H5 file: \"" + dataset_fname + "\"");
 
     flag_initialized = false;
 }
@@ -1557,13 +1521,13 @@ H5DRMLoadPattern::sendSelf(int commitTag, Channel & theChannel)
 
     if (theChannel.sendMsg(0, 0, filename_msg) < 0)
     {
-        cerr << "H5DRMLoadPattern::sendSelf -- failed to send dataset_fname\n";
+        cerr << "H5DRMLoadPattern::sendSelf - error sending filename_msg\n";
         return -1;
     }
 
     if (theChannel.sendVector(0, 0, data) < 0)
     {
-        cerr << "H5DRMLoadPattern::sendSelf -- failed to send cFactor\n";
+        cerr << "H5DRMLoadPattern::sendSelf -- error sending data\n";
         return -1;
     }
 
@@ -1575,20 +1539,19 @@ int
 H5DRMLoadPattern::recvSelf(int commitTag, Channel & theChannel,
                 FEM_ObjectBroker & theBroker)
 {
-    H5DRMout << "receiving...\n";
     static Vector data(3);
     char drmfilename[H5DRM_MAX_FILENAME];
     Message filename_msg(drmfilename, H5DRM_MAX_FILENAME);
 
     if (theChannel.recvMsg(0, 0, filename_msg) < 0)
     {
-        cerr << "H5DRMLoadPattern::receiveSelf -- failed to receive dataset_fname\n";
+        cerr << "H5DRMLoadPattern::receiveSelf - error receiving filename_msg\n";
         return -1;
     }
 
     if (theChannel.recvVector(0, 0, data) < 0)
     {
-        cerr << "H5DRMLoadPattern::receiveSelf -- failed to receive cFactor\n";
+        cerr << "H5DRMLoadPattern::receiveSelf - error receiving data\n";
         return -1;
     }
     cFactor = data(0);
@@ -1596,7 +1559,6 @@ H5DRMLoadPattern::recvSelf(int commitTag, Channel & theChannel,
     distance_tolerance = data(2);
 
     dataset_fname = drmfilename;
-    H5DRMout << "received filename is " <<  drmfilename << "\n";
 
     return 0;
 }
