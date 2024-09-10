@@ -93,7 +93,7 @@ void *OPS_PipeElement() {
     }
 
     auto *ele = new Pipe(iData[0], iData[1], iData[2], *theMat,
-                         *theSect, T0, pressure);
+                         *theSect, T0, pressure, thermalLoad, pressureLoad);
 
     return ele;
 }
