@@ -1078,7 +1078,7 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
   // necessary arguments
   if (recvMat != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -mat inputs (got %d inputs, but want 1 input)",
             recvMat);
     ifNoError = errDetected(ifNoError, buf);
@@ -1086,7 +1086,7 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
 
   if (recvShape != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -shape inputs (got %d inputs, but want 1 input)",
             recvShape);
     ifNoError = errDetected(ifNoError, buf);
@@ -1094,7 +1094,7 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
 
   if (recvSize != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -size inputs (got %d inputs, but want 1 input)",
             recvSize);
     ifNoError = errDetected(ifNoError, buf);
@@ -1103,7 +1103,7 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
   // optional arguments
   if (recvLambda >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -lambda inputs (got %d inputs, but want 1 input)",
             recvLambda);
     ifNoError = errDetected(ifNoError, buf);
@@ -1111,7 +1111,7 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
 
   if (recvOrient >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -ori inputs (got %d inputs, but want 1 input)",
             recvOrient);
     ifNoError = errDetected(ifNoError, buf);
@@ -1119,7 +1119,7 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
 
   if (recvMass >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -mass inputs (got %d inputs, but want 1 input)",
             recvMass);
     ifNoError = errDetected(ifNoError, buf);
@@ -1485,7 +1485,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
   // necessary arguments
   if (recvShape != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -shape inputs (got %d inputs, but want 1 input)",
             recvShape);
     ifNoError = errDetected(ifNoError, buf);
@@ -1493,7 +1493,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvSize != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -size inputs (got %d inputs, but want 1 input)",
             recvSize);
     ifNoError = errDetected(ifNoError, buf);
@@ -1501,7 +1501,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvNMSS != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -NMSS inputs (got %d inputs, but want 1 input)",
             recvNMSS);
     ifNoError = errDetected(ifNoError, buf);
@@ -1509,7 +1509,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvMatMSS != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -matMSS inputs (got %d inputs, but want 1 input)",
             recvMatMSS);
     ifNoError = errDetected(ifNoError, buf);
@@ -1517,7 +1517,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvNMNS != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -NMNS inputs (got %d inputs, but want 1 input)",
             recvNMNS);
     ifNoError = errDetected(ifNoError, buf);
@@ -1525,7 +1525,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvMatMNS != 1) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf, 100,
             "wrong number of -matMNS inputs (got %d inputs, but want 1 input)",
             recvMatMNS);
     ifNoError = errDetected(ifNoError, buf);
@@ -1534,8 +1534,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
   // optional arguments
   if (recvHeight >= 2) {
     char buf[100];
-    sprintf(
-        buf,
+    snprintf(buf,100,
         "wrong number of -totalHeight inputs (got %d inputs, but want 1 input)",
         recvHeight);
     ifNoError = errDetected(ifNoError, buf);
@@ -1543,7 +1542,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvLimDisp >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf,100,
             "wrong number of -limDisp inputs (got %d inputs, but want 1 input)",
             recvLimDisp);
     ifNoError = errDetected(ifNoError, buf);
@@ -1551,7 +1550,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvLambda >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf,100,
             "wrong number of -lambda inputs (got %d inputs, but want 1 input)",
             recvLambda);
     ifNoError = errDetected(ifNoError, buf);
@@ -1559,7 +1558,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvOrient >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf,100,
             "wrong number of -ori inputs (got %d inputs, but want 1 input)",
             recvOrient);
     ifNoError = errDetected(ifNoError, buf);
@@ -1567,7 +1566,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvMass >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf,100,
             "wrong number of -mass inputs (got %d inputs, but want 1 input)",
             recvMass);
     ifNoError = errDetected(ifNoError, buf);
@@ -1575,8 +1574,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvIfPD >= 2) {
     char buf[100];
-    sprintf(
-        buf,
+    snprintf(buf, 100,
         "wrong number of -noPDInput inputs (got %d inputs, but want 1 input)",
         recvIfPD);
     ifNoError = errDetected(ifNoError, buf);
@@ -1584,7 +1582,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvIfTl >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf,100,
             "wrong number of -noTilt inputs (got %d inputs, but want 1 input)",
             recvIfTl);
     ifNoError = errDetected(ifNoError, buf);
@@ -1592,7 +1590,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvAdj >= 2) {
     char buf[100];
-    sprintf(buf,
+    snprintf(buf,100,
             "wrong number of -adjustPDOutput inputs (got %d inputs, but want 1 "
             "input)",
             recvAdj);
@@ -1601,8 +1599,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
 
   if (recvBal >= 2) {
     char buf[100];
-    sprintf(
-        buf,
+    snprintf(buf, 100,
         "wrong number of -doBalance inputs (got %d inputs, but want 1 input)",
         recvBal);
     ifNoError = errDetected(ifNoError, buf);
