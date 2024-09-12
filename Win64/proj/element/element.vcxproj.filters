@@ -315,6 +315,8 @@
     <ClCompile Include="..\..\..\SRC\element\NewElement.cpp" />
     <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3dThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\pipe\CurvedPipe.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\pipe\Pipe.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\OTHER\tetgen1.4.3\tetgen.h" />
