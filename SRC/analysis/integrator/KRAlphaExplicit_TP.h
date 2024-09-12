@@ -37,7 +37,7 @@
 // Reference: Kolay, C. and J. Ricles (2014). "Development of a family of
 // unconditionally stable explicit direct integration algorithms with
 // controllable numerical energy dissipation." Earthquake Engineering and
-// Structural Dynamics, 43(9):1361�1380.
+// Structural Dynamics, 43(9):1361-1380.
 
 #include <TransientIntegrator.h>
 
