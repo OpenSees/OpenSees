@@ -74,6 +74,9 @@ public:
     int update(const Vector &aiPlusOne);
     int commit(void);
 
+    // modalDamping
+    double getCFactor(void) {return c2;}
+
     const Vector &getVel(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
