@@ -18,52 +18,25 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-#ifndef CircSectionCell_h 
-#define CircSectionCell_h 
+// $Revision: 1.1.1.1 $
+// $Date: 2000-09-15 08:23:22 $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/patch/Patch.cpp,v $
+                                                                        
+                                                                        
+// File: Patch.C
+// Written by Remo M. de Souza
+// December 1998
 
-#include <Cell.h>
-#include <Vector.h>
 
-class Matrix;
-class Vector;
+#include <Patch.h> 
 
-
-class CircSectionCell: public Cell
+Patch::Patch(void)
 {
-  public:
 
-    CircSectionCell();
-    CircSectionCell(double r2, double r1, double alpha, double theta, double centerX, double centerY);
-        
-    ~CircSectionCell();
-    
-    // edition functions
+}
 
-    void setVertCoords (const Matrix &vertexCoords);
+Patch::~Patch(void)
+{
 
-    // reinforcing bar inquiring functions
-    
-    double getArea                     (void) const;
-    double getdValue                   (void) const;    
-    const  Matrix &getVertCoords       (void) const;
-    const  Vector &getCentroidPosition (void);
-
-    void Print(OPS_Stream &s, int flag =0) const;   
-    friend OPS_Stream &operator<<(OPS_Stream &s, const CircSectionCell &quadCell);    
-    
-  protected:
-    
-  private:
-    double r1, r2; // r1 inner and r2 outer radii
-    double alpha;  // inner angle of section
-    double theta;  // angle of centerline about z axis
-
-    double A;
-    Vector Centroid;
-    double offsetX, offsetY;
-//    double area;
-};
-
-
-#endif
+}
 

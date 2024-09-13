@@ -17,53 +17,22 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
-#ifndef CircSectionCell_h 
-#define CircSectionCell_h 
 
-#include <Cell.h>
-#include <Vector.h>
+// File: ReinfLayer.C
+// Written by Remo M. de Souza
+// December 1998
 
-class Matrix;
-class Vector;
+#include <ReinfLayer.h>
 
 
-class CircSectionCell: public Cell
+ReinfLayer::ReinfLayer(void)
 {
-  public:
 
-    CircSectionCell();
-    CircSectionCell(double r2, double r1, double alpha, double theta, double centerX, double centerY);
-        
-    ~CircSectionCell();
-    
-    // edition functions
-
-    void setVertCoords (const Matrix &vertexCoords);
-
-    // reinforcing bar inquiring functions
-    
-    double getArea                     (void) const;
-    double getdValue                   (void) const;    
-    const  Matrix &getVertCoords       (void) const;
-    const  Vector &getCentroidPosition (void);
-
-    void Print(OPS_Stream &s, int flag =0) const;   
-    friend OPS_Stream &operator<<(OPS_Stream &s, const CircSectionCell &quadCell);    
-    
-  protected:
-    
-  private:
-    double r1, r2; // r1 inner and r2 outer radii
-    double alpha;  // inner angle of section
-    double theta;  // angle of centerline about z axis
-
-    double A;
-    Vector Centroid;
-    double offsetX, offsetY;
-//    double area;
-};
+}
 
 
-#endif
+ReinfLayer::~ReinfLayer(void)
+{
+
+}
 

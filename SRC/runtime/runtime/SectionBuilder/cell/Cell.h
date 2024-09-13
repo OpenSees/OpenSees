@@ -23,6 +23,7 @@
 // Written by Remo M. de Souza
 // December 1998
 
+
 #ifndef Cell_h 
 #define Cell_h 
 
@@ -34,11 +35,16 @@ class Cell
 {
   public:
 
+    Cell();
+    virtual ~Cell();
+    
+    // edition functions
+
     // reinforcing bar inquiring functions
     
-    virtual        double getArea() const = 0;
-    virtual        double getdValue() const = 0;
-    virtual const  Vector &getCentroidPosition() = 0;
+    virtual        double getArea              (void) const = 0;
+    virtual        double getdValue              (void) const = 0;
+    virtual const  Vector &getCentroidPosition (void) = 0;
  
     virtual void   Print(OPS_Stream &s, int flag =0) const = 0;   
     friend OPS_Stream &operator<<(OPS_Stream &s, const Cell &Cell);    

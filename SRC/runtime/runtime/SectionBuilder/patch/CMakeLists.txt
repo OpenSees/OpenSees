@@ -8,6 +8,7 @@
 target_sources(OPS_Section_Repres
     PRIVATE
         CircPatch.cpp
+        Patch.cpp
         QuadPatch.cpp
     PUBLIC
         CircPatch.h

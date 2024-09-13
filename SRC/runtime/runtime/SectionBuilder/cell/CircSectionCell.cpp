@@ -51,18 +51,18 @@ CircSectionCell::~CircSectionCell()
 
 }
 
-double CircSectionCell::getArea() const
+double CircSectionCell::getArea (void) const
 {
   return A;
 }
 
-double CircSectionCell::getdValue() const
+double CircSectionCell::getdValue (void) const
 {
   return 1.0; // TODO: Should be something meaningful -- MHS
 }
 
 const Vector & 
-CircSectionCell::getCentroidPosition()
+CircSectionCell::getCentroidPosition(void)
 {
    return Centroid;
 }

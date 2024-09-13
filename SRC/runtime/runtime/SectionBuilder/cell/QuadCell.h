@@ -17,7 +17,12 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-//
+                                                                        
+// $Revision: 1.2 $
+// $Date: 2003/02/14 23:01:36 $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/section/repres/cell/QuadCell.h,v $
+                                                                        
+                                                                        
 // File: QuadCell.h
 //
 // Written by Remo M. de Souza
@@ -49,10 +54,10 @@ class QuadCell: public Cell
 
     // reinforcing bar inquiring functions
     
-    double getArea() const;
-    double getdValue() const;
-    const  Matrix &getVertCoords() const;
-    const  Vector &getCentroidPosition();
+    double getArea                     (void) const;
+    double getdValue                   (void) const;
+    const  Matrix &getVertCoords       (void) const;
+    const  Vector &getCentroidPosition (void);
 
     void Print(OPS_Stream &s, int flag =0) const;   
     friend OPS_Stream &operator<<(OPS_Stream &s, const QuadCell &quadCell);    

@@ -52,16 +52,16 @@ class StraightReinfLayer : public ReinfLayer
 
     // inquiring functions
 
-    int           getNumReinfBars() const;
-    int           getMaterialID() const;
-    double        getReinfBarDiameter() const;
-    double        getReinfBarArea() const;
-    ReinfBar     *getReinfBars() const;
+    int           getNumReinfBars     (void) const;
+    int           getMaterialID       (void) const;
+    double        getReinfBarDiameter (void) const;
+    double        getReinfBarArea     (void) const;
+    ReinfBar     *getReinfBars        (void) const;
 
   
-    ReinfLayer   *getCopy() const;
-    const Vector &getInitialPosition() const;
-    const Vector &getFinalPosition() const;
+    ReinfLayer   *getCopy             (void) const;
+    const Vector &getInitialPosition  (void) const;
+    const Vector &getFinalPosition    (void) const;
 
     void Print(OPS_Stream &s, int flag =0) const;   
     friend OPS_Stream &operator<<(OPS_Stream &s, const StraightReinfLayer &straightReinfLayer);    

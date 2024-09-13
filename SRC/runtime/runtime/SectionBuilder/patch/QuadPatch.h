@@ -50,13 +50,13 @@ class QuadPatch: public Patch
 
     // reinforcing bar inquiring functions
     
-    int     getMaterialID() const; 
-    int     getNumCells() const;
-    Cell  **getCells() const;
-    Patch  *getCopy() const;
+    int     getMaterialID         (void) const; 
+    int     getNumCells           (void) const;
+    Cell  **getCells              (void) const;
+    Patch  *getCopy               (void) const;
 
     void   getDiscretization     (int &numSubdivIJ, int &numSubdivJK) const;
-    const  Matrix &getVertCoords() const;
+    const  Matrix &getVertCoords (void) const;
 
     void Print(OPS_Stream &s, int flag =0) const;   
     friend OPS_Stream &operator<<(OPS_Stream &s, QuadPatch &quadPatch);    
