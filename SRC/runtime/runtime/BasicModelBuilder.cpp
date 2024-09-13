@@ -4,9 +4,10 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// A BasicModelBuilder stores intermediate "reference" objects like
-// materials and sections that are used
-// to construct other objects like elements.
+// Description: This file contains the class definition for BasicModelBuilder.
+// A BasicModelBuilder adds the commands to create the model for the standard
+// models that can be generated using the elements released with the g3
+// framework.
 //
 // Written: cmp
 //
@@ -42,6 +43,7 @@ BasicModelBuilder::BasicModelBuilder(Domain &domain, Tcl_Interp *interp,
       tclEnclosingPattern(nullptr),
       next_node_load(0),
       next_elem_load(0)
+
 {
   static int ncmd = sizeof(tcl_char_cmds)/sizeof(char_cmd);
 
@@ -54,6 +56,7 @@ BasicModelBuilder::BasicModelBuilder(Domain &domain, Tcl_Interp *interp,
         (ClientData) this, nullptr);
  
   tclEnclosingPattern = nullptr;
+  // theTclMultiSupportPattern = 0;
 
   Tcl_SetAssocData(interp, "OPS::theTclBuilder", NULL, (ClientData)this);
   Tcl_SetAssocData(interp, "OPS::theBasicModelBuilder", NULL, (ClientData)this);
