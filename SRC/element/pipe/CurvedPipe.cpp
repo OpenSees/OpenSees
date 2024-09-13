@@ -583,6 +583,11 @@ Response *CurvedPipe::setResponse(const char **argv, int argc,
         output.tag("ResponseType", "My");
         output.tag("ResponseType", "Mz");
         theResponse = new ElementResponse(this, 4, Vector(6));
+    } else if (strncmp(argv[0], "center", 80) == 0) {
+      output.tag("ResponseType", "XC");
+      output.tag("ResponseType", "YC");
+      output.tag("ResponseType", "ZC");      
+      theResponse = new ElementResponse(this, 5, Vector(3));
     }
     return theResponse;
 }
@@ -626,6 +631,8 @@ int CurvedPipe::getResponse(int responseID, Information &info) {
             return -1;
         }
         return info.setVector(s);
+    } else if (responseID == 5) {
+      return info.setVector(center);
     }
     return 0;
 }
