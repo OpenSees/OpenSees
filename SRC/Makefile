@@ -652,6 +652,8 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PFEMElement/Flume.o \
 	$(FE)/element/PFEMElement/BeamBrick.o \
 	$(FE)/element/PFEMElement/BeamDisk.o \
+	$(FE)/element/pipe/Pipe.o \
+	$(FE)/element/pipe/CurvedPipe.o \
 	$(FE)/element/UWelements/SSPquad.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
@@ -767,6 +769,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/HardeningMaterial.o \
 	$(FE)/material/uniaxial/HardeningMaterial2.o \
 	$(FE)/material/uniaxial/ParallelMaterial.o \
+	$(FE)/material/uniaxial/PipeMaterial.o \
 	$(FE)/material/uniaxial/SeriesMaterial.o \
 	$(FE)/material/uniaxial/FlagShapeMaterial.o \
 	$(FE)/material/uniaxial/Neoprene.o \
@@ -1133,6 +1136,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/NDFiberSection3d.o \
 	$(FE)/material/section/SectionAggregator.o \
 	$(FE)/material/section/ParallelSection.o \
+	$(FE)/material/section/PipeSection.o \
 	$(FE)/material/section/GenericSection1d.o \
 	$(FE)/material/section/ElasticPlateSection.o \
 	$(FE)/material/section/ElasticMembranePlateSection.o \

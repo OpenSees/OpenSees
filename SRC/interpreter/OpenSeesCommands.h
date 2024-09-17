@@ -348,6 +348,8 @@ int OPS_buildModel();
 int OPS_setNodeDisp();
 int OPS_setNodeVel();
 int OPS_setNodeAccel();
+int OPS_setNodeTemperature();
+int OPS_getNodeTemperature();
 int OPS_setElementRayleighDampingFactors();
 int OPS_MeshRegion();
 int OPS_peerNGA();

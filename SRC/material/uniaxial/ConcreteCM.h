@@ -41,9 +41,7 @@ class ConcreteCM : public UniaxialMaterial
 {
 public:
 	// Constructors
-	ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp);
-	ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp, int mon); 
-	ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp, int Gap, int dummy); 
+  ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp, int mon=0, int Gap=0);
 	ConcreteCM(int tag);
 	ConcreteCM();
 

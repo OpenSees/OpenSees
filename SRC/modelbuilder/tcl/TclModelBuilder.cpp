@@ -960,8 +960,8 @@ TclModelBuilder::getPlasticMaterial(int tag)
 int 
 TclModelBuilder::addSectionRepres(SectionRepres &theSectionRepres)
 {
-  bool result = theSectionRepresents->addComponent(&theSectionRepres);
-
+  //bool result = theSectionRepresents->addComponent(&theSectionRepres);
+  bool result = OPS_addSectionRepres(&theSectionRepres);
   if (result == true)
     return 0;
   else {
@@ -974,10 +974,11 @@ TclModelBuilder::addSectionRepres(SectionRepres &theSectionRepres)
 SectionRepres *
 TclModelBuilder::getSectionRepres(int tag)
 {
-  TaggedObject *mc = theSectionRepresents->getComponentPtr(tag);
-  if (mc == 0) return 0;
-  SectionRepres *result = (SectionRepres *)mc;
-  return result;
+	return OPS_getSectionRepres(tag);
+  //TaggedObject *mc = theSectionRepresents->getComponentPtr(tag);
+  //if (mc == 0) return 0;
+  //SectionRepres *result = (SectionRepres *)mc;
+  //return result;
 }
 
 
@@ -2070,58 +2071,83 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       return 0;
     }
     else if (ndm == 3) {
-      double wy, wz, wyb, wzb;
-      double wx = 0.0;
-	  double wxb = 0.0;
-	  if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
-	return TCL_ERROR;
+      double wy, wz;
+      double wx  = 0.0;
+      if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
+        return TCL_ERROR;
       }
       count++;
       if (count >= argc || Tcl_GetDouble(interp, argv[count], &wz) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
+        return TCL_ERROR;
       }
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &wx) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
+        return TCL_ERROR;
       }
       double aL = 0.0;
       double bL = 1.0;
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &aL) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid aOverL for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid aOverL for beamUniform \n";
+        return TCL_ERROR;
       }
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &bL) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
+        return TCL_ERROR;
+      }
+
+      //
+      // Parse values at end "b"; when not supplied, set to value
+      // at end "a"
+      //
+
+      double wyb = wy;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wyb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
+        return TCL_ERROR;
+      }
+
+      double wzb = wz;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wzb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
+        return TCL_ERROR;
+      }
+
+      double wxb = wx;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wxb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
+        return TCL_ERROR;
       }
 
       for (int i=0; i<theEleTags.Size(); i++) {
-	if (aL > 0.0 || bL < 1.0)
-	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, wyb, wzb, wxb, theEleTags(i));
-	else 
-	  theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));    	
+        if (aL > 0.0 || bL < 1.0)
+          theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, wyb, wzb, wxb, theEleTags(i));
+        else 
+          theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));            
 
-	if (theLoad == 0) {
-	  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
-	  return TCL_ERROR;
-	}
+        if (theLoad == 0) {
+          opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
+          return TCL_ERROR;
+        }
 
-	// get the current pattern tag if no tag given in i/p
-	int loadPatternTag = theTclLoadPattern->getTag();
-	
-	// add the load to the domain
-	if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
-	  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
-	  opserr << theLoad;
-	  delete theLoad;
-	  return TCL_ERROR;
-	}
-	eleLoadTag++;
+        // get the current pattern tag if no tag given in i/p
+        int loadPatternTag = theTclLoadPattern->getTag();
+        
+        // add the load to the domain
+        if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+          opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+          opserr << theLoad;
+          delete theLoad;
+          return TCL_ERROR;
+        }
+        eleLoadTag++;
       }
       
       return 0;
