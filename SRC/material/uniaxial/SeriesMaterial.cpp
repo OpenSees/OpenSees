@@ -641,8 +641,8 @@ SeriesMaterial::setResponse(const char **argv, int argc, OPS_Stream &theOutput)
   if (strcmp(argv[0],"strains") == 0) {
     for (int i=0; i<numMaterials; i++) {
       theOutput.tag("UniaxialMaterialOutput");
-      theOutput.attr("matType", this->getClassType());
-      theOutput.attr("matTag", this->getTag());
+      theOutput.attr("matType", theModels[i]->getClassType());
+      theOutput.attr("matTag", theModels[i]->getTag());
       theOutput.tag("ResponseType", "eps11");
       theOutput.endTag();
     }
