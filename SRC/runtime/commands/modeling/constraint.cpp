@@ -33,20 +33,54 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
   assert(clientData != nullptr);
   Domain *theTclDomain = ((BasicModelBuilder*)clientData)->getDomain();
 
+
+  if (argc < 3) {
+    opserr << G3_ERROR_PROMPT << "bad command - want: fix nodeId <fixities>\n";
+    return TCL_ERROR;
+  }
+
+
+  // get the id of the node
+  int nodeId;
+  if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
+    opserr << G3_ERROR_PROMPT << "invalid nodeId\n";
+    return TCL_ERROR;
+  }
+
+  // Alternate form:
+  // 
+  // fix $node -dof $dof <-value $value>
+  //
+  if (strcmp(argv[2], "-dof") == 0) {
+    if (argc < 4) {
+      opserr << G3_ERROR_PROMPT << "missing required argument for -dof $dof\n";
+      return TCL_ERROR;
+    }
+    int dof;
+    if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK) {
+      opserr << G3_ERROR_PROMPT << "invalid dof\n";
+      return TCL_ERROR;
+    }
+    // create a homogeneous constraint
+    SP_Constraint *theSP = new SP_Constraint(nodeId, dof-1, 0.0, true);
+
+    // add it to the domain
+    if (theTclDomain->addSP_Constraint(theSP) == false) {
+      opserr << G3_ERROR_PROMPT << "could not add SP_Constraint to domain using fix "
+                "command - node may already be constrained\n";
+      delete theSP;
+      return TCL_ERROR;
+    }
+
+    return TCL_OK;
+  }
+
   int ndf = argc - 2;
 
   // check number of arguments
   if (argc < (2 + ndf)) {
     opserr << G3_ERROR_PROMPT << "bad command - want: fix nodeId " << ndf
            << " [0,1] conditions";
-    return TCL_ERROR;
-  }
-
-  // get the id of the node
-  int nodeId;
-  if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid nodeId - fix nodeId " << ndf
-           << " [0,1] conditions\n";
     return TCL_ERROR;
   }
 
@@ -60,6 +94,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
       opserr << G3_ERROR_PROMPT << "invalid fixity " << i + 1 << " - load " << nodeId;
       opserr << " " << ndf << " fixities\n";
       return TCL_ERROR;
+
     } else {
       if (theFixity != 0) {
         // create a homogeneous constraint
@@ -72,6 +107,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
           sprintf(buffer, "%d ", 0);
           delete theSP;
           return TCL_ERROR;
+
         } else {
           sprintf(buffer, "%d ", theSP->getTag());
           Tcl_AppendResult(interp, buffer, NULL);
@@ -155,7 +191,8 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
   // get the yCrd of nodes to be constrained
   double yLoc;
   if (Tcl_GetDouble(interp, argv[1], &yLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid yCrd - fixY yLoc " << ndf << " [0,1] conditions\n"; return TCL_ERROR;
+    opserr << G3_ERROR_PROMPT << "invalid yCrd - fixY yLoc " << ndf << " [0,1] conditions\n";
+    return TCL_ERROR;
   }
 
   // read in the fixities
@@ -205,7 +242,8 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
   // get the yCrd of nodes to be constrained
   double zLoc;
   if (Tcl_GetDouble(interp, argv[1], &zLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid zCrd - fixZ zLoc " << ndf << " [0,1] conditions\n"; return TCL_ERROR;
+    opserr << G3_ERROR_PROMPT << "invalid zCrd - fixZ zLoc " << ndf << " [0,1] conditions\n";
+    return TCL_ERROR;
   }
 
   // read in the fixities
@@ -313,7 +351,9 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     opserr << nodeId << " dofID value\n";
     return TCL_ERROR;
   }
-  dofId--; // DECREMENT THE DOF VALUE BY 1 TO GO TO OUR C++ INDEXING
+
+  // Decrement the DOF index by 1 to go to C/C++ 0-indexing
+  dofId--; 
 
   if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
     opserr << G3_ERROR_PROMPT << "invalid value: " << argv[3] << " -  sp ";
@@ -582,7 +622,6 @@ TclCommand_addImposedMotionSP(ClientData clientData, Tcl_Interp *interp,
   //
   // check valid node & dof
   //
-
   Node *theNode = domain->getNode(nodeId);
   if (theNode == nullptr) {
     opserr << G3_ERROR_PROMPT << "invalid node " << argv[2] << " node not found\n ";
