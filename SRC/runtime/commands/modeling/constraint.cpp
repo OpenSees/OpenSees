@@ -35,7 +35,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: fix nodeId <fixities>\n";
+    opserr << OpenSees::PromptValueError << "bad command - want: fix nodeId <fixities>\n";
     return TCL_ERROR;
   }
 
@@ -43,7 +43,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
   // get the id of the node
   int nodeId;
   if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid nodeId\n";
+    opserr << OpenSees::PromptValueError << "invalid nodeId\n";
     return TCL_ERROR;
   }
 
@@ -53,12 +53,12 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
   //
   if (strcmp(argv[2], "-dof") == 0) {
     if (argc < 4) {
-      opserr << G3_ERROR_PROMPT << "missing required argument for -dof $dof\n";
+      opserr << OpenSees::PromptValueError << "missing required argument for -dof $dof\n";
       return TCL_ERROR;
     }
     int dof;
     if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid dof\n";
+      opserr << OpenSees::PromptValueError << "invalid dof\n";
       return TCL_ERROR;
     }
     // create a homogeneous constraint
@@ -66,7 +66,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
 
     // add it to the domain
     if (theTclDomain->addSP_Constraint(theSP) == false) {
-      opserr << G3_ERROR_PROMPT << "could not add SP_Constraint to domain using fix "
+      opserr << OpenSees::PromptValueError << "could not add SP_Constraint to domain using fix "
                 "command - node may already be constrained\n";
       delete theSP;
       return TCL_ERROR;
@@ -79,7 +79,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // check number of arguments
   if (argc < (2 + ndf)) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: fix nodeId " << ndf
+    opserr << OpenSees::PromptValueError << "bad command - want: fix nodeId " << ndf
            << " [0,1] conditions";
     return TCL_ERROR;
   }
@@ -91,7 +91,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
   for (int i = 0; i < ndf; ++i) {
     int theFixity;
     if (Tcl_GetInt(interp, argv[2 + i], &theFixity) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid fixity " << i + 1 << " - load " << nodeId;
+      opserr << OpenSees::PromptValueError << "invalid fixity " << i + 1 << " - load " << nodeId;
       opserr << " " << ndf << " fixities\n";
       return TCL_ERROR;
 
@@ -102,7 +102,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
 
         // add it to the domain
         if (theTclDomain->addSP_Constraint(theSP) == false) {
-          opserr << G3_ERROR_PROMPT << "could not add SP_Constraint to domain using fix "
+          opserr << OpenSees::PromptValueError << "could not add SP_Constraint to domain using fix "
                     "command - node may already be constrained\n";
           sprintf(buffer, "%d ", 0);
           delete theSP;
@@ -128,7 +128,7 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
 
   // check number of arguments
   if (argc < (2 + ndf)) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: fixX xLoc " << ndf 
+    opserr << OpenSees::PromptValueError << "bad command - want: fixX xLoc " << ndf 
            << " [0,1] conditions" << "\n";
     return TCL_ERROR;
   }
@@ -136,7 +136,7 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
   // get the xCrd of nodes to be constrained
   double xLoc;
   if (Tcl_GetDouble(interp, argv[1], &xLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid xCrd - fixX xLoc " << ndf 
+    opserr << OpenSees::PromptValueError << "invalid xCrd - fixX xLoc " << ndf 
            << " [0,1] conditions" << "\n";
     return TCL_ERROR;
   }
@@ -145,7 +145,7 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
   ID fixity(ndf);
   for (int i=0; i<ndf; ++i) {
     if (Tcl_GetInt(interp, argv[2+i], &fixity(i)) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid fixity " << i+1 << " - fixX " << xLoc;
+      opserr << OpenSees::PromptValueError << "invalid fixity " << i+1 << " - fixX " << xLoc;
       opserr << " " << ndf << " fixities\n";
       return TCL_ERROR;
     }
@@ -157,7 +157,7 @@ TclCommand_addHomogeneousBC_X(ClientData clientData, Tcl_Interp *interp,
   if (argc >= (4 + ndf)) {
     if (strcmp(argv[2+ndf],"-tol") == 0)
     if (Tcl_GetDouble(interp, argv[3+ndf], &tol) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid tol specified - fixX " << xLoc << endln;
+      opserr << OpenSees::PromptValueError << "invalid tol specified - fixX " << xLoc << endln;
       return TCL_ERROR;
     }
   }
@@ -184,14 +184,14 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
 
   // check number of arguments
   if (argc < (2 + ndf)) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: fixY yLoc " << ndf << " [0,1] conditions";
+    opserr << OpenSees::PromptValueError << "bad command - want: fixY yLoc " << ndf << " [0,1] conditions";
     return TCL_ERROR;
   }
 
   // get the yCrd of nodes to be constrained
   double yLoc;
   if (Tcl_GetDouble(interp, argv[1], &yLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid yCrd - fixY yLoc " << ndf << " [0,1] conditions\n";
+    opserr << OpenSees::PromptValueError << "invalid yCrd - fixY yLoc " << ndf << " [0,1] conditions\n";
     return TCL_ERROR;
   }
 
@@ -199,7 +199,7 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
   ID fixity(ndf);
   for (int i=0; i<ndf; ++i) {
     if (Tcl_GetInt(interp, argv[2+i], &fixity(i)) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid fixity " << i+1 << " - fixY " << yLoc;
+      opserr << OpenSees::PromptValueError << "invalid fixity " << i+1 << " - fixY " << yLoc;
       opserr << " " << ndf << " fixities\n";
       return TCL_ERROR;
     }
@@ -211,7 +211,7 @@ TclCommand_addHomogeneousBC_Y(ClientData clientData, Tcl_Interp *interp,
   if (argc >= (4 + ndf)) {
     if (strcmp(argv[2+ndf],"-tol") == 0)
       if (Tcl_GetDouble(interp, argv[3+ndf], &tol) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid tol specified - fixY " << yLoc << endln;
+        opserr << OpenSees::PromptValueError << "invalid tol specified - fixY " << yLoc << endln;
         return TCL_ERROR;
       }
   }
@@ -235,14 +235,14 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
 
   // check number of arguments
   if (argc < (2 + ndf)) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: fixZ zLoc " << ndf << " [0,1] conditions";
+    opserr << OpenSees::PromptValueError << "bad command - want: fixZ zLoc " << ndf << " [0,1] conditions";
     return TCL_ERROR;
   }
 
   // get the yCrd of nodes to be constrained
   double zLoc;
   if (Tcl_GetDouble(interp, argv[1], &zLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid zCrd - fixZ zLoc " << ndf << " [0,1] conditions\n";
+    opserr << OpenSees::PromptValueError << "invalid zCrd - fixZ zLoc " << ndf << " [0,1] conditions\n";
     return TCL_ERROR;
   }
 
@@ -250,7 +250,7 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
   ID fixity(ndf);
   for (int i=0; i<ndf; ++i) {
     if (Tcl_GetInt(interp, argv[2+i], &fixity(i)) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid fixity " << i+1 << " - fixZ " << zLoc;
+      opserr << OpenSees::PromptValueError << "invalid fixity " << i+1 << " - fixZ " << zLoc;
       opserr << " " << ndf << " fixities\n";
       return TCL_ERROR;
     }
@@ -262,7 +262,7 @@ TclCommand_addHomogeneousBC_Z(ClientData clientData, Tcl_Interp *interp,
   if (argc >= (4 + ndf)) {
     if (strcmp(argv[2+ndf],"-tol") == 0)
       if (Tcl_GetDouble(interp, argv[3+ndf], &tol) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid tol specified - fixZ " << zLoc << endln;
+        opserr << OpenSees::PromptValueError << "invalid tol specified - fixZ " << zLoc << endln;
         return TCL_ERROR;
       }
   }
@@ -285,14 +285,14 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
 
   if (argc > 1 && (strcmp(argv[1], "remove") == 0)) {
     if (argc < 3) {
-      opserr << G3_ERROR_PROMPT << "want - remove sp spTag? -or- remove "
+      opserr << OpenSees::PromptValueError << "want - remove sp spTag? -or- remove "
                 "sp nodeTag? dofTag? <patternTag?>\n";
       return TCL_ERROR;
     }
     int tag;
     if (argc == 3) {
       if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "remove sp tag? failed to read tag: " << argv[2]
+        opserr << OpenSees::PromptValueError << "remove sp tag? failed to read tag: " << argv[2]
                << endln;
         return TCL_ERROR;
       }
@@ -305,19 +305,19 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
       int patternTag = -1;
 
       if (Tcl_GetInt(interp, argv[2], &nodeTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "remove sp tag? failed to read node tag: " << argv[2]
+        opserr << OpenSees::PromptValueError << "remove sp tag? failed to read node tag: " << argv[2]
                << endln;
         return TCL_ERROR;
       }
       if (Tcl_GetInt(interp, argv[3], &dofTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "remove sp tag? failed to read dof tag: " << argv[3]
+        opserr << OpenSees::PromptValueError << "remove sp tag? failed to read dof tag: " << argv[3]
                << endln;
         return TCL_ERROR;
       }
 
       if (argc == 5) {
         if (Tcl_GetInt(interp, argv[4], &patternTag) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT << "remove sp tag? failed to read pattern tag: "
+          opserr << OpenSees::PromptValueError << "remove sp tag? failed to read pattern tag: "
                  << argv[4] << endln;
           return TCL_ERROR;
         }
@@ -334,7 +334,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // check number of arguments
   if (argc < 4) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: sp nodeId dofID value";
+    opserr << OpenSees::PromptValueError << "bad command - want: sp nodeId dofID value";
     return TCL_ERROR;
   }
 
@@ -343,11 +343,11 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   double value;
 
   if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid nodeId: " << argv[1] << " -  sp nodeId dofID value\n";
+    opserr << OpenSees::PromptValueError << "invalid nodeId: " << argv[1] << " -  sp nodeId dofID value\n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &dofId) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid dofId: " << argv[2] << " -  sp ";
+    opserr << OpenSees::PromptValueError << "invalid dofId: " << argv[2] << " -  sp ";
     opserr << nodeId << " dofID value\n";
     return TCL_ERROR;
   }
@@ -356,7 +356,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   dofId--; 
 
   if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid value: " << argv[3] << " -  sp ";
+    opserr << OpenSees::PromptValueError << "invalid value: " << argv[3] << " -  sp ";
     opserr << nodeId << " dofID value\n";
     return TCL_ERROR;
   }
@@ -378,7 +378,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
       if (endMarker == argc ||
           Tcl_GetInt(interp, argv[endMarker], &loadPatternTag) != TCL_OK) {
 
-        opserr << G3_ERROR_PROMPT << "invalid patternTag - load " << nodeId << "\n";
+        opserr << OpenSees::PromptValueError << "invalid patternTag - load " << nodeId << "\n";
         return TCL_ERROR;
       }
     }
@@ -388,7 +388,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   // if load pattern tag has not changed - get the pattern tag from current one
   if (userSpecifiedPattern == false) {
     if (theTclLoadPattern == nullptr) {
-      opserr << G3_ERROR_PROMPT << "no current pattern - sp " 
+      opserr << OpenSees::PromptValueError << "no current pattern - sp " 
              << nodeId << " dofID value\n"; 
       return TCL_ERROR;
     } else {
@@ -402,7 +402,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst);
 
   if (theTclDomain->addSP_Constraint(theSP, loadPatternTag) == false) {
-    opserr << G3_ERROR_PROMPT << "could not add SP_Constraint to domain ";
+    opserr << OpenSees::PromptValueError << "could not add SP_Constraint to domain ";
     delete theSP;
     return TCL_ERROR;
   }
@@ -420,7 +420,7 @@ TclCommand_addEqualDOF_MP(ClientData clientData, Tcl_Interp *interp,
 
     // Check number of arguments
     if (argc < 4) {
-      opserr << G3_ERROR_PROMPT << "bad command - want: equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
+      opserr << OpenSees::PromptValueError << "bad command - want: equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
       return TCL_ERROR;
     }
 
@@ -428,12 +428,12 @@ TclCommand_addEqualDOF_MP(ClientData clientData, Tcl_Interp *interp,
     int RnodeID, CnodeID, dofID;
 
     if (Tcl_GetInt(interp, argv[1], &RnodeID) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid RnodeID: " << argv[1]
+      opserr << OpenSees::PromptValueError << "invalid RnodeID: " << argv[1]
              << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
       return TCL_ERROR;
     }
     if (Tcl_GetInt(interp, argv[2], &CnodeID) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid CnodeID: " << argv[2]
+      opserr << OpenSees::PromptValueError << "invalid CnodeID: " << argv[2]
              << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
       return TCL_ERROR;
     }
@@ -452,14 +452,14 @@ TclCommand_addEqualDOF_MP(ClientData clientData, Tcl_Interp *interp,
     // Read the degrees of freedom which are to be coupled
     for (i = 3, j = 0; i < argc; i++, j++) {
       if (Tcl_GetInt(interp, argv[i], &dofID) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid dofID: " << argv[3]
+        opserr << OpenSees::PromptValueError << "invalid dofID: " << argv[3]
                << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
         return TCL_ERROR;
       }
 
       dofID -= 1; // Decrement for C++ indexing
       if (dofID < 0) {
-        opserr << G3_ERROR_PROMPT << "invalid dofID: " << argv[i]
+        opserr << OpenSees::PromptValueError << "invalid dofID: " << argv[i]
                << " must be >= 1";
         return TCL_ERROR;
       }
@@ -472,7 +472,7 @@ TclCommand_addEqualDOF_MP(ClientData clientData, Tcl_Interp *interp,
 
     // Add the multi-point constraint to the domain
     if (theTclDomain->addMP_Constraint(theMP) == false) {
-      opserr << G3_ERROR_PROMPT << "could not add equalDOF MP_Constraint to domain ";
+      opserr << OpenSees::PromptValueError << "could not add equalDOF MP_Constraint to domain ";
       delete theMP;
       return TCL_ERROR;
     }
@@ -489,13 +489,13 @@ TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
         BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
 
         if (theTclBuilder == 0 || clientData == 0) {
-          opserr << G3_ERROR_PROMPT << "builder has been destroyed - equalDOF \n";
+          opserr << OpenSees::PromptValueError << "builder has been destroyed - equalDOF \n";
           return TCL_ERROR;
         }
 
         // Check number of arguments
         if (argc < 4) {
-          opserr << G3_ERROR_PROMPT << "bad command - want: equalDOFmixed RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ... ...";
+          opserr << OpenSees::PromptValueError << "bad command - want: equalDOFmixed RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ... ...";
           return TCL_ERROR;
         }
 
@@ -503,18 +503,18 @@ TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
         int RnodeID, CnodeID, dofIDR, dofIDC, numDOF;
 
         if (Tcl_GetInt(interp, argv[1], &RnodeID) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT << "invalid RnodeID: " << argv[1]
+          opserr << OpenSees::PromptValueError << "invalid RnodeID: " << argv[1]
                << " equalDOF RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ...";
           return TCL_ERROR;
         }
         if (Tcl_GetInt(interp, argv[2], &CnodeID) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT << "invalid CnodeID: " << argv[2]
+          opserr << OpenSees::PromptValueError << "invalid CnodeID: " << argv[2]
                << " equalDOF RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ...";
           return TCL_ERROR;
         }
 
         if (Tcl_GetInt(interp, argv[3], &numDOF) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT << "invalid numDOF: " << argv[2]
+          opserr << OpenSees::PromptValueError << "invalid numDOF: " << argv[2]
                << " equalDOF RnodeID? CnodeID? numDOF? RDOF1? CDOF1? ...";
           return TCL_ERROR;
         }
@@ -534,12 +534,12 @@ TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
         // Read the degrees of freedom which are to be coupled
         for (i = 4, j = 5, k = 0; k < numDOF; i+=2, j+=2, k++) {
           if (Tcl_GetInt(interp, argv[i], &dofIDR) != TCL_OK) {
-            opserr << G3_ERROR_PROMPT << "invalid dofID: " << argv[3]
+            opserr << OpenSees::PromptValueError << "invalid dofID: " << argv[3]
                  << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
             return TCL_ERROR;
           }
           if (Tcl_GetInt(interp, argv[j], &dofIDC) != TCL_OK) {
-            opserr << G3_ERROR_PROMPT << "invalid dofID: " << argv[3]
+            opserr << OpenSees::PromptValueError << "invalid dofID: " << argv[3]
                  << " equalDOF RnodeID? CnodeID? DOF1? DOF2? ...";
             return TCL_ERROR;
           }
@@ -547,7 +547,7 @@ TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
           dofIDR -= 1; // Decrement for 0-based indexing
           dofIDC -= 1;
           if (dofIDC < 0 || dofIDR < 0) {
-            opserr << G3_ERROR_PROMPT << "invalid dofID: " << argv[i]
+            opserr << OpenSees::PromptValueError << "invalid dofID: " << argv[i]
                    << " must be >= 1";
             return TCL_ERROR;
           }
@@ -561,7 +561,7 @@ TclCommand_addEqualDOF_MP_Mixed(ClientData clientData, Tcl_Interp *interp,
 
         // Add the multi-point constraint to the domain
         if (theTclDomain->addMP_Constraint (theMP) == false) {
-          opserr << G3_ERROR_PROMPT << "could not add equalDOF MP_Constraint to domain ";
+          opserr << OpenSees::PromptValueError << "could not add equalDOF MP_Constraint to domain ";
           delete theMP;
           return TCL_ERROR;
         }
@@ -587,7 +587,7 @@ TclCommand_addImposedMotionSP(ClientData clientData, Tcl_Interp *interp,
 
   // check number of arguments
   if (argc < 4) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: imposedMotion nodeId dofID gMotionID\n";
+    opserr << OpenSees::PromptValueError << "bad command - want: imposedMotion nodeId dofID gMotionID\n";
     return TCL_ERROR;
   }
 
@@ -595,20 +595,20 @@ TclCommand_addImposedMotionSP(ClientData clientData, Tcl_Interp *interp,
   int nodeId, dofId, gMotionID;
 
   if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid nodeId: " << argv[1]
+    opserr << OpenSees::PromptValueError << "invalid nodeId: " << argv[1]
            << " - imposedMotion nodeId dofID gMotionID" << "\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetInt(interp, argv[2], &dofId) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid dofId: " << argv[2] 
+    opserr << OpenSees::PromptValueError << "invalid dofId: " << argv[2] 
            << " -  imposedMotion " << nodeId << " dofID gMotionID\n";
     return TCL_ERROR;
   }
   dofId--; // DECREMENT THE DOF VALUE BY 1 TO GO TO OUR C++ INDEXING
 
   if (Tcl_GetInt(interp, argv[3], &gMotionID) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid gMotionID: " << argv[3] << " -  imposedMotion ";
+    opserr << OpenSees::PromptValueError << "invalid gMotionID: " << argv[3] << " -  imposedMotion ";
     opserr << nodeId << " dofID gMotionID\n";
     return TCL_ERROR;
   }
@@ -624,13 +624,13 @@ TclCommand_addImposedMotionSP(ClientData clientData, Tcl_Interp *interp,
   //
   Node *theNode = domain->getNode(nodeId);
   if (theNode == nullptr) {
-    opserr << G3_ERROR_PROMPT << "invalid node " << argv[2] << " node not found\n ";
+    opserr << OpenSees::PromptValueError << "invalid node " << argv[2] << " node not found\n ";
     return -1;
   }
 
   int nDof = theNode->getNumberDOF();
   if (dofId < 0 || dofId >= nDof) {
-    opserr << G3_ERROR_PROMPT << "invalid dofId: " << argv[2] << " dof specified cannot be <= 0 or greater than num dof at nod\n "; 
+    opserr << OpenSees::PromptValueError << "invalid dofId: " << argv[2] << " dof specified cannot be <= 0 or greater than num dof at nod\n "; 
     return -2;
   }
 
@@ -652,7 +652,7 @@ TclCommand_addImposedMotionSP(ClientData clientData, Tcl_Interp *interp,
   }
 
   if (thePattern->addSP_Constraint(theSP) == false) {
-    opserr << G3_ERROR_PROMPT << "could not add SP_Constraint to pattern ";
+    opserr << OpenSees::PromptValueError << "could not add SP_Constraint to pattern ";
     delete theSP;
     return TCL_ERROR;
   }
