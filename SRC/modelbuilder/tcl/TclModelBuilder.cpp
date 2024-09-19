@@ -3481,6 +3481,46 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }
 
+  if (argc < 3) {
+    opserr << "WARNING bad command - want: fix nodeId <fixities>\n";
+    return TCL_ERROR;
+  }
+
+  // get the id of the node
+  int nodeId;
+  if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
+      opserr << "WARNING invalid nodeId - fix nodeId " << ndf << " [0,1] conditions\n";
+      return TCL_ERROR;
+  }
+
+  // Alternate form:
+  // 
+  // fix $node -dof $dof <-value $value>
+  //
+  if (strcmp(argv[2], "-dof") == 0) {
+    if (argc < 4) {
+      opserr << "WARNING " << "missing required argument for -dof $dof\n";
+      return TCL_ERROR;
+    }
+    int dof;
+    if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK) {
+      opserr << "WARNING " << "invalid dof\n";
+      return TCL_ERROR;
+    }
+    // create a homogeneous constraint
+    SP_Constraint *theSP = new SP_Constraint(nodeId, dof-1, 0.0, true);
+
+    // add it to the domain
+    if (theTclDomain->addSP_Constraint(theSP) == false) {
+      opserr << "WARNING " << "could not add SP_Constraint to domain using fix "
+                "command - node may already be constrained\n";
+      delete theSP;
+      return TCL_ERROR;
+    }
+
+    return TCL_OK;
+  }
+
   //  int ndf = theTclBuilder->getNDF();
   int ndf = argc - 2;
 
@@ -3491,12 +3531,6 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
   }    
 
-  // get the id of the node
-  int nodeId;
-  if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
-      opserr << "WARNING invalid nodeId - fix nodeId " << ndf << " [0,1] conditions\n";
-      return TCL_ERROR;
-  }
 
   char buffer[80];
   strcpy(buffer,"");
