@@ -3489,7 +3489,7 @@ TclCommand_addHomogeneousBC(ClientData clientData, Tcl_Interp *interp, int argc,
   // get the id of the node
   int nodeId;
   if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
-      opserr << "WARNING invalid nodeId - fix nodeId " << ndf << " [0,1] conditions\n";
+      opserr << "WARNING invalid nodeId - fix nodeId  <fixities>\n";
       return TCL_ERROR;
   }
 
