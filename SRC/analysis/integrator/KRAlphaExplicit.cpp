@@ -561,7 +561,7 @@ int KRAlphaExplicit::commit(void)
 const Vector &
 KRAlphaExplicit::getVel()
 {
-  return *Udot;
+  return *Ualphadot;
 }
 
 int KRAlphaExplicit::sendSelf(int cTag, Channel &theChannel)
