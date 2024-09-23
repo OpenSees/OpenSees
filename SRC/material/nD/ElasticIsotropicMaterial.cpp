@@ -271,18 +271,13 @@ ElasticIsotropicMaterial::getCopy (void)
 const char*
 ElasticIsotropicMaterial::getType (void) const
 {
-  opserr << "ElasticIsotropicMaterial::getType -- subclass responsibility\n";
-  exit(-1);	
-
-  return 0;
+  return "BaseClass";
 }
 
 int
 ElasticIsotropicMaterial::getOrder (void) const
 {
-  opserr << "ElasticIsotropicMaterial::getOrder -- subclass responsibility\n";
-  exit(-1);
-  return -1;
+  return 0;
 }
 
 int

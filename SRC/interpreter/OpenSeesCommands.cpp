@@ -144,7 +144,8 @@ bool setMPIDSOEFlag = false;
 static OpenSeesCommands* cmds = 0;
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
-    :interpreter(interp), theDomain(0), ndf(0), ndm(0),
+    :interpreter(interp), theDomain(0), 
+     ndf(0), ndm(0),
      theSOE(0), theEigenSOE(0), theNumberer(0), theHandler(0),
      theStaticIntegrator(0), theTransientIntegrator(0),
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),

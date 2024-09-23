@@ -119,6 +119,7 @@ void* OPS_TwoNodeLink()
     
     // options
     Vector x(3);
+    int NDM = OPS_GetNDM();
     Domain *theDomain = OPS_GetDomain();
     Node *ndI = theDomain->getNode(idata[1]);
     Node *ndJ = theDomain->getNode(idata[2]);
@@ -144,27 +145,42 @@ void* OPS_TwoNodeLink()
     while (OPS_GetNumRemainingInputArgs() > 0) {
         type = OPS_GetString();
         if (strcmp(type, "-orient") == 0) {
-            if (OPS_GetNumRemainingInputArgs() < 3) {
+	  int numArgs = OPS_GetNumRemainingInputArgs();
+            if (numArgs < 3) {
                 opserr << "WARNING: insufficient arguments after -orient\n";
                 return 0;
             }
-            numdata = 3;
-            //x.resize(3);
-            if (OPS_GetDoubleInput(&numdata, &x(0)) < 0) {
+	    // Read x and yp
+	    if (numArgs >= 6) {
+	      numdata = 3;
+	      // Read in user-specified x-axis
+	      if (OPS_GetDoubleInput(&numdata, &x(0)) < 0) {
                 opserr << "WARNING: invalid -orient values\n";
                 return 0;
-            }
-            if (OPS_GetNumRemainingInputArgs() < 3) {
-                y = x;
-                //x = Vector();
-                continue;
-            }
-            y.resize(3);
-            if (OPS_GetDoubleInput(&numdata, &y(0)) < 0) {
-                y = x;
-                x = Vector();
-                continue;
-            }
+	      }
+	      // Read in user-specified yp-axis
+	      if (OPS_GetDoubleInput(&numdata, &y(0)) < 0) {
+                opserr << "WARNING: invalid -orient values\n";
+                return 0;
+	      }	      
+	    }
+	    else {
+	      numdata = 3;
+	      // If only one vector given, treat this vector as x if NDM is 1 or 2
+	      if (NDM == 1 || NDM == 2) {
+		if (OPS_GetDoubleInput(&numdata, &x(0)) < 0) {
+		  opserr << "WARNING: invalid -orient values\n";
+		  return 0;
+		}
+	      }
+	      // Else, NDM is 3 and specifying yp with x from nodes
+	      else {
+		if (OPS_GetDoubleInput(&numdata, &y(0)) < 0) {
+		  opserr << "WARNING: invalid -orient values\n";
+		  return 0;
+		}
+	      }
+	    }
         }
         else if (strcmp(type, "-pDelta") == 0) {
             Mratio.resize(4);

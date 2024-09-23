@@ -29,6 +29,7 @@ target_sources(OPS_Material
       MaterialState.cpp
       OriginCentered.cpp
       ParallelMaterial.cpp
+      PipeMaterial.cpp
       ResilienceLow.cpp
       Steel2.cpp
       SteelMPF.cpp
@@ -58,6 +59,7 @@ target_sources(OPS_Material
       MaterialState.h
       OriginCentered.h
       ParallelMaterial.h
+      PipeMaterial.h
       ResilienceLow.h
       Steel2.h
       SteelMPF.h
