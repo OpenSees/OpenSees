@@ -180,7 +180,8 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         c3 = 1.0;
         this->TransientIntegrator::formTangent(INITIAL_TANGENT);
         Matrix A(*tmp);
-        
+        A.activateLUCache();
+
         c1 *= (1.0 - alphaF);
         c2 *= (1.0 - alphaF);
         c3 = (1.0 - alphaI);
@@ -199,6 +200,7 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         
         // solve [M + gamma*deltaT*C + beta*deltaT^2*K]*[alpha1] = [M] for alpha1
         A.Solve(B1, *alpha1);
+        A.deactivateLUCache();
         
         // calculate the effective mass matrix Mhat
         Mhat->addMatrix(0.0, B1, 1.0);
