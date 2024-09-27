@@ -1430,7 +1430,6 @@ Matrix::operator=(const Matrix &other)
 	  delete [] this->data;
           this->data = 0;
       }
-      this->clearLUCache();
 
       int theSize = other.numCols*other.numRows;
       
@@ -1448,8 +1447,9 @@ Matrix::operator=(const Matrix &other)
   for (int i=0; i<dataSize; i++)
       *dataPtr++ = *otherDataPtr++;
   
-  // Clear LU cache for the current object since we're not copying the cache
-  this->clearLUCache();
+  // Deactivate LU cache for the current object by default
+  // Users need to call Matrix::copyWithCache() for LU cache to be copied
+  this->deactivateLUCache();
 
   return *this;
 }
@@ -1514,6 +1514,8 @@ Matrix::operator+=(double fact)
   for (int i=0; i<dataSize; i++)
     *dataPtr++ += fact;
   
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
   return *this;
 }
 
@@ -1531,6 +1533,8 @@ Matrix::operator-=(double fact)
   for (int i=0; i<dataSize; i++)
     *dataPtr++ -= fact;
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
   return *this;
 }
 
@@ -1546,6 +1550,8 @@ Matrix::operator*=(double fact)
   for (int i=0; i<dataSize; i++)
     *dataPtr++ *= fact;
   
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
   return *this;
 }
 
@@ -1555,6 +1561,9 @@ Matrix::operator/=(double fact)
     // check if quick return
     if (fact == 1.0)
 	return *this;
+
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
 
     if (fact != 0.0) {
       double val = 1.0/fact;
@@ -1787,7 +1796,9 @@ Matrix::operator+=(const Matrix &M)
   double *otherData = M.data;
   for (int i=0; i<dataSize; i++)
     *dataPtr++ += *otherData++;
-  
+
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;  
   return *this;
 }
 
@@ -1807,7 +1818,9 @@ Matrix::operator-=(const Matrix &M)
   double *otherData = M.data;
   for (int i=0; i<dataSize; i++)
     *dataPtr++ -= *otherData++;
-  
+
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;   
   return *this;
 }
 
@@ -1891,6 +1904,8 @@ Matrix::Assemble(const Matrix &V, int init_row, int init_col, double fact)
      res = -1;
   }
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false; 
   return res;
 }
 
@@ -1927,6 +1942,8 @@ Matrix::Assemble(const Vector &V, int init_row, int init_col, double fact)
      res = -1;
   }
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false; 
   return res;
 }
 
@@ -1963,6 +1980,8 @@ Matrix::AssembleTranspose(const Matrix &V, int init_row, int init_col, double fa
      res = -1;
   }
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false; 
   return res;
 }
 
@@ -1999,6 +2018,8 @@ Matrix::AssembleTranspose(const Vector &V, int init_row, int init_col, double fa
      res = -1;
   }
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false; 
   return res;
 }
 
@@ -2035,6 +2056,8 @@ Matrix::Extract(const Matrix &V, int init_row, int init_col, double fact)
      res = -1;
   }
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false; 
   return res;
 }
 
@@ -2246,6 +2269,8 @@ Matrix::Eigen3(const Matrix &M)
   data[4]=dd(1);
   data[8]=dd(0);
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false; 
   return 0;
 }
 
