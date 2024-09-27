@@ -948,6 +948,8 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
       }
     } 
 
+    // reset factorization flag, but keep cache data structures
+    isLUFactorized = false;
     // successful
     return 0;
 }
@@ -1024,6 +1026,8 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
       }
     } 
 
+    // reset factorization flag, but keep cache data structures
+    isLUFactorized = false;
     // successful
     return 0;
 }
@@ -1100,6 +1104,8 @@ Matrix::addMatrixProduct(double thisFact,
       }
     } 
 
+    // reset factorization flag, but keep cache data structures
+    isLUFactorized = false;
     return 0;
 }
 
@@ -1164,6 +1170,8 @@ Matrix::addMatrixTransposeProduct(double thisFact,
     } 
   }
 
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
   return 0;
 }
 
@@ -1259,6 +1267,8 @@ Matrix::addMatrixTripleProduct(double thisFact,
       }
     }
 
+    // reset factorization flag, but keep cache data structures
+    isLUFactorized = false;
     return 0;
 }
 
@@ -1359,6 +1369,8 @@ Matrix::addMatrixTripleProduct(double thisFact,
       }
     }
 
+    // reset factorization flag, but keep cache data structures
+    isLUFactorized = false;
     return 0;
 }
 
