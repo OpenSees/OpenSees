@@ -77,7 +77,7 @@ class Matrix
     void activateLUCache() const;
     void deactivateLUCache() const;
     Matrix copyWithCache() const;
-    
+
     int addMatrix(double factThis, const Matrix &other, double factOther);
     int addMatrixTranspose(double factThis, const Matrix &other, double factOther);
     int addMatrixProduct(double factThis, const Matrix &A, const Matrix &B, double factOther); // AB
@@ -209,6 +209,9 @@ Matrix::operator()(int row, int col)
     return MATRIX_NOT_VALID_ENTRY;
   }
 #endif
+
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
   return data[col*numRows + row];
 }
 
