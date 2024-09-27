@@ -1434,6 +1434,14 @@ Response *MVLEM::setResponse(const char **argv, int argc, OPS_Stream &s)
 		return new ElementResponse(this, 6, Vector(2));
 	}
 
+	// Steel Fracture Index (KZ - 05/13/21)
+	else if (strcmp(argv[0], "Steel_Fracture_Index") == 0 || strcmp(argv[0], "steel_fracture_index") == 0) {
+
+		s.tag("ResponseType", "damage");
+
+		return theResponse = new ElementResponse(this, 7, Vector(m));
+	}
+
 	s.endTag();
 
 	return 0;
@@ -1461,6 +1469,9 @@ MVLEM::getResponse(int responseID, Information &eleInfo)
 
 	case 6:  // Shear Force-Deformtion
 		return eleInfo.setVector(this->getShearFD()); 
+
+	case 7:  // Steel Fracture Index (KZ - 05/13/21)
+		return eleInfo.setVector(this->getSteelFractureIndex());
 
 	default:
 
@@ -1568,4 +1579,21 @@ MVLEM::setupMacroFibers()
   NodeMass = density * A * h / 2;
 
   return 0;
+}
+
+
+// Get Steel Fracture Index (KZ - 05/13/21)
+Vector MVLEM::getSteelFractureIndex(void)
+{
+	Vector steelFractureIndex(m);
+
+	for (int i = 0; i<m; i++) {
+		Information matInfo(0.0);
+		if (theMaterialsSteel[i]->getResponse(5, matInfo) == 0) {
+			const Vector &dataFI = matInfo.getData();
+			steelFractureIndex(i) = dataFI(0);
+		}
+	}
+
+	return steelFractureIndex;
 }
