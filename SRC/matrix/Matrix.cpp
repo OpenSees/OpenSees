@@ -430,31 +430,29 @@ Matrix::Solve(const Vector &b, Vector &x) const
     int info;
     double *Xptr = x.theData;
 
-    // Use LU cache if available and factorized
+    // Use LU cache if available and factorize if needed
     if (isLUCacheEnabled) {
-      if (!isLUFactorized) {
-        // LU cache is enabled but not factorized, so compute LU factorization
-        info = computeLU();
-        if (info != 0) {
-          opserr << "WARNING: Matrix::Solve() - LU factorization failed\n";
-          return info;
-        }
-      }
-
-      if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0) {
-        // Use cached LU factors and pivot information
-        double *Aptr = cachedLUFactor;
-        int *iPIV = cachedPivot;
-        char trans = 'N';
-
-#ifdef _WIN32
-        DGETRS(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
-#else
-        dgetrs_(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
-#endif
-        return -abs(info);
+      info = computeLU();
+      if (info != 0) {
+        opserr << "WARNING: Matrix::Solve() - LU factorization failed\n";
+        return info;
       }
     }
+
+    if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0) {
+      // Use cached LU factors and pivot information
+      double *Aptr = cachedLUFactor;
+      int *iPIV = cachedPivot;
+      char trans = 'N';
+
+#ifdef _WIN32
+      DGETRS(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+#else
+      dgetrs_(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+#endif
+      return -abs(info);
+    }
+    
 
     // If not cached, perform LU factorization and solve
     // check work area can hold all the data
@@ -549,30 +547,27 @@ Matrix::Solve(const Matrix &b, Matrix &x) const
     int info;
     double *Xptr = x.data;
 
-    // Use LU cache if available and factorized
+    // Use LU cache if available and factorize if needed
     if (isLUCacheEnabled) {
-      if (!isLUFactorized) {
-        // LU cache is enabled but not factorized, so compute LU factorization
-        info = computeLU();
-        if (info != 0) {
-          opserr << "WARNING: Matrix::Solve() - LU factorization failed\n";
-          return info;
-        }
+      info = computeLU();
+      if (info != 0) {
+        opserr << "WARNING: Matrix::Solve() - LU factorization failed\n";
+        return info;
       }
+    }
 
-      if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0) {
-        // Use cached LU factors and pivot information
-        double *Aptr = cachedLUFactor;
-        int *iPIV = cachedPivot;
-        char trans = 'N';
+    if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0) {
+      // Use cached LU factors and pivot information
+      double *Aptr = cachedLUFactor;
+      int *iPIV = cachedPivot;
+      char trans = 'N';
 
 #ifdef _WIN32
-        DGETRS(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+      DGETRS(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
 #else
-        dgetrs_(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
+      dgetrs_(&trans, &n, &nrhs, Aptr, &ldA, iPIV, Xptr, &ldB, &info);
 #endif
-        return -abs(info);
-      }
+      return -abs(info);
     }
 
     // If not cached, perform LU factorization and solve
@@ -701,35 +696,33 @@ Matrix::Invert(Matrix &theInverse) const
     
     // Use LU cache if enabled and already factorized
     if (isLUCacheEnabled) {
-      if (!isLUFactorized) {
-        // LU cache is enabled but not factorized, so compute LU factorization
-        int info = computeLU();
-        if (info != 0) {
-            opserr << "WARNING: Matrix::Invert() - LU factorization failed\n";
-            return info;
-        }
+      // LU cache is enabled but not factorized, so compute LU factorization
+      int info = computeLU();
+      if (info != 0) {
+          opserr << "WARNING: Matrix::Invert() - LU factorization failed\n";
+          return info;
+      }
+    }
+
+    // If cached LU factors are available, copy them into theInverse
+    if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0) {
+      // Copy cached LU factor into theInverse.data
+      for (int i = 0; i < dataSize; i++) {
+        theInverse.data[i] = cachedLUFactor[i];
       }
 
-      // If cached LU factors are available, copy them into theInverse
-      if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0) {
-        // Copy cached LU factor into theInverse.data
-        for (int i = 0; i < dataSize; i++) {
-          theInverse.data[i] = cachedLUFactor[i];
-        }
-
-        double *Aptr = theInverse.data;
-        int *iPIV = cachedPivot;
-        int workSize = sizeDoubleWork;
-        double *Wptr = matrixWork;
-        int info;
+      double *Aptr = theInverse.data;
+      int *iPIV = cachedPivot;
+      int workSize = sizeDoubleWork;
+      double *Wptr = matrixWork;
+      int info;
 
 #ifdef _WIN32
-        DGETRI(&n, Aptr, &n, iPIV, Wptr, &workSize, &info);
+      DGETRI(&n, Aptr, &n, iPIV, Wptr, &workSize, &info);
 #else
-        dgetri_(&n, Aptr, &n, iPIV, Wptr, &workSize, &info);
+      dgetri_(&n, Aptr, &n, iPIV, Wptr, &workSize, &info);
 #endif
-        return -abs(info);
-      }
+      return -abs(info);
     }
 
     // If no cached LU factorization exists, proceed with regular inversion
@@ -774,17 +767,25 @@ Matrix::activateLUCache() const
 {
   isLUCacheEnabled = true;
 }
-void Matrix::deactivateLUCache() const
+
+void 
+Matrix::deactivateLUCache() const
 {
   clearLUCache();
   isLUCacheEnabled = false;
 }
-Matrix Matrix::copyWithCache() const {
+
+Matrix 
+Matrix::copyWithCache() const {
   // Use the default copy constructor to copy the matrix data
   Matrix copy(*this);
 
-  if (isLUCacheEnabled && isLUFactorized && 
-      cachedLUFactor != 0 && cachedPivot != 0) {
+  // set LU factorization and caching flag
+  copy.isLUFactorized = isLUFactorized;
+  copy.isLUCacheEnabled = isLUCacheEnabled;
+
+  if (isLUFactorized && cachedLUFactor != 0 && cachedPivot != 0 && 
+      dataSize > 0 && numRows > 0) {
     // allocate space for the cached LU factors and pivot
     copy.cachedLUFactor = new (nothrow) double[dataSize];
     copy.cachedPivot = new (nothrow) int[numRows];
@@ -801,9 +802,6 @@ Matrix Matrix::copyWithCache() const {
       for (int i = 0; i < numRows; i++) {
         copy.cachedPivot[i] = cachedPivot[i];
       }
-      // set LU factorization and caching flag
-      copy.isLUFactorized = true;
-      copy.isLUCacheEnabled = true;
     }
   }
   return copy; // RVO avoids copy, or the move constructor will be used
@@ -812,6 +810,11 @@ Matrix Matrix::copyWithCache() const {
 int 
 Matrix::computeLU() const
 { 
+  // check if LU has already been computed
+  if (isLUFactorized) {
+    return 0;
+  }
+
   // check that LU caching is enabled
   if (!isLUCacheEnabled) {
     opserr << "WARNING: Matrix::computeLU(): ";
@@ -819,15 +822,12 @@ Matrix::computeLU() const
     opserr << "Matrix::activateLUCache() will be called automatically." << endln;
     activateLUCache();
   }
-  // check if LU has already been computed
-  if (isLUFactorized) {
-    return 0;
-  }
+
   // allocate space for cache if need
-  if (cachedLUFactor == 0) {
+  if (cachedLUFactor == 0 && dataSize > 0) {
     cachedLUFactor = new (nothrow) double[dataSize];
   }
-  if (cachedPivot == 0) {
+  if (cachedPivot == 0 && numRows > 0) {
     cachedPivot = new (nothrow) int[numRows];
   }
   if (cachedLUFactor == 0 || cachedPivot == 0) {
