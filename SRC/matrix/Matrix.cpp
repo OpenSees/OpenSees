@@ -57,7 +57,8 @@ int    *Matrix::intWork =0;
 //
 
 Matrix::Matrix()
-:numRows(0), numCols(0), dataSize(0), data(0), fromFree(0)
+:numRows(0), numCols(0), dataSize(0), data(0), fromFree(0), 
+cachedLUFactor(0), cachedPivot(0), isLUFactorized(false), isLUCacheEnabled(false)
 {
   // allocate work areas if the first
   if (matrixWork == 0) {
@@ -72,7 +73,8 @@ Matrix::Matrix()
 
 
 Matrix::Matrix(int nRows,int nCols)
-:numRows(nRows), numCols(nCols), dataSize(0), data(0), fromFree(0)
+:numRows(nRows), numCols(nCols), dataSize(0), data(0), fromFree(0), 
+cachedLUFactor(0), cachedPivot(0), isLUFactorized(false), isLUCacheEnabled(false)
 {
 
   // allocate work areas if the first matrix
@@ -117,7 +119,8 @@ Matrix::Matrix(int nRows,int nCols)
 }
 
 Matrix::Matrix(double *theData, int row, int col) 
-:numRows(row),numCols(col),dataSize(row*col),data(theData),fromFree(1)
+:numRows(row),numCols(col),dataSize(row*col),data(theData),fromFree(1), 
+cachedLUFactor(0), cachedPivot(0), isLUFactorized(false), isLUCacheEnabled(false)
 {
   // allocate work areas if the first matrix
   if (matrixWork == 0) {
@@ -146,7 +149,8 @@ Matrix::Matrix(double *theData, int row, int col)
 }
 
 Matrix::Matrix(const Matrix &other)
-:numRows(0), numCols(0), dataSize(0), data(0), fromFree(0)
+:numRows(0), numCols(0), dataSize(0), data(0), fromFree(0), 
+cachedLUFactor(0), cachedPivot(0), isLUFactorized(false), isLUCacheEnabled(false)
 {
   // allocate work areas if the first matrix
   if (matrixWork == 0) {
@@ -177,18 +181,26 @@ Matrix::Matrix(const Matrix &other)
 	  *dataPtr++ = *otherDataPtr++;
       }
     }
+  // Note: this constructor does not copy the LU cache. 
+  // Such functionality is provided in Matrix::copyWithCache()
 }
 
 // Move ctor
 #ifdef USE_CXX11
 Matrix::Matrix(Matrix &&other)
-:numRows(other.numRows), numCols(other.numCols), dataSize(other.dataSize), data(other.data), fromFree(other.fromFree)
+:numRows(other.numRows), numCols(other.numCols), dataSize(other.dataSize), data(other.data), fromFree(other.fromFree), 
+cachedLUFactor(other.cachedLUFactor), cachedPivot(other.cachedPivot), isLUFactorized(other.isLUFactorized), 
+isLUCacheEnabled(other.isLUCacheEnabled)
 {
   other.numRows = 0;
   other.numCols = 0;
   other.dataSize = 0;
   other.data = 0;
   other.fromFree = 1;
+  other.cachedLUFactor = 0;
+  other.cachedPivot = 0;
+  other.isLUFactorized = false;
+  other.isLUCacheEnabled = false;
 }
 #endif
 
@@ -205,6 +217,9 @@ Matrix::~Matrix()
     }
   }
   //  if (data != 0) free((void *) data);
+  
+  // clear LU Factors
+  clearLUCache();
 }
     
 
@@ -646,6 +661,119 @@ Matrix::Invert(Matrix &theInverse) const
     return -abs(info);
 }
 
+void 
+Matrix::activateLUCache() const
+{
+  isLUCacheEnabled = true;
+}
+void Matrix::deactivateLUCache() const
+{
+  clearLUCache();
+  isLUCacheEnabled = false;
+}
+Matrix Matrix::copyWithCache() const {
+  // Use the default copy constructor to copy the matrix data
+  Matrix copy(*this);
+
+  if (isLUCacheEnabled && isLUFactorized && 
+      cachedLUFactor != 0 && cachedPivot != 0) {
+    // allocate space for the cached LU factors and pivot
+    copy.cachedLUFactor = new (nothrow) double[dataSize];
+    copy.cachedPivot = new (nothrow) int[numRows];
+
+    if (copy.cachedLUFactor == 0 || copy.cachedPivot == 0) {
+      opserr << "WARNING: Matrix::copyWithCache(): ";
+      opserr << "out of memory copying LU factorization data" << endln;
+      copy.clearLUCache();
+    } else {
+      // copy LU factorization and pivot data
+      for (int i = 0; i < dataSize; i++) {
+        copy.cachedLUFactor[i] = cachedLUFactor[i];
+      }
+      for (int i = 0; i < numRows; i++) {
+        copy.cachedPivot[i] = cachedPivot[i];
+      }
+      // set LU factorization and caching flag
+      copy.isLUFactorized = true;
+      copy.isLUCacheEnabled = true;
+    }
+  }
+  return copy; // RVO avoids copy, or the move constructor will be used
+}
+
+int 
+Matrix::computeLU() const
+{ 
+  // check that LU caching is enabled
+  if (!isLUCacheEnabled) {
+    opserr << "WARNING: Matrix::computeLU(): ";
+    opserr << "LU Caching is not activated. ";
+    opserr << "Matrix::activateLUCache() will be called automatically." << endln;
+    activateLUCache();
+  }
+  // check if LU has already been computed
+  if (isLUFactorized) {
+    return 0;
+  }
+  // allocate space for cache if need
+  if (cachedLUFactor == 0) {
+    cachedLUFactor = new (nothrow) double[dataSize];
+  }
+  if (cachedPivot == 0) {
+    cachedPivot = new (nothrow) int[numRows];
+  }
+  if (cachedLUFactor == 0 || cachedPivot == 0) {
+    opserr << "WARNING:Matrix::computeLU(): ";
+    opserr << "Unable to allocate memory for LU factorization" << endln;
+    clearLUCache();
+    return -1;
+  }
+  
+  // perform LU factorization and cache the result
+  for (int i = 0; i < dataSize; i++) {
+    cachedLUFactor[i] = data[i];
+  }
+
+  int M = numRows;
+  int N = numCols;
+  int lda = M;
+  int info;
+
+#ifdef _WIN32
+  DGETRF(&M, &N, cachedLUFactor, &lda, cachedPivot, &info);
+#else
+  dgetrf_(&M, &N, cachedLUFactor, &lda, cachedPivot, &info);
+#endif
+
+  // check if LU factorization succeded and set LU factorization flag
+  if (info != 0) {
+    clearLUCache();
+  } else {
+    isLUFactorized = true;
+  }
+
+  return -abs(info);
+}
+
+void
+Matrix::clearLUCache() const 
+{
+  // early return when matrix is not factorized
+  if (!isLUCacheEnabled) {
+    return;
+  }
+  // clear LU factors
+  if (cachedLUFactor != 0) {
+    delete [] cachedLUFactor;
+    cachedLUFactor = 0;
+  }
+  if (cachedPivot != 0) {
+    delete [] cachedPivot;
+    cachedPivot = 0;
+  }
+  // set LU factorization flag
+  isLUFactorized = false;
+}
 
 int
 Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
@@ -1182,7 +1310,8 @@ Matrix::operator=(const Matrix &other)
 	  delete [] this->data;
           this->data = 0;
       }
-      
+      this->clearLUCache();
+
       int theSize = other.numCols*other.numRows;
       
       data = new (nothrow) double[theSize];
@@ -1199,6 +1328,9 @@ Matrix::operator=(const Matrix &other)
   for (int i=0; i<dataSize; i++)
       *dataPtr++ = *otherDataPtr++;
   
+  // Clear LU cache for the current object since we're not copying the cache
+  this->clearLUCache();
+
   return *this;
 }
 
@@ -1218,17 +1350,26 @@ Matrix::operator=( Matrix &&other)
     delete [] this->data;
     this->data = 0;
   }
+  this->clearLUCache();
         
   this->data = other.data;
   this->dataSize = other.numCols*other.numRows;
   this->numCols = other.numCols;
   this->numRows = other.numRows;
   this->fromFree = other.fromFree;
+  this->cachedLUFactor = other.cachedLUFactor;
+  this->cachedPivot = other.cachedPivot;
+  this->isLUFactorized = other.isLUFactorized;
+  this->isLUCacheEnabled = other.isLUCacheEnabled;
   other.data = 0;
   other.dataSize = 0;
   other.numCols = 0;
   other.numRows = 0;
   other.fromFree = 1;
+  other.cachedLUFactor = 0;
+  other.cachedPivot = 0;
+  other.isLUFactorized = false;
+  other.isLUCacheEnabled = false;
 
   return *this;
 }
