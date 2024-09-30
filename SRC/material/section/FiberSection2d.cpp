@@ -917,7 +917,15 @@ FiberSection2d::Print(OPS_Stream &s, int flag)
       else
 	s << "}\n";	
     }
-    s << "\t\t\t]}";
+    s << "\t\t\t]";
+    FiberSectionRepr *sectionRepres = (FiberSectionRepr *)OPS_getSectionRepres(this->getTag());
+    if (sectionRepres == 0) 
+   {
+	   s<<'}';
+   } else {
+	   sectionRepres->Print(s,flag);
+	   s<<'}';
+   }
   }
 }
 

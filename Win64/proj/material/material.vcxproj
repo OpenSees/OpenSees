@@ -260,6 +260,7 @@
     <ClCompile Include="..\..\..\SRC\material\section\LayeredShellFiberSectionThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\MembranePlateFiberSectionThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\NDFiberSectionWarping2d.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\section\PipeSection.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\TimoshenkoSection3d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\WFFiberSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\WSection2d.cpp" />
@@ -380,6 +381,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Pinching4Material.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\limitState\PinchingLimitStateMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\PlasticDamageMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PipeMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\PySimple3.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\PY\QzLiq1.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\RambergOsgoodSteel.cpp" />

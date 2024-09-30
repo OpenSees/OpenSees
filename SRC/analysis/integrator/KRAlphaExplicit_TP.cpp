@@ -207,20 +207,8 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         // switch the SOE back to the user specified one
         this->IncrementalIntegrator::setLinks(*theModel, *theLinSOE, theTest);
         
-        // get initial unbalance at time t (in case domain changed)
-        // warning: this will use committed stiffness prop. damping
-        // from current step instead of previous step
-        (*Utdotdot) = *Udotdot;
-        alphaM = 1.0;
-        alphaD = alphaR = alphaP = (1.0 - alphaF);
-        Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
-        theModel->setAccel(*Udotdot);
-        this->TransientIntegrator::formUnbalance();
-        (*Put) = theLinSOE->getB();
-        // reset accelerations at t+deltaT
-        (*Udotdot) = *Utdotdot;
-        theModel->setAccel(*Udotdot);
-        
+        // formTangent only when initAlphaMatrices is set to true
+        this->KRAlphaExplicit_TP::formTangent(INITIAL_TANGENT);
         // set flag that initializations are done
         initAlphaMatrices = 0;
     }
@@ -230,9 +218,24 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
         return -6;
     }
     
-    // set weighting factors for subsequent iterations
-    alphaM = 0.0;
-    alphaD = alphaR = alphaP = alphaF;
+    // set response at t to be that at t+deltaT of previous step
+    (*Ut) = *U;
+    (*Utdot) = *Udot;
+    (*Utdotdot) = *Udotdot;
+
+    // compute the unweighted unbalance at time t without including acceleration
+    alphaD = alphaR = alphaP = 1.0; // do not multiply by 1.0 - alphaF yet
+    alphaM = 0.0; // do not include inertial term
+    // or alternatively, zero accelerations
+    // Udotdot->Zero();
+    // theModel->setAccel(*Udotdot);
+    double time = theModel->getCurrentDomainTime();
+    if (theModel->updateDomain(time, deltaT) < 0)  {
+        opserr << "WARNING KRAlphaExplicit::newStep() - failed to update the domain\n";
+        return -7;
+    }
+    this->TransientIntegrator::formUnbalance();
+    (*Put) = theLinSOE->getB();
     
     // determine new response at time t+deltaT
     Utdothat->addMatrixVector(0.0, *alpha1, *Utdotdot, deltaT);
@@ -243,22 +246,27 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
     
     Udot->addVector(1.0, *Utdothat, 1.0);
     
-    // no need to zero accelerations because alphaM = 0
-    //Udotdot->Zero();
-    //theModel->setResponse(*U, *Udot, *Udotdot);
-    
-    // set the trial response quantities
-    theModel->setDisp(*U);
-    theModel->setVel(*Udot);
+    // set trial response quantities, including adjusted acceleration predictor
+    // division by alphaF allowed because alphaF varies between 0.5 and 1.0
+    Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0 / alphaF);
+    theModel->setResponse(*U, *Udot, *Udotdot);
     
     // increment the time to t+deltaT and apply the load
-    double time = theModel->getCurrentDomainTime();
     time += deltaT;
     if (theModel->updateDomain(time, deltaT) < 0)  {
         opserr << "WARNING KRAlphaExplicit_TP::newStep() - failed to update the domain\n";
         return -7;
     }
     
+    // compute the unweighted unbalance at time t + deltaT
+    alphaM = 1.0; // include acceleration term
+    this->TransientIntegrator::formUnbalance();
+    
+    // Set the weighted unbalance vector as:
+    //    weightedUnbalance = (1.0 - alphaF) * (unbalance at time t) + 
+    //                        alphaF * (unbalance at time t + deltaT).
+    Put->addVector(1.0 - alphaF, theLinSOE->getB(), alphaF);
+
     return 0;
 }
 
@@ -280,27 +288,29 @@ int KRAlphaExplicit_TP::formTangent(int statFlag)
 {
     statusFlag = statFlag;
     
-    LinearSOE *theLinSOE = this->getLinearSOE();
-    AnalysisModel *theModel = this->getAnalysisModel();
-    if (theLinSOE == 0 || theModel == 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formTangent() - ";
-        opserr << "no LinearSOE or AnalysisModel has been set\n";
-        return -1;
+    // only update tangent if domain has changed
+    if (initAlphaMatrices) {
+        LinearSOE *theLinSOE = this->getLinearSOE();
+        AnalysisModel *theModel = this->getAnalysisModel();
+        if (theLinSOE == 0 || theModel == 0)  {
+            opserr << "WARNING KRAlphaExplicit_TP::formTangent() - ";
+            opserr << "no LinearSOE or AnalysisModel has been set\n";
+            return -1;
+        }
+        
+        theLinSOE->zeroA();
+        
+        int size = theLinSOE->getNumEqn();
+        ID id(size);
+        for (int i=1; i<size; i++)  {
+            id(i) = id(i-1) + 1;
+        }
+        if (theLinSOE->addA(*Mhat, id) < 0)  {
+            opserr << "WARNING KRAlphaExplicit_TP::formTangent() - ";
+            opserr << "failed to add Mhat to A\n";
+            return -2;
+        }
     }
-    
-    theLinSOE->zeroA();
-    
-    int size = theLinSOE->getNumEqn();
-    ID id(size);
-    for (int i=1; i<size; i++)  {
-        id(i) = id(i-1) + 1;
-    }
-    if (theLinSOE->addA(*Mhat, id) < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formTangent() - ";
-        opserr << "failed to add Mhat to A\n";
-        return -2;
-    }
-    
     return 0;
 }
 
@@ -318,23 +328,24 @@ int KRAlphaExplicit_TP::formUnbalance()
     
     theLinSOE->setB(*Put);
     
+    // no longer need this since Put is now set to the weighted balance 
     // do modal damping
-    const Vector *modalValues = theModel->getModalDampingFactors();
-    if (modalValues != 0)  {
-        this->addModalDampingForce(modalValues);
-    }
+    // const Vector *modalValues = theModel->getModalDampingFactors();
+    // if (modalValues != 0)  {
+    //     this->addModalDampingForce(modalValues);
+    // }
     
-    if (this->formElementResidual() < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
-        opserr << " - this->formElementResidual failed\n";
-        return -2;
-    }
+    // if (this->formElementResidual() < 0)  {
+    //     opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
+    //     opserr << " - this->formElementResidual failed\n";
+    //     return -2;
+    // }
     
-    if (this->formNodalUnbalance() < 0)  {
-        opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
-        opserr << " - this->formNodalUnbalance failed\n";
-        return -3;
-    }
+    // if (this->formNodalUnbalance() < 0)  {
+    //     opserr << "WARNING KRAlphaExplicit_TP::formUnbalance() ";
+    //     opserr << " - this->formNodalUnbalance failed\n";
+    //     return -3;
+    // }
     
     return 0;
 }
@@ -592,21 +603,22 @@ int KRAlphaExplicit_TP::commit(void)
         return -1;
     }
     
+    // no longer need this. This is handled in newStep() now. 
     // set response at t of next step to be that at t+deltaT
-    (*Ut) = *U;
-    (*Utdot) = *Udot;
-    (*Utdotdot) = *Udotdot;
+    // (*Ut) = *U;
+    // (*Utdot) = *Udot;
+    // (*Utdotdot) = *Udotdot;
     
-    // get unbalance Put and store it for next step
-    alphaM = 1.0;
-    alphaD = alphaR = alphaP = (1.0 - alphaF);
-    Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
-    theModel->setAccel(*Udotdot);
-    this->TransientIntegrator::formUnbalance();
-    (*Put) = theLinSOE->getB();
-    // reset accelerations at t+deltaT
-    (*Udotdot) = *Utdotdot;
-    theModel->setAccel(*Udotdot);
+    // // get unbalance Put and store it for next step
+    // alphaM = 1.0;
+    // alphaD = alphaR = alphaP = (1.0 - alphaF);
+    // Udotdot->addMatrixVector(0.0, *alpha3, *Utdotdot, 1.0);
+    // theModel->setAccel(*Udotdot);
+    // this->TransientIntegrator::formUnbalance();
+    // (*Put) = theLinSOE->getB();
+    // // reset accelerations at t+deltaT
+    // (*Udotdot) = *Utdotdot;
+    // theModel->setAccel(*Udotdot);
     
     return theModel->commitDomain();
 }
@@ -667,4 +679,22 @@ void KRAlphaExplicit_TP::Print(OPS_Stream &s, int flag)
         s << "  c1: " << c1 << "  c2: " << c2 << "  c3: " << c3 << endln;
     } else
         s << "KRAlphaExplicit_TP - no associated AnalysisModel\n";
+}
+
+int KRAlphaExplicit_TP::revertToStart()
+{
+    if (Ut != 0) 
+        Ut->Zero();
+    if (Utdot != 0) 
+        Utdot->Zero();
+    if (Utdotdot != 0) 
+        Utdotdot->Zero();
+    if (U != 0) 
+        U->Zero();
+    if (Udot != 0) 
+        Udot->Zero();
+    if (Udotdot != 0) 
+        Udotdot->Zero();
+    
+    return 0;
 }

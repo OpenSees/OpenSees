@@ -225,6 +225,7 @@ CircReinfLayer::getCopy (void) const
 
 void CircReinfLayer::Print(OPS_Stream &s, int flag) const
 {
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
    s << "\nReinforcing Layer type:  Circ";
    s << "\nMaterial ID: " << matID;
    s << "\nReinf. bar diameter: " << barDiam;
@@ -233,6 +234,14 @@ void CircReinfLayer::Print(OPS_Stream &s, int flag) const
    s << "\nArc Radius: " << arcRad;
    s << "\nInitial angle: " << initAng;
    s << "\nFinal angle: " << finalAng;
+}
+if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	 s << "\t\t\t\t{\"type\": \"layerCirc\", \"material\": "<<matID<<", "<<",\"area\": "<<area<<", \"nReinfBars\": " << nReinfBars<<", ";
+	 s << "\"center\": ["<<centerPosit(0)<<","<<centerPosit(1)<<"], ";
+	 s << "\"radius\": "<<arcRad<<", ";
+	 s << "\"angles\": ["<<initAng<<", "<<finalAng<<"]";
+	 s <<"}";
+}
 }
 
 

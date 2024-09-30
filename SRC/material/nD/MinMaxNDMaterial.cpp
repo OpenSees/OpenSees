@@ -176,9 +176,11 @@ MinMaxNDMaterial::setTrialStrain(const Vector& strain)
 
   double a = 0.5*(eps11-eps22);
   double b = 0.5*eps12;
-  double eps1 = 0.5*(eps11+eps22) + pow(a*a+b*b,0.5);
+  double ab = pow(a*a+b*b,0.5);
+  double eps1 = 0.5*(eps11+eps22) + ab;
+  double eps2 = 0.5*(eps11+eps22) - ab;
 
-  if (eps1 >= maxStrain || eps1 <= minStrain) {
+  if (eps1 >= maxStrain || eps2 <= minStrain) {
     Tfailed = true;
     return 0;
   }
@@ -205,9 +207,11 @@ MinMaxNDMaterial::setTrialStrainIncr(const Vector& strain)
   double eps12 = strain(3);
   double a = 0.5*(eps11-eps22);
   double b = 0.5*eps12;
-  double eps1 = 0.5*(eps11+eps22) + pow(a*a+b*b,0.5);
+  double ab = pow(a*a+b*b,0.5);
+  double eps1 = 0.5*(eps11+eps22) + ab;
+  double eps2 = 0.5*(eps11+eps22) - ab;
   
-  if (eps1 >= maxStrain || eps1 <= minStrain) {
+  if (eps1 >= maxStrain || eps2 <= minStrain) {
     Tfailed = true;
     return 0;
   }

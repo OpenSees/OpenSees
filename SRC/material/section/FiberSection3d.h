@@ -36,6 +36,7 @@
 #include <SectionForceDeformation.h>
 #include <Vector.h>
 #include <Matrix.h>
+#include <FiberSectionRepr.h>
 
 class UniaxialMaterial;
 class Fiber;
