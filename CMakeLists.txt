@@ -114,6 +114,7 @@ else()
   find_package(TCL REQUIRED)
   find_package(Eigen3 REQUIRED)
   include_directories(${TCL_INCLUDE_DIR})
+  set(TCL_INCLUDE_PATH ${TCL_INCLUDE_DIR})
   set(TCL_LIBRARY ${TCL_LIBRARIES})
 
 endif()
@@ -741,6 +742,8 @@ target_link_libraries(OpenSeesPy
 #
 
 install (TARGETS OpenSees DESTINATION bin)
+set (TCL_INIT_FILE "${TCL_INCLUDE_PATH}/../lib/tcl8.6/init.tcl")
+install(FILES ${TCL_INIT_FILE} DESTINATION lib/tcl8.6)
 
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
