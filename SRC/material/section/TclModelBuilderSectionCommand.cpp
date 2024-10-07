@@ -1811,8 +1811,8 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 
 	 //SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
    
-	 // Delete fibers
-	 for (i = 0; i < numFibers; i++)
+	 // Delete fibers created for patches and layers
+	 for (i = numSectionRepresFibers; i < numFibers; i++)
 	   delete fiber[i];
 
          if (section == 0)
@@ -1870,7 +1870,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	   section = new FiberSection3d(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid);
    
 	 // Delete fibers
-	 for (i = 0; i < numFibers; i++)
+	 for (i = numSectionRepresFibers; i < numFibers; i++)
 	   delete fiber[i];
 
          if (section == 0)
@@ -2531,7 +2531,8 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 			//SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 
 			SectionForceDeformation *section = 0;
-			section = new FiberSection3dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
+            section = new FiberSection3dThermal(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid); // GR
+            // section = new FiberSection3dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
 
 			// Delete fibers
 			for (i = 0; i < numFibers; i++)

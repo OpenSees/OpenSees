@@ -149,7 +149,7 @@ extern void *OPS_N4BiaxialTruss(void);
 extern void *OPS_AC3D8HexWithSensitivity(void);
 extern void *OPS_ASI3D8QuadWithSensitivity(void);
 extern void *OPS_AV3D4QuadWithSensitivity(void);
-extern void *OPS_VS3D4WuadWithSensitivity(void);
+extern void *OPS_VS3D4QuadWithSensitivity(void);
 extern void *OPS_MVLEM(void);       // Kristijan Kolozvari
 extern void *OPS_SFI_MVLEM(void);   // Kristijan Kolozvari
 extern void* OPS_MVLEM_3D(void);    // Kristijan Kolozvari
@@ -172,9 +172,9 @@ extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
+extern void* OPS_ShellNLDKGTThermal(void);// Giovanni Rinaldin
 extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
-extern void *OPS_ShellANDeS(void);
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_TenNodeTetrahedron(void);
 extern void *OPS_LysmerTriangle(void);
@@ -184,6 +184,7 @@ extern void *OPS_FSIFluidElement2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_FSIInterfaceElement2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_FSIFluidBoundaryElement2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_TwoNodeLink(void);
+extern void *OPS_TwoNodeLinkSection(void);
 extern void *OPS_LinearElasticSpring(void);
 extern void *OPS_Inerter(void);
 extern void *OPS_Adapter(void);
@@ -1019,7 +1020,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 	opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
 	return TCL_ERROR;
       }
-      //end of adding thermo-mechanical shell elements by L.Jiang [SIF]  
+    }
+    else if ((strcmp(argv[1], "shellNLDKGTThermal") == 0) || (strcmp(argv[1], "ShellNLDKGTThermal") == 0)) {
+
+    void* theEle = OPS_ShellNLDKGTThermal();
+    if (theEle != 0)
+        theElement = (Element*)theEle;
+    else {
+        opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+        return TCL_ERROR;
+    }
+    //end of adding thermo-mechanical shell elements by L.Jiang [SIF]  
       
   } else if ((strcmp(argv[1],"shellNL") == 0) || (strcmp(argv[1],"ShellNL") == 0) ||
 	     (strcmp(argv[1],"shellMITC9") == 0) || (strcmp(argv[1],"ShellMITC9") == 0)) {
@@ -1334,7 +1345,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "VS3D4") == 0) {
 
-    void *theEle = OPS_VS3D4WuadWithSensitivity();
+    void *theEle = OPS_VS3D4QuadWithSensitivity();
     if (theEle != 0) 
       theElement = (Element *)theEle;
     else {
@@ -1400,16 +1411,6 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
-  else if (strcmp(argv[1], "ShellANDeS") == 0) {
-      void *theEle = OPS_ShellANDeS();
-      if (theEle != 0) {
-    theElement = (Element*)theEle;
-      } else {
-    opserr<<"tclelementcommand -- unable to create element of type : "
-    <<argv[1]<<endln;
-    return TCL_ERROR;
-      }
-  }
   
   else if (strcmp(argv[1], "LysmerTriangle") == 0) {
       void *theEle = OPS_LysmerTriangle();
@@ -1519,6 +1520,18 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "twoNodeLink") == 0) {
   void *theEle = OPS_TwoNodeLink();
+  if (theEle != 0) {
+      theElement = (Element*)theEle;
+  }
+  else {
+      opserr << "tclelementcommand -- unable to create element of type : "
+          << argv[1] << endln;
+      return TCL_ERROR;
+  }
+  }
+
+  else if (strcmp(argv[1], "twoNodeLinkSection") == 0) {
+  void *theEle = OPS_TwoNodeLinkSection();
   if (theEle != 0) {
       theElement = (Element*)theEle;
   }

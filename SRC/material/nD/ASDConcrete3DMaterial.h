@@ -24,9 +24,7 @@
 
 // Massimo Petracca - ASDEA Software, Italy
 //
-// A Generic Orthotropic Material Wrapper that can convert any
-// nonlinear isotropic material into an orthotropic one by means of tensor
-// mapping
+// A Simple and robust plastic-damage model for concrete and masonry
 //
 
 #ifndef ASDConcrete3DMaterial_h

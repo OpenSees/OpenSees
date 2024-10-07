@@ -46,6 +46,7 @@
 #include <math.h>
 #include <ElementalLoad.h>
 #include <elementAPI.h>
+#include <ElementIter.h>
 
 Matrix TimoshenkoBeamColumn2d::K(6,6);
 Vector TimoshenkoBeamColumn2d::P(6);
@@ -115,10 +116,233 @@ void* OPS_TimoshenkoBeamColumn2d()
 	}
     }
     
-    Element *theEle =  new TimoshenkoBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),
-						  sections, *bi,*theTransf,mass);
+    Element *theEle =  new TimoshenkoBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
+						  *bi,*theTransf,mass);
     delete [] sections;
     return theEle;
+}
+
+void* OPS_TimoshenkoBeamColumn2d(const ID &info)
+{
+    // data
+    int iData[5];
+    int numData;
+    double mass = 0.0;
+    int cmass = 0;
+    // regular element, not in a mesh, get tags
+    if (info.Size() == 0) {
+	if(OPS_GetNumRemainingInputArgs() < 5) {
+	    opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag <-mass mass> <-cmass>\n";
+	    return 0;
+	}
+
+	int ndm = OPS_GetNDM();
+	int ndf = OPS_GetNDF();
+	if(ndm != 2 || ndf != 3) {
+	    opserr<<"ndm must be 2 and ndf must be 3\n";
+	    return 0;
+	}
+
+	// inputs:
+	numData = 3;
+	if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	    opserr<<"WARNING: invalid integer inputs\n";
+	    return 0;
+	}
+    }
+
+    // regular element, or in a mesh
+    if (info.Size()==0 || info(0)==1) {
+	if(OPS_GetNumRemainingInputArgs() < 2) {
+	    opserr<<"insufficient arguments: transfTag,integrationTag\n";
+	    return 0;
+	}
+
+	numData = 2;
+	if(OPS_GetIntInput(&numData,&iData[3]) < 0) {
+	    opserr << "WARNING invalid int inputs\n";
+	    return 0;
+	}
+
+	// options
+	numData = 1;
+	while(OPS_GetNumRemainingInputArgs() > 0) {
+	    const char* type = OPS_GetString();
+	    if(strcmp(type, "-cMass") == 0) {
+		cmass = 1;
+	    } else if(strcmp(type,"-mass") == 0) {
+		if(OPS_GetNumRemainingInputArgs() > 0) {
+		    if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+			opserr<<"WARNING: invalid mass\n";
+			return 0;
+		    }
+		}
+	    }
+        }
+    }
+
+    // store data for different mesh
+    static std::map<int, Vector> meshdata;
+    if (info.Size()>0 && info(0)==1) {
+	if (info.Size() < 2) {
+	    opserr << "WARNING: need info -- inmesh, meshtag\n";
+	    return 0;
+	}
+
+	// save the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	mdata.resize(4);
+	mdata(0) = iData[3];
+	mdata(1) = iData[4];
+	mdata(2) = mass;
+	mdata(3) = cmass;
+	return &meshdata;
+
+    } else if (info.Size()>0 && info(0)==2) {
+	if (info.Size() < 5) {
+	    opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2\n";
+	    return 0;
+	}
+
+	// get the data for a mesh
+	Vector& mdata = meshdata[info(1)];
+	if (mdata.Size() < 4) return 0;
+
+	iData[0] = info(2);
+	iData[1] = info(3);
+	iData[2] = info(4);
+	iData[3] = mdata(0);
+	iData[4] = mdata(1);
+	mass = mdata(2);
+	cmass = mdata(3);
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_getCrdTransf(iData[3]);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return 0;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[4]);
+    if(theRule == 0) {
+	opserr<<"beam integration not found\n";
+	return 0;
+    }
+    BeamIntegration* bi = theRule->getBeamIntegration();
+    if(bi == 0) {
+	opserr<<"beam integration is null\n";
+	return 0;
+    }
+
+    // check sections
+    const ID& secTags = theRule->getSectionTags();
+    SectionForceDeformation** sections = new SectionForceDeformation *[secTags.Size()];
+    for(int i=0; i<secTags.Size(); i++) {
+	sections[i] = OPS_getSectionForceDeformation(secTags(i));
+	if(sections[i] == 0) {
+	    opserr<<"section "<<secTags(i)<<"not found\n";
+		delete [] sections;
+	    return 0;
+	}
+    }
+    
+    Element *theEle =  new TimoshenkoBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
+					    *bi,*theTransf,mass);
+    delete [] sections;
+    return theEle;
+}
+
+int OPS_TimoshenkoBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
+{
+    if(OPS_GetNumRemainingInputArgs() < 2) {
+	opserr<<"insufficient arguments:transfTag,integrationTag <-mass mass> <-cmass>\n";
+	return -1;
+    }
+
+    // inputs: 
+    int iData[2];
+    int numData = 2;
+    if(OPS_GetIntInput(&numData,&iData[0]) < 0) {
+	opserr<<"WARNING: invalid integer inputs\n";
+	return -1;
+    }
+
+    // options
+    double mass = 0.0;
+    int cmass = 0;
+    numData = 1;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
+	const char* type = OPS_GetString();
+	if(strcmp(type,"-cMass") == 0) {
+	    cmass = 1;
+	} else if(strcmp(type,"-mass") == 0) {
+	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
+		    opserr<<"WARNING: invalid mass\n";
+		    return -1;
+		}
+	    }
+	}
+    }
+
+    // check transf
+    CrdTransf* theTransf = OPS_getCrdTransf(iData[0]);
+    if(theTransf == 0) {
+	opserr<<"coord transfomration not found\n";
+	return -1;
+    }
+
+    // check beam integrataion
+    BeamIntegrationRule* theRule = OPS_getBeamIntegrationRule(iData[1]);
+    if(theRule == 0) {
+	opserr<<"beam integration not found\n";
+	return -1;
+    }
+    BeamIntegration* bi = theRule->getBeamIntegration();
+    if(bi == 0) {
+	opserr<<"beam integration is null\n";
+	return -1;
+    }
+
+    // check sections
+    const ID& secTags = theRule->getSectionTags();
+    SectionForceDeformation** sections = new SectionForceDeformation *[secTags.Size()];
+    for(int i=0; i<secTags.Size(); i++) {
+	sections[i] = OPS_getSectionForceDeformation(secTags(i));
+	if(sections[i] == 0) {
+	    opserr<<"section "<<secTags(i)<<"not found\n";
+		delete [] sections;
+	    return -1;
+	}
+    }
+
+    // create elements
+    ElementIter& theEles = theDomain.getElements();
+    Element* theEle = theEles();
+    int currTag = 0;
+    if (theEle != 0) {
+	currTag = theEle->getTag();
+    }
+    eletags.resize(elenodes.Size()/2);
+    for (int i=0; i<eletags.Size(); i++) {
+	theEle = new TimoshenkoBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
+				      sections,*bi,*theTransf,mass);
+	if (theEle == 0) {
+	    opserr<<"WARNING: run out of memory for creating element\n";
+	    return -1;
+	}
+	if (theDomain.addElement(theEle) == false) {
+	    opserr<<"WARNING: failed to add element to domain\n";
+	    delete theEle;
+	    return -1;
+	}
+	eletags(i) = currTag;
+    }
+    
+    delete [] sections;
+    return 0;
 }
 
 TimoshenkoBeamColumn2d::TimoshenkoBeamColumn2d(int tag, int nd1, int nd2,

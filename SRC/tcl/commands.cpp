@@ -54,6 +54,7 @@ extern "C" {
 extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
+extern void OPS_clearAllSectionRepres(void);
 
 extern void OPS_clearAllHystereticBackbone(void);
 extern void OPS_clearAllStiffnessDegradation(void);
@@ -258,6 +259,8 @@ extern void *OPS_WilsonTheta(void);
 extern int OPS_DomainModalProperties(void);
 extern int OPS_ResponseSpectrumAnalysis(void);
 extern int OPS_sdfResponse(void);
+
+extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 
 #include <Newmark.h>
 #include <StagedNewmark.h>
@@ -1285,6 +1288,11 @@ reliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
   if (theReliabilityBuilder == 0) {
 
     theReliabilityBuilder = new TclReliabilityBuilder(theDomain,interp);
+    if (theReliabilityBuilder == 0) {
+      opserr << "Failed to create reliability domain" << endln;
+      return TCL_ERROR;
+    }
+    OPS_SetReliabilityDomain(theReliabilityBuilder->getReliabilityDomain());
     return TCL_OK;
   }
   else
@@ -1297,6 +1305,7 @@ wipeReliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 {
   if (theReliabilityBuilder != 0) {
     delete theReliabilityBuilder;
+    OPS_SetReliabilityDomain(0);
     theReliabilityBuilder = 0;
   }
   return TCL_OK;
@@ -1444,6 +1453,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllUniaxialMaterial();
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
+  OPS_clearAllSectionRepres();
 
   OPS_clearAllHystereticBackbone();
   OPS_clearAllStiffnessDegradation();
@@ -3105,14 +3115,18 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
 
   else if(strcmp(argv[1], "PFEM") == 0) {
+    
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
           theSOE = new PFEMLinSOE(*theSolver);
       } else if(strcmp(argv[2], "-quasi") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
+
       } else if (strcmp(argv[2],"-mumps") ==0) {
-#ifdef _PARALLEL_INTERPRETERS
+
+#ifdef _MUMPS
+	
 	  int relax = 20;
 	  if (argc > 3) {
 	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
@@ -3122,9 +3136,11 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
           theSOE = new PFEMLinSOE(*theSolver);
-#endif // _PARALLEL_INTERPRETERS
+#endif // _MUMPS
+
       } else if (strcmp(argv[2],"-quasi-mumps")==0) {
-#ifdef _PARALLEL_INTERPRETERS
+
+#ifdef _MUMPS
 	  int relax = 20;
 	  if (argc > 3) {
 	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
@@ -3134,7 +3150,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-#endif // _PARALLEL_INTERPRETERS
+#endif // _MUMPS
       }
   }
 
