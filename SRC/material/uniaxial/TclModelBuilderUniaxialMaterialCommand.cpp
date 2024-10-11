@@ -207,6 +207,8 @@ extern void* OPS_Ratchet(void); // Yi Xiao
 extern void* OPS_APDFMD(void);
 extern void* OPS_APDMD(void);
 extern void* OPS_APDVFD(void);
+extern void* OPS_TzSandCPT(void); 
+extern void* OPS_QbSandCPT(void);
 
 
 extern UniaxialMaterial *
@@ -2129,7 +2131,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
-     if ((strcmp(argv[1], "APDFMD") == 0)) {
+    if ((strcmp(argv[1], "APDFMD") == 0)) {
         void* theMat = OPS_APDFMD();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
@@ -2143,13 +2145,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
-	if ((strcmp(argv[1], "APDVFD") == 0)) {
+    if ((strcmp(argv[1], "APDVFD") == 0)) {
         void* theMat = OPS_APDVFD();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
         else
             return TCL_ERROR;
     }
+    if (strcmp(argv[1], "TzSandCPT") == 0) {
+        void* theMat = OPS_TzSandCPT();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "QbSandCPT") == 0) {
+        void* theMat = OPS_QbSandCPT();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }        
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)
