@@ -340,6 +340,14 @@ target_sources(OPS_Material
    Trilinwpd.h
 )
 
+target_sources(OPS_Material
+  PRIVATE
+    QbSandCPT.cpp
+    TzSandCPT.cpp
+  PUBLIC
+    QbSandCPT.h
+    TzSandCPT.h
+)
 
 add_library(OPS_Material_f)
 
