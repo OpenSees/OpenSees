@@ -43,7 +43,7 @@ SAniSandMS3D::SAniSandMS3D(int tag, double G0, double nu, double e_init, double 
 
 // null constructor
 SAniSandMS3D::SAniSandMS3D() 
-  : SAniSandMS()
+  : SAniSandMS(ND_TAG_SAniSandMS3D)
 {  
 }
 

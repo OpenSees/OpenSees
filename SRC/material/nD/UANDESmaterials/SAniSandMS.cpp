@@ -37,6 +37,8 @@
 #include <MaterialResponse.h>
 #include <string.h>
 
+#include <ID.h>
+
 // #if defined(_WIN32) || defined(_WIN64)
 #include <algorithm>
 #define fmax std::max
@@ -356,8 +358,8 @@ SAniSandMS::SAniSandMS(int tag, int classTag, double G0, double nu,
 }
 
 // null constructor
-SAniSandMS::SAniSandMS()
-	: NDMaterial(),
+SAniSandMS::SAniSandMS(int classTag)
+	: NDMaterial(0, classTag),
 	mEpsilon(6),
 	mEpsilon_n(6),
 	mSigma(6),
@@ -451,6 +453,7 @@ SAniSandMS::getCopy(const char *type)
 int
 SAniSandMS::commitState(void)
 {
+
 	double D;
 	malpha_in_n = malpha_in;
 
@@ -599,39 +602,325 @@ SAniSandMS::getResponse(int responseID, Information &matInfo)
 	}
 }
 
-int
-SAniSandMS::sendSelf(int commitTag, Channel &theChannel)
-{
+int SAniSandMS::sendSelf(int commitTag, Channel &theChannel) {
+    // Create an ID to hold integer data 
+    ID idData(10);
+    idData(0) = this->getTag();
+    idData(1) = mIter;
+    idData(2) = mJacoType;
+    idData(3) = mScheme;
+    idData(4) = mTangType;
+    idData(5) = mUseElasticTan;
+    idData(6) = mElastFlag;
+    idData(7) = num_load_reversals;
+    idData(8) = num_load_reversals_n;
+    idData(9) = m_firstLoading;
 
-	opserr << "SAniSandMS::sendSelf - not yet implemented! Contact https://github.com/jaabell" << endln;
+    // Send the integer data
+    if (theChannel.sendID(this->getDbTag(), commitTag, idData) < 0) {
+        opserr << "SAniSandMS::sendSelf - failed to send ID data\n";
+        return -1;
+    }
 
-	return 0;
+    // Create a Vector to hold double data
+    Vector vecData(212);
+    vecData(0) = m_G0; 
+    vecData(1) = m_nu; 
+    vecData(2) = m_e_init; 
+    vecData(3) = m_Mc; 
+    vecData(4) = m_c; 
+    vecData(5) = m_lambda_c; 
+    vecData(6) = m_e0; 
+    vecData(7) = m_ksi; 
+    vecData(8) = m_P_atm; 
+    vecData(9) = m_m; 
+    vecData(10) = m_h0; 
+    vecData(11) = m_ch; 
+    vecData(12) = m_nb; 
+    vecData(13) = m_A0; 
+    vecData(14) = m_nd; 
+    vecData(15) = m_zeta; 
+    vecData(16) = m_mu0; 
+    vecData(17) = m_beta; 
+    vecData(18) = mMM_plus;
+    vecData(19) = mMM_plus_n;
+    vecData(20) = mMM_minus;
+    vecData(21) = mMM_minus_n;
+    vecData(22) = mDGamma;
+    vecData(23) = mDGamma_n;
+    vecData(24) = mK;
+    vecData(25) = mG;
+    vecData(26) = massDen;
+    vecData(27) = mVoidRatio;
+    vecData(28) = mTolF;
+    vecData(29) = mTolR;
+    vecData(30) = mEPS;
+    vecData(31) = m_Pmin;
+
+
+    // Store Vector and Matrix type internal variables
+    for (int i = 0; i < 6; ++i) {
+        vecData(32 + i) = mEpsilon(i);
+        vecData(38 + i) = mEpsilon_n(i);
+        vecData(44 + i) = mSigma(i);
+        vecData(50 + i) = mSigma_n(i);
+        vecData(56 + i) = mEpsilonE(i);
+        vecData(62 + i) = mEpsilonE_n(i);
+        vecData(68 + i) = mAlpha(i);
+        vecData(74 + i) = mAlpha_n(i);
+        vecData(80 + i) = mAlphaM(i);
+        vecData(86 + i) = mAlphaM_n(i);
+        vecData(92 + i) = malpha_in(i);
+        vecData(98 + i) = malpha_in_n(i);
+    }
+
+    // Flattening mCe, mCep, mCep_Consistent into vecData
+    int index = 104;
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            vecData(index++) = mCe(i, j);
+            vecData(index++) = mCep(i, j);
+            vecData(index++) = mCep_Consistent(i, j);
+        }
+    }
+
+
+
+
+
+    // Send the double data
+    if (theChannel.sendVector(this->getDbTag(), commitTag, vecData) < 0) {
+        opserr << "SAniSandMS::sendSelf - failed to send Vector data\n";
+        return -1;
+    }
+
+    // opserr << "SAniSandMS::sendSelf - sent idData = " << idData << endln; 
+    // opserr << "SAniSandMS::sendSelf - sent vecData = " << vecData << endln; 
+
+    // // Send the matrix data
+    // if (theChannel.sendMatrix(this->getDbTag(), commitTag, mCe) < 0) {
+    //     opserr << "SAniSandMS::sendSelf - failed to send mCe data\n";
+    //     return -1;
+    // }
+
+    // // Send the matrix data
+    // if (theChannel.sendMatrix(this->getDbTag(), commitTag, mCep) < 0) {
+    //     opserr << "SAniSandMS::sendSelf - failed to send mCep data\n";
+    //     return -1;
+    // }
+
+    // // Send the matrix data
+    // if (theChannel.sendMatrix(this->getDbTag(), commitTag, mCep_Consistent) < 0) {
+    //     opserr << "SAniSandMS::sendSelf - failed to send mCep_Consistent data\n";
+    //     return -1;
+    // }
+
+    return 0;
 }
 
-int
-SAniSandMS::recvSelf(int commitTag, Channel &theChannel,
-	FEM_ObjectBroker &theBroker)
-{
-	opserr << "SAniSandMS::recvSelf - not yet implemented! Contact https://github.com/jaabell" << endln;
-	return 0;
+int SAniSandMS::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {
+    // Create an ID to receive integer data 
+    ID idData(10);
+
+    // Receive the integer data
+    if (theChannel.recvID(this->getDbTag(), commitTag, idData) < 0) {
+        opserr << "SAniSandMS::recvSelf - failed to receive ID data\n";
+        return -1;
+    }
+
+    this->setTag(idData(0));
+    mIter = idData(1);
+    mJacoType = idData(2);
+    mScheme = idData(3);
+    mTangType = idData(4);
+    mUseElasticTan = idData(5);
+    mElastFlag = idData(6);
+    num_load_reversals = idData(7);
+    num_load_reversals_n = idData(8);
+    m_firstLoading = idData(9);
+
+
+
+
+    // Create a Vector to receive double data 
+    Vector vecData(212);
+
+    // Receive the double data
+    if (theChannel.recvVector(this->getDbTag(), commitTag, vecData) < 0) {
+        opserr << "SAniSandMS::recvSelf - failed to receive Vector data\n";
+        return -1;
+    }
+
+    m_G0 = vecData(0) ;
+    m_nu = vecData(1) ;
+    m_e_init = vecData(2) ;
+    m_Mc = vecData(3) ;
+    m_c = vecData(4) ;
+    m_lambda_c = vecData(5) ;
+    m_e0 = vecData(6) ;
+    m_ksi = vecData(7) ;
+    m_P_atm = vecData(8) ;
+    m_m = vecData(9) ;
+    m_h0 = vecData(10) ;
+    m_ch = vecData(11) ;
+    m_nb = vecData(12) ;
+    m_A0 = vecData(13) ;
+    m_nd = vecData(14) ;
+    m_zeta = vecData(15) ;
+    m_mu0 = vecData(16) ;
+    m_beta = vecData(17) ;
+    mMM_plus = vecData(18) ;
+    mMM_plus_n = vecData(19) ;
+    mMM_minus = vecData(20) ;
+    mMM_minus_n = vecData(21) ;
+    mDGamma = vecData(22) ;
+    mDGamma_n = vecData(23) ;
+    mK = vecData(24) ;
+    mG = vecData(25) ;
+    massDen = vecData(26) ;
+    mVoidRatio = vecData(27) ;
+    mTolF = vecData(28) ;
+    mTolR = vecData(29) ;
+    mEPS = vecData(30) ;
+    m_Pmin = vecData(31) ;
+
+    // Restore Vector and Matrix type internal variables
+    for (int i = 0; i < 6; ++i) {
+        mEpsilon(i) = vecData(32 + i);
+        mEpsilon_n(i) = vecData(38 + i);
+        mSigma(i) = vecData(44 + i);
+        mSigma_n(i) = vecData(50 + i);
+        mEpsilonE(i) = vecData(56 + i);
+        mEpsilonE_n(i) = vecData(62 + i);
+        mAlpha(i) = vecData(68 + i);
+        mAlpha_n(i) = vecData(74 + i);
+        mAlphaM(i) = vecData(80 + i);
+        mAlphaM_n(i) = vecData(86 + i);
+        malpha_in(i) = vecData(92 + i);
+        malpha_in_n(i) = vecData(98 + i);
+    }
+
+    // Flattening mCe, mCep, mCep_Consistent into vecData
+    int index = 104;
+    for (int i = 0; i < 6; ++i) {
+        for (int j = 0; j < 6; ++j) {
+            mCe(i, j) = vecData(index++);
+            mCep(i, j) = vecData(index++);
+            mCep_Consistent(i, j) = vecData(index++);
+        }
+    }
+
+    // opserr << "SAniSandMS::recvSelf - sent idData = " << idData << endln; 
+    // opserr << "SAniSandMS::recvSelf - sent vecData = " << vecData << endln; 
+
+
+
+    // // Receive the mCe data
+    // if (theChannel.recvMatrix(this->getDbTag(), commitTag, mCe) < 0) {
+    //     opserr << "SAniSandMS::recvSelf - failed to receive mCe data\n";
+    //     return -1;
+    // }
+
+    //     // Receive the mCep data
+    // if (theChannel.recvMatrix(this->getDbTag(), commitTag, mCep) < 0) {
+    //     opserr << "SAniSandMS::recvSelf - failed to receive mCep data\n";
+    //     return -1;
+    // }
+
+    //     // Receive the mCep_Consistent data
+    // if (theChannel.recvMatrix(this->getDbTag(), commitTag, mCep_Consistent) < 0) {
+    //     opserr << "SAniSandMS::recvSelf - failed to receive mCep_Consistent data\n";
+    //     return -1;
+    // }
+
+
+    return 0;
 }
 
 void SAniSandMS::Print(OPS_Stream &s, int flag)
 {
 	s << "SAniSandMS Material, tag: " << this->getTag() << endln;
 	s << "Type: " << this->getType() << endln;
-	s << "mSigma_n = " << mSigma_n << endln;
+
+	s << "Constants" << endln;
+	s << "m_G0 = " << m_G0 << endln;
+	s << "m_nu = " << m_nu << endln;
+	s << "m_e_init = " << m_e_init << endln;
+	s << "m_Mc = " << m_Mc << endln;
+	s << "m_c = " << m_c << endln;
+	s << "m_lambda_c = " << m_lambda_c << endln;
+	s << "m_e0 = " << m_e0 << endln;
+	s << "m_ksi = " << m_ksi << endln;
+	s << "m_P_atm = " << m_P_atm << endln;
+	s << "m_m = " << m_m << endln;
+	s << "m_h0 = " << m_h0 << endln;
+	s << "m_ch = " << m_ch << endln;
+	s << "m_nb = " << m_nb << endln;
+	s << "m_A0 = " << m_A0 << endln;
+	s << "m_nd = " << m_nd << endln;
+	s << "m_zeta = " << m_zeta << endln;
+	s << "m_mu0 = " << m_mu0 << endln;
+	s << "m_beta = " << m_beta << endln;
+
+	s << "Internal variables" << endln;
+	s << "mEpsilon = " << mEpsilon << endln;
 	s << "mEpsilon_n = " << mEpsilon_n << endln;
+	s << "mSigma = " << mSigma << endln;
+	s << "mSigma_n = " << mSigma_n << endln;
+	s << "mEpsilonE = " << mEpsilonE << endln;
 	s << "mEpsilonE_n = " << mEpsilonE_n << endln;
+	s << "mAlpha = " << mAlpha << endln;
 	s << "mAlpha_n = " << mAlpha_n << endln;
+	s << "mAlphaM = " << mAlphaM << endln;
 	s << "mAlphaM_n = " << mAlphaM_n << endln;
-	s << "mMM_plus_n = " << mMM_plus_n << endln;
-	s << "mMM_minus_n = " << mMM_minus_n << endln;
+	s << "malpha_in = " << malpha_in << endln;
 	s << "malpha_in_n = " << malpha_in_n << endln;
+	
+	s << "mMM_plus = " << mMM_plus << endln;
+	s << "mMM_plus_n = " << mMM_plus_n << endln;
+	s << "mMM_minus = " << mMM_minus << endln;
+	s << "mMM_minus_n = " << mMM_minus_n << endln;
+
+	s << "mCe = " << mCe << endln;
+	s << "mCep = " << mCep << endln;
+	s << "mCep_Consistent = " << mCep_Consistent << endln;
+
+	s << "mDGamma = " << mDGamma << endln;
 	s << "mDGamma_n = " << mDGamma_n << endln;
+	s << "mK = " << mK << endln;
+	s << "mG = " << mG << endln;
+	s << "massDen = " << massDen << endln;
 	s << "mVoidRatio = " << mVoidRatio << endln;
+	s << "mTolF = " << mTolF << endln;
+	s << "mTolR = " << mTolR << endln;
+	s << "mEPS = " << mEPS << endln;
+	s << "m_Pmin = " << m_Pmin << endln;
+	s << "num_load_reversals = " << num_load_reversals << endln;
+	s << "num_load_reversals_n = " << num_load_reversals_n << endln;
+	
+	s << "mElastFlag = " << (int) mElastFlag << endln;
+	s << "mIter = " << (int) mIter << endln;
+	s << "mJacoType = " << (int) mJacoType << endln;
+	s << "mScheme = " << (int) mScheme << endln;
+	s << "mTangType = " << (int) mTangType << endln;
 
-
+	s << "mI1 = " <<  mI1 << endln;
+	s << "mIIco = " <<  mIIco << endln;
+	s << "mIIcon = " <<  mIIcon << endln;
+	s << "mIImix = " <<  mIImix << endln;
+	s << "mIIvol = " <<  mIIvol << endln;
+	s << "mIIdevCon = " <<  mIIdevCon << endln;
+	s << "mIIdevMix = " <<  mIIdevMix << endln;
+	s << "mIIdevCo = " <<  mIIdevCo << endln;
+	
+	s << "one3 = " <<  one3 << endln;
+	s << "two3 = " <<  two3 << endln;
+	s << "root23 = " <<  root23 << endln;
+	s << "small = " <<  small << endln;
+	s << "maxStrainInc = " <<  maxStrainInc << endln;
+	s << "debugFlag = " <<  (int) debugFlag << endln;
+	s << "mMaxSubStep = " <<  (int) mMaxSubStep << endln;
+	s << "mElastFlag = " <<  (int) mElastFlag << endln;
 }
 
 int
