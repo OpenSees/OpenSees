@@ -163,8 +163,8 @@
 #include "PY/TzLiq1.h"
 #include "PY/QzLiq1.h"
 // Unified CPT based method
-#include "Axial_CPT/TzSandCPT.h"
-#include "Axial_CPT/QbSandCPT.h"
+#include "TzSandCPT.h"
+#include "QbSandCPT.h"
 
 #include "fedeas/FedeasBond1Material.h"
 #include "fedeas/FedeasBond2Material.h"
