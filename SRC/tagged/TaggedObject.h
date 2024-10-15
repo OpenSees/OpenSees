@@ -26,9 +26,6 @@
 #ifndef TaggedObject_h
 #define TaggedObject_h
 
-#define OPS_PRINT_JSON_ELEM_INDENT "\t\t\t"
-#define OPS_PRINT_JSON_NODE_INDENT "\t\t\t"
-#define OPS_PRINT_JSON_MATE_INDENT "\t\t\t"
 
 // File: ~/tagged/TaggedObject.h
 //
@@ -59,6 +56,9 @@ class TaggedObject
 
   protected:
     void setTag(int newTag);  // CAUTION: this is a dangerous method to call
+                              //
+    constexpr static char[] JsonGeometryIndent = "\t\t\t";
+    constexpr static char[] JsonPropertyIndent = "\t\t\t";
     
   private:    
     int theTag;    

@@ -1222,7 +1222,7 @@ void
 FiberSection3dThermal::Print(OPS_Stream &s, int flag)
 {
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-        s << OPS_PRINT_JSON_MATE_INDENT << "{";
+        s << TaggedObject::JsonPropertyIndent << "{";
         s << "\"name\": \"" << this->getTag() << "\", ";
         s << "\"type\": \"" << this->getClassType() << "\", ";
 
@@ -1231,7 +1231,7 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
 
         s << "\"fibers\": [\n";
         for (int i = 0; i < numFibers; i++) {
-              s << OPS_PRINT_JSON_MATE_INDENT 
+              s << TaggedObject::JsonPropertyIndent 
                 << "\t{\"coord\": [" << matData[3*i] << ", " 
                                      << matData[3*i+1] << "], ";
               s << "\"area\": " << matData[3*i+2] << ", ";
@@ -1241,7 +1241,7 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
               else
                     s << "}\n";
         }
-        s << OPS_PRINT_JSON_MATE_INDENT << "]}";
+        s << TaggedObject::JsonPropertyIndent << "]}";
         return;
   }
   if (flag == 2) {
