@@ -8,14 +8,9 @@
 #include <tcl.h>
 #include <vector>
 #include <OPS_Globals.h>
-// #include <mpi.h>
 #include <Channel.h>
 #include <MachineBroker.h>
 
-// #  include <DistributedDisplacementControl.h>
-// #  include <ShedHeaviest.h>
-// #  include <MPIDiagonalSOE.h>
-// #  include <MPIDiagonalSolver.h>
 #include <ShadowSubdomain.h>
 #include <Metis.h>
 #include <FEM_ObjectBroker.h>
@@ -27,10 +22,6 @@
 #include <MachineBroker.h>
 #include <StaticDomainDecompositionAnalysis.h>
 #include <TransientDomainDecompositionAnalysis.h>
-
-// #  define MPIPP_H
-// #  include <DistributedSuperLU.h>
-// #  include <DistributedProfileSPDLinSOE.h>
 
  struct PartitionRuntime {
    MachineBroker       *machine            = nullptr;
@@ -58,11 +49,7 @@ Init_PartitionRuntime(Tcl_Interp* interp, MachineBroker* theMachineBroker, FEM_O
 {
   PartitionRuntime *part = new PartitionRuntime{theMachineBroker, theBroker};
 
-  //
-  // set some global parameters
-  //
-  if (theMachineBroker->getPID() == 0) {
-  
+  if (theMachineBroker->getPID() == 0) { 
     // always use p0 even if ODD number of partitions
     part->num_subdomains    = theMachineBroker->getNP();
     part->using_main_domain = true;
@@ -72,10 +59,10 @@ Init_PartitionRuntime(Tcl_Interp* interp, MachineBroker* theMachineBroker, FEM_O
     part->using_main_domain = false;
     part->num_subdomains = 0;
     part->partitioned = false;
-
   }
   
   
+  // Add commands to the interpreter
   Tcl_CreateCommand(interp, "partition", &opsPartition, (ClientData)part, (Tcl_CmdDeleteProc *)NULL);
   Tcl_CreateCommand(interp, "wipePP",    &wipePP,       (ClientData)part, (Tcl_CmdDeleteProc *)NULL);
   Tcl_CreateCommand(interp, "model",     &TclCommand_specifyModel,  (ClientData)&part->theDomain, (Tcl_CmdDeleteProc *)NULL);
@@ -124,8 +111,6 @@ partitionModel(PartitionRuntime& part, int eleTag)
 
   // create a partitioner & partition the domain
   if (part.DOMAIN_partitioner == nullptr) {
-    //      part.balancer = new ShedHeaviest();
-    // OPS_DOMAIN_partitioner = new DomainPartitioner(*OPS_GRAPH_partitioner, *part.balancer);
     part.GRAPH_partitioner = new Metis;
     part.DOMAIN_partitioner = new DomainPartitioner(*part.GRAPH_partitioner);
     part.theDomain.setPartitioner(part.DOMAIN_partitioner);
@@ -142,24 +127,6 @@ partitionModel(PartitionRuntime& part, int eleTag)
   DomainDecompositionAnalysis *theSubAnalysis;
   SubdomainIter &theSubdomains = part.theDomain.getSubdomains();
   Subdomain *theSub = nullptr;
-
-  void* the_static_analysis = nullptr;
-#if 0
-  // create the appropriate domain decomposition analysis
-  while ((theSub = theSubdomains()) != nullptr) {
-    if (the_static_analysis != nullptr) {
-      theSubAnalysis = new StaticDomainDecompositionAnalysis(
-          *theSub, *theHandler, *theNumberer, *the_analysis_model, *theAlgorithm,
-          *theSOE, *theStaticIntegrator, theTest, false);
-
-    } else {
-      theSubAnalysis = new TransientDomainDecompositionAnalysis(
-          *theSub, *theHandler, *theNumberer, *the_analysis_model, *theAlgorithm,
-          *theSOE, *theTransientIntegrator, theTest, false);
-    }
-    theSub->setDomainDecompAnalysis(*theSubAnalysis);
-  }
-#endif
   return result;
 }
 
