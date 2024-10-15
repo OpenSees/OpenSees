@@ -12,9 +12,7 @@
 #  define OPENSEESRT_VERSION "0.0.0"
 #endif
 
-extern "C" {
 #include <tcl.h>
-}
 
 #include <ID.h>
 #include <stdio.h>

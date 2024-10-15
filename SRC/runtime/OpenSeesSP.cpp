@@ -12,10 +12,7 @@
 #  define OPENSEESRT_VERSION "0.0.0"
 #endif
 
-extern "C" {
 #include <tcl.h>
-}
-
 #include <stdio.h>
 #include <string.h>
 #include "G3_Runtime.h"
