@@ -148,7 +148,7 @@ target_sources(LAPACK_C PUBLIC
   BLAS_error.c
 )
 
-target_link_libraries(LAPACK PUBLIC LAPACK_C)
+target_link_libraries(LAPACK PUBLIC LAPACK_C BLAS)
 
 
 
