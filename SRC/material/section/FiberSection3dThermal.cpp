@@ -1221,29 +1221,6 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection3dThermal::Print(OPS_Stream &s, int flag)
 {
-  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-        s << TaggedObject::JsonPropertyIndent << "{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
-        s << "\"type\": \"" << this->getClassType() << "\", ";
-
-        if (theTorsion != 0)
-          s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
-
-        s << "\"fibers\": [\n";
-        for (int i = 0; i < numFibers; i++) {
-              s << TaggedObject::JsonPropertyIndent 
-                << "\t{\"coord\": [" << matData[3*i] << ", " 
-                                     << matData[3*i+1] << "], ";
-              s << "\"area\": " << matData[3*i+2] << ", ";
-              s << "\"material\": " << theMaterials[i]->getTag();
-              if (i < numFibers - 1)
-                    s << "},\n";
-              else
-                    s << "}\n";
-        }
-        s << TaggedObject::JsonPropertyIndent << "]}";
-        return;
-  }
   if (flag == 2) {
     for (int i = 0; i < numFibers; i++) {
       s << -matData[3*i] << " "  << matData[3*i+1] << " "  << matData[3*i+2] << " " ;
