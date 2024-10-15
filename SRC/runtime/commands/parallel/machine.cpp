@@ -3,6 +3,12 @@
 //        OpenSees - Open System for Earthquake Engineering Simulation
 //
 //===----------------------------------------------------------------------===//
+//
+// Description: Commands used for getting information about spawned processes.
+// ClientData is an instance of MachineBroker.
+//
+// Adapted from commands.cpp by Claudio Perez.
+//
 #include <tcl.h>
 #include <OPS_Globals.h>
 #include <Channel.h>
@@ -48,5 +54,4 @@ getNP(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const arg
 
   return TCL_OK;
 }
-
 

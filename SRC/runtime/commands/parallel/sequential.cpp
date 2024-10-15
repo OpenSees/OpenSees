@@ -7,6 +7,8 @@
 // Description: This unit contains implementations of parallel commands
 // for use in non-parallel interpreters
 //
+// Adapted from commands.cpp by Claudio Perez.
+//
 #include <tcl.h>
 #define TCL_Char CONST84 char
 

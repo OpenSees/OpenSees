@@ -4,6 +4,10 @@
 //
 //===----------------------------------------------------------------------===//
 //
+// Description: Commands used to partition a domain. ClientData is an
+// instance of PartitionRuntime (defined in this file).
+//
+// Adapted from commands.cpp by Claudio Perez.
 //
 #include <tcl.h>
 #include <vector>

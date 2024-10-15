@@ -1,4 +1,14 @@
-
+//===----------------------------------------------------------------------===//
+//
+//        OpenSees - Open System for Earthquake Engineering Simulation
+//
+//===----------------------------------------------------------------------===//
+// 
+// Description: Commands that facilitate communication between processes.
+// ClientData is an instance of MachineBroker.
+//
+// Adapted from commands.cpp by Claudio Perez.
+//
 #include <tcl.h>
 #include <mpi.h>
 #include <string.h>
