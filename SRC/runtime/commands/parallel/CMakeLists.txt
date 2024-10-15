@@ -4,8 +4,6 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-# _PARALLEL_INTERPRETERS
-# _PARALLEL_PROCESSING     # OpenSeesSP
 
 find_package(MPI)
 if (NOT MPI_FOUND)
@@ -27,7 +25,6 @@ target_link_libraries(OpenSeesRT_Parallel PRIVATE
     OPS_Parallel 
     OPS_Actor 
     MPI::MPI_CXX
-#   ${MPI_CXX_LIBRARIES}
 )
 
 target_sources(OpenSeesRT_Parallel PRIVATE
@@ -47,7 +44,6 @@ target_link_libraries(OpenSeesRT_Parallel PRIVATE
     OPS_Parallel 
     OPS_Actor
     MPI::MPI_CXX
-#   /usr/lib/libscalapack.so
     ${MPI_Fortran_LIBRARIES}
 )
 
@@ -93,5 +89,4 @@ target_link_libraries(LibOpenSeesSP
     OpenSeesRT 
     MPI::MPI_CXX
     METIS
-#   /usr/lib/libscalapack.so
 )
