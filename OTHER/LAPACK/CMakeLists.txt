@@ -18,6 +18,7 @@ target_sources(LAPACK PUBLIC
   lsame.f
   xerbla.f
   ilaenv.f
+  ieeeck.f
   dgeqr2.f
   dlabad.f
   dlacon.f
