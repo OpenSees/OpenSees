@@ -1222,63 +1222,66 @@ void
 FiberSection3dThermal::Print(OPS_Stream &s, int flag)
 {
   if (flag == 2) {
-    for (int i = 0; i < numFibers; i++) {
-      s << -matData[3*i] << " "  << matData[3*i+1] << " "  << matData[3*i+2] << " " ;
-      s << theMaterials[i]->getStress() << " "  << theMaterials[i]->getStrain() << endln;
+    for (int i = 0; i < fibers.size(); i++) {
+      s << -fibers[i].y << " "  << fibers[i].z << " "  << fibers[i].area << " " ;
+      s << fibers[i].material->getStress() << " "  << fibers[i].material->getStrain() << endln;
     }
-  } else {
+  }
+
+  else if (flag == 3) {
+    for (int i = 0; i < fibers.size(); i++) {
+      s << fibers[i].material->getTag() << " " << fibers[i].y << " "  << fibers[i].z << " "  << fibers[i].area << " " ;
+      s << fibers[i].material->getStress() << " "  << fibers[i].material->getStrain() << endln;
+    } 
+  }
+    
+  else if (flag == 4) {
+    for (int i = 0; i < fibers.size(); i++) {
+      s << "add fiber # " << i+1 << " using material # " << fibers[i].material->getTag() << " to section # 1\n";
+      s << "fiber_cross_section = " << fibers[i].area << "*m^2\n";
+      s << "fiber_location = (" << fibers[i].y << "*m, " << fibers[i].z << "*m);\n\n";
+    }
+  }
+
+  else if (flag == OPS_PRINT_PRINTMODEL_JSON) { 
+      s << TaggedObject::JsonPropertyIndent << "{";
+      s << "\"name\": \"" << this->getTag() << "\", ";
+      s << "\"type\": \"" << this->getClassType() << "\", ";
+
+      if (theTorsion != 0)
+        s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
+
+      s << "\"fibers\": [\n";
+      for (int i = 0; i < fibers.size(); i++) {
+            s << TaggedObject::JsonPropertyIndent 
+              << "\t{\"coord\": [" << fibers[i].y << ", " 
+                                   << fibers[i].z << "], ";
+            s << "\"area\": " << fibers[i].area << ", ";
+            s << "\"material\": " << fibers[i].material->getTag();
+            if (i < fibers.size() - 1)
+                  s << "},\n";
+            else
+                  s << "}\n";
+      }
+      s << TaggedObject::JsonPropertyIndent << "]}";
+      return;
+  }
+
+  else {
     s << "\nFiberSection3dThermal, tag: " << this->getTag() << endln;
     s << "\tSection code: " << code;
-    s << "\tNumber of Fibers: " << numFibers << endln;
+    s << "\tNumber of Fibers: " << fibers.size() << endln;
     s << "\tCentroid: (" << yBar << ", " << zBar << ')' << endln;
     if (theTorsion != 0)
         theTorsion->Print(s, flag); 
 
     if (flag == 1) {
-      for (int i = 0; i < numFibers; i++) {
-	s << "\nLocation (y, z) = (" << -matData[3*i] << ", " << matData[3*i+1] << ")";
-	s << "\nArea = " << matData[3*i+2] << endln;
-      theMaterials[i]->Print(s, flag);
+      for (int i = 0; i < fibers.size(); i++) {
+        s << "\nLocation (y, z) = (" << -fibers[i].y << ", " << fibers[i].z << ")";
+        s << "\nArea = " << fibers[i].area << endln;
+      fibers[i].material->Print(s, flag);
       }
     }
-  }
-  if (flag == 3) {
-    for (int i = 0; i < numFibers; i++) {
-      s << theMaterials[i]->getTag() << " " << matData[3*i] << " "  << matData[3*i+1] << " "  << matData[3*i+2] << " " ;
-      s << theMaterials[i]->getStress() << " "  << theMaterials[i]->getStrain() << endln;
-    } 
-  }
-    
-  if (flag == 4) {
-    for (int i = 0; i < numFibers; i++) {
-      s << "add fiber # " << i+1 << " using material # " << theMaterials[i]->getTag() << " to section # 1\n";
-      s << "fiber_cross_section = " << matData[3*i+2] << "*m^2\n";
-      s << "fiber_location = (" << matData[3*i] << "*m, " << matData[3*i+1] << "*m);\n\n";
-    }
-  }
-
-  if (flag == OPS_PRINT_PRINTMODEL_JSON) { 
-        s << TaggedObject::JsonPropertyIndent << "{";
-        s << "\"name\": \"" << this->getTag() << "\", ";
-        s << "\"type\": \"" << this->getClassType() << "\", ";
-
-        if (theTorsion != 0)
-          s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
-
-        s << "\"fibers\": [\n";
-        for (int i = 0; i < numFibers; i++) {
-              s << TaggedObject::JsonPropertyIndent 
-                << "\t{\"coord\": [" << matData[3*i] << ", " 
-                                     << matData[3*i+1] << "], ";
-              s << "\"area\": " << matData[3*i+2] << ", ";
-              s << "\"material\": " << theMaterials[i]->getTag();
-              if (i < numFibers - 1)
-                    s << "},\n";
-              else
-                    s << "}\n";
-        }
-        s << TaggedObject::JsonPropertyIndent << "]}";
-        return;
   }
 }
 
