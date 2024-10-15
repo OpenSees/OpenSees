@@ -26,6 +26,10 @@
 #ifndef TaggedObject_h
 #define TaggedObject_h
 
+#define OPS_PRINT_JSON_ELEM_INDENT "\t\t\t"
+#define OPS_PRINT_JSON_NODE_INDENT "\t\t\t"
+#define OPS_PRINT_JSON_MATE_INDENT "\t\t\t"
+
 // File: ~/tagged/TaggedObject.h
 //
 // Written: fmk 
