@@ -15,6 +15,8 @@
 add_library(LAPACK)
 
 target_sources(LAPACK PUBLIC
+  lsame.f
+  xerbla.f
   dgeqr2.f
   dlabad.f
   dlacon.f
