@@ -16,8 +16,6 @@ extern "C" {
 #include <tcl.h>
 }
 
-
-// #include "commands.h"
 #include <ID.h>
 #include <stdio.h>
 
@@ -65,7 +63,6 @@ Libopenseesmp_Init(Tcl_Interp* interp)
 
   
   // Initialize process runtime
-
 
   int pid = theMachineBroker->getPID();
   int np  = theMachineBroker->getNP();

@@ -67,9 +67,6 @@ Libopenseessp_Init(Tcl_Interp* interp)
   int pid = theMachineBroker->getPID();
   int np = theMachineBroker->getNP();
 
-  //
-  // depending on rank we do something
-  //
   if (pid != 0) {
 
     //
@@ -92,13 +89,6 @@ Libopenseessp_Init(Tcl_Interp* interp)
     Init_PartitionRuntime(interp, theMachineBroker, theBroker);
 
     Tcl_CreateCommand(interp, "barrier",   &doNothing, (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
-
-    // TODO
-//  // some clean up to shut the remotes down if still running
-//  theDomain.clearAll();
-//  
-//  // shutdown the remote machines
-//  theMachineBroker->shutdown();
   }
   return 0;
 }
