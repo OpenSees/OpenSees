@@ -42,7 +42,7 @@ class Steel01Thermal : public UniaxialMaterial
     Steel01Thermal();
     ~Steel01Thermal();
 
-    const char *getClassType(void) const {return "Steel01Thermal";};
+    const char *getClassType(void) const {return "Steel01Thermal";}
 
 
     double getThermalElongation(void); //***JZ
