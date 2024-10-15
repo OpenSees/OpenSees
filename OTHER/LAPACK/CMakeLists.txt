@@ -15,6 +15,13 @@
 add_library(LAPACK)
 
 target_sources(LAPACK PUBLIC
+  lsame.f
+  lsamen.f
+  xerbla.f
+  ilaenv.f
+  xlaenv.f
+  ieeeck.f
+
   dgeqr2.f
   dlabad.f
   dlacon.f
@@ -148,7 +155,7 @@ target_sources(LAPACK_C PUBLIC
   BLAS_error.c
 )
 
-target_link_libraries(LAPACK PUBLIC LAPACK_C)
+target_link_libraries(LAPACK PUBLIC LAPACK_C BLAS)
 
 
 
