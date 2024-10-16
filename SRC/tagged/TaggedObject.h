@@ -26,6 +26,7 @@
 #ifndef TaggedObject_h
 #define TaggedObject_h
 
+
 // File: ~/tagged/TaggedObject.h
 //
 // Written: fmk 
@@ -55,6 +56,9 @@ class TaggedObject
 
   protected:
     void setTag(int newTag);  // CAUTION: this is a dangerous method to call
+                              //
+    constexpr static char JsonGeometryIndent[] = "\t\t\t";
+    constexpr static char JsonPropertyIndent[] = "\t\t\t";
     
   private:    
     int theTag;    
