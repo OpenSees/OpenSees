@@ -4,7 +4,8 @@
 //
 //===----------------------------------------------------------------------===//
 //
-//                                   OpenSeesMP                               
+//  Description: This file implements a Tcl library that provides
+//  the capabilities of OpenSeesMP
 //
 //===----------------------------------------------------------------------===//
 //
