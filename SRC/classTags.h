@@ -943,17 +943,21 @@
 #define BEAM_INTEGRATION_TAG_DistHinge3d     35
 
 
-#define CRDTR_TAG_LinearCrdTransf2d 1
-#define CRDTR_TAG_PDeltaCrdTransf2d 2
-#define CRDTR_TAG_ModerateDispCrdTransf2d 8
-#define CRDTR_TAG_CorotCrdTransf2d  3
-#define CRDTR_TAG_CorotCrdTransfWarping2d 31
-#define CRDTR_TAG_LinearCrdTransf3d 4
-#define CRDTR_TAG_PDeltaCrdTransf3d 5
-#define CRDTR_TAG_ModerateDispCrdTransf3d 9
-#define CRDTR_TAG_CorotCrdTransf3d  6
-#define CRDTR_TAG_CorotCrdTransfWarping3d  61
-#define CRDTR_TAG_LinearCrdTransf2dInt 7
+enum : int {
+        CRDTR_TAG_LinearCrdTransf2d,       // 1
+        CRDTR_TAG_PDeltaCrdTransf2d,       // 2
+        CRDTR_TAG_ModerateDispCrdTransf2d, // 8
+        CRDTR_TAG_CorotCrdTransf2d,        // 3
+        CRDTR_TAG_CorotCrdTransfWarping2d, // 31
+        CRDTR_TAG_LinearCrdTransf3d,       // 4
+        CRDTR_TAG_PDeltaCrdTransf3d,       // 5
+        CRDTR_TAG_ModerateDispCrdTransf3d, // 9
+        CRDTR_TAG_CorotCrdTransf3d,        // 6
+        CRDTR_TAG_CorotCrdTransf3d02,
+        CRDTR_TAG_CorotCrdTransfWarping3d, //  61
+        CRDTR_TAG_LinearCrdTransf2dInt,    // 7
+};
+
 
 #define DMP_TAG_UniformDamping 1
 #define DMP_TAG_SecStifDamping 2
