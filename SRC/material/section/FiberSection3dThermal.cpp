@@ -1248,7 +1248,7 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
         s << "\"name\": \"" << this->getTag() << "\", ";
         s << "\"type\": \"" << this->getClassType() << "\", ";
 
-        if (theTorsion != 0)
+        if (theTorsion != nullptr)
           s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
 
         s << "\"fibers\": [\n";
