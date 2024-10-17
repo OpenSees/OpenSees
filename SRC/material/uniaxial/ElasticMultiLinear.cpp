@@ -52,8 +52,8 @@ void *OPS_ElasticMultiLinear()
     }
     
     int tag[1];
-    double strainData[64];
-    double stressData[64];
+    Vector strainData;
+    Vector stressData;
     double eta = 0.0;
     const char *paraStr;
     
@@ -76,9 +76,13 @@ void *OPS_ElasticMultiLinear()
     
     // get strain data points
     numData = (argc - 3)/2;
+    if (numData > 0) {
+        strainData.resize(numData);
+        stressData.resize(numData);
+    }
     paraStr = OPS_GetString();
     if (strcmp(paraStr,"-strain") == 0)  {
-        if (OPS_GetDoubleInput(&numData,strainData) != 0)  {
+        if (OPS_GetDoubleInput(&numData, &strainData(0)) != 0)  {
             opserr << "WARNING invalid strainPoints\n";
             opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
             return 0;
@@ -88,12 +92,12 @@ void *OPS_ElasticMultiLinear()
         opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
         return 0;
     }
-    Vector strainPts(strainData,numData);
+    // Vector strainPts(strainData,numData);
     
     // get stress data points
     paraStr = OPS_GetString();
     if (strcmp(paraStr,"-stress") == 0)  {
-        if (OPS_GetDoubleInput(&numData, stressData) != 0)  {
+        if (OPS_GetDoubleInput(&numData, &stressData(0)) != 0)  {
             opserr << "WARNING invalid stressPoints\n";
             opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
             return 0;
@@ -103,10 +107,10 @@ void *OPS_ElasticMultiLinear()
         opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
         return 0;
     }
-    Vector stressPts(stressData,numData);
+    // Vector stressPts(stressData,numData);
     
     // Parsing was successful, allocate the material
-    theMaterial = new ElasticMultiLinear(tag[0], strainPts, stressPts, eta);
+    theMaterial = new ElasticMultiLinear(tag[0], strainData, stressData, eta);
     
     if (theMaterial == 0) {
         opserr << "WARNING could not create uniaxialMaterial of type ";
