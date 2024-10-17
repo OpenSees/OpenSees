@@ -280,7 +280,10 @@ void* OPS_Ratchet(void); // Yi Xiao
 void* OPS_APDVFD(void);
 void* OPS_APDMD(void);
 void* OPS_APDFMD(void);
-void *OPS_PipeMaterial();
+void* OPS_PipeMaterial();
+void* OPS_TzSandCPT(void);
+void* OPS_QbSandCPT(void);
+
 
 namespace {
 
@@ -643,7 +646,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
   uniaxialMaterialsMap.insert(std::make_pair("Pipe", &OPS_PipeMaterial));
-  
+  uniaxialMaterialsMap.insert(std::make_pair("TzSandCPT", &OPS_TzSandCPT));
+  uniaxialMaterialsMap.insert(std::make_pair("QbSandCPT", &OPS_QbSandCPT));
   return 0;
 }
 
@@ -664,16 +668,6 @@ static int setUpHystereticBackbones(void) {
       std::make_pair("Material", &OPS_MaterialBackbone));  
   hystereticBackbonesMap.insert(std::make_pair(
       "ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
-  hystereticBackbonesMap.insert(std::make_pair(
-      "ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
-  hystereticBackbonesMap.insert(
-      std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
-  hystereticBackbonesMap.insert(
-      std::make_pair("CementedSoil", &OPS_CementedSoil));
-  hystereticBackbonesMap.insert(
-      std::make_pair("WeakRock", &OPS_WeakRock));
-  hystereticBackbonesMap.insert(
-      std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
   hystereticBackbonesMap.insert(
       std::make_pair("Raynor", &OPS_RaynorBackbone));
   hystereticBackbonesMap.insert(
