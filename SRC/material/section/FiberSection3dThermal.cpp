@@ -48,6 +48,8 @@
 #include <math.h>
 #include <elementAPI.h>
 
+using namespace OpenSees;
+
 ID FiberSection3dThermal::code(4);
 
 void* OPS_FiberSection3dThermal()
@@ -1244,7 +1246,7 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
   }
 
   else if (flag == OPS_PRINT_PRINTMODEL_JSON) { 
-        s << TaggedObject::JsonPropertyIndent << "{";
+        s << Printing::JsonPropertyIndent << "{";
         s << "\"name\": \"" << this->getTag() << "\", ";
         s << "\"type\": \"" << this->getClassType() << "\", ";
 
@@ -1253,7 +1255,7 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
 
         s << "\"fibers\": [\n";
         for (int i = 0; i < numFibers; i++) {
-              s << TaggedObject::JsonPropertyIndent 
+              s << Printing::JsonPropertyIndent 
                 << "\t{\"coord\": [" << matData[3*i] << ", " 
                                      << matData[3*i+1] << "], ";
               s << "\"area\": " << matData[3*i+2] << ", ";
@@ -1263,7 +1265,7 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
               else
                     s << "}\n";
         }
-        s << TaggedObject::JsonPropertyIndent << "]}";
+        s << Printing::JsonPropertyIndent << "]}";
         return;
   }
 
