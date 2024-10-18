@@ -974,7 +974,7 @@ int Steel01Thermal::recvSelf (int commitTag, Channel& theChannel,
 void Steel01Thermal::Print (OPS_Stream& s, int flag)
 {
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
-    s << TaggedObject::JsonPropertyIndent << "{";
+    s << Printing::JsonPropertyIndent << "{";
     s << "\"name\": \"" << this->getTag() << "\", ";
     s << "\"type\": \"" << this->getClassType() << "\", ";
     s << "\"E\": " << E0 << ", ";
