@@ -156,13 +156,13 @@ Newmark::~Newmark()
 
 int Newmark::newStep(double deltaT)
 {
-    if (beta == 0 || gamma == 0)  {
+    if ((beta == 0 || gamma == 0) && displ != 3)  {
         opserr << "Newmark::newStep() - error in variable\n";
         opserr << "gamma = " << gamma << " beta = " << beta << endln;
         return -1;
     }
     
-    if (deltaT <= 0.0)  {
+    if (deltaT < 0.0 || (displ != 3 && deltaT == 0.0))  {
         opserr << "Newmark::newStep() - error in variable\n";
         opserr << "dT = " << deltaT << endln;
         return -2;	
@@ -593,7 +593,8 @@ int Newmark::formEleResidual(FE_Element* theEle)
 	// So, the constants can be computed as follows:
 	if (displ != 1) {
 	    opserr << "ERROR: Newmark::formEleResidual() -- the implemented"
-		   << " scheme only works if the displ variable is set to true." << endln;
+		   << " scheme only works if the displ variable is set to 1." << endln;
+        return 0;
 	}
 	double a2 = -c3;
 	double a3 = -c2/gamma;
@@ -698,6 +699,12 @@ Newmark::formNodUnbalance(DOF_Group *theDof)
 
     }
     else {  // ASSEMBLE ALL TERMS
+
+    if (displ != 1) {
+	    opserr << "ERROR: Newmark::formNodUnbalance() -- the implemented"
+		   << " scheme only works if the displ variable is set to 1." << endln;
+        return 0;
+	}
 
 	theDof->zeroUnbalance();
 
@@ -831,6 +838,12 @@ Newmark::formIndependentSensitivityRHS()
 int 
 Newmark::saveSensitivity(const Vector & vNew,int gradNum,int numGrads)
 {
+
+    if (displ != 1) {
+	    opserr << "ERROR: Newmark::saveSensitivity() -- the implemented"
+		   << " scheme only works if the displ variable is set to 1." << endln;
+        return 0;
+	}
 
     // Compute Newmark parameters in general notation
     double a1 = c3;
