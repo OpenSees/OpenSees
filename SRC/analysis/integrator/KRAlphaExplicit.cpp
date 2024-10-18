@@ -202,7 +202,8 @@ int KRAlphaExplicit::newStep(double _deltaT)
         // solve [M + gamma*deltaT*C + beta*deltaT^2*K]*[alpha3] = 
         // [alphaM*M + alphaF*gamma*deltaT*C + alphaF*beta*deltaT^2*K] for alpha3
         A.Solve(B3, *alpha3);
-        
+        A.activateLUCache();
+
         c1 = 0.0;
         c2 = 0.0;
         c3 = 1.0;
@@ -211,6 +212,7 @@ int KRAlphaExplicit::newStep(double _deltaT)
         
         // solve [M + gamma*deltaT*C + beta*deltaT^2*K]*[alpha1] = [M] for alpha1
         A.Solve(B1, *alpha1);
+        A.deactivateLUCache();
         
         // calculate the effective mass matrix Mhat
         Mhat->addMatrix(0.0, B1, 1.0);
