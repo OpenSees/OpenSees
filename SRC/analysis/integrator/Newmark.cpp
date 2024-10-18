@@ -104,7 +104,7 @@ OPS_Newmark(void)
 
 Newmark::Newmark(int classTag)
     : TransientIntegrator(classTag),
-      displ(true), gamma(0), beta(0), 
+      displ(1), gamma(0), beta(0), 
       c1(0.0), c2(0.0), c3(0.0), 
       Ut(0), Utdot(0), Utdotdot(0), U(0), Udot(0), Udotdot(0),
       determiningMass(false),
@@ -116,7 +116,7 @@ Newmark::Newmark(int classTag)
 }
 
 
-Newmark::Newmark(double _gamma, double _beta, bool dispFlag, bool aflag, int classTag_)
+Newmark::Newmark(double _gamma, double _beta, int dispFlag, bool aflag, int classTag_)
     : TransientIntegrator(classTag_),
       displ(dispFlag), gamma(_gamma), beta(_beta), 
       c1(0.0), c2(0.0), c3(0.0), 
@@ -211,7 +211,7 @@ int Newmark::newStep(double deltaT)
     (*Utdot) = *Udot;  
     (*Utdotdot) = *Udotdot;
     
-    if (displ == 1 || displ == 2)  {    
+    if (displ == 1)  {    
         // determine new velocities and accelerations at t+deltaT
         double a1 = (1.0 - gamma/beta); 
         double a2 = (deltaT)*(1.0 - 0.5*gamma/beta);
@@ -223,6 +223,18 @@ int Newmark::newStep(double deltaT)
 
         // set the trial response quantities
         theModel->setVel(*Udot);
+        theModel->setAccel(*Udotdot);
+    } if (displ == 2) {
+        // determine new displacements and accelerations at t+deltaT
+        double a1 = deltaT * deltaT * (0.5 - beta / gamma);
+        U->addVector(1.0, *Utdot, deltaT);
+        U->addVector(1.0, *Utdotdot, a1);
+
+        double a2 = 1.0 - 1.0 / gamma;
+        Udotdot->addVector(0.0, *Utdotdot, a2);
+
+        // set the trial response quantities
+        theModel->setDisp(*U);
         theModel->setAccel(*Udotdot);
     } else  {
         // determine new displacements and velocities at t+deltaT      
