@@ -26,6 +26,7 @@
 #ifndef TaggedObject_h
 #define TaggedObject_h
 
+
 // File: ~/tagged/TaggedObject.h
 //
 // Written: fmk 
@@ -42,6 +43,15 @@
 
 class Domain;
 
+
+namespace OpenSees {
+namespace Printing {
+    constexpr static char JsonGeometryIndent[] = "\t\t\t";
+    constexpr static char JsonPropertyIndent[] = "\t\t\t";
+}
+}
+    
+
 class TaggedObject 
 {
   public:
@@ -55,7 +65,7 @@ class TaggedObject
 
   protected:
     void setTag(int newTag);  // CAUTION: this is a dangerous method to call
-    
+                              //
   private:    
     int theTag;    
 };
