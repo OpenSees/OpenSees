@@ -224,7 +224,7 @@ int Newmark::newStep(double deltaT)
         // set the trial response quantities
         theModel->setVel(*Udot);
         theModel->setAccel(*Udotdot);
-    } if (displ == 2) {
+    } else if (displ == 2) {
         // determine new displacements and accelerations at t+deltaT
         double a1 = deltaT * deltaT * (0.5 - beta / gamma);
         U->addVector(1.0, *Utdot, deltaT);
