@@ -162,6 +162,9 @@
 #include "PY/PyLiq1.h"
 #include "PY/TzLiq1.h"
 #include "PY/QzLiq1.h"
+// Unified CPT based method
+#include "TzSandCPT.h"
+#include "QbSandCPT.h"
 
 #include "fedeas/FedeasBond1Material.h"
 #include "fedeas/FedeasBond2Material.h"
@@ -285,6 +288,9 @@
 #include "UWmaterials/ManzariDafaliasRO.h"
 #include "UWmaterials/ManzariDafalias3DRO.h"
 #include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
+#include "UANDESmaterials/SAniSandMS.h"
+#include "UANDESmaterials/SAniSandMS3D.h"
+#include "UANDESmaterials/SAniSandMSPlaneStrain.h"
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
 #include "J2CyclicBoundingSurface.h"
@@ -1831,6 +1837,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
     case MAT_TAG_QzLiq1:
 		return new QzLiq1();
 
+	case MAT_TAG_TzSandCPT:
+		return new TzSandCPT();
+
+	case MAT_TAG_QbSandCPT:
+		return new QbSandCPT();
+
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();
 
@@ -2389,6 +2401,16 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_SmearedSteelDoubleLayerT2DMaterial01:
 	  return new SmearedSteelDoubleLayerT2DMaterial01();
+
+  case ND_TAG_SAniSandMS: 
+    return new SAniSandMS();
+
+  case ND_TAG_SAniSandMSPlaneStrain: 
+    return new SAniSandMSPlaneStrain();
+
+  case ND_TAG_SAniSandMS3D: 
+    return new SAniSandMS3D();
+
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";

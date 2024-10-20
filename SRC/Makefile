@@ -938,6 +938,8 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/SteelFractureDI.o \
 	$(FE)/material/uniaxial/DowelType.o \
 	$(FE)/material/uniaxial/DuctileFracture.o \
+	$(FE)/material/uniaxial/QbSandCPT.o \
+	$(FE)/material/uniaxial/TzSandCPT.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -1074,7 +1076,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/stressDensityModel/SDM-UC.o \
 	$(FE)/material/nD/OrthotropicRotatingAngleConcreteT2DMaterial01/OrthotropicRotatingAngleConcreteT2DMaterial01.o \
 	$(FE)/material/nD/SmearedSteelDoubleLayerT2DMaterial01/SmearedSteelDoubleLayerT2DMaterial01.o \
- 	$(FE)/material/nD/ASDPlasticMaterial3D/OPS_AllASDPlasticMaterial3Ds.o
+	$(FE)/material/nD/ASDPlasticMaterial3D/OPS_AllASDPlasticMaterial3Ds.o
 
 FEDEAS_LIBS = $(FE)/material/uniaxial/FedeasMaterial.o \
 	$(FE)/material/uniaxial/fedeas/FedeasHardeningMaterial.o \
