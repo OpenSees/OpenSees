@@ -42,9 +42,10 @@ class UDP_Socket : public Channel
 {
   public:
     UDP_Socket();
-    UDP_Socket(unsigned int port, bool checkEndianness = false);
+    UDP_Socket(unsigned int port,
+        bool initialHandshake = false, bool checkEndianness = false);
     UDP_Socket(unsigned int other_Port, const char *other_InetAddr,
-        bool checkEndianness = false);
+        bool initialHandshake = false, bool checkEndianness = false);
     ~UDP_Socket();
     
     char *addToProgram();
@@ -112,6 +113,7 @@ class UDP_Socket : public Channel
     
     unsigned int myPort;
     int connectType;
+    bool initialHandshake;
     bool checkEndianness;
     bool endiannessProblem;
 };
