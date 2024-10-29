@@ -101,11 +101,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <NewtonLineSearch.h>
 #include <FileDatastore.h>
 #include <Mesh.h>
+#include <BackgroundMesh.h>
 #ifdef _MUMPS
 #include <MumpsSolver.h>
 #include <MumpsSOE.h>
 #endif
-#include <BackgroundMesh.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -138,9 +138,30 @@ bool setMPIDSOEFlag = false;
 #endif
 #endif
 
+typedef struct materialFunction {
+    char* funcName;
+    matFunct theFunct;
+    struct materialFunction* next;
+} MaterialFunction;
+
+typedef struct limitCurveFunction {
+    char* funcName;
+    limCrvFunct theFunct;
+    struct limitCurveFunction* next;
+} LimitCurveFunction;
+
+typedef struct elementFunction {
+    char* funcName;
+    eleFunct theFunct;
+    struct elementFunction* next;
+} ElementFunction;
 
 // active object
 static OpenSeesCommands* cmds = 0;
+static MaterialFunction* theMaterialFunctions = 0;
+static LimitCurveFunction* theLimitCurveFunctions = 0;
+static ElementFunction* theElementFunctions = 0;
+
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
     :interpreter(interp), theDomain(0), ndf(0), ndm(0),
@@ -148,8 +169,8 @@ OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
      theStaticIntegrator(0), theTransientIntegrator(0),
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),
      theVariableTimeStepTransientAnalysis(0),
-     thePFEMAnalysis(0),
-     theAnalysisModel(0), theTest(0), numEigen(0), theDatabase(0),
+     thePFEMAnalysis(0), theAnalysisModel(0), theTest(0),
+     numEigen(0), builtModel(false), theDatabase(0),
      theBroker(), theTimer(), theSimulationInfo(), theMachineBroker(0),
      theChannels(0), numChannels(0), reliability(0)
 {
@@ -215,13 +236,14 @@ OpenSeesCommands::getDomain()
 ReliabilityDomain*
 OpenSeesCommands::getReliabilityDomain()
 {
-  if (reliability == 0) {
-    return 0;
-  }
-  return reliability->getDomain();
+    if (reliability == 0) {
+        return 0;
+    }
+    return reliability->getDomain();
 }
 
-AnalysisModel** OpenSeesCommands::getAnalysisModel()
+AnalysisModel**
+OpenSeesCommands::getAnalysisModel()
 {
     return &theAnalysisModel;
 }
@@ -252,7 +274,7 @@ OpenSeesCommands::setSOE(LinearSOE* soe)
 
 int
 OpenSeesCommands::eigen(int typeSolver, double shift,
-			bool generalizedAlgo, bool findSmallest)
+    bool generalizedAlgo, bool findSmallest)
 {
     //
     // create a transient analysis if no analysis exists
@@ -356,20 +378,6 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
     }
 
     return result;
-}
-
-int* OPS_GetNumEigen()                                                          
-{                                                                               
-    static int numEigen = 0;                                                    
-    if (cmds == 0) return 0;                                                    
-    numEigen = cmds->getNumEigen();                                             
-    int numdata = 1;                                                            
-    if (OPS_SetIntOutput(&numdata, &numEigen, true) < 0) {
-        opserr << "WARNING failed to set output\n";                             
-        return 0;                                                               
-    }                                                                           
-                                                                                
-    return &numEigen;                                                           
 }
 
 void
@@ -503,7 +511,8 @@ OpenSeesCommands::setTransientIntegrator(TransientIntegrator* integrator)
     }
 }
 
-void OpenSeesCommands::setIntegrator(Integrator* inte,
+void
+OpenSeesCommands::setIntegrator(Integrator* inte,
                                      bool transient) {
   if (inte == 0) {
     return;
@@ -797,7 +806,6 @@ OpenSeesCommands::setVariableAnalysis(bool suppress)
     if (theEigenSOE != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
-
 }
 
 void
@@ -976,7 +984,6 @@ OpenSeesCommands::wipe()
 
     // wipe CyclicModel
     OPS_clearAllCyclicModel();
-
 }
 
 void
@@ -992,11 +999,81 @@ OpenSeesCommands::setFileDatabase(const char* filename)
 /////////////////////////////
 //// OpenSees APIs  /// /////
 /////////////////////////////
+static
+void OPS_InvokeMaterialObject(struct matObject* theMat, modelState* theModel, double* strain, double* tang, double* stress, int* isw, int* result)
+{
+    int matType = (int)theMat->theParam[0];
+
+    if (matType == 1) {
+        //  UniaxialMaterial *theMaterial = theUniaxialMaterials[matCount];
+        UniaxialMaterial* theMaterial = (UniaxialMaterial*)theMat->matObjectPtr;
+        if (theMaterial == 0) {
+            *result = -1;
+            return;
+        }
+
+        if (*isw == ISW_COMMIT) {
+            *result = theMaterial->commitState();
+            return;
+        }
+        else if (*isw == ISW_REVERT) {
+            *result = theMaterial->revertToLastCommit();
+            return;
+        }
+        else if (*isw == ISW_REVERT_TO_START) {
+            *result = theMaterial->revertToStart();
+            return;
+        }
+        else if (*isw == ISW_FORM_TANG_AND_RESID) {
+            double matStress = 0.0;
+            double matTangent = 0.0;
+            int res = theMaterial->setTrial(strain[0], matStress, matTangent);
+            stress[0] = matStress;
+            tang[0] = matTangent;
+            *result = res;
+            return;
+        }
+    }
+
+    return;
+}
+
 int OPS_GetNumRemainingInputArgs()
 {
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
     return interp->getNumRemainingInputArgs();
+}
+
+int OPS_ResetCurrentInputArg(int cArg)
+{
+    if (cArg == 0) {
+        opserr << "WARNING can't reset to argv[0]\n";
+        return -1;
+    }
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    interp->resetInput(cArg);
+    return 0;
+}
+
+int OPS_ResetCommandLine(int nArgs, int cArg, const char** argv)
+{
+    if (cArg == 0) {
+        opserr << "WARNING can't reset to argv[0]\n";
+        return -1;
+    }
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    interp->resetInput(cArg);
+    return 0;
+}
+
+int OPS_Error(char* errorMessage, int length)
+{
+    opserr << errorMessage;
+    opserr << endln;
+    return 0;
 }
 
 int OPS_GetIntInput(int *numData, int*data)
@@ -1071,9 +1148,7 @@ int OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data
     return interp->setDouble(data);
 }
 
-
-
-const char * OPS_GetString(void)
+const char* OPS_GetString(void)
 {
     if (cmds == 0) return "Invalid String Input!";
     DL_Interpreter* interp = cmds->getInterpreter();
@@ -1084,7 +1159,7 @@ const char * OPS_GetString(void)
     return res;
 }
 
-const char * OPS_GetStringFromAll(char* buffer, int len)
+const char* OPS_GetStringFromAll(char* buffer, int len)
 {
     if (cmds == 0) return "Invalid String Input!";
     DL_Interpreter* interp = cmds->getInterpreter();
@@ -1130,6 +1205,503 @@ int OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data)
     return interp->setString(data);
 }
 
+int OPS_GetNDF()
+{
+    if (cmds == 0) return 0;
+    return cmds->getNDF();
+}
+
+int OPS_GetNDM()
+{
+    if (cmds == 0) return 0;
+    return cmds->getNDM();
+}
+
+extern "C" int OPS_GetNodeCrd(int* nodeTag, int* sizeCrd, double* data)
+{
+    Domain* theDomain = cmds->getDomain();
+    Node* theNode = theDomain->getNode(*nodeTag);
+    if (theNode == 0) {
+        opserr << "OPS_GetNodeCrd - no node with tag " << *nodeTag << endln;
+        return -1;
+    }
+    int size = *sizeCrd;
+    const Vector& crd = theNode->getCrds();
+    if (crd.Size() != size) {
+        opserr << "OPS_GetNodeCrd - crd size mismatch\n";
+        opserr << "Actual crd size is: " << crd.Size() << endln;
+        return -1;
+    }
+    for (int i = 0; i < size; i++)
+        data[i] = crd(i);
+    
+    return 0;
+}
+
+extern "C" int OPS_GetNodeDisp(int* nodeTag, int* sizeData, double* data)
+{
+    Domain* theDomain = cmds->getDomain();
+    Node* theNode = theDomain->getNode(*nodeTag);
+    if (theNode == 0) {
+        opserr << "OPS_GetNodeDisp - no node with tag " << *nodeTag << endln;
+        return -1;
+    }
+    int size = *sizeData;
+    const Vector& disp = theNode->getTrialDisp();
+    if (disp.Size() != size) {
+        opserr << "OPS_GetNodeDisp - crd size mismatch\n";
+        return -1;
+    }
+    for (int i = 0; i < size; i++)
+        data[i] = disp(i);
+    
+    return 0;
+}
+
+extern "C" int OPS_GetNodeVel(int* nodeTag, int* sizeData, double* data)
+{
+    Domain* theDomain = cmds->getDomain();
+    Node* theNode = theDomain->getNode(*nodeTag);
+    if (theNode == 0) {
+        opserr << "OPS_GetNodeVel - no node with tag " << *nodeTag << endln;
+        return -1;
+    }
+    int size = *sizeData;
+    const Vector& vel = theNode->getTrialVel();
+    if (vel.Size() != size) {
+        opserr << "OPS_GetNodeVel - crd size mismatch\n";
+        return -1;
+    }
+    for (int i = 0; i < size; i++)
+        data[i] = vel(i);
+    
+    return 0;
+}
+
+extern "C" int OPS_GetNodeAccel(int* nodeTag, int* sizeData, double* data)
+{
+    Domain* theDomain = cmds->getDomain();
+    Node* theNode = theDomain->getNode(*nodeTag);
+    if (theNode == 0) {
+        opserr << "OPS_GetNodeAccel - no node with tag " << *nodeTag << endln;
+        return -1;
+    }
+    int size = *sizeData;
+    const Vector& accel = theNode->getTrialAccel();
+    if (accel.Size() != size) {
+        opserr << "OPS_GetNodeAccel - accel size mismatch\n";
+        return -1;
+    }
+    for (int i = 0; i < size; i++)
+        data[i] = accel(i);
+    
+    return 0;
+}
+
+extern "C" int OPS_GetNodeIncrDisp(int* nodeTag, int* sizeData, double* data)
+{
+    Domain* theDomain = cmds->getDomain();
+    Node* theNode = theDomain->getNode(*nodeTag);
+    if (theNode == 0) {
+        opserr << "OPS_GetNodeIncrDisp - no node with tag " << *nodeTag << endln;
+        return -1;
+    }
+    int size = *sizeData;
+    const Vector& disp = theNode->getIncrDisp();
+    if (disp.Size() != size) {
+        opserr << "OPS_GetNodeIncrDis - crd size mismatch\n";
+        return -1;
+    }
+    for (int i = 0; i < size; i++)
+        data[i] = disp(i);
+    
+    return 0;
+}
+
+extern "C" int OPS_GetNodeIncrDeltaDisp(int* nodeTag, int* sizeData, double* data)
+{
+    Domain* theDomain = cmds->getDomain();
+    Node* theNode = theDomain->getNode(*nodeTag);
+    if (theNode == 0) {
+        opserr << "OPS_GetNodeIncrDeltaDisp - no node with tag " << *nodeTag << endln;
+        return -1;
+    }
+    int size = *sizeData;
+    const Vector& disp = theNode->getIncrDeltaDisp();
+    if (disp.Size() != size) {
+        opserr << "OPS_GetNodeIncrDis - crd size mismatch\n";
+        return -1;
+    }
+    for (int i = 0; i < size; i++)
+        data[i] = disp(i);
+    
+    return 0;
+}
+
+extern "C"
+matObj* OPS_GetMaterial(int* matTag, int* matType)
+{
+    if (*matType == OPS_UNIAXIAL_MATERIAL_TYPE) {
+        UniaxialMaterial* theUniaxialMaterial = OPS_getUniaxialMaterial(*matTag);
+
+        if (theUniaxialMaterial != 0) {
+
+            UniaxialMaterial* theCopy = theUniaxialMaterial->getCopy();
+            //uniaxialMaterialObjectCount++;
+            //theUniaxialMaterials[uniaxialMaterialObjectCount] = theCopy;
+
+            matObject* theMatObject = new matObject;
+            theMatObject->tag = *matTag;
+            theMatObject->nParam = 1;
+            theMatObject->nState = 0;
+
+            theMatObject->theParam = new double[1];
+            //theMatObject->theParam[0] = uniaxialMaterialObjectCount;
+            theMatObject->theParam[0] = 1; // code for uniaxial material
+
+            theMatObject->tState = 0;
+            theMatObject->cState = 0;
+            theMatObject->matFunctPtr = OPS_InvokeMaterialObject;
+
+            theMatObject->matObjectPtr = theCopy;
+
+            return theMatObject;
+        }
+
+        fprintf(stderr, "getMaterial - no uniaxial material exists with tag %d\n", *matTag);
+        return 0;
+    }
+    else if (*matType == OPS_SECTION_TYPE) {
+        fprintf(stderr, "getMaterial - not yet implemented for Section\n");
+        return 0;
+    }
+    else {
+
+        //    NDMaterial *theNDMaterial = theModelBuilder->getNDMaterial(*matTag);
+
+        //    if (theNDMaterial != 0) 
+          //      theNDMaterial = theNDMaterial->getCopy(matType);
+          //    else {
+          //      fprintf(stderr,"getMaterial - no nd material exists with tag %d\n", *matTag);          
+          //      return 0;
+          //    }
+
+          //    if (theNDMaterial == 0) {
+        //      fprintf(stderr,"getMaterial - material with tag %d cannot deal with %d\n", *matTag, matType);          
+        //      return 0;
+        //    }
+
+        fprintf(stderr, "getMaterial - not yet implemented for nDMaterial\n");
+        return 0;
+    }
+
+    fprintf(stderr, "getMaterial - unknown material type\n");
+    return 0;
+}
+
+extern "C"
+matObj* OPS_GetMaterialType(char* type, int sizeType)
+{
+    // try existing loaded routines
+    MaterialFunction* matFunction = theMaterialFunctions;
+    bool found = false;
+    while (matFunction != NULL && found == false) {
+        if (strcmp(type, matFunction->funcName) == 0) {
+
+            // create a new matObject, set the function ptr & return it
+            matObj* theMatObject = new matObj;
+            theMatObject->matFunctPtr = matFunction->theFunct;
+            //opserr << "matObj *OPS_GetMaterialType() - FOUND " << endln;
+            return theMatObject;
+        }
+        else
+            matFunction = matFunction->next;
+    }
+
+    // try to load new routine from dynamic library in load path
+    matFunct matFunctPtr;
+    void* libHandle;
+
+    int res = getLibraryFunction(type, type, &libHandle, (void**)&matFunctPtr);
+
+    if (res == 0) {
+
+        // add the routine to the list of possible elements
+        char* funcName = new char[strlen(type) + 1];
+        strcpy(funcName, type);
+        matFunction = new MaterialFunction;
+        matFunction->theFunct = matFunctPtr;
+        matFunction->funcName = funcName;
+        matFunction->next = theMaterialFunctions;
+        theMaterialFunctions = matFunction;
+
+        // create a new matObject, set the function ptr & return it
+        matObj* theMatObject = new matObj;
+        //eleObj *theEleObject = (eleObj *)malloc(sizeof( eleObj));;      
+
+        theMatObject->matFunctPtr = matFunction->theFunct;
+        //fprintf(stderr,"getMaterial Address %p\n",theMatObject);
+
+        return theMatObject;
+    }
+
+    return 0;
+}
+
+extern "C"
+limCrvObj* OPS_GetLimitCurveType(char* type, int sizeType)
+{
+    // try existing loaded routines
+    LimitCurveFunction* limCrvFunction = theLimitCurveFunctions;
+    bool found = false;
+    while (limCrvFunction != NULL && found == false) {
+        if (strcmp(type, limCrvFunction->funcName) == 0) {
+
+            // create a new limCrvObject, set the function ptr & return it
+            limCrvObj* theLimCrvObject = new limCrvObj;
+            theLimCrvObject->limCrvFunctPtr = limCrvFunction->theFunct;
+            //opserr << "limCrvObj *OPS_GetLimitCurveType() - FOUND " << endln;
+            return theLimCrvObject;
+        }
+        else
+            limCrvFunction = limCrvFunction->next;
+    }
+
+    // try to load new routine from dynamic library in load path
+    limCrvFunct limCrvFunctPtr;
+    void* libHandle;
+    int res = getLibraryFunction(type, type, &libHandle, (void**)&limCrvFunctPtr);
+
+    if (res == 0)
+    {
+        // add the routine to the list of possible elements
+        char* funcName = new char[strlen(type) + 1];
+        strcpy(funcName, type);
+        limCrvFunction = new LimitCurveFunction;
+        limCrvFunction->theFunct = limCrvFunctPtr;
+        limCrvFunction->funcName = funcName;
+        limCrvFunction->next = theLimitCurveFunctions;
+        theLimitCurveFunctions = limCrvFunction;
+
+        // create a new limCrvObject, set the function ptr & return it    
+        limCrvObj* theLimCrvObject = new limCrvObj;
+        theLimCrvObject->limCrvFunctPtr = limCrvFunction->theFunct;
+        return theLimCrvObject;
+    }
+
+    return 0;
+}
+
+extern "C"
+eleObj* OPS_GetElement(int* eleTag)
+{
+    return 0;
+}
+
+extern "C"
+eleObj* OPS_GetElementType(char* type, int sizeType)
+{
+    // try existing loaded routines
+    ElementFunction* eleFunction = theElementFunctions;
+    bool found = false;
+    while (eleFunction != NULL && found == false) {
+        if (strcmp(type, eleFunction->funcName) == 0) {
+
+            // create a new eleObject, set the function ptr & return it
+            eleObj* theEleObject = new eleObj;
+            theEleObject->eleFunctPtr = eleFunction->theFunct;
+            return theEleObject;
+        }
+        else
+            eleFunction = eleFunction->next;
+    }
+
+    // try to load new routine from dynamic library in load path
+    eleFunct eleFunctPtr;
+    void* libHandle;
+
+    int res = getLibraryFunction(type, type, &libHandle, (void**)&eleFunctPtr);
+
+    if (res == 0) {
+
+        // add the routine to the list of possible elements
+        char* funcName = new char[strlen(type) + 1];
+        strcpy(funcName, type);
+        eleFunction = new ElementFunction;
+        eleFunction->theFunct = eleFunctPtr;
+        eleFunction->funcName = funcName;
+        eleFunction->next = theElementFunctions;
+        theElementFunctions = eleFunction;
+
+        // create a new eleObject, set the function ptr & return it
+        eleObj* theEleObject = new eleObj;
+        //eleObj *theEleObject = (eleObj *)malloc(sizeof( eleObj));;      
+
+        theEleObject->eleFunctPtr = eleFunction->theFunct;
+
+        return theEleObject;
+    }
+
+    return 0;
+}
+
+extern "C"
+int OPS_AllocateMaterial(matObject* theMat)
+{
+    //fprintf(stderr,"allocateMaterial Address %p\n",theMat);
+    if (theMat->nParam > 0)
+        theMat->theParam = new double[theMat->nParam];
+
+    int nState = theMat->nState;
+
+    if (nState > 0) {
+        theMat->cState = new double[nState];
+        theMat->tState = new double[nState];
+        for (int i = 0; i < nState; i++) {
+            theMat->cState[i] = 0;
+            theMat->tState[i] = 0;
+        }
+    }
+    else {
+        theMat->cState = 0;
+        theMat->tState = 0;
+    }
+
+    return 0;
+}
+
+extern "C"
+int OPS_AllocateLimitCurve(limCrvObject* theLimCrv)
+{
+    //fprintf(stderr,"allocateLimitCurve Address %p\n",theLimCrv);
+    if (theLimCrv->nParam > 0)
+        theLimCrv->theParam = new double[theLimCrv->nParam];
+
+    int nState = theLimCrv->nState;
+
+    if (nState > 0) {
+        theLimCrv->cState = new double[nState];
+        theLimCrv->tState = new double[nState];
+        for (int i = 0; i < nState; i++) {
+            theLimCrv->cState[i] = 0;
+            theLimCrv->tState[i] = 0;
+        }
+    }
+    else {
+        theLimCrv->cState = 0;
+        theLimCrv->tState = 0;
+    }
+
+    return 0;
+}
+
+extern "C"
+int OPS_AllocateElement(eleObject* theEle, int* matTags, int* matType)
+{
+    if (theEle->nNode > 0)
+        theEle->node = new int[theEle->nNode];
+
+    if (theEle->nParam > 0)
+        theEle->param = new double[theEle->nParam];
+
+    if (theEle->nState > 0) {
+        theEle->cState = new double[theEle->nState];
+        theEle->tState = new double[theEle->nState];
+    }
+
+    int numMat = theEle->nMat;
+    if (numMat > 0)
+        theEle->mats = new matObject * [numMat];
+
+
+    for (int i = 0; i < numMat; i++) {
+        //opserr << "AllocateElement - matTag " << matTags[i] << "\n"; */
+        matObject* theMat = OPS_GetMaterial(&(matTags[i]), matType);
+        //matObject *theMat = OPS_GetMaterial(&(matTags[i]));
+
+        theEle->mats[i] = theMat;
+    }
+
+    return 0;
+}
+
+extern "C" int
+OPS_InvokeMaterial(eleObject* theEle, int* mat, modelState* model, double* strain, double* stress, double* tang, int* isw)
+{
+    int error = 0;
+
+    matObject* theMat = theEle->mats[*mat];
+    //fprintf(stderr,"invokeMaterial Address %d %d %d\n",*mat, theMat, sizeof(int));
+
+    if (theMat != 0)
+        theMat->matFunctPtr(theMat, model, strain, tang, stress, isw, &error);
+    else
+        error = -1;
+
+    return error;
+}
+
+extern "C" int
+OPS_InvokeMaterialDirectly(matObject** theMat, modelState* model, double* strain, double* stress, double* tang, int* isw)
+{
+    int error = 0;
+    //fprintf(stderr,"invokeMaterialDirectly Address %d %d %d\n",theMat, sizeof(int), *theMat);
+    if (*theMat != 0)
+        (*theMat)->matFunctPtr(*theMat, model, strain, tang, stress, isw, &error);
+    else
+        error = -1;
+
+    return error;
+}
+
+extern "C" int
+OPS_InvokeMaterialDirectly2(matObject* theMat, modelState* model, double* strain, double* stress, double* tang, int* isw)
+{
+    int error = 0;
+    //fprintf(stderr,"invokeMaterialDirectly Address %d %d\n",theMat, sizeof(int));
+    if (theMat != 0)
+        theMat->matFunctPtr(theMat, model, strain, tang, stress, isw, &error);
+    else
+        error = -1;
+
+    return error;
+}
+
+UniaxialMaterial* OPS_GetUniaxialMaterial(int matTag)
+{
+    return OPS_getUniaxialMaterial(matTag);
+}
+
+LimitCurve*
+OPS_GetLimitCurve(int limCrvTag)
+{
+    return OPS_getLimitCurve(limCrvTag);
+}
+
+NDMaterial*
+OPS_GetNDMaterial(int matTag)
+{
+    return OPS_getNDMaterial(matTag);
+}
+
+SectionForceDeformation*
+OPS_GetSectionForceDeformation(int secTag)
+{
+    return OPS_getSectionForceDeformation(secTag);
+}
+
+CrdTransf*
+OPS_GetCrdTransf(int crdTag)
+{
+    return OPS_getCrdTransf(crdTag);
+}
+
+FrictionModel*
+OPS_GetFrictionModel(int frnTag)
+{
+    return OPS_getFrictionModel(frnTag);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
@@ -1141,8 +1713,19 @@ ReliabilityDomain* OPS_GetReliabilityDomain(void) {
   return cmds->getReliabilityDomain();
 }
 
-AnalysisModel**
-OPS_GetAnalysisModel(void)
+FE_Datastore* OPS_GetFEDatastore(void)
+{
+    if (cmds == 0) return 0;
+    return cmds->getDatabase();
+}
+
+SimulationInformation* OPS_GetSimulationInfo(void)
+{
+    if (cmds == 0) return 0;
+    return cmds->getSimulationInformation();
+}
+
+AnalysisModel** OPS_GetAnalysisModel(void)
 {
     if (cmds == 0) return 0;
     return cmds->getAnalysisModel();
@@ -1204,47 +1787,39 @@ ConvergenceTest** OPS_GetTest(void) {
     return cmds->getCTestPointer();
 }
 
-int OPS_GetNDF()
+bool* OPS_builtModel(void)
 {
+    static bool bltMdl = 0;
     if (cmds == 0) return 0;
-    return cmds->getNDF();
-}
-
-int OPS_GetNDM()
-{
-    if (cmds == 0) return 0;
-    return cmds->getNDM();
-}
-
-int OPS_Error(char *errorMessage, int length)
-{
-    opserr << errorMessage;
-    opserr << endln;
-    return 0;
-}
-
-int OPS_ResetCurrentInputArg(int cArg)
-{
-    if (cArg == 0) {
-	opserr << "WARNING can't reset to argv[0]\n";
-	return -1;
+    bltMdl = cmds->getBuiltModel();
+    int numdata = 1;
+    if (OPS_SetIntOutput(&numdata, (int*) &bltMdl, true) < 0) {
+        opserr << "WARNING failed to set output\n";
+        return 0;
     }
-    if (cmds == 0) return 0;
-    DL_Interpreter* interp = cmds->getInterpreter();
-    interp->resetInput(cArg);
-    return 0;
+
+    return &bltMdl;
 }
 
-UniaxialMaterial *OPS_GetUniaxialMaterial(int matTag)
+int* OPS_GetNumEigen(void)
 {
-    return OPS_getUniaxialMaterial(matTag);
+    static int numEigen = 0;
+    if (cmds == 0) return 0;
+    numEigen = cmds->getNumEigen();
+    int numdata = 1;
+    if (OPS_SetIntOutput(&numdata, &numEigen, true) < 0) {
+        opserr << "WARNING failed to set output\n";
+        return 0;
+    }
+
+    return &numEigen;
 }
 
 int OPS_wipe()
 {
     // wipe
     if (cmds != 0) {
-	cmds->wipe();
+	    cmds->wipe();
     }
 
     return 0;
@@ -1254,7 +1829,7 @@ int OPS_wipeAnalysis()
 {
     // wipe analysis
     if (cmds != 0) {
-	cmds->wipeAnalysis();
+	    cmds->wipeAnalysis();
     }
 
     return 0;
@@ -1322,6 +1897,8 @@ int OPS_model()
 	cmds->setNDF(ndf);
 	cmds->setNDM(ndm);
     }
+
+    cmds->setBuiltModel(true);
 
     return 0;
 }
@@ -2063,7 +2640,7 @@ int OPS_eigenAnalysis()
                 (strcmp(type, "fullGenLapackEigen") == 0) ||
                 (strcmp(type, "-fullGenLapackEigen") == 0)) {
 	    if (!warning_displayed) {
-            opserr << "WARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.";
+            opserr << "\nWARNING - the 'fullGenLapack' eigen solver is VERY SLOW. Consider using the default eigen solver.\n";
             warning_displayed = true;
 		}
         typeSolver = EigenSOE_TAGS_FullGenEigenSOE;

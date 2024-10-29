@@ -278,6 +278,7 @@ void* OPS_Ratchet(void); // Yi Xiao
 void* OPS_APDVFD(void);
 void* OPS_APDMD(void);
 void* OPS_APDFMD(void);
+
 namespace {
 
 static UniaxialMaterial* theTestingUniaxialMaterial = 0;

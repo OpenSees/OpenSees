@@ -36,7 +36,6 @@
 #define ISW_FORM_MASS 4
 #define ISW_REVERT_TO_START 5
 #define ISW_DELETE 6
-
 #define ISW_SET_RESPONSE 7
 #define ISW_GET_RESPONSE 8
 
@@ -105,6 +104,16 @@ struct eleObject {
 
 typedef struct eleObject eleObj;
 
+class UniaxialMaterial;
+class LimitCurve;
+class NDMaterial;
+class SectionForceDeformation;
+class CrdTransf;
+class FrictionModel;
+class Domain;
+class FE_Datastore;
+class SimulationInformation;
+
 class AnalysisModel;
 class EquiSolnAlgo;
 class ConstraintHandler;
@@ -119,32 +128,18 @@ class TransientIntegrator;
 class ConvergenceTest;
 
 #define OPS_Error ops_error_
+#define OPS_GetInt ops_getintinput_
 #define OPS_GetIntInput ops_getintinput_
 #define OPS_SetIntOutput ops_setintoutput_
 #define OPS_SetIntListsOutput ops_setintlistsoutput_
 #define OPS_SetIntDictOutput ops_setintdictoutput_
 #define OPS_SetIntDictListOutput ops_setintdictlistoutput_
+#define OPS_GetDouble ops_getdoubleinput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
 #define OPS_SetDoubleOutput ops_setdoubleoutput_
 #define OPS_SetDoubleListsOutput ops_setdoublelistsoutput_
 #define OPS_SetDoubleDictOutput ops_setdoubledictoutput_
 #define OPS_SetDoubleDictListOutput ops_setdoubledictlistoutput_
-#define OPS_AllocateMaterial ops_allocatematerial_
-#define OPS_AllocateElement ops_allocateelement_
-#define OPS_GetMaterialType ops_getmaterialtype_
-#define OPS_GetMaterial ops_getmaterial_
-#define OPS_GetCrdTransf ops_getcrdtransf_
-#define OPS_GetFrictionModel ops_getfrictionmodel_
-#define OPS_GetNodeCrd ops_getnodecrd_
-#define OPS_GetNodeDisp ops_getnodedisp_
-#define OPS_GetNodeVel ops_getnodevel_
-#define OPS_GetNodeAccel ops_getnodeaccel_
-#define OPS_GetNodeIncrDisp ops_getnodeincrdisp_
-#define OPS_GetNodeIncrDeltaDisp ops_getnodeincrdeltadisp_
-#define OPS_InvokeMaterial ops_invokematerial_
-#define OPS_InvokeMaterialDirectly ops_invokematerialdirectly_
-#define OPS_GetInt ops_getintinput_
-#define OPS_GetDouble ops_getdoubleinput_
 #define OPS_GetString ops_getstring
 #define OPS_GetStringFromAll ops_getstringfromall_
 #define OPS_SetString ops_setstring
@@ -152,13 +147,34 @@ class ConvergenceTest;
 #define OPS_SetStringLists ops_setstringlists
 #define OPS_SetStringDict ops_setstringdict
 #define OPS_SetStringDictList ops_setstringdictlist_
+
 #define OPS_GetNDM ops_getndm_
 #define OPS_GetNDF ops_getndf_
-#define OPS_GetFEDatastore ops_getfedatastore_
-#define OPS_GetInterpPWD ops_getinterppwd_
-#define OPS_AllocateLimitCurve ops_allocatelimitcurve_
-#define OPS_GetLimitCurveType ops_getlimitcurvetype_
 
+#define OPS_GetNodeCrd ops_getnodecrd_
+#define OPS_GetNodeDisp ops_getnodedisp_
+#define OPS_GetNodeVel ops_getnodevel_
+#define OPS_GetNodeAccel ops_getnodeaccel_
+#define OPS_GetNodeIncrDisp ops_getnodeincrdisp_
+#define OPS_GetNodeIncrDeltaDisp ops_getnodeincrdeltadisp_
+
+#define OPS_GetMaterial ops_getmaterial_
+#define OPS_GetMaterialType ops_getmaterialtype_
+#define OPS_GetLimitCurveType ops_getlimitcurvetype_
+#define OPS_GetCrdTransf ops_getcrdtransf_
+#define OPS_GetFrictionModel ops_getfrictionmodel_
+#define OPS_GetElement ops_getelement_
+#define OPS_GetElementType ops_getelementtype_
+#define OPS_AllocateMaterial ops_allocatematerial_
+#define OPS_AllocateLimitCurve ops_allocatelimitcurve_
+#define OPS_AllocateElement ops_allocateelement_
+#define OPS_InvokeMaterial ops_invokematerial_
+#define OPS_InvokeMaterialDirectly ops_invokematerialdirectly_
+#define OPS_InvokeMaterialDirectly2 ops_invokematerialdirectly2_
+
+#define OPS_GetDomain ops_getdomain_
+#define OPS_GetFEDatastore ops_getfedatastore_
+#define OPS_GetSimulationInfo ops_getsimulationinfo_
 #define OPS_GetAnalysisModel ops_getanalysismodel_
 #define OPS_GetAlgorithm ops_getalgorithm_
 #define OPS_GetHandler ops_gethandler_
@@ -173,22 +189,16 @@ class ConvergenceTest;
 #define OPS_GetTransientIntegrator ops_gettransientintegrator_
 #define OPS_GetTest ops_gettest_
 #define OPS_builtModel ops_builtmodel_
-#define OPS_GetDomain ops_getdomain_
 
 #include <OPS_Globals.h>
 #include <vector>
 #include <map>
-// #include <tcl.h>
-//#include "TclModelBuilder.h"
 
 #ifdef __cplusplus
-extern "C" int         OPS_GetNDM();
-extern "C" int         OPS_GetNDF();
-extern "C" int         OPS_Error(char* errorMessage, int length);
 extern "C" int         OPS_GetNumRemainingInputArgs();
 extern "C" int         OPS_ResetCurrentInputArg(int cArg);
-//extern "C" int       OPS_ResetInput(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain, TclModelBuilder * builder);
-//extern "C" int       OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+extern "C" int         OPS_ResetCommandLine(int nArgs, int cArg, const char** argv);
+extern "C" int         OPS_Error(char* errorMessage, int length);
 extern "C" int         OPS_GetIntInput(int* numData, int* data);
 extern "C" int         OPS_SetIntOutput(int* numData, int* data, bool scalar);
 extern "C" int         OPS_SetIntListsOutput(std::vector<std::vector<int>>& data);
@@ -201,24 +211,15 @@ extern "C" int         OPS_SetDoubleDictOutput(std::map<const char*, double>& da
 extern "C" int         OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data);
 extern "C" const char* OPS_GetString(); // does a strcpy
 extern "C" const char* OPS_GetStringFromAll(char* buffer, int len); // does a strcpy
+//extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy
 extern "C" int         OPS_SetString(const char* str);
 extern "C" int         OPS_SetStringList(std::vector<const char*>& data);
 extern "C" int         OPS_SetStringLists(std::vector<std::vector<const char*>>& data);
 extern "C" int         OPS_SetStringDict(std::map<const char*, const char*>& data);
 extern "C" int         OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data);
-extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy
-extern "C" matObj*     OPS_GetMaterial(int* matTag, int* matType);
-extern "C" eleObj*     OPS_GetElement(int* eleTag);
-extern "C" matObj*     OPS_GetMaterialType(char* type, int sizeType);
-extern "C" eleObj*     OPS_GetElementType(char* type, int sizeType);
-extern "C" int         OPS_AllocateElement(eleObject * theEle, int* matTags, int* matType);
-extern "C" int         OPS_AllocateMaterial(matObject * theMat);
-extern "C" limCrvObj*  OPS_GetLimitCurveType(char* type, int sizeType);
-extern "C" int         OPS_AllocateLimitCurve(limCrvObject * theLimCrv);
 
-extern "C" int         OPS_InvokeMaterial(eleObject*, int*, modelState*, double*, double*, double*, int*);
-extern "C" int         OPS_InvokeMaterialDirectly(matObject**, modelState*, double*, double*, double*, int*);
-extern "C" int         OPS_InvokeMaterialDirectly2(matObject*, modelState*, double*, double*, double*, int*);
+extern "C" int         OPS_GetNDM();
+extern "C" int         OPS_GetNDF();
 
 extern "C" int         OPS_GetNodeCrd(int* nodeTag, int* sizeData, double* data);
 extern "C" int         OPS_GetNodeDisp(int* nodeTag, int* sizeData, double* data);
@@ -227,26 +228,29 @@ extern "C" int         OPS_GetNodeAccel(int* nodeTag, int* sizeData, double* dat
 extern "C" int         OPS_GetNodeIncrDisp(int* nodeTag, int* sizeData, double* data);
 extern "C" int         OPS_GetNodeIncrDeltaDisp(int* nodeTag, int* sizeData, double* data);
 
-class UniaxialMaterial;
-class NDMaterial;
-class SectionForceDeformation;
-class CrdTransf;
-class FrictionModel;
-class LimitCurve;
-class Domain;
-class FE_Datastore;
+extern "C" matObj*     OPS_GetMaterial(int* matTag, int* matType);
+extern "C" matObj*     OPS_GetMaterialType(char* type, int sizeType);
+extern "C" limCrvObj*  OPS_GetLimitCurveType(char* type, int sizeType);
+extern "C" eleObj*     OPS_GetElement(int* eleTag);
+extern "C" eleObj*     OPS_GetElementType(char* type, int sizeType);
+extern "C" int         OPS_AllocateMaterial(matObject* theMat);
+extern "C" int         OPS_AllocateLimitCurve(limCrvObject* theLimCrv);
+extern "C" int         OPS_AllocateElement(eleObject * theEle, int* matTags, int* matType);
+extern "C" int         OPS_InvokeMaterial(eleObject*, int*, modelState*, double*, double*, double*, int*);
+extern "C" int         OPS_InvokeMaterialDirectly(matObject**, modelState*, double*, double*, double*, int*);
+extern "C" int         OPS_InvokeMaterialDirectly2(matObject*, modelState*, double*, double*, double*, int*);
 
 extern UniaxialMaterial* OPS_GetUniaxialMaterial(int matTag);
+extern LimitCurve* OPS_GetLimitCurve(int limCrvTag);
 extern NDMaterial* OPS_GetNDMaterial(int matTag);
 extern SectionForceDeformation* OPS_GetSectionForceDeformation(int secTag);
 extern CrdTransf* OPS_GetCrdTransf(int crdTag);
 extern FrictionModel* OPS_GetFrictionModel(int frnTag);
-extern LimitCurve* OPS_GetLimitCurve(int LimCrvTag);
 extern Domain* OPS_GetDomain(void);
-
 extern FE_Datastore* OPS_GetFEDatastore();
-extern "C" const char* OPS_GetInterpPWD();
+extern SimulationInformation* OPS_GetSimulationInfo();
 
+//extern "C" const char* OPS_GetInterpPWD();
 extern "C" AnalysisModel * *OPS_GetAnalysisModel(void);
 extern "C" EquiSolnAlgo * *OPS_GetAlgorithm(void);
 extern "C" ConstraintHandler * *OPS_GetHandler(void);
@@ -256,46 +260,41 @@ extern "C" EigenSOE * *OPS_GetEigenSOE(void);
 extern "C" StaticAnalysis * *OPS_GetStaticAnalysis(void);
 extern "C" DirectIntegrationAnalysis * *OPS_GetTransientAnalysis(void);
 extern "C" VariableTimeStepDirectIntegrationAnalysis * *OPS_GetVariableTimeStepTransientAnalysis(void);
-extern "C" int* OPS_GetNumEigen(void);
 extern "C" StaticIntegrator * *OPS_GetStaticIntegrator(void);
 extern "C" TransientIntegrator * *OPS_GetTransientIntegrator(void);
 extern "C" ConvergenceTest * *OPS_GetTest(void);
 extern "C" bool* OPS_builtModel(void);
-
-int OPS_numIter();
+extern "C" int* OPS_GetNumEigen(void);
+extern "C" int OPS_numIter();
 
 #else
-
-int     OPS_GetNDF();
-int     OPS_GetNDM();
 
 int     OPS_Error(char*, int length);
 int     OPS_GetIntInput(int* numData, int* data);
 int     OPS_GetDoubleInput(int* numData, double* data);
-int     OPS_GetString(char* cArray, int sizeArray);
+int     OPS_GetStringFromAll(char* cArray, int sizeArray);
 
+int     OPS_GetNDF();
+int     OPS_GetNDM();
+
+int     OPS_GetNodeCrd(int* nodeTag, int* sizeData, double* data);
+int     OPS_GetNodeDisp(int* nodeTag, int* sizeData, double* data);
+int     OPS_GetNodeVel(int* nodeTag, int* sizeData, double* data);
+int     OPS_GetNodeAccel(int* nodeTag, int* sizeData, double* data);
+int     OPS_GetNodeIncrDisp(int* nodeTag, int* sizeData, double* data);
+int     OPS_GetNodeIncrDeltaDisp(int* nodeTag, int* sizeData, double* data);
 
 matObj* OPS_GetMaterial(int* matTag, int* matType);
-void    OPS_GetMaterialPtr(int*, matObj*);
-eleObj* OPS_GetElement(int*);
 matObj* OPS_GetMaterialType(char* type, int sizeType);
-eleObj* OPS_GetElementType(char*, int);
-int     OPS_AllocateElement(eleObj*, int* matTags, int* maType);
-int     OPS_AllocateMaterial(matObj*);
-
 limCrv* OPS_GetLimitCurveType(char* type, int sizeType);//**MRL
+eleObj* OPS_GetElement(int*);
+eleObj* OPS_GetElementType(char*, int);
+int     OPS_AllocateMaterial(matObj*);
 int     OPS_AllocateLimitCurve(limCrvObj*);//**MRL
-
-int    OPS_InvokeMaterial(struct eleObj*, int*, modelState*, double*, double*, double*, int*);
-int    OPS_InvokeMaterialDirectly(matObj**, modelState*, double*, double*, double*, int*);
-int    OPS_InvokeMaterialDirectly2(matObj*, modelState*, double*, double*, double*, int*);
-
-int    OPS_GetNodeCrd(int* nodeTag, int* sizeData, double* data);
-int    OPS_GetNodeDisp(int* nodeTag, int* sizeData, double* data);
-int    OPS_GetNodeVel(int* nodeTag, int* sizeData, double* data);
-int    OPS_GetNodeAcc(int* nodeTag, int* sizeData, double* data);
-int    OPS_GetNodeIncrDisp(int* nodeTag, int* sizeData, double* data);
-int    OPS_GetNodeIncrDeltaDisp(int* nodeTag, int* sizeData, double* data);
+int     OPS_AllocateElement(eleObject* theEle, int* matTags, int* matType);
+int     OPS_InvokeMaterial(eleObject*, int*, modelState*, double*, double*, double*, int*);
+int     OPS_InvokeMaterialDirectly(matObject**, modelState*, double*, double*, double*, int*);
+int     OPS_InvokeMaterialDirectly2(matObject*, modelState*, double*, double*, double*, int*);
 
 AnalysisModel** OPS_GetAnalysisModel(void);
 EquiSolnAlgo** OPS_GetAlgorithm(void);
@@ -306,11 +305,11 @@ EigenSOE** OPS_GetEigenSOE(void);
 StaticAnalysis** OPS_GetStaticAnalysis(void);
 DirectIntegrationAnalysis** OPS_GetTransientAnalysis(void);
 VariableTimeStepDirectIntegrationAnalysis** OPS_GetVariableTimeStepTransientAnalysis(void);
-int* OPS_GetNumEigen(void);
 StaticIntegrator** OPS_GetStaticIntegrator(void);
 TransientIntegrator** OPS_GetTransientIntegrator(void);
 ConvergenceTest** OPS_GetTest(void);
 bool* OPS_builtModel(void);
+int* OPS_GetNumEigen(void);
 
 #endif
 

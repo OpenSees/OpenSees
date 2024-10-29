@@ -113,8 +113,8 @@ extern const char * getInterpPWD(Tcl_Interp *interp);  //L.Jiang [SIF]
 #include <YieldSurface_BC.h>
 #include <YS_Evolution.h>
 #include <PlasticHardeningMaterial.h>
-#include <CyclicModel.h> //!!
-#include <DamageModel.h> //!!
+#include <CyclicModel.h>
+#include <DamageModel.h>
 
 #include <FrictionModel.h>
 
@@ -129,7 +129,7 @@ extern const char * getInterpPWD(Tcl_Interp *interp);  //L.Jiang [SIF]
 ////////////////////////////////////////////
 
 extern void TCL_OPS_setModelBuilder(TclModelBuilder *theNewBuilder);
-extern int OPS_ResetInput(ClientData clientData, 
+extern "C" int OPS_ResetInput(ClientData clientData,
 			  Tcl_Interp *interp,  
 			  int cArg, 
 			  int mArg, 
@@ -456,12 +456,12 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
 TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM, int NDF)
   :ModelBuilder(theDomain), ndm(NDM), ndf(NDF), theInterp(interp)
 {
-  theSections  = new ArrayOfTaggedObjects(32);
+  //theSections  = new ArrayOfTaggedObjects(32);
   theSectionRepresents = new ArrayOfTaggedObjects(32);  
   theYieldSurface_BCs = new ArrayOfTaggedObjects(32);
-  theCycModels = new ArrayOfTaggedObjects(32); //!!
-  theYS_EvolutionModels = new ArrayOfTaggedObjects(32);
   thePlasticMaterials = new ArrayOfTaggedObjects(32);
+  theYS_EvolutionModels = new ArrayOfTaggedObjects(32);
+  theCycModels = new ArrayOfTaggedObjects(32); //!!
 
   // call Tcl_CreateCommand for class specific commands
   Tcl_CreateCommand(interp, "parameter", TclCommand_addParameter,
@@ -680,11 +680,10 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
 TclModelBuilder::~TclModelBuilder()
 {
-
   OPS_clearAllTimeSeries();
-  //  OPS_clearAllUniaxialMaterial();
-  //  OPS_clearAllNDMaterial();
-  //  OPS_clearAllSectionForceDeformation();
+  // OPS_clearAllUniaxialMaterial();
+  // OPS_clearAllNDMaterial();
+  // OPS_clearAllSectionForceDeformation();
 
   OPS_clearAllCrdTransf();
   OPS_clearAllDamping();
@@ -693,23 +692,21 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllDamageModel();
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
-  //  OPS_clearAllNDMaterial();
 
   OPS_clearAllBeamIntegrationRule();
 
-  theSections->clearAll();
   theSectionRepresents->clearAll();
   theYieldSurface_BCs->clearAll();
-  theYS_EvolutionModels->clearAll();
   thePlasticMaterials->clearAll();
-  theCycModels->clearAll();//!!
+  theYS_EvolutionModels->clearAll();
+  theCycModels->clearAll();
+
   // free up memory allocated in the constructor
-  delete theSections;
   delete theSectionRepresents;
   delete theYieldSurface_BCs;
-  delete theYS_EvolutionModels;
   delete thePlasticMaterials;
-  delete theCycModels;//!!
+  delete theYS_EvolutionModels;
+  delete theCycModels;
 
   // set the pointers to 0 
   theTclDomain =0;
@@ -827,7 +824,7 @@ TclModelBuilder::getNDMaterial(int tag)
 int 
 TclModelBuilder::addSection(SectionForceDeformation &theSection)
 {
-  //  bool result = theSections->addComponent(&theSection);
+  // bool result = theSections->addComponent(&theSection);
   bool result = OPS_addSectionForceDeformation(&theSection);
   if (result == true)
     return 0;
@@ -4671,11 +4668,7 @@ TclCommand_Package(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
   }
 
   if (res == 0) {
-    int result = (*funcPtr)(clientData, interp,
-			    argc, 
-			    argv,
-			    theTclDomain,
-			    theTclBuilder);	
+    int result = (*funcPtr)(clientData, interp, argc, argv, theTclDomain, theTclBuilder);
   } else {
     opserr << "Error: Could not find function: " << argv[1] << endln;
     return -1;

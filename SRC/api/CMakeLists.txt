@@ -7,9 +7,9 @@
 add_library(OPS_Api OBJECT)
 
 target_sources(OPS_InterpTcl
-  PRIVATE
-    elementAPI_TCL.cpp
-    packages.cpp
+    PRIVATE
+        elementAPI_TCL.cpp
+        packages.cpp
 )
 
 target_sources(OPS_Api
@@ -18,7 +18,7 @@ target_sources(OPS_Api
         #win32Functions.cpp
     PUBLIC
         elementAPI.h
-	#packages.h
+        #packages.h
 )
 
 

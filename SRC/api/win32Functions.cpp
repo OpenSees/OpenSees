@@ -14,6 +14,7 @@
 ** Developed by:                                                      **
 **   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
 **   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
 
@@ -21,10 +22,9 @@
 ** Written: fmk
 */
 
-#include <tcl.h>
 #include <OPS_Stream.h>
 #include <elementAPI.h>
-#include <SimulationInformation.h>
+//#include <SimulationInformation.h>
 
 // override byte to prevent clashes with <cstddef>
 #define byte win_byte_override
@@ -40,33 +40,32 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 }
 
 OPS_Stream* opserrPtr = 0;
-SimulationInformation* theSimulationInfo = 0;
-//Domain *ops_TheActiveDomain = 0;
+//SimulationInformation* theSimulationInfo = 0;
+//Domain *ops_TheActiveDomain = 0;  // global variable defined in Domain.cpp
 
+typedef int(*OPS_GetIntPtrType)();
 typedef int(*OPS_ErrorPtrType)(char*, int);
 typedef int(*OPS_GetNumRemainingInputArgsType)();
 typedef int(*OPS_ResetCurrentInputArgType)(int);
-//typedef int (*OPS_ResetInputType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*, TclModelBuilder*);
-typedef int(*OPS_ResetInputNoBuilderType)(ClientData, Tcl_Interp*, int, int, TCL_Char**, Domain*);
+typedef int(*OPS_ResetCommandLineType)(int, int, const char**);
 typedef int(*OPS_GetIntInputPtrType)(int*, int*);
 typedef int(*OPS_GetDoubleInputPtrType)(int*, double*);
 typedef const char* (*OPS_GetStringType)();
-typedef int(*OPS_GetStringCopyType)(char**);
-typedef int(*OPS_AllocateElementPtrType)(eleObj*, int*, int*);
+//typedef int(*OPS_GetStringCopyType)(char**);
+
 typedef int(*OPS_AllocateMaterialPtrType)(matObj*);
+typedef int(*OPS_AllocateElementPtrType)(eleObj*, int*, int*);
+typedef int(*OPS_InvokeMaterialDirectlyPtrType)(matObject**, modelState*, double*, double*, double*, int*);
 typedef UniaxialMaterial* (*OPS_GetUniaxialMaterialPtrType)(int);
 typedef NDMaterial* (*OPS_GetNDMaterialPtrType)(int);
 typedef SectionForceDeformation* (*OPS_GetSectionForceDeformationPtrType)(int);
 typedef CrdTransf* (*OPS_GetCrdTransfPtrType)(int);
 typedef FrictionModel* (*OPS_GetFrictionModelPtrType)(int);
+
 typedef int(*OPS_GetNodeInfoPtrType)(int*, int*, double*);
-typedef int(*OPS_InvokeMaterialDirectlyPtrType)(matObject**, modelState*, double*, double*, double*, int*);
-typedef int(*OPS_GetIntPtrType)();
-
-typedef FE_Datastore* (*OPS_GetFEDatastorePtrType)();
-typedef const char* (_cdecl* OPS_GetInterpPWD_PtrType)();
-
 typedef Domain* (*OPS_GetDomainPointer)(void);
+typedef FE_Datastore* (*OPS_GetFEDatastorePtrType)();
+typedef SimulationInformation* (*OPS_GetSimulationInfoPtrType)();
 typedef AnalysisModel** (*OPS_GetAnalysisModelPtrType)(void);
 typedef EquiSolnAlgo** (*OPS_GetAlgorithmPtrType)(void);
 typedef ConstraintHandler** (*OPS_GetHandlerPtrType)(void);
@@ -83,33 +82,36 @@ typedef ConvergenceTest** (*OPS_GetTestPtrType)(void);
 typedef bool* (*OPS_builtModelPtrType)(void);
 
 OPS_ErrorPtrType OPS_ErrorPtr = 0;
+OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingInputArgsPtr = 0;
+OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgPtr = 0;
+OPS_ResetCommandLineType OPS_ResetCommandLinePtr = 0;
 OPS_GetIntInputPtrType OPS_GetIntInputPtr = 0;
 OPS_GetDoubleInputPtrType OPS_GetDoubleInputPtr = 0;
-OPS_AllocateElementPtrType OPS_AllocateElementPtr = 0;
-OPS_AllocateMaterialPtrType OPS_AllocateMaterialPtr = 0;
-OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialPtr = 0;
-OPS_GetNDMaterialPtrType OPS_GetNDMaterialPtr = 0;
-OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationPtr = 0;
-OPS_GetCrdTransfPtrType OPS_GetCrdTransfPtr = 0;
-OPS_GetFrictionModelPtrType OPS_GetFrictionModelPtr = 0;
+OPS_GetStringType OPS_GetStringPtr = 0;
+//OPS_GetStringCopyType OPS_GetStringCopyPtr = 0;
+
+OPS_GetIntPtrType OPS_GetNDM_Ptr = 0;
+OPS_GetIntPtrType OPS_GetNDF_Ptr = 0;
+
 OPS_GetNodeInfoPtrType OPS_GetNodeCrdPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeDispPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeVelPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeAccelPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeIncrDispPtr = 0;
 OPS_GetNodeInfoPtrType OPS_GetNodeIncrDeltaDispPtr = 0;
+
+OPS_AllocateMaterialPtrType OPS_AllocateMaterialPtr = 0;
+OPS_AllocateElementPtrType OPS_AllocateElementPtr = 0;
 OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyPtr = 0;
-OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingInputArgsPtr = 0;
-OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgPtr = 0;
-//OPS_ResetInputType OPS_ResetInputPtr = 0;
-OPS_ResetInputNoBuilderType OPS_ResetInputNoBuilderPtr = 0;
-OPS_GetStringType OPS_GetStringPtr = 0;
-OPS_GetStringCopyType OPS_GetStringCopyPtr = 0;
-OPS_GetIntPtrType OPS_GetNDM_Ptr = 0;
-OPS_GetIntPtrType OPS_GetNDF_Ptr = 0;
-OPS_GetFEDatastorePtrType OPS_GetFEDatastorePtr = 0;
-OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Ptr = 0;
+OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialPtr = 0;
+OPS_GetNDMaterialPtrType OPS_GetNDMaterialPtr = 0;
+OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationPtr = 0;
+OPS_GetCrdTransfPtrType OPS_GetCrdTransfPtr = 0;
+OPS_GetFrictionModelPtrType OPS_GetFrictionModelPtr = 0;
+
 OPS_GetDomainPointer OPS_GetDomainPtr = 0;
+OPS_GetFEDatastorePtrType OPS_GetFEDatastorePtr = 0;
+OPS_GetSimulationInfoPtrType OPS_GetSimulationInfoPtr = 0;
 OPS_GetAnalysisModelPtrType OPS_GetAnalysisModelPtr = 0;
 OPS_GetAlgorithmPtrType OPS_GetAlgorithmPtr = 0;
 OPS_GetHandlerPtrType OPS_GetHandlerPtr = 0;
@@ -130,34 +132,34 @@ extern "C" DllExport
 void setGlobalPointers(
     OPS_Stream * theErrorStreamPtr,
     Domain * theDomain,
-    SimulationInformation * theSimulationInfoPtr,
+    //SimulationInformation * theSimulationInfoPtr,
+    OPS_GetIntPtrType OPS_GetNDM_Funct,
+    OPS_GetIntPtrType OPS_GetNDF_Funct,
     OPS_ErrorPtrType errorFunct,
+    OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingArgsFunct,
+    OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgFunct,
+    OPS_ResetCommandLineType OPS_ResetCommandLineFunct,
     OPS_GetIntInputPtrType getIntInputFunct,
     OPS_GetDoubleInputPtrType getDoubleInputFunct,
-    OPS_AllocateElementPtrType allocateElementFunct,
+    OPS_GetStringType OPS_GetStringFunct,
+    //OPS_GetStringCopyType OPS_GetStringCopyFunct,
     OPS_AllocateMaterialPtrType allocateMaterialFunct,
+    OPS_AllocateElementPtrType allocateElementFunct,
+    OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyFunct,
     OPS_GetUniaxialMaterialPtrType OPS_GetUniaxialMaterialFunct,
     OPS_GetNDMaterialPtrType OPS_GetNDMaterialFunct,
     OPS_GetSectionForceDeformationPtrType OPS_GetSectionForceDeformationFunct,
     OPS_GetCrdTransfPtrType OPS_GetCrdTransfFunct,
     OPS_GetFrictionModelPtrType OPS_GetFrictionModelFunct,
-    OPS_InvokeMaterialDirectlyPtrType OPS_InvokeMaterialDirectlyFunct,
     OPS_GetNodeInfoPtrType OPS_GetNodeCrdFunct,
     OPS_GetNodeInfoPtrType OPS_GetNodeDispFunct,
     OPS_GetNodeInfoPtrType OPS_GetNodeVelFunct,
     OPS_GetNodeInfoPtrType OPS_GetNodeAccelFunct,
     OPS_GetNodeInfoPtrType OPS_GetNodeIncrDispFunct,
     OPS_GetNodeInfoPtrType OPS_GetNodeIncrDeltaDispFunct,
-    OPS_GetNumRemainingInputArgsType OPS_GetNumRemainingArgsFunct,
-    OPS_ResetCurrentInputArgType OPS_ResetCurrentInputArgFunct,
-    //OPS_ResetInputType OPS_ResetInputFunct,
-    OPS_ResetInputNoBuilderType OPS_ResetInputNoBuilderFunct,
-    OPS_GetStringType OPS_GetStringFunct,
-    OPS_GetStringCopyType OPS_GetStringCopyFunct,
-    OPS_GetIntPtrType OPS_GetNDM_Funct,
-    OPS_GetIntPtrType OPS_GetNDF_Funct,
+    OPS_GetDomainPointer OPS_getDomainPtr,
     OPS_GetFEDatastorePtrType OPS_GetFEDatastoreFunct,
-    OPS_GetInterpPWD_PtrType OPS_GetInterpPWD_Funct,
+    OPS_GetSimulationInfoPtrType OPS_GetSimulationInfoFunct,
     OPS_GetAnalysisModelPtrType OPS_GetAnalysisModelFunct,
     OPS_GetAlgorithmPtrType OPS_GetAlgorithmFunct,
     OPS_GetHandlerPtrType OPS_GetHandlerFunct,
@@ -171,17 +173,24 @@ void setGlobalPointers(
     OPS_GetStaticIntegratorPtrType OPS_GetStaticIntegratorFunct,
     OPS_GetTransientIntegratorPtrType OPS_GetTransientIntegratorFunct,
     OPS_GetTestPtrType OPS_GetTestFunct,
-    OPS_builtModelPtrType OPS_builtModelFunct,
-    OPS_GetDomainPointer OPS_getDomainPtr)
+    OPS_builtModelPtrType OPS_builtModelFunct)
 {
     opserrPtr = theErrorStreamPtr;
     ops_TheActiveDomain = theDomain;
-    theSimulationInfo = theSimulationInfoPtr;
+    //theSimulationInfo = theSimulationInfoPtr;
     OPS_ErrorPtr = errorFunct;
+    OPS_GetNDM_Ptr = OPS_GetNDM_Funct;
+    OPS_GetNDF_Ptr = OPS_GetNDF_Funct;
+    OPS_GetNumRemainingInputArgsPtr = OPS_GetNumRemainingArgsFunct;
+    OPS_ResetCurrentInputArgPtr = OPS_ResetCurrentInputArgFunct;
+    OPS_ResetCommandLinePtr = OPS_ResetCommandLineFunct;
     OPS_GetIntInputPtr = getIntInputFunct;
     OPS_GetDoubleInputPtr = getDoubleInputFunct;
-    OPS_AllocateElementPtr = allocateElementFunct;
+    OPS_GetStringPtr = OPS_GetStringFunct;
+    //OPS_GetStringCopyPtr = OPS_GetStringCopyFunct;
     OPS_AllocateMaterialPtr = allocateMaterialFunct;
+    OPS_AllocateElementPtr = allocateElementFunct;
+    OPS_InvokeMaterialDirectlyPtr = OPS_InvokeMaterialDirectlyFunct;
     OPS_GetUniaxialMaterialPtr = OPS_GetUniaxialMaterialFunct;
     OPS_GetNDMaterialPtr = OPS_GetNDMaterialFunct;
     OPS_GetSectionForceDeformationPtr = OPS_GetSectionForceDeformationFunct;
@@ -193,17 +202,9 @@ void setGlobalPointers(
     OPS_GetNodeAccelPtr = OPS_GetNodeAccelFunct;
     OPS_GetNodeIncrDispPtr = OPS_GetNodeIncrDispFunct;
     OPS_GetNodeIncrDeltaDispPtr = OPS_GetNodeIncrDeltaDispFunct;
-    OPS_InvokeMaterialDirectlyPtr = OPS_InvokeMaterialDirectlyFunct;
-    OPS_GetNumRemainingInputArgsPtr = OPS_GetNumRemainingArgsFunct;
-    OPS_ResetCurrentInputArgPtr = OPS_ResetCurrentInputArgFunct;
-    //OPS_ResetInputPtr = OPS_ResetInputFunct;
-    OPS_ResetInputNoBuilderPtr = OPS_ResetInputNoBuilderFunct;
-    OPS_GetStringPtr = OPS_GetStringFunct;
-    OPS_GetStringCopyPtr = OPS_GetStringCopyFunct;
-    OPS_GetNDM_Ptr = OPS_GetNDM_Funct;
-    OPS_GetNDF_Ptr = OPS_GetNDF_Funct;
+    OPS_GetDomainPtr = OPS_getDomainPtr;
     OPS_GetFEDatastorePtr = OPS_GetFEDatastoreFunct;
-    OPS_GetInterpPWD_Ptr = OPS_GetInterpPWD_Funct;
+    OPS_GetSimulationInfoPtr = OPS_GetSimulationInfoFunct;
     OPS_GetAnalysisModelPtr = OPS_GetAnalysisModelFunct;
     OPS_GetAlgorithmPtr = OPS_GetAlgorithmFunct;
     OPS_GetHandlerPtr = OPS_GetHandlerFunct;
@@ -218,43 +219,30 @@ void setGlobalPointers(
     OPS_GetTransientIntegratorPtr = OPS_GetTransientIntegratorFunct;
     OPS_GetTestPtr = OPS_GetTestFunct;
     OPS_builtModelPtr = OPS_builtModelFunct;
-    OPS_GetDomainPtr = OPS_getDomainPtr;
-}
-
-UniaxialMaterial*
-OPS_GetUniaxialMaterial(int matTag)
-{
-    return (*OPS_GetUniaxialMaterialPtr)(matTag);
-}
-
-NDMaterial*
-OPS_GetNDMaterial(int matTag)
-{
-    return (*OPS_GetNDMaterialPtr)(matTag);
-}
-
-SectionForceDeformation*
-OPS_GetSectionForceDeformation(int secTag)
-{
-    return (*OPS_GetSectionForceDeformationPtr)(secTag);
-}
-
-CrdTransf*
-OPS_GetCrdTransf(int crdTag)
-{
-    return (*OPS_GetCrdTransfPtr)(crdTag);
-}
-
-FrictionModel*
-OPS_GetFrictionModel(int frnTag)
-{
-    return (*OPS_GetFrictionModelPtr)(frnTag);
 }
 
 int
 OPS_Error(char* data, int length)
 {
     return (*OPS_ErrorPtr)(data, length);
+}
+
+extern "C"
+int OPS_GetNumRemainingInputArgs()
+{
+    return (*OPS_GetNumRemainingInputArgsPtr)();
+}
+
+extern "C"
+int OPS_ResetCurrentInputArg(int cArg)
+{
+    return (*OPS_ResetCurrentInputArgPtr)(cArg);
+}
+
+extern "C"
+int OPS_ResetCommandLine(int nArgs, int cArg, const char** argv)
+{
+    return (*OPS_ResetCommandLinePtr)(nArgs, cArg, argv);
 }
 
 extern "C"
@@ -270,15 +258,27 @@ int OPS_GetDoubleInput(int* numData, double* data)
 }
 
 extern "C"
-int OPS_AllocateMaterial(matObj * mat)
+const char* OPS_GetString()
 {
-    return (*OPS_AllocateMaterialPtr)(mat);
+    return (*OPS_GetStringPtr)();
+}
+
+/*extern "C"
+int OPS_GetStringCopy(char** cArray)
+{
+    return (*OPS_GetStringCopyPtr)(cArray);
+}*/
+
+extern "C"
+int OPS_GetNDM()
+{
+    return (*OPS_GetNDM_Ptr)();
 }
 
 extern "C"
-int OPS_AllocateElement(eleObj * ele, int* matTags, int* matType)
+int OPS_GetNDF()
 {
-    return (*OPS_AllocateElementPtr)(ele, matTags, matType);
+    return (*OPS_GetNDF_Ptr)();
 }
 
 extern "C"
@@ -318,60 +318,58 @@ int OPS_GetNodeIncrDeltaDisp(int* nodeTag, int* sizeData, double* data)
 }
 
 extern "C"
-int OPS_InvokeMaterialDirectly(matObject * *theMat, modelState * model,
+int OPS_AllocateMaterial(matObj* mat)
+{
+    return (*OPS_AllocateMaterialPtr)(mat);
+}
+
+extern "C"
+int OPS_AllocateElement(eleObj* ele, int* matTags, int* matType)
+{
+    return (*OPS_AllocateElementPtr)(ele, matTags, matType);
+}
+
+extern "C"
+int OPS_InvokeMaterialDirectly(matObject** theMat, modelState* model,
     double* strain, double* stress, double* tang, int* isw)
 {
     return (*OPS_InvokeMaterialDirectlyPtr)(theMat, model, strain, stress, tang, isw);
 }
 
-extern "C"
-const char* OPS_GetString()
+UniaxialMaterial*
+OPS_GetUniaxialMaterial(int matTag)
 {
-    return (*OPS_GetStringPtr)();
+    return (*OPS_GetUniaxialMaterialPtr)(matTag);
 }
 
-extern "C"
-int OPS_GetStringCopy(char** cArray)
+NDMaterial*
+OPS_GetNDMaterial(int matTag)
 {
-    return (*OPS_GetStringCopyPtr)(cArray);
+    return (*OPS_GetNDMaterialPtr)(matTag);
 }
 
-extern "C"
-int OPS_GetNumRemainingInputArgs()
+SectionForceDeformation*
+OPS_GetSectionForceDeformation(int secTag)
 {
-    return (*OPS_GetNumRemainingInputArgsPtr)();
+    return (*OPS_GetSectionForceDeformationPtr)(secTag);
 }
 
-extern "C"
-int OPS_ResetCurrentInputArg(int cArg)
+CrdTransf*
+OPS_GetCrdTransf(int crdTag)
 {
-    return (*OPS_ResetCurrentInputArgPtr)(cArg);
+    return (*OPS_GetCrdTransfPtr)(crdTag);
 }
 
-/*extern "C"
-int OPS_ResetInput(ClientData clientData, Tcl_Interp* interp,
-    int cArg, int mArg, TCL_Char** argv, Domain* domain, TclModelBuilder* builder)
+FrictionModel*
+OPS_GetFrictionModel(int frnTag)
 {
-    return (*OPS_ResetInputPtr)(clientData, interp, cArg, mArg, argv, domain, builder);
-}*/
-
-extern "C"
-int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp,
-    int cArg, int mArg, TCL_Char * *argv, Domain * domain)
-{
-    return (*OPS_ResetInputNoBuilderPtr)(clientData, interp, cArg, mArg, argv, domain);
+    return (*OPS_GetFrictionModelPtr)(frnTag);
 }
 
-extern "C"
-int OPS_GetNDM()
+Domain*
+OPS_GetDomain(void)
 {
-    return (*OPS_GetNDM_Ptr)();
-}
-
-extern "C"
-int OPS_GetNDF()
-{
-    return (*OPS_GetNDF_Ptr)();
+    return (*OPS_GetDomainPtr)();
 }
 
 FE_Datastore*
@@ -380,10 +378,10 @@ OPS_GetFEDatastore()
     return (*OPS_GetFEDatastorePtr)();
 }
 
-extern "C"
-const char* OPS_GetInterpPWD()
+SimulationInformation*
+OPS_GetSimulationInfo()
 {
-    return (*OPS_GetInterpPWD_Ptr)();
+    return (*OPS_GetSimulationInfoPtr)();
 }
 
 extern "C"
@@ -468,10 +466,4 @@ extern "C"
 bool* OPS_builtModel(void)
 {
     return (*OPS_builtModelPtr)();
-}
-
-Domain*
-OPS_GetDomain(void)
-{
-    return (*OPS_GetDomainPtr)();
 }

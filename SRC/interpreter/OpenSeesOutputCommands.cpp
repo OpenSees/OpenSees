@@ -1589,7 +1589,7 @@ int OPS_getPatterns()
   while ((thePattern = thePatterns()) != 0)
     data.push_back(thePattern->getTag());
 
-  int size = data.size();
+  int size = (int)data.size();
   
   if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
     opserr << "WARNING getPatterns - failed to set output\n";
@@ -1617,7 +1617,7 @@ int OPS_getFixedNodes()
 	sort( data.begin(), data.end() );
 	data.erase( unique( data.begin(), data.end() ), data.end() );
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -1657,7 +1657,7 @@ int OPS_getFixedDOFs()
         }
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -1700,7 +1700,7 @@ int OPS_getConstrainedNodes()
 	sort( data.begin(), data.end() );
 	data.erase( unique( data.begin(), data.end() ), data.end() );
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -1781,7 +1781,7 @@ int OPS_getConstrainedDOFs()
         }
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -1824,7 +1824,7 @@ int OPS_getRetainedNodes()
 	sort( data.begin(), data.end() );
 	data.erase( unique( data.begin(), data.end() ), data.end() );
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -1905,7 +1905,7 @@ int OPS_getRetainedDOFs()
         }
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -3924,7 +3924,7 @@ int OPS_getEleClassTags()
 	  return -1;
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -3983,7 +3983,7 @@ int OPS_getEleLoadClassTags()
     }
 
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -4041,7 +4041,7 @@ int OPS_getEleLoadTags()
 	return -1;
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -4112,7 +4112,7 @@ int OPS_getEleLoadData()
 	return -1;
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -4170,7 +4170,7 @@ int OPS_getNodeLoadTags()
 	return -1;
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetIntOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";
@@ -4241,7 +4241,7 @@ int OPS_getNodeLoadData()
 	return -1;
     }
 
-	int size = data.size();
+	int size = (int)data.size();
 
 	if (OPS_SetDoubleOutput(&size, data.data(), false) < 0) {
 	  opserr << "WARNING failed to set output\n";

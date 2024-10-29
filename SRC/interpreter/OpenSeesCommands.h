@@ -62,6 +62,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <Timer.h>
 #include <SimulationInformation.h>
 #include <elementAPI.h>
+#include <packages.h>
 #include <MachineBroker.h>
 #include "OpenSeesReliabilityCommands.h"
 
@@ -144,6 +145,9 @@ public:
     EigenSOE* getEigenSOE() {return theEigenSOE;}
     EigenSOE** getEigenSOEPointer() {return &theEigenSOE;}
 
+    void setBuiltModel(bool blt) {builtModel = blt;}
+    bool getBuiltModel() {return builtModel;}
+
     void setFileDatabase(const char* filename);
     FE_Datastore* getDatabase() {return theDatabase;}
 
@@ -180,6 +184,7 @@ private:
     ConvergenceTest *theTest;
 
     int numEigen;
+    bool builtModel;
     FE_Datastore* theDatabase;
     FEM_ObjectBrokerAllClasses theBroker;
     Timer theTimer;
@@ -190,7 +195,6 @@ private:
     int numChannels;
 
     OpenSeesReliabilityCommands* reliability;
-
 };
 
 ///////////////////////////////////////////////////////////////////////////
@@ -439,6 +443,7 @@ int OPS_solveCPU();
 int OPS_accelCPU();
 int OPS_numFact();
 int OPS_numIter();
+bool* OPS_builtModel();
 int* OPS_GetNumEigen();
 int OPS_systemSize();
 int OPS_domainCommitTag();
@@ -579,6 +584,5 @@ void* OPS_BFGS();
 //              UCFiber, TclModelBuilderYS_SectionCommand, yieldSurface_BC,
 //              ysEvolutionModel, plasticMaterial, cyclicModel, damageModel,
 //              FirePattern, PySimple1Gen, TzSimple1Gen, Hfiber,
-//              hystereticBackbone, updateMaterialStage, updateMaterials,
-//              loadPackage
+//              updateMaterials
 #endif
