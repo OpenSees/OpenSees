@@ -49,7 +49,8 @@ using std::ios;
 PathTimeSeries::PathTimeSeries()	
   :TimeSeries(TSERIES_TAG_PathTimeSeries),
    thePath(0), time(0), currentTimeLoc(0), cFactor(0.0),
-   dbTag1(0), dbTag2(0), lastSendCommitTag(-1)
+   dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0),
+   useLast(false)
 {
   // does nothing
 }

@@ -60,12 +60,12 @@ void* OPS_RampSeries(void)
 
     //Parse tStart
     numData = 1;
-    if (OPS_GetDouble(&numData, &dData[0]) != 0) {
+    if (OPS_GetDoubleInput(&numData, &dData[0]) != 0) {
         opserr << "WARNING invalid tStart? in RampSeries with tag " << tag << endln;
         return 0;
     }
     //Parse tRamp
-    if (OPS_GetDouble(&numData, &dData[1]) != 0) {
+    if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
         opserr << "WARNING invalid tRamp? in RampSeries with tag " << tag << endln;
         return 0;
     }
@@ -80,14 +80,14 @@ void* OPS_RampSeries(void)
 
         if (strcmp(argvS, "-offset") == 0) {
             numData = 1;
-            if (OPS_GetDouble(&numData, &dData[2]) != 0) {
+            if (OPS_GetDoubleInput(&numData, &dData[2]) != 0) {
                 opserr << "WARNING invalid offset? in RampSeries with tag " << tag << endln;
                 return 0;
             }
         }
         else if (strcmp(argvS, "-smooth") == 0) {
             numData = 1;
-            if (OPS_GetDouble(&numData, &dData[3]) != 0) {
+            if (OPS_GetDoubleInput(&numData, &dData[3]) != 0) {
                 opserr << "WARNING invalid smoothness? in RampSeries with tag " << tag << " Expected value ranging between 0 and 1" << endln;
                 return 0;
             }
@@ -98,7 +98,7 @@ void* OPS_RampSeries(void)
         }
         else if (strcmp(argvS, "-factor") == 0) {
             numData = 1;
-            if (OPS_GetDouble(&numData, &dData[4]) != 0) {
+            if (OPS_GetDoubleInput(&numData, &dData[4]) != 0) {
                 opserr << "WARNING invalid factor in RampSeries with tag " << tag << endln;
                 return 0;
             }
