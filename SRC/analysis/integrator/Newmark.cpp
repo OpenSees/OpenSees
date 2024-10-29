@@ -71,7 +71,7 @@ OPS_Newmark(void)
   int dispFlag = 1;
   double dData[2];
   int numData = 2;
-  if (OPS_GetDouble(&numData, dData) != 0) {
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
     opserr << "WARNING - invalid args want Newmark $gamma $beta <-form $typeUnknown>\n";
     return 0;
   }
@@ -524,7 +524,7 @@ int Newmark::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
     
     gamma  = data(0);
     beta   = data(1);
-    displ  = data(2);
+    displ  = (int)data(2);
 
     return 0;
 }

@@ -72,7 +72,7 @@ void *    OPS_CollocationHSFixedNumIter(void)
     // reset to read from beginning
     OPS_ResetCurrentInputArg(2);
     
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want CollocationHSFixedNumIter $theta <-polyOrder $O>\n";
         opserr << "          or CollocationHSFixedNumIter $theta $beta $gamma <-polyOrder $O>\n";
         return 0;
@@ -82,7 +82,7 @@ void *    OPS_CollocationHSFixedNumIter(void)
         const char *argvLoc = OPS_GetString();
         if (strcmp(argvLoc, "-polyOrder") == 0) {
             int numData2 = 1;
-            if (OPS_GetInt(&numData2, &polyOrder) != 0) {
+            if (OPS_GetIntInput(&numData2, &polyOrder) != 0) {
                 opserr << "WARNING - invalid polyOrder want CollocationHSFixedNumIter $rhoInf <-polyOrder $O>\n";
                 opserr << "          or CollocationHSFixedNumIter $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
             }

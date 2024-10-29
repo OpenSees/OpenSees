@@ -56,7 +56,7 @@ void *    OPS_HHTHSIncrReduct_TP(void)
     }
     
     double dData[5];
-    if (OPS_GetDouble(&argc, dData) != 0) {
+    if (OPS_GetDoubleInput(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want HHTHSIncrReduct_TP $rhoInf $reduct\n";
         opserr << "          or HHTHSIncrReduct_TP $alphaI $alphaF $beta $gamma $reduct\n";
         return 0;

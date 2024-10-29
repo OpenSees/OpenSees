@@ -312,7 +312,7 @@ ArcLength1::recvSelf(int cTag,
   alpha2 = data(1);
   deltaLambdaStep = data(2);
   currentLambda = data(3);
-  signLastDeltaLambdaStep = data(4);
+  signLastDeltaLambdaStep = (int)data(4);
   return 0;
 }
 
