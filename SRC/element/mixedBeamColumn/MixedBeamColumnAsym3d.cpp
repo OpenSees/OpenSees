@@ -188,7 +188,7 @@ void* OPS_MixedBeamColumnAsym3d()
         }
         else if (strcmp(type, "-doRayleigh") == 0) {
             numData = 1;
-            if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+            if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
                 opserr << "WARNING: Invalid doRayleigh in element MixedBeamColumnAsym3d " << iData[0];
                 return 0;
             }
@@ -343,7 +343,7 @@ void * OPS_MixedBeamColumnAsym3dTcl() {
       }
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
-        if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+        if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
           opserr << "WARNING: Invalid doRayleigh in element MixedBeamColumnAsym3d " << eleTag;
           return 0;
         }

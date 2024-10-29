@@ -79,7 +79,7 @@ OPS_QuadBeamEmbedContact(void)
 	oData[0] = dData[2];
 	numData = numArgs - 10;
 	if (numData != 0)
-		if (OPS_GetDouble(&numData, oData) != 0) {
+		if (OPS_GetDoubleInput(&numData, oData) != 0) {
 		opserr << "WARNING invalid data: element QuadBeamEmbedContact" << endln;
 		return 0;
 		}

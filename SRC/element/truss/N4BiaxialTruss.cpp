@@ -78,20 +78,20 @@ OPS_N4BiaxialTruss(void)
 	int ndm = OPS_GetNDM();
 
 	int numData = 5;
-	if (OPS_GetInt(&numData, iData) != 0) {
+	if (OPS_GetIntInput(&numData, iData) != 0) {
 		opserr << "WARNING invalid integer (tag, iNode, jNode, iGNode, jGNode) in element N4BiaxialTruss " << endln;
 		return 0;
 	}
 
 	numData = 1;
-	if (OPS_GetDouble(&numData, &A) != 0) {
+	if (OPS_GetDoubleInput(&numData, &A) != 0) {
 		opserr << "WARNING: Invalid A: element N4BiaxialTruss " << iData[0] << 
 		" $i1Node $j1Node $iG2Node $j2Node $A $matTag1 <-rho $rho> <-doRayleigh $flag>\n";
 		return 0;	
 	}
 
 	numData = 1;
-	if (OPS_GetInt(&numData, &matTag1) != 0) {
+	if (OPS_GetIntInput(&numData, &matTag1) != 0) {
 		opserr << "WARNING: Invalid matTag1: element N4BiaxialTruss " << iData[0] << 
 		" $i1Node $j1Node $iG2Node $j2Node $A $matTag1 <-rho $rho> <-doRayleigh $flag>\n";
 		return 0;
@@ -109,14 +109,14 @@ OPS_N4BiaxialTruss(void)
 
 		if (strcmp(argvS,"-rho") == 0) {
 			numData = 1;
-			if (OPS_GetDouble(&numData, &rho) != 0) {
+			if (OPS_GetDoubleInput(&numData, &rho) != 0) {
 				opserr << "WARNING Invalid rho in element N4BiaxialTruss " << iData[0] << 
 				" $i1Node $j1Node $iG2Node $j2Node $A $matTag1 <-rho $rho> <-doRayleigh $flag>\n";
 				return 0;
 			}
 		} else if (strcmp(argvS,"-doRayleigh") == 0) {
 			numData = 1;
-			if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+			if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
 				opserr << "WARNING: Invalid doRayleigh in element N4BiaxialTruss " << iData[0] << 
 				" $i1Node $j1Node $iG2Node $j2Node $A $matTag1 <-rho $rho> <-doRayleigh $flag>\n";
 				return 0;

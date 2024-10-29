@@ -58,7 +58,7 @@ httpGET_File(char const *URL, char const *page, unsigned int port, const char *f
 // SOME STATIC POINTERS USED IN THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
-extern int OPS_ResetInput(ClientData clientData,
+extern "C" int OPS_ResetInput(ClientData clientData,
 			  Tcl_Interp *interp,
 			  int cArg,
 			  int mArg,

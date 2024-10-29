@@ -79,7 +79,7 @@ OPS_ShellNLDKGQThermal(void)
   
   int iData[6];
   int numData = 6;
-  if (OPS_GetInt(&numData, iData) != 0) {
+  if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid integer tag: element ShellNLDKGQThermal \n";
     return 0;
   }

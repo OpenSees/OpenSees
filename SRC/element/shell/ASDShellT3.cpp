@@ -67,7 +67,7 @@ OPS_ASDShellT3(void)
 
     int iData[5];
     int numData = 5;
-    if (OPS_GetInt(&numData, iData) != 0) {
+    if (OPS_GetIntInput(&numData, iData) != 0) {
         opserr << "WARNING invalid integer tag: element ASDShellT3 \n";
         return 0;
     }
