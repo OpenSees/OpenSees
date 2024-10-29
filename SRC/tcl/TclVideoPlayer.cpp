@@ -200,7 +200,6 @@ TclVideoPlayer::play(void)
 
   // till we are done
   float a,b,c,d;
-  int mode;
   Vector pt(3);
   Vector rgb(3);
   Vector pt2(3);
