@@ -37,7 +37,7 @@
 // Reference: Kolay, C. and J. Ricles (2014). "Development of a family of
 // unconditionally stable explicit direct integration algorithms with
 // controllable numerical energy dissipation." Earthquake Engineering and
-// Structural Dynamics, 43(9):1361–1380.
+// Structural Dynamics, 43(9):1361-1380.
 
 #include <TransientIntegrator.h>
 
@@ -72,13 +72,17 @@ public:
     int update(const Vector &aiPlusOne);
     int commit(void);
 
+    // modalDamping
+    double getCFactor(void) {return c2;}
+
     const Vector &getVel(void);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
     
     void Print(OPS_Stream &s, int flag = 0);
-    
+    int revertToStart();
+
 protected:
     
 private:

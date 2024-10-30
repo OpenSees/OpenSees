@@ -719,5 +719,32 @@ int IMKBilin::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroke
 
 void IMKBilin::Print(OPS_Stream &s, int flag)
 {
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+       s << "\t\t\t{";
+       s << "\"name\": \"" << this->getTag() << "\", ";
+       s << "\"type\": \"IMKPeakOriented\", ";
+       s << "\"Ke\": " << Ke << ", ";
+       s << "\"dp_pos\": " << posUp_0 << ", ";
+       s << "\"dpc_pos\": " << posUpc_0 << ", ";
+       s << "\"du_pos\": " << posUu_0 << ", ";
+       s << "\"Fy_pos\": " << posFy_0 << ", ";
+       s << "\"FmaxFy_pos\": " << posFcapFy_0 << ", ";
+       s << "\"FresFy_pos\": " << posFresFy_0 << ", ";
+       s << "\"dp_neg\": " << negUp_0 << ", ";
+       s << "\"dpc_neg\": " << negUpc_0 << ", ";
+       s << "\"du_neg\": " << negUu_0 << ", ";    
+       s << "\"Fy_neg\": " << negFy_0 << ", ";    
+       s << "\"FmaxFy_neg\": " << negFcapFy_0 << ", ";    
+       s << "\"FresFy_neg\": " << negFresFy_0 << ", ";    
+       s << "\"Lamda_S\": " << LAMBDA_S << ", ";    
+       s << "\"Lamda_C\": " << LAMBDA_C << ", ";  
+       s << "\"Lamda_K\": " << LAMBDA_K << ", ";    
+       s << "\"c_S\": " << c_S << ", ";    
+       s << "\"c_C\": " << c_C << ", ";    
+       s << "\"c_K\": " << c_K << ", ";    
+       s << "\"D_pos\": " << D_pos << ", ";
+       s << "\"D_neg\": " << D_neg << "}";
+       return;
+  }
     cout << "IMKBilin tag: " << this->getTag() << endln;
 }

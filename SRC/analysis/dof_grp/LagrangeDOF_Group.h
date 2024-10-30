@@ -39,6 +39,7 @@
 // What: "@(#) LagrangeDOF_Group.h, revA"
 
 #include <DOF_Group.h>
+#include <Vector.h>
 class SP_Constraint;
 class MP_Constraint;
 
@@ -59,6 +60,9 @@ class LagrangeDOF_Group: public DOF_Group
     virtual const Vector &getCommittedDisp(void);
     virtual const Vector &getCommittedVel(void);
     virtual const Vector &getCommittedAccel(void);
+    virtual const Vector &getTrialDisp();
+    virtual const Vector &getTrialVel();
+    virtual const Vector &getTrialAccel();
     
     // methods to update the trial response at the nodes
     virtual void setNodeDisp(const Vector &u);
@@ -83,6 +87,9 @@ class LagrangeDOF_Group: public DOF_Group
   protected:
     
   private:
+    // we don't have a physical Node, so we need a persistent storage
+    // for the lagrange multipliers so that the lagrange FE can correctly compute the residual
+    Vector m_lagrange_variable;
 
 };
 

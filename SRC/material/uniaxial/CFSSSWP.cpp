@@ -55,6 +55,11 @@ OPS_CFSSSWP(void)
     numCFSSSWP =1;
   }
 
+  opserr << "Due to known issues and unreliable results, this material has been" << endln;
+  opserr << "temporarily removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
+  opserr << "The material source code remains available. Compile at your own risk." << endln;
+  return 0;    
+  
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
@@ -329,7 +334,7 @@ getIndexNeg(Vector v,double value)
 
  void CFSSSWP::SetSpline(void)
  {
-			const int Size = 5;
+			constexpr int Size = 5;
 			double X[Size]; double Y[Size];
 			
 			int fifth = getIndexNeg(envlpNegStrain,state3Strain(0));
@@ -677,7 +682,7 @@ getIndexNeg(Vector v,double value)
  
 		 // BSpline Adds
 
-		 const int Size = 9;
+		 constexpr int Size = 9;
 		 double X[Size]; double Y[Size];
 
 		 for(int i = 0;i < 2;i++)

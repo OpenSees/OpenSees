@@ -93,7 +93,6 @@ extern void *OPS_Bilin(void);
 extern void *OPS_Bilin02(void);
 extern void *OPS_Steel01(void);
 extern void *OPS_SteelMP(void);
-extern void *OPS_FRPConfinedConcrete02(void);
 extern void *OPS_Steel02(void);
 extern void *OPS_Steel03(void);
 extern void *OPS_SteelFractureDI(void); // galvisf
@@ -151,6 +150,7 @@ extern void *OPS_ConcreteECThermal(void);// L.Jiang [SIF]
 extern void *OPS_ElasticMaterialThermal(void); //L.Jiang[SIF]
 //extern void *OPS_PlateBearingConnectionThermal(void);
 extern void* OPS_ASD_SMA_3K(void); // Luca Aceto
+extern void* OPS_ASDConcrete1DMaterial(void);
 extern void *OPS_BWBN(void);
 extern void *OPS_IMKPeakOriented(void);
 extern void *OPS_IMKBilin(void);
@@ -207,6 +207,8 @@ extern void* OPS_Ratchet(void); // Yi Xiao
 extern void* OPS_APDFMD(void);
 extern void* OPS_APDMD(void);
 extern void* OPS_APDVFD(void);
+extern void* OPS_TzSandCPT(void); 
+extern void* OPS_QbSandCPT(void);
 
 
 extern UniaxialMaterial *
@@ -940,7 +942,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	return TCL_ERROR;
     }
     if (strcmp(argv[1],"FRPConfinedConcrete") == 0) {
-      void *theMat = 0; //OPS_FRPConfinedConcrete();
+      void *theMat = OPS_FRPConfinedConcrete();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
@@ -2002,6 +2004,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
       else
         return TCL_ERROR;
     }
+
+    if (strcmp(argv[1], "ASDConcrete1D") == 0) {
+      void *theMat = OPS_ASDConcrete1DMaterial();
+      if (theMat != 0)
+        theMaterial = (UniaxialMaterial *)theMat;
+      else
+        return TCL_ERROR;
+    }
+
     if (strcmp(argv[1],"SelfCentering") == 0) {
       void *theMat = OPS_SelfCenteringMaterial();
       if (theMat != 0)
@@ -2120,7 +2131,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
-     if ((strcmp(argv[1], "APDFMD") == 0)) {
+    if ((strcmp(argv[1], "APDFMD") == 0)) {
         void* theMat = OPS_APDFMD();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
@@ -2134,13 +2145,27 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
-	if ((strcmp(argv[1], "APDVFD") == 0)) {
+    if ((strcmp(argv[1], "APDVFD") == 0)) {
         void* theMat = OPS_APDVFD();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
         else
             return TCL_ERROR;
     }
+    if (strcmp(argv[1], "TzSandCPT") == 0) {
+        void* theMat = OPS_TzSandCPT();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "QbSandCPT") == 0) {
+        void* theMat = OPS_QbSandCPT();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+    }        
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)

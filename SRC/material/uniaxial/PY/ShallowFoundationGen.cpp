@@ -411,7 +411,7 @@ z50mid=kvfactor*qmid/kvMidSpring;
 z50end=kvfactor*qend/kvEndSpring;
 z50endext=kvfactor*qendext/kvEndExt;
 xp50=kxpfactor*Pult/Kx;
-xt50=kxpfactor*Tult/Kx;
+xt50=kxtfactor*Tult/Kx;
 Cd=0.1;
 //--------- END OF Z50 AND X50 CALCULATION
 

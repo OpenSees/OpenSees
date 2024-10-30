@@ -69,6 +69,7 @@ add_subdirectory(surfaceLoad)
 add_subdirectory(feap)
 
 add_subdirectory(PFEMElement)
+add_subdirectory(pipe)
 
 add_subdirectory(mvlem)
 add_subdirectory(pyMacro)

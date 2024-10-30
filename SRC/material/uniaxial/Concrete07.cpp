@@ -97,7 +97,7 @@ Concrete07::Concrete07 (int tag, double FPC, double EPSC0, double EC, double FPT
 
 Concrete07::Concrete07() : UniaxialMaterial(0,MAT_TAG_Concrete07)
 {
-	opserr << "WARNING: Reguire input of tag, fpc, epsc0, Ec, fpt, epst0, xcrp, xcrn, deltaFcu, r\n";
+	//opserr << "WARNING: Reguire input of tag, fpc, epsc0, Ec, fpt, epst0, xcrp, xcrn, deltaFcu, r\n";
 }
 
 Concrete07::~Concrete07()

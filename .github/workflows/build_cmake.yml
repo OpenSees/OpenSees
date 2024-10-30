@@ -1,83 +1,98 @@
 name: CMake Build
 
-env:
-  CMAKE_VERSION: 3.20.1
-  BUILD_TYPE: Debug
-
 on:
   push:
     branches: [master]
 
   pull_request:
     branches: [master]
-    
+
   workflow_dispatch:
 
 jobs:
-  build-ubuntu:
-    name: Ubuntu bundled build
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
+  build-win:
+    name: Build Windows10
+    runs-on: windows-2019
     steps:
-    - uses: actions/checkout@v4
-    - uses: actions/setup-python@v5
-      with:
-        python-version: "3.11"
+      - name: 2.1. Obtaining OpenSees Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      # - name: CMake is already installed
+      # - name: Git is already installed
+      - name: Microsoft Visual Studio
+        uses: ilammy/msvc-dev-cmd@v1
+        with:
+          vsversion: 2019
+      - name: Intel oneAPI Basic & HPC Toolkits
+        shell: pwsh
+        env:
+          WINDOWS_BASEKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/7dff44ba-e3af-4448-841c-0d616c8da6e7/w_BaseKit_p_2024.1.0.595_offline.exe
+          WINDOWS_BASEKIT_COMPONENTS: intel.oneapi.win.mkl.devel
+          WINDOWS_HPCKIT_URL: https://registrationcenter-download.intel.com/akdlm/IRC_NAS/c95a3b26-fc45-496c-833b-df08b10297b9/w_HPCKit_p_2024.1.0.561_offline.exe
+          WINDOWS_HPCKIT_COMPONENTS: "intel.oneapi.win.mpi.devel:intel.oneapi.win.ifort-compiler"
+        working-directory: D:\a\OpenSees\OpenSees\.github\workflows
+        run: |
+          ./install_fortran.bat $env:WINDOWS_BASEKIT_URL $env:WINDOWS_BASEKIT_COMPONENTS
+          ./install_fortran.bat $env:WINDOWS_HPCKIT_URL $env:WINDOWS_HPCKIT_COMPONENTS
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Conan 1.x
+        run: pip install conan<2.0
+      - name: MUMPS
+        shell: cmd
+        run: |
+          git clone https://github.com/OpenSees/mumps.git
+          cd mumps
+          mkdir build
+          cd build
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
+          cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
+          cmake --build . --config Release --parallel 4
+      - name: 2.2.2. Building the OpenSees Applications and Python module
+        shell: cmd
+        run: |
+          mkdir build
+          cd build
+          conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
+          call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
+          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
+          cmake --build . --config Release --target OpenSees -j8
+          cmake --build . --config Release --target OpenSeesPy -j8
+      - name: Verification OpenSeesPySP
+        shell: pwsh
+        run: |
+          mv ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/bin/
+          $env:PYTHONPATH = "./build/bin/"
+          python -c "import sys; print(sys.path)"
+          python ./EXAMPLES/ExamplePython/example_variable_analysis.py
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: OpenSees_Windows
+            path: |
+              ./build/bin/OpenSees.exe
+              ./build/bin/opensees.pyd
+              ./build/bin/libiomp5md.dll
 
-    - name: Install conan
-      run: python3 -m pip install conan==1.60.0
-
-    - name: Detect Conan Defaults
-      run: |
-        conan --version
-
-    - name: Build
-      run: |
-        mkdir build
-        cd build
-        conan install .. --build missing
-        cmake ..
-        cmake --build . -j8
-
-        #- name: Verification
-        #  run: |
-        #    cd ./EXAMPLES/verification/ && ../../build/OpenSeesTcl runVerificationSuite.tcl
-    - name: Build OpenSeesPy
-      run: |
-        cd ./build
-        cmake ..
-        make -j 4
-        make OpenSeesPy
-        mkdir fake_folder
-    - name: Rename OpenSeesPy
-      run: |
-        cd ./build
-        mv lib/OpenSeesPy.so lib/opensees.so
-
-# Simple sanity test
-    - name: Verification OpenSeesPySP
-      run: |
-        cd ./build
-        cd ../EXAMPLES/ExamplePython/
-        export PYTHONPATH="../../build/lib/"
-        python3 -c "import sys; print(sys.path)"
-        python3 example_variable_analysis.py
-#        # Simple MP sanity test
-#        - name: Verification OpenSeesPyMP
-#          run: |
-#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
   build-mac:
-    name: Mac Build
+    name: Build Mac OS
     runs-on: macos-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
+      - name: 2.1. Obtaining OpenSees Source Code
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - uses: actions/setup-python@v5
+      - name: Python 3.11
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Install Library
+      # - name: XCode Command Line Tools is already installed.
+      - name: Install other dependencies via Homebrew
         run: |
          ln -s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
          ln -s /opt/homebrew/bin/gfortran-13 /usr/local/bin/gfortran
@@ -86,7 +101,15 @@ jobs:
          brew install open-mpi
          brew install scalapack
          sudo ln -sf /opt/homebrew/include/eigen3/Eigen /opt/homebrew/include/Eigen
-      - name: Build
+      - name: MUMPS
+        run: |
+          git clone https://github.com/OpenSees/mumps.git
+          cd mumps
+          mkdir build
+          cd build
+          cmake .. -Darith=d
+          cmake --build . --config Release --parallel 4
+      - name: 2.3.2. Building the OpenSees Applications and Python module
         run: |
           mkdir build
           cd build
@@ -96,7 +119,55 @@ jobs:
           mv ./OpenSeesPy.dylib ./opensees.so
       - name: Verification OpenSeesPySP
         run: |
-          cd ./EXAMPLES/ExamplePython/
-          export PYTHONPATH="../../build/"
+          export PYTHONPATH="./build/"
           python3 -c "import sys; print(sys.path)"
-          python3 example_variable_analysis.py
+          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: OpenSees_Mac
+            path: |
+              ./build/OpenSees
+              ./build/opensees.so
+
+  build-ubuntu:
+    name: Build Ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 2.1. Obtaining OpenSees Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      # - name: Needed Applications and Libraries are already satisfied.
+      - name: Conan 1.x
+        run: pip install "conan<2.0"
+      - name: 2.4.2. Building the OpenSees Applications and Python module
+        run: |
+          mkdir build
+          cd build
+          conan install .. --build missing # conan executables location is different.
+          cmake ..
+          cmake --build . --target OpenSees -j8
+          cmake --build . --target OpenSeesPy -j8
+          mv lib/OpenSeesPy.so lib/opensees.so
+      - name: Verification OpenSeesPySP   # Simple Sanity Test
+        run: |
+          export PYTHONPATH="./build/lib/"
+          python3 -c "import sys; print(sys.path)"
+          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: OpenSees_Ubuntu
+            path: |
+              ./build/bin/OpenSees
+              ./build/lib/opensees.so
+#        # Simple MP sanity test
+#        - name: Verification OpenSeesPyMP
+#          run: |
+#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py

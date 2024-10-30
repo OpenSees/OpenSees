@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SectionRepres.h>
 #include <TimeSeries.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 #include <BeamIntegration.h>
 #include <NodalLoad.h>
 #include <AnalysisModel.h>
@@ -164,7 +165,8 @@ static ElementFunction* theElementFunctions = 0;
 
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
-    :interpreter(interp), theDomain(0), ndf(0), ndm(0),
+    :interpreter(interp), theDomain(0), 
+     ndf(0), ndm(0),
      theSOE(0), theEigenSOE(0), theNumberer(0), theHandler(0),
      theStaticIntegrator(0), theTransientIntegrator(0),
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),
@@ -961,6 +963,9 @@ OpenSeesCommands::wipe()
     // wipe GeomTransf
     OPS_clearAllCrdTransf();
 
+    // wipe damping
+    OPS_clearAllDamping();
+
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();
 
@@ -1118,6 +1123,19 @@ int OPS_GetDoubleInput(int *numData, double *data)
     DL_Interpreter* interp = cmds->getInterpreter();
     if (numData == 0 || data == 0) return -1;
     return interp->getDouble(data, *numData);
+}
+
+int OPS_GetDoubleListInput(int* size, Vector* data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->getDoubleList(size, data);
+}
+
+int OPS_EvalDoubleStringExpression(const char* theExpression, double& current_val) {
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->evalDoubleStringExpression(theExpression, current_val);
 }
 
 int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
@@ -2094,6 +2112,9 @@ int OPS_ConstraintHandler()
 
     } else if (strcmp(type,"Transformation") == 0) {
     	theHandler = (ConstraintHandler*)OPS_TransformationConstraintHandler();
+
+    } else if (strcmp(type,"Auto") == 0) {
+    	theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
 
     } else {
     	opserr<<"WARNING unknown ConstraintHandler type "<<type<<"\n";

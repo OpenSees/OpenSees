@@ -57,6 +57,8 @@ void* OPS_RectangularSeries();
 void* OPS_PulseSeries();
 void* OPS_MPAccSeries();   //Tang.S
 void* OPS_SocketSeries();
+void* OPS_DiscretizedRandomProcessSeries();
+void* OPS_SimulatedRandomProcessSeries();
 
 namespace {
     
@@ -233,6 +235,9 @@ namespace {
 	functionMap.insert(std::make_pair("Socket", &OPS_SocketSeries));
 	functionMap.insert(std::make_pair("SocketSeries", &OPS_SocketSeries));
 
+	functionMap.insert(std::make_pair("DiscretizedRandomProcess", &OPS_DiscretizedRandomProcessSeries));
+	functionMap.insert(std::make_pair("SimulatedRandomProcess", &OPS_SimulatedRandomProcessSeries));
+      
 	return 0;
     }
 }

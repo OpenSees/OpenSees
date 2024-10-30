@@ -512,14 +512,32 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
 //print out data
 void  MembranePlateFiberSection::Print( OPS_Stream &s, int flag )
 {
-  s << "MembranePlateFiberSection: \n " ;
-  s <<  "  Thickness h = "        <<  h  <<  endln ;
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"PlateFiber\", ";
+        s << "\"thickness\": \"" << h << "\", ";
+        s << "\"fibers\": [\n";
+        for (int i = 0; i < numFibers; i++) {
+            s << "\t\t\t\t{\"centroid\": " << (i+0.5) * h / numFibers << ", ";
+            s << "\"material\": \"" << theFibers[i]->getTag() << "\"";
+            if (i < numFibers - 1)
+                s << "},\n";
+            else
+                s << "}\n";
+        }
+        s << "\t\t\t]}";
+    }
+    else {
+        s << "MembranePlateFiberSection: \n ";
+        s << "  Thickness h = " << h << endln;
 
-  for (int i = 0; i < numFibers; i++) {
-    theFibers[i]->Print( s, flag ) ;
-  }
+        for (int i = 0; i < numFibers; i++) {
+            theFibers[i]->Print(s, flag);
+        }
 
-  return ;
+        return;
+    }
 }
 
 int 

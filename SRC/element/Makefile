@@ -45,6 +45,7 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/XMUelements; $(MAKE);
 	@$(CD) $(FE)/element/mvlem; $(MAKE);
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE);
+	@$(CD) $(FE)/element/pipe; $(MAKE);
 	@$(CD) $(FE)/element/componentElement; $(MAKE);
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE);
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE);
@@ -97,6 +98,7 @@ spotless: clean
 	@$(CD) $(FE)/element/XMUelements; $(MAKE) wipe;
 	@$(CD) $(FE)/element/mvlem; $(MAKE) wipe;
 	@$(CD) $(FE)/element/PFEMElement; $(MAKE) wipe;
+	@$(CD) $(FE)/element/pipe; $(MAKE) wipe;
 	@$(CD) $(FE)/element/componentElement; $(MAKE) wipe;
 	@$(CD) $(FE)/element/catenaryCable; $(MAKE) wipe;
 	@$(CD) $(FE)/element/tetrahedron; $(MAKE) wipe;

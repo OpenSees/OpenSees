@@ -10,7 +10,7 @@ SHELL ["/bin/bash", "-c"]
 
 WORKDIR /opensees
 
-ARG versionOpenSees=v3.6.0
+ARG versionOpenSees=v3.7.0
 
 RUN cp /etc/apt/sources.list /etc/apt/sources.list~ \
     && sed -Ei 's/^# deb-src /deb-src /' /etc/apt/sources.list \

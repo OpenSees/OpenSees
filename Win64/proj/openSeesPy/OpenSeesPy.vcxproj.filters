@@ -70,6 +70,9 @@
     <ClCompile Include="..\..\..\SRC\interpreter\PythonStream.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\api\packages.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\classTags.h">
@@ -94,6 +97,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\interpreter\OpenSeesReliabilityCommands.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\interpreter\PythonStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\reliability\domain\functionEvaluator\PythonEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

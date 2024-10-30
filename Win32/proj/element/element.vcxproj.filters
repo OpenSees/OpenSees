@@ -144,6 +144,9 @@
     <Filter Include="mefi">
       <UniqueIdentifier>{cf4d1e34-1cd5-4338-9cc3-6a7271261f51}</UniqueIdentifier>
     </Filter>
+    <Filter Include="pipe">
+      <UniqueIdentifier>{b000d79e-0e45-41cf-8e9b-9b20cbc63eaf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\element\Element.cpp">
@@ -770,9 +773,6 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.cpp">
       <Filter>shell</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp">
-      <Filter>shell</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp">
       <Filter>dispBeamColumn</Filter>
     </ClCompile>
@@ -1054,6 +1054,21 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
       <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\pipe\CurvedPipe.cpp">
+      <Filter>pipe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\pipe\Pipe.cpp">
+      <Filter>pipe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3dThermal.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.cpp">
+      <Filter>twoNodeLink</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1618,9 +1633,6 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.h">
       <Filter>shell</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h">
-      <Filter>shell</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.h">
       <Filter>dispBeamColumn</Filter>
     </ClInclude>
@@ -1893,6 +1905,21 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
       <Filter>elasticBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\pipe\CurvedPipe.h">
+      <Filter>pipe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\pipe\Pipe.h">
+      <Filter>pipe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3dThermal.h">
+      <Filter>forceBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.h">
+      <Filter>twoNodeLink</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

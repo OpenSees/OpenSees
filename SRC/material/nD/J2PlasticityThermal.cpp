@@ -867,16 +867,12 @@ J2PlasticityThermal::getCopy (void)
 const char*
 J2PlasticityThermal::getType (void) const
 {
-    opserr << "J2PlasticityThermal::getType -- subclass responsibility\n";
-    exit(-1);
-    return 0;
+    return "BaseClass";
 }
 
 int
 J2PlasticityThermal::getOrder (void) const
 {
-    opserr << "J2PlasticityThermal::getOrder -- subclass responsibility\n";
-    exit(-1);
     return 0;
 }
 

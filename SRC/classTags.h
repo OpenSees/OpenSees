@@ -182,6 +182,7 @@
 #define MAT_TAG_Pinching                        60
 #define MAT_TAG_HookGap 			61
 #define MAT_TAG_FRPConfinedConcrete             62
+#define MAT_TAG_FRPConfinedConcrete02 5010
 #define MAT_TAG_Steel01Thermal		        63
 #define MAT_TAG_Steel02Thermal			64
 #define MAT_TAG_Concrete02Thermal		65
@@ -254,6 +255,10 @@
 #define MAT_TAG_CoulombDamperMaterial 228
 #define MAT_TAG_FlagShapeMaterial 229
 #define MAT_TAG_CreepMaterial 230
+#define MAT_TAG_ASDConcrete1DMaterial 231
+#define MAT_TAG_PipeMaterial 232
+#define MAT_TAG_TzSandCPT 233
+#define MAT_TAG_QbSandCPT 234
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -359,6 +364,8 @@
 #define SEC_TAG_BiaxialHysteretic 36
 #define SEC_TAG_ElasticTube3d 37
 #define SEC_TAG_CreepSection 38
+#define SEC_TAG_ASDCoupledHinge3D 39
+#define SEC_TAG_PipeSection 40
 
 #define SEC_TAG_MCFTFiberSection2d 7601
 
@@ -392,6 +399,7 @@
 #define ND_TAG_Damage2p3D 			24
 #define ND_TAG_Damage2ppstress 			25
 #define ND_TAG_SimplifiedJ2                     26
+#define ND_TAG_PlaneStressSimplifiedJ2                     2626
 #define ND_TAG_CapPlasticity                    27
 #define ND_TAG_PlaneStressUserMaterial          28
 #define ND_TAG_PlateFromPlaneStressMaterial     29
@@ -410,6 +418,7 @@
 #define ND_TAG_MaterialCMM                        42
 #define ND_TAG_FSAM                               43
 #define ND_TAG_PlasticDamageConcrete3d            44
+#define ND_TAG_PlasticDamageConcretePlaneStress            4444
 #define ND_TAG_PlaneStressLayeredMaterial         45
 #define ND_TAG_PlaneStressRebarMaterial           46
 #define ND_TAG_Faria1998PlaneStrain               48
@@ -455,6 +464,7 @@
 #define ND_TAG_J2AxiSymm                      3007
 #define ND_TAG_J2ThreeDimensional             3009
 #define ND_TAG_J2PlateFiber		      3010
+#define ND_TAG_J2PlateFibre 30101
 #define ND_TAG_J2BeamFiber		      3011
 #define ND_TAG_J2BeamFiber2d 91625
 #define ND_TAG_J2BeamFiber3d 92516
@@ -533,6 +543,7 @@
 #define ND_TAG_PlateFromPlaneStressMaterialThermal 7008   //L.Jiang[SIF]
 
 #define ND_TAG_InitStressNDMaterial 7009
+#define ND_TAG_MinMaxNDMaterial 70091
 
 #define ND_TAG_IncrementalElasticIsotropicThreeDimensional 7010 //Chile
 
@@ -550,7 +561,7 @@
 #define ND_TAG_SmearedSteelDoubleLayerT2DMaterial01 7019		  // M. J. Nunez - UChile
 
 #define ND_TAG_InitStrainNDMaterial 7020 // Massimo Petracca ASDEA Software
-#define ND_TAG_ASDPlasticMaterial 10000 // For ASDPlasticity-class material
+#define ND_TAG_ASDPlasticMaterial3D 10000 // For ASDPlasticity-class material
 
 
 #define FIBER_TAG_Uniaxial2d	1
@@ -726,6 +737,7 @@
 #define ELE_TAG_ElastomericBearingPlasticity3d 84
 #define ELE_TAG_ElastomericBearingPlasticity2d 85
 #define ELE_TAG_TwoNodeLink             86
+#define ELE_TAG_TwoNodeLinkSection           86001
 #define ELE_TAG_ActuatorCorot           87
 #define ELE_TAG_Actuator                88
 #define ELE_TAG_Adapter                 89
@@ -815,7 +827,7 @@
 #define ELE_TAG_ForceBeamColumn3dThermal  172  //L.Jiang [SIF] //Still testing
 #define ELE_TAG_ShellMITC4Thermal         173   //L.Jiang [SIF]
 #define ELE_TAG_ShellNLDKGQThermal        174   //L.Jiang [SIF]
-#define ELE_TAG_ShellANDeS                175 //by jaabell (UANDES)
+#define ELE_TAG_DeprecatedShell           175 
 #define ELE_TAG_AxEqDispBeamColumn2d      178
 #define ELE_TAG_FourNodeTetrahedron       179 //by jaabell (UANDES)
 #define ELE_TAG_TriSurfaceLoad            180 //by jaabell (UANDES) 
@@ -881,6 +893,9 @@
 #define ELE_TAG_FSIFluidElement2D          265  // Massimo Petracca (ASDEA)
 #define ELE_TAG_FSIInterfaceElement2D      266  // Massimo Petracca (ASDEA)
 #define ELE_TAG_FSIFluidBoundaryElement2D  267  // Massimo Petracca (ASDEA)
+#define ELE_TAG_ShellNLDKGTThermal		   268 // Giovanni Rinaldin
+#define ELE_TAG_Pipe                      269
+#define ELE_TAG_CurvedPipe                      270
 
 
 #define FRN_TAG_Coulomb            1
@@ -976,6 +991,7 @@
 #define HANDLER_TAG_PenaltyConstraintHandler    	3
 #define HANDLER_TAG_TransformationConstraintHandler    	4
 #define HANDLER_TAG_PenaltyHandlerNoHomoSPMultipliers   5
+#define HANDLER_TAG_AutoConstraintHandler    6
 
 #define NUMBERER_TAG_DOF_Numberer      	1
 #define NUMBERER_TAG_PlainNumberer 	2
