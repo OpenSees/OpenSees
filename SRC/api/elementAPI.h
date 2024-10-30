@@ -136,12 +136,12 @@ class ConvergenceTest;
 #define OPS_SetIntDictListOutput ops_setintdictlistoutput_
 #define OPS_GetDouble ops_getdoubleinput_
 #define OPS_GetDoubleInput ops_getdoubleinput_
+#define OPS_GetDoubleListInput ops_getdoublelistinput_
+#define OPS_EvalDoubleStringExpression ops_evaldoublestringexpression_
 #define OPS_SetDoubleOutput ops_setdoubleoutput_
 #define OPS_SetDoubleListsOutput ops_setdoublelistsoutput_
 #define OPS_SetDoubleDictOutput ops_setdoubledictoutput_
 #define OPS_SetDoubleDictListOutput ops_setdoubledictlistoutput_
-#define OPS_GetDoubleListInput ops_getdoublelistinput_
-#define OPS_EvalDoubleStringExpression ops_evaldoublestringexpression_
 #define OPS_GetString ops_getstring
 #define OPS_GetStringFromAll ops_getstringfromall_
 #define OPS_SetString ops_setstring
