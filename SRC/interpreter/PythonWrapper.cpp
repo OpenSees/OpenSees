@@ -1170,7 +1170,7 @@ static PyObject *Py_ops_setNodeDisp(PyObject *self, PyObject *args)
 
 static PyObject *Py_ops_getNodeTemperature(PyObject *self, PyObject *args)
 {
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
     if (OPS_getNodeTemperature() < 0) {
 	opserr<<(void*)0;
@@ -1182,7 +1182,7 @@ static PyObject *Py_ops_getNodeTemperature(PyObject *self, PyObject *args)
 
 static PyObject *Py_ops_setNodeTemperature(PyObject *self, PyObject *args)
 {
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
     if (OPS_setNodeTemperature() < 0) {
 	opserr<<(void*)0;
@@ -2419,7 +2419,7 @@ static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
 
 static PyObject *Py_ops_filter(PyObject *self, PyObject *args)
 {
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
     if (OPS_filter() < 0) {
 	opserr<<(void*)0;
@@ -2431,7 +2431,7 @@ static PyObject *Py_ops_filter(PyObject *self, PyObject *args)
 
 static PyObject *Py_ops_spectrum(PyObject *self, PyObject *args)
 {
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
     if (OPS_spectrum() < 0) {
 	opserr<<(void*)0;
@@ -2443,7 +2443,7 @@ static PyObject *Py_ops_spectrum(PyObject *self, PyObject *args)
 
 static PyObject *Py_ops_modulatingFunction(PyObject *self, PyObject *args)
 {
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
     if (OPS_modulatingFunction() < 0) {
 	opserr<<(void*)0;
@@ -2894,7 +2894,7 @@ static PyObject *Py_ops_findDesignPoint(PyObject *self,
 
 static PyObject *Py_ops_findCurvatures(PyObject *self,
 				       PyObject *args) {
-  wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+  wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
   if (OPS_findCurvatures() < 0) {
     opserr << (void *)0;
@@ -2916,7 +2916,7 @@ static PyObject *Py_ops_runFORMAnalysis(PyObject *self, PyObject *args) {
 }
 
 static PyObject *Py_ops_runSORMAnalysis(PyObject *self, PyObject *args) {
-    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
 
     if (OPS_runSORMAnalysis() < 0) {
         opserr << (void *)0;

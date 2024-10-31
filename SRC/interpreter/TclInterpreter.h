@@ -61,8 +61,10 @@ class TclInterpreter: public DL_Interpreter
     virtual int getNumRemainingInputArgs(void);
     virtual int getInt(int *, int numArgs);
     virtual int getDouble(double *, int numArgs);
+    virtual int getDoubleList(int* size, Vector* data);
     virtual const char* getString();
     virtual int getStringCopy(char **stringPtr);
+    virtual int evalDoubleStringExpression(const char* theExpression, double& current_val);
     virtual void resetInput(int cArg);
 
     // methods for interpreters to output results

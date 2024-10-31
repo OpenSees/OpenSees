@@ -4788,33 +4788,39 @@ TclCommand_addFrictionModel(ClientData clientData,
 }
 
 int 
-TclCommand_Package(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+TclCommand_Package(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
 {
-  
-  void *libHandle;
-  int (*funcPtr)(ClientData clientData, Tcl_Interp *interp,  int argc, 
-		 TCL_Char **argv, Domain*, TclModelBuilder*);       
-  
-  const char *funcName = 0;
-  int res = -1;
-  
-  if (argc == 2) {
-    res = getLibraryFunction(argv[1], argv[1], &libHandle, (void **)&funcPtr);
-  } else if (argc == 3) {
-    res = getLibraryFunction(argv[1], argv[2], &libHandle, (void **)&funcPtr);
-  }
-
-  if (res == 0) {
-    int result = (*funcPtr)(clientData, interp, argc, argv, theTclDomain, theTclBuilder);
-  } else {
-    opserr << "Error: Could not find function: " << argv[1] << endln;
-    return -1;
-  }
-
-  return res;
+	// make sure correct number of arguments on command line
+	if (argc < 1) {
+		opserr << "WARNING insufficient arguments\n";
+		printCommand(argc, argv);
+		opserr << "Want: loadPackage libName? <fncName?>\n";
+		return TCL_ERROR;
+	}
+    
+	int res = -1;
+	void* libHandle;
+	int (*funcPtr)(ClientData clientData, Tcl_Interp * interp,
+		int argc, TCL_Char * *argv, Domain*);
+    
+	// get the library function
+	if (argc == 2) {
+		res = getLibraryFunction(argv[1], argv[1], &libHandle, (void**)&funcPtr);
+	}
+	else if (argc == 3) {
+		res = getLibraryFunction(argv[1], argv[2], &libHandle, (void**)&funcPtr);
+	}
+    
+	// finally load the package (i.e., load the function from the library)
+	if (res == 0) {
+		res = (*funcPtr)(clientData, interp, argc, argv, theTclDomain);
+	}
+	else {
+		opserr << "Error: Could not find function: " << argv[1] << endln;
+	}
+    
+	return res;
 }
-
-
 
 // Added by Alborz Ghofrani - U.Washington
 extern int

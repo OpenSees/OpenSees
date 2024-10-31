@@ -189,7 +189,7 @@ int PythonModule::getDoubleList(int* size, Vector* data)
     wrapper.incrCurrentArg();
 
     if (PyList_Check(o)) {
-        *size = PyList_Size(o);
+        *size = (int)PyList_Size(o);
         data->resize(*size);
         for (int i = 0; i < *size; i++) {
             PyErr_Clear();
@@ -205,7 +205,7 @@ int PythonModule::getDoubleList(int* size, Vector* data)
         }
     }
     else if (PyTuple_Check(o)) {
-        *size = PyTuple_Size(o);
+        *size = (int)PyTuple_Size(o);
         data->resize(*size);
         for (int i = 0; i < *size; i++) {
             PyErr_Clear();
@@ -328,31 +328,31 @@ int
 PythonModule::evalDoubleStringExpression(const char* theExpression, double& current_val)
 {
     if (theExpression == 0) {
-        opserr << "OPS_EvalDoubleStringExpression Error: Expression not set\n";
+        opserr << "PythonModule::evalDoubleStringExpression error: Expression not set\n";
         return -1;
     }
 
     // run the string and get results
     PyObject* py_main = PyImport_AddModule("__main__");
     if (py_main == NULL) {
-        opserr << "OPS_EvalDoubleStringExpression Error: cannot add module  __main__\n";
+        opserr << "PythonModule::evalDoubleStringExpression error: cannot add module  __main__\n";
         return -1;
     }
     PyObject* py_dict = PyModule_GetDict(py_main);
     if (py_main == NULL) {
-        opserr << "OPS_EvalDoubleStringExpression Error: cannot get dict of module __main__\n";
+        opserr << "PythonModule::evalDoubleStringExpression error: cannot get dict of module __main__\n";
         return -1;
     }
     PyObject* PyRes = PyRun_String(theExpression, Py_eval_input, py_dict, py_dict);
 
     if (PyRes == NULL) {
-        opserr << "OPS_EvalDoubleStringExpression Error: failed to evaluate expression\n";
+        opserr << "PythonModule::evalDoubleStringExpression error: failed to evaluate expression\n";
         return -1;
     }
 
     // get results
     if (!(PyLong_Check(PyRes) || PyFloat_Check(PyRes) || PyBool_Check(PyRes))) {
-        opserr << "OPS_EvalDoubleStringExpression Error: the expression must return a float (or int or bool)\n";
+        opserr << "PythonModule::evalDoubleStringExpression error: the expression must return a float (or int or bool)\n";
         return -1;
     }
     current_val = PyFloat_AsDouble(PyRes);
