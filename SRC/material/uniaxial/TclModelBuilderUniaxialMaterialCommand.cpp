@@ -209,7 +209,7 @@ extern void* OPS_APDMD(void);
 extern void* OPS_APDVFD(void);
 extern void* OPS_TzSandCPT(void); 
 extern void* OPS_QbSandCPT(void);
-
+extern void* OPS_CoulombDamperMaterial(void);
 
 extern UniaxialMaterial *
 Tcl_AddLimitStateMaterial(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg);
@@ -1200,6 +1200,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     if (strcmp(argv[1],"Cable") == 0) {
 
       void *theMat = OPS_CableMaterial();
+      if (theMat != 0) 
+	theMaterial = (UniaxialMaterial *)theMat;
+      else 
+	return TCL_ERROR;
+    }
+    if (strcmp(argv[1],"CoulombDamper") == 0) {
+
+      void *theMat = OPS_CoulombDamperMaterial();
       if (theMat != 0) 
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
