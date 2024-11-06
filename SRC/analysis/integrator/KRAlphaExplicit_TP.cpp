@@ -140,10 +140,12 @@ int KRAlphaExplicit_TP::newStep(double _deltaT)
     }
     
     // initialize the integration matrices
-    if (initAlphaMatrices || _deltaT != deltaT)  {
-        
+    if (_deltaT != deltaT) {
         // update time step increment
         deltaT = _deltaT;
+        initAlphaMatrices = 1;
+    }
+    if (initAlphaMatrices)  {
         if (deltaT <= 0.0)  {
             opserr << "WARNING KRAlphaExplicit_TP::newStep() - error in variable\n";
             opserr << "dT = " << deltaT << endln;

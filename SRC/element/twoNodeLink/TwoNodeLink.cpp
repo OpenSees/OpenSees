@@ -132,6 +132,18 @@ void* OPS_TwoNodeLink()
     y(0) = 0;
     y(1) = 1;
     y(2) = 0;
+
+    if (x.Norm() > 0) {
+      // If local x points along global Y, change the local y vector
+      if (x(0) == 0.0 && x(1) > 0.0 && x(2) == 0.0) {
+	y(0) = -1;
+	y(1) = 0;
+      }
+      if (x(0) == 0.0 && x(1) < 0.0 && x(2) == 0.0) {
+	y(0) = 1;
+	y(1) = 0;
+      }      
+    }
     
     Vector Mratio, sDistI;
     int doRayleigh = 0;
