@@ -1264,11 +1264,9 @@ NodeRecorder::initialize(void)
   sprintf(nodeCrdData,"coord");
 
   if (echoTimeFlag == true) {
-    if (theNodalTags != 0 && addColumnInfo == 1) {
       theOutputHandler->tag("TimeOutput");
       theOutputHandler->tag("ResponseType", "time");
       theOutputHandler->endTag();
-    }
   }
 
   for (int i=0; i<numValidNodes; i++) {
