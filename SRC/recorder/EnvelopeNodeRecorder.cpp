@@ -1169,7 +1169,7 @@ EnvelopeNodeRecorder::initialize(void)
 	theHandler->endTag();
       }
 
-      sprintf(outputData, "%s%d", dataType, j+1);
+      sprintf(outputData, "%s%d", dataType, (*theDofs)(j)+1);
       theHandler->tag("ResponseType",outputData);
     }
 
