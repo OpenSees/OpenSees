@@ -86,7 +86,8 @@ class SAniSandMS : public NDMaterial
 
 
     // null constructor
-    SAniSandMS();
+    SAniSandMS(int classTag=0);
+
     // destructor
     ~SAniSandMS();
  
@@ -145,12 +146,9 @@ class SAniSandMS : public NDMaterial
 	double m_nb;
 	double m_A0;
 	double m_nd;
-
-
 	double m_zeta;
 	double m_mu0;
-	// double m_beta;  old formulation
-	double m_beta;   	//new formulation
+	double m_beta; 
 
 	
 	// internal variables

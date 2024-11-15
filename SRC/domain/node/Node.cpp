@@ -2123,7 +2123,8 @@ Node::addReactionForce(const Vector &add, double factor){
   else if (factor == -1.0)
     *reaction -= add;
   else
-    *reaction = add * factor;
+    //*reaction = add * factor;
+    reaction->addVector(1.0,add,factor);
 
   return 0;
 }
