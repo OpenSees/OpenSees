@@ -288,6 +288,9 @@
 #include "UWmaterials/ManzariDafaliasRO.h"
 #include "UWmaterials/ManzariDafalias3DRO.h"
 #include "UWmaterials/ManzariDafaliasPlaneStrainRO.h"
+#include "UANDESmaterials/SAniSandMS.h"
+#include "UANDESmaterials/SAniSandMS3D.h"
+#include "UANDESmaterials/SAniSandMSPlaneStrain.h"
 #include "UWmaterials/PM4Sand.h"
 #include "UWmaterials/PM4Silt.h"
 #include "J2CyclicBoundingSurface.h"
@@ -2398,6 +2401,16 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
 
   case ND_TAG_SmearedSteelDoubleLayerT2DMaterial01:
 	  return new SmearedSteelDoubleLayerT2DMaterial01();
+
+  case ND_TAG_SAniSandMS: 
+    return new SAniSandMS();
+
+  case ND_TAG_SAniSandMSPlaneStrain: 
+    return new SAniSandMSPlaneStrain();
+
+  case ND_TAG_SAniSandMS3D: 
+    return new SAniSandMS3D();
+
     
   default:
     opserr << "FEM_ObjectBrokerAllClasses::getNewNDMaterial - ";
