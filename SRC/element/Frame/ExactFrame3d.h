@@ -29,6 +29,12 @@ class ExactFrame3d:
   public FiniteElement<nen, 3, 6>
 {
 public:
+  enum Logarithm {
+    None,
+    LogLeft,
+    LogRight
+  };
+
   ExactFrame3d(int tag, std::array<int,nen>& nodes,
                FrameSection *section[nip], 
                FrameTransform3d& transf
@@ -83,6 +89,7 @@ public:
           ndm = 3,              // Dimension of the problem (3D)
           ndf = 6;              // Degrees of freedom per node
 
+
     // Layout of stress resultants
     static constexpr FrameStressLayout scheme = {
       FrameStress::N,
@@ -110,6 +117,7 @@ public:
     std::array<GaussPoint,nip> past;
     BeamIntegration*        stencil;
     FrameTransform3d*       transform;
+    Logarithm               logarithm;
 
 
     //
@@ -201,6 +209,7 @@ ExactFrame3d<nen,nip>::ExactFrame3d(int tag,
                                     FrameTransform3d& transf)
     : FiniteElement<nen, 3, 6>(tag, 0, nodes),
       transform(&transf),
+      logarithm(Logarithm::None),
       stencil(nullptr)
 {
 //  double wt[nip];
@@ -332,7 +341,6 @@ ExactFrame3d<nen,nip>::update()
     const Vector& ddui = theNodes[i]->getIncrDeltaDisp();
     for (int j=0; j<ndf; j++)
       ddu[i][j] = ddui[j];
-//  opserr << "ddu(" << this->getTag() << ")[" << i << "] = " << Vector(ddu[i]) << "\n";
   }
 
   // Form displaced node locations xyz
