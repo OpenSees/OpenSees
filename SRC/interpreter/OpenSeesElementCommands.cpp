@@ -258,6 +258,7 @@ void* OPS_PML2D_5(void);
 void* OPS_PML2D_12(void);
 void* OPS_PML2DVISCOUS(void);
 void* OPS_PML3D(void);
+void* OPS_PML3DGeneral(void);
 void* OPS_Inno3DPnPJoint();
 void* OPS_ShellMITC4Thermal();
 void* OPS_ShellNLDKGQThermal();
@@ -815,6 +816,7 @@ namespace {
 	functionMap.insert(std::make_pair("PML2D_5", &OPS_PML2D_5));
 	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
 	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
+	functionMap.insert(std::make_pair("PML3DGeneral", &OPS_PML3DGeneral));
 	functionMap.insert(std::make_pair("ShellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
 	functionMap.insert(std::make_pair("shellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
 	functionMap.insert(std::make_pair("ShellNLDKGTThermal", &OPS_ShellNLDKGTThermal));

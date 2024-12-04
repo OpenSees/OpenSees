@@ -140,6 +140,7 @@ extern void *OPS_PML2D_3(void);
 extern void *OPS_PML2D_5(void);
 extern void *OPS_PML2D_12(void);
 extern void *OPS_PML2DVISCOUS(void);
+extern void *OPS_PML3DGeneral(void); // Amin Pakzad
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -593,6 +594,14 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     } 
+  } else if ((strcmp(argv[1],"PML3DGeneral") == 0) || (strcmp(argv[1],"pml3dgeneral")) == 0) {
+    Element *theEle = (Element *)OPS_PML3DGeneral();
+    if (theEle != 0) 
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
   } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
     Element *theEle = 0;
     ID info;
