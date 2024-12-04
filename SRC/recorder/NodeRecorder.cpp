@@ -1279,11 +1279,9 @@ NodeRecorder::initialize(void)
   sprintf(nodeCrdData,"coord");
 
   if (echoTimeFlag == true) {
-    if (theNodalTags != 0 && addColumnInfo == 1) {
       theOutputHandler->tag("TimeOutput");
       theOutputHandler->tag("ResponseType", "time");
       theOutputHandler->endTag();
-    }
   }
 
   for (int i=0; i<numValidNodes; i++) {
@@ -1304,7 +1302,7 @@ NodeRecorder::initialize(void)
     }
 
     for (int k=0; k<theDofs->Size(); k++) {
-      sprintf(outputData, "%s%d", dataType, k+1);
+      sprintf(outputData, "%s%d", dataType, (*theDofs)(k)+1);
       theOutputHandler->tag("ResponseType",outputData);
     }
 
