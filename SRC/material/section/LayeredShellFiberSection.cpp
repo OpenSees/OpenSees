@@ -336,7 +336,12 @@ LayeredShellFiberSection::setResponse(const char **argv, int argc,
       output.endTag();
     }
   }
-
+  else if ((strcmp(argv[0],"sectionFailed") == 0) || 
+	   (strcmp(argv[0],"hasSectionFailed") == 0) ||
+	   (strcmp(argv[0],"hasFailed") == 0)) {
+    theResponse = new MaterialResponse(this, 777, 0);
+  }
+  
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
 
@@ -346,6 +351,21 @@ LayeredShellFiberSection::setResponse(const char **argv, int argc,
 int 
 LayeredShellFiberSection::getResponse(int responseID, Information &secInfo)
 {
+  if (responseID == 777) {
+    int count = 0;
+    for (int j = 0; j < nLayers; j++) {    
+      if (theFibers[j]->hasFailed() == true) {
+	count += 1;
+      }
+    }
+    if (count == nLayers)
+      count = 1;
+    else
+      count = 0;
+    
+    return secInfo.setInt(count);
+  }
+  
   return SectionForceDeformation::getResponse(responseID, secInfo);
 }
 
