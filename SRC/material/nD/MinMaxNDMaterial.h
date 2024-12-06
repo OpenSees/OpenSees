@@ -75,7 +75,8 @@ class MinMaxNDMaterial : public NDMaterial
     int updateParameter(int parameterID, Information& info);
 
     Response* setResponse(const char** argv, int argc, OPS_Stream& output);
-
+    bool hasFailed(void) {return Cfailed;}
+  
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     const Vector &getStressSensitivity(int gradIndex, bool conditional);
     int commitSensitivity(const Vector &depsdh, int gradIndex, int numGrads);
