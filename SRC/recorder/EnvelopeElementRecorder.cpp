@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**    OpenSeesite - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -315,7 +315,7 @@ EnvelopeElementRecorder::EnvelopeElementRecorder(const ID *ele,
 						 double rTolDt,
 						 bool echoTime,
 						 const ID *indexValues,
-						 closeOnW)
+						 bool closeOnW)
  :Recorder(RECORDER_TAGS_EnvelopeElementRecorder),
   numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
   theHandler(&theOutputHandler), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
@@ -429,6 +429,9 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
   }
 
   int result = 0;
+  bool writeIt = false;
+
+    
   // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
   // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
     if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
@@ -468,9 +471,9 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
     }
 
     int sizeData = currentData->Size();
+    
     if (echoTimeFlag == false) {
 
-      bool writeIt = false;
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
 	  (*data)(0,i) = (*currentData)(i);
@@ -499,7 +502,6 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
       }
     } else {
       sizeData /= 2;
-      bool writeIt = false;
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
 	  
@@ -537,7 +539,7 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	}
       }
     }
-  }    
+    }
 
     // deal with close on write flag
     if (closeOnWrite == true && writeIt == true) {
