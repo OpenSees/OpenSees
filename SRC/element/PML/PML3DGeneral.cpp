@@ -64,7 +64,21 @@ void* OPS_PML3DGeneral()
 	}
 
 
+	double noramls[6];
+	num = 6;
+	if (OPS_GetDoubleInput(&num, noramls) < 0) {
+		opserr << "WARNING: invalid double data: could be x0 y0 z0 nx ny nz\n";
+		return 0;
+	}
 
+
+	double _x0_pml = noramls[0];
+    double _y0_pml = noramls[1];
+    double _z0_pml = noramls[2];
+
+    double _nx_pml = noramls[3];
+    double _ny_pml = noramls[4];
+    double _nz_pml = noramls[5];
 
 
     //reading E , nu, rho
@@ -87,34 +101,24 @@ void* OPS_PML3DGeneral()
 		return 0;
 	}
 
-	// reading material properties
-	double dData[9]; 
-    num = 9;
-	if (OPS_GetDoubleInput(&num, dData) < 0) {
-		opserr << "WARNING: invalid PML Material Propertises\n";
-		return 0;
-	}
-
 	// create a new PML3DGeneral element and add it to the Domain
     double _gamma = Newmark[0];
     double _beta  = Newmark[1];
     double _eta   = Newmark[2]; 
 
-    // double _E     = dData[0];
-    // double _nu    = dData[1];
-    // double _rho   = dData[2];
+	// reading material properties
+	double dData[3]; 
+    num = 3;
+	if (OPS_GetDoubleInput(&num, dData) < 0) {
+		opserr << "WARNING: invalid PML Material Propertises\n";
+		return 0;
+	}
 
     double _m_pml = dData[0];
     double _L_pml = dData[1];
     double _R_pml = dData[2];
 
-    double _x0_pml = dData[3];
-    double _y0_pml = dData[4];
-    double _z0_pml = dData[5];
 
-    double _nx_pml = dData[6];
-    double _ny_pml = dData[7];
-    double _nz_pml = dData[8];
 
 	return new PML3DGeneral(idata[0], &idata[1],
                             _E, _nu, _rho,
@@ -219,26 +223,26 @@ PML3DGeneral::PML3DGeneral(int tag, int* nodeTags,
     EffectiveStiffnessMatrix.Zero();
     ImpedanceMatrix.Zero();
 
-    // create the coordinate vectors
-    opserr << "PML3DGeneral::PML3DGeneral()" << endln;
-    opserr << "element data: "    << endln;
-    opserr << "\t tag: "    << tag    << endln;
-    opserr << "\t nodeTags: "     << connectedExternalNodes;
-    opserr << "\t E: "     << E     << endln;
-    opserr << "\t nu: "    << nu    << endln;
-    opserr << "\t rho: "   << rho   << endln;
-    opserr << "\t eta: "    << eta    << endln;
-    opserr << "\t beta: "   << beta   << endln;
-    opserr << "\t gamma: "  << gamma  << endln;
-    opserr << "\t m_pml: "  << m_pml  << endln;
-    opserr << "\t L_pml: "  << L_pml  << endln;
-    opserr << "\t R_pml: "  << R_pml  << endln;
-    opserr << "\t x0_pml: " << x0_pml << endln;
-    opserr << "\t y0_pml: " << y0_pml << endln;
-    opserr << "\t z0_pml: " << z0_pml << endln;
-    opserr << "\t nx_pml: " << nx_pml << endln;
-    opserr << "\t ny_pml: " << ny_pml << endln;
-    opserr << "\t nz_pml: " << nz_pml << endln;
+    // // create the coordinate vectors
+    // opserr << "PML3DGeneral::PML3DGeneral()" << endln;
+    // opserr << "element data: "    << endln;
+    // opserr << "\t tag: "    << tag    << endln;
+    // opserr << "\t nodeTags: "     << connectedExternalNodes;
+    // opserr << "\t E: "     << E     << endln;
+    // opserr << "\t nu: "    << nu    << endln;
+    // opserr << "\t rho: "   << rho   << endln;
+    // opserr << "\t eta: "    << eta    << endln;
+    // opserr << "\t beta: "   << beta   << endln;
+    // opserr << "\t gamma: "  << gamma  << endln;
+    // opserr << "\t m_pml: "  << m_pml  << endln;
+    // opserr << "\t L_pml: "  << L_pml  << endln;
+    // opserr << "\t R_pml: "  << R_pml  << endln;
+    // opserr << "\t x0_pml: " << x0_pml << endln;
+    // opserr << "\t y0_pml: " << y0_pml << endln;
+    // opserr << "\t z0_pml: " << z0_pml << endln;
+    // opserr << "\t nx_pml: " << nx_pml << endln;
+    // opserr << "\t ny_pml: " << ny_pml << endln;
+    // opserr << "\t nz_pml: " << nz_pml << endln;
 }
 
 // =======================================================================
@@ -286,14 +290,14 @@ void PML3DGeneral::setDomain(Domain* theDomain)
     Vector X7 = nodePointers[6]->getCrds();
     Vector X8 = nodePointers[7]->getCrds();
 
-    opserr << "X1: " << X1(0) << " " << X1(1) << " " << X1(2) << endln;
-    opserr << "X2: " << X2(0) << " " << X2(1) << " " << X2(2) << endln;
-    opserr << "X3: " << X3(0) << " " << X3(1) << " " << X3(2) << endln;
-    opserr << "X4: " << X4(0) << " " << X4(1) << " " << X4(2) << endln;
-    opserr << "X5: " << X5(0) << " " << X5(1) << " " << X5(2) << endln;
-    opserr << "X6: " << X6(0) << " " << X6(1) << " " << X6(2) << endln;
-    opserr << "X7: " << X7(0) << " " << X7(1) << " " << X7(2) << endln;
-    opserr << "X8: " << X8(0) << " " << X8(1) << " " << X8(2) << endln;
+    // opserr << "X1: " << X1(0) << " " << X1(1) << " " << X1(2) << endln;
+    // opserr << "X2: " << X2(0) << " " << X2(1) << " " << X2(2) << endln;
+    // opserr << "X3: " << X3(0) << " " << X3(1) << " " << X3(2) << endln;
+    // opserr << "X4: " << X4(0) << " " << X4(1) << " " << X4(2) << endln;
+    // opserr << "X5: " << X5(0) << " " << X5(1) << " " << X5(2) << endln;
+    // opserr << "X6: " << X6(0) << " " << X6(1) << " " << X6(2) << endln;
+    // opserr << "X7: " << X7(0) << " " << X7(1) << " " << X7(2) << endln;
+    // opserr << "X8: " << X8(0) << " " << X8(1) << " " << X8(2) << endln;
 
 }
 
