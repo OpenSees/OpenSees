@@ -53,16 +53,19 @@ void* OPS_GroundMotion()
 	    int numData = 1;
 	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
 	    accelSeries = OPS_getTimeSeries(tstag);
+	    dtInt = accelSeries->getTimeIncr(0.0);
 	} else if(type == "-vel"||type == "-velocity") {
 	    int tstag;
 	    int numData = 1;
 	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
 	    velSeries = OPS_getTimeSeries(tstag);
+	    dtInt = velSeries->getTimeIncr(0.0);
 	} else if(type == "-disp"||type == "-displacement") {
 	    int tstag;
 	    int numData = 1;
 	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
 	    dispSeries = OPS_getTimeSeries(tstag);
+	    dtInt = dispSeries->getTimeIncr(0.0);
 	} else if(type == "-fact"||type == "-factor") {
 	    int numData = 1;
 	    if(OPS_GetDoubleInput(&numData,&fact) < 0) return 0;
