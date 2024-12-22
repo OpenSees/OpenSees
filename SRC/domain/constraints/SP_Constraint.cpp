@@ -257,8 +257,8 @@ int SP_Constraint_GetNextTag(void) {
 // constructor for FEM_ObjectBroker
 SP_Constraint::SP_Constraint(int clasTag)
 :DomainComponent(0,clasTag),
- nodeTag(0), dofNumber(0), valueR(0.0), valueC(0.0), initialValue(0.0), initialized(false), isConstant(true), 
- loadPatternTag(-1)
+ nodeTag(0), dofNumber(0), valueR(0.0), valueC(0.0), initialValue(0.0),
+ initialized(false), isConstant(true), zeroInit(false), loadPatternTag(-1)
 {
   numSPs++;
 }
@@ -266,8 +266,8 @@ SP_Constraint::SP_Constraint(int clasTag)
 // constructor for a subclass to use
 SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 :DomainComponent(nextTag++, clasTag),
- nodeTag(node), dofNumber(ndof), valueR(0.0), valueC(0.0), initialValue(0.0), initialized(false), isConstant(true), 
- loadPatternTag(-1)
+ nodeTag(node), dofNumber(ndof), valueR(0.0), valueC(0.0), initialValue(0.0),
+ initialized(false), isConstant(true),  zeroInit(false), loadPatternTag(-1)
  // valueC is set to 1.0 so that homo will be false when recvSelf() invoked
  // should be ok as valueC cannot be used by subclasses and subclasses should
  // not be used if it is a homogeneous constraint.
@@ -278,8 +278,8 @@ SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 // constructor for object of type SP_Constraint
 SP_Constraint::SP_Constraint(int node, int ndof, double value, bool ISconstant, bool zInit)
 :DomainComponent(nextTag++, CNSTRNT_TAG_SP_Constraint),
- nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0), initialized(false), isConstant(ISconstant), zeroInit(zInit)
- loadPatternTag(-1)
+ nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0),
+ initialized(false), isConstant(ISconstant), zeroInit(zInit), loadPatternTag(-1)
 {
   numSPs++;
 }
