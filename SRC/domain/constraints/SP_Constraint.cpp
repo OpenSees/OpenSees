@@ -276,9 +276,9 @@ SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 }
 
 // constructor for object of type SP_Constraint
-SP_Constraint::SP_Constraint(int node, int ndof, double value, bool ISconstant)
+SP_Constraint::SP_Constraint(int node, int ndof, double value, bool ISconstant, bool zInit)
 :DomainComponent(nextTag++, CNSTRNT_TAG_SP_Constraint),
- nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0), initialized(false), isConstant(ISconstant),
+ nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0), initialized(false), isConstant(ISconstant), zeroInit(zInit)
  loadPatternTag(-1)
 {
   numSPs++;
@@ -317,7 +317,10 @@ double
 SP_Constraint::getInitialValue(void)
 {
     // return the initial value of the constraint
+  if (zeroInit == false)
     return initialValue;
+  else
+    return 0;
 }
 
 int

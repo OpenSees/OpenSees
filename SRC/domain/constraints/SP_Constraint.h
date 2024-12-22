@@ -47,7 +47,7 @@ class SP_Constraint : public DomainComponent
     // constructors    
     SP_Constraint(int classTag);        
     SP_Constraint(int nodeTag, int ndof, int classTag);    
-    SP_Constraint(int nodeTag, int ndof, double value, bool isConstant);
+    SP_Constraint(int nodeTag, int ndof, double value, bool isConstant, bool zeroInit = false);
 
     // destructor
     virtual ~SP_Constraint();
@@ -78,6 +78,7 @@ class SP_Constraint : public DomainComponent
     double initialValue; // the value of the dof when the sp constrain is added to the domain
     bool initialized; // a flag to avoid recomputing the intial value in setDomain if already initialized
     bool isConstant; // flag indicating if constant
+  bool zeroInit; // algo's subtract initialValue, this so that initValue returns 0 if true
     int  loadPatternTag;    
 };
 
