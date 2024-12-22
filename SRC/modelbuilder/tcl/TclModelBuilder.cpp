@@ -3753,6 +3753,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   bool isSpConst = false;
+  bool zeroInitial = false;
   bool userSpecifiedPattern = false;
   int loadPatternTag = 0; // some pattern that will never be used!
 
@@ -3761,6 +3762,11 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     if (strcmp(argv[endMarker],"-const") == 0) {
       // allow user to specify const load
       isSpConst = true;
+      
+    } else if (strcmp(argv[endMarker],"-useZeroInit") == 0) {
+      // allow user to ignore init disp values at the node
+      zeroInitial = true;
+      
     } else if (strcmp(argv[endMarker],"-pattern") == 0) {
       // allow user to specify load pattern other than current
       endMarker++;
