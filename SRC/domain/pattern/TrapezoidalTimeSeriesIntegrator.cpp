@@ -73,7 +73,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
   }
 
   // Add one to get ceiling out of type cast
-  long long numSteps = (long long)theSeries->getDuration() / delta + 1.0;
+  long long numSteps = (long long)(theSeries->getDuration() / delta + 1.0);
 
   Vector *theInt = new Vector (numSteps);
 
@@ -139,7 +139,7 @@ TrapezoidalTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double del
   }
 
   // Add one to get ceiling out of type cast
-  long long numSteps = (long long)theSeries->getDuration() / delta + 1.0;
+  long long numSteps = (long long)(theSeries->getDuration() / delta + 1.0);
 
   Vector *theDif = new Vector (numSteps);
 
@@ -163,6 +163,7 @@ TrapezoidalTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double del
 
   Fi = 0.0;
 
+  opserr<<"differentiate()\n";
   for (long long i = 0; i < numSteps; i++, dummyTime += delta) {
     Fj = theSeries->getFactor(dummyTime);
 
@@ -172,6 +173,8 @@ TrapezoidalTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double del
     (*theDif)[i] = f;
 
     Fi = Fj;
+    if (i < 10)
+      opserr<<"data"<<f<<" "<<Fi<<" "<<Fj<<"\n";
   }
 
   // Set the method return value
