@@ -49,7 +49,7 @@ using std::ios;
 PathTimeSeries::PathTimeSeries()	
   :TimeSeries(TSERIES_TAG_PathTimeSeries),
    thePath(0), time(0), currentTimeLoc(0), cFactor(0.0),
-   dbTag1(0), dbTag2(0), lastSendCommitTag(-1)
+   dbTag1(0), dbTag2(0), useLast(false)
 {
   // does nothing
 }
@@ -61,8 +61,7 @@ PathTimeSeries::PathTimeSeries(int tag,
 			       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathTimeSeries),
    thePath(0), time(0), currentTimeLoc(0), cFactor(theFactor),
-   dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0),
-   useLast(last)
+   dbTag1(0), dbTag2(0), useLast(last)
 {
   // check vectors are of same size
   if (theLoadPath.Size() != theTimePath.Size()) {
@@ -96,8 +95,7 @@ PathTimeSeries::PathTimeSeries(int tag,
 			       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathTimeSeries),
    thePath(0), time(0), currentTimeLoc(0), cFactor(theFactor),
-   dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0),
-   useLast(last)
+   dbTag1(0), dbTag2(0), useLast(last)
 {
   // determine the number of data points
   int numDataPoints1 =0;
@@ -204,7 +202,7 @@ PathTimeSeries::PathTimeSeries(int tag,
 			       bool last)
   :TimeSeries(tag, TSERIES_TAG_PathTimeSeries),
    thePath(0), time(0), currentTimeLoc(0), cFactor(theFactor),
-   dbTag1(0), dbTag2(0), lastChannel(0), useLast(last)
+   dbTag1(0), dbTag2(0), useLast(last)
 {
   // determine the number of data points
   int numDataPoints = 0;
@@ -404,26 +402,17 @@ int
 PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
-  Vector data(6);
+  Vector data(6+1);
   data(0) = cFactor;
-  data(1) = -1;
+  int size = thePath->Size();
+  data(1) = size;
   
-  if (thePath != 0) {
-    int size = thePath->Size();
-    data(1) = size;
-    if (dbTag1 == 0) {
-      dbTag1 = theChannel.getDbTag();
-      dbTag2 = theChannel.getDbTag();
-    }
-    data(2) = dbTag1;
-    data(3) = dbTag2;
+  if (dbTag1 == 0) {
+    dbTag1 = theChannel.getDbTag();
+    dbTag2 = theChannel.getDbTag();
   }
-
-  if ((lastSendCommitTag == -1) && (theChannel.isDatastore() == 1)) {
-    lastSendCommitTag = commitTag;
-  }
-
-  data(4) = lastSendCommitTag;
+  data(2) = dbTag1;
+  data(3) = dbTag2;
   
   if (useLast == true)
     data(5) = 1;
@@ -438,29 +427,26 @@ PathTimeSeries::sendSelf(int commitTag, Channel &theChannel)
 
   // we only send the vector data if this is the first time it is sent to the database
   // or the channel is for sending the data to a remote process
-
-  if (lastChannel != &theChannel || (lastSendCommitTag == commitTag) || (theChannel.isDatastore() == 0)) {  
-
-    lastChannel = &theChannel;
-
-    if (thePath != 0) {
-      result = theChannel.sendVector(dbTag1, commitTag, *thePath);
-      if (result < 0) {
-	opserr << "PathTimeSeries::sendSelf() - ";
-	opserr << "channel failed to send the Path Vector\n";
-	return result;  
-      }
+  // ...
+  // Now sending the vector data every time
+  
+  if (thePath != 0) {
+    result = theChannel.sendVector(dbTag1, commitTag, *thePath);
+    if (result < 0) {
+      opserr << "PathTimeSeries::sendSelf() - ";
+      opserr << "channel failed to send the Path Vector\n";
+      return result;  
     }
-    if (time != 0) {
-      result = theChannel.sendVector(dbTag2, commitTag, *time);
-      if (result < 0) {
-	opserr << "PathTimeSeries::sendSelf() - ";
-	opserr << "channel failed to send the Path Vector\n";
-	return result;  
-      }
-    }
-    return 0;
   }
+  if (time != 0) {
+    result = theChannel.sendVector(dbTag2, commitTag, *time);
+    if (result < 0) {
+      opserr << "PathTimeSeries::sendSelf() - ";
+      opserr << "channel failed to send the Path Vector\n";
+      return result;  
+    }
+  }
+
   return 0;
 }
 
@@ -469,7 +455,7 @@ PathTimeSeries::recvSelf(int commitTag, Channel &theChannel,
 		       FEM_ObjectBroker &theBroker)
 {
   int dbTag = this->getDbTag();
-  Vector data(6);
+  Vector data(6+1);
   int result = theChannel.recvVector(dbTag,commitTag, data);
   if (result < 0) {
     opserr << "PathTimeSeries::sendSelf() - channel failed to receive data\n";
@@ -478,17 +464,15 @@ PathTimeSeries::recvSelf(int commitTag, Channel &theChannel,
   }
   cFactor = data(0);
   int size = data(1);
-  lastSendCommitTag = data(4);
 
   if (data(5) == 1)
     useLast = true;
   else
     useLast = false;
 
-  // get the data cvector, only receive them once as they cannot change
-  if (thePath == 0 && size > 0) {
-    dbTag1 = data(2);
-    dbTag2 = data(3);
+  // allocate the data vector if needed
+  if ((thePath == 0 || time == 0) && size > 0) {
+
     thePath = new Vector(size);
     time = new Vector(size);
     if (thePath == 0 || time == 0 ||
@@ -504,19 +488,24 @@ PathTimeSeries::recvSelf(int commitTag, Channel &theChannel,
       time = 0;
       return -1;
     }
-    result = theChannel.recvVector(dbTag1, lastSendCommitTag, *thePath);    
-    if (result < 0) {
-      opserr << "PathTimeSeries::recvSelf() - ";
-      opserr << "channel failed to receive the Path Vector\n";
-      return result;  
-    }
-    result = theChannel.recvVector(dbTag2, lastSendCommitTag, *time);    
-    if (result < 0) {
-      opserr << "PathTimeSeries::recvSelf() - ";
-      opserr << "channel failed to receive the time Vector\n";
-      return result;  
-    }
   }
+  
+  dbTag1 = data(2);
+  dbTag2 = data(3);
+  
+  result = theChannel.recvVector(dbTag1, commitTag, *thePath);    
+  if (result < 0) {
+    opserr << "PathTimeSeries::recvSelf() - ";
+    opserr << "channel failed to receive the Path Vector\n";
+    return result;  
+  }
+  result = theChannel.recvVector(dbTag2, commitTag, *time);    
+  if (result < 0) {
+    opserr << "PathTimeSeries::recvSelf() - ";
+    opserr << "channel failed to receive the time Vector\n";
+    return result;  
+  }
+
   return 0;    
 }
 

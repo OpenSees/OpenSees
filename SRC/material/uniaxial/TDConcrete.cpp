@@ -75,16 +75,6 @@
 #include <Vector.h>
 
 
-//Added by AMK to use dylib:
-//-----------------------------------------------------------------------
-	#ifdef _USRDLL
-	#define OPS_Export extern "C" _declspec(dllexport)
-	#elif _MACOSX
-	#define OPS_Export extern "C" __attribute__((visibility("default")))
-	#else
-	#define OPS_Export extern "C"
-	#endif
-
 	static int numTDConcrete = 0;
 
 //	OPS_Export void *
@@ -147,9 +137,10 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
   fc(_fc), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
 {
   ecminP = 0.0;
+  ecmaxP = 0.0;
   deptP = 0.0;
 
-	sigCr = fabs(sigCr);
+  //sigCr = fabs(sigCr);
   eP = Ec; //Added by AMK
   epsP = 0.0;
   sigP = 0.0;
@@ -177,9 +168,9 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
 	
 	
 	//Change inputs into the proper sign convention:
-		fc = -1.0*fabs(fc); 
-		epsshu = -1.0*fabs(epsshu);
-		epscru = 1.0*fabs(epscru); 
+		fc = -fabs(fc); 
+		epsshu = -fabs(epsshu);
+		epscru = fabs(epscru); 
 }
 
 TDConcrete::TDConcrete(void):
@@ -210,7 +201,7 @@ TDConcrete::getInitialTangent(void)
 double
 TDConcrete::getCurrentTime(void)
 {
-	double currentTime;
+	double currentTime = 0.0;
 	Domain * theDomain = ops_TheActiveDomain;
 
 	if (theDomain != 0) {
@@ -559,7 +550,7 @@ TDConcrete::revertToStart(void)
 int 
 TDConcrete::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(11);
+  static Vector data(14);
   data(0) =ft;    
   data(1) =Ec; 
   data(2) =beta;   
@@ -571,7 +562,10 @@ TDConcrete::sendSelf(int commitTag, Channel &theChannel)
   data(8) =epscra; 
   data(9) =epscrd;     
   data(10) = this->getTag();
-
+  data(11) = fc;
+  data(12) = tcast;
+  data(13) = count;
+  
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcrete::sendSelf() - failed to sendSelf\n";
     return -1;
@@ -584,7 +578,7 @@ TDConcrete::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(11);
+  static Vector data(14);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcrete::recvSelf() - failed to recvSelf\n";
@@ -602,7 +596,10 @@ TDConcrete::recvSelf(int commitTag, Channel &theChannel,
   epscra = data(8); 
   epscrd = data(9);   
   this->setTag(data(10));
-
+  fc = data(11);
+  tcast = data(12);
+  count = (int)data(13);
+  
   e = eP;
   sig = sigP;
   eps = epsP;

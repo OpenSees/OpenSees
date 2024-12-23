@@ -31,6 +31,7 @@
 #include <MembranePlateFiberSection.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <MaterialResponse.h>
 #include <string.h>
 #include <elementAPI.h>
 
@@ -512,14 +513,32 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
 //print out data
 void  MembranePlateFiberSection::Print( OPS_Stream &s, int flag )
 {
-  s << "MembranePlateFiberSection: \n " ;
-  s <<  "  Thickness h = "        <<  h  <<  endln ;
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"PlateFiber\", ";
+        s << "\"thickness\": \"" << h << "\", ";
+        s << "\"fibers\": [\n";
+        for (int i = 0; i < numFibers; i++) {
+            s << "\t\t\t\t{\"centroid\": " << (i+0.5) * h / numFibers << ", ";
+            s << "\"material\": \"" << theFibers[i]->getTag() << "\"";
+            if (i < numFibers - 1)
+                s << "},\n";
+            else
+                s << "}\n";
+        }
+        s << "\t\t\t]}";
+    }
+    else {
+        s << "MembranePlateFiberSection: \n ";
+        s << "  Thickness h = " << h << endln;
 
-  for (int i = 0; i < numFibers; i++) {
-    theFibers[i]->Print( s, flag ) ;
-  }
+        for (int i = 0; i < numFibers; i++) {
+            theFibers[i]->Print(s, flag);
+        }
 
-  return ;
+        return;
+    }
 }
 
 int 
@@ -686,6 +705,11 @@ MembranePlateFiberSection::setResponse(const char **argv, int argc,
     }
 
   }
+  else if ((strcmp(argv[0],"sectionFailed") == 0) || 
+	   (strcmp(argv[0],"hasSectionFailed") == 0) ||
+	   (strcmp(argv[0],"hasFailed") == 0)) {
+    theResponse = new MaterialResponse(this, 777, 0);
+  }  
 
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
@@ -697,6 +721,21 @@ MembranePlateFiberSection::setResponse(const char **argv, int argc,
 int 
 MembranePlateFiberSection::getResponse(int responseID, Information &sectInfo)
 {
+  if (responseID == 777) {
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {    
+      if (theFibers[j]->hasFailed() == true) {
+	count += 1;
+      }
+    }
+    if (count == numFibers)
+      count = 1;
+    else
+      count = 0;
+    
+    return sectInfo.setInt(count);
+  }
+  
   // Just call the base class method ... don't need to define
   // this function, but keeping it here just for clarity
   return SectionForceDeformation::getResponse(responseID, sectInfo);

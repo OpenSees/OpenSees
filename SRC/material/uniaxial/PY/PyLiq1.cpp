@@ -71,10 +71,6 @@
 #include <FluidSolidPorousMaterial.h>
 #include <PressureDependMultiYield.h>
 
-// Controls on internal iteration between spring components
-const int PYmaxIterations = 20;
-const double PYtolerance = 1.0e-12;
-
 int PyLiq1::loadStage = 0;
 int PyConstructorType = 1;
 Vector PyLiq1::stressV3(3);
@@ -174,7 +170,7 @@ pRes(p_res), theDomain(the_Domain), theSeries(the_Series)
 //	Default constructor
 
 PyLiq1::PyLiq1()
-:PySimple1(), pRes(0.0), solidElem1(0), solidElem2(0), theDomain(0), theSeries(0)
+  :PySimple1(0, MAT_TAG_PyLiq1), pRes(0.0), solidElem1(0), solidElem2(0), theDomain(0), theSeries(0)
 {
 }
 
@@ -291,6 +287,7 @@ PyLiq1::setTrialStrain (double newy, double yRate)
 double 
 PyLiq1::getStress(void)
 {
+  const double PYtolerance = 1.0e-12;
 	double dashForce = getStrainRate()*this->getDampTangent();
 
 	// Limit the combined force to pult*(1-ru).

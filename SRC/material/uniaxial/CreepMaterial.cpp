@@ -52,6 +52,8 @@
 #include <Domain.h>
 #include <MaterialResponse.h>
 #include <Vector.h>
+#include <ID.h>
+#include <FEM_ObjectBroker.h>
 
 #include <Concrete02IS.h>
 #include <ElasticMaterial.h>
@@ -155,12 +157,14 @@ OPS_CreepMaterial() {
 
 CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, double _ft, double _Ec, double _beta, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast): 
   UniaxialMaterial(tag, MAT_TAG_CreepMaterial), wrappedMaterial(0),
-  fc(_fc), fcu(_fcu), epscu(_epscu), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
+  fc(_fc), fcu(_fcu), epscu(_epscu), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast), maxSize(startSize),
+  PHI_i(0), E_i(0), DSIG_i(0), TIME_i(0), DTIME_i(0)
 {
   wrappedMaterial = new Concrete02IS(0,Ec,fc,2*fc/Ec,fcu,epscu);
   //wrappedMaterial = new ElasticMaterial(0,Ec);
 
   ecminP = 0.0;
+  ecmaxP = 0.0;
   deptP = 0.0;
   
   //sigCr = fabs(sigCr);
@@ -191,14 +195,72 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
   
   
   //Change inputs into the proper sign convention:
-  fc = -1.0*fabs(fc); 
-  epsshu = -1.0*fabs(epsshu);
-  epscru = 1.0*fabs(epscru);
+  fc = -fabs(fc); 
+  epsshu = -fabs(epsshu);
+  epscru = fabs(epscru);
+
+  this->expandArrays();
+}
+
+void
+CreepMaterial::expandArrays()
+{
+  if (PHI_i == 0)
+    PHI_i = new float[maxSize];
+
+  if (E_i == 0)
+    E_i = new float[maxSize];
+
+  if (DSIG_i == 0)
+    DSIG_i = new float[maxSize];
+
+  if (TIME_i == 0)
+    TIME_i = new float[maxSize];
+
+  if (DTIME_i == 0)
+    DTIME_i = new float[maxSize];
+
+  if (count+1 >= maxSize) {
+    maxSize += growSize;
+
+    float *a = new float[maxSize];
+    float *b = new float[maxSize];
+    float *c = new float[maxSize];
+    float *e = new float[maxSize];
+    float *f = new float[maxSize];
+
+    for (int i = 0; i <= count; i++) {
+      a[i] = PHI_i[i];
+      b[i] = E_i[i];
+      c[i] = DSIG_i[i];
+      e[i] = TIME_i[i];
+      f[i] = DTIME_i[i];
+    }
+
+    if (PHI_i != 0)
+      delete [] PHI_i;
+    if (E_i != 0)
+      delete [] E_i;
+    if (DSIG_i != 0)
+      delete [] DSIG_i;
+    if (TIME_i != 0)
+      delete [] TIME_i;
+    if (DTIME_i != 0)
+      delete [] DTIME_i;
+
+    PHI_i = a;
+    E_i = b;
+    DSIG_i = c;
+    TIME_i = e;
+    DTIME_i = f;    
+  }
+  
 }
 
 CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, double _epsshu, double _epssha, double _tcr, double _epscru, double _epscra, double _epscrd, double _tcast): 
   UniaxialMaterial(tag, MAT_TAG_CreepMaterial), wrappedMaterial(0),
-  age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
+  age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast), maxSize(startSize),
+  PHI_i(0), E_i(0), DSIG_i(0), TIME_i(0), DTIME_i(0)  
 {
   wrappedMaterial = matl.getCopy();
   if (wrappedMaterial == 0) {
@@ -208,7 +270,7 @@ CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, doubl
 
   // Set initial tangent
   Ec = wrappedMaterial->getInitialTangent();
-  
+    
   ecminP = 0.0;
   deptP = 0.0;
   
@@ -238,13 +300,15 @@ CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, doubl
   iter = 0;
   
   //Change inputs into the proper sign convention:
-  fc = -1.0*fabs(fc); 
-  epsshu = -1.0*fabs(epsshu);
-  epscru = 1.0*fabs(epscru);
+  epsshu = -fabs(epsshu);
+  epscru = fabs(epscru);
+
+  this->expandArrays();  
 }
 
 CreepMaterial::CreepMaterial(void):
-  UniaxialMaterial(0, MAT_TAG_CreepMaterial), wrappedMaterial(0)
+  UniaxialMaterial(0, MAT_TAG_CreepMaterial), wrappedMaterial(0), maxSize(startSize),
+  PHI_i(0), E_i(0), DSIG_i(0), TIME_i(0), DTIME_i(0)
 {
  
 }
@@ -253,12 +317,26 @@ CreepMaterial::~CreepMaterial(void)
 {
   if (wrappedMaterial != 0)
     delete wrappedMaterial;
+
+  if (PHI_i != 0)
+    delete [] PHI_i;
+  if (E_i != 0)
+    delete [] E_i;
+  if (DSIG_i != 0)
+    delete [] DSIG_i;
+  if (TIME_i != 0)
+    delete [] TIME_i;
+  if (DTIME_i != 0)
+    delete [] DTIME_i;
 }
 
 UniaxialMaterial*
 CreepMaterial::getCopy(void)
 {
   CreepMaterial *theCopy = new CreepMaterial(this->getTag(), *wrappedMaterial, age, epsshu, epssha, tcr, epscru, epscra, epscrd, tcast); 
+
+  theCopy->maxSize = maxSize;
+  theCopy->count = count;
   
   return theCopy;
 }
@@ -272,7 +350,7 @@ CreepMaterial::getInitialTangent(void)
 double
 CreepMaterial::getCurrentTime(void)
 {
-  double currentTime;
+  double currentTime = 0.0;
   Domain * theDomain = ops_TheActiveDomain;
   
   if (theDomain != 0) {
@@ -386,48 +464,6 @@ CreepMaterial::setTrialStrain(double trialStrain, double strainRate)
 }
 
 double
-CreepMaterial::setStress(double strain, double &stiff)
-{
-  // Determine proper load path (comp load, comp unload, tens load, tens unload):
-  double stress=0.0;
-  crack_flag = crackP_flag;
-  ecmin = ecminP; //Initialized as ecmin = 0; ecmin should never be positive
-  ecmax = ecmaxP; //Initialized as ecmax = 0; ecmax should never be negative
-  
-  if (strain <= ecmin) { // Concrete in compression loading
-    this->Compr_Envlp(strain,stress,stiff);
-    ecmin = strain;			// reset ecmin
-    crack_flag = 0;			// concrete in compression, no cracking
-  } else { // Concrete in either: Comp Unload, Tens Load, or Tens Unload/reload
-    if (strain < 0.0) { // Compression Unloading
-      //stiff = Ec;
-      //stress = strain * stiff;
-      this->Compr_Envlp(strain,stress,stiff);
-    } else { // either Tens Load, Tens Unload, or Tens reload
-      double et0 = ft/Ec;
-      if (strain >= ecmax) { //Tens Load or reload if strain is larger than before
-	//Need to check whether cracking has occurred or not
-	//If cracked, then reloading occurs along Et
-	//If not cracked, then loading occurs according to Tens_Envlp
-	ecmax = strain; // reset ecmax
-	this->Tens_Envlp(strain, stress, stiff);
-	if (strain >= et0) {//cracking has occurred, set cracking flag
-	  crack_flag = 1;
-	}
-      } else { //Tens Unload or Tens Reload
-	if (strain<=et0 && ecmax<=et0) { //Linear unloading/reloading, i.e, not cracked
-	  this->Tens_Envlp(strain,stress,stiff);
-	} else { // Nonlinear unloading/reloading, i.e., cracked
-	  stress = Et*strain;
-	  stiff = Et;
-	}
-      }
-    }
-  }
-  return stress;
-}
-
-double
 CreepMaterial::getStrain(void)
 {
   return eps_total; //Added by AMK
@@ -477,8 +513,11 @@ CreepMaterial::commitState(void)
   ecminP = ecmin;
   ecmaxP = ecmax;
   deptP = dept;
-  
-  dsig_i[count]=sig-sigP;
+
+  // Make sure enough room to write into count+1 -- MHS
+  this->expandArrays();
+    
+  //dsig_i[count]=sig-sigP; // Unused -- MHS
   /* 5/8/2013: commented the following lines so that the DSIG_i[count+1]=sig-sigP;*/
   //if (crack_flag == 1) {// DSIG_i will be different depending on how the fiber is cracked
   //	if (sig < 0 && sigP > 0) { //if current step puts concrete from tension to compression, DSIG_i will be only the comp. stress
@@ -493,6 +532,7 @@ CreepMaterial::commitState(void)
   //} else { //concrete is uncracked, DSIG = sig - sigP
   //	DSIG_i[count+1] = sig-sigP;
   //}
+
   DSIG_i[count+1] = sig-sigP;
   
   //Secant Stiffness for determination of creep strain:
@@ -518,9 +558,11 @@ CreepMaterial::commitState(void)
   epsP_sh = eps_sh;
   epsP_cr = eps_cr;
   epsP_m = eps_m;
-  if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fc/Ec)) {
-    double s = fabs(eps_m/fc)*Ec;
-    s = 0.5*fabs(fc/Ec);
+  double fcOverEc = (wrappedMaterial == 0) ? fc/Ec : 0.002; // Assumed by MHS
+  if (eps_m < 0 && fabs(eps_m)>0.50*fabs(fcOverEc)) {
+    //double s = fabs(eps_m/fc)*Ec;
+    double s = fabs(eps_m/fcOverEc);    
+    s = 0.5*fabs(fcOverEc);
     //opserr << "Strain Compression Limit Exceeded: " << eps_m << ' ' << -s << endln;
   }
   
@@ -606,54 +648,224 @@ CreepMaterial::revertToStart(void)
 int 
 CreepMaterial::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(11);
-  data(0) =ft;    
-  data(1) =Ec; 
-  data(2) =beta;   
-  data(3) =age; 
-  data(4) =epsshu;   
-  data(5) =epssha;    
-  data(6) =tcr;   
-  data(7) =epscru;
-  data(8) =epscra; 
-  data(9) =epscrd;     
-  data(10) = this->getTag();
+  int res = 0;
 
-  if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
-    opserr << "CreepMaterial::sendSelf() - failed to sendSelf\n";
-    return -1;
+  int dbTag = this->getDbTag();
+
+  static ID classTags(4);
+
+  classTags(0) = wrappedMaterial->getClassTag();
+
+  int matDbTag = wrappedMaterial->getDbTag();
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    if (matDbTag != 0)
+      wrappedMaterial->setDbTag(matDbTag);
   }
-  return 0;
+  classTags(1) = matDbTag;
+  classTags(2) = this->getTag();
+  classTags(3) = maxSize;
+  
+  res = theChannel.sendID(dbTag, commitTag, classTags);
+  if (res < 0) {
+    opserr << "CreepMaterial::sendSelf -- could not send ID" << endln;
+    return res;
+  }
+
+  Vector data(16 + 6 + 21 + maxSize*5);
+  data(0) = fc;    
+  data(1) = epsc0; 
+  data(2) = fcu;   
+  data(3) = epscu; 
+  data(4) = tcr;   
+  data(5) = ft;    
+  data(6) = Ets;   
+  data(7) = Ec;
+  data(8) = age; 
+  data(9) = epsshu;
+  data(10) = epssha;
+  data(11) = epscra;
+  data(12) = epscru;
+  data(13) = beta;
+  data(14) = epscrd;
+  data(15) = tcast;
+
+  data(16) = ecminP;
+  data(17) = ecmaxP;
+  data(18) = deptP;
+  data(19) = epsP;
+  data(20) = sigP;
+  data(21) = eP;
+
+  data(22) = count;
+  data(23) = epsInit;
+  data(24) = sigInit;
+  data(25) = eps_cr;
+  data(26) = eps_sh;
+  data(27) = eps_T;
+  data(28) = eps_m;
+  data(29) = epsP_m;    
+  data(30) = epsP_cr;
+  data(31) = epsP_sh;
+  data(32) = eps_total;
+  data(33) = epsP_total;
+  data(34) = e_total;
+  data(35) = eP_total;
+  data(36) = t;
+  data(37) = t_load;
+  data(38) = phi_i;
+  data(39) = Et;
+  data(40) = crack_flag;
+  data(41) = crackP_flag;
+  data(42) = iter;
+  
+  for (int i = 0; i < maxSize; i++) {
+    data(43             + i) = PHI_i[i];
+    data(43 +   maxSize + i) = E_i[i];
+    data(43 + 2*maxSize + i) = DSIG_i[i];
+    data(43 + 3*maxSize + i) = TIME_i[i];
+    data(43 + 4*maxSize + i) = DTIME_i[i];            
+  }
+  
+  res = theChannel.sendVector(this->getDbTag(), commitTag, data);
+  if (res < 0) {
+    opserr << "CreepMaterial::sendSelf - failed to send Vector" << endln;
+    return res;
+  }
+  
+  res = wrappedMaterial->sendSelf(commitTag, theChannel);
+  if (res < 0) {
+    opserr << "CreepMaterial::sendSelf -- could not send UniaxialMaterial" << endln;
+    return res;
+  }
+	
+  return res;
 }
 
 int 
 CreepMaterial::recvSelf(int commitTag, Channel &theChannel, 
-	     FEM_ObjectBroker &theBroker)
+			FEM_ObjectBroker &theBroker)
 {
-  static Vector data(11);
+  int res = 0;
+
+  static ID idata(4);
+  int dbTag = this->getDbTag();
+
+  res = theChannel.recvID(dbTag, commitTag, idata);
+  if (res < 0) {
+    opserr << "CreepMaterial::recvSelf() - failed to receive data\n";
+    return res;
+  }
+
+  this->setTag(idata(2));  
+  maxSize = idata(3);
+  Vector data(16 + 6 + 21 + maxSize*5);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "CreepMaterial::recvSelf() - failed to recvSelf\n";
     return -1;
   }
   
-  ft = data(0);   
-  Ec = data(1);
-  beta = data(2);   
-  age = data(3); 
-  epsshu = data(4);   
-  epssha = data(5);    
-  tcr = data(6);   
-  epscru = data(7);
-  epscra = data(8); 
-  epscrd = data(9);   
-  this->setTag(data(10));
+  fc = data(0);
+  epsc0 = data(1);
+  fcu = data(2);
+  epscu = data(3);
+  tcr = data(4);
+  ft = data(5);
+  Ets = data(6);
+  Ec = data(7);
+  age = data(8);
+  epsshu = data(9);
+  epssha = data(10);
+  epscra = data(11);
+  epscru = data(12);
+  beta = data(13);
+  epscrd = data(14);
+  tcast = data(15);
+
+  ecminP = data(16);
+  ecmaxP = data(17);
+  deptP = data(18);
+  epsP = data(19);
+  sigP = data(20);
+  eP = data(21);
+
+  count = data(22);
+  epsInit = data(23);
+  sigInit = data(24);
+  eps_cr = data(25);
+  eps_sh = data(26);
+  eps_T = data(27);
+  eps_m = data(28);
+  epsP_m = data(29);
+  epsP_cr = data(30);
+  epsP_sh = data(31);
+  eps_total = data(32);
+  epsP_total = data(33);
+  e_total = data(34);
+  eP_total = data(35);
+  t = data(36);
+  t_load = data(37);
+  phi_i = data(38);
+  Et = data(39);
+  crack_flag = data(40);
+  crackP_flag = data(41);
+  iter = data(42);
+
+  if (PHI_i != 0) delete [] PHI_i;
+  PHI_i = new float [maxSize];
+  if (E_i != 0) delete [] E_i;
+  E_i = new float [maxSize];
+  if (DSIG_i != 0) delete [] DSIG_i;
+  DSIG_i = new float [maxSize];
+  if (TIME_i != 0) delete [] TIME_i;
+  TIME_i = new float [maxSize];
+  if (DTIME_i != 0) delete [] DTIME_i;
+  DTIME_i = new float [maxSize];  
+  
+  for (int i = 0; i < maxSize; i++) {
+    PHI_i[i]   = data(43             + i);
+    E_i[i]     = data(43 +   maxSize + i);
+    DSIG_i[i]  = data(43 + 2*maxSize + i);
+    TIME_i[i]  = data(43 + 3*maxSize + i);
+    DTIME_i[i] = data(43 + 4*maxSize + i);
+  }
 
   e = eP;
   sig = sigP;
   eps = epsP;
   
-  return 0;
+  
+
+  int matClassTag = idata(0);
+  
+  // Check if material is null
+  if (wrappedMaterial == 0) {
+    wrappedMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
+    if (wrappedMaterial == 0) {
+      opserr << "CreepMaterial::recvSelf -- could not get a UniaxialMaterial" << endln;
+      return -1;
+    }
+  }
+
+  dbTag = idata(1);
+  if (wrappedMaterial->getClassTag() != matClassTag) {
+    delete wrappedMaterial;
+    wrappedMaterial = theBroker.getNewUniaxialMaterial(matClassTag);
+    if (wrappedMaterial == 0) {
+      opserr << "CreepMaterial::recvSelf -- could not get a UniaxialMaterial" << endln;
+      return -1;
+    }
+  }
+  
+  wrappedMaterial->setDbTag(dbTag);
+  res = wrappedMaterial->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) {
+    opserr << "CreepMaterial::recvSelf -- count not receive Uniaxialmaterial" << endln;
+    return res;
+  }
+  
+  return res;
 }
 
 void 
@@ -662,104 +874,6 @@ CreepMaterial::Print(OPS_Stream &s, int flag)
   s << "CreepMaterial:(strain, stress, tangent) " << eps << " " << sig << " " << e << endln;
 }
 
-
-
-
-void
-CreepMaterial::Tens_Envlp (double epsc, double &sigc, double &Ect)
-{
-/*-----------------------------------------------------------------------
-! monotonic envelope of concrete in tension (positive envelope)
-!
-!   ft    = concrete tensile strength
-!   Ec0   = initial tangent modulus of concrete 
-!   Ets   = tension softening modulus
-!   eps   = strain
-!
-!   returned variables
-!    sigc  = stress corresponding to eps
-!    Ect  = tangent concrete modulus
-!-----------------------------------------------------------------------*/
-  
-  double Ec0 = Ec;
-  double eps0 = ft/Ec0;
-  double epsu = ft*(1.0/Ets+1.0/Ec0);
-  double b = beta;
-  // USE THIS ONE
-  if (epsc<=eps0) {
-    sigc = epsc*Ec0;
-    Ect  = Ec0;
-  } else {
-    Ect = -b*eps0*ft/pow(epsc,2)*pow(eps0/epsc,b-1.0);
-    sigc = ft*pow(eps0/epsc,b);
-  }
-   
-  
-  //THiS IS FOR TESTING LINEAR
-  //sigc = epsc*Ec0;
-  //Ect = Ec0;
-    
-    /*
-    if (epsc<=epsu) {
-      Ect  = -Ets;
-      sigc = ft-Ets*(epsc-eps0);
-    } else {
-      Ect  = 1.0e-10;
-      sigc = 1.0e-10;
-    }
-    */
-    
-  return;
-}
-
-  
-void
-CreepMaterial::Compr_Envlp (double epsc, double &sigc, double &Ect) 
-{
-  //Linear
-  //Ect = Ec;
-  //sigc = Ect*epsc;
-  //Non-linear with linear softening
-  /*-----------------------------------------------------------------------
-    ! monotonic envelope of concrete in compression (negative envelope)
-    !
-    !   fc    = concrete compressive strength
-    !   fcu   = stress at ultimate (crushing) strain
-    !   epscu = ultimate (crushing) strain
-    !   Ec0   = initial concrete tangent modulus
-    !   epsc  = strain
-    !
-    !   returned variables
-    !   sigc  = current stress
-    !   Ect   = tangent concrete modulus
-    -----------------------------------------------------------------------*/
-  
-  double Ec0 = Ec; //ntosic
-  double epsc0 = 2.0*fc / Ec0; //ntosic
-  
-  double ratLocal = epsc / epsc0;
-  if (epsc >= epsc0) {
-    sigc = fc * ratLocal*(2.0 - ratLocal);
-    Ect = Ec0 * (1.0 - ratLocal);
-  }
-  else {
-    
-    //   linear descending branch between epsc0 and epscu
-    if (epsc > epscu) {
-      sigc = (fcu - fc)*(epsc - epsc0) / (epscu - epsc0) + fc;
-      Ect = (fcu - fc) / (epscu - epsc0);
-    }
-    else {
-      
-      // flat friction branch for strains larger than epscu
-      
-      sigc = fcu;
-      Ect = 1.0e-10;
-      //       Ect  = 0.0  
-      return;
-    }
-  }  
-}
 
 int
 CreepMaterial::getVariable(const char *varName, Information &theInfo)

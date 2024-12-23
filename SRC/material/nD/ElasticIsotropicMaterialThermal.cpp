@@ -256,18 +256,13 @@ ElasticIsotropicMaterialThermal::getCopy(void)
 const char*
 ElasticIsotropicMaterialThermal::getType(void) const
 {
-	opserr << "ElasticIsotropicMaterialThermal::getType -- subclass responsibility\n";
-	exit(-1);
-
-	return 0;
+	return "BaseClass";
 }
 
 int
 ElasticIsotropicMaterialThermal::getOrder(void) const
 {
-	opserr << "ElasticIsotropicMaterialThermal::getOrder -- subclass responsibility\n";
-	exit(-1);
-	return -1;
+	return 0;
 }
 
 int

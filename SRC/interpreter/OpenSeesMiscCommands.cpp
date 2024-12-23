@@ -55,6 +55,7 @@
 #include <TriMesh.h>
 #include <TetMesh.h>
 #include <BackgroundMesh.h>
+#include <Damping.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
@@ -548,6 +549,85 @@ int OPS_setNodeDisp()
     return 0;
 }
 
+int OPS_setNodeTemperature()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+        opserr
+            << "WARNING want - setNodeTemperature nodeTag? value?\n";
+        return -1;
+    }
+
+    int tag;
+    double value = 0.0;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING setNodeTemperature could not read tag? \n";
+        return -1;
+    }
+
+    Domain *theDomain = OPS_GetDomain();
+    if (theDomain == 0) {
+        opserr << "WARNING: domain is not defined\n";
+        return -1;
+    }
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+        opserr << "WARNING setNodeTemperature -- node with tag "
+               << tag << " not found\n";
+        return -1;
+    }
+
+    if (OPS_GetDoubleInput(&numdata, &value) < 0) {
+        opserr << "WARNING setNodeTemperature could not read "
+                  "temperature? \n";
+        return -1;
+    }
+
+    theNode->setTemp(value);
+
+    return 0;
+}
+
+int OPS_getNodeTemperature() {
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING want - getNodeTemperature nodeTag?\n";
+        return -1;
+    }
+
+    int tag;
+    int numdata = 1;
+
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+        opserr << "WARNING getNodeTemperature could not read tag? \n";
+        return -1;
+    }
+
+    Domain *theDomain = OPS_GetDomain();
+    if (theDomain == 0) {
+        opserr << "WARNING: domain is not defined\n";
+        return -1;
+    }
+
+    Node *theNode = theDomain->getNode(tag);
+    if (theNode == 0) {
+        opserr << "WARNING getNodeTemperature -- node with tag "
+               << tag << " not found\n";
+        return -1;
+    }
+
+    double value = theNode->getTemp();
+    if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+        opserr << "WARNING: failed to set nodal temperature\n";
+        return -1;
+    }
+
+    return 0;
+}
+
 int OPS_setNodeVel()
 {
     // make sure at least one other argument to contain type of system
@@ -709,6 +789,7 @@ int OPS_MeshRegion()
     double betaK  = 0.0;
     double betaK0 = 0.0;
     double betaKc = 0.0;
+    Damping *theDamping = 0;
 
     ID *theNodes = 0;
     ID *theElements = 0;
@@ -893,6 +974,26 @@ int OPS_MeshRegion()
 		opserr << "WARNING region tag? .. -rayleigh aM bK bK0 - invalid bKc " << endln;
 		return -1;
 	    }
+	}  else if (strcmp(flag,"-damp") == 0) {
+
+	    // ensure no segmentation fault if user messes up
+	    if (OPS_GetNumRemainingInputArgs() < 1) {
+		opserr << "WARNING region tag? .. -damp dampingTag?\n";
+		return -1;
+	    }
+		
+		int dampingTag = 0;
+
+	    // read in damping factors
+	    if (OPS_GetIntInput(&numdata, &dampingTag) < 0) {
+		opserr << "WARNING region tag? .. -damp dampingTag?" << endln;
+		return -1;
+	    }
+	    theDamping = OPS_getDamping(dampingTag);
+	    if(theDamping == 0) {
+		opserr << "damping not found\n";
+	    return -1;
+		}
 	}
     }
 
@@ -936,6 +1037,8 @@ int OPS_MeshRegion()
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0) {
 	theRegion->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
     }
+	
+	if(theDamping) theRegion->setDamping(theDamping);
 
     if (theElements != 0) {
 	delete theElements;

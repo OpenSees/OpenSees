@@ -23,6 +23,7 @@ target_sources(OPS_Domain
         TriangleSeries.cpp
         TrigSeries.cpp
         RampSeries.cpp
+	MPAccSeries.cpp
         UniformExcitation.cpp
     PUBLIC
         ConstantSeries.h
@@ -42,6 +43,7 @@ target_sources(OPS_Domain
         TriangleSeries.h
         TrigSeries.h
         RampSeries.h
+	MPAccSeries.h
         UniformExcitation.h
 )
 

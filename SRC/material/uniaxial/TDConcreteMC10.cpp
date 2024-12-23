@@ -74,16 +74,6 @@
 #include <Vector.h>
 
 
-//Added by AMK to use dylib:
-//-----------------------------------------------------------------------
-	#ifdef _USRDLL
-	#define OPS_Export extern "C" _declspec(dllexport)
-	#elif _MACOSX
-	#define OPS_Export extern "C" __attribute__((visibility("default")))
-	#else
-	#define OPS_Export extern "C"
-	#endif
-
 	static int numTDConcreteMC10 = 0;
 
 //	OPS_Export void * //ntosic: eliminated AMK code
@@ -181,11 +171,11 @@ TDConcreteMC10::TDConcreteMC10(int tag, double _fc, double _ft, double _Ec, doub
 	
 	
 	//Change inputs into the proper sign convention: ntosic: changed
-		fc = -1.0*fabs(fc); 
-		epsba = -1.0*fabs(epsba);
-		epsda = -1.0*fabs(epsda);
-		phiba = 1.0*fabs(phiba);
-		phida = 1.0*fabs(phida);
+		fc = -fabs(fc); 
+		epsba = -fabs(epsba);
+		epsda = -fabs(epsda);
+		phiba = fabs(phiba);
+		phida = fabs(phida);
 }
 
 TDConcreteMC10::TDConcreteMC10(void):
@@ -216,7 +206,7 @@ TDConcreteMC10::getInitialTangent(void)
 double
 TDConcreteMC10::getCurrentTime(void)
 {
-	double currentTime;
+	double currentTime = 0.0;
 	Domain * theDomain = ops_TheActiveDomain;
 
 	if (theDomain != 0) {
@@ -633,7 +623,7 @@ TDConcreteMC10::revertToStart(void)
 int 
 TDConcreteMC10::sendSelf(int commitTag, Channel &theChannel)
 {
-  static Vector data(21); //ntosic
+  static Vector data(24); //ntosic
   data(0) =ft;    
   data(1) =Ec;
   data(2) =Ecm;  //ntosic 
@@ -655,7 +645,10 @@ TDConcreteMC10::sendSelf(int commitTag, Channel &theChannel)
   data(18) =sigP; //ntosic
   data(19) =eP; //ntosic
   data(20) = this->getTag();
-
+  data(21) = fc;
+  data(22) = count;
+  data(23) = tcast;
+  
   if (theChannel.sendVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10::sendSelf() - failed to sendSelf\n";
     return -1;
@@ -668,7 +661,7 @@ TDConcreteMC10::recvSelf(int commitTag, Channel &theChannel,
 	     FEM_ObjectBroker &theBroker)
 {
 
-  static Vector data(21); //ntosic
+  static Vector data(24); //ntosic
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "TDConcreteMC10::recvSelf() - failed to recvSelf\n";
@@ -696,7 +689,10 @@ TDConcreteMC10::recvSelf(int commitTag, Channel &theChannel,
   sigP = data(18); //ntosic
   eP = data(19); //ntosic
   this->setTag(data(20));
-
+  fc = data(21);
+  count = (int)data(22);
+  tcast = data(23);
+  
   e = eP;
   sig = sigP;
   eps = epsP;

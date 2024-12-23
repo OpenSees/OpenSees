@@ -1,7 +1,7 @@
 include ../../../../Makefile.def
 
 ifdef H5DRM_FLAG
-	H5_FILE = H5DRM.o
+	H5_FILE = H5DRMLoadPattern.o
 else
 	H5_FIle = 
 endif

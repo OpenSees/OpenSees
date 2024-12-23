@@ -257,6 +257,7 @@ int OPS_Layer();
 
 /* OpenSeesCrdTransfCommands.cpp */
 int OPS_CrdTransf();
+int OPS_Damping();
 
 /* OpenSeesBeamIntegrationCommands.cpp */
 int OPS_BeamIntegration();
@@ -292,6 +293,7 @@ int OPS_eleNodes();
 int OPS_getNDMM();
 int OPS_getNDFF();
 int OPS_eleType();
+int OPS_classType();
 int OPS_nodeDOFs();
 int OPS_nodeMass();
 int OPS_nodePressure();
@@ -346,6 +348,8 @@ int OPS_buildModel();
 int OPS_setNodeDisp();
 int OPS_setNodeVel();
 int OPS_setNodeAccel();
+int OPS_setNodeTemperature();
+int OPS_getNodeTemperature();
 int OPS_setElementRayleighDampingFactors();
 int OPS_MeshRegion();
 int OPS_peerNGA();
@@ -374,6 +378,9 @@ int OPS_partition();
 
 // OpenSeesReliabilityCommands.cpp
 int OPS_randomVariable();
+int OPS_filter();
+int OPS_spectrum();
+int OPS_modulatingFunction();
 int OPS_getRVTags();
 int OPS_getRVParamTag();
 int OPS_getRVValue();
@@ -396,11 +403,13 @@ int OPS_meritFunctionCheck();
 int OPS_stepSizeRule();
 int OPS_rootFinding();
 int OPS_findDesignPoint();
+int OPS_findCurvatures();
 int OPS_functionEvaluator();
 int OPS_gradientEvaluator();
 int OPS_wipeReliability();
 int OPS_runFOSMAnalysis();
 int OPS_runFORMAnalysis();
+int OPS_runSORMAnalysis();
 int OPS_runImportanceSamplingAnalysis();
 ReliabilityDomain* OPS_GetReliabilityDomain();
 
@@ -499,6 +508,7 @@ void* OPS_PlainHandler();
 void* OPS_PenaltyConstraintHandler();
 void* OPS_LagrangeConstraintHandler();
 void* OPS_TransformationConstraintHandler();
+void* OPS_AutoConstraintHandler();
 
 void* OPS_CTestNormUnbalance();
 void* OPS_CTestNormDispIncr();

@@ -450,13 +450,17 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 data[j] = argv[i];
 
 
+       bool closeFileOnWrite = closeOnWrite;
+       if ((strcmp(argv[1],"EnvelopeElement") == 0) || (strcmp(argv[1],"EnvelopeNode") == 0))
+	 closeFileOnWrite = false;
+       
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeFileOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_ADD && fileName != 0) {
-	 theOutputStream = new DataFileStreamAdd(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
+	 theOutputStream = new DataFileStreamAdd(fileName, OVERWRITE, 2, 0, closeFileOnWrite, precision, doScientific);
        } else if (eMode == DATA_STREAM_CSV && fileName != 0) {
-	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeOnWrite, precision, doScientific);
+	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 1, closeFileOnWrite, precision, doScientific);
        } else if (eMode == XML_STREAM && fileName != 0) {
 	 theOutputStream = new XmlFileStream(fileName);
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
@@ -492,7 +496,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 						      dT,
 						      rTolDt,
 						      echoTime,
-						      specificIndices);
+						      specificIndices,
+						      closeOnWrite);
 
        } else if (strcmp(argv[1],"NormElement") == 0) {
 
@@ -1446,7 +1451,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 						   dT,
 						   rTolDt,
 						   echoTimeFlag,
-						   theTimeSeries);
+						   theTimeSeries,
+						   closeOnWrite);
        }
 
        if (theNodes != 0)

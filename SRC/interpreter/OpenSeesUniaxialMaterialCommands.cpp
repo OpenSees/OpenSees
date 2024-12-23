@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <StrengthDegradation.h>
 #include <UniaxialMaterial.h>
 #include <UnloadingRule.h>
+#include <PipeMaterial.h>
 #include <elementAPI.h>
 
 #include <map>
@@ -139,6 +140,7 @@ void* OPS_ElasticBilin();
 void* OPS_ElasticMultiLinear();
 void* OPS_ElasticPowerFunc();
 void* OPS_MultiLinear();
+void* OPS_ContinuumUniaxialMaterial();
 void* OPS_InitStrainMaterial();
 void* OPS_InitStressMaterial();
 void* OPS_PathIndependentMaterial();
@@ -147,8 +149,10 @@ void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
+void* OPS_ASDConcrete1DMaterial();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
+void* OPS_BoucWenOriginal();
 void* OPS_BoucWenInfill();
 void* OPS_BWBN();
 void* OPS_PySimple1();
@@ -178,6 +182,7 @@ void* OPS_OriginCentered();
 void* OPS_HookGap();
 void* OPS_FRPConfinedConcrete02();
 void* OPS_pyUCLA();
+void* OPS_ElasticMaterialThermal();
 void* OPS_Steel01Thermal();
 void* OPS_Steel02Thermal();
 void* OPS_ConcretewBeta();
@@ -272,6 +277,13 @@ void *OPS_Trilinwp2(void);
 void *OPS_Masonryt(void);
 
 void* OPS_Ratchet(void); // Yi Xiao
+void* OPS_APDVFD(void);
+void* OPS_APDMD(void);
+void* OPS_APDFMD(void);
+void* OPS_PipeMaterial();
+void* OPS_TzSandCPT(void);
+void* OPS_QbSandCPT(void);
+
 
 namespace {
 
@@ -427,6 +439,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("MultiLinear", &OPS_MultiLinear));
   uniaxialMaterialsMap.insert(std::make_pair(
+      "Continuum", &OPS_ContinuumUniaxialMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair(
       "InitStrainMaterial", &OPS_InitStrainMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("InitStrain", &OPS_InitStrainMaterial));
@@ -447,10 +461,14 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ASDConcrete1D", &OPS_ASDConcrete1DMaterial));
+  uniaxialMaterialsMap.insert(
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
   uniaxialMaterialsMap.insert(
+      std::make_pair("BoucWenOriginal", &OPS_BoucWenOriginal));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("BoucWenInfill", &OPS_BoucWenInfill));  
   uniaxialMaterialsMap.insert(
       std::make_pair("BWBN", &OPS_BWBN));
@@ -511,6 +529,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("PYUCLA", &OPS_pyUCLA));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ElasticThermal", &OPS_ElasticMaterialThermal));
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("Steel01Thermal", &OPS_Steel01Thermal));
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel02Thermal", &OPS_Steel02Thermal));
@@ -607,6 +627,12 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair(
 	  "GMG_CyclicReinforcedConcrete", &OPS_GMG_CyclicReinforcedConcrete));
   uniaxialMaterialsMap.insert(
+      std::make_pair("APDVFD", &OPS_APDVFD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDMD", &OPS_APDMD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDFMD", &OPS_APDFMD));
+  uniaxialMaterialsMap.insert(
       std::make_pair("Hertzdamp", &OPS_Hertzdamp));
   uniaxialMaterialsMap.insert(
       std::make_pair("HertzDamp", &OPS_Hertzdamp));
@@ -619,7 +645,9 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
-  
+  uniaxialMaterialsMap.insert(std::make_pair("Pipe", &OPS_PipeMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair("TzSandCPT", &OPS_TzSandCPT));
+  uniaxialMaterialsMap.insert(std::make_pair("QbSandCPT", &OPS_QbSandCPT));
   return 0;
 }
 
@@ -640,16 +668,6 @@ static int setUpHystereticBackbones(void) {
       std::make_pair("Material", &OPS_MaterialBackbone));  
   hystereticBackbonesMap.insert(std::make_pair(
       "ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
-  hystereticBackbonesMap.insert(std::make_pair(
-      "ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
-  hystereticBackbonesMap.insert(
-      std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
-  hystereticBackbonesMap.insert(
-      std::make_pair("CementedSoil", &OPS_CementedSoil));
-  hystereticBackbonesMap.insert(
-      std::make_pair("WeakRock", &OPS_WeakRock));
-  hystereticBackbonesMap.insert(
-      std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
   hystereticBackbonesMap.insert(
       std::make_pair("Raynor", &OPS_RaynorBackbone));
   hystereticBackbonesMap.insert(

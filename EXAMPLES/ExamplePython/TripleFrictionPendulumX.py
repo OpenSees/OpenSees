@@ -1,9 +1,14 @@
-from openseespy.opensees import *
+import sys
+#sys.path.append(r'C:\OpenSees-3.3.0\Win64\bin')
+#import opensees as op
 
+import openseespy.opensees as op 
+
+# Units: N, m, sec
 # Remove existing model
-wipe()
+op.wipe()
 
-# EXAMPLE 3 (Kim and Constantinou, 2023 https://doi.org/10.1002/eqe.3797)
+# TFP Geomoetry of Configuration A (Kim and Constantinou, 2023 https://doi.org/10.1002/eqe.3797)
 #----------------------------------------------------------------------------
 # User Defined Parameters
 #----------------------------------------------------------------------------
@@ -21,6 +26,9 @@ b3 = 0.711
 r1 = b1 / 2  # Radius of the rigid slider and the two inner slide plate (m)
 r2 = b2 / 2
 r3 = b3 / 2
+Thickness2 = 0.02  # Thickness of concave plate (m)
+Thickness3 = 0.02
+
 
 uy = 0.001  # Yield displacement (m)
 kvc = 8000000000.  # Vertical compression stiffness (N/m)
@@ -36,6 +44,7 @@ tol = 1.e-5  # Relative tolerance for checking convergence
 Diffu = 0.444e-5  # Thermal diffusivity (m^2/sec)
 Conduct = 18  # Thermal conductivity (W/m*Celsius)
 Temperature0 = 20  # Initial temperature (Celsius)
+tagT2 = 2 					  # 1 = indefinite plate thickness / 2 = finite plate thickness
 
 # Friction coefficients (reference)
 mu1 = 0.01
@@ -52,18 +61,18 @@ Pref3 = P / (r3 * r3 * 3.141592)
 #----------------------------------------------------------------------------
 
 # Create Model Builder
-model('basic', '-ndm', 3, '-ndf', 6)
+op.model('basic', '-ndm', 3, '-ndf', 6)
 
 # Create nodes
-node(1, 0, 0, 0)  # End i
-node(2, 0, 0, 0)  # End j
+op.node(1, 0, 0, 0)  # End i
+op.node(2, 0, 0, 0)  # End j
 
 # Define single point constraints
-fix(1, 1, 1, 1, 1, 1, 1)
+op.fix(1, 1, 1, 1, 1, 1, 1)
 
 # Define friction models
 tagTemp = 1
-tagVel = 0
+tagVel = 1
 tagPres = 0
 velRate = 100
 kTmodel = 1  # kT = 1/2 at 200 degree celsius
@@ -73,14 +82,14 @@ kTmodel = 1  # kT = 1/2 at 200 degree celsius
 #----------------------------------------------------------------------------
 
 # Creating material for compression and rotation behaviors
-uniaxialMaterial('Elastic', 1, kvc)
-uniaxialMaterial('Elastic', 2, 10.)
+op.uniaxialMaterial('Elastic', 1, kvc)
+op.uniaxialMaterial('Elastic', 2, 10.)
 
 tagT = 1
 
 # Define TripleFrictionPendulumX element
-element('TripleFrictionPendulumX', 1, 1, 2, tagT, 1, 2, 2, 2, tagPres, tagTemp, tagVel, mu1, mu2, mu3,
-            L1, L2, L3, d1, d2, d3, b1, b2, b3, P, uy, kvt, minFv, tol, Pref1, Pref2, Pref3, Diffu, Conduct,
+op.element('TripleFrictionPendulumX', 1, 1, 2, tagT, tagT2, 1, 2, 2, 2, tagPres, tagTemp, tagVel, mu1, mu2, mu3,
+            L1, L2, L3, d1, d2, d3, b1, b2, b3, Thickness2, Thickness3, P, uy, kvt, minFv, tol, Pref1, Pref2, Pref3, Diffu, Conduct,
             Temperature0, velRate, kTmodel, 1)
 
 #----------------------------------------------------------------------------
@@ -88,35 +97,35 @@ element('TripleFrictionPendulumX', 1, 1, 2, tagT, 1, 2, 2, 2, tagPres, tagTemp, 
 #----------------------------------------------------------------------------
 
 # Create a plain load pattern with linear timeseries
-timeSeries('Linear', 1)
-pattern('Plain', 1, 1)
-load(2, 0.0, 0.0, -P, 0.0, 0.0, 0.0)
+op.timeSeries('Linear', 1)
+op.pattern('Plain', 1, 1)
+op.load(2, 0.0, 0.0, -P, 0.0, 0.0, 0.0)
 
 #----------------------------------------------------------------------------
 # Start of analysis generation (Gravity)
 #----------------------------------------------------------------------------
 
-system('BandSPD')
-constraints('Transformation')
-numberer('RCM')
-test('NormDispIncr', 1.0e-15, 10)
-algorithm('Newton')
-integrator('LoadControl', 1)
-analysis('Static')
+op.system('BandSPD')
+op.constraints('Transformation')
+op.numberer('RCM')
+op.test('NormDispIncr', 1.0e-15, 10)
+op.algorithm('Newton')
+op.integrator('LoadControl', 0.1)
+op.analysis('Static')
 
 #----------------------------------------------------------------------------
 # Analysis (Gravity)
 #----------------------------------------------------------------------------
 
-analyze(1)
+op.analyze(10)
 print("Gravity analysis completed SUCCESSFULLY")
 
 #----------------------------------------------------------------------------
 # Start of analysis generation
-# (Sinusoidal; Two cycles of 5s period and 508mm amplitude)
+# (Sinusoidal; Ten cycles of 5s period and 600mm amplitude)
 #----------------------------------------------------------------------------
 
-loadConst('-time', 0.0)
+op.loadConst('-time', 0.0)
 
 # analysis time step
 dt = 0.008
@@ -124,67 +133,62 @@ dt = 0.008
 # excitation time step
 dt1 = 0.001
 
-timeSeries('Trig', 11, dt, 10, 5, '-factor', 0.508, '-shift', 0, '-zeroShift', 0)
-pattern('MultipleSupport', 2)
-groundMotion(1,'Plain', '-disp', 11)
-imposedMotion(2,2,1)
+op.timeSeries('Trig', 11, dt, 50, 5, '-factor', 0.6, '-shift', 0, '-zeroShift', 0)
+op.pattern('MultipleSupport', 2)
+op.groundMotion(1,'Plain', '-disp', 11)
+op.imposedMotion(2,2,1)
 
 #----------------------------------------------------------------------------
 # Start of recorder generation (Sinusoidal)
 #----------------------------------------------------------------------------
 
 # Set up recorder
-OutDir = "EXAMPLE3"  # Output folder
-OutFile1 = "TEMPERATURE.out"
-OutFile2 = "DISP.out"
-OutFile3 = "FORCE.out"
-OutFile4 = "COMPDISP.out"
+OutDir = "EXAMPLE_PY"  # Output folder
+OutFile1 = "TEMPERATURE_FINITE_DEPTH.out"
+OutFile2 = "DISP_FINITE_DEPTH.out"
+OutFile3 = "FORCE_FINITE_DEPTH.out"
+OutFile4 = "COMPDISP_FINITE_DEPTH.out"
+
+# OutFile1 = "TEMPERATURE_INDEFINITE_DEPTH.out"
+# OutFile2 = "DISP_INDEFINITE_DEPTH.out"
+# OutFile3 = "FORCE_INDEFINITE_DEPTH.out"
+# OutFile4 = "COMPDISP_INDEFINITE_DEPTH.out"
 
 import os
 os.makedirs(OutDir, exist_ok=True)
 
-recorder('Element', '-file', os.path.join(OutDir, OutFile1), '-time', '-ele', 1, 'Parameters')
-recorder('Node', '-file', os.path.join(OutDir, OutFile2), '-time', '-nodes', 2, '-dof', 1, 2, 3, 'disp')
-recorder('Element', '-file', os.path.join(OutDir, OutFile3), '-time', '-ele', 1, 'basicForce')
-recorder('Element', '-file', os.path.join(OutDir, OutFile4), '-time', '-ele', 1, 'compDisplacement')
+op.recorder('Element', '-file', os.path.join(OutDir, OutFile1), '-time', '-ele', 1, 'Parameters')
+op.recorder('Node', '-file', os.path.join(OutDir, OutFile2), '-time', '-nodes', 2, '-dof', 1, 2, 3, 'disp')
+op.recorder('Element', '-file', os.path.join(OutDir, OutFile3), '-time', '-ele', 1, 'basicForce')
+op.recorder('Element', '-file', os.path.join(OutDir, OutFile4), '-time', '-ele', 1, 'compDisplacement')
 
 #----------------------------------------------------------------------------
 # Analysis (Sinusoidal)
 #----------------------------------------------------------------------------
 
-wipeAnalysis()
-system('SuperLU')
-constraints('Transformation')
-numberer('Plain')
-integrator('Newmark', 0.5, 0.25)
-test('NormDispIncr', 1.0e-5, 20)
-algorithm('Newton')
-analysis('Transient')
+op.wipeAnalysis()
+op.system('SuperLU')
+op.constraints('Transformation')
+op.numberer('Plain')
+op.integrator('Newmark', 0.5, 0.25)
+op.test('NormDispIncr', 1.0e-5, 20)
+op.algorithm('Newton')
+op.analysis('Transient')
 
 # set some variables
-tFinal = 10
-tCurrent = getTime()
+tFinal = 50
+tCurrent = op.getTime()
 ok = 0
 
 # Perform the transient analysis
 while ok == 0 and tCurrent < tFinal:
-    ok = analyze(1, dt)
-
-    # if the analysis fails, try initial tangent iteration
-    if ok != 0:
-        print("Regular Newton failed... Let's try an initial stiffness for this step")
-        test('NormDispIncr', 1.0e-12, 100)
-        algorithm('ModifiedNewton', '-initial')
-        ok = analyze(1, dt)
-        if ok == 0:
-            print("That worked... Back to regular Newton")
-        test('NormDispIncr', 1.0e-12, 10)
-        algorithm('Newton')
-
-    tCurrent = getTime()
+    ok = op.analyze(1, dt)
+    tCurrent = op.getTime()
 
 # Print a message to indicate if analysis was successful or not
 if ok == 0:
     print("Transient analysis completed SUCCESSFULLY")
 else:
     print("Transient analysis completed FAILED")
+
+op.wipe()

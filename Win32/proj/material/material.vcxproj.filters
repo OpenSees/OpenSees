@@ -148,6 +148,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -565,6 +568,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\InitStressNDMaterial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.cpp">
+      <Filter>nD</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\LinearCap.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -655,6 +661,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\Series3DMaterial.cpp">
       <Filter>nD\wrappers</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\Parallel3DMaterial.cpp">
+      <Filter>nD\wrappers</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.cpp">
       <Filter>nD\wrappers</Filter>
     </ClCompile>
@@ -723,6 +732,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\reinforcedConcretePlaneStress\TendonL01.cpp">
       <Filter>nD\reinforcedConcretePlaneStress</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp">
+      <Filter>nD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\Src\material\section\Bidirectional.cpp">
       <Filter>section</Filter>
@@ -1411,6 +1423,9 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
@@ -1801,6 +1816,9 @@
     <ClInclude Include="..\..\..\SRC\material\nD\InitStressNDMaterial.h">
       <Filter>nD</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\InitStrainNDMaterial.h">
+      <Filter>nD</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\LinearCap.h">
       <Filter>nD</Filter>
     </ClInclude>
@@ -1883,6 +1901,9 @@
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\Series3DMaterial.h">
+      <Filter>nD\wrappers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\Parallel3DMaterial.h">
       <Filter>nD\wrappers</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStrainMaterial.h">

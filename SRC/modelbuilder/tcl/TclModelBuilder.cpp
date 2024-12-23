@@ -680,10 +680,12 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
 
 TclModelBuilder::~TclModelBuilder()
 {
+
   OPS_clearAllTimeSeries();
   //  OPS_clearAllUniaxialMaterial();
   //  OPS_clearAllNDMaterial();
   //  OPS_clearAllSectionForceDeformation();
+
   OPS_clearAllCrdTransf();
   OPS_clearAllDamping();
   OPS_clearAllFrictionModel();
@@ -692,15 +694,15 @@ TclModelBuilder::~TclModelBuilder()
   OPS_clearAllFrictionModel();
   OPS_clearAllHystereticBackbone();
   //  OPS_clearAllNDMaterial();
+
   OPS_clearAllBeamIntegrationRule();
 
-  theSections->clearAll(); 
+  theSections->clearAll();
   theSectionRepresents->clearAll();
   theYieldSurface_BCs->clearAll();
   theYS_EvolutionModels->clearAll();
   thePlasticMaterials->clearAll();
   theCycModels->clearAll();//!!
-
   // free up memory allocated in the constructor
   delete theSections;
   delete theSectionRepresents;
@@ -715,7 +717,7 @@ TclModelBuilder::~TclModelBuilder()
   theTclLoadPattern =0;
   theTclMultiSupportPattern = 0;  
   TCL_OPS_setModelBuilder(0);
-  
+
   // may possibly invoke Tcl_DeleteCommand() later
   Tcl_DeleteCommand(theInterp, "parameter");
   Tcl_DeleteCommand(theInterp, "addToParameter");
@@ -768,7 +770,7 @@ TclModelBuilder::~TclModelBuilder()
   Tcl_DeleteCommand(theInterp, "damageModel");
 
   Tcl_DeleteCommand(theInterp, "loadPackage");
-    Tcl_DeleteCommand(theInterp, "generateInterfacePoints"); // Added by Alborz Ghofrani - U.Washington
+  Tcl_DeleteCommand(theInterp, "generateInterfacePoints"); // Added by Alborz Ghofrani - U.Washington
 }
 
 
@@ -958,8 +960,8 @@ TclModelBuilder::getPlasticMaterial(int tag)
 int 
 TclModelBuilder::addSectionRepres(SectionRepres &theSectionRepres)
 {
-  bool result = theSectionRepresents->addComponent(&theSectionRepres);
-
+  //bool result = theSectionRepresents->addComponent(&theSectionRepres);
+  bool result = OPS_addSectionRepres(&theSectionRepres);
   if (result == true)
     return 0;
   else {
@@ -972,10 +974,11 @@ TclModelBuilder::addSectionRepres(SectionRepres &theSectionRepres)
 SectionRepres *
 TclModelBuilder::getSectionRepres(int tag)
 {
-  TaggedObject *mc = theSectionRepresents->getComponentPtr(tag);
-  if (mc == 0) return 0;
-  SectionRepres *result = (SectionRepres *)mc;
-  return result;
+	return OPS_getSectionRepres(tag);
+  //TaggedObject *mc = theSectionRepresents->getComponentPtr(tag);
+  //if (mc == 0) return 0;
+  //SectionRepres *result = (SectionRepres *)mc;
+  //return result;
 }
 
 
@@ -1440,6 +1443,8 @@ extern void* OPS_HingeMidpointBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeRadauBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeRadauTwoBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags);
+extern void* OPS_ConcentratedPlasticityBeamIntegration(int&, ID&);
+extern void* OPS_ConcentratedCurvatureBeamIntegration(int&, ID&);
 
 int
 TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1484,6 +1489,10 @@ TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int arg
 	bi = (BeamIntegration*)OPS_HingeRadauTwoBeamIntegration(iTag,secTags);
     } else if (strcmp(argv[1],"HingeEndpoint") == 0) {
 	bi = (BeamIntegration*)OPS_HingeEndpointBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"ConcentratedPlasticity") == 0) {
+	bi = (BeamIntegration*)OPS_ConcentratedPlasticityBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"ConcentratedCurvature") == 0) {
+	bi = (BeamIntegration*)OPS_ConcentratedCurvatureBeamIntegration(iTag,secTags);		
     } else {
 	opserr<<"WARNING: integration type "<<argv[1]<<" is unknown\n";
 	return TCL_ERROR;
@@ -2063,56 +2072,82 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
     }
     else if (ndm == 3) {
       double wy, wz;
-      double wx = 0.0;
+      double wx  = 0.0;
       if (count >= argc || Tcl_GetDouble(interp, argv[count], &wy) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
+        return TCL_ERROR;
       }
       count++;
       if (count >= argc || Tcl_GetDouble(interp, argv[count], &wz) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
+        return TCL_ERROR;
       }
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &wx) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
+        return TCL_ERROR;
       }
       double aL = 0.0;
       double bL = 1.0;
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &aL) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid aOverL for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid aOverL for beamUniform \n";
+        return TCL_ERROR;
       }
       count++;
       if (count < argc && Tcl_GetDouble(interp, argv[count], &bL) != TCL_OK) {
-	opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
-	return TCL_ERROR;
+        opserr << "WARNING eleLoad - invalid bOverL for beamUniform \n";
+        return TCL_ERROR;
+      }
+
+      //
+      // Parse values at end "b"; when not supplied, set to value
+      // at end "a"
+      //
+
+      double wyb = wy;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wyb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wy for beamUniform \n";
+        return TCL_ERROR;
+      }
+
+      double wzb = wz;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wzb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wz for beamUniform \n";
+        return TCL_ERROR;
+      }
+
+      double wxb = wx;
+      count++;
+      if (count < argc && Tcl_GetDouble(interp, argv[count], &wxb) != TCL_OK) {
+        opserr << "WARNING eleLoad - invalid wx for beamUniform \n";
+        return TCL_ERROR;
       }
 
       for (int i=0; i<theEleTags.Size(); i++) {
-	if (aL > 0.0 || bL < 1.0)
-	  theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, theEleTags(i));
-	else 
-	  theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));    	
+        if (aL > 0.0 || bL < 1.0)
+          theLoad = new Beam3dPartialUniformLoad(eleLoadTag, wy, wz, wx, aL, bL, wyb, wzb, wxb, theEleTags(i));
+        else 
+          theLoad = new Beam3dUniformLoad(eleLoadTag, wy, wz, wx, theEleTags(i));            
 
-	if (theLoad == 0) {
-	  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
-	  return TCL_ERROR;
-	}
+        if (theLoad == 0) {
+          opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count] ;
+          return TCL_ERROR;
+        }
 
-	// get the current pattern tag if no tag given in i/p
-	int loadPatternTag = theTclLoadPattern->getTag();
-	
-	// add the load to the domain
-	if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
-	  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
-	  opserr << theLoad;
-	  delete theLoad;
-	  return TCL_ERROR;
-	}
-	eleLoadTag++;
+        // get the current pattern tag if no tag given in i/p
+        int loadPatternTag = theTclLoadPattern->getTag();
+        
+        // add the load to the domain
+        if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+          opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+          opserr << theLoad;
+          delete theLoad;
+          return TCL_ERROR;
+        }
+        eleLoadTag++;
       }
       
       return 0;
@@ -3037,10 +3072,45 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 		  //-------------------------end for importing temp data from external files --source -------------------------
 		  else {
 
+			  // GR - new load function for temperatures in 3d beams
+			  if (argc - count == 35) {
+				  double indata[35];
+				  double BufferData;
+
+				  for (int i = 0; i < 35; i++) {
+					  if (Tcl_GetDouble(interp, argv[count], &BufferData) != TCL_OK) {
+						  opserr << "WARNING eleLoad - invalid data " << argv[count] << " for -beamThermal 3D\n";
+						  return TCL_ERROR;
+					  }
+					  indata[i] = BufferData;
+					  count++;
+				  }
+
+				  for (int i = 0; i < theEleTags.Size(); i++) {
+					  theLoad = new Beam3dThermalAction(eleLoadTag, indata, theEleTags(i));
+					  if (theLoad == 0) {
+						  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count];
+						  return TCL_ERROR;
+					  }
+					  // get the current pattern tag if no tag given in i/p
+					  int loadPatternTag = theTclLoadPattern->getTag();
+
+					  // add the load to the domain
+					  if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+						  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+						  opserr << theLoad;
+						  delete theLoad;
+						  return TCL_ERROR;
+					  }
+					  eleLoadTag++;
+				  }
+				  return 0;
+			  }
+
 			  //double t1, locY1, t2, locY2, t3, locY3, t4, locY4, t5, locY5, 
 			  //t6, t7, locZ1, t8, t9, locZ2, t10,t11, locZ3, t12, t13, locZ4, t14,t15, locZ5;
 
-			  if (argc - count == 25) {
+			  else if (argc - count == 25) {
 				  double indata[25];
 				  double BufferData;
 
@@ -3089,11 +3159,11 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 					  return TCL_ERROR;
 				  }
 				  if (Tcl_GetDouble(interp, argv[count + 2], &t5) != TCL_OK) {
-					  opserr << "WARNING eleLoad - invalid T1 " << argv[count] << " for -beamThermal\n";
+					  opserr << "WARNING eleLoad - invalid T5 " << argv[count] << " for -beamThermal\n";
 					  return TCL_ERROR;
 				  }
 				  if (Tcl_GetDouble(interp, argv[count + 3], &locY5) != TCL_OK) {
-					  opserr << "WARNING eleLoad - invalid LocY1 " << argv[count + 1] << " for -beamThermal\n";
+					  opserr << "WARNING eleLoad - invalid LocY5 " << argv[count + 1] << " for -beamThermal\n";
 					  return TCL_ERROR;
 				  }
 
@@ -3131,6 +3201,81 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
 				  return 0;
 			  }
 			  //end of  if (argc-count == 4){
+			  else if (argc - count == 8) {
+
+				  if (Tcl_GetDouble(interp, argv[count], &t1) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid T1 " << argv[count] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+				  if (Tcl_GetDouble(interp, argv[count + 1], &locY1) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid LocY1 " << argv[count + 1] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+				  if (Tcl_GetDouble(interp, argv[count + 2], &t5) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid T5 " << argv[count] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+				  if (Tcl_GetDouble(interp, argv[count + 3], &locY5) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid LocY5 " << argv[count + 1] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+
+				  if (Tcl_GetDouble(interp, argv[count + 4], &t6) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid T1 " << argv[count] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+				  if (Tcl_GetDouble(interp, argv[count + 5], &locZ1) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid LocZ1 " << argv[count + 1] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+				  if (Tcl_GetDouble(interp, argv[count + 6], &t10) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid T10 " << argv[count] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+				  if (Tcl_GetDouble(interp, argv[count + 7], &locZ5) != TCL_OK) {
+					  opserr << "WARNING eleLoad - invalid LocZ5 " << argv[count + 1] << " for -beamThermal\n";
+					  return TCL_ERROR;
+				  }
+
+				  locY2 = locY1 + (locY5 - locY1) / 4;
+				  locY3 = locY1 + (locY5 - locY1) / 2;
+				  locY4 = locY1 + 3 * (locY5 - locY1) / 4;
+				  t2 = t1 + (t5 - t1) / 4;
+				  t3 = t1 + (t5 - t1) / 2;
+				  t4 = t1 + 3 * (t5 - t1) / 4;
+
+				  locZ2 = locZ1 + (locZ5 - locZ1) / 4;
+				  locZ3 = locZ1 + (locZ5 - locZ1) / 2;
+				  locZ4 = locZ1 + 3 * (locZ5 - locZ1) / 4;
+				  t11 = t6; t15 = t10;
+				  t7 = t6 + (t10 - t6) / 4; t12 = t11 + (t15 - t11) / 4;
+				  t8 = t6 + (t10 - t6) / 2; t13 = t11 + (t15 - t11) / 2;
+				  t9 = t6 + 3*(t10 - t6) / 4; t14 = t11 + 3*(t15 - t11) / 4;
+
+				  for (int i = 0; i < theEleTags.Size(); i++) {
+					  theLoad = new Beam3dThermalAction(eleLoadTag,
+						  t1, locY1, t2, locY2, t3, locY3, t4, locY4,
+						  t5, locY5, t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3,
+						  t12, t13, locZ4, t14, t15, locZ5, theEleTags(i));
+					  if (theLoad == 0) {
+						  opserr << "WARNING eleLoad - out of memory creating load of type " << argv[count];
+						  return TCL_ERROR;
+					  }
+					  // get the current pattern tag if no tag given in i/p
+					  int loadPatternTag = theTclLoadPattern->getTag();
+
+					  // add the load to the domain
+					  if (theTclDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+						  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+						  opserr << theLoad;
+						  delete theLoad;
+						  return TCL_ERROR;
+					  }
+					  eleLoadTag++;
+				  }
+				  return 0;
+			  }
+			  //end of  if (argc-count == 8){
 			  else {
 				  opserr << "WARNING eleLoad Beam3dThermalAction: invalid number of temperature arguments,/n looking for arguments for Temperatures and coordinates.\n";
 			  }
@@ -3608,6 +3753,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   bool isSpConst = false;
+  bool zeroInitial = false;
   bool userSpecifiedPattern = false;
   int loadPatternTag = 0; // some pattern that will never be used!
 
@@ -3616,6 +3762,11 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
     if (strcmp(argv[endMarker],"-const") == 0) {
       // allow user to specify const load
       isSpConst = true;
+      
+    } else if (strcmp(argv[endMarker],"-useZeroInit") == 0) {
+      // allow user to ignore init disp values at the node
+      zeroInitial = true;
+      
     } else if (strcmp(argv[endMarker],"-pattern") == 0) {
       // allow user to specify load pattern other than current
       endMarker++;
@@ -3642,7 +3793,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   LoadPattern *thePattern = theTclDomain->getLoadPattern(loadPatternTag);
   
   // create a homogeneous constraint
-  SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst);
+  SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst, zeroInitial);
 
   if (theSP == 0) {
     opserr << "WARNING ran out of memory for SP_Constraint ";

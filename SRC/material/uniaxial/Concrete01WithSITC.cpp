@@ -137,7 +137,7 @@ Concrete01WithSITC::Concrete01WithSITC
 Concrete01WithSITC::Concrete01WithSITC():UniaxialMaterial(0, MAT_TAG_Concrete01WithSITC),
  fpc(0.0), epsc0(0.0), fpcu(0.0), epscu(0.0),
  CminStrain(0.0), CunloadSlope(0.0), CendStrain(0.0),
- Cstrain(0.0), Cstress(0.0), CmaxStrain(0.0),
+ Cstrain(0.0), Cstress(0.0), Ctangent(0.0), CmaxStrain(0.0),
  CslopeSITC(0.0), CendStrainSITC(0.0), Cindex(0), CsmallStrainIndex(0)
 
 {
@@ -715,18 +715,20 @@ int Concrete01WithSITC::recvSelf (int commitTag, Channel& theChannel,
       Cstress = data(9);
       Ctangent = data(10);
 
-	  // variables added by WL
-	  data(11) = CmaxStrain;
-      data(12) = CslopeSITC;
-      data(13) = CendStrainSITC;
-      data(14) = Cindex;
-      data(15) = CsmallStrainIndex;
+      // variables added by WL
+      CmaxStrain = data(11);
+      CslopeSITC = data(12);
+      CendStrainSITC = data(13);
+      Cindex = data(14);
+      CsmallStrainIndex = data(15);
 
 
       // Set trial state variables
       Tstrain = Cstrain;
       Tstress = Cstress;
       Ttangent = Ctangent;
+
+      this->revertToLastCommit();
    }
 
    return res;

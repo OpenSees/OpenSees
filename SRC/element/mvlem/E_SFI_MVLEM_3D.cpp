@@ -1,5 +1,5 @@
 // Code written/implemented by:	Kristijan Kolozvari (kkolozvari@fullerton.edu)
-//								Carlos N. LÛpez
+//								Carlos N. L√≥pez
 //								Leonardo M. Massone
 //								 
 // User documentation available at: https://kkolozvari.github.io/E-SFI-MVLEM-3D/
@@ -21,7 +21,7 @@
 //    1........2 |-> x
 //
 // Reference:
-// Kristijan Kolozvari, Carlos N. LÛpez, Leonardo M. Massone (2023), ìEfficient Three-dimensional Shear-flexure Interaction Model for Reinforced Concrete Wallsî, Engineering Structures, Vol. 294, 116700, https://doi.org/10.1016/j.engstruct.2023.116700.
+// Kristijan Kolozvari, Carlos N. L√≥pez, Leonardo M. Massone (2023), ‚ÄúEfficient Three-dimensional Shear-flexure Interaction Model for Reinforced Concrete Walls‚Äù, Engineering Structures, Vol. 294, 116700, https://doi.org/10.1016/j.engstruct.2023.116700.
 //
 // User documentation available at: https://kkolozvari.github.io/E-SFI-MVLEM-3D/
 //
@@ -93,9 +93,16 @@ void* OPS_E_SFI_MVLEM_3D(void)
 	int* matTags = new int[m];
 
 	NDMaterial** theMaterials = new NDMaterial * [m];
+	for (int i = 0; i < m; i++) {
+		theThickness[i] = 0.0;
+		theWidth[i] = 0.0;
+		matTags[i] = 0;
+		theMaterials[i] = 0;
+	}
 
 	numArgs = OPS_GetNumRemainingInputArgs();
 
+	double Eave = 0.0;
 	while (numArgs > 0) {
 		//OPS_GetStringCopy(&str);
 		str = OPS_GetString();
@@ -158,6 +165,13 @@ void* OPS_E_SFI_MVLEM_3D(void)
 				return 0;
 			}
 		}
+		else if (strcmp(str, "-Eave") == 0) {
+			numData = 1;
+			if (OPS_GetDoubleInput(&numData, &Eave) != 0) {
+				opserr << "Invalid Eave parameter for E_SFI_MVLEM_3D   " << iData[0] << endln;
+				return 0;
+			}
+		}				
 		numArgs = OPS_GetNumRemainingInputArgs();
 
 	}
@@ -167,7 +181,7 @@ void* OPS_E_SFI_MVLEM_3D(void)
 		theMaterials,
 		theThickness,
 		theWidth,
-		iData[5], dData[0], dData[2], dData[1]);
+					iData[5], dData[0], dData[2], dData[1], Eave);
 
 	// Cleanup dynamic memory
 	if (theThickness != 0)
@@ -190,10 +204,11 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	NDMaterial** materials,
 	double* thickness,
 	double* width,
-	int mm = 0,
-	double cc = 0.0,
-	double nn = 0.0,
-	double tf = 0.0)
+	int mm,
+	double cc,
+	double nn,
+			       double tf,
+			       double Eave_in)
 
 	:Element(tag, ELE_TAG_E_SFI_MVLEM_3D),
 	density(Dens),
@@ -205,7 +220,7 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	E_SFI_MVLEM_3DK(24, 24), E_SFI_MVLEM_3DR(24), E_SFI_MVLEM_3DD(24, 24), E_SFI_MVLEM_3DM(24, 24),
 	E_SFI_MVLEM_3DKlocal(24, 24), E_SFI_MVLEM_3DDlocal(24, 24), E_SFI_MVLEM_3DRlocal(24), E_SFI_MVLEM_3DMlocal(24, 24),
 	P_24DOF(24), P_24DOF_local(24),
-	m(mm), c(cc), NUelastic(nn), Tfactor(tf),
+	 m(mm), c(cc), NUelastic(nn), Tfactor(tf), Eave(Eave_in),
 	T(24, 24), Tt(3, 3), T6(6, 6),
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {
@@ -217,7 +232,7 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D(int tag,
 	Lw = 0.0;
 
 	// Out of Plane parameters
-	Eave = 0.0;
+	//Eave = 0.0;
 	Tave = 0.0;
 
 	// Imaginary beam properties
@@ -392,7 +407,7 @@ E_SFI_MVLEM_3D::E_SFI_MVLEM_3D()
 	E_SFI_MVLEM_3DK(24, 24), E_SFI_MVLEM_3DR(24), E_SFI_MVLEM_3DD(24, 24), E_SFI_MVLEM_3DM(24, 24),
 	E_SFI_MVLEM_3DKlocal(24, 24), E_SFI_MVLEM_3DDlocal(24, 24), E_SFI_MVLEM_3DRlocal(24), E_SFI_MVLEM_3DMlocal(24, 24),
 	P_24DOF(24), P_24DOF_local(24),
-	m(m), c(c), NUelastic(NUelastic), Tfactor(Tfactor),
+	 m(0), c(0.4), NUelastic(0.0), Tfactor(0.0), Eave(0.0),
 	T(24, 24), Tt(3, 3), T6(6, 6),
 	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
 {
@@ -448,7 +463,7 @@ E_SFI_MVLEM_3D::~E_SFI_MVLEM_3D()
 	if (Dxy != 0)
 		delete[]Dxy;
 	if (rhox != 0)
-		delete rhox;
+		delete[] rhox;
 	if (E_SFI_MVLEM_3DStrainX != 0)
 		delete[]E_SFI_MVLEM_3DStrainX;
 	if (E_SFI_MVLEM_3DStrainY != 0)
@@ -647,7 +662,8 @@ void E_SFI_MVLEM_3D::setDomain(Domain* theDomain)
 	const char* argv[1];
 	argv[0] = aa;
 
-	for (int i = 0; i < m; i++)
+	double Eave_FSAM = 0.0;
+	for (int i = 0; Eave <= 0.0 && i < m; i++)
 	{
 		//theResponses[0] = theMaterial[i]->setResponse(argv, 1, *theDummyStream);
 		Response* theResponse = theMaterial[i]->setResponse(argv, 1, theDummyStream);
@@ -666,7 +682,7 @@ void E_SFI_MVLEM_3D::setDomain(Domain* theDomain)
 		const Vector& InputNDMat = theInfoInput.getData();
 
 		// Calculate out-of-plane modulus of elasticity (average modulus)
-		Eave += AcY[i] * InputNDMat[9] / A;
+		Eave_FSAM += AcY[i] * InputNDMat[9] / A;
 
 		// Assign parameters for EpsX formula calculsions
 		rhox[i] = InputNDMat[3];
@@ -674,7 +690,9 @@ void E_SFI_MVLEM_3D::setDomain(Domain* theDomain)
 		delete theResponse;
 
 	}
-
+	if (Eave <= 0.0) // If not input by user, use the value from materials
+	  Eave = Eave_FSAM;
+ 
 	//delete theDummyStream;
 
 	// Internal beam parameters
@@ -2406,7 +2424,7 @@ int E_SFI_MVLEM_3D::sendSelf(int commitTag, Channel& theChannel)
 	int res;
 	int dataTag = this->getDbTag();
 
-	static Vector data(6);
+	static Vector data(7);
 
 	data(0) = this->getTag();
 	data(1) = density;
@@ -2414,6 +2432,7 @@ int E_SFI_MVLEM_3D::sendSelf(int commitTag, Channel& theChannel)
 	data(3) = c;
 	data(4) = NUelastic;
 	data(5) = Tfactor;
+	data(6) = Eave;
 
 	// E_SFI_MVLEM_3D then sends the tags of it's nodes
 	res = theChannel.sendID(dataTag, commitTag, externalNodes);
@@ -2451,7 +2470,7 @@ int E_SFI_MVLEM_3D::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroke
 		delete[] theMaterial;
 	}
 
-	Vector data(6);
+	Vector data(7);
 	res = theChannel.recvVector(dataTag, commitTag, data);
 	if (res < 0) {
 		opserr << "WARNING E_SFI_MVLEM_3D::recvSelf() - failed to receive Vector\n";
@@ -2464,7 +2483,8 @@ int E_SFI_MVLEM_3D::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroke
 	c = data(3);
 	NUelastic = data(4);
 	Tfactor = data(5);
-
+	Eave = data(6);
+	
 	// E_SFI_MVLEM_3D now receives the tags of it's four external nodes
 	res = theChannel.recvID(dataTag, commitTag, externalNodes);
 	if (res < 0) {

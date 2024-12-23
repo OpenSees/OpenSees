@@ -128,7 +128,7 @@ void* OPS_ShearPanelMaterial()
 				      data[0], data[0], data[0], data[0], data[0],
 				      data[15], data[16]);
     }
-    if (argc == 31) {
+    else {
 	return new ShearPanelMaterial(tag,
 				      datap[0], datap[1], datap[2], datap[3], 
 				      datap[4], datap[5], datap[6], datap[7],

@@ -27,7 +27,7 @@
 //
 // Description: This file contains the class definition for 
 // TensionOnlyMaterial.  TensionOnlyMaterial wraps a UniaxialMaterial
-// and imposes min and max strain limits.
+// and only returns positive stresses.
 
 #include <stdlib.h>
 #include <string.h>
@@ -40,16 +40,13 @@
 #include <OPS_Globals.h>
 
 #include <elementAPI.h>
-#define OPS_Export 
 
-OPS_Export void *
+void *
 OPS_TensionOnlyMaterial(void)
 {
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
   UniaxialMaterial *theOtherMaterial = 0;
-  double minStrain = -1.0e16;
-  double maxStrain = 1.0e16;
   int    iData[2];
 
   int argc = OPS_GetNumRemainingInputArgs();
@@ -68,35 +65,6 @@ OPS_TensionOnlyMaterial(void)
   if (theOtherMaterial == 0) {
     opserr << "WARNING invalid otherTag uniaxialMaterial TensionOnly tag: " << iData[0] << endln;
     return 0;	
-  }
-
-  argc = OPS_GetNumRemainingInputArgs();  
-  while (argc > 1) {
-    //char argvLoc[10];
-    const char *argvLoc = OPS_GetString();
-    /*    if (OPS_GetString(argvLoc, 10) != 0) {
-      opserr << "WARNING invalid string option uniaxialMaterial TensionOnly tag: " << iData[0] << endln;
-      return 0;
-    }
-    */
-    numData = 1;
-
-    if ((strcmp(argvLoc, "-min") == 0) || (strcmp(argvLoc, "-Min") == 0) || (strcmp(argvLoc, "-MIN") == 0)) {
-      if (OPS_GetDouble(&numData, &minStrain) != 0) {      
-	opserr << "WARNING invalid min value  uniaxialMaterial TensionOnly tag: " << iData[0] << endln;	
-	return 0;
-      }
-    } else if ((strcmp(argvLoc, "-max") == 0) || (strcmp(argvLoc, "-Max") == 0) || (strcmp(argvLoc, "-MAX") == 0)) {
-      if (OPS_GetDouble(&numData, &maxStrain) != 0) {      
-	opserr << "WARNING invalid min value  uniaxialMaterial TensionOnly tag: " << iData[0] << endln;  
-	return 0;
-      }
-    } else {
-      opserr << "WARNING invalid option:" << argvLoc << " uniaxialMaterial TensionOnly tag: " << iData[0] << endln;  
-      return 0;
-    }
-    
-    argc = OPS_GetNumRemainingInputArgs();
   }
 
   // Parsing was successful, allocate the material
@@ -241,21 +209,6 @@ TensionOnlyMaterial::sendSelf(int cTag, Channel &theChannel)
     return -1;
   }
 
-  static Vector dataVec(3);
-  dataVec(0) = 0.0;//minStrain;
-  dataVec(1) = 0.0;//maxStrain;
-  /*
-  if (Cfailed == true)
-    dataVec(2) = 1.0;
-  else
-    dataVec(2) = 0.0;
-  */
-  
-  if (theChannel.sendVector(dbTag, cTag, dataVec) < 0) {
-    opserr << "TensionOnlyMaterial::sendSelf() - failed to send the Vector\n";
-    return -2;
-  }
-
   if (theMaterial->sendSelf(cTag, theChannel) < 0) {
     opserr << "TensionOnlyMaterial::sendSelf() - failed to send the Material\n";
     return -3;
@@ -289,24 +242,6 @@ TensionOnlyMaterial::recvSelf(int cTag, Channel &theChannel,
   }
   theMaterial->setDbTag(dataID(2));
 
-  static Vector dataVec(3);
-  if (theChannel.recvVector(dbTag, cTag, dataVec) < 0) {
-    opserr << "TensionOnlyMaterial::recvSelf() - failed to get the Vector\n";
-    return -3;
-  }
-
-  /*
-  minStrain = dataVec(0);
-  maxStrain = dataVec(1);
-  
-  if (dataVec(2) == 1.0)
-    Cfailed = true;
-  else
-    Cfailed = false;
-
-  Tfailed = Cfailed;
-  */
-  
   if (theMaterial->recvSelf(cTag, theChannel, theBroker) < 0) {
     opserr << "TensionOnlyMaterial::recvSelf() - failed to get the Material\n";
     return -4;

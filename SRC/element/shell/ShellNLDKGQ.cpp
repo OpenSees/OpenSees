@@ -47,6 +47,7 @@
 #include <R3vectors.h>
 #include <Renderer.h>
 #include <ElementResponse.h>
+#include <Parameter.h>
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -564,7 +565,8 @@ ShellNLDKGQ::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
   } 
 
-  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0) {
+  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0 ||
+	   strcmp(argv[0],"section") == 0) {
     if (argc < 2) {
       opserr << "ShellNLDKGQ::setResponse() - need to specify more data\n";
       return 0;
@@ -742,6 +744,19 @@ ShellNLDKGQ::getResponse(int responseID, Information &eleInfo)
   //return 0;
 }
 
+int
+ShellNLDKGQ::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int res = -1;
+  // Send to all sections
+  for (int i = 0; i < 4; i++) {
+    int secRes = materialPointers[i]->setParameter(argv, argc, param);
+    if (secRes != -1) {
+      res = secRes;
+    }
+  }
+  return res;
+}
 
 //return stiffness matrix 
 const Matrix&  ShellNLDKGQ::getTangentStiff( ) 
@@ -2632,6 +2647,12 @@ int  ShellNLDKGQ::sendSelf (int commitTag, Channel &theChannel)
     return res;
   }
 
+  res += theChannel.sendVector(dataTag, commitTag, CstrainGauss);
+  if (res < 0) {
+    opserr << "WARNING ShellNLDKGT::sendSelf() - " << this->getTag() << " failed to send committed strains\n";
+    return res;
+  }
+  
   // Finally, quad asks its material objects to send themselves
   for (i = 0; i < 4; i++) {
     res += materialPointers[i]->sendSelf(commitTag, theChannel);
@@ -2690,6 +2711,13 @@ int  ShellNLDKGQ::recvSelf (int commitTag,
   betaK0 = vectData(2);
   betaKc = vectData(3);
 
+  res += theChannel.recvVector(dataTag, commitTag, CstrainGauss);
+  if (res < 0) {
+    opserr << "WARNING ShellNLDKGQ::sendSelf() - " << this->getTag() << " failed to send ID\n";
+    return res;
+  }
+  TstrainGauss = CstrainGauss;
+  
   int i;
 
   if (materialPointers[0] == 0) {
