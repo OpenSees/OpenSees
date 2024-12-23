@@ -1005,12 +1005,19 @@ int OPS_SP()
 
     // get sp const
     bool isSpConst = false;
+    bool zeroInitial = false;
+    
     bool userPattern = false;
     int loadPatternTag = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
 	if(strcmp(type, "-const") == 0) {
 	    isSpConst = true;
+	    
+	} else if (strcmp(argv[endMarker],"-useZeroInit") == 0) {
+	  // allow user to ignore init disp values at the node
+	  zeroInitial = true;
+
 	} else if(strcmp(type, "-pattern") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() > 0) {
 		int numData = 1;
@@ -1034,8 +1041,9 @@ int OPS_SP()
     }
 
     // create pattern
-    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst);
-    if(theSP == 0) return -1;
+    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst, zeroInitial);
+    if(theSP == 0)
+      return -1;
 
     // add load to domain
     if(theDomain->addSP_Constraint(theSP,loadPatternTag) == false) {
