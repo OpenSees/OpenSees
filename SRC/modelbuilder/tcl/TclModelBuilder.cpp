@@ -3793,7 +3793,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   LoadPattern *thePattern = theTclDomain->getLoadPattern(loadPatternTag);
   
   // create a homogeneous constraint
-  SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst);
+  SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst, zeroInitial);
 
   if (theSP == 0) {
     opserr << "WARNING ran out of memory for SP_Constraint ";
