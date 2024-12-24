@@ -113,7 +113,7 @@ TimeSeries* SimpsonTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double
   }
 
   // set the method return value
-  PathSeries *returnSeries = new PathSeries(0, *theInt, delta, 1.0, true);
+  PathSeries *returnSeries = new PathSeries(0, *theInt, delta, 1.0, true, false, theSeries->getStartTime());
   delete theInt;
   
   if (returnSeries == 0)  {
@@ -184,7 +184,7 @@ TimeSeries* SimpsonTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, do
   }
 
   // set the method return value
-  PathSeries *returnSeries = new PathSeries(0, *theDif, delta, 1.0, true);
+  PathSeries *returnSeries = new PathSeries(0, *theDif, delta, 1.0, true, false, theSeries->getStartTime());
   delete theDif;
   
   if (returnSeries == 0)  {
