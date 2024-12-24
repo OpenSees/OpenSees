@@ -1005,7 +1005,7 @@ int OPS_SP()
 
     // get sp const
     bool isSpConst = false;
-    bool zeroInitial = false;
+    bool retZeroInitValue = true;
     
     bool userPattern = false;
     int loadPatternTag = 0;
@@ -1014,9 +1014,9 @@ int OPS_SP()
 	if(strcmp(type, "-const") == 0) {
 	    isSpConst = true;
 	    
-	} else if (strcmp(type,"-useZeroInit") == 0) {
+	} else if (strcmp(type,"-subtractInit") == 0) {
 	  // allow user to ignore init disp values at the node
-	  zeroInitial = true;
+	  retZeroInitValue = true;
 
 	} else if(strcmp(type, "-pattern") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -1041,7 +1041,7 @@ int OPS_SP()
     }
 
     // create pattern
-    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst, zeroInitial);
+    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst, retZeroInitValue);
     if(theSP == 0)
       return -1;
 

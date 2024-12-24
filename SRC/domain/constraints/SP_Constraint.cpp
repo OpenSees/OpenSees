@@ -258,7 +258,7 @@ int SP_Constraint_GetNextTag(void) {
 SP_Constraint::SP_Constraint(int clasTag)
 :DomainComponent(0,clasTag),
  nodeTag(0), dofNumber(0), valueR(0.0), valueC(0.0), initialValue(0.0),
- initialized(false), isConstant(true), zeroInit(false), loadPatternTag(-1)
+ initialized(false), isConstant(true), retZeroInitValue(true), loadPatternTag(-1)
 {
   numSPs++;
 }
@@ -267,7 +267,7 @@ SP_Constraint::SP_Constraint(int clasTag)
 SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 :DomainComponent(nextTag++, clasTag),
  nodeTag(node), dofNumber(ndof), valueR(0.0), valueC(0.0), initialValue(0.0),
- initialized(false), isConstant(true),  zeroInit(false), loadPatternTag(-1)
+ initialized(false), isConstant(true),  retZeroInitValue(true), loadPatternTag(-1)
  // valueC is set to 1.0 so that homo will be false when recvSelf() invoked
  // should be ok as valueC cannot be used by subclasses and subclasses should
  // not be used if it is a homogeneous constraint.
@@ -279,7 +279,7 @@ SP_Constraint::SP_Constraint(int node, int ndof, int clasTag)
 SP_Constraint::SP_Constraint(int node, int ndof, double value, bool ISconstant, bool zInit)
 :DomainComponent(nextTag++, CNSTRNT_TAG_SP_Constraint),
  nodeTag(node), dofNumber(ndof), valueR(value), valueC(value), initialValue(0.0),
- initialized(false), isConstant(ISconstant), zeroInit(zInit), loadPatternTag(-1)
+ initialized(false), isConstant(ISconstant), retZeroInitValue(zInit), loadPatternTag(-1)
 {
   numSPs++;
 }
@@ -316,9 +316,13 @@ SP_Constraint::getValue(void)
 double
 SP_Constraint::getInitialValue(void)
 {
-    // return the initial value of the constraint
-  if (zeroInit == false)
+
+  if (retZeroInitValue == false)
+    
+    // return the initial value of the constraint if retZeroInitValue is false,
+    //   - constraint handlers will subtract this off the current getValue()    
     return initialValue;
+  
   else
     return 0;
 }
@@ -385,7 +389,7 @@ SP_Constraint::setDomain(Domain* theDomain)
 int 
 SP_Constraint::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(10);  // we send as double to avoid having 
+    static Vector data(11);  // we send as double to avoid having 
                      // to send two messages.
     data(0) = this->getTag(); 
     data(1) = nodeTag;
@@ -401,6 +405,7 @@ SP_Constraint::sendSelf(int cTag, Channel &theChannel)
     data(7) = nextTag;
     data(8) = initialValue;
     data(9) = static_cast<double>(initialized);
+    data(10) = static_cast<double>(retZeroInitValue);    
 
     int result = theChannel.sendVector(this->getDbTag(), cTag, data);
     if (result != 0) {
@@ -415,7 +420,7 @@ int
 SP_Constraint::recvSelf(int cTag, Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-    static Vector data(10);  // we sent the data as double to avoid having to send
+    static Vector data(11);  // we sent the data as double to avoid having to send
                      // two messages
     int result = theChannel.recvVector(this->getDbTag(), cTag, data);
     if (result < 0) {
@@ -440,6 +445,7 @@ SP_Constraint::recvSelf(int cTag, Channel &theChannel,
     nextTag = (int)data(7);
     initialValue = data(8);
     initialized = static_cast<bool>(data(9));
+    retZeroInitValue = static_cast<bool>(data(10));    
 
     return 0;
 }

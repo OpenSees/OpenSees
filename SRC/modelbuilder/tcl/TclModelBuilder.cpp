@@ -3753,7 +3753,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   bool isSpConst = false;
-  bool zeroInitial = false;
+  bool retZeroInitial = true;
   bool userSpecifiedPattern = false;
   int loadPatternTag = 0; // some pattern that will never be used!
 
@@ -3763,9 +3763,9 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
       // allow user to specify const load
       isSpConst = true;
       
-    } else if (strcmp(argv[endMarker],"-useZeroInit") == 0) {
+    } else if (strcmp(argv[endMarker],"-subtractInit") == 0) {
       // allow user to ignore init disp values at the node
-      zeroInitial = true;
+      retZeroInitial = false;
       
     } else if (strcmp(argv[endMarker],"-pattern") == 0) {
       // allow user to specify load pattern other than current
@@ -3793,7 +3793,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, int argc,
   LoadPattern *thePattern = theTclDomain->getLoadPattern(loadPatternTag);
   
   // create a homogeneous constraint
-  SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst, zeroInitial);
+  SP_Constraint *theSP = new SP_Constraint(nodeId, dofId, value, isSpConst, retZeroInitial);
 
   if (theSP == 0) {
     opserr << "WARNING ran out of memory for SP_Constraint ";
