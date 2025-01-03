@@ -84,6 +84,7 @@ MAINTENANCE, SUPPORT, UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <KooModulatingFunction.h>
 #include <JonswapSpectrum.h>
 #include <NarrowBandSpectrum.h>
+#include <PointsSpectrum.h>
 
 #include <AdkZhangMeritFunctionCheck.h>
 #include <AllIndependentTransformation.h>
@@ -465,8 +466,34 @@ int OPS_spectrum() {
     theSpectrum = new NarrowBandSpectrum(tag, data[0], data[1], data[2]);
   }
   else if (strcmp(type,"points") == 0) {
-    opserr << "ERROR: points spectrum not yet added to Python interpreter" << endln;
-    return -1;
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    if (numArgs < 4) {
+      opserr << "ERROR: insufficient arguments for points spectrum, need at least two points" << endln;
+      return -1;
+    }    
+
+    if (numArgs % 2 == 1) {
+      opserr << "Warning - points spectrum, odd number of values entered, ignoring final input" << endln;
+    }
+    int numPoints = numArgs / 2;
+    Vector frequencies(numPoints);
+    Vector amplitudes(numPoints);
+    numdata = 1;
+    for (int i = 0; i < numPoints; i++) {
+      double data;
+      if (OPS_GetDoubleInput(&numdata,&data) < 0) {
+	opserr << "ERROR: invalid double data for spectrum with tag " << tag << endln;
+	return -1;
+      }
+      frequencies(i) = data;
+      if (OPS_GetDoubleInput(&numdata,&data) < 0) {
+	opserr << "ERROR: invalid double data for spectrum with tag " << tag << endln;
+	return -1;
+      }
+      amplitudes(i) = data;      
+    }
+
+    theSpectrum = new PointsSpectrum(tag, frequencies, amplitudes);    
   } 
   else {
     opserr << "Unknown spectrum type: " << type << endln;

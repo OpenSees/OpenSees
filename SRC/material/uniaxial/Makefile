@@ -167,6 +167,8 @@ OBJS       = UniaxialMaterial.o \
 	APDFMD.o \
 	APDMD.o \
 	APDVFD.o \
+	QbSandCPT.o \
+	TzSandCPT.o \
     TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
