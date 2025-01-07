@@ -150,6 +150,7 @@ void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
 void* OPS_ASDConcrete1DMaterial();
+void* OPS_ASDSteel1DMaterial();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BoucWenOriginal();
@@ -462,6 +463,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
   uniaxialMaterialsMap.insert(
       std::make_pair("ASDConcrete1D", &OPS_ASDConcrete1DMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ASDSteel1D", &OPS_ASDSteel1DMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(
