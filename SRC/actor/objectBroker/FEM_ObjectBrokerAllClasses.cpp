@@ -74,6 +74,7 @@
 #include "TensionOnlyMaterial.h"
 #include "ASD_SMA_3K.h"
 #include "ASDConcrete1DMaterial.h"
+#include "ASDSteel1DMaterial.h"
 #include "Concrete01.h"
 #include "Concrete01WithSITC.h"
 #include "Concrete02.h"
@@ -1726,6 +1727,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ASDConcrete1DMaterial:  
 	     return new ASDConcrete1DMaterial();
 
+	case MAT_TAG_ASDSteel1DMaterial:  
+	     return new ASDSteel1DMaterial();
+
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
 
@@ -1837,11 +1841,11 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
     case MAT_TAG_QzLiq1:
 		return new QzLiq1();
 
-	case MAT_TAG_TzSandCPT:
-		return new TzSandCPT();
+	//case MAT_TAG_TzSandCPT:
+	//	return new TzSandCPT();
 
-	case MAT_TAG_QbSandCPT:
-		return new QbSandCPT();
+	//case MAT_TAG_QbSandCPT:
+	//	return new QbSandCPT();
 
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();

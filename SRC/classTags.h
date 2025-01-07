@@ -258,6 +258,7 @@
 #define MAT_TAG_PipeMaterial 232
 #define MAT_TAG_TzSandCPT 233
 #define MAT_TAG_QbSandCPT 234
+#define MAT_TAG_ASDSteel1DMaterial 235
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
