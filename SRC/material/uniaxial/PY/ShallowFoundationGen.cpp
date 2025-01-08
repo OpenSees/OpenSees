@@ -231,7 +231,7 @@ q= GammaSoil*Dfoot;
 Nq= Nphi*exp(pi*tph);   
 if (PhiSoil == 0)
 {
-Nc = 5.7;  //using table 3.2 (Das, 2006)
+Nc = 5.14;  //using table 12.2 (Das, 2006)
 }
 else
 {
@@ -286,7 +286,7 @@ Qult = qu*Lfoot*Bfoot;
 
 //-------- CALCULATION OF Pult (LATERAL PASSIVE CAPACITY)
 Kp=Nphi;                                    //following Rankin's passive earth pressure theory (Rankin, 1857)
-Pult=(0.5*Kp*GammaSoil*Dfoot*Dfoot+2*cSoil*Dfoot*sqrt(Kp))*Lfoot;  //passive capacity of the footing 
+Pult=(0.5*Kp*GammaSoil*Dfoot*Dfoot+2*cSoil*Dfoot*sqrt(Kp))*Bfoot;  //passive capacity of the footing 
 //-------- END OF Pult CALCULATION
 
 //-------- CALCULATION OF Tult (LATERAL SLIDING CAPACITY)
@@ -565,14 +565,7 @@ ShallowFoundationOut << " #element  " << " elasticBeamColumn " << " $eleTag " <<
 
 for(i=1; i<nodeTotal; i++){
 //writing Foundation connectivity
-	if (i > ndivEnd && i <= ndivEnd+ndivMid)
-	{
 ShallowFoundationOut << " element " <<"elasticBeamColumn " << FoundationTag*1000+i << " " <<FoundationTag*1000+i << "  " << FoundationTag*1000+i+1 << " " << Aelefoot << " " << Efoot << " " <<  Ielefoot << " " << transfTag <<endln;
-	}
-	else
-	{
-ShallowFoundationOut << " element " <<"elasticBeamColumn " << FoundationTag*1000+i << " " <<FoundationTag*1000+i << "  " << FoundationTag*1000+i+1 << " " << Aelefoot << " " << Efoot << " " <<  Ielefoot << " " << transfTag <<endln;
-	}
 }
 
 //writing Spring Fixity
