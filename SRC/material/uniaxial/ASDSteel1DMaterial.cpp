@@ -127,15 +127,22 @@ void* OPS_ASDSteel1DMaterial()
 	double H2 = H1 * 50;
 	double gamma2 = gamma1 * 50;
 	double alpha = 0.9;
+	ASDSteel1DMaterial::InputParameters params;
+	params.E = E;
+	params.sy = sy;
+	params.H1 = H1 * alpha;
+	params.gamma1 = gamma1;
+	params.H2 = H2 * (1.0 - alpha);
+	params.gamma2 = gamma2;
 
 	// create the material
 	UniaxialMaterial* instance = new ASDSteel1DMaterial(
 		// tag
-		tag,
+		tag, params);
 		// base steel args
-		E, sy, H1*alpha, gamma1, H2*(1.0-alpha), gamma2
+		//E, sy, H1*alpha, gamma1, H2*(1.0-alpha), gamma2
 		// others..
-	);
+	//);
 	if (instance == nullptr) {
 		opserr << "UniaxialMaterial ASDSteel1D Error: failed to allocate a new material.\n";
 		return nullptr;
@@ -143,21 +150,65 @@ void* OPS_ASDSteel1DMaterial()
 	return instance;
 }
 
+void ASDSteel1DMaterial::StateVariablesSteel::commit(const  ASDSteel1DMaterial::InputParameters& params)
+{
+	// state variables
+	alpha1_commit = alpha1;
+	alpha2_commit = alpha2;
+	lambda_commit = lambda;
+	strain_commit = strain;
+	stress_commit = stress;
+}
+
+void ASDSteel1DMaterial::StateVariablesSteel::revertToLastCommit(const  ASDSteel1DMaterial::InputParameters& params)
+{
+	// state variables
+	alpha1 = alpha1_commit;
+	alpha2 = alpha2_commit;
+	lambda = lambda_commit;
+	strain = strain_commit;
+	stress = stress_commit;
+}
+
+void ASDSteel1DMaterial::StateVariablesSteel::revertToStart(const  ASDSteel1DMaterial::InputParameters& params)
+{
+	// state variables
+	alpha1 = 0.0;
+	alpha1_commit = 0.0;
+	alpha2 = 0.0;
+	alpha2_commit = 0.0;
+	lambda = 0.0;
+	lambda_commit = 0.0;
+
+	// strain, stress and tangent
+	strain = 0.0;
+	strain_commit = 0.0;
+	stress = 0.0;
+	stress_commit = 0.0;
+	C = params.E;
+}
+void ASDSteel1DMaterial::StateVariablesSteel::sendSelf(int& counter, Vector& ddata) {
+	ddata(counter++) = alpha1;
+	ddata(counter++) = alpha1_commit;
+	ddata(counter++) = alpha2;
+	ddata(counter++) = alpha2_commit;
+	ddata(counter++) = lambda;
+	ddata(counter++) = lambda_commit;
+}
+void ASDSteel1DMaterial::StateVariablesSteel::recvSelf(int& counter, Vector& ddata) {
+	alpha1 = ddata(counter++);
+	alpha1_commit = ddata(counter++);
+	alpha2 = ddata(counter++);
+	alpha2_commit = ddata(counter++);
+	lambda = ddata(counter++);
+	lambda_commit = ddata(counter++);
+}
+
 ASDSteel1DMaterial::ASDSteel1DMaterial(
 	int _tag,
-	double _E,
-	double _sy,
-	double _H1,
-	double _gamma1,
-	double _H2,
-	double _gamma2)
+	const InputParameters& _params)
 	: UniaxialMaterial(_tag, MAT_TAG_ASDSteel1DMaterial)
-	, E(_E)
-	, sy(_sy)
-	, H1(_H1)
-	, H2(_H2)
-	, gamma1(_gamma1)
-	, gamma2(_gamma2)
+	, params(_params)
 {
 	// intialize C as C0
 	C = getInitialTangent();
@@ -177,20 +228,19 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	// retval
 	int retval = 0;
 
-	// perturbation
-	constexpr double pert = 1.0e-10;
-
-	// compute forward response
-	retval = computeBaseSteel(v + pert);
-	if (retval < 0) return retval;
-	double pert_sigma = stress;
-
 	// compute real response
-	retval = computeBaseSteel(v);
+	steel.strain = v;
+	retval = computeBaseSteel(steel);
 	if (retval < 0) return retval;
 
-	// compute numerical tangent
-	Cnum = (pert_sigma - stress) / pert;
+	// todo: homogenize
+	strain = steel.strain;
+	stress = steel.stress;
+	C = steel.C;
+
+	// done
+	return retval;
+
 }
 
 double ASDSteel1DMaterial::getStress(void)
@@ -205,7 +255,7 @@ double ASDSteel1DMaterial::getTangent(void)
 
 double ASDSteel1DMaterial::getInitialTangent(void)
 {
-	return E;
+	return params.E;
 }
 
 double ASDSteel1DMaterial::getStrain(void)
@@ -219,9 +269,9 @@ int ASDSteel1DMaterial::commitState(void)
 	energy += 0.5 * (stress_commit + stress) * (strain - strain_commit);
 
 	// store committed variables
-	alpha1_commit = alpha1;
-	alpha2_commit = alpha2;
-	lambda_commit = lambda;
+	steel.commit(params);
+
+	// state variables
 	strain_commit = strain;
 	stress_commit = stress;
 
@@ -232,9 +282,9 @@ int ASDSteel1DMaterial::commitState(void)
 int ASDSteel1DMaterial::revertToLastCommit(void)
 {
 	// restore converged values
-	alpha1 = alpha1_commit;
-	alpha2 = alpha2_commit;
-	lambda = lambda_commit;
+	steel.revertToLastCommit(params);
+
+	// state variables
 	strain = strain_commit;
 	stress = stress_commit;
 
@@ -245,12 +295,7 @@ int ASDSteel1DMaterial::revertToLastCommit(void)
 int ASDSteel1DMaterial::revertToStart(void)
 {
 	// state variables
-	alpha1 = 0.0;
-	alpha1_commit = 0.0;
-	alpha2 = 0.0;
-	alpha2_commit = 0.0;
-	lambda = 0.0;
-	lambda_commit = 0.0;
+	steel.revertToStart(params);
 
 	// strain, stress and tangent
 	strain = 0.0;
@@ -283,21 +328,16 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	int counter;
 
 	// send DBL data
-	Vector ddata(19);
+	Vector ddata(InputParameters::NDATA + 1*StateVariablesSteel::NDATA + 7);
 	counter = 0;
 	ddata(counter++) = static_cast<double>(getTag());
-	ddata(counter++) = E;
-	ddata(counter++) = sy;
-	ddata(counter++) = H1;
-	ddata(counter++) = H2;
-	ddata(counter++) = gamma1;
-	ddata(counter++) = gamma2;
-	ddata(counter++) = alpha1;
-	ddata(counter++) = alpha1_commit;
-	ddata(counter++) = alpha2;
-	ddata(counter++) = alpha2_commit;
-	ddata(counter++) = lambda;
-	ddata(counter++) = lambda_commit;
+	ddata(counter++) = params.E;
+	ddata(counter++) = params.sy;
+	ddata(counter++) = params.H1;
+	ddata(counter++) = params.H2;
+	ddata(counter++) = params.gamma1;
+	ddata(counter++) = params.gamma2;
+	steel.sendSelf(counter, ddata);
 	ddata(counter++) = strain;
 	ddata(counter++) = strain_commit;
 	ddata(counter++) = stress;
@@ -319,25 +359,20 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	int counter;
 
 	// recv DBL data
-	Vector ddata(19);
+	Vector ddata(InputParameters::NDATA + 1 * StateVariablesSteel::NDATA + 7);
 	if (theChannel.recvVector(getDbTag(), commitTag, ddata) < 0) {
 		opserr << "ASDSteel1DMaterial::recvSelf() - failed to receive DBL data\n";
 		return -1;
 	}
 	counter = 0;
 	setTag(ddata(counter++));
-	E = ddata(counter++);
-	sy = ddata(counter++);
-	H1 = ddata(counter++);
-	H2 = ddata(counter++);
-	gamma1 = ddata(counter++);
-	gamma2 = ddata(counter++);
-	alpha1 = ddata(counter++);
-	alpha1_commit = ddata(counter++);
-	alpha2 = ddata(counter++);
-	alpha2_commit = ddata(counter++);
-	lambda = ddata(counter++);
-	lambda_commit = ddata(counter++);
+	params.E = ddata(counter++);
+	params.sy = ddata(counter++);
+	params.H1 = ddata(counter++);
+	params.H2 = ddata(counter++);
+	params.gamma1 = ddata(counter++);
+	params.gamma2 = ddata(counter++);
+	steel.recvSelf(counter, ddata);
 	strain = ddata(counter++);
 	strain_commit = ddata(counter++);
 	stress = ddata(counter++);
@@ -382,8 +417,6 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 
 	// labels
 	static std::vector<std::string> lb_eqpl_strain = { "PLE" };
-	static std::vector<std::string> lb_plastic_iter = { "PITER" };
-	static std::vector<std::string> lb_plastic_tangent_error = { "PK_ERROR (%)" };
 
 	// all outputs are 1D
 	static Vector out1(1);
@@ -392,16 +425,8 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 	if (argc > 0) {
 		// 1000 - base steel output
 		if (strcmp(argv[0], "equivalentPlasticStrain") == 0 || strcmp(argv[0], "EquivalentPlasticStrain") == 0) {
-			out1(0) = lambda;
+			out1(0) = steel.lambda;
 			return make_resp(1001, out1, &lb_eqpl_strain);
-		}
-		if (strcmp(argv[0], "plasticIter") == 0 || strcmp(argv[0], "PlasticIter") == 0) {
-			out1(0) = niter;
-			return make_resp(1002, out1, &lb_plastic_iter);
-		}
-		if (strcmp(argv[0], "plasticTangentError") == 0) {
-			out1(0) = 100.0 * std::abs((Cnum - C) / C);
-			return make_resp(1003, out1, &lb_plastic_tangent_error);
 		}
 	}
 
@@ -417,13 +442,7 @@ int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 	switch (responseID) {
 		// 1000 - base steel output
 	case 1001:
-		out1(0) = lambda;
-		return matInformation.setVector(out1);
-	case 1002:
-		out1(0) = niter;
-		return matInformation.setVector(out1);
-	case 1003:
-		out1(0) = 100.0 * std::abs((Cnum - C) / C);;
+		out1(0) = steel.lambda;
 		return matInformation.setVector(out1);
 	default:
 		break;
@@ -436,7 +455,7 @@ double ASDSteel1DMaterial::getEnergy(void)
 	return energy;
 }
 
-int ASDSteel1DMaterial::computeBaseSteel(double trial_strain)
+int ASDSteel1DMaterial::computeBaseSteel(ASDSteel1DMaterial::StateVariablesSteel& sv)
 {
 	// return value
 	int retval = 0;
@@ -446,48 +465,46 @@ int ASDSteel1DMaterial::computeBaseSteel(double trial_strain)
 	constexpr double F_REL_TOL = 1.0e-6;
 	constexpr double L_ABS_TOL = 1.0e-8;
 	// base steel response
-	alpha1 = alpha1_commit;
-	alpha2 = alpha2_commit;
-	lambda = lambda_commit;
+	sv.alpha1 = sv.alpha1_commit;
+	sv.alpha2 = sv.alpha2_commit;
+	sv.lambda = sv.lambda_commit;
 	// elastic predictor
-	strain = trial_strain;
-	double dstrain = strain - strain_commit;
-	double sigma = stress_commit + E * dstrain;
-	double tangent = E;
+	double dstrain = sv.strain - sv.strain_commit;
+	double sigma = sv.stress_commit + params.E * dstrain;
+	double tangent = params.E;
 	// plastic utilities
-	auto lam_rel_stress = [this, &sigma]() -> double {
-		return sigma - alpha1 - alpha2;
+	auto lam_rel_stress = [&sv, &sigma]() -> double {
+		return sigma - sv.alpha1 - sv.alpha2;
 	};
 	auto lam_yield_function = [this, &lam_rel_stress]() -> double {
-		return std::abs(lam_rel_stress()) - sy;
+		return std::abs(lam_rel_stress()) - params.sy;
 	};
-	auto lam_yield_derivative = [this, &lam_rel_stress](double dlambda) -> double {
+	auto lam_yield_derivative = [this, &lam_rel_stress, &sv](double dlambda) -> double {
 		// plastic flow direction
 		double sg = sign(lam_rel_stress());
 		// d stress / d lambda
-		double dsigma = -E * sg;
+		double dsigma = -params.E * sg;
 		// d backstress / d lambda
-		double dalpha1 = H1 * sg - gamma1 * alpha1;
-		double dalpha2 = H2 * sg - gamma2 * alpha2;
+		double dalpha1 = params.H1 * sg - params.gamma1 * sv.alpha1;
+		double dalpha2 = params.H2 * sg - params.gamma2 * sv.alpha2;
 		return sg * (dsigma - dalpha1 - dalpha2);
 	};
-	auto lam_yield_update = [this, &sigma, &lam_rel_stress](double dlambda, double delta_lambda) {
+	auto lam_yield_update = [this, &sigma, &lam_rel_stress, &sv](double dlambda, double delta_lambda) {
 		// plastic flow direction
 		double sg = sign(lam_rel_stress());
 		// update stress
-		sigma -= sg * dlambda * E;
+		sigma -= sg * dlambda * params.E;
 		// update backstress
-		alpha1 = sg * H1 / gamma1 - (sg * H1 / gamma1 - alpha1_commit) * std::exp(-gamma1 * delta_lambda);
-		alpha2 = sg * H2 / gamma2 - (sg * H2 / gamma2 - alpha2_commit) * std::exp(-gamma2 * delta_lambda);
+		sv.alpha1 = sg * params.H1 / params.gamma1 - (sg * params.H1 / params.gamma1 - sv.alpha1_commit) * std::exp(-params.gamma1 * delta_lambda);
+		sv.alpha2 = sg * params.H2 / params.gamma2 - (sg * params.H2 / params.gamma2 - sv.alpha2_commit) * std::exp(-params.gamma2 * delta_lambda);
 	};
 	// plastic corrector
-	niter = 0;
 	double F = lam_yield_function();
 	if (F > 0.0) {
 		double delta_lambda = 0.0;
 		double dlambda = 0.0;
 		bool converged = false;
-		for (niter = 0; niter < MAX_ITER; ++niter) {
+		for (int niter = 0; niter < MAX_ITER; ++niter) {
 			// form tangent
 			double dF = lam_yield_derivative(dlambda);
 			if (dF == 0.0) break;
@@ -499,16 +516,16 @@ int ASDSteel1DMaterial::computeBaseSteel(double trial_strain)
 			// update residual
 			F = lam_yield_function();
 			// check convergence
-			if (std::abs(F) < F_REL_TOL * sy && std::abs(dlambda) < L_ABS_TOL) {
+			if (std::abs(F) < F_REL_TOL * params.sy && std::abs(dlambda) < L_ABS_TOL) {
 				converged = true;
 				// update plastic multiplier
-				lambda += delta_lambda;
+				sv.lambda += delta_lambda;
 				// compute tangent
 				double sg = sign(lam_rel_stress());
 				double PE =
-					gamma1 * (H1 / gamma1 - sg * alpha1) +
-					gamma2 * (H2 / gamma2 - sg * alpha2);
-				tangent = (E * PE) / (E + PE);
+					params.gamma1 * (params.H1 / params.gamma1 - sg * sv.alpha1) +
+					params.gamma2 * (params.H2 / params.gamma2 - sg * sv.alpha2);
+				tangent = (params.E * PE) / (params.E + PE);
 				break;
 			}
 		}
@@ -516,9 +533,10 @@ int ASDSteel1DMaterial::computeBaseSteel(double trial_strain)
 			retval = -1;
 	}
 	// accept solution
-	stress = sigma;
-	C = tangent;
+	sv.stress = sigma;
+	sv.C = tangent;
 
 	// done
 	return retval;
 }
+
