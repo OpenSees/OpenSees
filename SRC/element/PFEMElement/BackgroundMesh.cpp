@@ -1800,14 +1800,15 @@ int BackgroundMesh::gridFluid() {
     int numele = 0;
     int numelenodes = 0;
     if (ndm == 2) {
-        numele = 2;
+        numele = 4;
         numelenodes = 3;
     } else if (ndm == 3) {
-        numele = 6;
+        numele = 12;
         numelenodes = 4;
     }
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
+    int ndtag = Mesh::nextNodeTag();
 #pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // structural cell
@@ -1850,48 +1851,154 @@ int BackgroundMesh::gridFluid() {
                 cnodes[i] = tags[0];
             }
         }
+
+        // create center node
+        Node* center_node = cells[j]->setCenterNode(ndtag, ndtag+1);
+        if (center_node == 0) {
+            opserr << "WARNING: failed to create center node. Only use corner nodes -- "
+                      "BgMesh::gridFluid\n";
+        } else {
+            ndtag += 2;
+        }
         for (int i = 0; i < numele; ++i) {
             elends[numele * j + i].resize(numelenodes);
         }
-        if (ndm == 2) {
-            elends[numele * j][0] = cnodes[0];
-            elends[numele * j][1] = cnodes[3];
-            elends[numele * j][2] = cnodes[2];
 
-            elends[numele * j + 1][0] = cnodes[0];
-            elends[numele * j + 1][1] = cnodes[1];
-            elends[numele * j + 1][2] = cnodes[3];
+        // create elements
+        if (ndm == 2) {
+            if (center_node == 0) {
+                // two elements
+                elends[numele * j][0] = cnodes[0];
+                elends[numele * j][1] = cnodes[3];
+                elends[numele * j][2] = cnodes[2];
+
+                elends[numele * j + 1][0] = cnodes[0];
+                elends[numele * j + 1][1] = cnodes[1];
+                elends[numele * j + 1][2] = cnodes[3];
+            } else {
+                // four elements
+                int center_tag = center_node->getTag();
+                elends[numele * j][0] = center_tag;
+                elends[numele * j][1] = cnodes[2];
+                elends[numele * j][2] = cnodes[0];
+
+                elends[numele * j + 1][0] = center_tag;
+                elends[numele * j + 1][1] = cnodes[0];
+                elends[numele * j + 1][2] = cnodes[1];
+
+                elends[numele * j + 2][0] = center_tag;
+                elends[numele * j + 2][1] = cnodes[1];
+                elends[numele * j + 2][2] = cnodes[3];
+
+                elends[numele * j + 3][0] = center_tag;
+                elends[numele * j + 3][1] = cnodes[3];
+                elends[numele * j + 3][2] = cnodes[2];
+            }
+
 
         } else if (ndm == 3) {
-            elends[numele * j][0] = cnodes[0];
-            elends[numele * j][1] = cnodes[7];
-            elends[numele * j][2] = cnodes[4];
-            elends[numele * j][3] = cnodes[5];
+            if (center_node == 0) {
+                // six elements
+                elends[numele * j][0] = cnodes[0];
+                elends[numele * j][1] = cnodes[7];
+                elends[numele * j][2] = cnodes[4];
+                elends[numele * j][3] = cnodes[5];
 
-            elends[numele * j + 1][0] = cnodes[0];
-            elends[numele * j + 1][1] = cnodes[1];
-            elends[numele * j + 1][2] = cnodes[7];
-            elends[numele * j + 1][3] = cnodes[5];
+                elends[numele * j + 1][0] = cnodes[0];
+                elends[numele * j + 1][1] = cnodes[1];
+                elends[numele * j + 1][2] = cnodes[7];
+                elends[numele * j + 1][3] = cnodes[5];
 
-            elends[numele * j + 2][0] = cnodes[0];
-            elends[numele * j + 2][1] = cnodes[1];
-            elends[numele * j + 2][2] = cnodes[3];
-            elends[numele * j + 2][3] = cnodes[7];
+                elends[numele * j + 2][0] = cnodes[0];
+                elends[numele * j + 2][1] = cnodes[1];
+                elends[numele * j + 2][2] = cnodes[3];
+                elends[numele * j + 2][3] = cnodes[7];
 
-            elends[numele * j + 3][0] = cnodes[0];
-            elends[numele * j + 3][1] = cnodes[3];
-            elends[numele * j + 3][2] = cnodes[2];
-            elends[numele * j + 3][3] = cnodes[7];
+                elends[numele * j + 3][0] = cnodes[0];
+                elends[numele * j + 3][1] = cnodes[3];
+                elends[numele * j + 3][2] = cnodes[2];
+                elends[numele * j + 3][3] = cnodes[7];
 
-            elends[numele * j + 4][0] = cnodes[6];
-            elends[numele * j + 4][1] = cnodes[0];
-            elends[numele * j + 4][2] = cnodes[7];
-            elends[numele * j + 4][3] = cnodes[4];
+                elends[numele * j + 4][0] = cnodes[6];
+                elends[numele * j + 4][1] = cnodes[0];
+                elends[numele * j + 4][2] = cnodes[7];
+                elends[numele * j + 4][3] = cnodes[4];
 
-            elends[numele * j + 5][0] = cnodes[6];
-            elends[numele * j + 5][1] = cnodes[0];
-            elends[numele * j + 5][2] = cnodes[2];
-            elends[numele * j + 5][3] = cnodes[7];
+                elends[numele * j + 5][0] = cnodes[6];
+                elends[numele * j + 5][1] = cnodes[0];
+                elends[numele * j + 5][2] = cnodes[2];
+                elends[numele * j + 5][3] = cnodes[7];
+            } else {
+                // twelve elements
+                int center_tag = center_node->getTag();
+
+                // front
+                elends[numele * j][0] = center_tag;
+                elends[numele * j][1] = cnodes[4];
+                elends[numele * j][2] = cnodes[0];
+                elends[numele * j][3] = cnodes[1];
+
+                elends[numele * j + 1][0] = center_tag;
+                elends[numele * j + 1][1] = cnodes[4];
+                elends[numele * j + 1][2] = cnodes[1];
+                elends[numele * j + 1][3] = cnodes[5];
+
+                // right
+                elends[numele * j + 2][0] = center_tag;
+                elends[numele * j + 2][1] = cnodes[5];
+                elends[numele * j + 2][2] = cnodes[1];
+                elends[numele * j + 2][3] = cnodes[3];
+
+                elends[numele * j + 3][0] = center_tag;
+                elends[numele * j + 3][1] = cnodes[5];
+                elends[numele * j + 3][2] = cnodes[3];
+                elends[numele * j + 3][3] = cnodes[7];
+
+                // back
+                elends[numele * j + 4][0] = center_tag;
+                elends[numele * j + 4][1] = cnodes[2];
+                elends[numele * j + 4][2] = cnodes[6];
+                elends[numele * j + 4][3] = cnodes[7];
+
+                elends[numele * j + 4][0] = center_tag;
+                elends[numele * j + 4][1] = cnodes[2];
+                elends[numele * j + 4][2] = cnodes[7];
+                elends[numele * j + 4][3] = cnodes[3];
+
+                // left
+                elends[numele * j + 5][0] = center_tag;
+                elends[numele * j + 5][1] = cnodes[2];
+                elends[numele * j + 5][2] = cnodes[0];
+                elends[numele * j + 5][3] = cnodes[4];
+
+                elends[numele * j + 6][0] = center_tag;
+                elends[numele * j + 6][1] = cnodes[2];
+                elends[numele * j + 6][2] = cnodes[4];
+                elends[numele * j + 6][3] = cnodes[6];
+
+                // top
+                elends[numele * j + 7][0] = center_tag;
+                elends[numele * j + 7][1] = cnodes[6];
+                elends[numele * j + 7][2] = cnodes[4];
+                elends[numele * j + 7][3] = cnodes[5];
+
+                elends[numele * j + 8][0] = center_tag;
+                elends[numele * j + 8][1] = cnodes[6];
+                elends[numele * j + 8][2] = cnodes[5];
+                elends[numele * j + 8][3] = cnodes[7];
+
+                // bottom
+                elends[numele * j + 9][0] = center_tag;
+                elends[numele * j + 9][1] = cnodes[0];
+                elends[numele * j + 9][2] = cnodes[2];
+                elends[numele * j + 9][3] = cnodes[3];
+
+                elends[numele * j + 10][0] = center_tag;
+                elends[numele * j + 10][1] = cnodes[0];
+                elends[numele * j + 10][2] = cnodes[3];
+                elends[numele * j + 10][3] = cnodes[1];
+
+            }
         }
     }
 
