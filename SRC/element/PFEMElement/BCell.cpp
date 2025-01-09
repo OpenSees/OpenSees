@@ -152,8 +152,6 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
     if (center_pc != 0) {
         pnode = center_pc->getPressureNode();
         if (pnode == 0) {
-            opserr << "WARNING: pressure does not exist -- "
-                      "Bcell::setCenterNode\n";
             return 0;
         }
     } else {

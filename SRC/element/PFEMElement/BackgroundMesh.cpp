@@ -1821,7 +1821,8 @@ int BackgroundMesh::gridFluid() {
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
     int ndtag = Mesh::nextNodeTag();
-#pragma omp parallel for
+// #pragma omp parallel for
+// TODO: setCenterNode will add nodes to domain. Can't be in parallel.
     for (int j = 0; j < (int)cells.size(); ++j) {
         // structural cell
         if (cells[j]->getType() == BACKGROUND_STRUCTURE) continue;
@@ -1868,11 +1869,11 @@ int BackgroundMesh::gridFluid() {
         Node* center_node = 0;
         if (use_center_node) {
             center_node =
-                cells[j]->setCenterNode(ndtag, ndtag + 1);
+                cells[j]->setCenterNode(
+                    ndtag + 2 * j + 1,
+                    ndtag + 2 * j + 2);
             if (center_node == 0) {
                 continue;
-            } else {
-                ndtag += 2;
             }
         }
         for (int i = 0; i < numele; ++i) {
