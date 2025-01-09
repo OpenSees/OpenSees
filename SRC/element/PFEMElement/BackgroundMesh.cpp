@@ -823,6 +823,9 @@ void BackgroundMesh::clearGrid() {
             }
         }
     }
+    for (auto& bcell : bcells) {
+        bcell.second.removeCenterNode();
+    }
 
     bnodes.clear();
     bcells.clear();
@@ -1809,7 +1812,8 @@ int BackgroundMesh::gridFluid() {
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
     int ndtag = Mesh::nextNodeTag();
-#pragma omp parallel for
+    // std::vector<const char*> errors(cells.size());
+// #pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // structural cell
         if (cells[j]->getType() == BACKGROUND_STRUCTURE) continue;

@@ -52,7 +52,6 @@ class BCell {
 
    public:
     BCell();
-    ~BCell();
     void removeCenterNode();
     void add(Particle* pt);
     void setType(BackgroundType t);

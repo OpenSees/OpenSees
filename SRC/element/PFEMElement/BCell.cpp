@@ -47,23 +47,26 @@ BCell::BCell()
       center_node(0),
       center_pc(0) {}
 
-BCell::~BCell() { removeCenterNode(); }
 
 void BCell::removeCenterNode() {
     auto* domain = OPS_GetDomain();
     if (center_node != 0) {
         if (domain != 0) {
-            domain->removeNode(center_node->getTag());
+            Node* nd = domain->removeNode(center_node->getTag());
+            if (nd != 0) {
+                delete nd;
+            }
         }
-        delete center_node;
         center_node = 0;
     }
     if (center_pc != 0) {
         if (domain != 0) {
-            domain->removePressure_Constraint(
+            auto* pc = domain->removePressure_Constraint(
                 center_pc->getTag());
+            if (pc != 0) {
+                delete pc;
+            }
         }
-        delete center_pc;
         center_pc = 0;
     }
 }
@@ -86,7 +89,7 @@ void BCell::addNode(BNode* bnode, const VInt& index) {
 }
 
 Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
-    if (bnodes.size() == 4 || bnodes.size() == 8) {
+    if (bnodes.size() != 4 && bnodes.size() != 8) {
         return 0;
     }
     removeCenterNode();
@@ -131,6 +134,13 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
                   "BCell::setCenterNode\n";
         return 0;
     }
+    if (domain->addNode(center_node) == false) {
+        opserr << "WARNING: failed to add center node -- "
+                  "BCell::setCenterNode\n";
+        delete center_node;
+        center_node = 0;
+        return 0;
+    }
 
     // set the center node
     Vector vec;
@@ -139,13 +149,12 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
     toVector(accel, vec);
     center_node->setTrialAccel(vec);
     center_node->commitState();
-
     // set the pressure constraint
-    auto* pc = domain->getPressure_Constraint(
+    center_pc = domain->getPressure_Constraint(
         center_node->getTag());
     Node* pnode = 0;
-    if (pc != 0) {
-        pnode = pc->getPressureNode();
+    if (center_pc != 0) {
+        pnode = center_pc->getPressureNode();
         if (pnode == 0) {
             opserr << "WARNING: pressure does not exist -- "
                       "Bcell::setCenterNode\n";
@@ -165,20 +174,26 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
                       "Bcell::setCenterNode\n";
             return 0;
         }
+        if (domain->addNode(pnode) == false) {
+            opserr << "WARNING: failed to add pressure node -- "
+                      "Bcell::setCenterNode\n";
+            delete pnode;
+            pnode = 0;
+            return 0;
+        }
 
         // create pressure constraint
-        pc = new Pressure_Constraint(center_node->getTag(),
+        center_pc = new Pressure_Constraint(center_node->getTag(),
                                      pnode->getTag());
-        if (pc == 0) {
+        if (center_pc == 0) {
             opserr << "WARNING: run out of memory -- "
                       "Bcell::setCenterNode\n";
             return 0;
         }
-        pc->setDomain(domain);
-        domain->addPressure_Constraint(pc);
+        domain->addPressure_Constraint(center_pc);
     }
-    pc->setPressure(pressure);
-    pc->setPdot(dp);
+    center_pc->setPressure(pressure);
+    center_pc->setPdot(dp);
 
     return center_node;
 }
