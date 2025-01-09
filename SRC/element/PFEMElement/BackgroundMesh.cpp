@@ -1800,20 +1800,28 @@ int BackgroundMesh::gridFluid() {
     }
 
     // create elements in each cell
+    bool use_center_node = true;
     int numele = 0;
     int numelenodes = 0;
     if (ndm == 2) {
-        numele = 4;
+        if (use_center_node) {
+            numele = 4;
+        } else {
+            numele = 2;
+        }
         numelenodes = 3;
     } else if (ndm == 3) {
-        numele = 12;
+        if (use_center_node) {
+            numele = 12;
+        } else {
+            numele = 6;
+        }
         numelenodes = 4;
     }
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
     int ndtag = Mesh::nextNodeTag();
-    // std::vector<const char*> errors(cells.size());
-// #pragma omp parallel for
+#pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // structural cell
         if (cells[j]->getType() == BACKGROUND_STRUCTURE) continue;
@@ -1857,12 +1865,15 @@ int BackgroundMesh::gridFluid() {
         }
 
         // create center node
-        Node* center_node = cells[j]->setCenterNode(ndtag, ndtag+1);
-        if (center_node == 0) {
-            opserr << "WARNING: failed to create center node. Only use corner nodes -- "
-                      "BgMesh::gridFluid\n";
-        } else {
-            ndtag += 2;
+        Node* center_node = 0;
+        if (use_center_node) {
+            center_node =
+                cells[j]->setCenterNode(ndtag, ndtag + 1);
+            if (center_node == 0) {
+                continue;
+            } else {
+                ndtag += 2;
+            }
         }
         for (int i = 0; i < numele; ++i) {
             elends[numele * j + i].resize(numelenodes);

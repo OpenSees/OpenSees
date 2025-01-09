@@ -95,7 +95,6 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
     removeCenterNode();
     Domain* domain = OPS_GetDomain();
     if (domain == 0) {
-        opserr << "WARNING: domain is not created\n";
         return 0;
     }
     int ndm = OPS_GetNDM();
@@ -130,13 +129,9 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
                                crds[1], crds[2]);
     }
     if (center_node == 0) {
-        opserr << "WARNING: run out of memory -- "
-                  "BCell::setCenterNode\n";
         return 0;
     }
     if (domain->addNode(center_node) == false) {
-        opserr << "WARNING: failed to add center node -- "
-                  "BCell::setCenterNode\n";
         delete center_node;
         center_node = 0;
         return 0;
@@ -149,6 +144,7 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
     toVector(accel, vec);
     center_node->setTrialAccel(vec);
     center_node->commitState();
+
     // set the pressure constraint
     center_pc = domain->getPressure_Constraint(
         center_node->getTag());
@@ -170,13 +166,9 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
                              crds[2]);
         }
         if (pnode == 0) {
-            opserr << "WARNING: run out of memory -- "
-                      "Bcell::setCenterNode\n";
             return 0;
         }
         if (domain->addNode(pnode) == false) {
-            opserr << "WARNING: failed to add pressure node -- "
-                      "Bcell::setCenterNode\n";
             delete pnode;
             pnode = 0;
             return 0;
@@ -186,8 +178,6 @@ Node* BCell::setCenterNode(int new_tag, int new_p_tag) {
         center_pc = new Pressure_Constraint(center_node->getTag(),
                                      pnode->getTag());
         if (center_pc == 0) {
-            opserr << "WARNING: run out of memory -- "
-                      "Bcell::setCenterNode\n";
             return 0;
         }
         domain->addPressure_Constraint(center_pc);
