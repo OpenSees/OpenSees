@@ -1976,43 +1976,43 @@ int BackgroundMesh::gridFluid() {
                 elends[numele * j + 4][2] = cnodes[6];
                 elends[numele * j + 4][3] = cnodes[7];
 
-                elends[numele * j + 4][0] = center_tag;
-                elends[numele * j + 4][1] = cnodes[2];
-                elends[numele * j + 4][2] = cnodes[7];
-                elends[numele * j + 4][3] = cnodes[3];
-
-                // left
                 elends[numele * j + 5][0] = center_tag;
                 elends[numele * j + 5][1] = cnodes[2];
-                elends[numele * j + 5][2] = cnodes[0];
-                elends[numele * j + 5][3] = cnodes[4];
+                elends[numele * j + 5][2] = cnodes[7];
+                elends[numele * j + 5][3] = cnodes[3];
 
+                // left
                 elends[numele * j + 6][0] = center_tag;
                 elends[numele * j + 6][1] = cnodes[2];
-                elends[numele * j + 6][2] = cnodes[4];
-                elends[numele * j + 6][3] = cnodes[6];
+                elends[numele * j + 6][2] = cnodes[0];
+                elends[numele * j + 6][3] = cnodes[4];
+
+                elends[numele * j + 7][0] = center_tag;
+                elends[numele * j + 7][1] = cnodes[2];
+                elends[numele * j + 7][2] = cnodes[4];
+                elends[numele * j + 7][3] = cnodes[6];
 
                 // top
-                elends[numele * j + 7][0] = center_tag;
-                elends[numele * j + 7][1] = cnodes[6];
-                elends[numele * j + 7][2] = cnodes[4];
-                elends[numele * j + 7][3] = cnodes[5];
-
                 elends[numele * j + 8][0] = center_tag;
                 elends[numele * j + 8][1] = cnodes[6];
-                elends[numele * j + 8][2] = cnodes[5];
-                elends[numele * j + 8][3] = cnodes[7];
+                elends[numele * j + 8][2] = cnodes[4];
+                elends[numele * j + 8][3] = cnodes[5];
+
+                elends[numele * j + 9][0] = center_tag;
+                elends[numele * j + 9][1] = cnodes[6];
+                elends[numele * j + 9][2] = cnodes[5];
+                elends[numele * j + 9][3] = cnodes[7];
 
                 // bottom
-                elends[numele * j + 9][0] = center_tag;
-                elends[numele * j + 9][1] = cnodes[0];
-                elends[numele * j + 9][2] = cnodes[2];
-                elends[numele * j + 9][3] = cnodes[3];
-
                 elends[numele * j + 10][0] = center_tag;
                 elends[numele * j + 10][1] = cnodes[0];
-                elends[numele * j + 10][2] = cnodes[3];
-                elends[numele * j + 10][3] = cnodes[1];
+                elends[numele * j + 10][2] = cnodes[2];
+                elends[numele * j + 10][3] = cnodes[3];
+
+                elends[numele * j + 11][0] = center_tag;
+                elends[numele * j + 11][1] = cnodes[0];
+                elends[numele * j + 11][2] = cnodes[3];
+                elends[numele * j + 11][3] = cnodes[1];
 
             }
         }
@@ -2078,7 +2078,7 @@ int BackgroundMesh::gridFSInoDT() {
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
     VInt contact3Ddir(numele * cells.size(), -1);
-#pragma omp parallel for
+// #pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // get indices
         auto& cindices = cells[j]->getIndices();
