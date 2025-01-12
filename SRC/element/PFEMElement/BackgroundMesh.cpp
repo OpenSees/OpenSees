@@ -296,12 +296,6 @@ int OPS_BgMesh() {
         }
     }
 
-    // bg mesh
-    if (bgmesh.remesh(true) < 0) {
-        opserr << "WARNING: failed to create background mesh\n";
-        return -1;
-    }
-
     return 0;
 }
 
@@ -894,7 +888,7 @@ int BackgroundMesh::solveLine(const VDouble& p1, const VDouble& dir,
 //     b. get tags, sids, types, crds, for cell nodes
 //     c. if all nodes are BACKGROUND_STRUCTURE, create contact
 //     elements d. if, gather particles from surrounding cells e.
-int BackgroundMesh::remesh(bool init) {
+int BackgroundMesh::remesh() {
     // clear and check
     if (bsize <= 0.0) {
         opserr << "WARNING: basic mesh size has not been set -- "
@@ -994,7 +988,7 @@ int BackgroundMesh::remesh(bool init) {
     timer.start();
 #endif
 
-    if (record(init) < 0) {
+    if (record() < 0) {
         opserr << "WARNING: failed to record\n";
         return -1;
     }
@@ -2071,13 +2065,16 @@ int BackgroundMesh::gridFSInoDT() {
     // create elements in each cell
     int numele = 0;
     if (ndm == 2) {
-        numele = 2;
+        // numele = 2;
+        numele = 4;
     } else if (ndm == 3) {
-        numele = 6;
+        // numele = 6;
+        numele = 12;
     }
     VVInt elends(numele * cells.size());
     VInt gtags(numele * cells.size());
     VInt contact3Ddir(numele * cells.size(), -1);
+    int ndtag = Mesh::nextNodeTag();
 // #pragma omp parallel for
     for (int j = 0; j < (int)cells.size(); ++j) {
         // get indices
@@ -2223,204 +2220,431 @@ int BackgroundMesh::gridFSInoDT() {
             gtags[numele * j + i] = gtag;
         }
 
+        // create center node
+        Node* center_node = cells[j]->setCenterNode(
+            ndtag + 2 * j + 1, 
+            ndtag + 2 * j + 2);
+        if (center_node == 0) {
+            continue;
+        }
+
         // add to elenodes
         if (ndm == 2) {
-            if (types[1] == BACKGROUND_STRUCTURE &&
-                types[2] == BACKGROUND_STRUCTURE) {
-                if (types[0] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[0], ndcrds[1],
-                                    ndcrds[2])) {
-                        elends[numele * j].push_back(tags[0]);
-                        elends[numele * j].push_back(tags[1]);
-                        elends[numele * j].push_back(tags[2]);
-                    }
-                }
-                if (types[3] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[1], ndcrds[3],
-                                    ndcrds[2])) {
-                        elends[numele * j + 1].push_back(tags[1]);
-                        elends[numele * j + 1].push_back(tags[3]);
-                        elends[numele * j + 1].push_back(tags[2]);
-                    }
-                }
-
-            } else if (types[0] == BACKGROUND_STRUCTURE &&
-                       types[3] == BACKGROUND_STRUCTURE) {
-                if (types[1] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[0], ndcrds[1],
-                                    ndcrds[3])) {
-                        elends[numele * j].push_back(tags[0]);
-                        elends[numele * j].push_back(tags[1]);
-                        elends[numele * j].push_back(tags[3]);
-                    }
-                }
-                if (types[2] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[0], ndcrds[3],
-                                    ndcrds[2])) {
-                        elends[numele * j + 1].push_back(tags[0]);
-                        elends[numele * j + 1].push_back(tags[3]);
-                        elends[numele * j + 1].push_back(tags[2]);
-                    }
-                }
-
-            } else if (types[1] != BACKGROUND_FIXED &&
-                       types[2] != BACKGROUND_FIXED) {
-                if (types[0] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[0], ndcrds[1],
-                                    ndcrds[2])) {
-                        elends[numele * j].push_back(tags[0]);
-                        elends[numele * j].push_back(tags[1]);
-                        elends[numele * j].push_back(tags[2]);
-                    }
-                }
-                if (types[3] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[1], ndcrds[3],
-                                    ndcrds[2])) {
-                        elends[numele * j + 1].push_back(tags[1]);
-                        elends[numele * j + 1].push_back(tags[3]);
-                        elends[numele * j + 1].push_back(tags[2]);
-                    }
-                }
-
-            } else if (types[0] != BACKGROUND_FIXED &&
-                       types[3] != BACKGROUND_FIXED) {
-                if (types[1] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[0], ndcrds[1],
-                                    ndcrds[3])) {
-                        elends[numele * j].push_back(tags[0]);
-                        elends[numele * j].push_back(tags[1]);
-                        elends[numele * j].push_back(tags[3]);
-                    }
-                }
-                if (types[2] != BACKGROUND_FIXED) {
-                    if (!check_area(ndcrds[0], ndcrds[3],
-                                    ndcrds[2])) {
-                        elends[numele * j + 1].push_back(tags[0]);
-                        elends[numele * j + 1].push_back(tags[3]);
-                        elends[numele * j + 1].push_back(tags[2]);
-                    }
-                }
+            // four elements
+            int center_tag = center_node->getTag();
+            if (types[0] != BACKGROUND_FIXED &&
+                types[2] != BACKGROUND_FIXED && (
+                    types[1] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED
+                )) { 
+                elends[numele * j].push_back(center_tag);
+                elends[numele * j].push_back(tags[2]);
+                elends[numele * j].push_back(tags[0]);
             }
+
+            if (types[0] != BACKGROUND_FIXED &&
+                types[1] != BACKGROUND_FIXED && (
+                    types[2] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 1].push_back(center_tag);
+                elends[numele * j + 1].push_back(tags[0]);
+                elends[numele * j + 1].push_back(tags[1]);
+            }
+
+            if (types[1] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED && (
+                    types[2] != BACKGROUND_FIXED ||
+                    types[0] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 2].push_back(center_tag);
+                elends[numele * j + 2].push_back(tags[1]);
+                elends[numele * j + 2].push_back(tags[3]);
+            }
+
+            if (types[2] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED && (
+                    types[1] != BACKGROUND_FIXED ||
+                    types[0] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 3].push_back(center_tag);
+                elends[numele * j + 3].push_back(tags[3]);
+                elends[numele * j + 3].push_back(tags[2]);
+            }
+
+            // if (types[1] == BACKGROUND_STRUCTURE &&
+            //     types[2] == BACKGROUND_STRUCTURE) {
+            //     if (types[0] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[0], ndcrds[1],
+            //                         ndcrds[2])) {
+            //             elends[numele * j].push_back(tags[0]);
+            //             elends[numele * j].push_back(tags[1]);
+            //             elends[numele * j].push_back(tags[2]);
+            //         }
+            //     }
+            //     if (types[3] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[1], ndcrds[3],
+            //                         ndcrds[2])) {
+            //             elends[numele * j + 1].push_back(tags[1]);
+            //             elends[numele * j + 1].push_back(tags[3]);
+            //             elends[numele * j + 1].push_back(tags[2]);
+            //         }
+            //     }
+
+            // } else if (types[0] == BACKGROUND_STRUCTURE &&
+            //            types[3] == BACKGROUND_STRUCTURE) {
+            //     if (types[1] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[0], ndcrds[1],
+            //                         ndcrds[3])) {
+            //             elends[numele * j].push_back(tags[0]);
+            //             elends[numele * j].push_back(tags[1]);
+            //             elends[numele * j].push_back(tags[3]);
+            //         }
+            //     }
+            //     if (types[2] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[0], ndcrds[3],
+            //                         ndcrds[2])) {
+            //             elends[numele * j + 1].push_back(tags[0]);
+            //             elends[numele * j + 1].push_back(tags[3]);
+            //             elends[numele * j + 1].push_back(tags[2]);
+            //         }
+            //     }
+
+            // } else if (types[1] != BACKGROUND_FIXED &&
+            //            types[2] != BACKGROUND_FIXED) {
+            //     if (types[0] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[0], ndcrds[1],
+            //                         ndcrds[2])) {
+            //             elends[numele * j].push_back(tags[0]);
+            //             elends[numele * j].push_back(tags[1]);
+            //             elends[numele * j].push_back(tags[2]);
+            //         }
+            //     }
+            //     if (types[3] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[1], ndcrds[3],
+            //                         ndcrds[2])) {
+            //             elends[numele * j + 1].push_back(tags[1]);
+            //             elends[numele * j + 1].push_back(tags[3]);
+            //             elends[numele * j + 1].push_back(tags[2]);
+            //         }
+            //     }
+
+            // } else if (types[0] != BACKGROUND_FIXED &&
+            //            types[3] != BACKGROUND_FIXED) {
+            //     if (types[1] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[0], ndcrds[1],
+            //                         ndcrds[3])) {
+            //             elends[numele * j].push_back(tags[0]);
+            //             elends[numele * j].push_back(tags[1]);
+            //             elends[numele * j].push_back(tags[3]);
+            //         }
+            //     }
+            //     if (types[2] != BACKGROUND_FIXED) {
+            //         if (!check_area(ndcrds[0], ndcrds[3],
+            //                         ndcrds[2])) {
+            //             elends[numele * j + 1].push_back(tags[0]);
+            //             elends[numele * j + 1].push_back(tags[3]);
+            //             elends[numele * j + 1].push_back(tags[2]);
+            //         }
+            //     }
+            // }
 
         } else if (ndm == 3) {
-            VInt prism(6);
-            VVInt tets;
-            bool incl1, incl4;
+            // twelve elements
+            int center_tag = center_node->getTag();
 
-            int face[6][4] = {{1, 2, 5, 6}, {0, 3, 4, 7},
-                              {1, 3, 4, 6}, {0, 2, 5, 7},
-                              {2, 3, 4, 5}, {0, 1, 6, 7}};
-            int prisms[12][6] = {
-                {5, 4, 6, 1, 0, 2}, {6, 7, 5, 2, 3, 1},
-                {4, 6, 7, 0, 2, 3}, {7, 5, 4, 3, 1, 0},
-                {4, 5, 1, 6, 7, 3}, {1, 0, 4, 3, 2, 6},
-                {0, 4, 5, 2, 6, 7}, {5, 1, 0, 7, 3, 2},
-                {3, 1, 5, 2, 0, 4}, {5, 7, 3, 4, 6, 2},
-                {1, 5, 7, 0, 4, 6}, {7, 3, 1, 6, 2, 0}};
-
-            // if find a splitting
-            bool find = false;
-
-            // check which face is structure
-            for (int i = 0; i < 6; ++i) {
-                find = true;
-                for (int k = 0; k < 4; ++k) {
-                    if (types[face[i][k]] != BACKGROUND_STRUCTURE) {
-                        find = false;
-                    }
-                }
-
-                // if it's structure
-                if (find) {
-                    // set prism
-                    for (int k = 0; k < 2; ++k) {
-                        for (int m = 0; m < 6; ++m) {
-                            prism[m] = prisms[2 * i + k][m];
-                        }
-
-                        // check if include corner 1
-                        incl1 = false;
-                        if (types[prism[1]] != BACKGROUND_FIXED) {
-                            incl1 = true;
-                        }
-
-                        // check if include corner 4
-                        incl4 = false;
-                        if (types[prism[4]] != BACKGROUND_FIXED) {
-                            incl4 = true;
-                        }
-
-                        // split the prism
-                        splitPrism(prism, tets, incl1, incl4);
-
-                        // add ele nodes
-                        for (int m = 0; m < (int)tets.size(); ++m) {
-                            if (!check_vol(ndcrds[tets[m][0]],
-                                           ndcrds[tets[m][1]],
-                                           ndcrds[tets[m][2]],
-                                           ndcrds[tets[m][3]])) {
-                                for (int p : tets[m]) {
-                                    elends[numele * j + m].push_back(
-                                        tags[p]);
-                                }
-                            }
-                        }
-                    }
-                    break;
-                }
+            // front
+            if (types[0] != BACKGROUND_FIXED &&
+                types[1] != BACKGROUND_FIXED &&
+                types[4] != BACKGROUND_FIXED && (
+                    types[3] != BACKGROUND_FIXED ||
+                    types[2] != BACKGROUND_FIXED ||
+                    types[6] != BACKGROUND_FIXED ||
+                    types[7] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j].push_back(center_tag);
+                elends[numele * j].push_back(tags[4]);
+                elends[numele * j].push_back(tags[0]);
+                elends[numele * j].push_back(tags[1]);
             }
 
-            // check which face is not fixed
-            if (!find) {
-                for (int i = 0; i < 6; ++i) {
-                    find = true;
-                    for (int k = 0; k < 4; ++k) {
-                        if (types[face[i][k]] == BACKGROUND_FIXED) {
-                            find = false;
-                        }
-                    }
-
-                    // if it's not fixed
-                    if (find) {
-                        // set prism
-                        for (int k = 0; k < 2; ++k) {
-                            for (int m = 0; m < 6; ++m) {
-                                prism[m] = prisms[2 * i + k][m];
-                            }
-
-                            // check if include corner 1
-                            incl1 = false;
-                            if (types[prism[1]] != BACKGROUND_FIXED) {
-                                incl1 = true;
-                            }
-
-                            // check if include corner 4
-                            incl4 = false;
-                            if (types[prism[4]] != BACKGROUND_FIXED) {
-                                incl4 = true;
-                            }
-
-                            // split the prism
-                            splitPrism(prism, tets, incl1, incl4);
-
-                            // add ele nodes
-                            for (int m = 0; m < (int)tets.size();
-                                 ++m) {
-                                if (!check_vol(ndcrds[tets[m][0]],
-                                               ndcrds[tets[m][1]],
-                                               ndcrds[tets[m][2]],
-                                               ndcrds[tets[m][3]])) {
-                                    for (int p : tets[m]) {
-                                        elends[numele * j + m]
-                                            .push_back(tags[p]);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                    }
-                }
+            if (types[4] != BACKGROUND_FIXED &&
+                types[5] != BACKGROUND_FIXED &&
+                types[1] != BACKGROUND_FIXED && (
+                    types[2] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED ||
+                    types[6] != BACKGROUND_FIXED ||
+                    types[7] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 1].push_back(center_tag);
+                elends[numele * j + 1].push_back(tags[4]);
+                elends[numele * j + 1].push_back(tags[1]);
+                elends[numele * j + 1].push_back(tags[5]);
             }
+
+            // right
+            if (types[5] != BACKGROUND_FIXED &&
+                types[1] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED && (
+                    types[0] != BACKGROUND_FIXED ||
+                    types[2] != BACKGROUND_FIXED ||
+                    types[4] != BACKGROUND_FIXED ||
+                    types[6] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 2].push_back(center_tag);
+                elends[numele * j + 2].push_back(tags[5]);
+                elends[numele * j + 2].push_back(tags[1]);
+                elends[numele * j + 2].push_back(tags[3]);
+            }
+
+            if (types[5] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED &&
+                types[7] != BACKGROUND_FIXED && (
+                    types[0] != BACKGROUND_FIXED ||
+                    types[2] != BACKGROUND_FIXED ||
+                    types[4] != BACKGROUND_FIXED ||
+                    types[6] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 3].push_back(center_tag);
+                elends[numele * j + 3].push_back(tags[5]);
+                elends[numele * j + 3].push_back(tags[3]);
+                elends[numele * j + 3].push_back(tags[7]);
+            }
+
+            // back
+            if (types[2] != BACKGROUND_FIXED &&
+                types[6] != BACKGROUND_FIXED &&
+                types[7] != BACKGROUND_FIXED && (
+                    types[0] != BACKGROUND_FIXED ||
+                    types[1] != BACKGROUND_FIXED ||
+                    types[4] != BACKGROUND_FIXED ||
+                    types[5] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 4].push_back(center_tag);
+                elends[numele * j + 4].push_back(tags[2]);
+                elends[numele * j + 4].push_back(tags[6]);
+                elends[numele * j + 4].push_back(tags[7]);
+            }
+
+            if (types[2] != BACKGROUND_FIXED &&
+                types[7] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED && (
+                    types[0] != BACKGROUND_FIXED ||
+                    types[1] != BACKGROUND_FIXED ||
+                    types[4] != BACKGROUND_FIXED ||
+                    types[5] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 5].push_back(center_tag);
+                elends[numele * j + 5].push_back(tags[2]);
+                elends[numele * j + 5].push_back(tags[7]);
+                elends[numele * j + 5].push_back(tags[3]);
+            }
+
+            // left
+            if (types[2] != BACKGROUND_FIXED &&
+                types[0] != BACKGROUND_FIXED &&
+                types[4] != BACKGROUND_FIXED && (
+                    types[1] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED ||
+                    types[5] != BACKGROUND_FIXED ||
+                    types[7] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 6].push_back(center_tag);
+                elends[numele * j + 6].push_back(tags[2]);
+                elends[numele * j + 6].push_back(tags[0]);
+                elends[numele * j + 6].push_back(tags[4]);
+            }
+
+            if (types[2] != BACKGROUND_FIXED &&
+                types[4] != BACKGROUND_FIXED &&
+                types[6] != BACKGROUND_FIXED && (
+                    types[1] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED ||
+                    types[5] != BACKGROUND_FIXED ||
+                    types[7] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 7].push_back(center_tag);
+                elends[numele * j + 7].push_back(tags[2]);
+                elends[numele * j + 7].push_back(tags[4]);
+                elends[numele * j + 7].push_back(tags[6]);
+            }
+
+            // top
+            if (types[6] != BACKGROUND_FIXED &&
+                types[4] != BACKGROUND_FIXED &&
+                types[5] != BACKGROUND_FIXED && (
+                    types[0] != BACKGROUND_FIXED ||
+                    types[1] != BACKGROUND_FIXED ||
+                    types[2] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 8].push_back(center_tag);
+                elends[numele * j + 8].push_back(tags[6]);
+                elends[numele * j + 8].push_back(tags[4]);
+                elends[numele * j + 8].push_back(tags[5]);
+            }
+
+            if (types[6] != BACKGROUND_FIXED &&
+                types[5] != BACKGROUND_FIXED &&
+                types[7] != BACKGROUND_FIXED && (
+                    types[0] != BACKGROUND_FIXED ||
+                    types[1] != BACKGROUND_FIXED ||
+                    types[2] != BACKGROUND_FIXED ||
+                    types[3] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 9].push_back(center_tag);
+                elends[numele * j + 9].push_back(tags[6]);
+                elends[numele * j + 9].push_back(tags[5]);
+                elends[numele * j + 9].push_back(tags[7]);
+            }
+
+            // bottom
+            if (types[0] != BACKGROUND_FIXED &&
+                types[2] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED && (
+                    types[4] != BACKGROUND_FIXED ||
+                    types[5] != BACKGROUND_FIXED ||
+                    types[6] != BACKGROUND_FIXED ||
+                    types[7] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 10].push_back(center_tag);
+                elends[numele * j + 10].push_back(tags[0]);
+                elends[numele * j + 10].push_back(tags[2]);
+                elends[numele * j + 10].push_back(tags[3]);
+            }
+
+            if (types[0] != BACKGROUND_FIXED &&
+                types[3] != BACKGROUND_FIXED &&
+                types[1] != BACKGROUND_FIXED && (
+                    types[4] != BACKGROUND_FIXED ||
+                    types[5] != BACKGROUND_FIXED ||
+                    types[6] != BACKGROUND_FIXED ||
+                    types[7] != BACKGROUND_FIXED
+                )) {
+                elends[numele * j + 11].push_back(center_tag);
+                elends[numele * j + 11].push_back(tags[0]);
+                elends[numele * j + 11].push_back(tags[3]);
+                elends[numele * j + 11].push_back(tags[1]);
+            }
+            
+            // VInt prism(6);
+            // VVInt tets;
+            // bool incl1, incl4;
+
+            // int face[6][4] = {{1, 2, 5, 6}, {0, 3, 4, 7},
+            //                   {1, 3, 4, 6}, {0, 2, 5, 7},
+            //                   {2, 3, 4, 5}, {0, 1, 6, 7}};
+            // int prisms[12][6] = {
+            //     {5, 4, 6, 1, 0, 2}, {6, 7, 5, 2, 3, 1},
+            //     {4, 6, 7, 0, 2, 3}, {7, 5, 4, 3, 1, 0},
+            //     {4, 5, 1, 6, 7, 3}, {1, 0, 4, 3, 2, 6},
+            //     {0, 4, 5, 2, 6, 7}, {5, 1, 0, 7, 3, 2},
+            //     {3, 1, 5, 2, 0, 4}, {5, 7, 3, 4, 6, 2},
+            //     {1, 5, 7, 0, 4, 6}, {7, 3, 1, 6, 2, 0}};
+
+            // // if find a splitting
+            // bool find = false;
+
+            // // check which face is structure
+            // for (int i = 0; i < 6; ++i) {
+            //     find = true;
+            //     for (int k = 0; k < 4; ++k) {
+            //         if (types[face[i][k]] != BACKGROUND_STRUCTURE) {
+            //             find = false;
+            //         }
+            //     }
+
+            //     // if it's structure
+            //     if (find) {
+            //         // set prism
+            //         for (int k = 0; k < 2; ++k) {
+            //             for (int m = 0; m < 6; ++m) {
+            //                 prism[m] = prisms[2 * i + k][m];
+            //             }
+
+            //             // check if include corner 1
+            //             incl1 = false;
+            //             if (types[prism[1]] != BACKGROUND_FIXED) {
+            //                 incl1 = true;
+            //             }
+
+            //             // check if include corner 4
+            //             incl4 = false;
+            //             if (types[prism[4]] != BACKGROUND_FIXED) {
+            //                 incl4 = true;
+            //             }
+
+            //             // split the prism
+            //             splitPrism(prism, tets, incl1, incl4);
+
+            //             // add ele nodes
+            //             for (int m = 0; m < (int)tets.size(); ++m) {
+            //                 if (!check_vol(ndcrds[tets[m][0]],
+            //                                ndcrds[tets[m][1]],
+            //                                ndcrds[tets[m][2]],
+            //                                ndcrds[tets[m][3]])) {
+            //                     for (int p : tets[m]) {
+            //                         elends[numele * j + m].push_back(
+            //                             tags[p]);
+            //                     }
+            //                 }
+            //             }
+            //         }
+            //         break;
+            //     }
+            // }
+
+            // // check which face is not fixed
+            // if (!find) {
+            //     for (int i = 0; i < 6; ++i) {
+            //         find = true;
+            //         for (int k = 0; k < 4; ++k) {
+            //             if (types[face[i][k]] == BACKGROUND_FIXED) {
+            //                 find = false;
+            //             }
+            //         }
+
+            //         // if it's not fixed
+            //         if (find) {
+            //             // set prism
+            //             for (int k = 0; k < 2; ++k) {
+            //                 for (int m = 0; m < 6; ++m) {
+            //                     prism[m] = prisms[2 * i + k][m];
+            //                 }
+
+            //                 // check if include corner 1
+            //                 incl1 = false;
+            //                 if (types[prism[1]] != BACKGROUND_FIXED) {
+            //                     incl1 = true;
+            //                 }
+
+            //                 // check if include corner 4
+            //                 incl4 = false;
+            //                 if (types[prism[4]] != BACKGROUND_FIXED) {
+            //                     incl4 = true;
+            //                 }
+
+            //                 // split the prism
+            //                 splitPrism(prism, tets, incl1, incl4);
+
+            //                 // add ele nodes
+            //                 for (int m = 0; m < (int)tets.size();
+            //                      ++m) {
+            //                     if (!check_vol(ndcrds[tets[m][0]],
+            //                                    ndcrds[tets[m][1]],
+            //                                    ndcrds[tets[m][2]],
+            //                                    ndcrds[tets[m][3]])) {
+            //                         for (int p : tets[m]) {
+            //                             elends[numele * j + m]
+            //                                 .push_back(tags[p]);
+            //                         }
+            //                     }
+            //                 }
+            //             }
+            //             break;
+            //         }
+            //     }
+            // }
         }
     }
 
@@ -3062,7 +3286,7 @@ int BackgroundMesh::gridFSI() {
 // time, vx, vy, <vz>, xmin, xmax, ymin, ymax, <zmin, zmax>, dt
 //
 
-int BackgroundMesh::record(bool init) {
+int BackgroundMesh::record() {
     Domain* domain = OPS_GetDomain();
     if (domain == 0) return 0;
     int ndm = OPS_GetNDM();
@@ -3080,9 +3304,6 @@ int BackgroundMesh::record(bool init) {
                 return -1;
             }
         }
-    }
-    if (init) {
-        return 0;
     }
 
     // record time
@@ -3848,4 +4069,10 @@ int BackgroundMesh::createContact3D(const VInt& ndtags,
     }
 
     return 0;
+}
+
+bool BackgroundMesh::isDefined() const {
+    if (bsize <= 0.0) return false;
+    if (lower.empty() || upper.empty()) return false;
+    return true;
 }

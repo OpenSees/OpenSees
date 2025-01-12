@@ -54,7 +54,6 @@
 #include <vector>
 #include <TriMesh.h>
 #include <TetMesh.h>
-#include <BackgroundMesh.h>
 #include <Damping.h>
 
 #ifdef _PARALLEL_INTERPRETERS
@@ -1512,7 +1511,6 @@ extern int OPS_ParticleGroup();
 extern int OPS_Flume();
 extern int OPS_BeamBrick();
 extern int OPS_BeamDisk();
-extern BackgroundMesh& OPS_getBgMesh();
 
 
 int OPS_mesh()
@@ -1582,11 +1580,8 @@ int OPS_remesh()
 	}
 
     } else {
-	BackgroundMesh& bgmesh = OPS_getBgMesh();
-	if (bgmesh.remesh() < 0) {
-	    opserr << "WARNING: failed to remesh background\n";
-	    return -1;
-	}
+        opserr << "WARNING: background remesh is now done automatically\n";
+        return -1;
     }
 
     return 0;
