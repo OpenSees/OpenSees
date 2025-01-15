@@ -44,7 +44,9 @@
 
 // anonymous namespace for utilities
 namespace {
-
+	enum ErrorCodes {
+		EC_IMPLEX_Error_Control = -10
+	};
 	/**
 	Converts a string into a vector of doubles using whitespace as delimiter
 	*/
@@ -71,7 +73,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	}
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu <-implex>  <-implexControl $implexErrorTolerance $implexTimeReductionLimit>  ";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -90,6 +92,10 @@ void* OPS_ASDSteel1DMaterial()
 	double sy;
 	double su;
 	double eu;
+	bool implex = false;
+	bool implex_control = false;
+	double implex_error_tolerance = 0.05;  //to set
+	double implex_time_redution_limit = 0.01; //to set
 
 	// get tag
 	if (OPS_GetInt(&numData, &tag) != 0) {
@@ -109,6 +115,19 @@ void* OPS_ASDSteel1DMaterial()
 		}
 		return true;
 	};
+	auto lam_optional_double = [&numData](const char* variable, double& value) -> bool {
+		if (OPS_GetNumRemainingInputArgs() > 0) {
+			if (OPS_GetDouble(&numData, &value) < 0) {
+				opserr << "nDMaterial ASDSteel1D Error: failed to get '" << variable << "'.\n";
+				return false;
+			}
+		}
+		else {
+			opserr << "nDMaterial ASDSteel1D Error: '" << variable << "' requested but not provided.\n";
+			return false;
+		}
+		return true;
+	};
 	if (!lam_get_dparam(&E, "E")) return nullptr;
 	if (!lam_get_dparam(&sy, "sy")) return nullptr;
 	if (!lam_get_dparam(&su, "su")) return nullptr;
@@ -116,6 +135,25 @@ void* OPS_ASDSteel1DMaterial()
 	if (sy >= su) {
 		opserr << "nDMaterial ASDSteel1D Error: invalid value for 'su' (" << su << "). It should be larger than sy.\n" << msg << "\n";
 		return nullptr;
+	}
+
+	// parse optional arguments
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+		const char* value = OPS_GetString();
+		if (strcmp(value, "-implex") == 0) {
+			implex = true;
+		}
+		else if (strcmp(value, "-implexControl") == 0) {
+			implex_control = true;
+			if (OPS_GetNumRemainingInputArgs() < 2) {
+				opserr << "nDMaterial ASDSteel1D Error: '-implexControl' given without the next 2 arguments $implexErrorTolerance $implexTimeReductionLimit.\n";
+				return nullptr;
+			}
+			if (!lam_optional_double("implexErrorTolerance", implex_error_tolerance))
+				return nullptr;
+			if (!lam_optional_double("implexTimeReductionLimit", implex_time_redution_limit))
+				return nullptr;
+		}
 	}
 
 	// obtain chaboche params from E, sy, su, eu
@@ -134,6 +172,10 @@ void* OPS_ASDSteel1DMaterial()
 	params.gamma1 = gamma1;
 	params.H2 = H2 * (1.0 - alpha);
 	params.gamma2 = gamma2;
+	params.implex = implex;
+	params.implex_control = implex_control;
+	params.implex_error_tolerance = implex_error_tolerance;
+	params.implex_time_redution_limit = implex_time_redution_limit;
 
 	// create the material
 	UniaxialMaterial* instance = new ASDSteel1DMaterial(
@@ -152,6 +194,8 @@ void* OPS_ASDSteel1DMaterial()
 
 void ASDSteel1DMaterial::StateVariablesSteel::commit(const  ASDSteel1DMaterial::InputParameters& params)
 {
+	// store the previously committed variables for next move from n to n - 1
+	lambda_commit_old = lambda_commit;
 	// state variables
 	alpha1_commit = alpha1;
 	alpha2_commit = alpha2;
@@ -179,6 +223,8 @@ void ASDSteel1DMaterial::StateVariablesSteel::revertToStart(const  ASDSteel1DMat
 	alpha2_commit = 0.0;
 	lambda = 0.0;
 	lambda_commit = 0.0;
+	lambda_commit_old = 0.0;
+	sg_commit = 0.0;
 
 	// strain, stress and tangent
 	strain = 0.0;
@@ -194,6 +240,8 @@ void ASDSteel1DMaterial::StateVariablesSteel::sendSelf(int& counter, Vector& dda
 	ddata(counter++) = alpha2_commit;
 	ddata(counter++) = lambda;
 	ddata(counter++) = lambda_commit;
+	ddata(counter++) = lambda_commit_old;
+	ddata(counter++) = sg_commit;
 }
 void ASDSteel1DMaterial::StateVariablesSteel::recvSelf(int& counter, Vector& ddata) {
 	alpha1 = ddata(counter++);
@@ -202,6 +250,8 @@ void ASDSteel1DMaterial::StateVariablesSteel::recvSelf(int& counter, Vector& dda
 	alpha2_commit = ddata(counter++);
 	lambda = ddata(counter++);
 	lambda_commit = ddata(counter++);
+	lambda_commit_old = ddata(counter++);
+	sg_commit = ddata(counter++);
 }
 
 ASDSteel1DMaterial::ASDSteel1DMaterial(
@@ -228,10 +278,46 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	// retval
 	int retval = 0;
 
+	// save dT
+	if (!params.dtime_is_user_defined) {
+		dtime_n = ops_Dt;
+		if (!commit_done) {
+			dtime_0 = dtime_n;
+			dtime_n_commit = dtime_n;
+		}
+	}
+
 	// compute real response
 	steel.strain = v;
-	retval = computeBaseSteel(steel);
-	if (retval < 0) return retval;
+	//retval = computeBaseSteel(steel, params.implex);
+	//if (retval < 0) return retval;
+	if (params.implex) {
+		if (params.implex_control) {
+			// initial state
+			double stress_implicit = 0.0;
+			retval = computeBaseSteel(steel, false); // implicit solution
+			if (retval < 0) return retval;
+			stress_implicit = steel.stress;
+
+			// explicit solution
+			retval = computeBaseSteel(steel, params.implex); // Implex solution
+			if (retval < 0) return retval;
+
+			// Implex error
+			params.implex_error = std::abs(stress_implicit - steel.stress)/params.sy;
+			if (params.implex_error > params.implex_error_tolerance) {
+				if (dtime_n >= params.implex_time_redution_limit * dtime_0) {
+					return EC_IMPLEX_Error_Control;
+				}
+			}
+		} else {
+			retval = computeBaseSteel(steel, true); // Implex solution
+			if (retval < 0) return retval;
+		}
+	}
+	else {
+		retval = computeBaseSteel(steel, false);
+	}
 
 	// todo: homogenize
 	strain = steel.strain;
@@ -265,6 +351,23 @@ double ASDSteel1DMaterial::getStrain(void)
 
 int ASDSteel1DMaterial::commitState(void)
 {
+	// implicit stage
+	if (params.implex) {
+		int retval;
+		retval = computeBaseSteel(steel, false);
+		if (retval < 0) return retval;
+		// todo: homogenize
+		strain = steel.strain;
+		stress = steel.stress;
+		C = steel.C;
+		/*
+		// IMPL-EX error
+		params.implex_error = std::abs(steel.stress - stress);
+		if (params.implex_control && params.implex_error > params.implex_error_tolerance) {
+			return -1;   // avevamo detto quello implicito?
+		}*/
+	}
+
 	// compute energy
 	energy += 0.5 * (stress_commit + stress) * (strain - strain_commit);
 
@@ -274,6 +377,10 @@ int ASDSteel1DMaterial::commitState(void)
 	// state variables
 	strain_commit = strain;
 	stress_commit = stress;
+
+	// implex
+	dtime_n_commit = dtime_n;
+	commit_done = true;
 
 	// done
 	return 0;
@@ -287,6 +394,9 @@ int ASDSteel1DMaterial::revertToLastCommit(void)
 	// state variables
 	strain = strain_commit;
 	stress = stress_commit;
+
+	// implex
+	dtime_n = dtime_n_commit;
 
 	// done
 	return 0;
@@ -303,6 +413,14 @@ int ASDSteel1DMaterial::revertToStart(void)
 	stress = 0.0;
 	stress_commit = 0.0;
 	C = getInitialTangent();
+
+	// implex
+	dtime_n = 0.0;
+	dtime_n_commit = 0.0;
+	dtime_0 = 0.0;
+	
+
+	commit_done = false;
 
 	// output variables
 	energy = 0.0;
@@ -328,7 +446,7 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	int counter;
 
 	// send DBL data
-	Vector ddata(InputParameters::NDATA + 1*StateVariablesSteel::NDATA + 7);
+	Vector ddata(InputParameters::NDATA + 1*StateVariablesSteel::NDATA + 10);
 	counter = 0;
 	ddata(counter++) = static_cast<double>(getTag());
 	ddata(counter++) = params.E;
@@ -337,7 +455,17 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = params.H2;
 	ddata(counter++) = params.gamma1;
 	ddata(counter++) = params.gamma2;
+	ddata(counter++) = static_cast<double>(params.implex);
+	ddata(counter++) = params.implex_error_tolerance;
+	ddata(counter++) = params.implex_time_redution_limit;
+	ddata(counter++) = static_cast<int>(params.implex_control);
+	ddata(counter++) = static_cast<double>(params.dtime_is_user_defined);
+	ddata(counter++) = params.implex_error;
 	steel.sendSelf(counter, ddata);
+	ddata(counter++) = dtime_n;
+	ddata(counter++) = dtime_n_commit;
+	ddata(counter++) = dtime_0;
+	ddata(counter++) = static_cast<double>(commit_done);
 	ddata(counter++) = strain;
 	ddata(counter++) = strain_commit;
 	ddata(counter++) = stress;
@@ -359,7 +487,7 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	int counter;
 
 	// recv DBL data
-	Vector ddata(InputParameters::NDATA + 1 * StateVariablesSteel::NDATA + 7);
+	Vector ddata(InputParameters::NDATA + 1 * StateVariablesSteel::NDATA + 10);
 	if (theChannel.recvVector(getDbTag(), commitTag, ddata) < 0) {
 		opserr << "ASDSteel1DMaterial::recvSelf() - failed to receive DBL data\n";
 		return -1;
@@ -372,7 +500,17 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	params.H2 = ddata(counter++);
 	params.gamma1 = ddata(counter++);
 	params.gamma2 = ddata(counter++);
+	params.implex = static_cast<bool>(ddata(counter++));
+	params.implex_error_tolerance = ddata(counter++);
+	params.implex_time_redution_limit = ddata(counter++);
+	params.implex_control = static_cast<bool>(ddata(counter++));
+	params.dtime_is_user_defined = static_cast<bool>(ddata(counter++));
+	params.implex_error = ddata(counter++);
 	steel.recvSelf(counter, ddata);
+	dtime_n = ddata(counter++);
+	dtime_n_commit = ddata(counter++);
+	dtime_0 = ddata(counter++);
+	commit_done = static_cast<bool>(ddata(counter++));
 	strain = ddata(counter++);
 	strain_commit = ddata(counter++);
 	stress = ddata(counter++);
@@ -394,6 +532,19 @@ int ASDSteel1DMaterial::updateParameter(int parameterID, Information& info)
 {
 	switch (parameterID) {
 		// default
+	case 2000:
+		dtime_n = info.theDouble;
+		params.dtime_is_user_defined = true;
+		return 0;
+	case 2001:
+		dtime_n_commit = info.theDouble;
+		params.dtime_is_user_defined = true;
+		return 0;
+	case 2002:
+		dtime_0 = info.theDouble;
+		params.dtime_is_user_defined = true;
+		return 0;
+
 	default:
 		return -1;
 	}
@@ -417,6 +568,7 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 
 	// labels
 	static std::vector<std::string> lb_eqpl_strain = { "PLE" };
+	static std::vector<std::string> lb_implex_error = { "Error" };
 
 	// all outputs are 1D
 	static Vector out1(1);
@@ -428,6 +580,10 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 			out1(0) = steel.lambda;
 			return make_resp(1001, out1, &lb_eqpl_strain);
 		}
+		// 3000 - implex error
+		//if (strcmp(argv[0], "implexError") == 0 || strcmp(argv[0], "ImplexError") == 0) {
+			//return make_resp(3000, getImplexError(), &lb_implex_error);
+		//}
 	}
 
 	// otherwise return base-class response
@@ -444,6 +600,7 @@ int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 	case 1001:
 		out1(0) = steel.lambda;
 		return matInformation.setVector(out1);
+	//case 3000: return matInformation.setVector(getImplexError());
 	default:
 		break;
 	}
@@ -455,10 +612,15 @@ double ASDSteel1DMaterial::getEnergy(void)
 	return energy;
 }
 
-int ASDSteel1DMaterial::computeBaseSteel(ASDSteel1DMaterial::StateVariablesSteel& sv)
+int ASDSteel1DMaterial::computeBaseSteel(ASDSteel1DMaterial::StateVariablesSteel& sv, bool do_implex)
 {
 	// return value
 	int retval = 0;
+
+	// time factor for explicit extrapolation
+	double time_factor = 1.0;
+	if (params.implex && do_implex && (dtime_n_commit > 0.0))
+		time_factor = dtime_n / dtime_n_commit;
 
 	// settings
 	constexpr int MAX_ITER = 100;
@@ -473,6 +635,7 @@ int ASDSteel1DMaterial::computeBaseSteel(ASDSteel1DMaterial::StateVariablesSteel
 	double sigma = sv.stress_commit + params.E * dstrain;
 	double tangent = params.E;
 	// plastic utilities
+	double sg = 0.0; // plastic flow direction
 	auto lam_rel_stress = [&sv, &sigma]() -> double {
 		return sigma - sv.alpha1 - sv.alpha2;
 	};
@@ -499,44 +662,72 @@ int ASDSteel1DMaterial::computeBaseSteel(ASDSteel1DMaterial::StateVariablesSteel
 		sv.alpha2 = sg * params.H2 / params.gamma2 - (sg * params.H2 / params.gamma2 - sv.alpha2_commit) * std::exp(-params.gamma2 * delta_lambda);
 	};
 	// plastic corrector
-	double F = lam_yield_function();
-	if (F > 0.0) {
-		double delta_lambda = 0.0;
-		double dlambda = 0.0;
-		bool converged = false;
-		for (int niter = 0; niter < MAX_ITER; ++niter) {
-			// form tangent
-			double dF = lam_yield_derivative(dlambda);
-			if (dF == 0.0) break;
-			// solve for dlambda
-			dlambda = -F / dF;
-			delta_lambda += dlambda;
-			// update plastic multiplier increment and sigma
-			lam_yield_update(dlambda, delta_lambda);
-			// update residual
-			F = lam_yield_function();
-			// check convergence
-			if (std::abs(F) < F_REL_TOL * params.sy && std::abs(dlambda) < L_ABS_TOL) {
-				converged = true;
-				// update plastic multiplier
-				sv.lambda += delta_lambda;
-				// compute tangent
-				double sg = sign(lam_rel_stress());
-				double PE =
-					params.gamma1 * (params.H1 / params.gamma1 - sg * sv.alpha1) +
-					params.gamma2 * (params.H2 / params.gamma2 - sg * sv.alpha2);
-				tangent = (params.E * PE) / (params.E + PE);
-				break;
+	if (params.implex && do_implex) {
+		// extrapolate lambda
+		//  xn + time_factor * (xn - xnn);
+		double delta_lambda = time_factor * (sv.lambda_commit - sv.lambda_commit_old);
+		sv.lambda = sv.lambda_commit + delta_lambda;
+		// extrapolate plastic flow direction
+		sg = sv.sg_commit;
+		// update stress
+		sigma -= sg * delta_lambda * params.E;
+		// update backstress
+		sv.alpha1 = sg * params.H1 / params.gamma1 - (sg * params.H1 / params.gamma1 - sv.alpha1_commit) * std::exp(-params.gamma1 * delta_lambda);
+		sv.alpha2 = sg * params.H2 / params.gamma2 - (sg * params.H2 / params.gamma2 - sv.alpha2_commit) * std::exp(-params.gamma2 * delta_lambda);
+	}
+	else {
+		// standard implicit evaluation of lambda
+		double F = lam_yield_function();
+		if (F > 0.0) {
+			double delta_lambda = 0.0;
+			double dlambda = 0.0;
+			bool converged = false;
+			for (int niter = 0; niter < MAX_ITER; ++niter) {
+				// form tangent
+				double dF = lam_yield_derivative(dlambda);
+				if (dF == 0.0) break;
+				// solve for dlambda
+				dlambda = -F / dF;
+				delta_lambda += dlambda;
+				// update plastic multiplier increment and sigma
+				lam_yield_update(dlambda, delta_lambda);
+				// update residual
+				F = lam_yield_function();
+				// check convergence
+				if (std::abs(F) < F_REL_TOL * params.sy && std::abs(dlambda) < L_ABS_TOL) {
+					converged = true;
+					// update plastic multiplier
+					sv.lambda += delta_lambda;
+					// compute tangent
+					sg = sign(lam_rel_stress());
+					double PE =
+						params.gamma1 * (params.H1 / params.gamma1 - sg * sv.alpha1) +
+						params.gamma2 * (params.H2 / params.gamma2 - sg * sv.alpha2);
+					tangent = (params.E * PE) / (params.E + PE);
+					break;
+				}
 			}
+			if (!converged)
+				retval = -1;
 		}
-		if (!converged)
-			retval = -1;
 	}
 	// accept solution
 	sv.stress = sigma;
 	sv.C = tangent;
 
+	// save real plastic flow direction, if mp.implex and !do_implex -> called from commit
+	if (params.implex && !do_implex) {
+		// save it in implex mode during implicit phase
+		sv.sg_commit = sg;
+	}
+
 	// done
 	return retval;
 }
-
+/*
+const Vector& ASDSteel1DMaterial::getImplexError() const
+{
+	static Vector d(1); 
+	d(0) = params.implex_error; 
+	return d; 
+}*/
