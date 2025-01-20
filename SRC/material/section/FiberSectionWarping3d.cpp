@@ -174,6 +174,8 @@ FiberSectionWarping3d::FiberSectionWarping3d(int tag, int num, Fiber **fibers,
     zBar = Qy/A;
   }
 
+  yBar = zBar = 0.0;
+
   theTorsion = torsion.getCopy();
   if (theTorsion == 0)
     opserr << "FiberSectionWarping3d::FiberSectionWarping3d -- failed to get copy of torsion material\n";
@@ -443,6 +445,8 @@ FiberSectionWarping3d::addFiber(Fiber &newFiber)
   yBar = -Qz/A;
   zBar = Qy/A;
 
+  yBar = zBar = 0.0;
+  
   return 0;
 }
 
