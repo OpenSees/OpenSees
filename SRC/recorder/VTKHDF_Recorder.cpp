@@ -173,18 +173,18 @@ void* OPS_VTKHDF_Recorder()
 
         numdata = OPS_GetNumRemainingInputArgs();
     }
-    // print summary of parmeters for the user
-    opserr << "VTKHDF_Recorder: " << name << " -dT " << dT << " -rTolDt " << rTolDt << endln;
-    opserr << "disp " << (outputData.disp ? "true" : "false") << endln;
-    opserr << "vel " << (outputData.vel ? "true" : "false") << endln;
-    opserr << "accel " << (outputData.accel ? "true" : "false") << endln;
-    opserr << "reaction " << (outputData.reaction ? "true" : "false") << endln;
-    opserr << "mass " << (outputData.mass ? "true" : "false") << endln; 
-    opserr << "unbalancedLoad " << (outputData.unbalancedLoad ? "true" : "false") << endln;
-    opserr << "stress3D6 " << (outputData.stress3D6 ? "true" : "false") << endln;
-    opserr << "strain3D6 " << (outputData.strain3D6 ? "true" : "false") << endln;
-    opserr << "stress2D3 " << (outputData.stress2D3 ? "true" : "false") << endln;
-    opserr << "strain2D3 " << (outputData.strain2D3 ? "true" : "false") << endln;
+    // // print summary of parmeters for the user
+    // opserr << "VTKHDF_Recorder: " << name << " -dT " << dT << " -rTolDt " << rTolDt << endln;
+    // opserr << "disp " << (outputData.disp ? "true" : "false") << endln;
+    // opserr << "vel " << (outputData.vel ? "true" : "false") << endln;
+    // opserr << "accel " << (outputData.accel ? "true" : "false") << endln;
+    // opserr << "reaction " << (outputData.reaction ? "true" : "false") << endln;
+    // opserr << "mass " << (outputData.mass ? "true" : "false") << endln; 
+    // opserr << "unbalancedLoad " << (outputData.unbalancedLoad ? "true" : "false") << endln;
+    // opserr << "stress3D6 " << (outputData.stress3D6 ? "true" : "false") << endln;
+    // opserr << "strain3D6 " << (outputData.strain3D6 ? "true" : "false") << endln;
+    // opserr << "stress2D3 " << (outputData.stress2D3 ? "true" : "false") << endln;
+    // opserr << "strain2D3 " << (outputData.strain2D3 ? "true" : "false") << endln;
 
     // Create the recorder
     return new VTKHDF_Recorder(name, outputData, eledata, dT, rTolDt);
