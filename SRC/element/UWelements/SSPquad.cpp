@@ -839,15 +839,34 @@ SSPquad::Print(OPS_Stream &s, int flag)
 Response*
 SSPquad::setResponse(const char **argv, int argc, OPS_Stream &eleInfo)
 {
-	// no special recorders for this element, call the method in the material class
-	return theMaterial->setResponse(argv, argc, eleInfo);
+    if (strcmp(argv[0],"stress2D3")==0) {
+        return new ElementResponse(this, 1234432101, Vector(3));
+    } else if (strcmp(argv[0],"strain2D3")==0) {
+        return new ElementResponse(this, 1234432102, Vector(3));
+    } else {
+        return theMaterial->setResponse(argv, argc, eleInfo);
+    }
 }
 
 int
 SSPquad::getResponse(int responseID, Information &eleInfo)
 {
-	// no special recorders for this element, call the method in the material class
-	return theMaterial->getResponse(responseID, eleInfo);
+    if (responseID == 1234432101) {
+        // return the stress vector
+        Vector stress(3);
+        stress = theMaterial->getStress();
+        eleInfo.setVector(stress);
+        return 0;
+    } else if (responseID == 1234432102) {
+        // return the strain vector
+        Vector strain(3);
+        strain = theMaterial->getStrain();
+        eleInfo.setVector(strain);
+        return 0;
+    } else {
+        // default is to call getResponse in the material
+        return theMaterial->getResponse(responseID, eleInfo);
+    }
 }
 
 int
