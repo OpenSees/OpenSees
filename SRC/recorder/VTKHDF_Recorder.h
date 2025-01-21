@@ -30,8 +30,9 @@
 #include <ID.h>
 #include "Response.h"
 #include <Recorder.h>
+#include <vector>
+#include <cstdint>
 #include "hdf5.h"
-
 
 
 // Define the OutputData class
@@ -225,7 +226,7 @@ private:
 
 
 
-    u_int numSteps;
+    unsigned int numSteps;
 
 
 
@@ -235,7 +236,7 @@ private:
     std::vector<int> theNodeTags;
     std::vector<int> theEleTags;
     std::vector<int> theEleClassTags;
-    std::vector<u_char> theEleVtkTags;
+    std::vector<unsigned char> theEleVtkTags;
     std::vector<int> theEleVtkOffsets;
 
     // Create groups for temporal data

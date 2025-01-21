@@ -1517,7 +1517,7 @@ int VTKHDF_Recorder::writeMesh() {
 
 
     // (D) Types => shape (numElement)
-    std::vector<u_char> types(theEleVtkTags.begin(), theEleVtkTags.end());
+    std::vector<unsigned char> types(theEleVtkTags.begin(), theEleVtkTags.end());
 
     // opserr << " Gathering data done\n";
     // -------------------------------------------------------------
