@@ -1984,6 +1984,7 @@ int VTKHDF_Recorder::writeMesh() {
 
 int VTKHDF_Recorder::record(int commitTag, double timeStamp)
 {
+    H5Fflush(file_id, H5F_SCOPE_GLOBAL);
     if (!initDone) {
         this->writeMesh();
     }
@@ -2057,6 +2058,7 @@ int VTKHDF_Recorder::record(int commitTag, double timeStamp)
             nextTimeStampToRecord = timeStamp + deltaT;
         }
     }
+    H5Fflush(file_id, H5F_SCOPE_GLOBAL);
     return 0;
 }
 
