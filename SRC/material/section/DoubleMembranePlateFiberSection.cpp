@@ -114,7 +114,7 @@ const double  DoubleMembranePlateFiberSection::wg[] = { 0.1,
 //null constructor
 DoubleMembranePlateFiberSection::DoubleMembranePlateFiberSection( ) : 
 SectionForceDeformation( 0, SEC_TAG_DoubleMembranePlateFiberSection ), 
-strainResultant(8) 
+h(0.0), d(0.0), strainResultant(8) 
 { 
   for ( int i = 0; i < numFibers; i++ ) {
       theFibers[i] = 0 ;
@@ -131,16 +131,12 @@ DoubleMembranePlateFiberSection::DoubleMembranePlateFiberSection(
 				   double distance,
                                    NDMaterial &Afiber ) :
 SectionForceDeformation( tag, SEC_TAG_DoubleMembranePlateFiberSection ),
-strainResultant(8)
+h(thickness), d(distance), strainResultant(8)
 {
-  this->h  = thickness ;
-  this->d = distance;
-
   for (int i = 0; i < numFibers; i++ ) {
       theFibers[i] = Afiber.getCopy( "PlateFiber" ) ;
       theFibers[i+numFibers] = Afiber.getCopy( "PlateFiber" ) ;
   }
-
 }
 
 
