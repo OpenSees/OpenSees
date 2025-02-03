@@ -35,6 +35,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <math.h>
+#include <Parameter.h>
 
 #include <fstream>
 using std::ifstream;
@@ -223,7 +224,7 @@ void* OPS_PathSeries()
 
 PathSeries::PathSeries()	
   :TimeSeries(TSERIES_TAG_PathSeries),
-   thePath(0), pathTimeIncr(0.0), cFactor(0.0), otherDbTag(0), lastSendCommitTag(-1), startTime(0.0)
+   thePath(0), pathTimeIncr(0.0), cFactor(0.0), otherDbTag(0), lastSendCommitTag(-1), startTime(0.0), parameterID(0)
 {
   // does nothing
 }
@@ -237,7 +238,7 @@ PathSeries::PathSeries(int tag,
                double tStart)
   :TimeSeries(tag, TSERIES_TAG_PathSeries),
    thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor),
-   otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart)
+   otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart), parameterID(0)
 {
   // create a copy of the vector containing path points
   if (prependZero == false) {
@@ -267,7 +268,7 @@ PathSeries::PathSeries(int tag,
                double tStart)
   :TimeSeries(tag, TSERIES_TAG_PathSeries),
    thePath(0), pathTimeIncr(theTimeIncr), cFactor(theFactor),
-   otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart)
+   otherDbTag(0), lastSendCommitTag(-1), useLast(last), startTime(tStart), parameterID(0)
 {
   // determine the number of data points .. open file and count num entries
   int numDataPoints = 0;
@@ -524,4 +525,63 @@ PathSeries::Print(OPS_Stream &s, int flag)
     if (flag == 1 && thePath != 0)
       //s << " specified path: " << *thePath;
 	  s << *thePath;
+}
+
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+double
+PathSeries::getFactorSensitivity(double pseudoTime)
+{
+  // check for a quick return
+  if (pseudoTime < startTime || thePath == 0)
+    return 0.0;
+
+  if (parameterID != 1)
+    return 0.0;
+  
+  // determine indexes into the data array whose boundary holds the time
+  double incr = (pseudoTime-startTime)/pathTimeIncr; 
+  long long incr1 = floor(incr);
+  long long incr2 = incr1+1;
+  int size = thePath->Size();
+
+  if (incr2 >= size) {
+    if (useLast == false)
+      return 0.0;
+    else
+      return (*thePath)[size-1];
+  } else {
+    double value1 = (*thePath)[incr1];
+    double value2 = (*thePath)[incr2];
+    return (value1 + (value2-value1)*(incr - incr1));
+  }
+  }
+
+int 
+PathSeries::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strncmp(argv[0],"factor",80) == 0) {
+    param.setValue(cFactor);
+    return param.addObject(1, this);
+  }
+
+  return -1;
+}
+   
+int 
+PathSeries::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    cFactor = info.theDouble;
+    return 0;
+  }
+
+  return -1;
+}
+
+int
+PathSeries::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
 }
