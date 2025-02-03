@@ -180,8 +180,6 @@ namespace {
 	    }
 	}
 
-	if (factor < 0) factor = 1.0;
-
 	// create path series
 	if (dt > 0 && values.empty()==false) {
 	    
