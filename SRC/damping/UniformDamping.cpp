@@ -53,6 +53,8 @@
 #include <Matrix.h>
 #include <Domain.h>
 #include <Channel.h>
+#include <Information.h>
+#include <Parameter.h>
 #include <elementAPI.h>
 #include <UniformDamping.h>
 #include <FEM_ObjectBroker.h>
@@ -454,3 +456,28 @@ UniformDamping::Print(OPS_Stream &s, int flag)
     s << "}";
   }
 }
+
+int
+UniformDamping::setParameter(const char **argv, int argc, Parameter &param)
+{
+
+  if (strcmp(argv[0],"dampingRatio") == 0) {
+    param.setValue(0.5*eta);
+    return param.addObject(1, this);
+  }
+  return -1;
+}
+
+
+int 
+UniformDamping::updateParameter(int parameterID, Information &info)
+{
+  switch(parameterID) {
+  case 1:
+    eta = info.theDouble * 2.0;
+    return 0;
+  default:
+    return -1;
+  }
+}
+
