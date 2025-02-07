@@ -78,7 +78,6 @@ class NDFiber3d : public Fiber
     void getFiberLocation(double &y, double &z);
     NDMaterial *getNDMaterial(void) {return theMaterial;}
     double getArea(void) {return area;};
-    double getd(void) {return dValue;};
     
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
