@@ -146,14 +146,12 @@ FiberSectionWarping3d::FiberSectionWarping3d(int tag, int num, Fiber **fibers,
     double Qz = 0.0;
     double Qy = 0.0;
     double A  = 0.0;
-    double Heightt;
     
     for (int i = 0; i < numFibers; i++) {
       Fiber *theFiber = fibers[i];
       double yLoc, zLoc, Area;
       theFiber->getFiberLocation(yLoc, zLoc);
       Area = theFiber->getArea();
-	  Heightt = theFiber->getd();
 
       Qz += yLoc*Area;
       Qy += zLoc*Area;
@@ -162,7 +160,7 @@ FiberSectionWarping3d::FiberSectionWarping3d(int tag, int num, Fiber **fibers,
       matData[i*4] = yLoc;
       matData[i*4+1] = zLoc;
       matData[i*4+2] = Area;
-	  matData[i*4+3] = Heightt;
+      matData[i*4+3] = theFiber->getSectorial();
       UniaxialMaterial *theMat = theFiber->getMaterial();
       theMaterials[i] = theMat->getCopy();
 
@@ -175,6 +173,8 @@ FiberSectionWarping3d::FiberSectionWarping3d(int tag, int num, Fiber **fibers,
     yBar = -Qz/A;
     zBar = Qy/A;
   }
+
+  yBar = zBar = 0.0;
 
   theTorsion = torsion.getCopy();
   if (theTorsion == 0)
@@ -398,14 +398,13 @@ FiberSectionWarping3d::addFiber(Fiber &newFiber)
     newMatData[4*i+3] = matData[4*i+3];
   }
   // set the new pointers
-  double yLoc, zLoc, Area, Height;
+  double yLoc, zLoc, Area;
   newFiber.getFiberLocation(yLoc, zLoc);
   Area = newFiber.getArea();
-  Height = newFiber.getd();
   newMatData[numFibers*4] = -yLoc;
   newMatData[numFibers*4+1] = zLoc;
   newMatData[numFibers*4+2] = Area;
-  newMatData[numFibers*4+3] = Height;
+  newMatData[numFibers*4+3] = newFiber.getSectorial();
   UniaxialMaterial *theMat = newFiber.getMaterial();
   newArray[numFibers] = theMat->getCopy();
 
@@ -437,7 +436,7 @@ FiberSectionWarping3d::addFiber(Fiber &newFiber)
     yLoc = -matData[4*i];
     zLoc = matData[4*i+1];
     Area = matData[4*i+2];
-    Height = matData[4*i+3];
+
     A  += Area;
     Qz += yLoc*Area;
     Qy += zLoc*Area;
@@ -446,6 +445,8 @@ FiberSectionWarping3d::addFiber(Fiber &newFiber)
   yBar = -Qz/A;
   zBar = Qy/A;
 
+  yBar = zBar = 0.0;
+  
   return 0;
 }
 
@@ -1155,7 +1156,7 @@ FiberSectionWarping3d::recvSelf(int commitTag, Channel &theChannel,
       yLoc = -matData[4*i];
       zLoc = matData[4*i+1];
       Area = matData[4*i+2];
-      //Height=matData[4*i+3];
+
       A  += Area;
       Qz += yLoc*Area;
       Qy += zLoc*Area;
@@ -1201,131 +1202,10 @@ FiberSectionWarping3d::setResponse(const char **argv, int argc, OPS_Stream &outp
 
   Response *theResponse =0;
 
-  output.tag("SectionOutput");
-  output.attr("secType", this->getClassType());
-  output.attr("secTag", this->getTag());
-
-  // deformations
-  if (strcmp(argv[0],"deformations") == 0 || strcmp(argv[0],"deformation") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","kappaZ");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","eps");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","gammaY");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","kappaY");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","gammaZ");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","theta");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-    theResponse =  new MaterialResponse(this, 1, this->getSectionDeformation());
-  
-  // forces
-  } else if (strcmp(argv[0],"forces") == 0 || strcmp(argv[0],"force") == 0) {
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","Mz");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","P");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","Vy");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","My");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","Vz");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","T");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-    theResponse =  new MaterialResponse(this, 2, this->getStressResultant());
-  
-  // force and deformation
-  } else if (strcmp(argv[0],"forceAndDeformation") == 0) { 
-    for (int i=0; i<typeSize; i++) {
-      int code = type(i);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","kappaZ");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","eps");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","gammaY");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","kappaY");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","gammaZ");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","theta");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-    for (int j=0; j<typeSize; j++) {
-      int code = type(j);
-      switch (code){
-      case SECTION_RESPONSE_MZ:
-	output.tag("ResponseType","Mz");
-	break;
-      case SECTION_RESPONSE_P:
-	output.tag("ResponseType","P");
-	break;
-      case SECTION_RESPONSE_VY:
-	output.tag("ResponseType","Vy");
-	break;
-      case SECTION_RESPONSE_MY:
-	output.tag("ResponseType","My");
-	break;
-      case SECTION_RESPONSE_VZ:
-	output.tag("ResponseType","Vz");
-	break;
-      case SECTION_RESPONSE_T:
-	output.tag("ResponseType","T");
-	break;
-      default:
-	output.tag("ResponseType","Unknown");
-      }
-    }
-
-    theResponse =  new MaterialResponse(this, 4, Vector(2*this->getOrder()));
-  
-  }  
-  
-  else {
-    if (argc > 2 || strcmp(argv[0],"fiber") == 0) {
+  if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
       int key = numFibers;
       int passarg = 2;
-      
       
       if (argc <= 3)	{  // fiber number was input directly
 	
@@ -1335,7 +1215,7 @@ FiberSectionWarping3d::setResponse(const char **argv, int argc, OPS_Stream &outp
 	int matTag = atoi(argv[3]);
 	double yCoord = atof(argv[1]);
 	double zCoord = atof(argv[2]);
-	double closestDist;
+	double closestDist = 0.0;
 	double ySearch, zSearch, dy, dz;
 	double distance;
 	int j;
@@ -1406,11 +1286,12 @@ FiberSectionWarping3d::setResponse(const char **argv, int argc, OPS_Stream &outp
 	
 	output.endTag();
       }
-    }
   }
 
-  output.endTag();
-  return theResponse;
+  if (theResponse == 0)
+    return SectionForceDeformation::setResponse(argv, argc, output);
+
+  return theResponse;  
 }
 
 

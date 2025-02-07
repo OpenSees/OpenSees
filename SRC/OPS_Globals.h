@@ -11,8 +11,8 @@
 **                                                                    **
 ** Commercial use of this program without express permission of the   **
 ** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+** file 'COPYRIGHT' in main directory for information on usage and    **
+** redistribution, and for a DISCLAIMER OF ALL WARRANTIES.            **
 **                                                                    **
 ** Developed by:                                                      **
 **   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
@@ -27,7 +27,7 @@
 // Description: This file contains global variables used in OpenSees files.
 // if you change some of the variables, you must recompile ALL the code.
 
-#define OPS_VERSION "3.7.0"
+#define OPS_VERSION "3.7.1"
 
 #ifdef _WIN32
 #ifndef _WIN64
