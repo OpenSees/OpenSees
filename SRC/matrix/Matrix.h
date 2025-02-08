@@ -72,6 +72,11 @@ class Matrix
     int Solve(const Vector &V, Vector &res) const;
     int Solve(const Matrix &M, Matrix &res) const;
     int Invert(Matrix &res) const;
+    
+    // methods to cache LU factorization
+    void activateLUCache() const;
+    void deactivateLUCache() const;
+    Matrix copyWithCache() const;
 
     int addMatrix(double factThis, const Matrix &other, double factOther);
     int addMatrixTranspose(double factThis, const Matrix &other, double factOther);
@@ -166,6 +171,15 @@ class Matrix
     int dataSize;
     double *data;
     int fromFree;
+
+    // cached LU factorization
+    int computeLU() const;
+    void clearLUCache() const;
+    mutable double *cachedLUFactor;
+    mutable int *cachedPivot;
+    mutable bool isLUFactorized;
+    mutable bool isLUCacheEnabled;
+
 };
 
 
@@ -195,6 +209,9 @@ Matrix::operator()(int row, int col)
     return MATRIX_NOT_VALID_ENTRY;
   }
 #endif
+
+  // reset factorization flag, but keep cache data structures
+  isLUFactorized = false;
   return data[col*numRows + row];
 }
 
