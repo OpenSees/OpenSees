@@ -37,6 +37,8 @@
 #include <Matrix.h>
 #include <Domain.h>
 #include <Channel.h>
+#include <Information.h>
+#include <Parameter.h>
 #include <elementAPI.h>
 #include <SecStifDamping.h>
 #include <FEM_ObjectBroker.h>
@@ -281,3 +283,28 @@ SecStifDamping::Print(OPS_Stream &s, int flag)
     s << "}";
   }
 }
+
+int
+SecStifDamping::setParameter(const char **argv, int argc, Parameter &param)
+{
+
+  if (strcmp(argv[0],"dampingFactor") == 0) {
+    param.setValue(beta);
+    return param.addObject(1, this);
+  }
+  return -1;
+}
+
+
+int 
+SecStifDamping::updateParameter(int parameterID, Information &info)
+{
+  switch(parameterID) {
+  case 1:
+    beta = info.theDouble;
+    return 0;
+  default:
+    return -1;
+  }
+}
+

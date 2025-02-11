@@ -1868,6 +1868,15 @@ ElasticBeam3d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(releasey);
     return param.addObject(8, this);
   }  
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
+  }
   
   return -1;
 }

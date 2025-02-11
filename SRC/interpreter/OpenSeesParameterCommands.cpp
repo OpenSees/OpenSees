@@ -26,6 +26,7 @@
 #include <Element.h>
 #include <ElementParameter.h>
 #include <ElementStateParameter.h>
+#include <MeshRegion.h>
 #include <LoadFactorParameter.h>
 #include <NodeResponseParameter.h>
 #include <OPS_Stream.h>
@@ -121,6 +122,7 @@ int OPS_Parameter() {
   // loop through all other parameters
   Node *node = 0;
   Element *element = 0;
+  MeshRegion *region = 0;
   LoadPattern *pattern = 0;
   RandomVariable *theRV = 0;
   DomainComponent *theObject = 0;
@@ -196,6 +198,29 @@ int OPS_Parameter() {
         return -1;
       }
       theObject = (DomainComponent *)element;
+
+    } else if (strcmp(type, "region") == 0) {
+      // region object
+      if (OPS_GetNumRemainingInputArgs() == 0) {
+        opserr << "WARNING: need region tag\n";
+        return -1;
+      }
+      if (theObject != 0) {
+        opserr << "WARNING: another object is already set\n";
+        return -1;
+      }
+      int tag;
+      if (OPS_GetIntInput(&num, &tag) < 0) {
+        opserr << "WARNING parameter -- invalid region tag\n";
+        return -1;
+      }
+
+      region = theDomain->getRegion(tag);
+      if (region == 0) {
+        opserr << "WARNING: region " << tag << " not exists\n";
+        return -1;
+      }
+      theObject = (DomainComponent *)region;
 
     } else if (strcmp(type, "randomVariable") == 0) {
 #ifdef _RELIABILITY

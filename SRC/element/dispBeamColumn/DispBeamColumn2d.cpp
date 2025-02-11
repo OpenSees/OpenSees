@@ -1960,6 +1960,16 @@ DispBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(rho);
     return param.addObject(1, this);
   }
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
+  }
+
   if (strstr(argv[0],"sectionX") != 0) {
     if (argc < 3)
 		return -1;

@@ -1855,12 +1855,27 @@ Brick::getResponse(int responseID, Information &eleInfo)
 int
 Brick::setParameter(const char **argv, int argc, Parameter &param)
 {
+  int res = -1;
+
   if (argc < 1)
     return -1;
 
-  int res = -1;
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
 
-  if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    for (int i=0; i<4; i++) {
+      int dmpRes =  theDamping[i]->setParameter(argv, argc, param);
+      if (dmpRes != -1)
+        res = dmpRes;
+    }
+    return res;
+  }
+
+  // specific material point
+  if (strstr(argv[0],"material") != 0) {
 
     if (argc < 3)
       return -1;
@@ -1872,16 +1887,12 @@ Brick::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
   }
   
-  // otherwise it could be just a forall material parameter
-  else {
-    int matRes = res;
-    for (int i=0; i<8; i++) {
-      matRes =  materialPointers[i]->setParameter(argv, argc, param);
-      if (matRes != -1)
-	res = matRes;
-    }
+  // all material points
+  for (int i=0; i<8; i++) {
+    int matRes =  materialPointers[i]->setParameter(argv, argc, param);
+    if (matRes != -1)
+      res = matRes;
   }
-  
   return res;
 }
     
