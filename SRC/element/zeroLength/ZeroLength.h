@@ -148,6 +148,10 @@ class ZeroLength : public Element
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     const Vector &getResistingForceSensitivity(int gradIndex);
     int commitSensitivity(int gradIndex, int numGrads);
+    const Matrix & getTangentStiffSensitivity(int gradIndex);
+    const Matrix & getInitialStiffSensitivity(int gradIndex);
+  //const Matrix & getCommittedStiffSensitivity(int gradIndex);  
+  //const Matrix & getDampSensitivity(int gradIndex);
 // AddingSensitivity:END ///////////////////////////////////////////
 
     void updateDir (const Vector& x, const Vector& y);
