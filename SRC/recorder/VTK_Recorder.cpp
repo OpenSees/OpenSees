@@ -1199,6 +1199,12 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_FSIFluidElement2D] = VTK_QUAD;
     vtktypes[ELE_TAG_FSIInterfaceElement2D] = VTK_LINE;
     vtktypes[ELE_TAG_FSIFluidBoundaryElement2D] = VTK_LINE;
+    vtktypes[ELE_TAG_PML2D_3] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2D_5] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2D_12] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2DVISCOUS] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML3D] = VTK_HEXAHEDRON;
 }
 
 
