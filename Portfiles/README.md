@@ -22,21 +22,21 @@ Update file:  /opt/local/etc/macports/sources.conf with the content on this repo
 Run the follow commands:
 
 ```
-mkdir -p /Users/devops/ports
+mkdir -p ~/ports
 
-port self-update
-port update
-port install mumps
-port install superlu 
-port install superlu_dist
-port install arpack
-port install SuiteSparse_UMFPACK
-port install libevent
-port install tcl@8.6.16
-port install sqlite3-tcl
-port install qt5-qtcreator
-port select --set python python311
-port select --set python3 python311
+sudo port self-update
+sudo port update
+sudo port install mumps
+sudo port install superlu 
+sudo port install superlu_dist
+sudo port install arpack
+sudo port install SuiteSparse_UMFPACK
+sudo port install libevent
+sudo port install tcl@8.6.16
+sudo port install sqlite3-tcl
+sudo port install qt5-qtcreator
+sudo port select --set python python311
+sudo port select --set python3 python311
 ```
 **Note on Superlu_MT**
 
@@ -44,7 +44,7 @@ port select --set python3 python311
 
 copy Portfile into the folder and run portindex from folder /Users/devops/ports
 
-After you can install: `port install superlu_mt`
+After you can install: `sudo port install superlu_mt`
 
 After that you have installed all deps follow the build instruction for MacOS
 and replace the CMakeLists.txt on the root of the repos with the file that you find in the
