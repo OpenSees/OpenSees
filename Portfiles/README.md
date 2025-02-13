@@ -39,6 +39,19 @@ sudo port install python310
 sudo port select --set python python310
 sudo port select --set python3 python310
 ```
+**Install hdf5@1.12**
+
+```
+mkdir -p ~/GIT/
+cd ~/GIT/
+git clone --single-branch https://github.com/macports/macports-ports.git
+cd macports-ports
+git checkout 7bd523e
+cd science/hdf5
+cd Portfile
+sudo port install
+```
+
 **Note on Superlu_MT**
 
 `mkdir -p ~/ports/math/superlu_mt`
@@ -46,6 +59,7 @@ sudo port select --set python3 python310
 copy Portfile into the folder and run portindex from folder /Users/devops/ports
 
 After you can install: `sudo port install superlu_mt`
+
 
 After that you have installed all deps follow the build instruction for MacOS
 and replace the CMakeLists.txt on the root of the repos with the file that you find in the
