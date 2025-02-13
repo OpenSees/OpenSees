@@ -35,8 +35,9 @@ sudo port install libevent
 sudo port install tcl@8.6.16
 sudo port install sqlite3-tcl
 sudo port install qt5-qtcreator
-sudo port select --set python python311
-sudo port select --set python3 python311
+sudo port install python310
+sudo port select --set python python310
+sudo port select --set python3 python310
 ```
 **Note on Superlu_MT**
 
@@ -48,4 +49,17 @@ After you can install: `sudo port install superlu_mt`
 
 After that you have installed all deps follow the build instruction for MacOS
 and replace the CMakeLists.txt on the root of the repos with the file that you find in the
-Portfile folder
+Portfile folder.
+
+To select the right version of Python use the follow cmake command:
+
+```
+#! /bin/bash
+cd ..
+mkdir build                                                            
+cd build                                                               
+cmake .. -DMUMPS_DIR=/opt/local/lib -DOPENMPI=TRUE -DSCALAPACK_LIBRARIES=/opt/local/lib/libscalapack.dylib -DPython_LIBRARIES=/opt/local/Library/Frameworks/Python.framework/Versions/3.10/lib/libpython3.10.dylib -DPython_INCLUDE_DIRS=/opt/local/Library/Frameworks/Python.framework/Versions/3.10/include/python3.10/ -DPython_VERSION=3.10
+cmake --build . --target OpenSees -j4
+cmake --build . --target OpenSeesPy -j4
+mv ./OpenSeesPy.dylib ./opensees.so
+```
