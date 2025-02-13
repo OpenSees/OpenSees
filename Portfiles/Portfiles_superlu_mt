@@ -1,0 +1,46 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem                  1.0
+PortGroup                   cmake 1.1
+PortGroup                   github 1.0
+PortGroup                   linear_algebra 1.0
+PortGroup                   mpi 1.0
+
+github.setup                xiaoyeli superlu_mt 4.0.1 v
+revision                    0
+categories                  math
+license                     BSD
+description                 SuperLU_MT is a parallel extension to the serial SuperLU library
+long_description            SuperLU is a general purpose library for the direct \
+                            solution of large, sparse, nonsymmetric systems of \
+                            linear equations on high performance machines.
+
+distname                    ${name}_${version}
+
+github.tarball_from         archive
+
+checksums                   sha256  b6de5c8ebf8fa6c7c0d607f0607f522454315632ae55b70babf908b94e9602cb \
+                            size    1792282
+
+compiler.cxx_standard       2011
+
+mpi.setup                   require -fortran
+
+depends_lib                 port:openblas
+
+configure.args-append       -Denable_tests=OFF \
+                            -DUSE_XSDK_DEFAULTS=ON \
+                            -DCMAKE_INSTALL_INCLUDEDIR=include/${name} \
+                            -DXSDK_ENABLE_Fortran=OFF
+
+pre-configure {
+    configure.args-append   -DTPL_BLAS_LIBRARIES="-L${prefix}/lib ${linalglib}"
+}
+
+linalg.setup                noveclibfort
+
+variant longindex description {Build with 64 ints} {
+    configure.cflags-append -DXSDK_INDEX_SIZE=64
+}
+
+github.livecheck.regex      (\[^"-]+)
