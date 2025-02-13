@@ -18,14 +18,14 @@
 #
 #==============================================================================
 
-# Add any Apple Silicon-specific code here
-message( STATUS "Architecture: ${ARCHITECTURE}" )
+#  Apple Silicon-specific code here
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/local/bin")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/local/lib")
 set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/local/include")
 set(CMAKE_SOURCE_DIR  ${CMAKE_SOURCE_DIR} "/opt/local/include/" )
 set(Eigen3_INCLUDE_DIR "/opt/local/include/eigen3")
 set(CMAKE_Fortran_COMPILER "/opt/local/bin/gfortran-mp-14")
+#
 
 cmake_minimum_required(VERSION 3.16)
 project(OpenSeesFramework LANGUAGES C CXX Fortran)
