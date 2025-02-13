@@ -18,9 +18,17 @@
 #
 #==============================================================================
 
+# Add any Apple Silicon-specific code here
+message( STATUS "Architecture: ${ARCHITECTURE}" )
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/local/bin")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/local/lib")
+set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} "/opt/local/include")
+set(CMAKE_SOURCE_DIR  ${CMAKE_SOURCE_DIR} "/opt/local/include/" )
+set(Eigen3_INCLUDE_DIR "/opt/local/include/eigen3")
+set(CMAKE_Fortran_COMPILER "/opt/local/bin/gfortran-mp-14")
+
 cmake_minimum_required(VERSION 3.16)
 project(OpenSeesFramework LANGUAGES C CXX Fortran)
-
 
 set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 set(OPS_EXTERN_SOURCE_DIR "${PROJECT_SOURCE_DIR}/OTHER/")
@@ -324,8 +332,8 @@ endif()
 
 if(PYTHON_FOUND)
   message("Python_FOUND:${Python_FOUND}")
-  #message("Python_VERSION:${Python_VERSION}")
-  #message("Python_Development_FOUND:${Python_Development_FOUND}")
+  message("Python_VERSION:${Python_VERSION}")
+  message("Python_Development_FOUND:${Python_Development_FOUND}")
   message("Python_LIBRARIES:${Python_LIBRARIES}")
   message("Python_INCLUDES:${Python_INCLUDE_DIRS}")  
 else()
@@ -838,6 +846,7 @@ endif()
 
 if(HDF5_FOUND)
    include_directories(${HDF5_INCLUDE_DIR})
+   message(STATUS "HDF5_INCLUDE_DIR: ${HDF5_INCLUDE_DIR}")    
    set(_hdf5_libs hdf5 hdf5_cpp)
    if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
          add_compile_definitions(_H5DRM)
@@ -853,10 +862,13 @@ endif()
 #----------------------------
 if(Eigen3_FOUND)
    include_directories(${Eigen3_INCLUDE_DIR})
+   #include_directories()
+   message(STATUS "FIND Eigen3: ${Eigen3_INCLUDE_DIR}")
    add_compile_definitions(_EIGEN3)
 else()
    message(STATUS "OPS >>> Could not find Eigen3")
 endif()
+
 
 if (OPS_Use_Dev_Directories)
   add_subdirectory("${PROJECT_SOURCE_DIR}/DEVELOPER/")
