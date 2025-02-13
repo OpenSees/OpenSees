@@ -102,6 +102,9 @@ J2PlateFibre::J2PlateFibre
   rho(r), sigmaYn(syn),
   parameterID(0), SHVs(0), Tepsilon(5), dg_n1(0.0)
 {
+  sigmaY = fabs(sigmaY);
+  sigmaYn = fabs(sigmaYn);
+  
   epsPn[0] = 0.0;
   epsPn[1] = 0.0;
   epsPn[2] = 0.0;
