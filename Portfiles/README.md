@@ -56,6 +56,18 @@ sudo port install
 `mkdir -p ~/ports/math/superlu_mt`
 
 copy Portfile into the folder and run portindex from folder /Users/devops/ports
+```
+cp Portfiles_superlu_mt ~/ports/math/superlu_mt/Portfile
+cd ~/ports
+sudo portindex
+Creating port index in /Users/devops/ports
+Adding port math/superlu_mt
+
+Total number of ports parsed:	1
+Ports successfully parsed:	1
+Ports failed:			0
+Up-to-date ports skipped:	0
+```
 
 After you can install: `sudo port install superlu_mt`
 
