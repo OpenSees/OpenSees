@@ -34,7 +34,7 @@ sudo port install SuiteSparse_UMFPACK
 sudo port install libevent
 sudo port install tcl@8.6.16
 sudo port install sqlite3-tcl
-sudo port install qt5-qtcreator
+sudo port install eigen3
 sudo port install python310
 sudo port select --set python python310
 sudo port select --set python3 python310
