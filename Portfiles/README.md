@@ -48,7 +48,6 @@ git clone --single-branch https://github.com/macports/macports-ports.git
 cd macports-ports
 git checkout 7bd523e
 cd science/hdf5
-cd Portfile
 sudo port install
 ```
 
