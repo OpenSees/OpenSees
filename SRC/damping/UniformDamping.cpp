@@ -89,8 +89,6 @@ alpha(0), omegac(0), qL(0), qLC(0), qd(0), qdC(0), q0(0), q0C(0)
   if (nF > 0 && a->Size() == nF && w->Size() == nF)
   {
     nFilter = nF;
-    if (alpha) delete alpha;
-    if (omegac) delete omegac;
     alpha = new Vector(*a);
     omegac = new Vector(*w);
   }
