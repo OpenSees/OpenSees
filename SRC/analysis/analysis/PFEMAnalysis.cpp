@@ -52,6 +52,7 @@
 #include <Pressure_ConstraintIter.h>
 #include <ElementIter.h>
 #include <map>
+#include <BackgroundMesh.h>
 
 #ifdef _PARALLEL_INTERPRETERS
 #include <mpi.h>
@@ -81,6 +82,16 @@ PFEMAnalysis::~PFEMAnalysis()
 int 
 PFEMAnalysis::analyze(bool flush)
 {
+    // check if background mesh is defined
+    BackgroundMesh& bg = OPS_getBgMesh();
+    if (bg.isDefined()) {
+        int res = bg.remesh();
+        if (res < 0) {
+            opserr << "WARNING: failed to remesh background -- PFEMAnalysis::analyze\n";
+            return -1;
+        }
+    }
+
     Domain* theDomain = this->getDomainPtr();
     double current = theDomain->getCurrentTime();
     if(newstep) {
