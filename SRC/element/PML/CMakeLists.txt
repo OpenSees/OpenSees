@@ -16,6 +16,7 @@ target_sources(OPS_Element
     PML2D_3.cpp
     PML2D_5.cpp
     PML2D_12.cpp
+    PML3DGeneral.cpp
   PUBLIC    
     PML3D.h
     PML2D.h
@@ -23,6 +24,7 @@ target_sources(OPS_Element
     PML2D_3.h
     PML2D_5.h
     PML2D_12.h
+    PML3DGeneral.h
 )
 
 target_sources(OPS_ElementFortran

@@ -420,6 +420,7 @@
 #include "PML/PML2D_5.h"
 #include "PML/PML2D_12.h"
 #include "PML/PML2DVISCOUS.h"
+#include "PML/PML3DGeneral.h"
 
 
 #include "UP-ucsd/Nine_Four_Node_QuadUP.h"
@@ -1059,6 +1060,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
 	case ELE_TAG_PML2DVISCOUS:
 	  return new PML2DVISCOUS(); // Amin Pakzad
+  
+  case ELE_TAG_PML3DGeneral:
+    return new PML3DGeneral(); // Amin Pakzad
 	
     case ELE_TAG_BeamContact2D:
       return new BeamContact2D();
