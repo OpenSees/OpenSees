@@ -1672,26 +1672,37 @@ ZeroLength::getResponse(int responseID, Information &eleInformation)
 int
 ZeroLength::setParameter(const char **argv, int argc, Parameter &param)
 {
-  int result = -1;  
-
   if (argc < 1)
     return -1;
 
-  if (strcmp(argv[0], "material") == 0) {
-      if (argc > 2) {
-	int matNum = atoi(argv[1]);
-	if (matNum >= 1 && matNum <= numMaterials1d)    
-	  return theMaterial1d[matNum-1]->setParameter(&argv[2], argc-2, param);
-      } else {
-	return -1;
-      }
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
   }
 
+  // specific material
+  if (strstr(argv[0], "material") != 0) {
+
+    if (argc < 3)
+      return -1;
+
+    int matNum = atoi(argv[1]);
+    if (matNum >= 1 && matNum <= numMaterials1d)
+      return theMaterial1d[matNum-1]->setParameter(&argv[2], argc-2, param);
+    else
+      return -1;
+  } 
+
+  // all materials
+  int result = -1;  
   for (int i=0; i<numMaterials1d; i++) {
     int res = theMaterial1d[i]->setParameter(argv, argc, param);
-    if (res != -1) {
+    if (res != -1)
       result = res;
-    }
   }  
   return result;
 }
@@ -1742,7 +1753,79 @@ ZeroLength::commitSensitivity(int gradIndex, int numGrads)
   return ret;  
 }
 
+const Matrix &
+ZeroLength::getTangentStiffSensitivity(int gradIndex)
+{
+    double E;
 
+    // stiff is a reference to the matrix holding the stiffness matrix
+    Matrix& stiff = *theMatrix;
+    
+    // zero stiffness matrix
+    stiff.Zero();
+    
+    // loop over 1d materials
+    
+    Matrix& tran = *t1d;;
+    for (int mat=0; mat<numMaterials1d; mat++) {
+      
+      // get tangent for material
+      E = theMaterial1d[mat]->getTangentSensitivity(gradIndex);
+      if(theDamping) E *= theDamping->getStiffnessMultiplier();
+      
+      // compute contribution of material to tangent matrix
+      for (int i=0; i<numDOF; i++)
+	for(int j=0; j<i+1; j++)
+	  stiff(i,j) +=  tran(mat,i) * E * tran(mat,j);
+      
+    }
+
+    // end loop over 1d materials 
+    
+    // complete symmetric stiffness matrix
+    for (int i=0; i<numDOF; i++)
+      for(int j=0; j<i; j++)
+	stiff(j,i) = stiff(i,j);
+
+    return stiff;
+}
+
+const Matrix &
+ZeroLength::getInitialStiffSensitivity(int gradIndex)
+{
+    double E;
+
+    // stiff is a reference to the matrix holding the stiffness matrix
+    Matrix& stiff = *theMatrix;
+    
+    // zero stiffness matrix
+    stiff.Zero();
+    
+    // loop over 1d materials
+    
+    Matrix& tran = *t1d;;
+    for (int mat=0; mat<numMaterials1d; mat++) {
+      
+      // get tangent for material
+      E = theMaterial1d[mat]->getInitialTangentSensitivity(gradIndex);
+      if(theDamping) E *= theDamping->getStiffnessMultiplier();
+      
+      // compute contribution of material to tangent matrix
+      for (int i=0; i<numDOF; i++)
+	for(int j=0; j<i+1; j++)
+	  stiff(i,j) +=  tran(mat,i) * E * tran(mat,j);
+      
+    }
+
+    // end loop over 1d materials 
+    
+    // complete symmetric stiffness matrix
+    for (int i=0; i<numDOF; i++)
+      for(int j=0; j<i; j++)
+	stiff(j,i) = stiff(i,j);
+
+    return stiff;
+}
 
 
 // Private methods
