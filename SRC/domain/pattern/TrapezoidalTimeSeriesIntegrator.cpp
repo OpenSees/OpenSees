@@ -61,7 +61,7 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
 {	
   // Check for zero time step, before dividing to get number of steps
   if (delta <= 0.0) {
-    opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Attempting to integrate time step" <<
+    opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Attempting to integrate usiing time step" <<
       delta << "<= 0\n";
     return 0;
    }
@@ -73,59 +73,116 @@ TrapezoidalTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
   }
 
   // Add one to get ceiling out of type cast
-  long long numSteps = (long long)theSeries->getDuration() / delta + 1.0;
+  long long numSteps = (long long)(theSeries->getDuration() / delta + 1.0);
 
-  Vector *theIntegratedValues = new Vector (numSteps);
+  Vector *theInt = new Vector (numSteps);
 
   // Check that the Vector was allocated properly
-  if (theIntegratedValues == 0 || theIntegratedValues->Size() == 0) {
+  if (theInt == 0 || theInt->Size() == 0) {
     opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory allocating Vector " << endln;
 
 
-    if (theIntegratedValues != 0)
-      delete theIntegratedValues;
+    if (theInt != 0)
+      delete theInt;
 
     return 0;
   }
 
-  long long i;                // Counter for indexing
   double dummyTime;     // Dummy variable for integrating
-  double previousValue; // Temporary storage to avoid accessing same value twice
-	                        // through identical method calls
-  double currentValue;
-      
-  // Set the first point
-  // Assuming initial condition is zero, i.e. F(0) = 0
+  double fi, fj;        //function values
+  double F;             //intergral value
 
+  dummyTime = theSeries->getStartTime();
 
-  (*theIntegratedValues)[0] = theSeries->getFactor(0.0) * delta * 0.5;
+  F = 0.0;
 
-  previousValue = (*theIntegratedValues)[0];
-  
-  dummyTime = delta + theSeries->getStartTime();
-    
-  for (i = 1; i < numSteps; i++, dummyTime += delta) {
-    currentValue = theSeries->getFactor(dummyTime);
-    
-    // Apply the trapezoidal rule to update the integrated value
-    (*theIntegratedValues)[i] = (*theIntegratedValues)[i-1] +
-      delta*0.5 * (currentValue + previousValue);
-    
-    previousValue = currentValue;
+  fi = 0.0;
+
+  for (long long i = 0; i < numSteps; i++, dummyTime += delta) {
+    fj = theSeries->getFactor(dummyTime);
+
+    // Apply the trapezoidal rule to update the integral
+    F = F + 0.5 * delta * (fi + fj);
+
+    (*theInt)[i] = F;
+
+    fi = fj;
   }
 
-  /*
-  // Set the last point
-  (*theIntegratedValues)[i] = (*theIntegratedValues)[i-1] +
-    delta*0.5 * (theSeries->getFactor(dummyTime));
-  */
-
   // Set the method return value
-  PathSeries *returnSeries = new PathSeries (0, *theIntegratedValues, delta, true);
-  delete theIntegratedValues;
+  PathSeries *returnSeries = new PathSeries (0, *theInt, delta, 1.0, true, false, theSeries->getStartTime());
+  delete theInt;
 
   if (returnSeries == 0) {
     opserr << "TrapezoidalTimeSeriesIntegrator::integrate() Ran out of memory creating PathSeries\n";
+
+    return 0;
+   }
+
+  return returnSeries;
+}
+
+TimeSeries*
+TrapezoidalTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double delta)
+{	
+  // Check for zero time step, before dividing to get number of steps
+  if (delta <= 0.0) {
+    opserr << "TrapezoidalTimeSeriesIntegrator::differentiate() Attempting to differentiate using time step" <<
+      delta << "<= 0\n";
+    return 0;
+   }
+
+  // check a TimeSeries object was passed
+  if (theSeries == 0) {
+    opserr << "TrapezoidalTimeSeriesIntegrator::differentiate() - - no TimeSeries passed\n";
+    return 0;
+  }
+
+  // Add one to get ceiling out of type cast
+  long long numSteps = (long long)(theSeries->getDuration() / delta + 1.0);
+
+  Vector *theDif = new Vector (numSteps);
+
+  // Check that the Vector was allocated properly
+  if (theDif == 0 || theDif->Size() == 0) {
+    opserr << "TrapezoidalTimeSeriesIntegrator::differentiate() Ran out of memory allocating Vector " << endln;
+
+    if (theDif != 0)
+      delete theDif;
+
+    return 0;
+  }
+
+  double dummyTime;     // Dummy variable for integrating
+  double Fi, Fj;        // function values
+  double f;             // derivative value
+      
+  dummyTime = theSeries->getStartTime();
+
+  f = 0.0;
+
+  Fi = 0.0;
+
+  opserr<<"differentiate()\n";
+  for (long long i = 0; i < numSteps; i++, dummyTime += delta) {
+    Fj = theSeries->getFactor(dummyTime);
+
+    // Apply the trapezoidal rule to update the derivative
+    f = 2.0 * (Fj - Fi) / delta - f;
+
+    (*theDif)[i] = f;
+
+    Fi = Fj;
+    if (i < 10)
+      opserr<<"data"<<f<<" "<<Fi<<" "<<Fj<<"\n";
+  }
+
+  // Set the method return value
+  PathSeries *returnSeries = new PathSeries (0, *theDif, delta, 1.0, true, false, theSeries->getStartTime());
+  delete theDif;
+
+  if (returnSeries == 0) {
+    opserr << "TrapezoidalTimeSeriesIntegrator::differentiate() Ran out of memory creating PathSeries\n";
 
     return 0;
    }
