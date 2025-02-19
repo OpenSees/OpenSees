@@ -39,7 +39,7 @@
 #include <string.h>
 #include <stdlib.h>
 
-#include <R3vectors.h>
+//#include <R3vectors.h>
 
 Vector J2PlateFibre::sigma(5);
 Matrix J2PlateFibre::D(5,5);
