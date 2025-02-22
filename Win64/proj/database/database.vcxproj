@@ -131,7 +131,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\SRC\api;..\..\..\src\package;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\actor;..\..\..\src\ndarray;..\..\..\src\handler;..\..\..\src\domain\domain;..\..\..\src\actor\objectbroker;..\..\..\src\matrix;..\..\..\src\actor\channel;..\..\..\src\database;..\..\..\src;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\SRC\api;..\..\..\src\package;..\..\..\src\analysis\integrator;..\..\..\src\analysis\algorithm;..\..\..\src\analysis\algorithm\equiSolnAlgo;..\..\..\src\actor\actor;..\..\..\src\ndarray;..\..\..\src\handler;..\..\..\src\domain\domain;..\..\..\src\actor\objectbroker;..\..\..\src\matrix;..\..\..\src\actor\channel;..\..\..\src\database;..\..\..\src;C:\ActiveTcl;C:\ActiveTcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_TCL85;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

@@ -75,7 +75,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\tcl;..\..\..\src\handler;..\..\..\src\domain\node;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\renderer;..\..\..\src\matrix;..\..\..\src\utility;..\..\..\src\domain\domain;..\..\..\src;..\..\..\src\element;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\tcl;..\..\..\src\handler;..\..\..\src\domain\node;..\..\..\src\actor\actor;..\..\..\src\tagged;..\..\..\src\domain\component;..\..\..\src\renderer;..\..\..\src\matrix;..\..\..\src\utility;..\..\..\src\domain\domain;..\..\..\src;..\..\..\src\element;..\..\..\src\nDarray;C:\ActiveTcl;C:\ActiveTcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_WIN32;_DEBUG;_LIB;_WGL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>

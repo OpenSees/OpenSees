@@ -75,7 +75,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\src\element\elasticBeamColumn;..\..\..\src\modelbuilder\tcl;..\..\..\src\coordTransformation;..\..\..\src\handler;..\..\..\src\domain\pattern;..\..\..\src\domain\load;..\..\..\src\actor\channel;..\..\..\src\domain\node;..\..\..\src\domain\constraints;..\..\..\src\tagged;..\..\..\src\actor\actor;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\element\beam3d;..\..\..\src;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\modelbuilder;..\..\..\src\element\beam2d;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\src\element\elasticBeamColumn;..\..\..\src\modelbuilder\tcl;..\..\..\src\coordTransformation;..\..\..\src\handler;..\..\..\src\domain\pattern;..\..\..\src\domain\load;..\..\..\src\actor\channel;..\..\..\src\domain\node;..\..\..\src\domain\constraints;..\..\..\src\tagged;..\..\..\src\actor\actor;..\..\..\src\domain\component;..\..\..\src\element;..\..\..\src\element\beam3d;..\..\..\src;..\..\..\src\matrix;..\..\..\src\domain\domain;..\..\..\src\modelbuilder;..\..\..\src\element\beam2d;..\..\..\src\nDarray;C:\ActiveTcl;C:\ActiveTcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
       <PrecompiledHeaderOutputFile>.\..\..\obj\modelbuilder\debug/modelbuilder.pch</PrecompiledHeaderOutputFile>

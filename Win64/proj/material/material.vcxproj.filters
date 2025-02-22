@@ -1553,6 +1553,12 @@
     <ClCompile Include="..\..\..\SRC\material\section\PipeSection.cpp">
       <Filter>section</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\QbSandCPT.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\TzSandCPT.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\AxialSp.h">
@@ -2827,6 +2833,12 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.h">
       <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\QbSandCPT.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TzSandCPT.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

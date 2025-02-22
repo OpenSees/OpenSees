@@ -131,7 +131,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\OTHER\AMD;..\..\..\src\handler;..\..\..\src\actor\channel;..\..\..\src\graph\numberer;..\..\..\src\actor\objectBroker;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\actor\actor;..\..\..\src\analysis\model\simple;..\..\..\src\analysis\model;..\..\..\src\tagged\storage;..\..\..\src\matrix;..\..\..\src\graph\graph;..\..\..\src;..\..\..\src\tagged;..\..\..\src\nDarray;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\OTHER\AMD;..\..\..\src\handler;..\..\..\src\actor\channel;..\..\..\src\graph\numberer;..\..\..\src\actor\objectBroker;..\..\..\src\analysis\dof_grp;..\..\..\src\analysis\fe_ele;..\..\..\src\actor\actor;..\..\..\src\analysis\model\simple;..\..\..\src\analysis\model;..\..\..\src\tagged\storage;..\..\..\src\matrix;..\..\..\src\graph\graph;..\..\..\src;..\..\..\src\tagged;..\..\..\src\nDarray;C:\ActiveTcl;C:\ActiveTcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
