@@ -643,6 +643,7 @@ const Matrix& TwoNodeLinkSection::getDamp()
     
     // transform damping from basic to local system
     Matrix cl(numDOF,numDOF);
+    double factor = (L > 0.0) ? 1.0/L : 1.0;    
     cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
     
     // transform damping from local to global system
