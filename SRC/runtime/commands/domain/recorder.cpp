@@ -67,6 +67,7 @@ extern FEM_ObjectBroker theBroker;
 OPS_Routine OPS_PVDRecorder;
 OPS_Routine OPS_GmshRecorder;
 OPS_Routine OPS_MPCORecorder;
+OPS_Routine OPS_VTKHDF_Recorder;
 OPS_Routine OPS_VTK_Recorder;
 OPS_Routine OPS_ElementRecorderRMS;
 
@@ -1302,6 +1303,14 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   else if (strcmp(argv[1], "mpco") == 0) {
       OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
     (*theRecorder) = (Recorder*)OPS_MPCORecorder(rt, argc, argv);
+    if (theRecorder == 0) {
+      return TCL_ERROR;
+    }
+  }
+  
+  else if (strcmp(argv[1], "vtkhdf") == 0 || strcmp(argv[1], "VTKHDF") == 0) {
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    (*theRecorder) = (Recorder *)OPS_VTKHDF_Recorder(rt, argc, argv);
     if (theRecorder == 0) {
       return TCL_ERROR;
     }
