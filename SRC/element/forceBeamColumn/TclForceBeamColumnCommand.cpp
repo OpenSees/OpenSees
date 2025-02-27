@@ -80,6 +80,9 @@
 #include <MidDistanceBeamIntegration.h>
 //#include <GaussQBeamIntegration.h>
 
+#include <ConcentratedPlasticityBeamIntegration.h>
+#include <ConcentratedCurvatureBeamIntegration.h>
+
 #include <ElasticSection2d.h>
 #include <ElasticSection3d.h>
 
@@ -191,6 +194,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       (strcmp(argv[6],"FixedLocation") != 0) &&
       (strcmp(argv[6],"LowOrder") != 0) &&
       (strcmp(argv[6],"GaussQ") != 0) &&
+      (strcmp(argv[6],"ConcentratedPlasticity") != 0) &&
+      (strcmp(argv[6],"ConcentratedCurvature") != 0) &&
       (strcmp(argv[6],"MidDistance") != 0)) {
 
 
@@ -1368,6 +1373,143 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     }
 
     beamIntegr = new MidDistanceBeamIntegration(numSections, pts);
+  }
+
+  else if (strcmp(argv[6], "ConcentratedPlasticity") == 0) {
+
+      if (argc < 10) {
+          opserr << "WARNING insufficient arguments\n";
+          printCommand(argc, argv);
+          opserr << "Want: element " << argv[1] << " eleTag? iNode? jNode? transfTag? ConcentratedPlasticity secTagI? secTagJ? secTagE?\n";
+          return TCL_ERROR;
+      }
+
+      int secTagI, secTagJ, secTagE;
+
+      numSections = 5; // this is fixed
+      sections = new SectionForceDeformation * [numSections];
+
+      if (Tcl_GetInt(interp, argv[7], &secTagI) != TCL_OK) {
+          opserr << "WARNING invalid secTagI\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      if (Tcl_GetInt(interp, argv[8], &secTagJ) != TCL_OK) {
+          opserr << "WARNING invalid secTagJ\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      if (Tcl_GetInt(interp, argv[9], &secTagE) != TCL_OK) {
+          opserr << "WARNING invalid secTagE\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+
+      SectionForceDeformation* sectionI = theTclBuilder->getSection(secTagI);
+      if (sectionI == 0) {
+          opserr << "WARNING section not found\n";
+          opserr << "Section: " << secTagI;
+          opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      SectionForceDeformation* sectionJ = theTclBuilder->getSection(secTagJ);
+      if (sectionJ == 0) {
+          opserr << "WARNING section not found\n";
+          opserr << "Section: " << secTagJ;
+          opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+
+      SectionForceDeformation* sectionE = theTclBuilder->getSection(secTagE);
+      if (sectionE == 0) {
+          opserr << "WARNING section not found\n";
+          opserr << "Section: " << secTagE;
+          opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+
+      sections[0] = sectionI;
+      sections[1] = sectionE;
+      sections[2] = sectionE;
+      sections[3] = sectionE;
+      sections[4] = sectionJ;
+
+      
+
+      beamIntegr = new ConcentratedPlasticityBeamIntegration();
+      }
+
+  else if (strcmp(argv[6], "ConcentratedCurvature") == 0) {
+
+      if (argc < 12) {
+          opserr << "WARNING insufficient arguments\n";
+          printCommand(argc, argv);
+          opserr << "Want: element " << argv[1] << " eleTag? iNode? jNode? transfTag? ConcentratedCurvature secTagI? lpI? secTagJ? lpJ? secTagE?\n";
+          return TCL_ERROR;
+      }
+
+      int secTagI, secTagJ, secTagE;
+      double lpI, lpJ;
+
+      numSections = 5; // this is fixed
+      sections = new SectionForceDeformation * [numSections];
+
+      if (Tcl_GetInt(interp, argv[7], &secTagI) != TCL_OK) {
+          opserr << "WARNING invalid secTagI\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      if (Tcl_GetDouble(interp, argv[8], &lpI) != TCL_OK) {
+          opserr << "WARNING invalid lpI\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      if (Tcl_GetInt(interp, argv[9], &secTagJ) != TCL_OK) {
+          opserr << "WARNING invalid secTagJ\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      if (Tcl_GetDouble(interp, argv[10], &lpJ) != TCL_OK) {
+          opserr << "WARNING invalid lpJ\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      if (Tcl_GetInt(interp, argv[11], &secTagE) != TCL_OK) {
+          opserr << "WARNING invalid secTagE\n";
+          opserr << "" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+
+      SectionForceDeformation* sectionI = theTclBuilder->getSection(secTagI);
+      if (sectionI == 0) {
+          opserr << "WARNING section not found\n";
+          opserr << "Section: " << secTagI;
+          opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+      SectionForceDeformation* sectionJ = theTclBuilder->getSection(secTagJ);
+      if (sectionJ == 0) {
+          opserr << "WARNING section not found\n";
+          opserr << "Section: " << secTagJ;
+          opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+
+      SectionForceDeformation* sectionE = theTclBuilder->getSection(secTagE);
+      if (sectionE == 0) {
+          opserr << "WARNING section not found\n";
+          opserr << "Section: " << secTagE;
+          opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+          return TCL_ERROR;
+      }
+
+      sections[0] = sectionI;
+      sections[1] = sectionE;
+      sections[2] = sectionE;
+      sections[3] = sectionE;
+      sections[4] = sectionJ;
+
+      beamIntegr = new ConcentratedCurvatureBeamIntegration(lpI, lpJ);
   }
 
   else {
