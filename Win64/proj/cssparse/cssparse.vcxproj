@@ -87,6 +87,7 @@
       <ObjectFileName>.\..\..\obj\cssparse\debug/</ObjectFileName>
       <ProgramDataBaseFileName>.\..\..\obj\cssparse\debug/</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\cssparse.lib</OutputFile>
