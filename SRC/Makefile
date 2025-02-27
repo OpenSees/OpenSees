@@ -689,6 +689,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/PML/PML2D_5.o \
 	$(FE)/element/PML/PML2D_12.o \
 	$(FE)/element/PML/PML2DVISCOUS.o \
+	$(FE)/element/PML/PML3DGeneral.o \
 	$(FE)/element/RockingBC/RockingBC.o \
 	$(FE)/element/masonry/MasonPan12.o \
 	$(FE)/element/masonry/MasonPan3D.o \
@@ -977,6 +978,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/element/PML/PML2D_5.o \
 	$(FE)/element/PML/PML2D_12.o \
 	$(FE)/element/PML/PML2DVISCOUS.o \
+	$(FE)/element/PML/PML3DGeneral.o \
 	$(FE)/material/nD/eig3.o \
 	$(FE)/material/nD/CycLiqCP.o \
 	$(FE)/material/nD/CycLiqCP3D.o \
