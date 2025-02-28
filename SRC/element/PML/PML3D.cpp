@@ -197,7 +197,12 @@ void  PML3D::setDomain(Domain* theDomain)
 	int NPROPS = 13;
 	int MCRD = 3;
 	int NNODE = 8;
-	pml3d_(M, C, K, G, &NDOFEL, props, &NPROPS, coords, &MCRD, &NNODE);
+	int LFLAGS = 12;
+	// make props[10] and props[11] zero
+	props[10] = 0.0;
+	props[11] = 0.0;
+	double H[PML3D_NUM_DOF*PML3D_NUM_DOF];
+	pml3d_(M, C, K, G, H, &NDOFEL, props, coords, &MCRD, &NNODE, &LFLAGS);
 	dt = theDomain->getDT();
 
 	// // make C zero 

@@ -1,58 +1,36 @@
-c------------------------------------------------------------------------------
-c     Complete UEL file for Perfectly-Matched-Layer (PML) (3D)
-c------------------------------------------------------------------------------
-c     Note: 1) Please do not distribute the material model routines, and if
-c              anyone asks, please refer them to Prof. Ertugrul Taciroglu
-c              (etacir@ucla.edu)
-c           2) Please properly acknowledge our related publications when you
-c              publish your results
-c     Ref: Zhang W, Esmaeilzadeh Seylabi E, Taciroglu E. An ABAQUS toolbox for 
-c          soil-structure interaction analysis. Computers and Geotechnics. 114 
-c          (2019): 103143.
-c------------------------------------------------------------------------------
-c     Authors: Wenyang Zhang (zwyll@ucla.edu)
-c              University of California, Los Angeles
-c------------------------------------------------------------------------------     
-c     Function inputs given by the user:
-c
-c     E = PROPS(1)                     --- Young's modulus
-c     xnu = PROPS(2)                   --- Poisson's Ratio
-c     rho = PROPS(3)                   --- Density
-c     EleType_pos = floor(PROPS(4))    --- Element type, See line
-c     PML_L = PROPS(5)                 --- Thickness of the PML
-c     afp = PROPS(6)                   --- Coefficient m, typically m = 2
-c     PML_Rcoef = PROPS(7)             --- Coefficient R, typically R = 1e-8
-c     RD_half_width_x = PROPS(8)       --- Halfwidth of the regular domain in x-direction
-c     RD_half_width_y = PROPS(9)       --- Halfwidth of the regular domain in y-direction
-c     RD_depth = PROPS(10)             --- Depth of the regular domain
-c     Damp_alpha = PROPS(11)           --- Rayleigh damping coefficient alpha 
-c     Damp_beta = PROPS(12)            --- Rayleigh damping coefficient beta 
+! Modify material properties
+! Modify cp_ref for PML      
+      
+!
+!    ABAQUS format UEL subroutine
+!
+!    This file is compatible with ABAQUS/Standard
+!
+!    The example implements a standard fully integrated 3D linear elastic continuum element
+!
+!    The file also contains the following subrouines:
+!          abq_UEL_3D_integrationpoints           - defines integration ponits for 3D continuum elements
+!          abq_UEL_3D_shapefunctions              - defines shape functions for 3D continuum elements
+!          abq_UEL_invert3D                       - computes the inverse and determinant of a 3x3 matrix
+!          abq_facenodes_3D                       - returns list of nodes on the face of a 3D element
+!
 !=========================== ABAQUS format user element subroutine ===================
 
-c      SUBROUTINE UEL(RHS,AMATRX,SVARS,ENERGY,NDOFEL,NRHS,NSVARS,
-c     1     PROPS,NPROPS,COORDS,MCRD,NNODE,U,DU,V,A,JTYPE,TIME,DTIME,
-c     2     KSTEP,KINC,JELEM,PARAMS,NDLOAD,JDLTYP,ADLMAG,PREDEF,NPREDF,
-c     3     LFLAGS,MLVARX,DDLMAG,MDLOAD,PNEWDT,JPROPS,NJPROP,PERIOD)
-c    !
-c      INCLUDE 'ABA_PARAM.INC'
-c    ! 
-c    !
-c      DIMENSION MTRX(NDF,NDF),KTRX(NDF,NDF),C(NDF,NDF), NDF, (*),
-c     1   SVARS(*),ENERGY(8),COORDS(MCRD,NNODE),U(NDOFEL),
-c     2   DU(MLVARX,*),V(NDOFEL),A(NDOFEL),TIME(2),PARAMS(*),
-c     3   JDLTYP(MDLOAD,*),ADLMAG(MDLOAD,*),DDLMAG(MDLOAD,*),
-c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
+      SUBROUTINE PML_3D(MMATRX,CMATRX,KMATRX,GMATRX,HMATRX,
+     1               NDOFEL,PROPS,COORDS,MCRD,NNODE,LFLAGS)
+    !
+    ! INCLUDE 'ABA_PARAM.INC'
+    ! 
+    !
+      REAL *8 PROPS,COORDS,MMATRX, CMATRX, KMATRX, GMATRX, HMATRX
+      INTEGER *4 NDOFEL,MCRD,NNODE,LFLAGS
 
-      SUBROUTINE PML_3D(MMTRX,CMTRX,KMTRX,GMTRX, NDF,
-     1     PROPS,NPROPS,COORDS,MCRD,NNODE)
-
-
-      REAL *8 MMTRX,CMTRX,KMTRX,GMTRX,PROPS,COORDS,PARAMS
-      
-      INTEGER *4 NDF,NRHS,NPROPS,MCRD,NNODE
-
-      DIMENSION MMTRX(NDF,NDF),CMTRX(NDF,NDF),KMTRX(NDF,NDF),PROPS(*),
-     1   COORDS(MCRD,NNODE),GMTRX(NDF,NDF)
+      DIMENSION MMATRX(NDOFEL,NDOFEL),
+     1          CMATRX(NDOFEL,NDOFEL),
+     2          KMATRX(NDOFEL,NDOFEL),
+     3          GMATRX(NDOFEL,NDOFEL),
+     4          HMATRX(NDOFEL,NDOFEL),
+     5          PROPS(*),COORDS(MCRD,NNODE),LFLAGS(*)
 
     !
     !       Variables that must be computed in this routine
@@ -74,7 +52,7 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
     !                                  If PNEWDT>1 ABAQUS may increase the time increment by a factor PNEWDT
     !
     !       Variables provided for information
-    !       NDF                     Total # DOF for the element
+    !       NDOFEL                     Total # DOF for the element
     !       NRHS                       Dimension variable
     !       NSVARS                     Total # element state variables
     !       PROPS(1:NPROPS)            User-specified properties of the element
@@ -93,6 +71,7 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
     !       KSTEP                      Current step number 
     !       KINC                       Increment number
     !       JELEM                      User assigned element number in ABAQUS (internally assigned)
+    !       PARAMS(1:3)                Time increment parameters alpha, beta, gamma for implicit dynamics
     !       NDLOAD                     Number of user-defined distributed loads defined for this element
     !       JDLTYP(1:NDLOAD)           Integers n defining distributed load types defined as Un or (if negative) UnNU in input file
     !       ADLMAG(1:NDLOAD)           Distributed load magnitudes
@@ -124,11 +103,12 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
       real*8 ZERO,ONE,HALF       
       PARAMETER ( ZERO = 0.D0, HALF = 0.5D0, ONE = 1.D0 )
 
-      real*8 coef_alpha
+      real*8 coef_alpha, coef_beta
       PARAMETER (coef_alpha = 1.d0/12.d0)
+      PARAMETER (coef_beta = 1.d0/48.d0)
 
-      integer      :: i,j,n_points,kint, nfacenodes, ipoin
-      integer      :: face_node_list(8)                       ! List of nodes on an element face
+      integer      :: i,j,n_points,kint
+      ! integer      :: face_node_list(8)                       ! List of nodes on an element face
     !
       double precision  ::  xi(3,64)                          ! Volumetric Integration points
       double precision  ::  w(64)                             ! Integration weights
@@ -138,22 +118,27 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
       double precision  ::  dNdx(20,3)                        ! Derivative of shape functions wrt spatial coords
     !
     !   Variables below are for computing integrals over element faces
-      double precision  ::  face_coords(3,8)                  ! Coords of nodes on an element face
-      double precision  ::  xi2(2,9)                          ! Area integration points
-      double precision  ::  N2(9)                             ! 2D shape functions
-      double precision  ::  dNdxi2(9,2)                       ! 2D shape function derivatives
-      double precision  ::  norm(3)                           ! Normal to an element face
-      double precision  ::  dxdxi2(3,2)                       ! Derivative of spatial coord wrt normalized areal coord
+      ! double precision  ::  face_coords(3,8)                  ! Coords of nodes on an element face
+      ! double precision  ::  xi2(2,9)                          ! Area integration points
+      ! double precision  ::  N2(9)                             ! 2D shape functions
+      ! double precision  ::  dNdxi2(9,2)                       ! 2D shape function derivatives
+      ! double precision  ::  norm(3)                           ! Normal to an element face
+      ! double precision  ::  dxdxi2(3,2)                       ! Derivative of spatial coord wrt normalized areal coord
     !
-
+      double precision  ::  strain(6)                         ! Strain vector contains [e11, e22, e33, 2e12, 2e13, 2e23]
+      double precision  ::  stress(6)                         ! Stress vector contains [s11, s22, s33, s12, s13, s23]
+      double precision  ::  D(6,6)                            ! stress = D*(strain)  (NOTE FACTOR OF 2 in shear strain)
       double precision  ::  B(6,60)                           ! strain = B*(dof_total)
       double precision  ::  dxidx(3,3), determinant           ! Jacobian inverse and determinant
-      double precision  ::  E, xnu, D44, D11, D12             ! Material properties
+      double precision  ::  E, xnu                            ! Material properties
+      ! double precision  ::  ALPHA, BETA, GAMMA                ! Newmark Integration properties
       double precision  ::  Phi(3,60)                         ! Matrix consists of shape functions [N1 N2 ... N20]
-      double precision  ::  MMATRX(NDF,NDF)             ! Element mass matrix
-      double precision  ::  KMATRX(NDF,NDF)             ! Element stiffness matrix
-      double precision  ::  CMATRX(NDF,NDF)             ! Element damping matrix
-      double precision  ::  GMATRX(NDF,NDF)             ! Element G matrix
+      ! double precision  ::  MMATRX(NDOFEL,NDOFEL)             ! Element mass matrix
+      ! double precision  ::  KMATRX(NDOFEL,NDOFEL)             ! Element stiffness matrix
+      ! double precision  ::  CMATRX(NDOFEL,NDOFEL)             ! Element damping matrix
+      ! double precision  ::  GMATRX(NDOFEL,NDOFEL)             ! Element G matrix
+      ! double precision  ::  HMATRX(NDOFEL,NDOFEL)             ! Element H matrix
+      
       double precision  ::  rho                               ! Density of the material
 
       double precision  ::  PML_L,afp,PML_Rcoef               ! Parameters of PML
@@ -171,21 +156,30 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
       double precision  ::  Phi_x(8), Phi_y(8), Phi_z(8)                ! Derivative of shape functions for displacement fields [N1,i N2,i ... N8,i]^T
       double precision  ::  lambda, mu                                  ! Lame' constants
       double precision  ::  M_RD(24,24)                                 ! Mass matrix for regular domain                              
+      double precision  ::  C_RD(24,24)                                 ! Damping matrix for regular domain                              
       double precision  ::  M_a(24,24),M_b(24,24),M_c(24,24),M_d(24,24) ! Mass matrices
       double precision  ::  N_a(48,48),N_b(48,48),N_c(48,48),N_d(48,48) ! N matrices for PML
       double precision  ::  A_eu(24,48), A_wu(24,48), A_pu(24,48)       ! A_iu matrices for PML, where i = e, w, p
       double precision  ::  A_el(24,48), A_wl(24,48), A_pl(24,48)       ! A_il matrices for PML, where i = e, w, p
       double precision  ::  K_PML(72,72), M_PML(72,72), C_PML(72,72)    ! Stiffnee, mass and damping matrices for PML
       double precision  ::  G_PML(72,72)                                ! G matrices for PML
+      double precision  ::  H_PML(72,72)                                ! H matrices for PML
 
       double precision  ::  d_bar_n(72), d_bar_n1(72)                   ! d_bar at previous and current step
+      double precision  ::  d_bar_dot_n(72), d_bar_dot_n1(72)           ! d_bar_dot at previous and current step
+      
       double precision  ::  U_n(72), V_n(72), A_n(72)                   ! U, V, A at previous step
 
-      integer           ::  NodeDOF                                     ! Number of DOF per node
+      integer           ::  NodeDOF,res1, res2, res3, res4, res5                                     ! Number of DOF per node
       
       double precision  ::  Damp_alpha, Damp_beta                       ! Damping coefficients for Rayleigh Damping
+      
+      ! double precision  ::  Vs                                          ! Shear wave velocity
 
-      NodeDOF = NDF/NNODE
+
+      NodeDOF = NDOFEL/NNODE
+      
+
 
     !
     !     Example ABAQUS UEL implementing 3D linear elastic elements
@@ -198,13 +192,77 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
       if (NNODE == 10) n_points = 4              ! Quadratic tet
       if (NNODE == 8) n_points = 27               ! Linear Hex
       if (NNODE == 20) n_points = 27             ! Quadratic hex
+          ! Local Variables
+   !   print propertises
+    !   write(6,*) ' PROPS(1) = ',PROPS(1)
+    !   write(6,*) ' PROPS(2) = ',PROPS(2)
+    !   write(6,*) ' PROPS(3) = ',PROPS(3)
+    !   write(6,*) ' PROPS(4) = ',PROPS(4)
+    !   write(6,*) ' PROPS(5) = ',PROPS(5)
+    !   write(6,*) ' PROPS(6) = ',PROPS(6)
+    !   write(6,*) ' PROPS(7) = ',PROPS(7)
+    !   write(6,*) ' PROPS(8) = ',PROPS(8)
+    !   write(6,*) ' PROPS(9) = ',PROPS(9)
+    !   write(6,*) ' PROPS(10) = ',PROPS(10)
+    !   write(6,*) ' PROPS(11) = ',PROPS(11)
+    !   write(6,*) ' PROPS(12) = ',PROPS(12)
+      
+   !    ! print coords 
+    !   write(6,*) ' coords(1,1) = ',coords(1,1)
+    !   write(6,*) ' coords(2,1) = ',coords(2,1)
+    !   write(6,*) ' coords(3,1) = ',coords(3,1)
+    !   write(6,*) ' coords(1,2) = ',coords(1,2)
+    !   write(6,*) ' coords(2,2) = ',coords(2,2)
+    !   write(6,*) ' coords(3,2) = ',coords(3,2)
+    !   write(6,*) ' coords(1,3) = ',coords(1,3)
+    !   write(6,*) ' coords(2,3) = ',coords(2,3)
+    !   write(6,*) ' coords(3,3) = ',coords(3,3)
+    !   write(6,*) ' coords(1,4) = ',coords(1,4)
+    !   write(6,*) ' coords(2,4) = ',coords(2,4)
+    !   write(6,*) ' coords(3,4) = ',coords(3,4)
+    !   write(6,*) ' coords(1,5) = ',coords(1,5)
+    !   write(6,*) ' coords(2,5) = ',coords(2,5)
+    !   write(6,*) ' coords(3,5) = ',coords(3,5)
+    !   write(6,*) ' coords(1,6) = ',coords(1,6)
+    !   write(6,*) ' coords(2,6) = ',coords(2,6)
+    !   write(6,*) ' coords(3,6) = ',coords(3,6)
+    !   write(6,*) ' coords(1,7) = ',coords(1,7)
+    !   write(6,*) ' coords(2,7) = ',coords(2,7)
+    !   write(6,*) ' coords(3,7) = ',coords(3,7)
+    !   write(6,*) ' coords(1,8) = ',coords(1,8)
+    !   write(6,*) ' coords(2,8) = ',coords(2,8)
+    !   write(6,*) ' coords(3,8) = ',coords(3,8)
+
+      ! ! print MCRD
+      ! write(6,*) ' MCRD = ',MCRD
+
+      ! ! print NNODE
+      ! write(6,*) ' NNODE = ',NNODE
+
+      ! ! print NDOFEL
+      ! write(6,*) ' NDOFEL = ',NDOFEL
+
+      ! ! print LFLAGS
+      ! write(6,*) ' LFLAGS(1) = ',LFLAGS(1)
+
 
       call abq_UEL_3D_integrationpoints(n_points, NNODE, xi, w)
 
-      MMATRX(1:NDF,1:NDF) = 0.d0
-      KMATRX(1:NDF,1:NDF) = 0.d0
-      CMATRX(1:NDF,1:NDF) = 0.d0
-      GMATRX(1:NDF,1:NDF) = 0.d0
+      ! if (MLVARX<3*NNODE) then
+      !   write(6,*) ' Error in abaqus UEL '
+      !   write(6,*) ' Variable MLVARX must exceed 3*NNODE'
+      !   write(6,*) ' MLVARX = ',MLVARX,' NNODE = ',NNODE
+      !   stop
+      ! endif
+
+      ! RHS(1:MLVARX,1) = 0.d0
+      ! AMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
+      MMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
+      KMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
+      CMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
+      GMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
+      HMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
+      
 
       E = PROPS(1)
       xnu = PROPS(2)
@@ -219,26 +277,15 @@ c     4   PREDEF(2,NPREDF,NNODE),LFLAGS(*),JPROPS(*)
       Damp_alpha = PROPS(11)
       Damp_beta = PROPS(12)
 
-
-c      write(6,*) ' E = ',E,' xnu = ',xnu,' rho = ', rho
-c      write(6,*) ' Etype = ',EleType_pos,' PML_L = ',PML_L
-c      write(6,*) ' afp = ',afp,' PML_Rcoef = ',PML_Rcoef
-c      write(6,*) ' RD_halfwidth_x = ',RD_half_width_x
-c      write(6,*) ' RD_halfwidth_y = ',RD_half_width_y
-c      write(6,*) ' RD_Depth = ',RD_depth
-c      do i=1,NNODE
-c            write(6,*) COORDS(1,i),' ',COORDS(2,i),' ',COORDS(3,i)
-c      end do
-
-c      write(6,*) 
       IF (afp .LT. 3.d0) THEN
         n_points = 27
       else
         n_points = 64
       endif
-
+            
       lambda = xnu*E/( (1.d0+xnu)*(1.d0-2.D0*xnu) )
       mu = 0.5D0*E/(1.d0+xnu)
+
 
       M_RD = 0.d0
       M_a = 0.d0
@@ -260,19 +307,24 @@ c      write(6,*)
       A_pl = 0.d0
 
       K_RD = 0.d0
+      C_RD = 0.d0
 
       K_PML = 0.d0
       C_PML = 0.d0
       M_PML = 0.d0
       G_PML = 0.d0
+      H_PML = 0.d0
 
       d_bar_n = 0.d0
       d_bar_n1 = 0.d0
+      
+      d_bar_dot_n = 0.d0
+      d_bar_dot_n1 = 0.d0
 
       U_n = 0.d0
       V_n = 0.d0
       A_n = 0.d0
-
+      
     !     --  Loop over integration points
       do kint = 1, n_points
         call abq_UEL_3D_shapefunctions(xi(1:3,kint),NNODE,N,dNdxi)
@@ -290,402 +342,687 @@ c      write(6,*)
         B(6,2:3*NNODE-1:3) = dNdx(1:NNODE,3)
         B(6,3:3*NNODE:3)   = dNdx(1:NNODE,2)
 
-        Phi = 0.d0
-        Phi(1,1:3*NNODE-2:3) = N(1:NNODE)
-        Phi(2,2:3*NNODE-1:3) = N(1:NNODE)
-        Phi(3,3:3*NNODE:3)   = N(1:NNODE)
-        
-        Phi_x = 0.d0
-        Phi_y = 0.d0
-        Phi_z = 0.d0
-        Phi_x(1:NNODE) = dNdx(1:NNODE,1)
-        Phi_y(1:NNODE) = dNdx(1:NNODE,2)
-        Phi_z(1:NNODE) = dNdx(1:NNODE,3)
-        
+      !   strain = matmul(B(1:6,1:3*NNODE),U(1:3*NNODE))
 
-        x1 = 0.d0
-        x2 = 0.d0
-        x3 = 0.d0
-        
-        do i = 1,NNODE
-           x1 = x1 + N(i)*coords(1,i)
-           x2 = x2 + N(i)*coords(2,i)
-           x3 = x3 + N(i)*coords(3,i)
-        end do
-         
-         call PML_alpha_beta_function(PROPS,x1,x2,x3,PML_alpha_beta)
-         
-         coef_a = PML_alpha_beta(1,1)*PML_alpha_beta(1,2)
+        stress = matmul(D,strain)
+
+
+         !  ALPHA = PARAMS(1)
+         !  BETA  = PARAMS(2)
+         !  GAMMA = PARAMS(3)
+
+         !  DADU = ONE/(BETA*DTIME**2.d0)
+         !  DVDU = GAMMA/(BETA*DTIME)
+
+          Phi = 0.d0
+          Phi(1,1:3*NNODE-2:3) = N(1:NNODE)
+          Phi(2,2:3*NNODE-1:3) = N(1:NNODE)
+          Phi(3,3:3*NNODE:3)   = N(1:NNODE)
+
+          Phi_x = 0.d0
+          Phi_y = 0.d0
+          Phi_z = 0.d0
+          Phi_x(1:NNODE) = dNdx(1:NNODE,1)
+          Phi_y(1:NNODE) = dNdx(1:NNODE,2)
+          Phi_z(1:NNODE) = dNdx(1:NNODE,3)
+
+
+          x1 = 0.d0
+          x2 = 0.d0
+          x3 = 0.d0
+
+          do i = 1,NNODE
+            x1 = x1 + N(i)*coords(1,i)
+            x2 = x2 + N(i)*coords(2,i)
+            x3 = x3 + N(i)*coords(3,i)
+          end do
+
+         !  write(6,*) ' x1 = ',x1
+         !  write(6,*) ' x2 = ',x2
+         !  write(6,*) ' x3 = ',x3
+                              
+         !  mu = rho*Vs**2.d0
+         !  E = mu*2.d0*(1.d0+xnu)
+         !  lambda = xnu*E/((1.d0+xnu)*(1.d0-2.D0*xnu))            
+         !  PROPS(1) = E
+         !  write(6,*) ' E = ',E
+         !  write(6,*) ' xnu = ',xnu
+         !  write(6,*) ' lambda = ',lambda
+         !  write(6,*) ' mu = ',mu
+
+          call PML_alpha_beta_function(PROPS,x1,x2,x3,PML_alpha_beta)
+
+          coef_a = PML_alpha_beta(1,1)*PML_alpha_beta(1,2)
      1            *PML_alpha_beta(1,3)
+         !  write(6,*) ' alpha11 :',PML_alpha_beta(1,1)
+         !  write(6,*) ' alpha12 :',PML_alpha_beta(1,2)
+         !  write(6,*) ' alpha13 :',PML_alpha_beta(1,3)          
 
-         coef_b = PML_alpha_beta(1,1)*PML_alpha_beta(1,2)
-     1        *PML_alpha_beta(2,3) + 
-     2        PML_alpha_beta(1,1)*PML_alpha_beta(1,3)
-     3        *PML_alpha_beta(2,2) + 
-     4        PML_alpha_beta(1,2)*PML_alpha_beta(1,3)
-     5        *PML_alpha_beta(2,1) 
-         
-         coef_c = PML_alpha_beta(1,1)*PML_alpha_beta(2,2)
-     1        *PML_alpha_beta(2,3) + 
-     2        PML_alpha_beta(1,2)*PML_alpha_beta(2,3)
-     3        *PML_alpha_beta(2,1) + 
-     4        PML_alpha_beta(1,3)*PML_alpha_beta(2,2)
-     5        *PML_alpha_beta(2,1)
-         
-         coef_d = PML_alpha_beta(2,1)*PML_alpha_beta(2,2)
-     1        *PML_alpha_beta(2,3) 
-         
-         coef_Le = 0.d0
-         coef_Lp = 0.d0
-         coef_Lw = 0.d0
-         
-         do i = 1,3
+
+          coef_b = PML_alpha_beta(1,1)*PML_alpha_beta(1,2)
+     1            *PML_alpha_beta(2,3) + 
+     2             PML_alpha_beta(1,1)*PML_alpha_beta(1,3)
+     3            *PML_alpha_beta(2,2) + 
+     4             PML_alpha_beta(1,2)*PML_alpha_beta(1,3)
+     5            *PML_alpha_beta(2,1) 
+
+          coef_c = PML_alpha_beta(1,1)*PML_alpha_beta(2,2)
+     1            *PML_alpha_beta(2,3) + 
+     2             PML_alpha_beta(1,2)*PML_alpha_beta(2,3)
+     3            *PML_alpha_beta(2,1) + 
+     4             PML_alpha_beta(1,3)*PML_alpha_beta(2,2)
+     5            *PML_alpha_beta(2,1)
+
+          coef_d = PML_alpha_beta(2,1)*PML_alpha_beta(2,2)
+     1            *PML_alpha_beta(2,3) 
+
+          coef_Le = 0.d0
+          coef_Lp = 0.d0
+          coef_Lw = 0.d0
+
+          do i = 1,3
             do j = 1,3
-               coef_Le(i,j) = PML_alpha_beta(1,i)*PML_alpha_beta(1,j)
-               coef_Lp(i,j) = PML_alpha_beta(1,i)*PML_alpha_beta(2,j) +
-     1              PML_alpha_beta(2,i)*PML_alpha_beta(1,j) 
-               coef_Lw(i,j) = PML_alpha_beta(2,i)*PML_alpha_beta(2,j)  
+              coef_Le(i,j) = PML_alpha_beta(1,i)*PML_alpha_beta(1,j)
+              coef_Lp(i,j) = PML_alpha_beta(1,i)*PML_alpha_beta(2,j) +
+     1                       PML_alpha_beta(2,i)*PML_alpha_beta(1,j) 
+              coef_Lw(i,j) = PML_alpha_beta(2,i)*PML_alpha_beta(2,j)  
             end do
-         end do
-         
-         
-         do i = 1,NNODE
+          end do
+          
+          
+          do i = 1,NNODE
             do j = 1,NNODE
-               Kxx(i,j) = (lambda + 2.d0*mu) * Phi_x(i)*Phi_x(j) + 
-     1              mu*(Phi_y(i)*Phi_y(j)+Phi_z(i)*Phi_z(j))     
-               Kyy(i,j) = (lambda + 2.d0*mu) * Phi_y(i)*Phi_y(j) + 
-     1              mu*(Phi_x(i)*Phi_x(j)+Phi_z(i)*Phi_z(j)) 
-               Kzz(i,j) = (lambda + 2.d0*mu) * Phi_z(i)*Phi_z(j) + 
-     1              mu*(Phi_x(i)*Phi_x(j)+Phi_y(i)*Phi_y(j))  
-               
-               Kxy(i,j) = lambda * Phi_x(i)*Phi_y(j) + 
-     1              mu * Phi_y(i)*Phi_x(j)
-               
-               Kxz(i,j) = lambda * Phi_x(i)*Phi_z(j) + 
-     1              mu * Phi_z(i)*Phi_x(j)
-               
-               Kyz(i,j) = lambda * Phi_y(i)*Phi_z(j) + 
-     1              mu * Phi_z(i)*Phi_y(j)
-               
-               M_RD(i,j) = M_RD(i,j) + rho*N(i)*N(j)*w(kint)*determinant 
-               M_a(i,j) = M_a(i,j) + 
-     1              coef_a*rho*N(i)*N(j)*w(kint)*determinant 
-               M_b(i,j) = M_b(i,j) + 
-     1              coef_b*rho*N(i)*N(j)*w(kint)*determinant
+              Kxx(i,j) = (lambda + 2.d0*mu) * Phi_x(i)*Phi_x(j) + 
+     1                    mu*(Phi_y(i)*Phi_y(j)+Phi_z(i)*Phi_z(j))     
+              Kyy(i,j) = (lambda + 2.d0*mu) * Phi_y(i)*Phi_y(j) + 
+     1                    mu*(Phi_x(i)*Phi_x(j)+Phi_z(i)*Phi_z(j)) 
+              Kzz(i,j) = (lambda + 2.d0*mu) * Phi_z(i)*Phi_z(j) + 
+     1                    mu*(Phi_x(i)*Phi_x(j)+Phi_y(i)*Phi_y(j))  
+
+              Kxy(i,j) = lambda * Phi_x(i)*Phi_y(j) + 
+     1                   mu * Phi_y(i)*Phi_x(j)
+
+              Kxz(i,j) = lambda * Phi_x(i)*Phi_z(j) + 
+     1                   mu * Phi_z(i)*Phi_x(j)
+
+              Kyz(i,j) = lambda * Phi_y(i)*Phi_z(j) + 
+     1                   mu * Phi_z(i)*Phi_y(j)
+
+              M_RD(i,j) = M_RD(i,j) + rho*N(i)*N(j)*w(kint)*determinant 
+              M_a(i,j) = M_a(i,j) + 
+     1                         coef_a*rho*N(i)*N(j)*w(kint)*determinant
+              ! if i == 1 and j == 1 then print coef_a, rho, N(i), N(j), w(kint), determinant end if
+               ! If (i.EQ. 1 .AND. j .EQ. 1 ) THEN 
+               !    write(6,*) ' coef_a = ',coef_a 
+               !    write(6,*) ' rho = ',rho
+               !    write(6,*) ' N(i) = ',N(i)
+               !    write(6,*) ' N(j) = ',N(j)
+               !    write(6,*) ' w(kint) = ',w(kint)
+               !    write(6,*) ' determinant = ',determinant
+               ! endif
+              M_b(i,j) = M_b(i,j) + 
+     1                         coef_b*rho*N(i)*N(j)*w(kint)*determinant
               M_c(i,j) = M_c(i,j) + 
-     1              coef_c*rho*N(i)*N(j)*w(kint)*determinant
+     1                         coef_c*rho*N(i)*N(j)*w(kint)*determinant
               M_d(i,j) = M_d(i,j) + 
-     1             coef_d*rho*N(i)*N(j)*w(kint)*determinant
-              
+     1                         coef_d*rho*N(i)*N(j)*w(kint)*determinant
+
               A_eu(i,j) = A_eu(i,j) + 
-     1             Phi_x(i)*N(j)*coef_Le(2,3)*w(kint)*determinant
+     1                   Phi_x(i)*N(j)*coef_Le(2,3)*w(kint)*determinant
               A_eu(i,j+NNODE*3) = A_eu(i,j+NNODE*3) + 
-     1             Phi_y(i)*N(j)*coef_Le(1,3)*w(kint)*determinant 
+     1                   Phi_y(i)*N(j)*coef_Le(1,3)*w(kint)*determinant 
               A_eu(i,j+NNODE*4) = A_eu(i,j+NNODE*4) + 
-     1             Phi_z(i)*N(j)*coef_Le(1,2)*w(kint)*determinant 
-              
+     1                   Phi_z(i)*N(j)*coef_Le(1,2)*w(kint)*determinant 
+
               A_eu(i+NNODE,j+NNODE) = A_eu(i+NNODE,j+NNODE) + 
-     1             Phi_y(i)*N(j)*coef_Le(1,3)*w(kint)*determinant 
+     1                   Phi_y(i)*N(j)*coef_Le(1,3)*w(kint)*determinant 
               A_eu(i+NNODE,j+NNODE*3) = A_eu(i+NNODE,j+NNODE*3) + 
-     1             Phi_x(i)*N(j)*coef_Le(2,3)*w(kint)*determinant 
+     1                   Phi_x(i)*N(j)*coef_Le(2,3)*w(kint)*determinant 
               A_eu(i+NNODE,j+NNODE*5) = A_eu(i+NNODE,j+NNODE*5) + 
-     1             Phi_z(i)*N(j)*coef_Le(1,2)*w(kint)*determinant 
-              
+     1                   Phi_z(i)*N(j)*coef_Le(1,2)*w(kint)*determinant 
+
               A_eu(i+NNODE*2,j+NNODE*2) = A_eu(i+NNODE*2,j+NNODE*2) + 
-     1             Phi_z(i)*N(j)*coef_Le(1,2)*w(kint)*determinant 
+     1                   Phi_z(i)*N(j)*coef_Le(1,2)*w(kint)*determinant 
               A_eu(i+NNODE*2,j+NNODE*4) = A_eu(i+NNODE*2,j+NNODE*4) + 
-     1             Phi_x(i)*N(j)*coef_Le(2,3)*w(kint)*determinant
+     1                   Phi_x(i)*N(j)*coef_Le(2,3)*w(kint)*determinant
               A_eu(i+NNODE*2,j+NNODE*5) = A_eu(i+NNODE*2,j+NNODE*5) + 
-     1             Phi_y(i)*N(j)*coef_Le(1,3)*w(kint)*determinant
-              
+     1                   Phi_y(i)*N(j)*coef_Le(1,3)*w(kint)*determinant
+
               A_wu(i,j) = A_wu(i,j) + 
-     1             Phi_x(i)*N(j)*coef_Lw(2,3)*w(kint)*determinant
+     1                   Phi_x(i)*N(j)*coef_Lw(2,3)*w(kint)*determinant
               A_wu(i,j+NNODE*3) = A_wu(i,j+NNODE*3) + 
-     1             Phi_y(i)*N(j)*coef_Lw(1,3)*w(kint)*determinant 
+     1                   Phi_y(i)*N(j)*coef_Lw(1,3)*w(kint)*determinant 
               A_wu(i,j+NNODE*4) = A_wu(i,j+NNODE*4) + 
-     1             Phi_z(i)*N(j)*coef_Lw(1,2)*w(kint)*determinant 
-              
+     1                   Phi_z(i)*N(j)*coef_Lw(1,2)*w(kint)*determinant 
+
               A_wu(i+NNODE,j+NNODE) = A_wu(i+NNODE,j+NNODE) + 
-     1             Phi_y(i)*N(j)*coef_Lw(1,3)*w(kint)*determinant 
+     1                   Phi_y(i)*N(j)*coef_Lw(1,3)*w(kint)*determinant 
               A_wu(i+NNODE,j+NNODE*3) = A_wu(i+NNODE,j+NNODE*3) + 
-     1             Phi_x(i)*N(j)*coef_Lw(2,3)*w(kint)*determinant 
+     1                   Phi_x(i)*N(j)*coef_Lw(2,3)*w(kint)*determinant 
               A_wu(i+NNODE,j+NNODE*5) = A_wu(i+NNODE,j+NNODE*5) + 
-     1             Phi_z(i)*N(j)*coef_Lw(1,2)*w(kint)*determinant 
-              
+     1                   Phi_z(i)*N(j)*coef_Lw(1,2)*w(kint)*determinant 
+
               A_wu(i+NNODE*2,j+NNODE*2) = A_wu(i+NNODE*2,j+NNODE*2) + 
-     1             Phi_z(i)*N(j)*coef_Lw(1,2)*w(kint)*determinant 
+     1                   Phi_z(i)*N(j)*coef_Lw(1,2)*w(kint)*determinant 
               A_wu(i+NNODE*2,j+NNODE*4) = A_wu(i+NNODE*2,j+NNODE*4) + 
-     1             Phi_x(i)*N(j)*coef_Lw(2,3)*w(kint)*determinant
+     1                   Phi_x(i)*N(j)*coef_Lw(2,3)*w(kint)*determinant
               A_wu(i+NNODE*2,j+NNODE*5) = A_wu(i+NNODE*2,j+NNODE*5) + 
-     1             Phi_y(i)*N(j)*coef_Lw(1,3)*w(kint)*determinant
-              
+     1                   Phi_y(i)*N(j)*coef_Lw(1,3)*w(kint)*determinant
+
               A_pu(i,j) = A_pu(i,j) + 
-     1             Phi_x(i)*N(j)*coef_Lp(2,3)*w(kint)*determinant
+     1                   Phi_x(i)*N(j)*coef_Lp(2,3)*w(kint)*determinant
               A_pu(i,j+NNODE*3) = A_pu(i,j+NNODE*3) + 
-     1             Phi_y(i)*N(j)*coef_Lp(1,3)*w(kint)*determinant 
+     1                   Phi_y(i)*N(j)*coef_Lp(1,3)*w(kint)*determinant 
               A_pu(i,j+NNODE*4) = A_pu(i,j+NNODE*4) + 
-     1             Phi_z(i)*N(j)*coef_Lp(1,2)*w(kint)*determinant 
-              
+     1                   Phi_z(i)*N(j)*coef_Lp(1,2)*w(kint)*determinant 
+
               A_pu(i+NNODE,j+NNODE) = A_pu(i+NNODE,j+NNODE) + 
-     1             Phi_y(i)*N(j)*coef_Lp(1,3)*w(kint)*determinant 
+     1                   Phi_y(i)*N(j)*coef_Lp(1,3)*w(kint)*determinant 
               A_pu(i+NNODE,j+NNODE*3) = A_pu(i+NNODE,j+NNODE*3) + 
-     1             Phi_x(i)*N(j)*coef_Lp(2,3)*w(kint)*determinant 
+     1                   Phi_x(i)*N(j)*coef_Lp(2,3)*w(kint)*determinant 
               A_pu(i+NNODE,j+NNODE*5) = A_pu(i+NNODE,j+NNODE*5) + 
-     1             Phi_z(i)*N(j)*coef_Lp(1,2)*w(kint)*determinant 
-              
+     1                   Phi_z(i)*N(j)*coef_Lp(1,2)*w(kint)*determinant 
+
               A_pu(i+NNODE*2,j+NNODE*2) = A_pu(i+NNODE*2,j+NNODE*2) + 
-     1             Phi_z(i)*N(j)*coef_Lp(1,2)*w(kint)*determinant 
+     1                   Phi_z(i)*N(j)*coef_Lp(1,2)*w(kint)*determinant 
               A_pu(i+NNODE*2,j+NNODE*4) = A_pu(i+NNODE*2,j+NNODE*4) + 
-     1             Phi_x(i)*N(j)*coef_Lp(2,3)*w(kint)*determinant
+     1                   Phi_x(i)*N(j)*coef_Lp(2,3)*w(kint)*determinant
               A_pu(i+NNODE*2,j+NNODE*5) = A_pu(i+NNODE*2,j+NNODE*5) + 
-     1             Phi_y(i)*N(j)*coef_Lp(1,3)*w(kint)*determinant
-              
-           end do
-        end do
+     1                   Phi_y(i)*N(j)*coef_Lp(1,3)*w(kint)*determinant
 
-        
-        Kyx(1:NNODE,1:NNODE) = transpose(Kxy(1:NNODE,1:NNODE)) 
-        Kzx(1:NNODE,1:NNODE) = transpose(Kxz(1:NNODE,1:NNODE)) 
-        Kzy(1:NNODE,1:NNODE) = transpose(Kyz(1:NNODE,1:NNODE)) 
-        
-        K_RD(1:NNODE,1:NNODE) = K_RD(1:NNODE,1:NNODE) + 
-     1       Kxx(1:NNODE,1:NNODE)*w(kint)*determinant 
-        K_RD(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
-     1       K_RD(NNODE+1:2*NNODE,NNODE+1:2*NNODE) + 
-     2       Kyy(1:NNODE,1:NNODE)*w(kint)*determinant 
-        K_RD(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
-     1       K_RD(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) + 
-     2       Kzz(1:NNODE,1:NNODE)*w(kint)*determinant
-        
-        K_RD(1:NNODE,NNODE+1:2*NNODE) =
-     1       K_RD(1:NNODE,NNODE+1:2*NNODE) +  
-     2       Kxy(1:NNODE,1:NNODE)*w(kint)*determinant  
-        K_RD(1:NNODE,2*NNODE+1:3*NNODE) =
-     1       K_RD(1:NNODE,2*NNODE+1:3*NNODE) +  
-     2       Kxz(1:NNODE,1:NNODE)*w(kint)*determinant     
-        K_RD(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) =
-     1       K_RD(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) +  
-     2       Kyz(1:NNODE,1:NNODE)*w(kint)*determinant
-        
-        K_RD(NNODE+1:2*NNODE,1:NNODE) =
-     1       K_RD(NNODE+1:2*NNODE,1:NNODE) +  
-     2       Kyx(1:NNODE,1:NNODE)*w(kint)*determinant  
-        K_RD(2*NNODE+1:3*NNODE,1:NNODE) =
-     1       K_RD(2*NNODE+1:3*NNODE,1:NNODE) +  
-     2       Kzx(1:NNODE,1:NNODE)*w(kint)*determinant     
-        K_RD(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) =
-     1       K_RD(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) +  
-     2       Kzy(1:NNODE,1:NNODE)*w(kint)*determinant  
-        
-        
+                 end do
+          end do
+
+
+          Kyx(1:NNODE,1:NNODE) = transpose(Kxy(1:NNODE,1:NNODE)) 
+          Kzx(1:NNODE,1:NNODE) = transpose(Kxz(1:NNODE,1:NNODE)) 
+          Kzy(1:NNODE,1:NNODE) = transpose(Kyz(1:NNODE,1:NNODE)) 
+
+          K_RD(1:NNODE,1:NNODE) = K_RD(1:NNODE,1:NNODE) + 
+     1                          Kxx(1:NNODE,1:NNODE)*w(kint)*determinant 
+          K_RD(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
+     1            K_RD(NNODE+1:2*NNODE,NNODE+1:2*NNODE) + 
+     2                          Kyy(1:NNODE,1:NNODE)*w(kint)*determinant 
+          K_RD(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
+     1        K_RD(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) + 
+     2                          Kzz(1:NNODE,1:NNODE)*w(kint)*determinant
+
+          K_RD(1:NNODE,NNODE+1:2*NNODE) =
+     1                    K_RD(1:NNODE,NNODE+1:2*NNODE) +  
+     2                          Kxy(1:NNODE,1:NNODE)*w(kint)*determinant  
+          K_RD(1:NNODE,2*NNODE+1:3*NNODE) =
+     1                  K_RD(1:NNODE,2*NNODE+1:3*NNODE) +  
+     2                          Kxz(1:NNODE,1:NNODE)*w(kint)*determinant     
+          K_RD(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) =
+     1          K_RD(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) +  
+     2                          Kyz(1:NNODE,1:NNODE)*w(kint)*determinant
+
+          K_RD(NNODE+1:2*NNODE,1:NNODE) =
+     1                    K_RD(NNODE+1:2*NNODE,1:NNODE) +  
+     2                          Kyx(1:NNODE,1:NNODE)*w(kint)*determinant  
+          K_RD(2*NNODE+1:3*NNODE,1:NNODE) =
+     1                  K_RD(2*NNODE+1:3*NNODE,1:NNODE) +  
+     2                          Kzx(1:NNODE,1:NNODE)*w(kint)*determinant     
+          K_RD(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) =
+     1          K_RD(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) +  
+     2                          Kzy(1:NNODE,1:NNODE)*w(kint)*determinant  
+
+
       end do
-      
-      M_RD(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_RD(1:NNODE,1:NNODE)
-      M_RD(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
-     1     = M_RD(1:NNODE,1:NNODE)
-      
-      M_a(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_a(1:NNODE,1:NNODE)
-      M_a(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
-     1     = M_a(1:NNODE,1:NNODE)
-      
-      M_b(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_b(1:NNODE,1:NNODE)
-      M_b(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
-     1     = M_b(1:NNODE,1:NNODE)
-      
-      M_c(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_c(1:NNODE,1:NNODE)
-      M_c(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
-     1     = M_c(1:NNODE,1:NNODE)
-      
-      M_d(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_d(1:NNODE,1:NNODE)
-      M_d(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
-     1     = M_d(1:NNODE,1:NNODE)  
 
+        
 
-      N_a(1:NNODE,1:NNODE) = 
-     1     M_a(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_a(1:NNODE,NNODE+1:2*NNODE) = 
-     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_a(1:NNODE,2*NNODE+1:3*NNODE) = 
-     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_a(NNODE+1:2*NNODE,1:NNODE) = 
-     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_a(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
-     1     M_a(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_a(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
-     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_a(2*NNODE+1:3*NNODE,1:NNODE) = 
-     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_a(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
-     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_a(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
+        M_RD(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_RD(1:NNODE,1:NNODE)
+        M_RD(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
+     1                                        = M_RD(1:NNODE,1:NNODE)
+        
+        C_RD(1:3*NNODE,1:3*NNODE) = Damp_alpha*M_RD(1:3*NNODE,1:3*NNODE)
+     1                            + Damp_beta*K_RD(1:3*NNODE,1:3*NNODE)
+
+        M_a(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_a(1:NNODE,1:NNODE)
+        M_a(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
+     1                                       = M_a(1:NNODE,1:NNODE)
+
+        M_b(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_b(1:NNODE,1:NNODE)
+        M_b(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
+     1                                       = M_b(1:NNODE,1:NNODE)
+
+        M_c(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_c(1:NNODE,1:NNODE)
+        M_c(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
+     1                                       = M_c(1:NNODE,1:NNODE)
+
+        M_d(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = M_d(1:NNODE,1:NNODE)
+        M_d(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
+     1                                       = M_d(1:NNODE,1:NNODE)  
+
+      !   write(6,*)  " NNODE: ", NNODE
+      !   write(6,*)  " lambda: ", lambda
+      !   write(6,*)  " mu: ", mu
+      !   write(6,*)  " rho: ", rho 
+        N_a(1:NNODE,1:NNODE) = 
      1   M_a(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_a(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
+        N_a(1:NNODE,NNODE+1:2*NNODE) = 
+     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
+        N_a(1:NNODE,2*NNODE+1:3*NNODE) = 
+     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
+        N_a(NNODE+1:2*NNODE,1:NNODE) = 
+     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
+        N_a(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
+     1   M_a(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
+        N_a(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
+     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
+        N_a(2*NNODE+1:3*NNODE,1:NNODE) = 
+     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
+        N_a(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
+     1  -M_a(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
+        N_a(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
+     1   M_a(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
+        N_a(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
      1   M_a(1:NNODE,1:NNODE)/rho/mu
-      N_a(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
+        N_a(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
      1   M_a(1:NNODE,1:NNODE)/rho/mu
-      N_a(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
+        N_a(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
      1   M_a(1:NNODE,1:NNODE)/rho/mu
 
-
-      N_b(1:NNODE,1:NNODE) = 
+        N_b(1:NNODE,1:NNODE) = 
      1   M_b(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_b(1:NNODE,NNODE+1:2*NNODE) = 
+        N_b(1:NNODE,NNODE+1:2*NNODE) = 
      1  -M_b(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_b(1:NNODE,2*NNODE+1:3*NNODE) = 
+        N_b(1:NNODE,2*NNODE+1:3*NNODE) = 
      1  -M_b(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_b(NNODE+1:2*NNODE,1:NNODE) = 
+        N_b(NNODE+1:2*NNODE,1:NNODE) = 
      1  -M_b(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_b(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
+        N_b(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
      1   M_b(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_b(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
+        N_b(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
      1  -M_b(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_b(2*NNODE+1:3*NNODE,1:NNODE) = 
+        N_b(2*NNODE+1:3*NNODE,1:NNODE) = 
      1  -M_b(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_b(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
+        N_b(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
      1  -M_b(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_b(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
+        N_b(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
      1   M_b(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_b(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
+        N_b(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
      1   M_b(1:NNODE,1:NNODE)/rho/mu
-      N_b(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
+        N_b(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
      1   M_b(1:NNODE,1:NNODE)/rho/mu
-      N_b(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
+        N_b(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
      1   M_b(1:NNODE,1:NNODE)/rho/mu
 
-      N_c(1:NNODE,1:NNODE) = 
+        N_c(1:NNODE,1:NNODE) = 
      1   M_c(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_c(1:NNODE,NNODE+1:2*NNODE) = 
+        N_c(1:NNODE,NNODE+1:2*NNODE) = 
      1  -M_c(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_c(1:NNODE,2*NNODE+1:3*NNODE) = 
+        N_c(1:NNODE,2*NNODE+1:3*NNODE) = 
      1  -M_c(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_c(NNODE+1:2*NNODE,1:NNODE) = 
+        N_c(NNODE+1:2*NNODE,1:NNODE) = 
      1  -M_c(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_c(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
+        N_c(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
      1   M_c(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_c(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
+        N_c(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
      1  -M_c(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_c(2*NNODE+1:3*NNODE,1:NNODE) = 
+        N_c(2*NNODE+1:3*NNODE,1:NNODE) = 
      1  -M_c(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_c(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
+        N_c(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
      1  -M_c(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_c(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
+        N_c(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
      1   M_c(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_c(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
+        N_c(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
      1   M_c(1:NNODE,1:NNODE)/rho/mu
-      N_c(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
+        N_c(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
      1   M_c(1:NNODE,1:NNODE)/rho/mu
-      N_c(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
+        N_c(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
      1   M_c(1:NNODE,1:NNODE)/rho/mu
 
-      N_d(1:NNODE,1:NNODE) = 
+        N_d(1:NNODE,1:NNODE) = 
      1   M_d(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_d(1:NNODE,NNODE+1:2*NNODE) = 
+        N_d(1:NNODE,NNODE+1:2*NNODE) = 
      1  -M_d(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_d(1:NNODE,2*NNODE+1:3*NNODE) = 
+        N_d(1:NNODE,2*NNODE+1:3*NNODE) = 
      1  -M_d(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_d(NNODE+1:2*NNODE,1:NNODE) = 
+        N_d(NNODE+1:2*NNODE,1:NNODE) = 
      1  -M_d(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_d(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
+        N_d(NNODE+1:2*NNODE,NNODE+1:2*NNODE) = 
      1   M_d(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_d(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
+        N_d(NNODE+1:2*NNODE,2*NNODE+1:3*NNODE) = 
      1  -M_d(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_d(2*NNODE+1:3*NNODE,1:NNODE) = 
+        N_d(2*NNODE+1:3*NNODE,1:NNODE) = 
      1  -M_d(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_d(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
+        N_d(2*NNODE+1:3*NNODE,NNODE+1:2*NNODE) = 
      1  -M_d(1:NNODE,1:NNODE)/rho*(lambda)/mu/2.d0/(3.d0*lambda+2.d0*mu)
-      N_d(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
+        N_d(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) = 
      1   M_d(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
-      N_d(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
+        N_d(3*NNODE+1:4*NNODE,3*NNODE+1:4*NNODE) = 
      1   M_d(1:NNODE,1:NNODE)/rho/mu
-      N_d(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
+        N_d(4*NNODE+1:5*NNODE,4*NNODE+1:5*NNODE) = 
      1   M_d(1:NNODE,1:NNODE)/rho/mu
-      N_d(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
+        N_d(5*NNODE+1:6*NNODE,5*NNODE+1:6*NNODE) = 
      1   M_d(1:NNODE,1:NNODE)/rho/mu          
-      
 
-      IF (EleType_pos .EQ. 1) THEN
 
-         M_PML(1:NNODE*3,1:NNODE*3) = M_RD(1:NNODE*3,1:NNODE*3) + 
-     1                             M_a(1:NNODE*3,1:NNODE*3)
-         M_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
-     1                                      -N_a(1:NNODE*6,1:NNODE*6)
+      IF (EleType_pos .EQ. 1 .OR. LFLAGS(1).EQ.1 .OR. 
+     &       LFLAGS(1).EQ.2) THEN
 
-         C_PML(1:NNODE*3,1:NNODE*3) = M_b(1:NNODE*3,1:NNODE*3)
-         C_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_eu(1:NNODE*3,1:NNODE*6)
-         C_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
-     1        transpose(A_eu(1:NNODE*3,1:NNODE*6))
-         C_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
-     1                                      -N_b(1:NNODE*6,1:NNODE*6)
+          M_PML(1:NNODE*3,1:NNODE*3) = M_RD(1:NNODE*3,1:NNODE*3)
 
-         K_PML(1:NNODE*3,1:NNODE*3) = K_RD(1:NNODE*3,1:NNODE*3) + 
-     1                             M_c(1:NNODE*3,1:NNODE*3)
-         K_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_pu(1:NNODE*3,1:NNODE*6)
-         K_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
-     1                         transpose(A_pu(1:NNODE*3,1:NNODE*6))
-         K_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
-     1                                      -N_c(1:NNODE*6,1:NNODE*6)
+          K_PML(1:NNODE*3,1:NNODE*3) = K_RD(1:NNODE*3,1:NNODE*3)
+          write(*,*) 'this 2 if statement is working'
 
-         G_PML(1:NNODE*3,1:NNODE*3) = M_d(1:NNODE*3,1:NNODE*3)
-         G_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_wu(1:NNODE*3,1:NNODE*6)
-         G_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
-     1                         transpose(A_wu(1:NNODE*3,1:NNODE*6))
-         G_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
-     1        -N_d(1:NNODE*6,1:NNODE*6)
+
 
       else
-         M_PML(1:NNODE*3,1:NNODE*3) = M_a(1:NNODE*3,1:NNODE*3)
-         M_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+          IF (EleType_pos .EQ. 1) THEN
+
+          M_PML(1:NNODE*3,1:NNODE*3) = M_RD(1:NNODE*3,1:NNODE*3) + 
+     1                             M_a(1:NNODE*3,1:NNODE*3)
+          M_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
      1                                      -N_a(1:NNODE*6,1:NNODE*6)
 
-         C_PML(1:NNODE*3,1:NNODE*3) = M_b(1:NNODE*3,1:NNODE*3)
-         C_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_eu(1:NNODE*3,1:NNODE*6)
-         C_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
+          C_PML(1:NNODE*3,1:NNODE*3) = C_RD(1:NNODE*3,1:NNODE*3) + 
+     1                             M_b(1:NNODE*3,1:NNODE*3) 
+          C_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_eu(1:NNODE*3,1:NNODE*6)
+          C_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
      1                         transpose(A_eu(1:NNODE*3,1:NNODE*6))
-         C_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+          C_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
      1                                      -N_b(1:NNODE*6,1:NNODE*6)
 
-         K_PML(1:NNODE*3,1:NNODE*3) = M_c(1:NNODE*3,1:NNODE*3)
-         K_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_pu(1:NNODE*3,1:NNODE*6)
-         K_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
-     1        transpose(A_pu(1:NNODE*3,1:NNODE*6))
-         K_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+          K_PML(1:NNODE*3,1:NNODE*3) = K_RD(1:NNODE*3,1:NNODE*3) + 
+     1                             M_c(1:NNODE*3,1:NNODE*3)
+          K_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_pu(1:NNODE*3,1:NNODE*6)
+          K_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
+     1                         transpose(A_pu(1:NNODE*3,1:NNODE*6))
+          K_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
      1                                      -N_c(1:NNODE*6,1:NNODE*6)
 
-         G_PML(1:NNODE*3,1:NNODE*3) = M_d(1:NNODE*3,1:NNODE*3)
-         G_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_wu(1:NNODE*3,1:NNODE*6)
-         G_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
-     1        transpose(A_wu(1:NNODE*3,1:NNODE*6))
+          G_PML(1:NNODE*3,1:NNODE*3) = M_d(1:NNODE*3,1:NNODE*3)
+          G_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_wu(1:NNODE*3,1:NNODE*6)
+          G_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
+     1                         transpose(A_wu(1:NNODE*3,1:NNODE*6))
           G_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
      1                                      -N_d(1:NNODE*6,1:NNODE*6)
+         !  write(*,*) 'this 1 if statement is working'
 
-      endif     
+        else
+         ! write(*,*) 'this if statement is working'
+          M_PML(1:NNODE*3,1:NNODE*3) = 
+     1                            M_a(1:NNODE*3,1:NNODE*3)
+          M_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = 
+     1                            A_eu(1:NNODE*3,1:NNODE*6)*Damp_beta 
+          M_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+     1                                      -N_a(1:NNODE*6,1:NNODE*6)
+
+          C_PML(1:NNODE*3,1:NNODE*3) = 
+     1    M_b(1:NNODE*3,1:NNODE*3) + 
+     2    M_a(1:NNODE*3,1:NNODE*3)*Damp_alpha
+          
+          C_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = 
+     1                            A_pu(1:NNODE*3,1:NNODE*6)*Damp_beta +
+     2                            A_eu(1:NNODE*3,1:NNODE*6)    
+          C_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
+     1                         transpose(A_eu(1:NNODE*3,1:NNODE*6))
+          C_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+     1                                      -N_b(1:NNODE*6,1:NNODE*6)
+
+          K_PML(1:NNODE*3,1:NNODE*3) = 
+     1    M_c(1:NNODE*3,1:NNODE*3) + M_b(1:NNODE*3,1:NNODE*3)*Damp_alpha
+          K_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = 
+     1    A_pu(1:NNODE*3,1:NNODE*6)+A_wu(1:NNODE*3,1:NNODE*6)*Damp_beta
+          K_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
+     1                         transpose(A_pu(1:NNODE*3,1:NNODE*6))
+          K_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+     1                                      -N_c(1:NNODE*6,1:NNODE*6)
+
+          G_PML(1:NNODE*3,1:NNODE*3) = 
+     1    M_d(1:NNODE*3,1:NNODE*3) + M_c(1:NNODE*3,1:NNODE*3)*Damp_alpha
+          G_PML(1:NNODE*3,NNODE*3+1:NNODE*9) = A_wu(1:NNODE*3,1:NNODE*6)
+          G_PML(NNODE*3+1:NNODE*9,1:NNODE*3) = 
+     1                         transpose(A_wu(1:NNODE*3,1:NNODE*6))
+          G_PML(NNODE*3+1:NNODE*9,NNODE*3+1:NNODE*9) = 
+     1                                      -N_d(1:NNODE*6,1:NNODE*6)
+          
+          H_PML(1:NNODE*3,1:NNODE*3) = 
+     1     M_d(1:NNODE*3,1:NNODE*3)*Damp_alpha
+
+
+        endif 
+
+
+      endif 
+
 
         do i = 1,8
           do j = 1,8
-            MMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+            MMATRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
      1                        M_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
 
-            CMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+            CMATRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
      1                        C_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
 
-            KMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+            KMATRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
      1                        K_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
 
-            GMTRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+            GMATRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
      1                        G_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
+            HMATRX((i-1)*9+1:i*9,(j-1)*9+1:j*9) = 
+     1                        H_PML(i:NDOFEL-8+i:8,j:NDOFEL-8+j:8)
           end do
         end do
-        ! ! set MMTRX equal to M_PML
-        ! MMTRX(1:NNODE*9,1:NNODE*9) = M_PML(1:NNODE*9,1:NNODE*9)
-        ! CMTRX(1:NNODE*9,1:NNODE*9) = C_PML(1:NNODE*9,1:NNODE*9)
-        ! KMTRX(1:NNODE*9,1:NNODE*9) = K_PML(1:NNODE*9,1:NNODE*9)
-        ! GMTRX(1:NNODE*9,1:NNODE*9) = G_PML(1:NNODE*9,1:NNODE*9)
 
       
+      ! print Ele_type pos
+      ! write(*,*) ' EleType_pos', EleType_pos
+      ! MMATRX(1:NDOFEL,1:NDOFEL) = GMATRX(1:NDOFEL,1:NDOFEL)
+      
+CMATRX(1:NDOFEL,1:NDOFEL) = CMATRX(1:NDOFEL,1:NDOFEL) + Damp_alpha*MMATRX(1:NDOFEL,1:NDOFEL) + Damp_beta*KMATRX(1:NDOFEL,1:NDOFEL)
+
+
+   !    IF (LFLAGS(1).EQ.1 .OR. LFLAGS(1).EQ.2) THEN
+   !      AMATRX(1:NDOFEL,1:NDOFEL) = KMATRX(1:NDOFEL,1:NDOFEL)
+   !      RHS(1:NDOFEL,1) = RHS(1:NDOFEL,1) 
+   !   1        - matmul(KMATRX(1:NDOFEL,1:NDOFEL),U(1:NDOFEL))
+
+   !    ELSE IF (LFLAGS(1).EQ.11 .OR. LFLAGS(1).EQ.12) THEN
+
+
+   !      d_bar_n(1:NDOFEL) = SVARS(1:NDOFEL)
+   !      U_n(1:NDOFEL) = SVARS(NDOFEL+1:NDOFEL*2)
+   !      V_n(1:NDOFEL) = SVARS(2*NDOFEL+1:NDOFEL*3)
+   !      A_n(1:NDOFEL) = SVARS(3*NDOFEL+1:NDOFEL*4)
+   !      d_bar_dot_n(1:NDOFEL) = SVARS(4*NDOFEL+1:NDOFEL*5)
+
+
+
+   !      d_bar_n1(1:NDOFEL) = d_bar_n(1:NDOFEL) + 
+   !   1    DTIME*U_n(1:NDOFEL) + DTIME**2.d0/2.d0*V_n(1:NDOFEL) +
+   !   2    DTIME**3.d0*(1.d0/6.d0 - coef_alpha)*A_n(1:NDOFEL) + 
+   !   3    DTIME**3.d0*coef_alpha*A(1:NDOFEL)
+        
+   !      d_bar_dot_n1(1:NDOFEL) = d_bar_dot_n(1:NDOFEL) + 
+   !   1    DTIME*d_bar_n(1:NDOFEL) + DTIME**2.d0/2.d0*U_n(1:NDOFEL) +
+   !   2    DTIME**3.d0/6.d0*V_n(1:NDOFEL) + 
+   !   3    DTIME**4.d0*(1.d0/24.d0-coef_beta)*A_n(1:NDOFEL) + 
+   !   4    DTIME**4.d0*coef_beta*A(1:NDOFEL)
+
+
+   !      AMATRX(1:NDOFEL,1:NDOFEL) = 
+   !   1     (1.d0+ALPHA)*HMATRX(1:NDOFEL,1:NDOFEL)*DTIME**2.d0*coef_beta/
+   !   2     BETA 
+   !   3   + (1.d0+ALPHA)*GMATRX(1:NDOFEL,1:NDOFEL)*DTIME*coef_alpha/BETA
+   !   4   + (1.d0+ALPHA)*KMATRX(1:NDOFEL,1:NDOFEL)
+   !   5   + (1.d0+ALPHA)*CMATRX(1:NDOFEL,1:NDOFEL)*DVDU
+   !   6   + MMATRX(1:NDOFEL,1:NDOFEL)*DADU
+
+   !      RHS(1:NDOFEL,1) = RHS(1:NDOFEL,1) 
+   !   &    - matmul(MMATRX(1:NDOFEL,1:NDOFEL),A(1:NDOFEL))
+   !   &    - (1.d0+ALPHA)*matmul(KMATRX(1:NDOFEL,1:NDOFEL),U(1:NDOFEL))
+   !   &    - (1.d0+ALPHA)*matmul(CMATRX(1:NDOFEL,1:NDOFEL),V(1:NDOFEL))
+   !   &    - (1.d0+ALPHA)*
+   !   &            matmul(GMATRX(1:NDOFEL,1:NDOFEL),d_bar_n1(1:NDOFEL))
+   !   &    - (1.d0+ALPHA)*
+   !   &        matmul(HMATRX(1:NDOFEL,1:NDOFEL),d_bar_dot_n1(1:NDOFEL))
+   !   &    + ALPHA*matmul(KMATRX(1:NDOFEL,1:NDOFEL),U_n(1:NDOFEL))
+   !   &    + ALPHA*matmul(CMATRX(1:NDOFEL,1:NDOFEL),V_n(1:NDOFEL))
+   !   &    + ALPHA*matmul(GMATRX(1:NDOFEL,1:NDOFEL),d_bar_n(1:NDOFEL))
+   !   &    +ALPHA*matmul(HMATRX(1:NDOFEL,1:NDOFEL),d_bar_dot_n(1:NDOFEL))
+
+
+   !      SVARS(1:NDOFEL) = d_bar_n1(1:NDOFEL)
+   !      SVARS(NDOFEL+1:NDOFEL*2) = U(1:NDOFEL)
+   !      SVARS(2*NDOFEL+1:NDOFEL*3) = V(1:NDOFEL)
+   !      SVARS(3*NDOFEL+1:NDOFEL*4) = A(1:NDOFEL)
+   !      SVARS(4*NDOFEL+1:NDOFEL*5) = d_bar_dot_n1(1:NDOFEL)
+
+   !    ELSE   
+   !      write(6,*) ' Error in abaqus UEL '
+   !      write(6,*) ' Analsis types not supported'
+   !      stop   
+   !    END IF
+
+
+
+   !  !  PNEWDT = 1.d0          ! This leaves the timestep unchanged (ABAQUS will use its own algorithm to determine DTIME)
+   !  !
+   !  !   Apply distributed loads
+   !  !
+   !  !   Distributed loads are specified in the input file using the Un option in the input file.
+   !  !   n specifies the face number, following the ABAQUS convention
+   !  !
+   !  !
+   !    do j = 1,NDLOAD
+
+   !      call abq_facenodes_3D(NNODE,iabs(JDLTYP(j,1)),
+   !   1                                     face_node_list,nfacenodes)
+
+   !      do i = 1,nfacenodes
+   !          face_coords(1:3,i) = coords(1:3,face_node_list(i))
+   !      end do
+
+   !      if (nfacenodes == 3) n_points = 3
+   !      if (nfacenodes == 6) n_points = 4
+   !      if (nfacenodes == 4) n_points = 4
+   !      if (nfacenodes == 8) n_points = 9
+
+   !      call abq_UEL_2D_integrationpoints(n_points, nfacenodes, xi2, w)
+
+   !      do kint = 1,n_points
+   !          call abq_UEL_2D_shapefunctions(xi2(1:2,kint),
+   !   1                        nfacenodes,N2,dNdxi2)
+   !          dxdxi2 = matmul(face_coords(1:3,1:nfacenodes),
+   !   1                           dNdxi2(1:nfacenodes,1:2))
+   !          norm(1)=(dxdxi2(2,1)*dxdxi2(3,2))-(dxdxi2(2,2)*dxdxi2(3,1))
+   !          norm(2)=(dxdxi2(1,1)*dxdxi2(3,2))-(dxdxi2(1,2)*dxdxi2(3,1))
+   !          norm(3)=(dxdxi2(1,1)*dxdxi2(2,2))-(dxdxi2(1,2)*dxdxi2(2,1))
+
+   !          do i = 1,nfacenodes
+   !              ipoin = face_node_list(i)
+   !              RHS(ipoin:ipoin+2*9:9,1) = RHS(ipoin:ipoin+2*9:9,1)
+   !   1                 - N2(i)*adlmag(j,1)*norm(1:3)*w(kint)      ! Note determinant is already in normal
+   !          end do
+   !      end do
+   !    end do
+
+   ! check symmetry of matrices with tolerance
+
+      ! insert MMatrix in to M_PMl
+      ! M_PML(1:NDOFEL,1:NDOFEL) = MMATRX(1:NDOFEL,1:NDOFEL)
+      ! C_PML(1:NDOFEL,1:NDOFEL) = CMATRX(1:NDOFEL,1:NDOFEL)
+      ! K_PML(1:NDOFEL,1:NDOFEL) = KMATRX(1:NDOFEL,1:NDOFEL)
+      ! G_PML(1:NDOFEL,1:NDOFEL) = GMATRX(1:NDOFEL,1:NDOFEL)
+      ! H_PML(1:NDOFEL,1:NDOFEL) = HMATRX(1:NDOFEL,1:NDOFEL)
+      
+
+    !   call check_symmetry(M_PML,1.d-10,res1,"M")
+    !   if (res1 == 1) then
+    !      write(6,*) 'M_PML is symmetric ', res1
+    !   end if
+    !   call check_symmetry(G_PML,1.d-10,res4,"G")
+    !   if (res4 == 1) then
+    !      write(6,*) 'G_PML is symmetric ', res4
+    !   end if
+    !   call check_symmetry(H_PML,1.d-10,res5,"H")
+    !   if (res5 == 1) then 
+    !      write(6,*) 'H_PML is symmetric ', res5
+    !   end if
+    !   call check_symmetry(K_PML,1.d-10,res3,"K")
+    !   if (res3 == 1) then 
+    !      write(6,*) 'K_PML is symmetric ', res3
+    !   end if
+    !   call check_symmetry(C_PML,1.d-10,res2,"C")
+    !   if (res2 == 1) then 
+    !      write(6,*) 'C_PML is symmetric ', res2
+    !   end if
+
+    !   call check_zero(M_PML,1.d-10,res1,"M")
+    !   if (res1 == 1) write(6,*) 'M_PML is zero ', res1
+    !   call check_zero(G_PML,1.d-10,res1,"G")
+    !   if (res1 == 1) write(6,*) 'G_PML is zero ', res1
+    !   call check_zero(H_PML,1.d-10,res1,"H")
+    !   if (res1 == 1) write(6,*) 'H_PML is zero ', res1
+    !   call check_zero(K_PML,1.d-10,res1,"K")
+    !   if (res1 == 1) write(6,*) 'K_PML is zero ', res1
+    !   call check_zero(C_PML,1.d-10,res1,"C")
+    !   if (res1 == 1) write(6,*) 'C_PML is zero ', res1
+
+
       return
 
       END SUBROUTINE PML_3D
 
+   
+      ! check symmetry of matrices with tolerance
+      subroutine check_symmetry(AMATRX,RTOL,a,char)
+      
+         implicit none
+         double precision, intent(in) :: AMATRX(72,72)
+         double precision, intent(in) :: RTOL
+         character(len=1), intent(in) :: char
+         integer , intent(out) :: a
+         integer :: i,j
+
+         a = 1
+
+         do i = 1, 72
+         do j = 1, 72
+            if (abs(AMATRX(i,j)-AMATRX(j,i)) > RTOL) then
+               write(6,*) 'Matrix ',char,' is not symmetric'
+               write(6,*) '(i,j) = ',AMATRX(i,j)
+               write(6,*) '(j,i) = ',AMATRX(j,i)
+               a = 0
+               exit
+            endif
+         end do
+         if (a == 0) exit
+         end do
+
+         return
+      end subroutine check_symmetry
+
+
+      subroutine check_zero(AMATRX,RTOL,a,char)
+      
+         implicit none
+         double precision, intent(in) :: AMATRX(72,72)
+         double precision, intent(in) :: RTOL
+         character(len=1), intent(in) :: char
+         integer , intent(out) :: a
+         integer :: i,j
+
+         a = 1
+
+         do i = 1, 72
+         do j = 1, 72
+            if (abs(AMATRX(i,j)) > RTOL) then
+               write(6,*) 'Matrix ',char,' is not zero'
+               write(6,*) '(i,j) = ',AMATRX(i,j)
+               a = 0
+               exit
+            endif
+         end do
+         if (a == 0) exit
+         end do
+
+         return
+      end subroutine check_zero
 
       subroutine abq_UEL_3D_integrationpoints(n_points, n_nodes, xi, w)
 
@@ -1123,7 +1460,7 @@ c      write(6,*)
       double precision, intent(out) :: xi(2,*)
       double precision, intent(out) :: w(*)
 
-      integer :: i,j,k,n
+      ! integer :: i,j,k,n
 
       double precision :: cn,w1,w2,w11,w12,w22
 
@@ -1440,7 +1777,6 @@ c      write(6,*)
 
       cp_ref = SQRT(E *(1.d0-xnu)/rho/(1.d0+xnu)/(1.d0-2.d0*xnu))
 
-
       IF(x2 < -RD_half_width_y) then
           IF(x1 < -RD_half_width_x) then
               IF(x3 < -RD_depth) then
@@ -1547,7 +1883,7 @@ c      write(6,*)
           endif  
           
       endif
-      
+      ! write(6,*) "EleType_arg ",EleType_arg
       select case (EleType_arg) 
       case(1) !Regular domain (do nothing) 
           n1 = 0.d0 
@@ -1696,9 +2032,12 @@ c      write(6,*)
       end select
 
       PML_b = PML_L / 1.d0   !characteristic length (average element size in the PML domain) 
-
-      alpha_0 = ((afp+1)*PML_b) / (2.d0*PML_L )*LOG(1.d0 / PML_Rcoef)
-      beta_0 = ((afp+1)*cp_ref) / (2.d0*PML_L )*LOG(1.d0 / PML_Rcoef)
+      
+      alpha_0 = ((afp+1)*PML_b) / (2.d0*PML_L )*LOG10(1.d0 / PML_Rcoef)
+      beta_0 = ((afp+1)*cp_ref) / (2.d0*PML_L )*LOG10(1.d0 / PML_Rcoef)
+      
+!      alpha_0 = 5.d0
+!      beta_0 = 800.d0
 
       PML_alpha_beta(1,1) = 1.d0 + alpha_0*((x1 -x1_0) * n1 /PML_L)**afp 
       PML_alpha_beta(1,2) = 1.d0 + alpha_0*((x2 -x2_0) * n2 /PML_L)**afp
