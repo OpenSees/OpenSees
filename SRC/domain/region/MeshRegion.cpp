@@ -323,7 +323,7 @@ MeshRegion::setRayleighDampingFactors(double alpham, double betak, double betak0
 int
 MeshRegion::setDamping(Damping *theDamping)
 {
-  // now set the damping factors at the nodes & elements
+  // set the damping at the elements
   Domain *theDomain = this->getDomain();
   if (theDomain == 0) {
     opserr << "MeshRegion::setDamping() - no domain yet set\n";
@@ -341,6 +341,35 @@ MeshRegion::setDamping(Damping *theDamping)
 
   return 0;
 }
+
+int
+MeshRegion::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int result = -1;  
+
+  if (argc < 1)
+    return -1;
+
+  Domain *theDomain = this->getDomain();
+  if (theDomain == 0) {
+    opserr << "MeshRegion:: setParameter() - no domain yet set\n";
+    return -1;
+  }
+  if (theElements != 0) {
+    for (int i=0; i<theElements->Size(); i++) {
+      int eleTag = (*theElements)(i);
+      Element *theEle = theDomain->getElement(eleTag);
+      if (theEle != 0) {
+        int res = theEle->setParameter(argv, argc, param);
+        if (res != -1) {
+          result = res;
+        }
+      }  
+    }
+  }
+  return result;
+}
+
 
 int 
 MeshRegion::sendSelf(int commitTag, Channel &theChannel)
