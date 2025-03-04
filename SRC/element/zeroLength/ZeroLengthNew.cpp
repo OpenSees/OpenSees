@@ -25,8 +25,17 @@
 //
 // Date: March 02 2025
 
+// This element is based on the following: 
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthInterface2D.cpp,v $
+// $Revision: 1.1 $
+
+// Written: Roozbeh Geraili Mikola  (roozbehg@berkeley.edu)
+//          Prof. Nicholas Sitar (nsitar@ce.berkeley.edu)
+//
+// Date: July 02 2010
+
 /*
- - element zeroLengthNew eleTag? -sNdNum sNdNum? -pNdNum pNdNum? –dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi?
+ - element zeroLengthNew eleTag? -sNdNum sNdNum? -pNdNum pNdNum? â€“dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi?
  Description: This file contains the implementation for the ZeroLengthNew class.
 */
 
