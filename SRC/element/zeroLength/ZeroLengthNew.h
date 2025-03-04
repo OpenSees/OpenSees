@@ -17,12 +17,21 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthInterface2D.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthNew.cpp,v $
+// $Revision: 1.0 $
+
+// Written: Xianjue Deng  (UC San Diego, xianjue.deng@gmail.com)
+//
+// Date: March 02 2025
+
+// This element is based on the following: 
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthInterface2D.cpp,v $
 // $Revision: 1.1 $
-// $Date: July 02 2010
 
 // Written: Roozbeh Geraili Mikola  (roozbehg@berkeley.edu)
 //          Prof. Nicholas Sitar (nsitar@ce.berkeley.edu)
+//
+// Date: July 02 2010
 
 #ifndef ZeroLengthNew_h
 #define ZeroLengthNew_h
