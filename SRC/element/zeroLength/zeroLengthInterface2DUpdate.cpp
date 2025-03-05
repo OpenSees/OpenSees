@@ -18,7 +18,7 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthNew.cpp,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/zeroLengthInterface2DUpdate.cpp,v $
 // $Revision: 1.0 $
 
 // Written: Xianjue Deng  (UC San Diego, xianjue.deng@gmail.com)
@@ -35,11 +35,11 @@
 // Date: July 02 2010
 
 /*
- - element zeroLengthNew eleTag? -sNdNum sNdNum? -pNdNum pNdNum? –dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi?
- Description: This file contains the implementation for the ZeroLengthNew class.
+ - element zeroLengthInterface2DUpdate eleTag? -sNdNum sNdNum? -pNdNum pNdNum? –dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi?
+ Description: This file contains the implementation for the zeroLengthInterface2DUpdate class.
 */
 
-#include "ZeroLengthNew.h"
+#include "zeroLengthInterface2DUpdate.h"
 #include <Information.h>
 #define PI 3.141592653589793238462643383279502884197169399
 #include <Domain.h>
@@ -59,7 +59,7 @@
 //*********************************************************************
 //  Full Constructor:
 
-ZeroLengthNew::ZeroLengthNew(int tag, int sNdNum, int pNdNum, int sDof, int pDof, const ID& Nodes,
+zeroLengthInterface2DUpdate::zeroLengthInterface2DUpdate(int tag, int sNdNum, int pNdNum, int sDof, int pDof, const ID& Nodes,
     double Knormal, double Ktangent, double frictionAngle)
     :Element(tag, 0),
     connectedExternalNodes(sNdNum + pNdNum),
@@ -135,14 +135,14 @@ ZeroLengthNew::ZeroLengthNew(int tag, int sNdNum, int pNdNum, int sDof, int pDof
 
 //null constructor
 
-ZeroLengthNew::ZeroLengthNew(void)                               //fixme numberNodes?
+zeroLengthInterface2DUpdate::zeroLengthInterface2DUpdate(void)                               //fixme numberNodes?
     :Element(0, 0),
     connectedExternalNodes(numberNodes),
     N(6), T(6), Ki(0), load(0)
 {
     // ensure the connectedExternalNode ID is of correct size
     if (connectedExternalNodes.Size() != numberNodes)
-        opserr << "FATAL ZeroLengthNew::ZeroLengthNew - failed to create an ID of correct size\n";
+        opserr << "FATAL zeroLengthInterface2DUpdate::zeroLengthInterface2DUpdate - failed to create an ID of correct size\n";
     for (int j = 0; j < numberNodes; j++) nodePointers[j] = 0;
 }
 
@@ -150,32 +150,32 @@ ZeroLengthNew::ZeroLengthNew(void)                               //fixme numberN
 //  Destructor:
 //  delete must be invoked on any objects created by the object
 //  and on the matertial object.
-ZeroLengthNew::~ZeroLengthNew()
+zeroLengthInterface2DUpdate::~zeroLengthInterface2DUpdate()
 {
     if (load != 0) delete load;
     if (Ki != 0) delete Ki;
 }
 
 int
-ZeroLengthNew::getNumExternalNodes(void) const
+zeroLengthInterface2DUpdate::getNumExternalNodes(void) const
 {
     return numberNodes;
 }
 
 const ID&
-ZeroLengthNew::getExternalNodes(void)
+zeroLengthInterface2DUpdate::getExternalNodes(void)
 {
     return connectedExternalNodes;
 }
 
 Node**
-ZeroLengthNew::getNodePtrs(void)
+zeroLengthInterface2DUpdate::getNodePtrs(void)
 {
     return nodePointers;
 }
 
 int
-ZeroLengthNew::getNumDOF(void)
+zeroLengthInterface2DUpdate::getNumDOF(void)
 {
     return numDOF;
 }
@@ -185,7 +185,7 @@ ZeroLengthNew::getNumDOF(void)
 // also determines the number of dof associated
 // with the ZeroLengthInterface2D element
 void
-ZeroLengthNew::setDomain(Domain* theDomain)
+zeroLengthInterface2DUpdate::setDomain(Domain* theDomain)
 {
     // check Domain is not null - invoked when object removed from a domain
     if (theDomain == 0) {
@@ -203,14 +203,14 @@ ZeroLengthNew::setDomain(Domain* theDomain)
         int Nd = connectedExternalNodes(i);
         nodePointers[i] = theDomain->getNode(Nd);
         if (nodePointers[i] == 0) {
-            opserr << "WARNING ZeroLengthNew::setDomain() - Nd: " << Nd << " does not exist in ";
+            opserr << "WARNING zeroLengthInterface2DUpdate::setDomain() - Nd: " << Nd << " does not exist in ";
             return;
         }
         // now determine the number of dof and the dimension
         int dofNd = nodePointers[i]->getNumberDOF();
         // if differing dof at the ends - print a warning message
         //if ( dofNd != 2 || dofNd != 3) {
-        //	opserr << "WARNING ZeroLengthNew::setDomain cannot handle " << dofNd << "dofs\n";
+        //	opserr << "WARNING zeroLengthInterface2DUpdate::setDomain cannot handle " << dofNd << "dofs\n";
         //    return;
         //}
         numDOF += dofNd;
@@ -230,13 +230,13 @@ ZeroLengthNew::setDomain(Domain* theDomain)
     vm = (v1<v2) ? v2 : v1;
 
     if (L > LENTOL*vm)
-    opserr << "WARNING ZeroLengthNew::setDomain(): Element " << this->getTag() << " has L= " << L <<
+    opserr << "WARNING zeroLengthInterface2DUpdate::setDomain(): Element " << this->getTag() << " has L= " << L <<
     ", which is greater than the tolerance\n";
     */
 }
 
 int
-ZeroLengthNew::commitState()
+zeroLengthInterface2DUpdate::commitState()
 {
     double ANorm; // simplify the code
     double BNorm; // absolute of the shear force
@@ -266,7 +266,7 @@ ZeroLengthNew::commitState()
 }
 
 int
-ZeroLengthNew::revertToLastCommit()
+zeroLengthInterface2DUpdate::revertToLastCommit()
 {
     ///////////////////////////////////////////
     // need to revert the stickPoint??
@@ -282,7 +282,7 @@ ZeroLengthNew::revertToLastCommit()
 }
 
 int
-ZeroLengthNew::revertToStart()
+zeroLengthInterface2DUpdate::revertToStart()
 {
     // need to rezero stickPoint??
     //int code=0;
@@ -307,13 +307,13 @@ ZeroLengthNew::revertToStart()
 // update
 // calculate stress-strain relation -- M. Frank
 int
-ZeroLengthNew::update(void)
+zeroLengthInterface2DUpdate::update(void)
 {
     return 0;
 }
 
 const Matrix&
-ZeroLengthNew::getTangentStiff(void)
+zeroLengthInterface2DUpdate::getTangentStiff(void)
 {
     int tang_flag = 1; //get the tangent
     //zero stiffness and residual
@@ -325,7 +325,7 @@ ZeroLengthNew::getTangentStiff(void)
 }
 
 const Matrix&
-ZeroLengthNew::getInitialStiff(void)
+zeroLengthInterface2DUpdate::getInitialStiff(void)
 {
     int tang_flag = 1; //get the tangent
     stiff.Zero();
@@ -335,7 +335,7 @@ ZeroLengthNew::getInitialStiff(void)
 }
 
 const Matrix&
-ZeroLengthNew::getDamp(void)
+zeroLengthInterface2DUpdate::getDamp(void)
 {
     // no damp
     zeroMatrix.Zero();
@@ -343,7 +343,7 @@ ZeroLengthNew::getDamp(void)
 }
 
 const Matrix&
-ZeroLengthNew::getMass(void)
+zeroLengthInterface2DUpdate::getMass(void)
 {
     // no mass
     zeroMatrix.Zero();
@@ -351,27 +351,27 @@ ZeroLengthNew::getMass(void)
 }
 
 void
-ZeroLengthNew::zeroLoad(void)
+zeroLengthInterface2DUpdate::zeroLoad(void)
 {
     // does nothing now
 }
 
 int
-ZeroLengthNew::addLoad(ElementalLoad* theLoad, double loadFactor)
+zeroLengthInterface2DUpdate::addLoad(ElementalLoad* theLoad, double loadFactor)
 {
     // meaningless to addLoad to a contact !
     return 0;
 }
 
 int
-ZeroLengthNew::addInertiaLoadToUnbalance(const Vector& accel)
+zeroLengthInterface2DUpdate::addInertiaLoadToUnbalance(const Vector& accel)
 {
     // does nothing as element has no mass yet!
     return 0;
 }
 
 const Vector&
-ZeroLengthNew::getResistingForce()
+zeroLengthInterface2DUpdate::getResistingForce()
 {
     int tang_flag = 0; //don't get the tangent
     resid.Zero();
@@ -381,7 +381,7 @@ ZeroLengthNew::getResistingForce()
 }
 
 const Vector&
-ZeroLengthNew::getResistingForceIncInertia()
+zeroLengthInterface2DUpdate::getResistingForceIncInertia()
 {
     // there is no Inertia
     int tang_flag = 0; //don't get the tangent
@@ -391,32 +391,32 @@ ZeroLengthNew::getResistingForceIncInertia()
 }
 
 int
-ZeroLengthNew::sendSelf(int commitTag, Channel& theChannel)
+zeroLengthInterface2DUpdate::sendSelf(int commitTag, Channel& theChannel)
 {
     // doing nothing here
     return 0;
 }
 
 int
-ZeroLengthNew::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
+zeroLengthInterface2DUpdate::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
     // doing nothing here
     return 0;
 }
 
 int
-ZeroLengthNew::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
+zeroLengthInterface2DUpdate::displaySelf(Renderer& theViewer, int displayMode, float fact, const char** modes, int numMode)
 {
     // nothing to display
     return 0;
 }
 
 void
-ZeroLengthNew::Print(OPS_Stream& s, int flag)
+zeroLengthInterface2DUpdate::Print(OPS_Stream& s, int flag)
 {
     if (flag == 0) { // print everything
         s << "Element: " << this->getTag();
-        s << " type: ZeroLengthNew  Nodes: " << connectedExternalNodes << endln;
+        s << " type: zeroLengthInterface2DUpdate  Nodes: " << connectedExternalNodes << endln;
     }
     else if (flag == 1) {
         s << this->getTag() << "  ";
@@ -424,7 +424,7 @@ ZeroLengthNew::Print(OPS_Stream& s, int flag)
 }
 
 Response*
-ZeroLengthNew::setResponse(const char** argv, int argc, OPS_Stream& output)
+zeroLengthInterface2DUpdate::setResponse(const char** argv, int argc, OPS_Stream& output)
 {
     if (strcmp(argv[0], "force") == 0 || strcmp(argv[0], "forces") == 0)
         return new ElementResponse(this, 1, resid);
@@ -443,7 +443,7 @@ ZeroLengthNew::setResponse(const char** argv, int argc, OPS_Stream& output)
 }
 
 int
-ZeroLengthNew::getResponse(int responseID, Information& eleInfo)
+zeroLengthInterface2DUpdate::getResponse(int responseID, Information& eleInfo)
 {
     if (responseID == 1)
         return eleInfo.setVector(this->getResistingForce());
@@ -459,7 +459,7 @@ ZeroLengthNew::getResponse(int responseID, Information& eleInfo)
 
 // Private methods
 // determine the secondary/primary pair in contact, and setup Vectors (N,T1,T2)
-int ZeroLengthNew::contactDetect(int s, int p1, int p2, int stage)
+int zeroLengthInterface2DUpdate::contactDetect(int s, int p1, int p2, int stage)
 {
     //+--------------+-----------------+----------------+----------------+---------------+
     // NOTES: some methods to get displacements from nodes
@@ -563,7 +563,7 @@ int ZeroLengthNew::contactDetect(int s, int p1, int p2, int stage)
     
 }
 
-void  ZeroLengthNew::GlobalResidAndTangentOrder(int secondary, int primary1, int primary2)
+void  zeroLengthInterface2DUpdate::GlobalResidAndTangentOrder(int secondary, int primary1, int primary2)
 {
     // create a vector for converting local matrix to global
     int sdofNd = nodePointers[secondary]->getNumberDOF();
@@ -593,7 +593,7 @@ void  ZeroLengthNew::GlobalResidAndTangentOrder(int secondary, int primary1, int
     }
 }
 
-void  ZeroLengthNew::formLocalResidAndTangent(int tang_flag, int secondary, int primary1, int primary2, int stage)
+void  zeroLengthInterface2DUpdate::formLocalResidAndTangent(int tang_flag, int secondary, int primary1, int primary2, int stage)
 {
     const Vector& xs = nodePointers[secondary]->getCrds();
     const Vector& x1 = nodePointers[primary1]->getCrds();
@@ -665,7 +665,7 @@ void  ZeroLengthNew::formLocalResidAndTangent(int tang_flag, int secondary, int 
     }  // endif ContactFlag==1
 }
 
-void  ZeroLengthNew::formGlobalResidAndTangent(int tang_flag)
+void  zeroLengthInterface2DUpdate::formGlobalResidAndTangent(int tang_flag)
 {
     //std::cout << "formGlobalResidAndTangent " << "\n";
     // in the first loop the node to node contact will not be considered 
@@ -691,19 +691,19 @@ void  ZeroLengthNew::formGlobalResidAndTangent(int tang_flag)
 }
 
 
-// element ZeroLengthNew $eleTag -sNdNum $sNdNum -pNdNum $pNdNum -dof $sdof $mdof -Nodes $Nodes $Kn $Kt $phi
+// element zeroLengthInterface2DUpdate $eleTag -sNdNum $sNdNum -pNdNum $pNdNum -dof $sdof $mdof -Nodes $Nodes $Kn $Kt $phi
 //
 
-static int numZeroLengthNew = 0;
+static int numzeroLengthInterface2DUpdate = 0;
 #include <elementAPI.h>
 
 void*
-OPS_ZeroLengthNew() {
+OPS_zeroLengthInterface2DUpdate() {
 
-    if (numZeroLengthNew == 0) {
-        numZeroLengthNew++;
-        opserr << "ZeroLengthNew, developed by Xianjue Deng 02/2025, UC San Diego\n";
-        opserr << "ZeroLengthNew is based on ZeroLengthInterface2D, which is written by Roozbeh G. Mikola and N.Sitar, UC Berkeley\n";
+    if (numzeroLengthInterface2DUpdate == 0) {
+        numzeroLengthInterface2DUpdate++;
+        opserr << "zeroLengthInterface2DUpdate, developed by Xianjue Deng 02/2025, UC San Diego\n";
+        opserr << "zeroLengthInterface2DUpdate is based on ZeroLengthInterface2D, which is written by Roozbeh G. Mikola and N.Sitar, UC Berkeley\n";
     }
 
     Element* theEle = 0;
@@ -714,21 +714,21 @@ OPS_ZeroLengthNew() {
     numData = 1;
 
     if (OPS_GetInt(&numData, &eleTag) != 0) {
-        opserr << "ZeroLengthNew::WARNING invalid eleTag \n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING invalid eleTag \n";
         return 0;
     }
 
     const char* nextString = OPS_GetString();
 
     if (strcmp(nextString, "-sNdNum") != 0) {
-        opserr << "ZeroLengthNew:: expecting -sNdNum \n";
+        opserr << "zeroLengthInterface2DUpdate:: expecting -sNdNum \n";
         return 0;
     }
 
     // get the number of secondary nodes
     numData = 1;
     if (OPS_GetInt(&numData, &sNdNum) != 0) {
-        opserr << "ZeroLengthNew::WARNING invalied sNdNum \n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING invalied sNdNum \n";
         return 0;
     }
 
@@ -736,13 +736,13 @@ OPS_ZeroLengthNew() {
     nextString = OPS_GetString();
 
     if (strcmp(nextString, "-mNdNum") != 0 && strcmp(nextString, "-pNdNum") != 0) {
-        opserr << "ZeroLengthNew:: expecting -pNdNum\n";
+        opserr << "zeroLengthInterface2DUpdate:: expecting -pNdNum\n";
         return 0;
     }
 
     numData = 1;
     if (OPS_GetInt(&numData, &pNdNum) != 0) {
-        opserr << "ZeroLengthNew::WARNING invalied pNdNum \n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING invalied pNdNum \n";
         return 0;
     }
 
@@ -750,28 +750,28 @@ OPS_ZeroLengthNew() {
     nextString = OPS_GetString();
 
     if (strcmp(nextString, "-dof") != 0) {
-        opserr << "ZeroLengthNew:: expecting -sdof in " <<
-            "element ZeroLengthNew eleTag? -sNdNum sNdNum? -pNdNum pNdNum? -dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi? \n";
+        opserr << "zeroLengthInterface2DUpdate:: expecting -sdof in " <<
+            "element zeroLengthInterface2DUpdate eleTag? -sNdNum sNdNum? -pNdNum pNdNum? -dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi? \n";
         return 0;
     }
 
     numData = 1;
     if (OPS_GetInt(&numData, &sDOF) != 0) {
-        opserr << "ZeroLengthNew::WARNING invalied sDOF\n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING invalied sDOF\n";
         return 0;
     }
 
     numData = 1;
     if (OPS_GetInt(&numData, &mDOF) != 0) {
-        opserr << "ZeroLengthNew::WARNING invalied mDOF\n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING invalied mDOF\n";
         return 0;
     }
 
     // a quick check on number of args
     int argc = OPS_GetNumRemainingInputArgs();
     if (argc < 3 + sNdNum + pNdNum) {
-        opserr << "ZeroLengthNew::WARNING too few arguments " <<
-            "element ZeroLengthNew eleTag? -sNdNum sNdNum? -pNdNum pNdNum? -dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi? \n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING too few arguments " <<
+            "element zeroLengthInterface2DUpdate eleTag? -sNdNum sNdNum? -pNdNum pNdNum? -dof sdof? mdof? -Nodes Nodes? Kn? Kt? phi? \n";
         return 0;
     }
 
@@ -779,7 +779,7 @@ OPS_ZeroLengthNew() {
     nextString = OPS_GetString();
 
     if (strcmp(nextString, "-Nodes") != 0) {
-        opserr << "ZeroLengthNew:: expecting -Nodes\n";
+        opserr << "zeroLengthInterface2DUpdate:: expecting -Nodes\n";
         return 0;
     }
 
@@ -789,7 +789,7 @@ OPS_ZeroLengthNew() {
     ID  Nodes(theNodeData, numData);
 
     if (OPS_GetInt(&numData, theNodeData) != 0) {
-        opserr << "ZeroLengthNew:: not enough node tags provided for ele: ";
+        opserr << "zeroLengthInterface2DUpdate:: not enough node tags provided for ele: ";
         opserr << eleTag << "\n";
         return 0;
     }
@@ -798,7 +798,7 @@ OPS_ZeroLengthNew() {
     numData = 3;
     double dData[3];
     if (OPS_GetDouble(&numData, dData) != 0) {
-        opserr << "ZeroLengthNew::WARNING invalid Kn,Kt or phi\n";
+        opserr << "zeroLengthInterface2DUpdate::WARNING invalid Kn,Kt or phi\n";
         return 0;
     }
 
@@ -806,13 +806,13 @@ OPS_ZeroLengthNew() {
     // now we create the element and add it to the domain
     //
 
-    theEle = new ZeroLengthNew(eleTag, sNdNum, pNdNum, sDOF, mDOF, Nodes, dData[0], dData[1], dData[2]);
+    theEle = new zeroLengthInterface2DUpdate(eleTag, sNdNum, pNdNum, sDOF, mDOF, Nodes, dData[0], dData[1], dData[2]);
     return theEle;
 }
 
 
 int
-ZeroLengthNew::setParameter(const char** argv, int argc, Parameter& param)
+zeroLengthInterface2DUpdate::setParameter(const char** argv, int argc, Parameter& param)
 {
     if (argc < 1)
         return -1;
@@ -829,7 +829,7 @@ ZeroLengthNew::setParameter(const char** argv, int argc, Parameter& param)
 
 
 int
-ZeroLengthNew::updateParameter(int parameterID, Information& info)
+zeroLengthInterface2DUpdate::updateParameter(int parameterID, Information& info)
 {
     switch (parameterID) {
     case -1:
