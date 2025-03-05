@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/ZeroLengthNew.cpp,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/element/zeroLength/zeroLengthInterface2DUpdate.cpp,v $
 // $Revision: 1.0 $
 
 // Written: Xianjue Deng  (UC San Diego, xianjue.deng@gmail.com)
@@ -33,8 +33,8 @@
 //
 // Date: July 02 2010
 
-#ifndef ZeroLengthNew_h
-#define ZeroLengthNew_h
+#ifndef zeroLengthInterface2DUpdate_h
+#define zeroLengthInterface2DUpdate_h
 
 /*----+----+----+----+----+----+----+----+----+----+----+----+----+----+------*
  |                                                                            |
@@ -99,16 +99,16 @@ class Channel;
 //class UniaxialMaterial;
 class Response;
 
-class ZeroLengthNew : public Element
+class zeroLengthInterface2DUpdate : public Element
 {
 public:
     // Constructor
-    ZeroLengthNew(int tag, int sNdNum, int pNdNum, int sDof, int mDof, const ID& Nodes,
+    zeroLengthInterface2DUpdate(int tag, int sNdNum, int pNdNum, int sDof, int mDof, const ID& Nodes,
         double Kn, double Kt, double fRatio);
     // Null constructor
-    ZeroLengthNew();
+    zeroLengthInterface2DUpdate();
 
-    ~ZeroLengthNew();
+    ~zeroLengthInterface2DUpdate();
 
     // public methods to obtain information about dof & connectivity
     int getNumExternalNodes(void) const;
