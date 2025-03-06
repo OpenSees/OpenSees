@@ -600,7 +600,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_PML2D();
     if (OPS_GetNDM() == 3)
-      theEle = (Element *)OPS_PML3D();
+      theEle = (Element *)OPS_PML3DVISCOUS();
     if (theEle != 0) 
       theElement = theEle;
     else {

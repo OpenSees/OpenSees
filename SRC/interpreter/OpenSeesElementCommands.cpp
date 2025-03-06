@@ -595,7 +595,7 @@ namespace {
 	  return OPS_PML2D();
 	}
 	else {
-	  return OPS_PML3D();
+	  return OPS_PML3DVISCOUS();
 	}
   }
 
