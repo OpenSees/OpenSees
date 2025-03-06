@@ -296,6 +296,12 @@ int OPS_BgMesh() {
         }
     }
 
+    // bg mesh
+    if (bgmesh.remesh() < 0) {
+        opserr << "WARNING: failed to create background mesh\n";
+        return -1;
+    }
+
     return 0;
 }
 
