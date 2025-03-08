@@ -32,72 +32,6 @@
      4          HMATRX(NDOFEL,NDOFEL),
      5          PROPS(*),COORDS(MCRD,NNODE),LFLAGS(*)
 
-    !
-    !       Variables that must be computed in this routine
-    !       RHS(i)                     Right hand side vector.  Dimensions are RHS(MLVARX,1)
-    !       AMATRX(i,j)                Stiffness matrix d RHS(i)/ d DU(j)
-    !       SVARS(1:NSVARS)            Element state variables.  Must be updated in this routine
-    !       ENERGY(1:8)
-    !                                  Energy(1) Kinetic Energy
-    !                                  Energy(2) Elastic Strain Energy
-    !                                  Energy(3) Creep Dissipation
-    !                                  Energy(4) Plastic Dissipation
-    !                                  Energy(5) Viscous Dissipation
-    !                                  Energy(6) Artificial strain energy
-    !                                  Energy(7) Electrostatic energy
-    !                                  Energy(8) Incremental work done by loads applied to the element
-    !       PNEWDT                     Allows user to control ABAQUS time increments.
-    !                                  If PNEWDT<1 then time step is abandoned and computation is restarted with
-    !                                  a time increment equal to PNEWDT*DTIME
-    !                                  If PNEWDT>1 ABAQUS may increase the time increment by a factor PNEWDT
-    !
-    !       Variables provided for information
-    !       NDOFEL                     Total # DOF for the element
-    !       NRHS                       Dimension variable
-    !       NSVARS                     Total # element state variables
-    !       PROPS(1:NPROPS)            User-specified properties of the element
-    !       NPROPS                     No. properties
-    !       JPROPS(1:NJPROPS)          Integer valued user specified properties for the element
-    !       NJPROPS                    No. integer valued properties
-    !       COORDS(i,N)                ith coordinate of Nth node on element
-    !       MCRD                       Maximum of (# coords,minimum of (3,#DOF)) on any node
-    !       U                          Vector of DOF at the end of the increment
-    !       DU                         Vector of DOF increments
-    !       V                          Vector of velocities (defined only for implicit dynamics)
-    !       A                          Vector of accelerations (defined only for implicit dynamics)
-    !       TIME(1:2)                  TIME(1)   Current value of step time
-    !                                  TIME(2)   Total time
-    !       DTIME                      Time increment
-    !       KSTEP                      Current step number 
-    !       KINC                       Increment number
-    !       JELEM                      User assigned element number in ABAQUS (internally assigned)
-    !       PARAMS(1:3)                Time increment parameters alpha, beta, gamma for implicit dynamics
-    !       NDLOAD                     Number of user-defined distributed loads defined for this element
-    !       JDLTYP(1:NDLOAD)           Integers n defining distributed load types defined as Un or (if negative) UnNU in input file
-    !       ADLMAG(1:NDLOAD)           Distributed load magnitudes
-    !       DDLMAG(1:NDLOAD)           Increment in distributed load magnitudes
-    !       PREDEF(1:2,1:NPREDF,1:NNODE)   Predefined fields.
-    !       PREDEF(1,...)              Value of predefined field
-    !       PREDEF(2,...)              Increment in predefined field
-    !       PREDEF(1:2,1,k)            Value of temperature/temperature increment at kth node
-    !       PREDEF(1:2,2:NPREDF,k)     Value of user defined field/field increment at kth node 
-    !       NPREDF                     Number of predefined fields 
-    !       LFLAGS                     Control variable
-    !       LFLAGS(1)                  Defines procedure type
-    !       LFLAGS(2)                  0 => small displacement analysis  1 => Large displacement (NLGEOM option)
-    !       LFLAGS(3)                   1 => Subroutine must return both RHS and AMATRX 
-    !                                   2 => Subroutine must return stiffness AMATRX = -dF/du
-    !                                   3 => Subroutine must return daming matrix AMATRX = -dF/dudot
-    !                                   4 => Subroutine must return mass matrix AMATRX = -dF/duddot
-    !                                   5 => Define the RHS only
-    !                                   6 => Define the mass matrix for the initial acceleration calculation
-    !                                   100 => Define perturbation quantities for output
-    !       LFLAGS(4)                   0 => General step   1 => linear perturbation step
-    !       LFLAGS(5)                   0 => current approximation to solution based on Newton correction; 1 => based on extrapolation
-    !       MLVARX                      Dimension variable for RHS
-    !       PERIOD                      Time period of the current step
-    !
-    !
     ! Local Variables
 
       real*8 ZERO,ONE,HALF       
@@ -108,7 +42,6 @@
       PARAMETER (coef_beta = 1.d0/48.d0)
 
       integer      :: i,j,n_points,kint
-      ! integer      :: face_node_list(8)                       ! List of nodes on an element face
     !
       double precision  ::  xi(3,64)                          ! Volumetric Integration points
       double precision  ::  w(64)                             ! Integration weights
@@ -116,34 +49,21 @@
       double precision  ::  dNdxi(20,3)                       ! 3D Shape function derivatives
       double precision  ::  dxdxi(3,3)                        ! Derivative of position wrt normalized coords
       double precision  ::  dNdx(20,3)                        ! Derivative of shape functions wrt spatial coords
-    !
-    !   Variables below are for computing integrals over element faces
-      ! double precision  ::  face_coords(3,8)                  ! Coords of nodes on an element face
-      ! double precision  ::  xi2(2,9)                          ! Area integration points
-      ! double precision  ::  N2(9)                             ! 2D shape functions
-      ! double precision  ::  dNdxi2(9,2)                       ! 2D shape function derivatives
-      ! double precision  ::  norm(3)                           ! Normal to an element face
-      ! double precision  ::  dxdxi2(3,2)                       ! Derivative of spatial coord wrt normalized areal coord
-    !
+    
       double precision  ::  strain(6)                         ! Strain vector contains [e11, e22, e33, 2e12, 2e13, 2e23]
       double precision  ::  stress(6)                         ! Stress vector contains [s11, s22, s33, s12, s13, s23]
       double precision  ::  D(6,6)                            ! stress = D*(strain)  (NOTE FACTOR OF 2 in shear strain)
       double precision  ::  B(6,60)                           ! strain = B*(dof_total)
       double precision  ::  dxidx(3,3), determinant           ! Jacobian inverse and determinant
       double precision  ::  E, xnu                            ! Material properties
-      ! double precision  ::  ALPHA, BETA, GAMMA                ! Newmark Integration properties
       double precision  ::  Phi(3,60)                         ! Matrix consists of shape functions [N1 N2 ... N20]
-      ! double precision  ::  MMATRX(NDOFEL,NDOFEL)             ! Element mass matrix
-      ! double precision  ::  KMATRX(NDOFEL,NDOFEL)             ! Element stiffness matrix
-      ! double precision  ::  CMATRX(NDOFEL,NDOFEL)             ! Element damping matrix
-      ! double precision  ::  GMATRX(NDOFEL,NDOFEL)             ! Element G matrix
-      ! double precision  ::  HMATRX(NDOFEL,NDOFEL)             ! Element H matrix
       
       double precision  ::  rho                               ! Density of the material
 
-      double precision  ::  PML_L,afp,PML_Rcoef               ! Parameters of PML
-      double precision  ::  RD_half_width_x, RD_half_width_y  ! Parameters of PML
-      double precision  ::  RD_depth                          ! Parameters of PML
+      double precision  ::  PML_L,afp                         ! Parameters of PML
+      double precision  ::  alpha_0, beta_0                   ! Parameters of PML
+      double precision  ::  x1_0, x2_0, x3_0                  ! Parameters of PML
+      double precision  ::  n1, n2, n3                        ! Parameters of PML
       integer           ::  EleType_pos                       ! Parameters of PML
 
       double precision  ::  x1,x2,x3,PML_alpha_beta(2,3)      ! Coordinates x, y and z, alphas and betas    
@@ -170,93 +90,25 @@
       
       double precision  ::  U_n(72), V_n(72), A_n(72)                   ! U, V, A at previous step
 
-      integer           ::  NodeDOF,res1, res2, res3, res4, res5                                     ! Number of DOF per node
+      integer           ::  NodeDOF
       
       double precision  ::  Damp_alpha, Damp_beta                       ! Damping coefficients for Rayleigh Damping
       
-      ! double precision  ::  Vs                                          ! Shear wave velocity
 
 
       NodeDOF = NDOFEL/NNODE
       
 
 
-    !
-    !     Example ABAQUS UEL implementing 3D linear elastic elements
-    !     El props are:
-
-    !     PROPS(1)         Young's modulus
-    !     PROPS(2)         Poisson's ratio
 
       if (NNODE == 4) n_points = 1               ! Linear tet
       if (NNODE == 10) n_points = 4              ! Quadratic tet
       if (NNODE == 8) n_points = 27               ! Linear Hex
       if (NNODE == 20) n_points = 27             ! Quadratic hex
           ! Local Variables
-   !   print propertises
-    !   write(6,*) ' PROPS(1) = ',PROPS(1)
-    !   write(6,*) ' PROPS(2) = ',PROPS(2)
-    !   write(6,*) ' PROPS(3) = ',PROPS(3)
-    !   write(6,*) ' PROPS(4) = ',PROPS(4)
-    !   write(6,*) ' PROPS(5) = ',PROPS(5)
-    !   write(6,*) ' PROPS(6) = ',PROPS(6)
-    !   write(6,*) ' PROPS(7) = ',PROPS(7)
-    !   write(6,*) ' PROPS(8) = ',PROPS(8)
-    !   write(6,*) ' PROPS(9) = ',PROPS(9)
-    !   write(6,*) ' PROPS(10) = ',PROPS(10)
-    !   write(6,*) ' PROPS(11) = ',PROPS(11)
-    !   write(6,*) ' PROPS(12) = ',PROPS(12)
-      
-   !    ! print coords 
-    !   write(6,*) ' coords(1,1) = ',coords(1,1)
-    !   write(6,*) ' coords(2,1) = ',coords(2,1)
-    !   write(6,*) ' coords(3,1) = ',coords(3,1)
-    !   write(6,*) ' coords(1,2) = ',coords(1,2)
-    !   write(6,*) ' coords(2,2) = ',coords(2,2)
-    !   write(6,*) ' coords(3,2) = ',coords(3,2)
-    !   write(6,*) ' coords(1,3) = ',coords(1,3)
-    !   write(6,*) ' coords(2,3) = ',coords(2,3)
-    !   write(6,*) ' coords(3,3) = ',coords(3,3)
-    !   write(6,*) ' coords(1,4) = ',coords(1,4)
-    !   write(6,*) ' coords(2,4) = ',coords(2,4)
-    !   write(6,*) ' coords(3,4) = ',coords(3,4)
-    !   write(6,*) ' coords(1,5) = ',coords(1,5)
-    !   write(6,*) ' coords(2,5) = ',coords(2,5)
-    !   write(6,*) ' coords(3,5) = ',coords(3,5)
-    !   write(6,*) ' coords(1,6) = ',coords(1,6)
-    !   write(6,*) ' coords(2,6) = ',coords(2,6)
-    !   write(6,*) ' coords(3,6) = ',coords(3,6)
-    !   write(6,*) ' coords(1,7) = ',coords(1,7)
-    !   write(6,*) ' coords(2,7) = ',coords(2,7)
-    !   write(6,*) ' coords(3,7) = ',coords(3,7)
-    !   write(6,*) ' coords(1,8) = ',coords(1,8)
-    !   write(6,*) ' coords(2,8) = ',coords(2,8)
-    !   write(6,*) ' coords(3,8) = ',coords(3,8)
-
-      ! ! print MCRD
-      ! write(6,*) ' MCRD = ',MCRD
-
-      ! ! print NNODE
-      ! write(6,*) ' NNODE = ',NNODE
-
-      ! ! print NDOFEL
-      ! write(6,*) ' NDOFEL = ',NDOFEL
-
-      ! ! print LFLAGS
-      ! write(6,*) ' LFLAGS(1) = ',LFLAGS(1)
-
-
       call abq_UEL_3D_integrationpoints(n_points, NNODE, xi, w)
 
-      ! if (MLVARX<3*NNODE) then
-      !   write(6,*) ' Error in abaqus UEL '
-      !   write(6,*) ' Variable MLVARX must exceed 3*NNODE'
-      !   write(6,*) ' MLVARX = ',MLVARX,' NNODE = ',NNODE
-      !   stop
-      ! endif
 
-      ! RHS(1:MLVARX,1) = 0.d0
-      ! AMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
       MMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
       KMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
       CMATRX(1:NDOFEL,1:NDOFEL) = 0.d0
@@ -269,13 +121,18 @@
       rho = PROPS(3)
       EleType_pos = floor(PROPS(4))
       PML_L = PROPS(5)
-      afp = PROPS(6)
-      PML_Rcoef = PROPS(7)
-      RD_half_width_x = PROPS(8)
-      RD_half_width_y = PROPS(9)
-      RD_depth = PROPS(10)
-      Damp_alpha = PROPS(11)
-      Damp_beta = PROPS(12)
+      x1_0 = PROPS(6)
+      x2_0 = PROPS(7)
+      x3_0 = PROPS(8)
+      n1 = PROPS(9)
+      n2 = PROPS(10)
+      n3 = PROPS(11)
+      alpha_0 = PROPS(12)
+      beta_0 = PROPS(13)
+      Damp_alpha = PROPS(14)
+      Damp_beta = PROPS(15)
+      afp = PROPS(16)
+
 
       IF (afp .LT. 3.d0) THEN
         n_points = 27
@@ -377,26 +234,26 @@
             x3 = x3 + N(i)*coords(3,i)
           end do
 
-         !  write(6,*) ' x1 = ',x1
-         !  write(6,*) ' x2 = ',x2
-         !  write(6,*) ' x3 = ',x3
-                              
-         !  mu = rho*Vs**2.d0
-         !  E = mu*2.d0*(1.d0+xnu)
-         !  lambda = xnu*E/((1.d0+xnu)*(1.d0-2.D0*xnu))            
-         !  PROPS(1) = E
-         !  write(6,*) ' E = ',E
-         !  write(6,*) ' xnu = ',xnu
-         !  write(6,*) ' lambda = ',lambda
-         !  write(6,*) ' mu = ',mu
 
-          call PML_alpha_beta_function(PROPS,x1,x2,x3,PML_alpha_beta)
+
+         !  call PML_alpha_beta_function(PROPS,x1,x2,x3,PML_alpha_beta)
+         !  PML_alpha_beta(1,1) = 1.d0 + alpha_0*((x1 -x1_0) * n1 /PML_L)**afp 
+         !  PML_alpha_beta(1,2) = 1.d0 + alpha_0*((x2 -x2_0) * n2 /PML_L)**afp
+         !  PML_alpha_beta(1,3) = 1.d0 + alpha_0*((x3 -x3_0) * n3 /PML_L)**afp
+          PML_alpha_beta(1,1) = alpha_0*((x1 -x1_0) * n1 /PML_L)**afp
+          PML_alpha_beta(1,2) = alpha_0*((x2 -x2_0) * n2 /PML_L)**afp
+          PML_alpha_beta(1,3) = alpha_0*((x3 -x3_0) * n3 /PML_L)**afp
+          PML_alpha_beta(1,1) = 1.d0 + PML_alpha_beta(1,1)
+          PML_alpha_beta(1,2) = 1.d0 + PML_alpha_beta(1,2)
+          PML_alpha_beta(1,3) = 1.d0 + PML_alpha_beta(1,3)
+    
+          PML_alpha_beta(2,1) = beta_0*((x1 -x1_0) * n1 /PML_L)**afp 
+          PML_alpha_beta(2,2) = beta_0*((x2 -x2_0) * n2 /PML_L)**afp
+          PML_alpha_beta(2,3) = beta_0*((x3 -x3_0) * n3 /PML_L)**afp
 
           coef_a = PML_alpha_beta(1,1)*PML_alpha_beta(1,2)
      1            *PML_alpha_beta(1,3)
-         !  write(6,*) ' alpha11 :',PML_alpha_beta(1,1)
-         !  write(6,*) ' alpha12 :',PML_alpha_beta(1,2)
-         !  write(6,*) ' alpha13 :',PML_alpha_beta(1,3)          
+         
 
 
           coef_b = PML_alpha_beta(1,1)*PML_alpha_beta(1,2)
@@ -451,15 +308,10 @@
               M_RD(i,j) = M_RD(i,j) + rho*N(i)*N(j)*w(kint)*determinant 
               M_a(i,j) = M_a(i,j) + 
      1                         coef_a*rho*N(i)*N(j)*w(kint)*determinant
-              ! if i == 1 and j == 1 then print coef_a, rho, N(i), N(j), w(kint), determinant end if
-               ! If (i.EQ. 1 .AND. j .EQ. 1 ) THEN 
-               !    write(6,*) ' coef_a = ',coef_a 
-               !    write(6,*) ' rho = ',rho
-               !    write(6,*) ' N(i) = ',N(i)
-               !    write(6,*) ' N(j) = ',N(j)
-               !    write(6,*) ' w(kint) = ',w(kint)
-               !    write(6,*) ' determinant = ',determinant
-               ! endif
+
+
+
+     
               M_b(i,j) = M_b(i,j) + 
      1                         coef_b*rho*N(i)*N(j)*w(kint)*determinant
               M_c(i,j) = M_c(i,j) + 
@@ -595,10 +447,7 @@
         M_d(2*NNODE+1:3*NNODE,2*NNODE+1:3*NNODE) 
      1                                       = M_d(1:NNODE,1:NNODE)  
 
-      !   write(6,*)  " NNODE: ", NNODE
-      !   write(6,*)  " lambda: ", lambda
-      !   write(6,*)  " mu: ", mu
-      !   write(6,*)  " rho: ", rho 
+
         N_a(1:NNODE,1:NNODE) = 
      1   M_a(1:NNODE,1:NNODE)/rho*(lambda+mu)/mu/(3.d0*lambda+2.d0*mu)
         N_a(1:NNODE,NNODE+1:2*NNODE) = 
@@ -808,221 +657,13 @@
           end do
         end do
 
-      
-      ! print Ele_type pos
-      ! write(*,*) ' EleType_pos', EleType_pos
-      ! MMATRX(1:NDOFEL,1:NDOFEL) = GMATRX(1:NDOFEL,1:NDOFEL)
-      
-CMATRX(1:NDOFEL,1:NDOFEL) = CMATRX(1:NDOFEL,1:NDOFEL) + Damp_alpha*MMATRX(1:NDOFEL,1:NDOFEL) + Damp_beta*KMATRX(1:NDOFEL,1:NDOFEL)
-
-
-   !    IF (LFLAGS(1).EQ.1 .OR. LFLAGS(1).EQ.2) THEN
-   !      AMATRX(1:NDOFEL,1:NDOFEL) = KMATRX(1:NDOFEL,1:NDOFEL)
-   !      RHS(1:NDOFEL,1) = RHS(1:NDOFEL,1) 
-   !   1        - matmul(KMATRX(1:NDOFEL,1:NDOFEL),U(1:NDOFEL))
-
-   !    ELSE IF (LFLAGS(1).EQ.11 .OR. LFLAGS(1).EQ.12) THEN
-
-
-   !      d_bar_n(1:NDOFEL) = SVARS(1:NDOFEL)
-   !      U_n(1:NDOFEL) = SVARS(NDOFEL+1:NDOFEL*2)
-   !      V_n(1:NDOFEL) = SVARS(2*NDOFEL+1:NDOFEL*3)
-   !      A_n(1:NDOFEL) = SVARS(3*NDOFEL+1:NDOFEL*4)
-   !      d_bar_dot_n(1:NDOFEL) = SVARS(4*NDOFEL+1:NDOFEL*5)
-
-
-
-   !      d_bar_n1(1:NDOFEL) = d_bar_n(1:NDOFEL) + 
-   !   1    DTIME*U_n(1:NDOFEL) + DTIME**2.d0/2.d0*V_n(1:NDOFEL) +
-   !   2    DTIME**3.d0*(1.d0/6.d0 - coef_alpha)*A_n(1:NDOFEL) + 
-   !   3    DTIME**3.d0*coef_alpha*A(1:NDOFEL)
-        
-   !      d_bar_dot_n1(1:NDOFEL) = d_bar_dot_n(1:NDOFEL) + 
-   !   1    DTIME*d_bar_n(1:NDOFEL) + DTIME**2.d0/2.d0*U_n(1:NDOFEL) +
-   !   2    DTIME**3.d0/6.d0*V_n(1:NDOFEL) + 
-   !   3    DTIME**4.d0*(1.d0/24.d0-coef_beta)*A_n(1:NDOFEL) + 
-   !   4    DTIME**4.d0*coef_beta*A(1:NDOFEL)
-
-
-   !      AMATRX(1:NDOFEL,1:NDOFEL) = 
-   !   1     (1.d0+ALPHA)*HMATRX(1:NDOFEL,1:NDOFEL)*DTIME**2.d0*coef_beta/
-   !   2     BETA 
-   !   3   + (1.d0+ALPHA)*GMATRX(1:NDOFEL,1:NDOFEL)*DTIME*coef_alpha/BETA
-   !   4   + (1.d0+ALPHA)*KMATRX(1:NDOFEL,1:NDOFEL)
-   !   5   + (1.d0+ALPHA)*CMATRX(1:NDOFEL,1:NDOFEL)*DVDU
-   !   6   + MMATRX(1:NDOFEL,1:NDOFEL)*DADU
-
-   !      RHS(1:NDOFEL,1) = RHS(1:NDOFEL,1) 
-   !   &    - matmul(MMATRX(1:NDOFEL,1:NDOFEL),A(1:NDOFEL))
-   !   &    - (1.d0+ALPHA)*matmul(KMATRX(1:NDOFEL,1:NDOFEL),U(1:NDOFEL))
-   !   &    - (1.d0+ALPHA)*matmul(CMATRX(1:NDOFEL,1:NDOFEL),V(1:NDOFEL))
-   !   &    - (1.d0+ALPHA)*
-   !   &            matmul(GMATRX(1:NDOFEL,1:NDOFEL),d_bar_n1(1:NDOFEL))
-   !   &    - (1.d0+ALPHA)*
-   !   &        matmul(HMATRX(1:NDOFEL,1:NDOFEL),d_bar_dot_n1(1:NDOFEL))
-   !   &    + ALPHA*matmul(KMATRX(1:NDOFEL,1:NDOFEL),U_n(1:NDOFEL))
-   !   &    + ALPHA*matmul(CMATRX(1:NDOFEL,1:NDOFEL),V_n(1:NDOFEL))
-   !   &    + ALPHA*matmul(GMATRX(1:NDOFEL,1:NDOFEL),d_bar_n(1:NDOFEL))
-   !   &    +ALPHA*matmul(HMATRX(1:NDOFEL,1:NDOFEL),d_bar_dot_n(1:NDOFEL))
-
-
-   !      SVARS(1:NDOFEL) = d_bar_n1(1:NDOFEL)
-   !      SVARS(NDOFEL+1:NDOFEL*2) = U(1:NDOFEL)
-   !      SVARS(2*NDOFEL+1:NDOFEL*3) = V(1:NDOFEL)
-   !      SVARS(3*NDOFEL+1:NDOFEL*4) = A(1:NDOFEL)
-   !      SVARS(4*NDOFEL+1:NDOFEL*5) = d_bar_dot_n1(1:NDOFEL)
-
-   !    ELSE   
-   !      write(6,*) ' Error in abaqus UEL '
-   !      write(6,*) ' Analsis types not supported'
-   !      stop   
-   !    END IF
-
-
-
-   !  !  PNEWDT = 1.d0          ! This leaves the timestep unchanged (ABAQUS will use its own algorithm to determine DTIME)
-   !  !
-   !  !   Apply distributed loads
-   !  !
-   !  !   Distributed loads are specified in the input file using the Un option in the input file.
-   !  !   n specifies the face number, following the ABAQUS convention
-   !  !
-   !  !
-   !    do j = 1,NDLOAD
-
-   !      call abq_facenodes_3D(NNODE,iabs(JDLTYP(j,1)),
-   !   1                                     face_node_list,nfacenodes)
-
-   !      do i = 1,nfacenodes
-   !          face_coords(1:3,i) = coords(1:3,face_node_list(i))
-   !      end do
-
-   !      if (nfacenodes == 3) n_points = 3
-   !      if (nfacenodes == 6) n_points = 4
-   !      if (nfacenodes == 4) n_points = 4
-   !      if (nfacenodes == 8) n_points = 9
-
-   !      call abq_UEL_2D_integrationpoints(n_points, nfacenodes, xi2, w)
-
-   !      do kint = 1,n_points
-   !          call abq_UEL_2D_shapefunctions(xi2(1:2,kint),
-   !   1                        nfacenodes,N2,dNdxi2)
-   !          dxdxi2 = matmul(face_coords(1:3,1:nfacenodes),
-   !   1                           dNdxi2(1:nfacenodes,1:2))
-   !          norm(1)=(dxdxi2(2,1)*dxdxi2(3,2))-(dxdxi2(2,2)*dxdxi2(3,1))
-   !          norm(2)=(dxdxi2(1,1)*dxdxi2(3,2))-(dxdxi2(1,2)*dxdxi2(3,1))
-   !          norm(3)=(dxdxi2(1,1)*dxdxi2(2,2))-(dxdxi2(1,2)*dxdxi2(2,1))
-
-   !          do i = 1,nfacenodes
-   !              ipoin = face_node_list(i)
-   !              RHS(ipoin:ipoin+2*9:9,1) = RHS(ipoin:ipoin+2*9:9,1)
-   !   1                 - N2(i)*adlmag(j,1)*norm(1:3)*w(kint)      ! Note determinant is already in normal
-   !          end do
-   !      end do
-   !    end do
-
-   ! check symmetry of matrices with tolerance
-
-      ! insert MMatrix in to M_PMl
-      ! M_PML(1:NDOFEL,1:NDOFEL) = MMATRX(1:NDOFEL,1:NDOFEL)
-      ! C_PML(1:NDOFEL,1:NDOFEL) = CMATRX(1:NDOFEL,1:NDOFEL)
-      ! K_PML(1:NDOFEL,1:NDOFEL) = KMATRX(1:NDOFEL,1:NDOFEL)
-      ! G_PML(1:NDOFEL,1:NDOFEL) = GMATRX(1:NDOFEL,1:NDOFEL)
-      ! H_PML(1:NDOFEL,1:NDOFEL) = HMATRX(1:NDOFEL,1:NDOFEL)
-      
-
-    !   call check_symmetry(M_PML,1.d-10,res1,"M")
-    !   if (res1 == 1) then
-    !      write(6,*) 'M_PML is symmetric ', res1
-    !   end if
-    !   call check_symmetry(G_PML,1.d-10,res4,"G")
-    !   if (res4 == 1) then
-    !      write(6,*) 'G_PML is symmetric ', res4
-    !   end if
-    !   call check_symmetry(H_PML,1.d-10,res5,"H")
-    !   if (res5 == 1) then 
-    !      write(6,*) 'H_PML is symmetric ', res5
-    !   end if
-    !   call check_symmetry(K_PML,1.d-10,res3,"K")
-    !   if (res3 == 1) then 
-    !      write(6,*) 'K_PML is symmetric ', res3
-    !   end if
-    !   call check_symmetry(C_PML,1.d-10,res2,"C")
-    !   if (res2 == 1) then 
-    !      write(6,*) 'C_PML is symmetric ', res2
-    !   end if
-
-    !   call check_zero(M_PML,1.d-10,res1,"M")
-    !   if (res1 == 1) write(6,*) 'M_PML is zero ', res1
-    !   call check_zero(G_PML,1.d-10,res1,"G")
-    !   if (res1 == 1) write(6,*) 'G_PML is zero ', res1
-    !   call check_zero(H_PML,1.d-10,res1,"H")
-    !   if (res1 == 1) write(6,*) 'H_PML is zero ', res1
-    !   call check_zero(K_PML,1.d-10,res1,"K")
-    !   if (res1 == 1) write(6,*) 'K_PML is zero ', res1
-    !   call check_zero(C_PML,1.d-10,res1,"C")
-    !   if (res1 == 1) write(6,*) 'C_PML is zero ', res1
-
-
       return
 
       END SUBROUTINE PML_3D
 
    
-      ! check symmetry of matrices with tolerance
-      subroutine check_symmetry(AMATRX,RTOL,a,char)
-      
-         implicit none
-         double precision, intent(in) :: AMATRX(72,72)
-         double precision, intent(in) :: RTOL
-         character(len=1), intent(in) :: char
-         integer , intent(out) :: a
-         integer :: i,j
-
-         a = 1
-
-         do i = 1, 72
-         do j = 1, 72
-            if (abs(AMATRX(i,j)-AMATRX(j,i)) > RTOL) then
-               write(6,*) 'Matrix ',char,' is not symmetric'
-               write(6,*) '(i,j) = ',AMATRX(i,j)
-               write(6,*) '(j,i) = ',AMATRX(j,i)
-               a = 0
-               exit
-            endif
-         end do
-         if (a == 0) exit
-         end do
-
-         return
-      end subroutine check_symmetry
 
 
-      subroutine check_zero(AMATRX,RTOL,a,char)
-      
-         implicit none
-         double precision, intent(in) :: AMATRX(72,72)
-         double precision, intent(in) :: RTOL
-         character(len=1), intent(in) :: char
-         integer , intent(out) :: a
-         integer :: i,j
-
-         a = 1
-
-         do i = 1, 72
-         do j = 1, 72
-            if (abs(AMATRX(i,j)) > RTOL) then
-               write(6,*) 'Matrix ',char,' is not zero'
-               write(6,*) '(i,j) = ',AMATRX(i,j)
-               a = 0
-               exit
-            endif
-         end do
-         if (a == 0) exit
-         end do
-
-         return
-      end subroutine check_zero
 
       subroutine abq_UEL_3D_integrationpoints(n_points, n_nodes, xi, w)
 
@@ -1390,665 +1031,313 @@ CMATRX(1:NDOFEL,1:NDOFEL) = CMATRX(1:NDOFEL,1:NDOFEL) + Damp_alpha*MMATRX(1:NDOF
 
       end subroutine abq_UEL_invert3d
 
-      subroutine abq_facenodes_3D(nelnodes,face,list,nfacenodes)
-
-      implicit none
-
-      integer, intent (in)      :: nelnodes
-      integer, intent (in)      :: face
-      integer, intent (out)     :: list(*)
-      integer, intent (out)     :: nfacenodes
-
-    !
-    !        Subroutine to return list of nodes on an element face for standard 3D solid elements
-    !
-
-      if (nelnodes == 4) then
-        nfacenodes = 3
-        if   (face == 1) list(1:3) = [1,2,3]
-        if (face == 2) list(1:3) = [1,4,2]
-        if (face == 3) list(1:3) = [2,4,3]
-        if (face == 4) list(1:3) = [3,4,1]
-      else if (nelnodes ==6) then
-        nfacenodes = 3
-        if (face==1) list(1:3) = [1,2,3]
-        if (face==2) list(1:3) = [6,5,4]
-        if (face==3) list(1:4) = [1,2,5,4]
-        if (face==4) list(1:4) = [2,3,6,5]
-        if (face==5) list(1:4) = [4,6,3,1]
-        if (face>2) nfacenodes = 4
-      else if (nelnodes == 10) then
-        nfacenodes = 6
-        if   (face == 1) list(1:6) = [1,2,3,5,6,7]
-        if (face == 2) list(1:6) = [1,4,2,8,9,5]
-        if (face == 3) list(1:6) = [2,4,3,9,10,6]
-        if (face == 4) list(1:6) = [3,4,1,10,8,7]
-      else if (nelnodes == 8) then
-        nfacenodes = 4
-        if (face==1) list(1:4) = [1,2,3,4]
-        if (face==2) list(1:4) = [5,8,7,6]
-        if (face==3) list(1:4) = [1,5,6,2]
-        if (face==4) list(1:4) = [2,6,7,3]
-        if (face==5) list(1:4) = [3,7,8,4]
-        if (face==6) list(1:4) = [4,8,5,1]
-      else if (nelnodes ==15) then
-        nfacenodes = 6
-        if (face==1) list(1:6) = [1,2,3,7,8,9]
-        if (face==2) list(1:6) = [6,5,4,11,10,12]
-        if (face==3) list(1:8) = [1,2,5,4,7,14,10,13]
-        if (face==4) list(1:8) = [2,3,6,5,8,15,11,14]
-        if (face==5) list(1:8) = [4,6,3,1,12,15,9,13]
-        if (face>2) nfacenodes = 8
-      else  if (nelnodes == 20) then
-        nfacenodes = 8
-        if (face == 1) list(1:8) = [1,2,3,4,9,10,11,12]
-        if (face == 2) list(1:8) = [5,8,7,6,16,15,14,13]
-        if (face == 3) list(1:8) = [1,5,6,2,17,13,18,9]
-        if (face == 4) list(1:8) = [2,6,7,3,18,14,19,10]
-        if (face == 5) list(1:8) = [3,7,8,4,19,15,6,11]
-        if (face == 6) list(1:8) = [4,8,5,1,20,16,17,12]
-      endif
-
-      end subroutine abq_facenodes_3D
-
-      subroutine abq_UEL_2D_integrationpoints(n_points, n_nodes, xi, w)
-
-      implicit none
-      integer, intent(in) :: n_points
-      integer, intent(in) :: n_nodes
-
-      double precision, intent(out) :: xi(2,*)
-      double precision, intent(out) :: w(*)
-
-      ! integer :: i,j,k,n
-
-      double precision :: cn,w1,w2,w11,w12,w22
-
-    !         Defines integration points and weights for 2D continuum elements
-
-      if ( n_points==1 ) then
-        if ( n_nodes==4 .or. n_nodes==9 ) then    !     ---   4 or 9 noded quad
-            xi(1, 1) = 0.D0
-            xi(2, 1) = 0.D0
-            w(1) = 4.D0
-        else if ( n_nodes==3 .or. n_nodes==6 ) then !     ---   3 or 6 noded triangle
-            xi(1, 1) = 1.D0/3.D0
-            xi(2, 1) = 1.D0/3.D0
-            w(1) = 1.D0/2.D0
-        end if
-      else if ( n_points==3 ) then
-        xi(1, 1) = 0.5D0
-        xi(2, 1) = 0.5D0
-        w(1) = 1.D0/6.D0
-        xi(1, 2) = 0.D0
-        xi(2, 2) = 0.5D0
-        w(2) = w(1)
-        xi(1, 3) = 0.5D0
-        xi(2, 3) = 0.D0
-        w(3) = w(1)
-      else if ( n_points==4 ) then
-        if ( n_nodes==4 .or. n_nodes==8 .or. n_nodes==9 ) then
-            !     2X2 GAUSS INTEGRATION POINTS FOR QUADRILATERAL
-            !     43
-            !     12
-            cn = 0.5773502691896260D0
-            xi(1, 1) = -cn
-            xi(1, 2) = cn
-            xi(1, 3) = cn
-            xi(1, 4) = -cn
-            xi(2, 1) = -cn
-            xi(2, 2) = -cn
-            xi(2, 3) = cn
-            xi(2, 4) = cn
-            w(1) = 1.D0
-            w(2) = 1.D0
-            w(3) = 1.D0
-            w(4) = 1.D0
-        else if ( n_nodes==3 .or. n_nodes==6 ) then
-            !     xi integration points for triangle
-            xi(1, 1) = 1.D0/3.D0
-            xi(2, 1) = xi(1, 1)
-            w(1) = -27.D0/96.D0
-            xi(1, 2) = 0.6D0
-            xi(2, 2) = 0.2D0
-            w(2) = 25.D0/96.D0
-            xi(1, 3) = 0.2D0
-            xi(2, 3) = 0.6D0
-            w(3) = w(2)
-            xi(1, 4) = 0.2D0
-            xi(2, 4) = 0.2D0
-            w(4) = w(2)
-        end if
-
-      else if ( n_points==7 ) then
-        ! Quintic integration for triangle
-        xi(1,1) = 1.d0/3.d0
-        xi(2,1) = xi(1,1)
-        w(1) = 0.1125d0
-        xi(1,2) = 0.0597158717d0
-        xi(2,2) = 0.4701420641d0
-        w(2) = 0.0661970763d0
-        xi(1,3) = xi(2,2)
-        xi(2,3) = xi(1,2)
-        w(3) = w(2)
-        xi(1,4) = xi(2,2)
-        xi(2,4) = xi(2,2)
-        w(4) = w(2)
-        xi(1,5) = 0.7974269853d0
-        xi(2,5) = 0.1012865073d0
-        w(5) = 0.0629695902d0
-        xi(1,6) = xi(2,5)
-        xi(2,6) = xi(1,5)
-        w(6) = w(5)
-        xi(1,7) = xi(2,5)
-        xi(2,7) = xi(2,5)
-        w(7) = w(5)
-      else if ( n_points==9 ) then
-        !     3X3 GAUSS INTEGRATION POINTS
-        !     789
-        !     456
-        !     123
-        cn = 0.7745966692414830D0
-        xi(1, 1) = -cn
-        xi(1, 2) = 0.D0
-        xi(1, 3) = cn
-        xi(1, 4) = -cn
-        xi(1, 5) = 0.D0
-        xi(1, 6) = cn
-        xi(1, 7) = -cn
-        xi(1, 8) = 0.D0
-        xi(1, 9) = cn
-        xi(2, 1) = -cn
-        xi(2, 2) = -cn
-        xi(2, 3) = -cn
-        xi(2, 4) = 0.D0
-        xi(2, 5) = 0.D0
-        xi(2, 6) = 0.D0
-        xi(2, 7) = cn
-        xi(2, 8) = cn
-        xi(2, 9) = cn
-        w1 = 0.5555555555555560D0
-        w2 = 0.8888888888888890D0
-        w11 = w1*w1
-        w12 = w1*w2
-        w22 = w2*w2
-        w(1) = w11
-        w(2) = w12
-        w(3) = w11
-        w(4) = w12
-        w(5) = w22
-        w(6) = w12
-        w(7) = w11
-        w(8) = w12
-        w(9) = w11
-      end if
-
-      return
-
-      end subroutine abq_UEL_2D_integrationpoints
 
 
+!       subroutine PML_alpha_beta_function(PROPS,x1,x2,x3,PML_alpha_beta)
 
+!       implicit none
 
-      subroutine abq_UEL_2D_shapefunctions(xi,n_nodes,f,df)
-
-      implicit none
-      integer, intent(in) :: n_nodes
-
-      double precision, intent(in) :: xi(2)
-      double precision, intent(out) :: f(*)
-      double precision, intent(out) :: df(9,2)
-      double precision g1, g2, g3, dg1, dg2, dg3
-      double precision h1, h2, h3, dh1, dh2, dh3
-      double precision z,dzdp, dzdq
-
-            if ( n_nodes==3 ) then        !     SHAPE FUNCTIONS FOR 3 NODED TRIANGLE
-                f(1) = xi(1)
-                f(2) = xi(2)
-                f(3) = 1.D0 - xi(1) - xi(2)
-                df(1, 1) = 1.D0
-                df(1, 2) = 0.D0
-                df(2, 1) = 0.D0
-                df(2, 2) = 1.D0
-                df(3, 1) = -1.D0
-                df(3, 2) = -1.D0
-            else if ( n_nodes==4 ) then
-                !     SHAPE FUNCTIONS FOR 4 NODED QUADRILATERAL
-                !     43
-                !     12
-                g1 = 0.5D0*(1.D0 - xi(1))
-                g2 = 0.5D0*(1.D0 + xi(1))
-                h1 = 0.5D0*(1.D0 - xi(2))
-                h2 = 0.5D0*(1.D0 + xi(2))
-                f(1) = g1*h1
-                f(2) = g2*h1
-                f(3) = g2*h2
-                f(4) = g1*h2
-                dg1 = -0.5D0
-                dg2 = 0.5D0
-                dh1 = -0.5D0
-                dh2 = 0.5D0
-                df(1, 1) = dg1*h1
-                df(2, 1) = dg2*h1
-                df(3, 1) = dg2*h2
-                df(4, 1) = dg1*h2
-                df(1, 2) = g1*dh1
-                df(2, 2) = g2*dh1
-                df(3, 2) = g2*dh2
-                df(4, 2) = g1*dh2
-
-            else if ( n_nodes==6 ) then
-
-                !     SHAPE FUNCTIONS FOR 6 NODED TRIANGLE
-                !          3
-
-                !       6      5
-
-                !     1    4     2
-
-                !     P = L1
-                !     Q = L2
-                !     Z = 1 - P - Q = L3
-
-                z = 1.D0 - xi(1) - xi(2)
-                f(1) = (2.D0*xi(1) - 1.D0)*xi(1)
-                f(2) = (2.D0*xi(2) - 1.D0)*xi(2)
-                f(3) = (2.D0*z - 1.D0)*z
-                f(4) = 4.D0*xi(1)*xi(2)
-                f(5) = 4.D0*xi(2)*z
-                f(6) = 4.D0*xi(1)*z
-                dzdp = -1.D0
-                dzdq = -1.D0
-                df(1, 1) = 4.D0*xi(1) - 1.D0
-                df(2, 1) = 0.D0
-                df(3, 1) = 4.D0*z*dzdp - dzdp
-                df(4, 1) = 4.D0*xi(2)
-                df(5, 1) = 4.D0*xi(2)*dzdp
-                df(6, 1) = 4.D0*z + 4.D0*xi(1)*dzdp
-                df(1, 2) = 0.D0
-                df(2, 2) = 4.D0*xi(2) - 1.D0
-                df(3, 2) = 4.D0*z*dzdq - dzdq
-                df(4, 2) = 4.D0*xi(1)
-                df(5, 2) = 4.D0*z + 4.D0*xi(2)*dzdq
-                df(6, 2) = 4.D0*xi(1)*dzdq
-
-            else if ( n_nodes==8 ) then
-                !     SHAPE FUNCTIONS FOR 8 NODED SERENDIPITY ELEMENT
-                 f(1) = -0.25*(1.-xi(1))*(1.-xi(2))*(1.+xi(1)+xi(2))
-                 f(2) = 0.25*(1.+xi(1))*(1.-xi(2))*(xi(1)-xi(2)-1.)
-                 f(3) = 0.25*(1.+xi(1))*(1.+xi(2))*(xi(1)+xi(2)-1.)
-                 f(4) = 0.25*(1.-xi(1))*(1.+xi(2))*(xi(2)-xi(1)-1.)
-                 f(5) = 0.5*(1.-xi(1)*xi(1))*(1.-xi(2))
-                 f(6) = 0.5*(1.+xi(1))*(1.-xi(2)*xi(2))
-                 f(7) = 0.5*(1.-xi(1)*xi(1))*(1.+xi(2))
-                 f(8) = 0.5*(1.-xi(1))*(1.-xi(2)*xi(2))
-                 df(1,1) = 0.25*(1.-xi(2))*(2.*xi(1)+xi(2))
-                 df(1,2) = 0.25*(1.-xi(1))*(xi(1)+2.*xi(2))
-                 df(2,1) = 0.25*(1.-xi(2))*(2.*xi(1)-xi(2))
-                 df(2,2) = 0.25*(1.+xi(1))*(2.*xi(2)-xi(1))
-                 df(3,1) = 0.25*(1.+xi(2))*(2.*xi(1)+xi(2))
-                 df(3,2) = 0.25*(1.+xi(1))*(2.*xi(2)+xi(1))
-                 df(4,1) = 0.25*(1.+xi(2))*(2.*xi(1)-xi(2))
-                 df(4,2) = 0.25*(1.-xi(1))*(2.*xi(2)-xi(1))
-                 df(5,1) = -xi(1)*(1.-xi(2))
-                 df(5,2) = -0.5*(1.-xi(1)*xi(1))
-                 df(6,1) = 0.5*(1.-xi(2)*xi(2))
-                 df(6,2) = -(1.+xi(1))*xi(2)
-                 df(7,1) = -xi(1)*(1.+xi(2))
-                 df(7,2) = 0.5*(1.-xi(1)*xi(1))
-                 df(8,1) = -0.5*(1.-xi(2)*xi(2))
-                 df(8,2) = -(1.-xi(1))*xi(2)
-            else if ( n_nodes==9 ) then
-                !     SHAPE FUNCTIONS FOR 9 NODED LAGRANGIAN ELEMENT
-                !     789
-                !     456
-                !     123
-                g1 = -.5D0*xi(1)*(1.D0 - xi(1))
-                g2 = (1.D0 - xi(1))*(1.D0 + xi(1))
-                g3 = .5D0*xi(1)*(1.D0 + xi(1))
-                h1 = -.5D0*xi(2)*(1.D0 - xi(2))
-                h2 = (1.D0 - xi(2))*(1.D0 + xi(2))
-                h3 = .5D0*xi(2)*(1.D0 + xi(2))
-                dg1 = xi(1) - 0.5d0
-                dg2 = -2.d0*xi(1)
-                dg3 = xi(1) + 0.5d0
-                dh1 = xi(2)-0.5d0
-                dh2 = -2.d0*xi(2)
-                dh3 = xi(2) + 0.5d0
-                f(1) = g1*h1
-                f(2) = g2*h1
-                f(3) = g3*h1
-                f(4) = g1*h2
-                f(5) = g2*h2
-                f(6) = g3*h2
-                f(7) = g1*h3
-                f(8) = g2*h3
-                f(9) = g3*h3
-                df(1,1) = dg1*h1
-                df(1,2) = g1*dh1
-                df(2,1) = dg2*h1
-                df(2,2) = g2*dh1
-                df(3,1) = dg3*h1
-                df(3,2) = g3*dh1
-                df(4,1) = dg1*h2
-                df(4,2) = g1*dh2
-                df(5,1) = dg2*h2
-                df(5,2) = g2*dh2
-                df(6,1) = dg3*h2
-                df(6,2) = g3*dh2
-                df(7,1) = dg1*h3
-                df(7,2) = g1*dh3
-                df(8,1) = dg2*h3
-                df(8,2) = g2*dh3
-                df(9,1) = dg3*h3
-                df(9,2) = g3*dh3
-            end if
-
-      end subroutine abq_UEL_2D_shapefunctions
-
-
-      subroutine PML_alpha_beta_function(PROPS,x1,x2,x3,PML_alpha_beta)
-
-      implicit none
-
-      double precision, intent(in) :: PROPS(*)
-      double precision, intent(in) :: x1, x2, x3
+!       double precision, intent(in) :: PROPS(*)
+!       double precision, intent(in) :: x1, x2, x3
      
-      double precision, intent(out) :: PML_alpha_beta(2,3)
+!       double precision, intent(out) :: PML_alpha_beta(2,3)
 
-      integer EleType_arg
+!       integer EleType_arg
 
-      double precision E, xnu, rho, PML_L, afp, PML_Rcoef
-      double precision x1_0, x2_0, x3_0, n1, n2, n3, cp_ref, PML_b
-      double precision alpha_0, beta_0
-      double precision RD_half_width_x, RD_half_width_y, RD_depth
+!       double precision E, xnu, rho, PML_L, afp, PML_Rcoef
+!       double precision x1_0, x2_0, x3_0, n1, n2, n3, cp_ref, PML_b
+!       double precision alpha_0, beta_0
+!       double precision RD_half_width_x, RD_half_width_y, RD_depth
 
-      E = PROPS(1)
-      xnu = PROPS(2)
-      rho = PROPS(3)
-      EleType_arg = floor(PROPS(4))
-      PML_L = PROPS(5)
-      afp = PROPS(6)
-      PML_Rcoef = PROPS(7)
-      RD_half_width_x = PROPS(8)
-      RD_half_width_y = PROPS(9)
-      RD_depth = PROPS(10)
+!       E = PROPS(1)
+!       xnu = PROPS(2)
+!       rho = PROPS(3)
+!       EleType_arg = floor(PROPS(4))
+!       PML_L = PROPS(5)
+!       afp = PROPS(6)
+!       PML_Rcoef = PROPS(7)
+!       RD_half_width_x = PROPS(8)
+!       RD_half_width_y = PROPS(9)
+!       RD_depth = PROPS(10)
       
 
-      cp_ref = SQRT(E *(1.d0-xnu)/rho/(1.d0+xnu)/(1.d0-2.d0*xnu))
+!       cp_ref = SQRT(E *(1.d0-xnu)/rho/(1.d0+xnu)/(1.d0-2.d0*xnu))
 
-      IF(x2 < -RD_half_width_y) then
-          IF(x1 < -RD_half_width_x) then
-              IF(x3 < -RD_depth) then
+!       IF(x2 < -RD_half_width_y) then
+!           IF(x1 < -RD_half_width_x) then
+!               IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 15
+!                   EleType_arg = 15
                   
-              else
+!               else
                   
-                  EleType_arg = 6
+!                   EleType_arg = 6
                   
-              endif
+!               endif
               
-          ELSEIF(x1 < RD_half_width_x) then
-               IF(x3 < -RD_depth) then
+!           ELSEIF(x1 < RD_half_width_x) then
+!                IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 11
+!                   EleType_arg = 11
                   
-              else
+!               else
                   
-                  EleType_arg = 2
+!                   EleType_arg = 2
                   
-              endif    
+!               endif    
               
-          Else
-              IF(x3 < -RD_depth) then
+!           Else
+!               IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 16
+!                   EleType_arg = 16
                   
-              else
+!               else
                   
-                  EleType_arg = 7
+!                   EleType_arg = 7
                   
-              endif  
-          endif
+!               endif  
+!           endif
           
-      ELSEIF(x2 < RD_half_width_y) then
-          IF(x1 < -RD_half_width_x) then
-              IF(x3 < -RD_depth) then
+!       ELSEIF(x2 < RD_half_width_y) then
+!           IF(x1 < -RD_half_width_x) then
+!               IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 14
+!                   EleType_arg = 14
                   
-              else
+!               else
                   
-                  EleType_arg = 5
+!                   EleType_arg = 5
                   
-              endif
+!               endif
               
-          ELSEIF(x1 < RD_half_width_x) then
-               IF(x3 < -RD_depth) then
+!           ELSEIF(x1 < RD_half_width_x) then
+!                IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 10
+!                   EleType_arg = 10
                   
-              else
+!               else
                   
-                  EleType_arg = 1
+!                   EleType_arg = 1
                   
-              endif    
+!               endif    
               
-          Else
-              IF(x3 < -RD_depth) then
+!           Else
+!               IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 12
+!                   EleType_arg = 12
                   
-              else
+!               else
                   
-                  EleType_arg = 3
+!                   EleType_arg = 3
                   
-              endif  
-          endif  
+!               endif  
+!           endif  
           
-      Else
-          IF(x1 < -RD_half_width_x) then
-              IF(x3 < -RD_depth) then
+!       Else
+!           IF(x1 < -RD_half_width_x) then
+!               IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 18
+!                   EleType_arg = 18
                   
-              else
+!               else
                   
-                  EleType_arg = 9
+!                   EleType_arg = 9
                   
-              endif
+!               endif
               
-          ELSEIF(x1 < RD_half_width_x) then
-               IF(x3 < -RD_depth) then
+!           ELSEIF(x1 < RD_half_width_x) then
+!                IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 13
+!                   EleType_arg = 13
                   
-              else
+!               else
                   
-                  EleType_arg = 4
+!                   EleType_arg = 4
                   
-              endif    
+!               endif    
               
-          Else
-              IF(x3 < -RD_depth) then
+!           Else
+!               IF(x3 < -RD_depth) then
                   
-                  EleType_arg = 17
+!                   EleType_arg = 17
                   
-              else
+!               else
                   
-                  EleType_arg = 8
+!                   EleType_arg = 8
                   
-              endif  
-          endif  
+!               endif  
+!           endif  
           
-      endif
-      ! write(6,*) "EleType_arg ",EleType_arg
-      select case (EleType_arg) 
-      case(1) !Regular domain (do nothing) 
-          n1 = 0.d0 
-          n2 = 0.d0 
-          n3 = 0.d0 
-          x1_0 = 0
-          x2_0 = 0
-          x3_0 = 0
+!       endif
+!       ! write(6,*) "EleType_arg ",EleType_arg
+!       select case (EleType_arg) 
+!       case(1) !Regular domain (do nothing) 
+!           n1 = 0.d0 
+!           n2 = 0.d0 
+!           n3 = 0.d0 
+!           x1_0 = 0
+!           x2_0 = 0
+!           x3_0 = 0
 
-      case(2) ! Top view, bottom surface PML
-          n1 = 0.d0
-          n2 = -1.d0 
-          n3 = 0.d0
-          x1_0 = 0
-          x2_0 = -1.d0* RD_half_width_y
-          x3_0 = 0
+!       case(2) ! Top view, bottom surface PML
+!           n1 = 0.d0
+!           n2 = -1.d0 
+!           n3 = 0.d0
+!           x1_0 = 0
+!           x2_0 = -1.d0* RD_half_width_y
+!           x3_0 = 0
 
-      case(3) ! Top view, right surface PML
-          n1 = 1.d0
-          n2 = 0.d0 
-          n3 = 0.d0
-          x1_0 = 1.d0* RD_half_width_x
-          x2_0 = 0
-          x3_0 = 0
+!       case(3) ! Top view, right surface PML
+!           n1 = 1.d0
+!           n2 = 0.d0 
+!           n3 = 0.d0
+!           x1_0 = 1.d0* RD_half_width_x
+!           x2_0 = 0
+!           x3_0 = 0
 
-      case(4) ! Top view, top surface PML
-          n1 = 0.d0
-          n2 = 1.d0 
-          n3 = 0.d0
-          x1_0 = 0
-          x2_0 = 1.d0* RD_half_width_y
-          x3_0 = 0
+!       case(4) ! Top view, top surface PML
+!           n1 = 0.d0
+!           n2 = 1.d0 
+!           n3 = 0.d0
+!           x1_0 = 0
+!           x2_0 = 1.d0* RD_half_width_y
+!           x3_0 = 0
 
-      case(5) ! Top view, left surface PML
-          n1 = -1.d0
-          n2 = 0.d0 
-          n3 = 0.d0
-          x1_0 = -1.d0* RD_half_width_x
-          x2_0 = 0
-          x3_0 = 0          
+!       case(5) ! Top view, left surface PML
+!           n1 = -1.d0
+!           n2 = 0.d0 
+!           n3 = 0.d0
+!           x1_0 = -1.d0* RD_half_width_x
+!           x2_0 = 0
+!           x3_0 = 0          
 
-      case(6) ! Top view, left-bottom column PML
-          n1 = -1.d0
-          n2 = -1.d0 
-          n3 = 0.d0
-          x1_0 = -1.d0* RD_half_width_x
-          x2_0 = -1.d0* RD_half_width_y
-          x3_0 = 0
+!       case(6) ! Top view, left-bottom column PML
+!           n1 = -1.d0
+!           n2 = -1.d0 
+!           n3 = 0.d0
+!           x1_0 = -1.d0* RD_half_width_x
+!           x2_0 = -1.d0* RD_half_width_y
+!           x3_0 = 0
 
-      case(7) ! Top view, right-bottom column PML
-          n1 = 1.d0
-          n2 = -1.d0 
-          n3 = 0.d0
-          x1_0 = 1.d0* RD_half_width_x
-          x2_0 = -1.d0* RD_half_width_y
-          x3_0 = 0
+!       case(7) ! Top view, right-bottom column PML
+!           n1 = 1.d0
+!           n2 = -1.d0 
+!           n3 = 0.d0
+!           x1_0 = 1.d0* RD_half_width_x
+!           x2_0 = -1.d0* RD_half_width_y
+!           x3_0 = 0
 
-      case(8) ! Top view, right-top column PML
-          n1 = 1.d0
-          n2 = 1.d0 
-          n3 = 0.d0
-          x1_0 = 1.d0* RD_half_width_x
-          x2_0 = 1.d0* RD_half_width_y
-          x3_0 = 0
+!       case(8) ! Top view, right-top column PML
+!           n1 = 1.d0
+!           n2 = 1.d0 
+!           n3 = 0.d0
+!           x1_0 = 1.d0* RD_half_width_x
+!           x2_0 = 1.d0* RD_half_width_y
+!           x3_0 = 0
 
-      case(9) ! Top view, left-top column PML
-          n1 = -1.d0
-          n2 = 1.d0 
-          n3 = 0.d0
-          x1_0 = -1.d0* RD_half_width_x
-          x2_0 = 1.d0* RD_half_width_y
-          x3_0 = 0
+!       case(9) ! Top view, left-top column PML
+!           n1 = -1.d0
+!           n2 = 1.d0 
+!           n3 = 0.d0
+!           x1_0 = -1.d0* RD_half_width_x
+!           x2_0 = 1.d0* RD_half_width_y
+!           x3_0 = 0
 
-      case(10) ! Top view, bottom surface, surface PML
-          n1 = 0.d0
-          n2 = 0.d0 
-          n3 = -1.d0
-          x1_0 = 0
-          x2_0 = 0
-          x3_0 = -1.d0* RD_depth    
+!       case(10) ! Top view, bottom surface, surface PML
+!           n1 = 0.d0
+!           n2 = 0.d0 
+!           n3 = -1.d0
+!           x1_0 = 0
+!           x2_0 = 0
+!           x3_0 = -1.d0* RD_depth    
 
-      case(11) ! Top view, bottom surface, bottom column PML
-          n1 = 0.d0
-          n2 = -1.d0 
-          n3 = -1.d0
-          x1_0 = 0
-          x2_0 = -1.d0* RD_half_width_y
-          x3_0 = -1.d0* RD_depth    
+!       case(11) ! Top view, bottom surface, bottom column PML
+!           n1 = 0.d0
+!           n2 = -1.d0 
+!           n3 = -1.d0
+!           x1_0 = 0
+!           x2_0 = -1.d0* RD_half_width_y
+!           x3_0 = -1.d0* RD_depth    
 
-      case(12) ! Top view, bottom surface, right column PML
-          n1 = 1.d0
-          n2 = 0.d0 
-          n3 = -1.d0
-          x1_0 = 1.d0* RD_half_width_x
-          x2_0 = 0
-          x3_0 = -1.d0* RD_depth  
+!       case(12) ! Top view, bottom surface, right column PML
+!           n1 = 1.d0
+!           n2 = 0.d0 
+!           n3 = -1.d0
+!           x1_0 = 1.d0* RD_half_width_x
+!           x2_0 = 0
+!           x3_0 = -1.d0* RD_depth  
 
-      case(13) ! Top view, bottom surface, top column PML
-          n1 = 0.d0
-          n2 = 1.d0 
-          n3 = -1.d0
-          x1_0 = 0
-          x2_0 = 1.d0* RD_half_width_y
-          x3_0 = -1.d0* RD_depth 
+!       case(13) ! Top view, bottom surface, top column PML
+!           n1 = 0.d0
+!           n2 = 1.d0 
+!           n3 = -1.d0
+!           x1_0 = 0
+!           x2_0 = 1.d0* RD_half_width_y
+!           x3_0 = -1.d0* RD_depth 
 
-      case(14) ! Top view, bottom surface, left column PML
-          n1 = -1.d0
-          n2 = 0.d0 
-          n3 = -1.d0
-          x1_0 = -1.d0* RD_half_width_x
-          x2_0 = 0
-          x3_0 = -1.d0* RD_depth 
+!       case(14) ! Top view, bottom surface, left column PML
+!           n1 = -1.d0
+!           n2 = 0.d0 
+!           n3 = -1.d0
+!           x1_0 = -1.d0* RD_half_width_x
+!           x2_0 = 0
+!           x3_0 = -1.d0* RD_depth 
 
-      case(15) ! Top view, bottom surface, left-bottom corner PML
-          n1 = -1.d0
-          n2 = -1.d0 
-          n3 = -1.d0
-          x1_0 = -1.d0* RD_half_width_x
-          x2_0 = -1.d0* RD_half_width_y
-          x3_0 = -1.d0* RD_depth    
+!       case(15) ! Top view, bottom surface, left-bottom corner PML
+!           n1 = -1.d0
+!           n2 = -1.d0 
+!           n3 = -1.d0
+!           x1_0 = -1.d0* RD_half_width_x
+!           x2_0 = -1.d0* RD_half_width_y
+!           x3_0 = -1.d0* RD_depth    
 
-      case(16) ! Top view, bottom surface, right-bottom corner PML
-          n1 = 1.d0
-          n2 = -1.d0 
-          n3 = -1.d0
-          x1_0 = 1.d0* RD_half_width_x
-          x2_0 = -1.d0* RD_half_width_y
-          x3_0 = -1.d0* RD_depth  
+!       case(16) ! Top view, bottom surface, right-bottom corner PML
+!           n1 = 1.d0
+!           n2 = -1.d0 
+!           n3 = -1.d0
+!           x1_0 = 1.d0* RD_half_width_x
+!           x2_0 = -1.d0* RD_half_width_y
+!           x3_0 = -1.d0* RD_depth  
 
-      case(17) ! Top view, bottom surface, right-top corner PML
-          n1 = 1.d0
-          n2 = 1.d0 
-          n3 = -1.d0
-          x1_0 = 1.d0* RD_half_width_x
-          x2_0 = 1.d0* RD_half_width_y
-          x3_0 = -1.d0* RD_depth 
+!       case(17) ! Top view, bottom surface, right-top corner PML
+!           n1 = 1.d0
+!           n2 = 1.d0 
+!           n3 = -1.d0
+!           x1_0 = 1.d0* RD_half_width_x
+!           x2_0 = 1.d0* RD_half_width_y
+!           x3_0 = -1.d0* RD_depth 
 
-      case(18) ! Top view, bottom surface, left-top corner PML
-          n1 = -1.d0
-          n2 = 1.d0 
-          n3 = -1.d0
-          x1_0 = -1.d0* RD_half_width_x
-          x2_0 = 1.d0* RD_half_width_y
-          x3_0 = -1.d0* RD_depth 
+!       case(18) ! Top view, bottom surface, left-top corner PML
+!           n1 = -1.d0
+!           n2 = 1.d0 
+!           n3 = -1.d0
+!           x1_0 = -1.d0* RD_half_width_x
+!           x2_0 = 1.d0* RD_half_width_y
+!           x3_0 = -1.d0* RD_depth 
 
-      end select
+!       end select
 
-      PML_b = PML_L / 1.d0   !characteristic length (average element size in the PML domain) 
+!       PML_b = PML_L / 1.d0   !characteristic length (average element size in the PML domain) 
       
-      alpha_0 = ((afp+1)*PML_b) / (2.d0*PML_L )*LOG10(1.d0 / PML_Rcoef)
-      beta_0 = ((afp+1)*cp_ref) / (2.d0*PML_L )*LOG10(1.d0 / PML_Rcoef)
+!       alpha_0 = ((afp+1)*PML_b) / (2.d0*PML_L )*LOG10(1.d0 / PML_Rcoef)
+!       beta_0 = ((afp+1)*cp_ref) / (2.d0*PML_L )*LOG10(1.d0 / PML_Rcoef)
       
-!      alpha_0 = 5.d0
-!      beta_0 = 800.d0
+! !      alpha_0 = 5.d0
+! !      beta_0 = 800.d0
 
-      PML_alpha_beta(1,1) = 1.d0 + alpha_0*((x1 -x1_0) * n1 /PML_L)**afp 
-      PML_alpha_beta(1,2) = 1.d0 + alpha_0*((x2 -x2_0) * n2 /PML_L)**afp
-      PML_alpha_beta(1,3) = 1.d0 + alpha_0*((x3 -x3_0) * n3 /PML_L)**afp
+!       write(6,*) , "alpha_____0", alpha_0
+!       write(6,*) , "beta______0", beta_0
 
-      PML_alpha_beta(2,1) = beta_0*((x1 -x1_0) * n1 /PML_L)**afp 
-      PML_alpha_beta(2,2) = beta_0*((x2 -x2_0) * n2 /PML_L)**afp
-      PML_alpha_beta(2,3) = beta_0*((x3 -x3_0) * n3 /PML_L)**afp
+!       PML_alpha_beta(1,1) = 1.d0 + alpha_0*((x1 -x1_0) * n1 /PML_L)**afp 
+!       PML_alpha_beta(1,2) = 1.d0 + alpha_0*((x2 -x2_0) * n2 /PML_L)**afp
+!       PML_alpha_beta(1,3) = 1.d0 + alpha_0*((x3 -x3_0) * n3 /PML_L)**afp
 
-      IF (EleType_arg .EQ.1) THEN
-        PML_alpha_beta(1:2,1:3) = 0.d0
-      end if
+!       PML_alpha_beta(2,1) = beta_0*((x1 -x1_0) * n1 /PML_L)**afp 
+!       PML_alpha_beta(2,2) = beta_0*((x2 -x2_0) * n2 /PML_L)**afp
+!       PML_alpha_beta(2,3) = beta_0*((x3 -x3_0) * n3 /PML_L)**afp
 
-      end subroutine PML_alpha_beta_function
+!       IF (EleType_arg .EQ.1) THEN
+!         PML_alpha_beta(1:2,1:3) = 0.d0
+!       end if
+
+!       end subroutine PML_alpha_beta_function
