@@ -373,6 +373,12 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\pyUCLA.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+	<ClCompile Include="..\..\..\SRC\material\uniaxial\QbSandCPT.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\..\SRC\material\uniaxial\TzSandCPT.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond1Material.cpp">
       <Filter>uniaxial\fedeas</Filter>
     </ClCompile>
@@ -1637,6 +1643,12 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\pyUCLA.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\QbSandCPT.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\TzSandCPT.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond1Material.h">
