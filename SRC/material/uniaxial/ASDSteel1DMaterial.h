@@ -38,6 +38,15 @@
 #include <vector>
 #include <map>
 
+/**
+todo: global material
+	flag computed_once -> if false -> call update
+		revert to start -> call update (TO SET INITIAL DATA)
+
+*/
+
+class ASDSteel1DMaterialPIMPL;
+
 class ASDSteel1DMaterial : public UniaxialMaterial
 {
 public:
@@ -54,41 +63,17 @@ public:
 		double gamma2 = 0.0;
 		// misc
 		bool implex = false;
-		double implex_error = 0.0;
-		double implex_time_redution_limit = 0.01;
-		double implex_error_tolerance = 0.05;
-		bool dtime_is_user_defined = false;
-		// True = keep IMPL-EX error under control
-		bool implex_control = false;
+		// buckling
+		double radius = 0.0;
+		double length = 0.0;
+
+		//convergence
+		double K_alpha = 0.0;
+		double max_iter = 0.0;
+		double tolU = 0.0;
+		double tolR = 0.0;
 		// counter
-		static constexpr int NDATA = 12;
-	};
-	class StateVariablesSteel {
-	public:
-		// state variables - backstresses
-		double alpha1 = 0.0;
-		double alpha1_commit = 0.0;
-		double alpha2 = 0.0;
-		double alpha2_commit = 0.0;
-		// state variables - plastic multiplier
-		double lambda = 0.0;
-		double lambda_commit = 0.0;
-		double lambda_commit_old = 0.0; // for implex
-		double sg_commit = 0.0; // plastic flow dir for implex
-		// strain, stress and tangent
-		double strain = 0.0;
-		double strain_commit = 0.0;
-		double stress = 0.0;
-		double stress_commit = 0.0;
-		double C = 0.0;
-		// methods
-		static constexpr int NDATA = 13;
-		void commit(const InputParameters& params);
-		void revertToLastCommit(const InputParameters& params);
-		void revertToStart(const InputParameters& params);
-		void sendSelf(int &counter, Vector& ddata);
-		void recvSelf(int& counterg, Vector& ddata);
-		
+		static constexpr int NDATA = 9;
 	};
 
 public:
@@ -97,6 +82,7 @@ public:
 		int _tag,
 		const InputParameters& _params);
 	ASDSteel1DMaterial();
+	ASDSteel1DMaterial(const ASDSteel1DMaterial& other);
 	~ASDSteel1DMaterial();
 
 	// info
@@ -110,9 +96,6 @@ public:
 	double getStress(void);
 	double getTangent(void);
 	double getInitialTangent(void);
-
-	// get IMPL-EX error
-	const Vector& getImplexError() const;
 
 	// handle state
 	int commitState(void);
@@ -135,19 +118,15 @@ public:
 	double getEnergy(void);
 
 private:
-	int computeBaseSteel(StateVariablesSteel& sv, bool do_implex);
+	int homogenize(bool do_implex);
 
  private:
 	 // common input parameters
 	 InputParameters params;
-	 // state variables - steel
-	 StateVariablesSteel steel;
 	 // state variables - implex
 	 double dtime_n = 0.0;
 	 double dtime_n_commit = 0.0;
-	 double dtime_0 = 0.0;
 	 bool commit_done = false;
-	 
 	 // strain, stress and tangent (homogenized)
 	 double strain = 0.0;
 	 double strain_commit = 0.0;
@@ -156,6 +135,8 @@ private:
 	 double C = 0.0;
 	 // other variables for output purposes
 	 double energy = 0.0;
+	 // private implementation
+	 ASDSteel1DMaterialPIMPL* pdata = nullptr;
 };
 
 #endif
