@@ -27,8 +27,8 @@
 // University of Washington, UC. Los Angeles, U.C. Berkeley, 12, 2020
 
 
-#ifndef PML3D_H
-#define PML3D_H
+#ifndef PML3DVISCOUS_H
+#define PML3DVISCOUS_H
 
 #include <stdio.h> 
 #include <stdlib.h> 
@@ -39,10 +39,11 @@
 #include <Matrix.h>
 #include <Element.h>
 #include <Node.h>
+#include <ElasticIsotropicMaterial.h>
 
-#define PML3D_NUM_DOF 72
-#define PML3D_NUM_PROPS 12
-#define PML3D_NUM_NODES 8
+#define PML3DVISCOUS_NUM_DOF 72
+#define PML3DVISCOUS_NUM_PROPS 12
+#define PML3DVISCOUS_NUM_NODES 8
 
 #ifdef _WIN32
 
@@ -78,14 +79,21 @@ extern "C" void  pml3d_(double* mMatrix,
 
 #endif
 
-class PML3D : public Element {
+class PML3DVISCOUS : public Element {
 
 public:
 
-	PML3D();                                                                         //null constructor
-	PML3D(int tag, int* nodeTags, double* newmarks, double* dData);                  // full constructor
-	virtual ~PML3D();                                                                //destructor
-	const char* getClassType(void) const { return "PML3D"; };                        //return class type
+	PML3DVISCOUS();                                                                         //null constructor
+	// PML3DVISCOUS(int tag, int* nodeTags, double* newmarks, double* dData);                  // full constructor
+	PML3DVISCOUS(int tag, int* nodeTags,
+				 ElasticIsotropicMaterial* theMat, double PMLThickness,
+				 double* Xref, double* Normal,
+				 double alpha_0, double beta_0, bool explicitAB,
+				 double Cp, double m_coeff, double R,
+				 double gammaN, double betaN, double etaN, double keisiN);                  // full constructor
+	
+	virtual ~PML3DVISCOUS();                                                                //destructor
+	const char* getClassType(void) const { return "PML3DVISCOUS"; };                        //return class type
 	void setDomain(Domain* theDomain);                                               // set domain
 	int getNumExternalNodes() const; 	   						                     // get number of external nodes
 	const ID& getExternalNodes(); 								                     // get external nodes
@@ -113,31 +121,53 @@ public:
 	int displaySelf(Renderer&, int mode, float fact, const char** displayModes = 0, int numModes = 0);
 
 private:
-
+	void calculateMatrices(); 								// calculate matrices method
 	Domain* Domainptr;                              // pointer to the domain
-	double props[PML3D_NUM_PROPS];                  // material properties
+	// double props[PML3DVISCOUS_NUM_PROPS];                  // material properties
 	ID connectedExternalNodes;  					//eight node numbers
-	Node* nodePointers[PML3D_NUM_NODES];    	    //pointers to eight nodes
-	double K[PML3D_NUM_DOF * PML3D_NUM_DOF];        // stiffness matrix
-	double C[PML3D_NUM_DOF * PML3D_NUM_DOF];        // damping matrix
-	double M[PML3D_NUM_DOF * PML3D_NUM_DOF];        // mass matrix
-    double G[PML3D_NUM_DOF * PML3D_NUM_DOF];        // G matrix
-	double Keff[PML3D_NUM_DOF * PML3D_NUM_DOF];     // effective stiffness matrix
-	static double eta;                              // Newmark parameters: eta
+	Node* nodePointers[PML3DVISCOUS_NUM_NODES];    	    //pointers to eight nodes
+	static double K[PML3DVISCOUS_NUM_DOF * PML3DVISCOUS_NUM_DOF];        // stiffness matrix
+	static double C[PML3DVISCOUS_NUM_DOF * PML3DVISCOUS_NUM_DOF];        // damping matrix
+	static double M[PML3DVISCOUS_NUM_DOF * PML3DVISCOUS_NUM_DOF];        // mass matrix
+    static double G[PML3DVISCOUS_NUM_DOF * PML3DVISCOUS_NUM_DOF];        // G matrix
+    static double H[PML3DVISCOUS_NUM_DOF * PML3DVISCOUS_NUM_DOF];        // H matrix
+	static double Keff[PML3DVISCOUS_NUM_DOF * PML3DVISCOUS_NUM_DOF];     // effective stiffness matrix
+	static double gamma; 					  	    // Newmark parameters: gamma
 	static double beta; 					  	    // Newmark parameters: beta
-	static double gamma; 					  	// Newmark parameters: gamma
+	static double eta;                              // Newmark parameters: eta
+	static double keisi;                            // Newmark parameters: keisi
 	static Matrix tangent;                          // tangent matrix
 	static Vector resid; 						    // residual vector
 	static Matrix mass;						        // mass matrix
 	static Matrix damping;	 					    // damping matrix
+	static Matrix Gmat;                             // G matrix
+	static Matrix Hmat;                             // H matrix
+	static Matrix keffmat;                          // effective stiffness matrix
 	Vector ubart; 				                    // ubar at time t 
+    Vector ubarbart;                                // ubarbar at time t
 	Vector ubar; 				                    // ubar at time t+dt
+    Vector ubarbar;                                 // ubarbar at time t+dt
 	static double dt; 								// time step
 	int updateflag; 								// update flag
 	int update_dt;                                  // flag for updating dt
 	static int eleCount; 						    // element count
+	static int ComputedEleTag; 					    // computed element tag
+	double coords[24];
 	// int innertag; 								// inner tag
 	// static int numberOfElements; 			    // number of elements
+	double alpha0;								    // alpha0 pml parameter
+	double beta0;								    // beta0 pml parameter
+	double xref, yref, zref;					    // reference point
+	double nx, ny, nz;							    // normal vector
+	const char* meshtype;							// type of  mesh
+	double PML_L;                                    // PML minimum thickness
+	double m_coeff;                                 // m parameter for PML
+	double R_coeff;									    // PML damping ratio
+	double cp_ref;								    // reference wave speed
+	bool ExplicitAlphaBeta;						 // flag for explicit alpha beta
+	
+	ElasticIsotropicMaterial* theMaterial;         // pointer to the material
+
 };
 
 #endif

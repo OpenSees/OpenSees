@@ -13,6 +13,7 @@ target_sources(OPS_Element
     PML2D.cpp
     PML3D.cpp
     PML2DVISCOUS.cpp
+    PML3DVISCOUS.cpp
     PML2D_3.cpp
     PML2D_5.cpp
     PML2D_12.cpp
@@ -20,6 +21,7 @@ target_sources(OPS_Element
     PML3D.h
     PML2D.h
     PML2DVISCOUS.h
+    PML3DVISCOUS.h
     PML2D_3.h
     PML2D_5.h
     PML2D_12.h
