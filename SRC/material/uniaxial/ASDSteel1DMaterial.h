@@ -73,7 +73,7 @@ public:
 		double tolU = 0.0;
 		double tolR = 0.0;
 		// counter
-		static constexpr int NDATA = 9;
+		static constexpr int NDATA = 13;
 	};
 
 public:

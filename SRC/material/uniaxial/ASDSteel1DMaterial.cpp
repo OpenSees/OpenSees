@@ -215,6 +215,9 @@ namespace {
 		Vector element_U_local = Vector(6);
 		Vector element_U_local_commit = Vector(6);
 		Matrix element_B = Matrix(3, 6);
+		Matrix element_TtK = Matrix(6, 6);
+		Matrix element_BtC = Matrix(6, 3);
+		Vector element_dU = Vector(6);
 
 		// RVE
 		// node positions (to be set at each setTrialStrain)
@@ -228,11 +231,11 @@ namespace {
 		double rve_Kred = 0.0;
 		std::array<V2D, 4> rve_nodes = { V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0) };
 		inline void setRVENodes(double lch) {
-			double dy = lch / 6.0; // consider half distance, the RVE uses symmetry
+			double dy = lch / 3.0;
 			for (int i = 0; i < 4; ++i) {
 				auto& ip = rve_nodes[i];
 				ip.y = dy * static_cast<double>(i); // from bottom to top, bottom at 0,0
-				ip.x = ip.y *  1.0e-3; // add imperfection
+				ip.x = ip.y * 1.0e-3; // add imperfection
 			}
 		}
 
@@ -284,12 +287,6 @@ namespace {
 			stress_commit = 0.0;
 		}
 		inline int compute(const param_t& params, bool do_implex, double time_factor, double _strain, double& sigma, double& tangent) {
-			// REM
-			/*sigma = _strain * params.E;
-			tangent = params.E;
-			return 0;*/
-
-
 			// return value
 			int retval = 0;
 			// settings
@@ -456,13 +453,6 @@ namespace {
 			const  ASDSteel1DMaterial::InputParameters& params, const Vector& strain,
 			bool do_implex, double time_factor,
 			Vector& stress, Matrix& tangent) {
-			//// REM
-			//tangent.Zero();
-			//tangent(0, 0) = tangent(1, 1) = tangent(2, 2) = 3000.0;
-			//stress.addMatrixVector(0.0, tangent, strain, 1.0);
-			//return 0;
-
-
 			/**
 			A section with 1 fiber is used for the central element. In this RVE model the
 			central element has always zero curvature. However, with only 1 fiber the bending
@@ -505,8 +495,7 @@ namespace {
 	{
 	public:
 		std::array<SteelComponent, 3> fibers;
-		//static constexpr std::array<double, 3> positions = { -1.0 / 2.0, 0.0, 1.0 / 2.0 };
-		static constexpr std::array<double, 3> positions = { -1.0/3 , 0.0, 1.0/3  };
+		static constexpr std::array<double, 3> positions = { -1.0 / 2.0, 0.0, 1.0 / 2.0 };
 		static constexpr std::array<double, 3> weights = { 1.0 / 4.0, 1.0 / 2.0, 1.0 / 4.0 };
 
 	public:
@@ -731,8 +720,6 @@ namespace {
 	{
 	public:
 		SectionComponent<NFiber> section;
-		SectionComponent<1> s1;
-		SectionComponent<3> s3;
 		Vector UL_commit = Vector(6);
 		std::array<Q2D, 2> qn = { Q2D::identity(), Q2D::identity()};
 		std::array<Q2D, 2> qn_commit = { Q2D::identity(), Q2D::identity() };
@@ -747,12 +734,15 @@ namespace {
 			auto& U = globals.element_U;
 			auto& U_commit = globals.element_U_commit;
 			auto& UL = globals.element_U_local;
+			auto& dU = globals.element_dU;
 			auto& B = globals.element_B;
 			auto& T = globals.element_T;
 			auto& RHS = globals.element_RHS;
 			auto& RHSL = globals.element_RHS_local;
 			auto& LHS = globals.element_LHS;
 			auto& LHSL = globals.element_LHS_local;
+			auto& BtC = globals.element_BtC;
+			auto& TtK = globals.element_TtK;
 			auto& stress_s = globals.section_stress;
 			auto& strain_s = globals.section_strain;
 			auto& tangent_s = globals.section_tangent;
@@ -789,14 +779,7 @@ namespace {
 			}
 			computeLocalFrame(node_i, node_j, Q0, C0);  //rve nodes
 
-
 			if (!do_implex) {
-				//to monitor the error
-				/*
-				Q2D Q_impl;
-				computeLocalFrame(deformed_node_i_old, deformed_node_j_old, Q_impl, C);
-				*/
-
 				V2D rn_current = V2D(U(2), U(5)); // rotation at current iteration
 				V2D dtheta = rn_current - rn; // iterative correction
 				rn = rn_current; // save current for next iteration
@@ -823,7 +806,6 @@ namespace {
 				UL(5) = (Q * qn[1] * Q0.conjugate()).toRotationVector();
 			}
 			else {
-				/*static*/ Vector dU(6);
 				dU = U;
 				dU.addVector(1.0, U_commit, -1.0);
 				UL = UL_commit; 
@@ -834,28 +816,28 @@ namespace {
 			
 			// section strain = B*U
 			strain_s.addMatrixVector(0.0, B, UL, 1.0);
+
 			//section compute strain - stress tangent
-		
 			int retval = section.compute(params, strain_s, do_implex, time_factor, stress_s, tangent_s);
 			if (retval != 0) {
 				opserr << "section !converged\n";
 				return retval;
 			}
 			
-			// RHS  //B ok 
-			
+			// RHS  
 			RHSL.addMatrixTransposeVector(0.0, B, stress_s, L);
 			RHS.addMatrixTransposeVector(0.0, T, RHSL, 1.0);
+
 			// LHS
+			BtC.addMatrixTransposeProduct(0.0, B, tangent_s, L);
+			LHSL.addMatrixProduct(0.0, BtC, B, 1.0);
+			TtK.addMatrixTransposeProduct(0.0, T, LHSL, 1.0);
+			LHS.addMatrixProduct(0.0, TtK, T, 1.0);
 
-
-			LHSL.addMatrixTripleProduct(0.0, B, tangent_s, L);
-			LHS.addMatrixTripleProduct(0.0, T, LHSL, 1.0);
-
+			// SEMI-COMMIT
 			if (params.implex && !do_implex) {
 				UL_commit = UL;
 			}
-
 			
 			return 0;
 		} 
@@ -874,6 +856,7 @@ namespace {
 			qn_commit = { Q2D::identity(), Q2D::identity() };
 			rn = V2D(0.0, 0.0);
 			rn_commit = V2D(0.0, 0.0);
+			UL_commit.Zero();
 			section.revertToStart(); 
 		}
 
@@ -889,7 +872,7 @@ namespace {
 		auto& globals = Globals::instance();
 		assembleRHS<EType>(globals.element_RHS, globals.rve_R); 
 		assembleLHS<EType>(globals.element_LHS, globals.rve_K);
-		
+		//opserr << "   Etype: " << EType << "rve_r: " << globals.rve_R << ", rve_k: " << globals.rve_K << "\n";
 		return 0;
 	}
 
@@ -897,9 +880,9 @@ namespace {
 	{
 	public:
 		RVEStateVariables sv;
-		ElementComponent<3, 1> e1;
-		ElementComponent<1, 2> e2;		
-		ElementComponent<3, 3> e3;  
+		ElementComponent<3, EType_Bot> e1;
+		ElementComponent<1, EType_Mid> e2;
+		ElementComponent<3, EType_Top> e3;
 
 		RVEModel() = default;
 		
@@ -932,9 +915,10 @@ namespace {
 			sv.UG(7) = U;
 
 			// first residual
-			lam_assemble();
-			if (lam_assemble() != 0)
+			if (lam_assemble() != 0) {
+				opserr << "1lam assemble !=0 \n";
 				return -1;
+			}
 			// newton loop for this step
 			// note: do it in reverse order, so that we can access the element RHS for element Bottom to get reaction
 			double Rnorm = -1.0;
@@ -954,9 +938,10 @@ namespace {
 				}
 
 				// assemble
-				lam_assemble();
-				if (lam_assemble() != 0)
+				if (lam_assemble() != 0){
+					opserr << "lam assemble !=0 \n";
 					break;
+			    }
 
 				// convergence test
 				
@@ -1179,7 +1164,7 @@ void* OPS_ASDSteel1DMaterial()
 	params.H2 = H2 * (1.0 - alpha);
 	params.gamma2 = gamma2;
 	params.implex = implex;
-	params.length = lch;
+	params.length = lch / 2.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
 	params.K_alpha = K_alpha;
 	params.max_iter = max_iter;
@@ -1241,6 +1226,7 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	strain = v;
 	// homogenize micro response (stress/tangent)
 
+	opserr << "MAT set trial (" << (int)params.implex << ")\n";
 	int retval = homogenize(params.implex);
 
 	return retval;
@@ -1270,6 +1256,7 @@ int ASDSteel1DMaterial::commitState(void)
 {
 	// implicit stage
 	if (params.implex) {
+		opserr << "MAT commit (" << (int)false << ")\n";
 		int retval = homogenize(false);
 		if (retval < 0) return retval;
 	}
