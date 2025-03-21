@@ -47,6 +47,16 @@
 #define M_PI 3.14159265358979323846
 #endif
 
+#define ASD_STEEL1D__VERBOSE
+
+#ifdef ASD_STEEL1D__VERBOSE
+#define asd_print_full(X) opserr  << __func__ << " (Line " << __LINE__ << "): " << X << "\n"
+#define asd_print(X) opserr << X << "\n"
+#else
+#define asd_print_full(X)
+#define asd_print(X)
+#endif // ASD_STEEL1D__VERBOSE
+
 // anonymous namespace for utilities
 namespace {
 
@@ -74,7 +84,7 @@ namespace {
 		}
 		inline double operator()(int i) const {
 			if (i == 0) return x;
-			/*if (i == 1) */return y;
+			return y;
 		}
 	};
 	inline V2D operator + (const V2D& a, const V2D& b) {
@@ -103,7 +113,7 @@ namespace {
 		M2D(const V2D& x, const V2D& y) : dx(x), dy(y) {}
 		inline double operator()(int i, int j) const {
 			if (i == 0) return dx(j);
-			/*else if (i == 1)*/ return dy(j);
+			return dy(j);
 		}
 	};
 	
@@ -219,8 +229,7 @@ namespace {
 		Matrix element_BtC = Matrix(6, 3);
 		Vector element_dU = Vector(6);
 
-		// RVE
-		// node positions (to be set at each setTrialStrain)
+		// for RVE
 		Vector rve_dU = Vector(7);
 		Vector rve_R = Vector(7);
 		Matrix rve_K = Matrix(7, 7);
@@ -229,6 +238,7 @@ namespace {
 		Vector rve_Kinv_Kcr = Vector(7);
 		double rve_Krr = 0.0;
 		double rve_Kred = 0.0;
+		// node positions (to be set at each setTrialStrain)
 		std::array<V2D, 4> rve_nodes = { V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0) };
 		inline void setRVENodes(double lch) {
 			double dy = lch / 3.0;
@@ -287,13 +297,12 @@ namespace {
 			stress_commit = 0.0;
 		}
 		inline int compute(const param_t& params, bool do_implex, double time_factor, double _strain, double& sigma, double& tangent) {
-			// return value
 			int retval = 0;
 			// settings
 			constexpr int MAX_ITER = 1000;
 			constexpr double F_REL_TOL = 1.0e-6;
 			constexpr double L_ABS_TOL = 1.0e-8;
-			//constexpr double K_alpha = 0.8;  //DA TARARE
+			//constexpr double K_alpha = 0.8;  
 			// base steel response
 			alpha1 = alpha1_commit;
 			alpha2 = alpha2_commit;
@@ -357,11 +366,6 @@ namespace {
 						if (dF == 0.0) break;
 						// solve for dlambda
 						dlambda = -F / dF;
-						//constexpr double max_strain_incr = 0.002;
-						//if (dlambda < -max_strain_incr)
-						//	dlambda = -max_strain_incr;
-						//else if (dlambda > max_strain_incr)
-						//	dlambda = max_strain_incr;
 						delta_lambda += dlambda;
 						// update plastic multiplier increment and sigma
 						lam_yield_update(dlambda, delta_lambda);
@@ -382,7 +386,7 @@ namespace {
 						}
 					}
 					if (!converged) {
-						opserr << "dlambda !converged\n";
+						asd_print("dlambda !converged");
 						retval = -1;
 					}
 				}
@@ -644,11 +648,9 @@ namespace {
 					if (jdof < 7) {
 						G(idof, jdof) += M(i, j); 
 					}
-
 				}
 			}
 		}
-
 	}
 	template<int EType>
 	inline void getRetainedComponents(const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
@@ -671,8 +673,6 @@ namespace {
 		}
 	}
 
-
-
 	inline M2D computeLocalFrameInternal(const V2D& X1, const V2D& X2, Q2D& Qi, V2D& C) {
 		C = (X1 + X2) * 0.5;
 		V2D dx = X2 - X1;
@@ -688,6 +688,7 @@ namespace {
 	}
 	inline void computeLocalFrame(const V2D& X1, const V2D& X2, Q2D& Qi, V2D& C, Matrix& T) {
 		M2D Ri = computeLocalFrameInternal(X1, X2, Qi, C);
+		//T matrix : considering P_t @ R
 		for (int i = 0; i < 2;++i) {
 			for (int j = 0; j < 2;++j) {
 				T(i, j) = T(i + 3, j + 3) = Ri(i, j) / 2.0;
@@ -812,7 +813,7 @@ namespace {
 				UL.addMatrixVector(1.0, T, dU, 1.0);
 			}
 
-			computeBmatrix(node_i, node_j, L, B);   //rve nodes
+			computeBmatrix(node_i, node_j, L, B);  //rve nodes
 			
 			// section strain = B*U
 			strain_s.addMatrixVector(0.0, B, UL, 1.0);
@@ -820,7 +821,7 @@ namespace {
 			//section compute strain - stress tangent
 			int retval = section.compute(params, strain_s, do_implex, time_factor, stress_s, tangent_s);
 			if (retval != 0) {
-				opserr << "section !converged\n";
+				asd_print_full("section !converged");
 				return retval;
 			}
 			
@@ -866,13 +867,12 @@ namespace {
 	inline int rve_process_element(ElementComponent<NFiber, EType>& ele, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor) {
 		int retval = ele.compute(rve, params, do_implex, time_factor);
 		if (retval != 0) {
-			opserr << "ele !converged\n";
+			asd_print_full("ele !converged");
 			return retval;
 		}
 		auto& globals = Globals::instance();
 		assembleRHS<EType>(globals.element_RHS, globals.rve_R); 
 		assembleLHS<EType>(globals.element_LHS, globals.rve_K);
-		//opserr << "   Etype: " << EType << "rve_r: " << globals.rve_R << ", rve_k: " << globals.rve_K << "\n";
 		return 0;
 	}
 
@@ -891,8 +891,10 @@ namespace {
 			// output
 			int retval = -1;
 			
-			// start from previous commited state
-			revertToLastCommit();
+			// start from previous commited state (not in implex commit)
+			if (!(params.implex && !do_implex)) {
+				revertToLastCommit();
+			}
 			
 			// globals
 			double tolR = params.tolR * params.sy;
@@ -901,6 +903,7 @@ namespace {
 			auto& globals = Globals::instance();
 			
 			// utility for assembly
+			// note: do it in reverse order, so that we can access the element RHS for element Bottom to get reaction
 			auto lam_assemble = [this, &globals, &params, &do_implex, &time_factor]() -> int {
 				// zero R and K for element integration
 				globals.rve_R.Zero();
@@ -916,19 +919,23 @@ namespace {
 
 			// first residual
 			if (lam_assemble() != 0) {
-				opserr << "1lam assemble !=0 \n";
+				asd_print_full("1lam assemble !=0");
 				return -1;
 			}
-			// newton loop for this step
-			// note: do it in reverse order, so that we can access the element RHS for element Bottom to get reaction
+
 			double Rnorm = -1.0;
 			double Unorm = -1.0;
+
+			//for implicit correction convergence
+			static std::array<Vector, 10> U_iterative = { Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7)};
+			static std::array<double, 10> Rnorm_iterative = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
+	
+			// newton loop for this step
 			for (int iter = 0; iter < params.max_iter; ++iter) {
 
 				// solve
 				if (globals.rve_K.Solve(globals.rve_R, globals.rve_dU) != 0) {
-					opserr << "Solve failed\n";
-
+					asd_print_full("Solve failed");
 					break;
 				}
 
@@ -939,27 +946,44 @@ namespace {
 
 				// assemble
 				if (lam_assemble() != 0){
-					opserr << "lam assemble !=0 \n";
+					asd_print_full("lam assemble !=0");
 					break;
 			    }
 
 				// convergence test
-				
 				Rnorm = globals.rve_R.Norm();
 				Unorm = globals.rve_dU.Norm();
-				opserr << "   iter: " << iter << "R: " << Rnorm << ", U: " << Unorm << "\n";
+				asd_print("iter: " << iter << "R: " << Rnorm << ", U: " << Unorm);
+
+				//for implicit correction convergence (max 10 iterations)
+				if (params.implex && !do_implex) {
+					U_iterative[iter] = sv.UG;
+					Rnorm_iterative[iter] = Rnorm;					
+					if (iter >= 9) {
+						auto minRiter = std::min_element(Rnorm_iterative.begin(), Rnorm_iterative.end());
+						double minRnorm = *minRiter;
+						if (!std::isfinite(minRnorm)) {
+							Rnorm = std::numeric_limits<double>::max();
+						}
+						Rnorm = minRnorm;
+						asd_print("minRnorm"<<minRnorm);
+						int pos_min = std::distance(Rnorm_iterative.begin(), minRiter);
+						sv.UG = U_iterative[pos_min];
+						lam_assemble();
+						retval = 0;
+						break;
+					}				
+				}
+			
 				if (Rnorm < tolR || Unorm < tolU) {
 					retval = 0;
-					break;
-				
+					break;				
 				}
 				
-	
 			}
 			
 			if (retval != 0) {
-				opserr << "rve !converged\n";
-				//opserr << "R: " << Rnorm << ", U: " << Unorm << "\n";
+				asd_print_full("rve !converged");
 			}
 
 			// do it outside, element Bottom is the last one
@@ -1050,8 +1074,8 @@ void* OPS_ASDSteel1DMaterial()
 	double lch;
 	double r;
 	bool implex = false;
-	double K_alpha = 0.6;
-	double max_iter= 200;
+	double K_alpha = 0.5;
+	double max_iter= 100;
 	double tolU = 1.0e-6;
 	double tolR = 1.0e-6;
 	bool have_K_alpha = false;
@@ -1226,7 +1250,7 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	strain = v;
 	// homogenize micro response (stress/tangent)
 
-	opserr << "MAT set trial (" << (int)params.implex << ")\n";
+	asd_print("MAT set trial (" << (int)params.implex << ")");
 	int retval = homogenize(params.implex);
 
 	return retval;
@@ -1256,7 +1280,7 @@ int ASDSteel1DMaterial::commitState(void)
 {
 	// implicit stage
 	if (params.implex) {
-		opserr << "MAT commit (" << (int)false << ")\n";
+		asd_print("MAT commit (" << (int)false << ")");
 		int retval = homogenize(false);
 		if (retval < 0) return retval;
 	}
@@ -1314,7 +1338,6 @@ int ASDSteel1DMaterial::revertToStart(void)
 
 	// output variables
 	energy = 0.0;
-
 
 	// done
 	return 0;
@@ -1473,8 +1496,7 @@ double ASDSteel1DMaterial::getEnergy(void)
 }
 
 int ASDSteel1DMaterial::homogenize(bool do_implex)
-{
-	
+{	
 	// return value
 	int retval = 0;
 
