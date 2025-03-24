@@ -1,21 +1,29 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
+/* ******************************************************************
+***
+**    OpenSees - Open System for Earthquake Engineering
+*Simulation    **
+**          Pacific Earthquake Engineering Research Center
+***
+** **
+** **
+** (C) Copyright 1999, The Regents of the University of
+*California    **
+** All Rights Reserved. **
+** **
+** Commercial use of this program without express permission
+*of the   **
+** University of California, Berkeley, is strictly
+*prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on
+*usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.
+***
+** **
+** Developed by: **
+**   Frank McKenna (fmckenna@ce.berkeley.edu) **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu) **
+**   Filip C. Filippou (filippou@ce.berkeley.edu) **
+** **
 ** ****************************************************************** */
 
 // Written: Minjie Zhu
@@ -28,18 +36,23 @@
 #include "BackgroundDef.h"
 
 class BNode;
+class Pressure_Constraint;
 
 // BACKGROUND_FLUID - a grid fluid cell
-// BACKGROUND_STRUCTURE - a structural cell, which should have no particles
+// BACKGROUND_STRUCTURE - a structural cell, which should
+// have no particles
 class BCell {
    private:
     VParticle pts;
     BackgroundType type;
     std::vector<BNode*> bnodes;
     std::vector<VInt> bindices;
+    Node* center_node;
+    Pressure_Constraint* center_pc;
 
    public:
     BCell();
+    void removeCenterNode();
     void add(Particle* pt);
     void setType(BackgroundType t);
     BackgroundType getType() const;
@@ -48,6 +61,8 @@ class BCell {
     std::vector<VInt>& getIndices();
 
     void addNode(BNode* bnode, const VInt& index);
+    Node* setCenterNode(int new_tag, int new_p_tag);
+    Node* getCenterNode();
 
     void clearParticles();
 };

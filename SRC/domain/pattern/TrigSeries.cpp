@@ -35,6 +35,7 @@
 #include <Vector.h>
 #include <Channel.h>
 #include <classTags.h>
+#include <Parameter.h>
 
 #include <math.h>
 
@@ -127,7 +128,7 @@ TrigSeries::TrigSeries(int tag,
     : TimeSeries(tag, TSERIES_TAG_TrigSeries),
     tStart(startTime), tFinish(finishTime),
     period(T), phaseShift(phaseshift),
-    cFactor(theFactor), zeroShift(zeroshift)
+      cFactor(theFactor), zeroShift(zeroshift), parameterID(0)
 {
     if (period == 0.0) {
         opserr << "TrigSeries::TrigSeries -- input period is zero, setting period to PI\n";
@@ -140,7 +141,7 @@ TrigSeries::TrigSeries()
     : TimeSeries(TSERIES_TAG_TrigSeries),
     tStart(0.0), tFinish(0.0),
     period(1.0), phaseShift(0.0),
-    cFactor(1.0), zeroShift(0.0)
+      cFactor(1.0), zeroShift(0.0), parameterID(0)
 {
     // does nothing
 }
@@ -228,4 +229,61 @@ void TrigSeries::Print(OPS_Stream &s, int flag)
     s << "\tPeriod: " << period << endln;
     s << "\tPhase Shift: " << phaseShift << endln;
     s << "\tZero Shift: " << zeroShift << endln;
+}
+
+// AddingSensitivity:BEGIN //////////////////////////////////////////
+double
+TrigSeries::getFactorSensitivity(double pseudoTime)
+{
+  static double twopi = 4*asin(1.0);
+
+  if (pseudoTime >= tStart && pseudoTime <= tFinish)  {
+    double phi = phaseShift - period/twopi*asin(zeroShift/cFactor);
+    if (parameterID == 1)
+      return sin(twopi*(pseudoTime-tStart)/period + phi);
+    if (parameterID == 2)
+      return cFactor*cos(twopi*(pseudoTime-tStart)/period + phi)*(-twopi*(pseudoTime-tStart)/(period*period));
+
+    return 0.0;
+  }
+
+  return 0.0;
+}
+
+int 
+TrigSeries::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strncmp(argv[0],"factor",80) == 0) {
+    param.setValue(cFactor);
+    return param.addObject(1, this);
+  }
+  if (strncmp(argv[0],"period",80) == 0) {
+    param.setValue(period);
+    return param.addObject(2, this);
+  }
+
+  return -1;
+}
+   
+int 
+TrigSeries::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    cFactor = info.theDouble;
+    return 0;
+  }
+  if (parameterID == 2) {
+    period = info.theDouble;
+    return 0;
+  }  
+
+  return -1;
+}
+
+int
+TrigSeries::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
 }

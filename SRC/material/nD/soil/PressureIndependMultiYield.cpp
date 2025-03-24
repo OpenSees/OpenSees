@@ -73,7 +73,7 @@ void* OPS_PressureIndependMultiYield()
     param[5] = 0.0;
     param[6] = 100.;
     param[7] = 0.0;
-    numdata = 8;
+    numdata = 5;
     if (OPS_GetDoubleInput(&numdata, &param[0]) < 0) {
 	opserr << "WARNING invalid PressureIndependMultiYield double inputs" << "\n";
 	return 0;

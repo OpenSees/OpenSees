@@ -87,7 +87,19 @@ void* OPS_TwoNodeLinkSection()
     y(0) = 0;
     y(1) = 1;
     y(2) = 0;
-    
+
+    if (x.Norm() > 0) {
+      // If local x points along global Y, change the local y vector
+      if (x(0) == 0.0 && x(1) > 0.0 && x(2) == 0.0) {
+	y(0) = -1;
+	y(1) = 0;
+      }
+      if (x(0) == 0.0 && x(1) < 0.0 && x(2) == 0.0) {
+	y(0) = 1;
+	y(1) = 0;
+      }      
+    }
+ 
     Vector Mratio, sDistI;
     int doRayleigh = 0;
     double mass = 0.0;
@@ -539,15 +551,12 @@ int TwoNodeLinkSection::update()
     uldot.addMatrixVector(0.0, Tgl, ugdot, 1.0);
     
     // transform response from the local to the basic system
-    ub.addMatrixVector(0.0, Tlb, ul, 1.0);
-    ubdot.addMatrixVector(0.0, Tlb, uldot, 1.0);
+    double factor = (L > 0.0) ? 1.0/L : 1.0;
+    ub.addMatrixVector(0.0, Tlb, ul, factor);
+    ubdot.addMatrixVector(0.0, Tlb, uldot, factor);
     //ub = (Tlb*Tgl)*ug;
     //ubdot = (Tlb*Tgl)*ugdot;
 
-    // MHS hack
-    ub(0) /= L;
-    ub(1) /= L;
-    
     errCode += theSection->setTrialSectionDeformation(ub);
     
     return errCode;
@@ -567,15 +576,11 @@ const Matrix& TwoNodeLinkSection::getTangentStiff()
 
     // MHS hack
     Matrix kb = theSection->getSectionTangent();
-    kb(0,0) /= L;
-    kb(1,1) /= L;
-    //kb(2,2) *= L;
-
-    //qb(2) *= L;
     
     // transform stiffness from basic to local system
     Matrix kl(numDOF,numDOF);
-    kl.addMatrixTripleProduct(0.0, Tlb, kb, 1.0);
+    double factor = (L > 0.0) ? 1.0/L : 1.0;
+    kl.addMatrixTripleProduct(0.0, Tlb, kb, factor);
     
     // add P-Delta effects to local stiffness
     if (Mratio.Size() == 4)
@@ -603,7 +608,8 @@ const Matrix& TwoNodeLinkSection::getInitialStiff()
     
     // transform stiffness from basic to local system
     Matrix klInit(numDOF,numDOF);
-    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, 1.0);
+    double factor = (L > 0.0) ? 1.0/L : 1.0;    
+    klInit.addMatrixTripleProduct(0.0, Tlb, kbInit, factor);
     
     // transform stiffness from local to global system
     theMatrix->addMatrixTripleProduct(0.0, Tgl, klInit, 1.0);
@@ -637,6 +643,7 @@ const Matrix& TwoNodeLinkSection::getDamp()
     
     // transform damping from basic to local system
     Matrix cl(numDOF,numDOF);
+    double factor = (L > 0.0) ? 1.0/L : 1.0;    
     cl.addMatrixTripleProduct(0.0, Tlb, cb, 1.0);
     
     // transform damping from local to global system
@@ -722,9 +729,6 @@ const Vector& TwoNodeLinkSection::getResistingForce()
     // get resisting force
     qb = theSection->getStressResultant();
 
-    // MHS hack
-    //qb(2) *= L;
-    
     // determine resisting force in local system
     Vector ql(numDOF);
     ql.addMatrixTransposeVector(0.0, Tlb, qb, 1.0);
@@ -1116,9 +1120,52 @@ void TwoNodeLinkSection::setUp()
 {
     const Vector &end1Crd = theNodes[0]->getCrds();
     const Vector &end2Crd = theNodes[1]->getCrds();	
-    Vector xp = end2Crd - end1Crd;
+    Vector xp(3);
+    for (int i = 0; i < numDIM; i++)
+      xp(i) = end2Crd(i) - end1Crd(i);    
     L = xp.Norm();
+    xp /= L;
+
+    x /= x.Norm();
+
+    if (numDIM == 1) {
+      x(0) = 1; y(0) = 0;
+      x(1) = 0; y(1) = 1;
+      x(2) = 0; y(2) = 0;
+    }
+    if (numDIM == 2) {
+      if (L > DBL_EPSILON) {
+	if (x != xp) {
+	  opserr << "WARNING TwoNodeLinkSection::setUp() - " 
+		 << "element: " << this->getTag() << endln
+		 << "ignoring nodes and using specified "
+		 << "local x vector to determine orientation\n";
+	  opserr << "input x:      " << x;
+	  opserr << "x from nodes: " << xp;	  
+	}
+      }
+      else {
+	
+      }
+      y(0) = -x(1);
+      y(1) =  x(0);
+      y(2) =     0;      
+    }
+    if (numDIM == 3) {
+      if (L > DBL_EPSILON) {
+	if (x != xp) {
+	  opserr << "WARNING TwoNodeLinkSection::setUp() - " 
+		 << "element: " << this->getTag() << endln
+		 << "ignoring nodes and using specified "
+		 << "local x vector to determine orientation\n";
+	}
+      }
+      else {
+	
+      }
+    }
     
+    /*
     // setup x and y orientation vectors
     if (L > DBL_EPSILON)  {
         if (x.Size() == 0)  {
@@ -1159,6 +1206,7 @@ void TwoNodeLinkSection::setUp()
             y(0) = 0.0; y(1) = 1.0; y(2) = 0.0;
         }
     }
+    */
     
     // check that vectors for orientation are of correct size
     if (x.Size() != 3 || y.Size() != 3)  {

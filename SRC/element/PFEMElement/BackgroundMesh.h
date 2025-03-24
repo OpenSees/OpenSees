@@ -53,7 +53,7 @@ class BackgroundMesh {
     void setRange(const VDouble& l, const VDouble& u);
     void setBasicSize(double size) { bsize = size; }
     void addRecorder(Recorder* recorder);
-    int record(bool init = false);
+    int record();
     void setLocs(const VDouble& l) { this->locs = l; }
     int setFile(const char* name);
     void setNumSub(int num) { numsub = num; }
@@ -66,9 +66,10 @@ class BackgroundMesh {
     void setDispOn(bool on);
     void setRecordRange(double range) { recordRange = range; }
     void setNumAve(int num) { numave = num; }
+    bool isDefined() const;
 
     // remesh all
-    int remesh(bool init = false);
+    int remesh();
 
     // get grids
     void getIndex(const VDouble& crds, double incr, VInt& index) const;

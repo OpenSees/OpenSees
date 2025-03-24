@@ -1559,17 +1559,31 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
 int
 FourNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
 {
+  int res = -1;
+
   if (argc < 1)
     return -1;
 
-  int res = -1;
-
   // quad pressure loading
-  if (strcmp(argv[0],"pressure") == 0) {
+  if (strcmp(argv[0], "pressure") == 0)
     return param.addObject(2, this);
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    for (int i=0; i<4; i++) {
+      int dmpRes =  theDamping[i]->setParameter(argv, argc, param);
+      if (dmpRes != -1)
+        res = dmpRes;
+    }
+    return res;
   }
-  // a material parameter
-  else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
+
+ // specific material point
+ if (strstr(argv[0],"material") != 0) {
 
     if (argc < 3)
       return -1;
@@ -1581,19 +1595,12 @@ FourNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
   }
 
-  // otherwise it could be just a forall material parameter
-  else {
-
-    int matRes = res;
-    for (int i=0; i<4; i++) {
-
-      matRes =  theMaterial[i]->setParameter(argv, argc, param);
-
-      if (matRes != -1)
-	res = matRes;
-    }
+  // all material points
+  for (int i=0; i<4; i++) {
+    int matRes =  theMaterial[i]->setParameter(argv, argc, param);
+    if (matRes != -1)
+      res = matRes;
   }
-  
   return res;
 }
     
