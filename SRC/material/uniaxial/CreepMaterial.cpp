@@ -200,6 +200,8 @@ CreepMaterial::CreepMaterial(int tag, double _fc, double _fcu, double _epscu, do
   epscru = fabs(epscru);
 
   this->expandArrays();
+
+  TIME_i[0] = getCurrentTime();
 }
 
 void
@@ -303,7 +305,9 @@ CreepMaterial::CreepMaterial(int tag, UniaxialMaterial &matl, double _age, doubl
   epsshu = -fabs(epsshu);
   epscru = fabs(epscru);
 
-  this->expandArrays();  
+  this->expandArrays();
+
+  TIME_i[0] = getCurrentTime();
 }
 
 CreepMaterial::CreepMaterial(void):
