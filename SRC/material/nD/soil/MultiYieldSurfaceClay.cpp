@@ -99,7 +99,7 @@ void* OPS_MultiYieldSurfaceClay()
     param[7] = 100.;
     param[8] = 0.0;
     param[9] = 20;
-    numdata = 10;
+    numdata = 6;
     if (OPS_GetDoubleInput(&numdata, param) < 0) {
 	opserr << "WARNING invalid MultiYieldSurfaceClay double inputs\n";
 	return 0;
