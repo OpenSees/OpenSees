@@ -264,6 +264,7 @@ void* OPS_ShellNLDKGQThermal();
 void* OPS_ShellNLDKGTThermal();
 void* OPS_PipeElement();
 void* OPS_CurvedPipeElement();
+void* OPS_PML3DVISCOUS(void);
 
 
 namespace {
@@ -382,7 +383,7 @@ namespace {
 	if(ndm == 3)
 	    return OPS_E_SFI_MVLEM_3D();	
 	return 0;
-    }      
+    }    
 
     static void* OPS_DispBeamColumn()
     {
@@ -466,7 +467,7 @@ namespace {
 	    return OPS_BeamColumnJoint3d();
 	}
     }
-	
+
     static void* OPS_FlatSliderBearing()
     {
 	int ndm = OPS_GetNDM();
@@ -594,7 +595,7 @@ namespace {
 	  return OPS_PML2D();
 	}
 	else {
-	  return OPS_PML3D();
+	  return OPS_PML3DVISCOUS();
 	}
   }
 
@@ -815,6 +816,7 @@ namespace {
 	functionMap.insert(std::make_pair("PML2D_5", &OPS_PML2D_5));
 	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
 	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
+	functionMap.insert(std::make_pair("PML3DVISCOUS", &OPS_PML3DVISCOUS));
 	functionMap.insert(std::make_pair("ShellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
 	functionMap.insert(std::make_pair("shellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
 	functionMap.insert(std::make_pair("ShellNLDKGTThermal", &OPS_ShellNLDKGTThermal));
