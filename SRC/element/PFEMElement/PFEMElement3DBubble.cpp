@@ -320,7 +320,14 @@ int
 PFEMElement3DBubble::update()
 {
     if (dispon) {
-	return updateJacobi();
+	if (updateJacobi() < 0) {
+	    opserr << "WARNING: failed to update Jacobi -- Bubble3D::update\n";
+	    return -1;
+	}
+	if (updateMatrix() < 0) {
+	    opserr << "WARNING: failed to update matrix -- Bubble3D::update\n";
+	    return -1;
+	}
     }
 
     return 0;

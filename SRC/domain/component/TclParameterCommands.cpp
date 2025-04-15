@@ -215,6 +215,23 @@ TclModelBuilderParameterCommand(ClientData clientData, Tcl_Interp *interp,
 
       argStart = (theRV) ? 6 : 4;
     }
+    else if (argc > argStart && strstr(argv[argStart],"region") != 0) {
+      if (argc < 4) {
+	opserr << "WARNING parameter -- insufficient number of arguments for parameter with tag " << paramTag << '\n';
+	return TCL_ERROR;
+      }
+
+      int regionTag;
+      if (Tcl_GetInt(interp, argv[argStart+1], &regionTag) != TCL_OK) {
+	opserr << "WARNING parameter -- invalid region tag\n";
+	return TCL_ERROR;    
+      }
+
+      // Retrieve element from domain
+      theObject = (DomainComponent *) theTclDomain->getRegion(regionTag);
+
+      argStart = (theRV) ? 6 : 4;
+    }
     else if (argc > argStart && strstr(argv[argStart],"loadPattern") != 0) {
       if (argc < 4) {
 	opserr << "WARNING parameter -- insufficient number of arguments for parameter with tag " << paramTag << '\n';
