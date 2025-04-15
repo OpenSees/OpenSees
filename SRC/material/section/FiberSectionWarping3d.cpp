@@ -1196,17 +1196,35 @@ FiberSectionWarping3d::Print(OPS_Stream &s, int flag)
 Response*
 FiberSectionWarping3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
-
   const ID &type = this->getType();
   int typeSize = this->getOrder();
 
-  Response *theResponse =0;
-
+  Response *theResponse = 0;
+  
+  static double yLocs[10000];
+  static double zLocs[10000];
+  static double fiberArea[10000];
+  static double omega[10000];
+  
+  if (sectionIntegr != 0) {
+    sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+    sectionIntegr->getFiberWeights(numFibers, fiberArea);
+    sectionIntegr->getFiberSectorials(numFibers, omega);      
+  }  
+  else {
+    for (int i = 0; i < numFibers; i++) {
+      yLocs[i] = matData[4*i];
+      zLocs[i] = matData[4*i+1];
+      fiberArea[i] = matData[4*i+2];
+      omega[i] = matData[4*i+3];	
+    }
+  }
+    
   if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
-      int key = numFibers;
-      int passarg = 2;
-      
+    int key = numFibers;
+    int passarg = 2;
+    
       if (argc <= 3)	{  // fiber number was input directly
 	
 	key = atoi(argv[1]);
@@ -1247,47 +1265,132 @@ FiberSectionWarping3d::setResponse(const char **argv, int argc, OPS_Stream &outp
 	    }
 	  }
 	}
-	passarg = 4;
-      }
+    } else if (argc > 4) {         // find fiber closest to coord. with mat tag
+      int matTag = atoi(argv[3]);
+      double yCoord = atof(argv[1]);
+      double zCoord = atof(argv[2]);
+      double closestDist = 0.0;
+      double ySearch, zSearch, dy, dz;
+      double distance;
+      int j;
       
-      else {                  // fiber near-to coordinate specified
-	double yCoord = atof(argv[1]);
-	double zCoord = atof(argv[2]);
-	double closestDist;
-	double ySearch, zSearch, dy, dz;
-	double distance;
-	ySearch = -matData[0];
-	zSearch =  matData[1];
-	dy = ySearch-yCoord;
-	dz = zSearch-zCoord;
-	closestDist = sqrt(dy*dy + dz*dz);
-	key = 0;
-	for (int j = 1; j < numFibers; j++) {
-	  ySearch = -matData[4*j];
-	  zSearch =  matData[4*j+1];
+      // Find first fiber with specified material tag
+      for (j = 0; j < numFibers; j++) {
+	if (matTag == theMaterials[j]->getTag()) {
+	  //ySearch = matData[3*j];
+	  //zSearch = matData[3*j+1];
+	  ySearch = yLocs[j];
+	  zSearch = zLocs[j];	    
 	  dy = ySearch-yCoord;
 	  dz = zSearch-zCoord;
-	  distance = sqrt(dy*dy + dz*dz);
+	  closestDist = dy*dy + dz*dz;
+	  key = j;
+	  break;
+	}
+      }
+      
+      // Search the remaining fibers
+      for ( ; j < numFibers; j++) {
+	if (matTag == theMaterials[j]->getTag()) {
+	  //ySearch = matData[3*j];
+	  //zSearch = matData[3*j+1];
+	  ySearch = yLocs[j];
+	  zSearch = zLocs[j];	    	    
+	  dy = ySearch-yCoord;
+	  dz = zSearch-zCoord;
+	  distance = dy*dy + dz*dz;
 	  if (distance < closestDist) {
 	    closestDist = distance;
 	    key = j;
 	  }
 	}
-	passarg = 3;
       }
+      passarg = 4;
+    }
+    
+    else {                  // fiber near-to coordinate specified
+      double yCoord = atof(argv[1]);
+      double zCoord = atof(argv[2]);
+      double closestDist;
+      double ySearch, zSearch, dy, dz;
+      double distance;
+      //ySearch = matData[0];
+      //zSearch = matData[1];
+      ySearch = yLocs[0];
+      zSearch = zLocs[0];
+      dy = ySearch-yCoord;
+      dz = zSearch-zCoord;
+      closestDist = dy*dy + dz*dz;
+      key = 0;
+      for (int j = 1; j < numFibers; j++) {
+	//ySearch = matData[3*j];
+	//zSearch = matData[3*j+1];
+	ySearch = yLocs[j];
+	zSearch = zLocs[j];	    	    	  
+	dy = ySearch-yCoord;
+	dz = zSearch-zCoord;
+	distance = dy*dy + dz*dz;
+	if (distance < closestDist) {
+	  closestDist = distance;
+	  key = j;
+	}
+      }
+      passarg = 3;
+    }
+    
+    if (key < numFibers && key >= 0) {
+      output.tag("FiberOutput");
+      output.attr("yLoc",yLocs[key]);
+      output.attr("zLoc",zLocs[key]);
+      output.attr("area",fiberArea[key]);
+      output.attr("omega",omega[key]);      
       
-      if (key < numFibers && key >= 0) {
-	output.tag("FiberOutput");
-	output.attr("yLoc",-matData[4*key]);
-	output.attr("zLoc",matData[4*key+1]);
-	output.attr("area",matData[4*key+2]);
-	
-	theResponse =  theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
-	
-	output.endTag();
-      }
-  }
+      theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
+      
+      output.endTag();
+    }
+  
+  } else if (strcmp(argv[0],"fiberData") == 0) {
+    int numData = numFibers*6;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", yLocs[j]);
+      output.attr("zLoc", zLocs[j]);
+      output.attr("area", fiberArea[j]);
+      output.attr("omega", omega[j]);          
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","omega");      
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 5, theResponseData);
 
+  } else if (strcmp(argv[0],"fiberData2") == 0) {
+    int numData = numFibers*7;
+    for (int j = 0; j < numFibers; j++) {
+      output.tag("FiberOutput");
+      output.attr("yLoc", yLocs[j]);
+      output.attr("zLoc", zLocs[j]);
+      output.attr("area", fiberArea[j]);
+      output.attr("omega", omega[j]);          
+      output.attr("material", theMaterials[j]->getTag());
+      output.tag("ResponseType","yCoord");
+      output.tag("ResponseType","zCoord");
+      output.tag("ResponseType","area");
+      output.tag("ResponseType","omega");      
+      output.tag("ResponseType","material");
+      output.tag("ResponseType","stress");
+      output.tag("ResponseType","strain");
+      output.endTag();
+    }
+    Vector theResponseData(numData);
+    theResponse = new MaterialResponse(this, 55, theResponseData);
+  }
+  
   if (theResponse == 0)
     return SectionForceDeformation::setResponse(argv, argc, output);
 
@@ -1298,9 +1401,57 @@ FiberSectionWarping3d::setResponse(const char **argv, int argc, OPS_Stream &outp
 int 
 FiberSectionWarping3d::getResponse(int responseID, Information &sectInfo)
 {
-  // Just call the base class method ... don't need to define
-  // this function, but keeping it here just for clarity
-  return SectionForceDeformation::getResponse(responseID, sectInfo);
+  static double yLocs[10000];
+  static double zLocs[10000];
+  static double fiberArea[10000];
+  static double omega[10000];
+  
+  if (sectionIntegr != 0) {
+    sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+    sectionIntegr->getFiberWeights(numFibers, fiberArea);
+    sectionIntegr->getFiberSectorials(numFibers, omega);      
+  }  
+  else {
+    for (int i = 0; i < numFibers; i++) {
+      yLocs[i] = matData[4*i];
+      zLocs[i] = matData[4*i+1];
+      fiberArea[i] = matData[4*i+2];
+      omega[i] = matData[4*i+3];	
+    }
+  }
+    
+  if (responseID == 5) {
+    int numData = 6*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = yLocs[j]; // y
+      data(count+1) = zLocs[j]; // z
+      data(count+2) = fiberArea[j]; // A
+      data(count+3) = omega[j]; // omega
+      data(count+4) = theMaterials[j]->getStress();
+      data(count+5) = theMaterials[j]->getStrain();
+      count += 6;
+    }
+    return sectInfo.setVector(data);	
+  } else if (responseID == 55) {
+    int numData = 7*numFibers;
+    Vector data(numData);
+    int count = 0;
+    for (int j = 0; j < numFibers; j++) {
+      data(count)   = yLocs[j]; // y
+      data(count+1) = zLocs[j]; // z
+      data(count+2) = fiberArea[j]; // A
+      data(count+3) = omega[j]; // omega
+      data(count+4) = (double)theMaterials[j]->getTag();
+      data(count+5) = theMaterials[j]->getStress();
+      data(count+6) = theMaterials[j]->getStrain();	    
+      count += 7;
+    }
+    return sectInfo.setVector(data);		  
+  }
+  
+  return SectionForceDeformation::getResponse(responseID, sectInfo);  
 }
 
 int

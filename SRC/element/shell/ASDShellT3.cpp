@@ -1544,6 +1544,21 @@ ASDShellT3::getResponse(int responseID, Information& eleInfo)
 int ASDShellT3::setParameter(const char** argv, int argc, Parameter& param)
 {
     int res = -1;
+
+    // damping
+    if (strstr(argv[0], "damp") != 0) {
+
+        if (argc < 2 || !m_damping)
+            return -1;
+
+        for (int i=0; i<3; i++) {
+            int dmpRes =  m_damping[i]->setParameter(argv, argc, param);
+            if (dmpRes != -1)
+                res = dmpRes;
+        }
+        return res;
+    }
+
     int matRes = res;
     for (int i = 0; i < 3; i++)
     {

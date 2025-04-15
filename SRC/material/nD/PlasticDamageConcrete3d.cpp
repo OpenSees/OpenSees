@@ -54,13 +54,13 @@ OPS_NewPlasticDamageConcrete3d(void)
   
   int numData = 1;
   if (OPS_GetInt(&numData, iData) != 0) {
-    opserr << "WARNING invalid integer tag: nDMaterial EasticIsotropic \n";
+    opserr << "WARNING invalid integer tag: nDMaterial PlasticDamageConcrete3d \n";
     return 0;
   }
   
   numData = numArgs - 1;;
   if (OPS_GetDouble(&numData, dData) != 0) {
-    opserr << "WARNING invalid data: nDMaterial EasticIsotropic : " << iData[0] <<"\n";
+    opserr << "WARNING invalid data: nDMaterial PlasticDamageConcrete3d : " << iData[0] <<"\n";
     return 0;
   }  
   
