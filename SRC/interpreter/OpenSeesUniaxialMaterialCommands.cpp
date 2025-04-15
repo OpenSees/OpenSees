@@ -764,7 +764,7 @@ int OPS_UniaxialMaterial() {
 
   // Now add the material to the modelBuilder
   if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    opserr << "ERROR could not add uniaaialMaterial.\n";
+    opserr << "ERROR could not add uniaxialMaterial.\n";
     delete theMaterial;  // invoke the material objects
                          // destructor, otherwise mem leak
     return -1;

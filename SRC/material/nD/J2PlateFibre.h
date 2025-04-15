@@ -43,10 +43,13 @@
 class J2PlateFibre : public NDMaterial
 {
   public:
-  J2PlateFibre (int tag, double E, double G, double sigY, double Hi, double Hk);
+  J2PlateFibre (int tag, double E, double G, double sigY, double Hi, double Hk,
+		double rho, double sigYn);
   J2PlateFibre ();
   ~J2PlateFibre ();
 
+  double getRho(void) {return rho;}
+  
   int setTrialStrain (const Vector &v);
   int setTrialStrain (const Vector &v, const Vector &r);
   int setTrialStrainIncr (const Vector &v);
@@ -88,6 +91,9 @@ class J2PlateFibre : public NDMaterial
   double Hiso;
   double Hkin;
 
+  double rho;
+  double sigmaYn;
+  
   int parameterID;
   Matrix *SHVs;
 

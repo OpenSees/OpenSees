@@ -1111,8 +1111,8 @@ const Vector & MixedBeamColumn2d::getResistingForceIncInertia() {
 
     theVector(0) += m*accel1(0);
     theVector(1) += m*accel1(1);
-    theVector(4) += m*accel2(0);
-    theVector(5) += m*accel2(1);
+    theVector(3) += m*accel2(0);
+    theVector(4) += m*accel2(1);
   }
 
   // Add the damping forces
