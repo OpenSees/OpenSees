@@ -66,14 +66,17 @@ public:
 		// buckling
 		double radius = 0.0;
 		double length = 0.0;
+		double lch_element = 0.0;
 
 		//convergence
 		double K_alpha = 0.0;
 		double max_iter = 0.0;
 		double tolU = 0.0;
 		double tolR = 0.0;
+		double p = 0.0;
+		double n = 0.0;
 		// counter
-		static constexpr int NDATA = 13;
+		static constexpr int NDATA = 16;
 	};
 
 public:
@@ -120,7 +123,10 @@ public:
 private:
 	int homogenize(bool do_implex);
 
- private:
+public:
+	void computeAlphaCr();
+
+ private:	
 	 // common input parameters
 	 InputParameters params;
 	 // state variables - implex
@@ -133,8 +139,16 @@ private:
 	 double stress = 0.0;
 	 double stress_commit = 0.0;
 	 double C = 0.0;
+	 double stress_rve = 0.0;
+	 double stress_rve_commit = 0.0;
+	 double C_rve = 0.0;
+	 
 	 // other variables for output purposes
 	 double energy = 0.0;
+
+	 //for regularization
+	 bool use_regularization = true;
+	 double alpha_cr = 1.0;
 	 // private implementation
 	 ASDSteel1DMaterialPIMPL* pdata = nullptr;
 };

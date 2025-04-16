@@ -1040,7 +1040,8 @@ public:
 	ASDSteel1DMaterialPIMPL() = default;
 	ASDSteel1DMaterialPIMPL(const ASDSteel1DMaterialPIMPL&) = default;
 public:
-	RVEModel rve_m;
+	SteelComponent steel_comp;
+	RVEModel rve_m;	
 };
 
 void* OPS_ASDSteel1DMaterial()
@@ -1052,7 +1053,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>  <-p $p>  <-n $n>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1078,10 +1079,15 @@ void* OPS_ASDSteel1DMaterial()
 	double max_iter= 100;
 	double tolU = 1.0e-6;
 	double tolR = 1.0e-6;
+	double p = 1.0;
+	double n = 1.0;
 	bool have_K_alpha = false;
 	bool have_max_iter = false;
 	bool have_tolU = false;
 	bool have_tolR = false;
+	bool have_p = false;
+	bool have_n = false;
+
 
 	// get tag
 	if (OPS_GetInt(&numData, &tag) != 0) {
@@ -1147,6 +1153,16 @@ void* OPS_ASDSteel1DMaterial()
 				return nullptr;
 			have_tolR = true;
 		}
+		if (strcmp(value, "-p") == 0) {
+			if (!lam_optional_double("p", p))
+				return nullptr;
+			have_p = true;
+		}
+		if (strcmp(value, "-n") == 0) {
+			if (!lam_optional_double("n", n))
+				return nullptr;
+			have_n = true;
+		}
 	}
 
 	// checks
@@ -1194,6 +1210,9 @@ void* OPS_ASDSteel1DMaterial()
 	params.max_iter = max_iter;
 	params.tolU = tolU;
 	params.tolR = tolR;
+    params.p = p;
+	params.n = n;
+	params.lch_element = params.length;
 	// create the material
 	UniaxialMaterial* instance = new ASDSteel1DMaterial(
 		// tag
@@ -1206,6 +1225,9 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "UniaxialMaterial ASDSteel1D Error: failed to allocate a new material.\n";
 		return nullptr;
 	}
+
+	dynamic_cast<ASDSteel1DMaterial*>(instance)->computeAlphaCr();
+	
 	return instance;
 }
 
@@ -1229,6 +1251,20 @@ ASDSteel1DMaterial::ASDSteel1DMaterial()
 ASDSteel1DMaterial::ASDSteel1DMaterial(const ASDSteel1DMaterial& other)
 	: UniaxialMaterial(other.getTag(), MAT_TAG_ASDSteel1DMaterial)
 	, params(other.params)
+	, dtime_n(other.dtime_n)
+	, dtime_n_commit(other.dtime_n_commit)
+	, commit_done(other.commit_done)
+	, strain(other.strain)
+	, strain_commit(other.strain_commit)
+	, stress(other.stress)
+	, stress_commit(other.stress_commit)
+	, C(other.C)
+	, stress_rve(other.stress_rve)
+	, stress_rve_commit(other.stress_rve_commit)
+	, C_rve(other.C_rve)
+	, energy(other.energy)
+	, use_regularization(other.use_regularization)
+	, alpha_cr(other.alpha_cr)
 	, pdata(other.pdata ? new ASDSteel1DMaterialPIMPL(*other.pdata) : nullptr)
 {
 }
@@ -1240,6 +1276,7 @@ ASDSteel1DMaterial::~ASDSteel1DMaterial()
 
 int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 {
+	params.lch_element = ops_TheActiveElement ? ops_TheActiveElement->getCharacteristicLength()/2 : params.length;
 	// save dT
 	dtime_n = ops_Dt;
 	if (!commit_done) {
@@ -1252,7 +1289,44 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 
 	asd_print("MAT set trial (" << (int)params.implex << ")");
 	int retval = homogenize(params.implex);
+	double sigma_macro = 0.0;
+	double tangent_macro = 0.0;
+	// time factor for explicit extrapolation (todo: make a unique function)
+	double time_factor = 1.0;
+	if (params.implex  && (dtime_n_commit > 0.0))
+		time_factor = dtime_n / dtime_n_commit;
 
+	//computation of sigma and tangent of steel
+	pdata->steel_comp.revertToLastCommit();
+	pdata->steel_comp.compute(params, params.implex, time_factor, strain, sigma_macro, tangent_macro);
+
+	//regularization for element length lower than physical length (weighted average)
+	if (use_regularization) {
+		double alpha0 = 0.0;
+		double alpha = 0.0;
+		double p = 2.0;
+		double n = 2.0;
+		if (params.lch_element < params.length) {
+			//horizontal displacement/physical length
+			double buckstrain = std::abs((params.implex ? pdata->rve_m.sv.UG_commit(6) : pdata->rve_m.sv.UG(6)) / params.length);
+			double axiallimit = 0.05;
+			//from relation between max strain and horizontal disp
+			double bucklimit = std::sqrt(2.0 * axiallimit - axiallimit * axiallimit) / 2.0;
+			alpha0 = alpha_cr + (1 - alpha_cr) * std::pow((params.lch_element / params.length), params.p);
+			alpha = std::min(1.0, alpha0 + (1-alpha0) * buckstrain / (std::pow((params.length  /params.lch_element),params.n) * bucklimit));
+		}
+		else if (params.lch_element >= params.length) {
+			alpha = 1.0;
+		}
+		stress = (alpha) * stress_rve +(1.0 - alpha) * sigma_macro;
+		C = alpha * C_rve + ( 1.0 - alpha) * tangent_macro ;
+	}
+	else { 
+		C = C_rve;
+		stress = stress_rve;
+	}
+
+	// done
 	return retval;
 }
 
@@ -1283,6 +1357,9 @@ int ASDSteel1DMaterial::commitState(void)
 		asd_print("MAT commit (" << (int)false << ")");
 		int retval = homogenize(false);
 		if (retval < 0) return retval;
+		double sigma_macro = 0.0;
+		double tangent_macro = 0.0;
+		retval = pdata->steel_comp.compute(params, false, 1.0, strain, sigma_macro, tangent_macro);
 	}
 
 	// compute energy
@@ -1290,6 +1367,7 @@ int ASDSteel1DMaterial::commitState(void)
 
 	// forward to all components
 	pdata->rve_m.commitState();
+	pdata->steel_comp.commitState();
 
 	// state variables
 	strain_commit = strain;
@@ -1307,10 +1385,12 @@ int ASDSteel1DMaterial::revertToLastCommit(void)
 {
 	// forward to all components
 	pdata->rve_m.revertToLastCommit();
+	pdata->steel_comp.revertToLastCommit();
 
 	// state variables
 	strain = strain_commit;
 	stress = stress_commit;
+	stress_rve = stress_rve_commit;
 
 	// implex
 	dtime_n = dtime_n_commit;
@@ -1323,13 +1403,17 @@ int ASDSteel1DMaterial::revertToStart(void)
 {
 	// forward to all components
 	pdata->rve_m.revertToStart();
+	pdata->steel_comp.revertToStart();
 
 	// strain, stress and tangent
 	strain = 0.0;
 	strain_commit = 0.0;
 	stress = 0.0;
 	stress_commit = 0.0;
+	stress_rve = 0.0;
+	stress_rve_commit = 0.0;
 	C = getInitialTangent();
+	C_rve = getInitialTangent();
 
 	// implex
 	dtime_n = 0.0;
@@ -1456,19 +1540,19 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 	};
 
 	// labels
-	static std::vector<std::string> lb_eqpl_strain = { "PLE" };
+	static std::vector<std::string> lb_buckling_ratio = { "BI" };
 
 	// all outputs are 1D
 	static Vector out1(1);
 
-	//// check specific responses
-	//if (argc > 0) {
-	//	// 1000 - base steel output
-	//	if (strcmp(argv[0], "equivalentPlasticStrain") == 0 || strcmp(argv[0], "EquivalentPlasticStrain") == 0) {
-	//		out1(0) = steel.lambda;
-	//		return make_resp(1001, out1, &lb_eqpl_strain);
-	//	}
-	//}
+	// check specific responses
+	if (argc > 0) {
+		// 1000 - base steel output
+		if (strcmp(argv[0], "BI") == 0 || strcmp(argv[0], "BucklingIndicator") == 0) {
+			out1(0) = pdata->rve_m.sv.UG(6);
+			return make_resp(1001, out1, &lb_buckling_ratio);
+		}
+	}
 
 	// otherwise return base-class response
 	return UniaxialMaterial::setResponse(argv, argc, output);
@@ -1479,14 +1563,14 @@ int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 	// all outputs are 1D
 	static Vector out1(1);
 
-	//switch (responseID) {
-	//	// 1000 - base steel output
-	//case 1001:
-	//	out1(0) = steel.lambda;
-	//	return matInformation.setVector(out1);
-	//default:
-	//	break;
-	//}
+	switch (responseID) {
+		// 1000 - base steel output
+	case 1001:
+		out1(0) = pdata->rve_m.sv.UG(6);
+		return matInformation.setVector(out1);
+	default:
+		break;
+	}
 	return UniaxialMaterial::getResponse(responseID, matInformation);
 }
 
@@ -1508,13 +1592,11 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	if (params.implex && do_implex && (dtime_n_commit > 0.0))
 		time_factor = dtime_n / dtime_n_commit;
 
-
 	// from macro strain to micro strain
 	double macro_strain = strain;
 	double Uy = -macro_strain * params.length;
 
 	// compute micro response
-
 	double N = 0.0;
 	double T = 0.0;
 	double area = 0.0;
@@ -1527,11 +1609,53 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	// from micro stress/tangent to macro stress/tangent
 	area = M_PI * params.radius * params.radius;
 
-	stress = -N/area;
-	C = T * params.length/area;
+	stress_rve = -N/area;
+	C_rve = T * params.length/area;
 
 	// done
 	return retval;
+}
+
+void ASDSteel1DMaterial::computeAlphaCr()
+{
+	//preliminary check to determine whether it requires regularization
+	constexpr int nstep = 100;
+	constexpr double cstrain = -0.05;
+	constexpr double d_cstrain = cstrain / nstep;
+	double residual_stress = 0.0;
+	// simulate rve steel
+	use_regularization = false;
+
+	for(int i = 0; i < nstep; ++i) {		
+		setTrialStrain(static_cast<double>(i + 1) * d_cstrain);
+		commitState();
+		residual_stress = -getStress();		
+	}
+
+	if (residual_stress >= params.sy) {
+		return;
+	}
+
+	revertToStart();
+	
+	// simulate no-buckling steel
+	double residual_stress_nb = 0.0;
+	double tangent_macro = 0.0;
+
+	for (int i = 0; i < nstep; ++i) {
+		pdata->steel_comp.revertToLastCommit();
+		pdata->steel_comp.compute(params, false, 1.0, cstrain, residual_stress_nb, tangent_macro);
+		pdata->steel_comp.commitState();
+		residual_stress_nb *= -1.0;
+	}
+
+	pdata->steel_comp.revertToStart();
+
+	// compute min alpha cr that shows softening
+	alpha_cr = (params.sy * 0.95 - residual_stress_nb) / (residual_stress - residual_stress_nb);
+	
+	use_regularization = true;	
+
 }
 
 
