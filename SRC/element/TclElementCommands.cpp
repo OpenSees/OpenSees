@@ -211,6 +211,8 @@ extern void *OPS_MasonPan12(void);
 extern void *OPS_MasonPan3D(void);
 extern void *OPS_BeamGT(void);
 extern void *OPS_BeamWithHinges(void);
+extern void *OPS_MixedBeamColumn2d(void);
+extern void *OPS_MixedBeamColumn3d(void);
 
 extern void* OPS_DispBeamColumnAsym3dTcl();  //Xinlong Du
 extern void* OPS_MixedBeamColumnAsym3dTcl(); //Xinlong Du
@@ -1760,6 +1762,21 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   }
   //Xinlong Du
+
+  else if (strcmp(argv[1], "mixedBeamColumn") == 0) {
+    Element* theEle = 0;
+    if (OPS_GetNDM() == 3)
+      theEle = (Element*)OPS_MixedBeamColumn3d();
+    if (OPS_GetNDM() == 2)
+      theEle = (Element*)OPS_MixedBeamColumn2d();    
+    if (theEle != 0)
+      theElement = theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
+
+  }
   
   else if ((strcmp(argv[1], "InertiaTruss") == 0)) {
 
