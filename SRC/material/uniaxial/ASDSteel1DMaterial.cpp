@@ -236,6 +236,12 @@ namespace {
 		Vector rve_Kcr = Vector(7);
 		Vector rve_Krc = Vector(7);
 		Vector rve_Kinv_Kcr = Vector(7);
+		Vector rve_dU_el = Vector(10);
+		Vector rve_R_el = Vector(10);
+		Matrix rve_K_el = Matrix(10, 10);
+		Vector rve_Kcr_el = Vector(10);
+		Vector rve_Krc_el = Vector(10);
+		Vector rve_Kinv_Kcr_el = Vector(10);
 		double rve_Krr = 0.0;
 		double rve_Kred = 0.0;
 		// node positions (to be set at each setTrialStrain)
@@ -248,7 +254,18 @@ namespace {
 				ip.x = ip.y * 1.0e-3; // add imperfection
 			}
 		}
-
+		std::array<V2D, 5> rve_nodes_el = { V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0), V2D(0.0, 0.0) };
+		inline void setRVENodes_el(double lch, double length_el) {
+			double dy = lch / 3.0;
+			double y_el = (length_el - lch);
+			for (int i = 1; i < 5; ++i) {
+				auto& ip = rve_nodes_el[i];
+				ip.y = dy * static_cast<double>(i-1) + y_el; // from bottom to top, bottom at 0,0
+				ip.x = ip.y * 1.0e-3; // add imperfection
+			}
+			rve_nodes_el[0].y = 0.0;
+			rve_nodes_el[0].x = 0.0;
+		}
 	};
 
 	/**
@@ -563,6 +580,54 @@ namespace {
 			return 0;
 		}
 	};
+	template<>
+	class SectionComponent<0>
+	{
+	public:
+		SteelComponent fib;
+
+	public:
+		SectionComponent() = default;
+		inline int commitState() {
+			return 0;
+		}
+		inline void revertToLastCommit() {
+		}
+		inline void revertToStart() {
+		}
+
+		inline int compute(
+			const  ASDSteel1DMaterial::InputParameters& params, const Vector& strain,
+			bool do_implex, double time_factor,
+			Vector& stress, Matrix& tangent) {
+			/**
+			A section with 0 fiber is used for the elastic element.
+			*/
+			int retval = 0.0;
+			double constexpr poiss = 0.3; // built-in poisson ratio
+			double constexpr kshear = 0.9; // built-in shear correction factor for circular sections
+			// area
+			double area = M_PI * params.radius * params.radius;
+			// compute elastic shear response
+			double G = params.E / (2.0 * (1.0 + poiss));
+			double GAk = G * area * kshear;
+			tangent(2, 2) = GAk;
+			stress(2) = GAk * strain(2);
+			// compute elastic M response (will be zero upon convergence for this model)
+			double I = M_PI * std::pow(params.radius, 4) / 4.0;
+			double EI = params.E * I;
+			stress(1) = EI * strain(1);
+			tangent(1, 1) = EI;
+			// compute elastic shear response
+			double EA = params.E * area;
+			stress(0) = EA * strain(0);
+			tangent(0, 0) = EA;
+			// zero terms
+			tangent(0, 1) = tangent(1, 0) = tangent(0, 2) = tangent(2, 0) = tangent(1, 2) = tangent(2, 1) = 0.0;
+			// done
+			return retval;
+		}
+	};
 
 
 	/**
@@ -587,6 +652,7 @@ namespace {
 	constexpr int EType_Bot = 1;
 	constexpr int EType_Mid = 2;
 	constexpr int EType_Top = 3;
+	constexpr int EType_El = 0;
 	template<int EType>
 	class ETypeTraits
 	{
@@ -596,78 +662,150 @@ namespace {
 	{
 	public:
 		static constexpr std::array<int, 6> DOFs = {8,7,9,    0,1,2 };
-		static constexpr int N1 = 0;
-		static constexpr int N2 = 1;
+		static constexpr int N1 = 1;
+		static constexpr int N2 = 2;
 	};
 	template<>
 	class ETypeTraits<EType_Mid>
 	{
 	public:
 		static constexpr std::array<int, 6> DOFs = { 0,1,2,    3,4,5 };
-		static constexpr int N1 = 1;
-		static constexpr int N2 = 2;
+		static constexpr int N1 = 2;
+		static constexpr int N2 = 3;
 	};
 	template<>
 	class ETypeTraits<EType_Top>
 	{
 	public:
 		static constexpr std::array<int, 6> DOFs = { 3,4,5,    6,10,11 };
-		static constexpr int N1 = 2;
-		static constexpr int N2 = 3;
+		static constexpr int N1 = 3;
+		static constexpr int N2 = 4;
+	};
+	template<>
+	class ETypeTraits<EType_El>
+	{
+	public:
+		static constexpr std::array<int, 6> DOFs = { 12,13,14,    8,7,9 };
+		static constexpr int N1 = 0;
+		static constexpr int N2 = 1;
 	};
 	template<int EType>
-	inline void getElementDisplacementVector(const Vector& G, Vector& L) {
+	inline void getElementDisplacementVector(bool flag, const Vector& G, Vector& L) {
 		// G = global vector, size = 8 -> full = 12, semi-full 8 (7 free + 1 Uy imposed)
 		// L = local vector , size = 6
-		for (int i = 0; i < 6; ++i) {
-			int gdof = ETypeTraits<EType>::DOFs[i];
-			L(i) = gdof < 8 ? G(gdof) : 0.0;
+		if (flag) {
+			for (int i = 0; i < 6; ++i) {
+				int gdof = ETypeTraits<EType>::DOFs[i];
+				if (gdof < 10 ) {
+					L(i) = G(gdof);
+
+				}
+				else if (gdof == 13) {
+					L(i) = G(10);
+				}
+				else {
+					L(i) = 0.0;
+				}
+			}
 		}
-	}
-	template<int EType>
-	inline void assembleRHS(const Vector& L, Vector& G) {
-		// G = global vector, size = 7 (-> full = 12, semi-full 8 (7 free + 1 Uy imposed) only free)
-		// L = local vector , size = 6
-		for (int i = 0; i < 6; ++i) {
-			int gdof = ETypeTraits<EType>::DOFs[i];
-			if (gdof < 7) {
-				G(gdof) += L(i);
+		else {
+			for (int i = 0; i < 6; ++i) {
+				int gdof = ETypeTraits<EType>::DOFs[i];
+				L(i) = gdof < 8 ? G(gdof) : 0.0;
 			}
 		}
 	}
 	template<int EType>
-	inline void assembleLHS(const Matrix& M, Matrix& G) {
+	inline void assembleRHS(bool flag, const Vector& L, Vector& G) {
+		// G = global vector, size = 7 (-> full = 12, semi-full 8 (7 free + 1 Uy imposed) only free)
+		// L = local vector , size = 6
+		if (flag) {
+			for (int i = 0; i < 6; ++i) {
+				int gdof = ETypeTraits<EType>::DOFs[i];
+				if (gdof < 10) {
+					G(gdof) += L(i);
+				}
+			}
+		}
+		else {
+			for (int i = 0; i < 6; ++i) {
+				int gdof = ETypeTraits<EType>::DOFs[i];
+				if (gdof < 7) {
+					G(gdof) += L(i);
+				}
+			}
+		}		
+	}
+	template<int EType>
+	inline void assembleLHS(bool flag, const Matrix& M, Matrix& G) {
 		// G = global matrix, size = 7x7 -> full = 12x12, semi-full 8 (7 free + 1 Uy imposed)
 		// L = local  vector , size = 6
 		// M = local  matrix , size = 6x6
-		for (int i = 0; i < 6; ++i) {
-			int idof = ETypeTraits<EType>::DOFs[i];
-			if (idof < 7) {
-				for (int j = 0; j < 6; ++j) {
-					int jdof = ETypeTraits<EType>::DOFs[j];
-					if (jdof < 7) {
-						G(idof, jdof) += M(i, j); 
+		if (flag) {
+			for (int i = 0; i < 6; ++i) {
+				int idof = ETypeTraits<EType>::DOFs[i];
+				if (idof < 10) {
+					for (int j = 0; j < 6; ++j) {
+						int jdof = ETypeTraits<EType>::DOFs[j];
+						if (jdof < 10) {
+							G(idof, jdof) += M(i, j);
+						}
 					}
 				}
 			}
 		}
-	}
-	template<int EType>
-	inline void getRetainedComponents(const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
-		for (int i = 0; i < 6; ++i) {
-			int idof = ETypeTraits<EType>::DOFs[i];
-			for (int j = 0; j < 6; ++j) {
-				int jdof = ETypeTraits<EType>::DOFs[j];
-				if (idof == 7) {
-					if (jdof == 7) {
-						Krr = M(i, j);
-					}
-					else if (jdof < 7) { //it is used to assemble krc and kcr for the bottom element -> jdof will be always < 3
-						Krc(jdof) = M(i, j);
+		else {
+			for (int i = 0; i < 6; ++i) {
+				int idof = ETypeTraits<EType>::DOFs[i];
+				if (idof < 7) {
+					for (int j = 0; j < 6; ++j) {
+						int jdof = ETypeTraits<EType>::DOFs[j];
+						if (jdof < 7) {
+							G(idof, jdof) += M(i, j);
+						}
 					}
 				}
-				else if (jdof == 7 && idof < 7) {
-					Kcr(idof) = M(j, i);
+			}
+		}
+		
+	}
+	template<int EType>
+	inline void getRetainedComponents(bool flag, const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
+		if (flag) {
+			for (int i = 0; i < 6; ++i) {
+				int idof = ETypeTraits<EType>::DOFs[i];
+				for (int j = 0; j < 6; ++j) {
+					int jdof = ETypeTraits<EType>::DOFs[j];
+					if (idof == 13) {
+						if (jdof == 13) {
+							Krr = M(i, j);
+						}
+						else if (jdof < 10) { //it is used to assemble krc and kcr for the bottom element -> jdof will be always < 3
+							Krc(jdof) = M(i, j);
+						}
+					}
+					else if (jdof == 13 && idof < 10) {
+						Kcr(idof) = M(j, i);
+					}
+				}
+			}
+		}
+		else {
+			for (int i = 0; i < 6; ++i) {
+				int idof = ETypeTraits<EType>::DOFs[i];
+				for (int j = 0; j < 6; ++j) {
+					int jdof = ETypeTraits<EType>::DOFs[j];
+					if (idof == 7) {
+						if (jdof == 7) {
+							Krr = M(i, j);
+						}
+						else if (jdof < 7) { //it is used to assemble krc and kcr for the bottom element -> jdof will be always < 3
+							Krc(jdof) = M(i, j);
+						}
+					}
+					else if (jdof == 7 && idof < 7) {
+						Kcr(idof) = M(j, i);
+					}
 				}
 			}
 		}
@@ -711,6 +849,8 @@ namespace {
 	public:
 		Vector UG = Vector(8);
 		Vector UG_commit = Vector(8);
+		Vector UG_el = Vector(11);
+		Vector UG_el_commit = Vector(11);
 	};
 
 	/**
@@ -729,7 +869,7 @@ namespace {
 		
 		ElementComponent() = default;
 		
-		inline int compute(const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor ) {
+		inline int compute(bool flag, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor ) {
 
 			auto& globals = Globals::instance(); 
 			auto& U = globals.element_U;
@@ -748,17 +888,43 @@ namespace {
 			auto& strain_s = globals.section_strain;
 			auto& tangent_s = globals.section_tangent;
 			auto& rve_nodes = globals.rve_nodes;
-
-			int inode = ETypeTraits<EType>::N1;
-			int jnode = ETypeTraits<EType>::N2;
+			auto& rve_nodes_el = globals.rve_nodes_el;
+			int inode;
+			int jnode;
+			if (flag) {
+				inode = ETypeTraits<EType>::N1;
+				jnode = ETypeTraits<EType>::N2;
+			}
+			else {
+				inode = ETypeTraits<EType>::N1-1;
+				jnode = ETypeTraits<EType>::N2-1;
+			}
 			
-			getElementDisplacementVector<EType>(rve.UG, U);
-			getElementDisplacementVector<EType>(rve.UG_commit, U_commit);
+			
+			if (flag) {
+				getElementDisplacementVector<EType>(flag, rve.UG_el, U);
+				getElementDisplacementVector<EType>(flag, rve.UG_el_commit, U_commit);
+			}
+			else {
+
+				getElementDisplacementVector<EType>(flag, rve.UG, U);
+				getElementDisplacementVector<EType>(flag, rve.UG_commit, U_commit);
+			}
+			
 
 			// undeformed nodes
-			V2D node_i = rve_nodes[inode];
-			V2D node_j = rve_nodes[jnode];
-
+			V2D node_i;
+			V2D node_j;
+			if (flag) {
+				node_i = rve_nodes_el[inode];
+				node_j = rve_nodes_el[jnode];
+			}
+			else {
+				node_i = rve_nodes[inode];
+				node_j = rve_nodes[jnode];
+			}
+			
+			
 			//deformed node position
 			V2D deformed_node_i = node_i +V2D(U(0), U(1));
 			V2D deformed_node_j = node_j +V2D(U(3), U(4));
@@ -864,15 +1030,22 @@ namespace {
 	};
 
 	template<int NFiber, int EType>
-	inline int rve_process_element(ElementComponent<NFiber, EType>& ele, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor) {
-		int retval = ele.compute(rve, params, do_implex, time_factor);
+	inline int rve_process_element(bool flag, ElementComponent<NFiber, EType>& ele, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor) {
+		int retval = ele.compute(flag, rve, params, do_implex, time_factor);
 		if (retval != 0) {
 			asd_print_full("ele !converged");
 			return retval;
 		}
 		auto& globals = Globals::instance();
-		assembleRHS<EType>(globals.element_RHS, globals.rve_R); 
-		assembleLHS<EType>(globals.element_LHS, globals.rve_K);
+		if (flag) {
+			assembleRHS<EType>(flag, globals.element_RHS, globals.rve_R_el);
+			assembleLHS<EType>(flag, globals.element_LHS, globals.rve_K_el);
+		}
+		else {
+
+			assembleRHS<EType>(flag, globals.element_RHS, globals.rve_R);
+			assembleLHS<EType>(flag, globals.element_LHS, globals.rve_K);
+		}
 		return 0;
 	}
 
@@ -883,10 +1056,11 @@ namespace {
 		ElementComponent<3, EType_Bot> e1;
 		ElementComponent<1, EType_Mid> e2;
 		ElementComponent<3, EType_Top> e3;
+		ElementComponent<0, EType_El> e0;
 
 		RVEModel() = default;
 		
-		inline int compute(const ASDSteel1DMaterial::InputParameters& params, double U, bool do_implex, double time_factor, double& N, double& tangent) {
+		inline int compute(bool flag, const ASDSteel1DMaterial::InputParameters& params, double U, bool do_implex, double time_factor, double& N, double& tangent) {
 
 			// output
 			int retval = -1;
@@ -904,19 +1078,41 @@ namespace {
 			
 			// utility for assembly
 			// note: do it in reverse order, so that we can access the element RHS for element Bottom to get reaction
-			auto lam_assemble = [this, &globals, &params, &do_implex, &time_factor]() -> int {
+			auto lam_assemble = [this, flag, &globals, &params, &do_implex, &time_factor]() -> int {
 				// zero R and K for element integration
 				globals.rve_R.Zero();
 				globals.rve_K.Zero();
-				if (rve_process_element< 3, EType_Top>(e3, sv, params, do_implex, time_factor) != 0) return -1;
-				if (rve_process_element< 1, EType_Mid>(e2, sv, params, do_implex, time_factor) != 0) return -1;
-				if (rve_process_element< 3, EType_Bot>(e1, sv, params, do_implex, time_factor) != 0) return -1;
+				globals.rve_R_el.Zero();
+				globals.rve_K_el.Zero();
+				if (flag) {
+					if (rve_process_element< 3, EType_Top>(flag, e3, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 1, EType_Mid>(flag, e2, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 3, EType_Bot>(flag, e1, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 0, EType_El>(flag, e0, sv, params, do_implex, time_factor) != 0) return -1;
+				}
+				else {
+					if (rve_process_element< 3, EType_Top>(flag, e3, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 1, EType_Mid>(flag, e2, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 3, EType_Bot>(flag, e1, sv, params, do_implex, time_factor) != 0) return -1;
+					double I = M_PI * std::pow(params.radius, 4) / 4.0;
+					double EI = params.E * I;
+					double fact = 0.04 * params.length / (params.radius * 5.0);
+					double penalty = 12.0 * EI * fact / std::pow(2.0*params.length, 3.0);
+					double KReg = std::max(0.0, (params.length / params.lch_element - 1)) * penalty;
+					globals.rve_K(6, 6) = globals.rve_K(6, 6) + KReg;
+					globals.rve_R(6) = globals.rve_R(6)  + KReg * sv.UG(6);
+				}                            
 				return 0;
 			};
 
 			// impose BC
-			sv.UG(7) = U;
-
+			if (flag) {
+				sv.UG_el(10) = U;
+			}
+			else {
+				sv.UG(7) = U;
+			}
+			
 			// first residual
 			if (lam_assemble() != 0) {
 				asd_print_full("1lam assemble !=0");
@@ -928,72 +1124,136 @@ namespace {
 
 			//for implicit correction convergence
 			static std::array<Vector, 10> U_iterative = { Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7), Vector(7)};
+			static std::array<Vector, 10> U_iterative_el = { Vector(10), Vector(10), Vector(10), Vector(10), Vector(10), Vector(10), Vector(10), Vector(10), Vector(10), Vector(10) };
 			static std::array<double, 10> Rnorm_iterative = { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 };
 	
 			// newton loop for this step
 			for (int iter = 0; iter < params.max_iter; ++iter) {
 
 				// solve
-				if (globals.rve_K.Solve(globals.rve_R, globals.rve_dU) != 0) {
-					asd_print_full("Solve failed");
-					break;
-				}
+				if (flag) {
+					if (globals.rve_K_el.Solve(globals.rve_R_el, globals.rve_dU_el) != 0) {
+						asd_print_full("Solve failed");
+						break;
+					}
 
-				// update free DOFs
-				for (int i = 0; i < 7; ++i) {
-					sv.UG(i) -= globals.rve_dU(i);
-				}
+					// update free DOFs
+					for (int i = 0; i < 10; ++i) {
+						sv.UG_el(i) -= globals.rve_dU_el(i);
+					}
 
-				// assemble
-				if (lam_assemble() != 0){
-					asd_print_full("lam assemble !=0");
-					break;
-			    }
+					// assemble
+					if (lam_assemble() != 0) {
+						asd_print_full("lam assemble !=0");
+						break;
+					}
 
-				// convergence test
-				Rnorm = globals.rve_R.Norm();
-				Unorm = globals.rve_dU.Norm();
-				asd_print("iter: " << iter << "R: " << Rnorm << ", U: " << Unorm);
+					// convergence test
 
-				//for implicit correction convergence (max 10 iterations)
-				if (params.implex && !do_implex) {
-					U_iterative[iter] = sv.UG;
-					Rnorm_iterative[iter] = Rnorm;					
-					if (iter >= 9) {
-						auto minRiter = std::min_element(Rnorm_iterative.begin(), Rnorm_iterative.end());
-						double minRnorm = *minRiter;
-						if (!std::isfinite(minRnorm)) {
-							Rnorm = std::numeric_limits<double>::max();
+					Rnorm = globals.rve_R_el.Norm();
+					Unorm = globals.rve_dU_el.Norm();
+					asd_print("iter: " << iter << "R: " << Rnorm << ", U: " << Unorm);
+
+					//for implicit correction convergence (max 10 iterations)
+					if (params.implex && !do_implex) {
+						U_iterative_el[iter] = sv.UG_el;
+						Rnorm_iterative[iter] = Rnorm;
+						if (iter >= 9) {
+							auto minRiter = std::min_element(Rnorm_iterative.begin(), Rnorm_iterative.end());
+							double minRnorm = *minRiter;
+							if (!std::isfinite(minRnorm)) {
+								Rnorm = std::numeric_limits<double>::max();
+							}
+							Rnorm = minRnorm;
+							asd_print("minRnorm" << minRnorm);
+							int pos_min = std::distance(Rnorm_iterative.begin(), minRiter);
+							sv.UG_el = U_iterative_el[pos_min];
+							lam_assemble();
+							retval = 0;
+							break;
 						}
-						Rnorm = minRnorm;
-						asd_print("minRnorm"<<minRnorm);
-						int pos_min = std::distance(Rnorm_iterative.begin(), minRiter);
-						sv.UG = U_iterative[pos_min];
-						lam_assemble();
+					}
+
+					if (Rnorm < tolR || Unorm < tolU) {
 						retval = 0;
 						break;
-					}				
+					}
 				}
-			
-				if (Rnorm < tolR || Unorm < tolU) {
-					retval = 0;
-					break;				
+				else {
+					if (globals.rve_K.Solve(globals.rve_R, globals.rve_dU) != 0) {
+						asd_print_full("Solve failed");
+						break;
+					}
+
+					// update free DOFs
+					for (int i = 0; i < 7; ++i) {
+						sv.UG(i) -= globals.rve_dU(i);
+					}
+
+					// assemble
+					if (lam_assemble() != 0) {
+						asd_print_full("lam assemble !=0");
+						break;
+					}
+
+					// convergence test
+
+					Rnorm = globals.rve_R.Norm();
+					Unorm = globals.rve_dU.Norm();
+					asd_print("iter: " << iter << "R: " << Rnorm << ", U: " << Unorm);
+
+					//for implicit correction convergence (max 10 iterations)
+					if (params.implex && !do_implex) {
+						U_iterative[iter] = sv.UG;
+						Rnorm_iterative[iter] = Rnorm;
+						if (iter >= 9) {
+							auto minRiter = std::min_element(Rnorm_iterative.begin(), Rnorm_iterative.end());
+							double minRnorm = *minRiter;
+							if (!std::isfinite(minRnorm)) {
+								Rnorm = std::numeric_limits<double>::max();
+							}
+							Rnorm = minRnorm;
+							asd_print("minRnorm" << minRnorm);
+							int pos_min = std::distance(Rnorm_iterative.begin(), minRiter);
+							sv.UG = U_iterative[pos_min];
+							lam_assemble();
+							retval = 0;
+							break;
+						}
+					}
+
+					if (Rnorm < tolR || Unorm < tolU) {
+						retval = 0;
+						break;
+					}
+
 				}
+				
 				
 			}
 			
 			if (retval != 0) {
 				asd_print_full("rve !converged");
 			}
-
+			double Krc_dot_Kinv_Kcr = 0.0;
 			// do it outside, element Bottom is the last one
-			getRetainedComponents<EType_Bot>(globals.element_LHS, globals.rve_Krr, globals.rve_Kcr, globals.rve_Krc);
+			if (flag) {
+				getRetainedComponents<EType_El>(flag, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr_el, globals.rve_Krc_el);
+				globals.rve_K_el.Solve(globals.rve_Kcr_el, globals.rve_Kinv_Kcr_el);
+				Krc_dot_Kinv_Kcr = globals.rve_Krc_el ^ globals.rve_Kinv_Kcr_el;
+			}
+			else {
+
+				getRetainedComponents<EType_Bot>(flag, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr, globals.rve_Krc);
+				globals.rve_K.Solve(globals.rve_Kcr, globals.rve_Kinv_Kcr);
+				Krc_dot_Kinv_Kcr = globals.rve_Krc ^ globals.rve_Kinv_Kcr;
+			}
 			// get N from element_RHS (note: RHS = Fext-Fint)
 			N = globals.element_RHS(1);
 			// perform static condensation
 			// Kred = Krr - (Krc *  inv(Kcc)*Kcr)
-			globals.rve_K.Solve(globals.rve_Kcr, globals.rve_Kinv_Kcr);
-			double Krc_dot_Kinv_Kcr = globals.rve_Krc ^ globals.rve_Kinv_Kcr;
+			
+			
 			globals.rve_Kred = globals.rve_Krr - Krc_dot_Kinv_Kcr;
 			tangent = globals.rve_Kred;
 			return retval;
@@ -1003,7 +1263,7 @@ namespace {
 			int retval = 0;
 			
 			sv.UG_commit = sv.UG;
-			
+			sv.UG_el_commit = sv.UG_el;
 			int el_retval;
 			el_retval = e1.commitState();
 			if (el_retval != 0) retval = el_retval;
@@ -1011,11 +1271,15 @@ namespace {
 			if (el_retval != 0) retval = el_retval;
 			el_retval = e3.commitState();
 			if (el_retval != 0) retval = el_retval;
+			el_retval = e0.commitState();
+			if (el_retval != 0) retval = el_retval;
 
 			return retval;
 		}
 		inline void revertToLastCommit() {
 			sv.UG = sv.UG_commit;
+			sv.UG_el = sv.UG_el_commit;
+			e0.revertToLastCommit();
 			e1.revertToLastCommit();
 			e2.revertToLastCommit();
 			e3.revertToLastCommit();
@@ -1023,6 +1287,9 @@ namespace {
 		inline void revertToStart() {
 			sv.UG.Zero();
 			sv.UG_commit.Zero();
+			sv.UG_el.Zero();
+			sv.UG_el_commit.Zero();
+			e0.revertToStart();
 			e1.revertToStart();
 			e2.revertToStart();
 			e3.revertToStart();
@@ -1053,7 +1320,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>  <-p $p>  <-n $n>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1079,14 +1346,10 @@ void* OPS_ASDSteel1DMaterial()
 	double max_iter= 100;
 	double tolU = 1.0e-6;
 	double tolR = 1.0e-6;
-	double p = 1.0;
-	double n = 1.0;
 	bool have_K_alpha = false;
 	bool have_max_iter = false;
 	bool have_tolU = false;
 	bool have_tolR = false;
-	bool have_p = false;
-	bool have_n = false;
 
 
 	// get tag
@@ -1153,16 +1416,6 @@ void* OPS_ASDSteel1DMaterial()
 				return nullptr;
 			have_tolR = true;
 		}
-		if (strcmp(value, "-p") == 0) {
-			if (!lam_optional_double("p", p))
-				return nullptr;
-			have_p = true;
-		}
-		if (strcmp(value, "-n") == 0) {
-			if (!lam_optional_double("n", n))
-				return nullptr;
-			have_n = true;
-		}
 	}
 
 	// checks
@@ -1210,8 +1463,6 @@ void* OPS_ASDSteel1DMaterial()
 	params.max_iter = max_iter;
 	params.tolU = tolU;
 	params.tolR = tolR;
-    params.p = p;
-	params.n = n;
 	params.lch_element = params.length;
 	// create the material
 	UniaxialMaterial* instance = new ASDSteel1DMaterial(
@@ -1225,8 +1476,6 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "UniaxialMaterial ASDSteel1D Error: failed to allocate a new material.\n";
 		return nullptr;
 	}
-
-	dynamic_cast<ASDSteel1DMaterial*>(instance)->computeAlphaCr();
 	
 	return instance;
 }
@@ -1263,8 +1512,7 @@ ASDSteel1DMaterial::ASDSteel1DMaterial(const ASDSteel1DMaterial& other)
 	, stress_rve_commit(other.stress_rve_commit)
 	, C_rve(other.C_rve)
 	, energy(other.energy)
-	, use_regularization(other.use_regularization)
-	, alpha_cr(other.alpha_cr)
+	, elastic_correction(other.elastic_correction)
 	, pdata(other.pdata ? new ASDSteel1DMaterialPIMPL(*other.pdata) : nullptr)
 {
 }
@@ -1282,50 +1530,36 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	if (!commit_done) {
 		dtime_n_commit = dtime_n;
 	}
-
+	if (params.lch_element > params.length) {
+		elastic_correction = true;
+	}
 	// save macro strain
 	strain = v;
 	// homogenize micro response (stress/tangent)
 
 	asd_print("MAT set trial (" << (int)params.implex << ")");
-	int retval = homogenize(params.implex);
-	double sigma_macro = 0.0;
-	double tangent_macro = 0.0;
+	int retval;
 	// time factor for explicit extrapolation (todo: make a unique function)
-	double time_factor = 1.0;
-	if (params.implex  && (dtime_n_commit > 0.0))
-		time_factor = dtime_n / dtime_n_commit;
-
-	//computation of sigma and tangent of steel
-	pdata->steel_comp.revertToLastCommit();
-	pdata->steel_comp.compute(params, params.implex, time_factor, strain, sigma_macro, tangent_macro);
+	//double time_factor = 1.0;
+	//if (params.implex  && (dtime_n_commit > 0.0))
+	//	time_factor = dtime_n / dtime_n_commit;
+	//
+	////computation of sigma and tangent of steel
+	//pdata->steel_comp.revertToLastCommit();
+	//pdata->steel_comp.compute(params, params.implex, time_factor, strain, sigma_macro, tangent_macro);
 
 	//regularization for element length lower than physical length (weighted average)
-	if (use_regularization) {
-		double alpha0 = 0.0;
-		double alpha = 0.0;
-		double p = 2.0;
-		double n = 2.0;
-		if (params.lch_element < params.length) {
-			//horizontal displacement/physical length
-			double buckstrain = std::abs((params.implex ? pdata->rve_m.sv.UG_commit(6) : pdata->rve_m.sv.UG(6)) / params.length);
-			double axiallimit = 0.05;
-			//from relation between max strain and horizontal disp
-			double bucklimit = std::sqrt(2.0 * axiallimit - axiallimit * axiallimit) / 2.0;
-			alpha0 = alpha_cr + (1 - alpha_cr) * std::pow((params.lch_element / params.length), params.p);
-			alpha = std::min(1.0, alpha0 + (1-alpha0) * buckstrain / (std::pow((params.length  /params.lch_element),params.n) * bucklimit));
-		}
-		else if (params.lch_element >= params.length) {
-			alpha = 1.0;
-		}
-		stress = (alpha) * stress_rve +(1.0 - alpha) * sigma_macro;
-		C = alpha * C_rve + ( 1.0 - alpha) * tangent_macro ;
-	}
-	else { 
+	if (elastic_correction) {
+		retval = homogenize(elastic_correction, params.implex);
 		C = C_rve;
 		stress = stress_rve;
 	}
-
+	else {
+		retval = homogenize(false, params.implex);
+		C = C_rve;
+		stress = stress_rve;
+	}
+	
 	// done
 	return retval;
 }
@@ -1355,7 +1589,7 @@ int ASDSteel1DMaterial::commitState(void)
 	// implicit stage
 	if (params.implex) {
 		asd_print("MAT commit (" << (int)false << ")");
-		int retval = homogenize(false);
+		int retval = homogenize(elastic_correction,false);
 		if (retval < 0) return retval;
 		double sigma_macro = 0.0;
 		double tangent_macro = 0.0;
@@ -1579,13 +1813,18 @@ double ASDSteel1DMaterial::getEnergy(void)
 	return energy;
 }
 
-int ASDSteel1DMaterial::homogenize(bool do_implex)
+int ASDSteel1DMaterial::homogenize(bool flag, bool do_implex)
 {	
 	// return value
 	int retval = 0;
 
 	auto& globals = Globals::instance();
-	globals.setRVENodes(params.length);
+	if (flag) {
+		globals.setRVENodes_el(params.length,params.lch_element);
+	}
+	else {
+		globals.setRVENodes(params.length);
+	}	
 
 	// time factor for explicit extrapolation
 	double time_factor = 1.0;
@@ -1594,13 +1833,17 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 
 	// from macro strain to micro strain
 	double macro_strain = strain;
-	double Uy = -macro_strain * params.length;
-
-	// compute micro response
+	double Uy;
+	if (flag) {
+		Uy = -macro_strain * params.lch_element;
+	}
+	else {
+		Uy = -macro_strain * params.length;
+	}
 	double N = 0.0;
 	double T = 0.0;
 	double area = 0.0;
-	retval = pdata->rve_m.compute(params, Uy, do_implex, time_factor, N, T);
+	retval = pdata->rve_m.compute(flag,params, Uy, do_implex, time_factor, N, T);
 
 	if (retval != 0) {
 		return retval;
@@ -1610,52 +1853,18 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	area = M_PI * params.radius * params.radius;
 
 	stress_rve = -N/area;
-	C_rve = T * params.length/area;
+	if (flag) {
+		C_rve = T * params.lch_element / area;
+	}
+	else {
+		C_rve = T * params.length / area;
+	}
+	
 
 	// done
 	return retval;
 }
 
-void ASDSteel1DMaterial::computeAlphaCr()
-{
-	//preliminary check to determine whether it requires regularization
-	constexpr int nstep = 100;
-	constexpr double cstrain = -0.05;
-	constexpr double d_cstrain = cstrain / nstep;
-	double residual_stress = 0.0;
-	// simulate rve steel
-	use_regularization = false;
 
-	for(int i = 0; i < nstep; ++i) {		
-		setTrialStrain(static_cast<double>(i + 1) * d_cstrain);
-		commitState();
-		residual_stress = -getStress();		
-	}
-
-	if (residual_stress >= params.sy) {
-		return;
-	}
-
-	revertToStart();
-	
-	// simulate no-buckling steel
-	double residual_stress_nb = 0.0;
-	double tangent_macro = 0.0;
-
-	for (int i = 0; i < nstep; ++i) {
-		pdata->steel_comp.revertToLastCommit();
-		pdata->steel_comp.compute(params, false, 1.0, cstrain, residual_stress_nb, tangent_macro);
-		pdata->steel_comp.commitState();
-		residual_stress_nb *= -1.0;
-	}
-
-	pdata->steel_comp.revertToStart();
-
-	// compute min alpha cr that shows softening
-	alpha_cr = (params.sy * 0.95 - residual_stress_nb) / (residual_stress - residual_stress_nb);
-	
-	use_regularization = true;	
-
-}
 
 

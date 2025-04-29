@@ -73,10 +73,8 @@ public:
 		double max_iter = 0.0;
 		double tolU = 0.0;
 		double tolR = 0.0;
-		double p = 0.0;
-		double n = 0.0;
 		// counter
-		static constexpr int NDATA = 16;
+		static constexpr int NDATA = 14;
 	};
 
 public:
@@ -121,10 +119,8 @@ public:
 	double getEnergy(void);
 
 private:
-	int homogenize(bool do_implex);
+	int homogenize(bool flag, bool do_implex);
 
-public:
-	void computeAlphaCr();
 
  private:	
 	 // common input parameters
@@ -147,8 +143,7 @@ public:
 	 double energy = 0.0;
 
 	 //for regularization
-	 bool use_regularization = true;
-	 double alpha_cr = 1.0;
+	 bool elastic_correction = false;
 	 // private implementation
 	 ASDSteel1DMaterialPIMPL* pdata = nullptr;
 };
