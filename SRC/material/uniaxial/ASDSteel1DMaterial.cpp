@@ -1320,7 +1320,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex>  <-buckling $buckling> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1342,6 +1342,7 @@ void* OPS_ASDSteel1DMaterial()
 	double lch;
 	double r;
 	bool implex = false;
+	bool buckling = false;
 	double K_alpha = 0.5;
 	double max_iter= 100;
 	double tolU = 1.0e-6;
@@ -1395,6 +1396,9 @@ void* OPS_ASDSteel1DMaterial()
 		const char* value = OPS_GetString();
 		if (strcmp(value, "-implex") == 0) {
 			implex = true;
+		}
+		if (strcmp(value, "-buckling") == 0) {
+			buckling = true;
 		}
 		if (strcmp(value, "-K_alpha") == 0) {
 			if (!lam_optional_double("K_alpha", K_alpha))
@@ -1457,6 +1461,7 @@ void* OPS_ASDSteel1DMaterial()
 	params.H2 = H2 * (1.0 - alpha);
 	params.gamma2 = gamma2;
 	params.implex = implex;
+	params.buckling = buckling;
 	params.length = lch / 2.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
 	params.K_alpha = K_alpha;
@@ -1512,7 +1517,6 @@ ASDSteel1DMaterial::ASDSteel1DMaterial(const ASDSteel1DMaterial& other)
 	, stress_rve_commit(other.stress_rve_commit)
 	, C_rve(other.C_rve)
 	, energy(other.energy)
-	, elastic_correction(other.elastic_correction)
 	, pdata(other.pdata ? new ASDSteel1DMaterialPIMPL(*other.pdata) : nullptr)
 {
 }
@@ -1530,9 +1534,10 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	if (!commit_done) {
 		dtime_n_commit = dtime_n;
 	}
-	if (params.lch_element > params.length) {
-		elastic_correction = true;
-	}
+	double time_factor = 1.0;
+	if (params.implex && (dtime_n_commit > 0.0))
+		time_factor = dtime_n / dtime_n_commit;
+	
 	// save macro strain
 	strain = v;
 	// homogenize micro response (stress/tangent)
@@ -1540,26 +1545,22 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	asd_print("MAT set trial (" << (int)params.implex << ")");
 	int retval;
 	// time factor for explicit extrapolation (todo: make a unique function)
-	//double time_factor = 1.0;
-	//if (params.implex  && (dtime_n_commit > 0.0))
-	//	time_factor = dtime_n / dtime_n_commit;
-	//
-	////computation of sigma and tangent of steel
-	//pdata->steel_comp.revertToLastCommit();
-	//pdata->steel_comp.compute(params, params.implex, time_factor, strain, sigma_macro, tangent_macro);
-
-	//regularization for element length lower than physical length (weighted average)
-	if (elastic_correction) {
-		retval = homogenize(elastic_correction, params.implex);
+	
+	if (params.buckling) {
+		//regularization for element length lower than physical length (weighted average)
+		retval = homogenize(params.implex);
 		C = C_rve;
 		stress = stress_rve;
 	}
 	else {
-		retval = homogenize(false, params.implex);
-		C = C_rve;
-		stress = stress_rve;
+		opserr << "HERE\n";		
+		////computation of sigma and tangent of steel
+		pdata->steel_comp.revertToLastCommit();
+		pdata->steel_comp.compute(params, params.implex, time_factor, strain, stress, C);
 	}
 	
+	// then apply damage on stress e C
+
 	// done
 	return retval;
 }
@@ -1589,7 +1590,7 @@ int ASDSteel1DMaterial::commitState(void)
 	// implicit stage
 	if (params.implex) {
 		asd_print("MAT commit (" << (int)false << ")");
-		int retval = homogenize(elastic_correction,false);
+		int retval = homogenize(false);
 		if (retval < 0) return retval;
 		double sigma_macro = 0.0;
 		double tangent_macro = 0.0;
@@ -1813,13 +1814,16 @@ double ASDSteel1DMaterial::getEnergy(void)
 	return energy;
 }
 
-int ASDSteel1DMaterial::homogenize(bool flag, bool do_implex)
+int ASDSteel1DMaterial::homogenize(bool do_implex)
 {	
 	// return value
 	int retval = 0;
 
+	// check for elastic correction
+	bool elastic_correction = params.lch_element > params.length;
+
 	auto& globals = Globals::instance();
-	if (flag) {
+	if (elastic_correction) {
 		globals.setRVENodes_el(params.length,params.lch_element);
 	}
 	else {
@@ -1834,7 +1838,7 @@ int ASDSteel1DMaterial::homogenize(bool flag, bool do_implex)
 	// from macro strain to micro strain
 	double macro_strain = strain;
 	double Uy;
-	if (flag) {
+	if (elastic_correction) {
 		Uy = -macro_strain * params.lch_element;
 	}
 	else {
@@ -1843,7 +1847,7 @@ int ASDSteel1DMaterial::homogenize(bool flag, bool do_implex)
 	double N = 0.0;
 	double T = 0.0;
 	double area = 0.0;
-	retval = pdata->rve_m.compute(flag,params, Uy, do_implex, time_factor, N, T);
+	retval = pdata->rve_m.compute(elastic_correction, params, Uy, do_implex, time_factor, N, T);
 
 	if (retval != 0) {
 		return retval;
@@ -1853,7 +1857,7 @@ int ASDSteel1DMaterial::homogenize(bool flag, bool do_implex)
 	area = M_PI * params.radius * params.radius;
 
 	stress_rve = -N/area;
-	if (flag) {
+	if (elastic_correction) {
 		C_rve = T * params.lch_element / area;
 	}
 	else {

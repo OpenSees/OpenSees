@@ -63,6 +63,7 @@ public:
 		double gamma2 = 0.0;
 		// misc
 		bool implex = false;
+		bool buckling = false;
 		// buckling
 		double radius = 0.0;
 		double length = 0.0;
@@ -74,7 +75,7 @@ public:
 		double tolU = 0.0;
 		double tolR = 0.0;
 		// counter
-		static constexpr int NDATA = 14;
+		static constexpr int NDATA = 15;
 	};
 
 public:
@@ -119,7 +120,7 @@ public:
 	double getEnergy(void);
 
 private:
-	int homogenize(bool flag, bool do_implex);
+	int homogenize(bool do_implex);
 
 
  private:	
@@ -142,8 +143,6 @@ private:
 	 // other variables for output purposes
 	 double energy = 0.0;
 
-	 //for regularization
-	 bool elastic_correction = false;
 	 // private implementation
 	 ASDSteel1DMaterialPIMPL* pdata = nullptr;
 };
