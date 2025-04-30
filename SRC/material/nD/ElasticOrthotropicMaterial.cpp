@@ -78,7 +78,7 @@ OPS_ElasticOrthotropicMaterial(void)
     numData = 9;
   
   if (OPS_GetDouble(&numData, dData) != 0) {
-    opserr << "WARNING invalid data: nDMaterial EasticIsotropic : " << iData[0] <<"\n";
+    opserr << "WARNING invalid data: nDMaterial ElasticOrthotropic : " << iData[0] <<"\n";
     return 0;
   }  
   

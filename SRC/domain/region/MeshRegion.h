@@ -70,6 +70,7 @@ class MeshRegion : public DomainComponent
 					  double betaKc);
 
     virtual int setDamping(Damping *theDamping);
+    virtual int setParameter(const char **argv, int argc, Parameter &param);
 
     // methods to send & recv data for database/parallel applications
     virtual int sendSelf(int commitTag, Channel &theChannel);

@@ -35,6 +35,7 @@
 #include <RectangularSeries.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 
@@ -182,4 +183,45 @@ RectangularSeries::Print(OPS_Stream &s, int flag)
     s << "Linear Series: constant factor: " << cFactor;
     s << "  tStart: " << tStart << "  tFinish: " << tFinish << endln;
 
+}
+
+double
+RectangularSeries::getFactorSensitivity(double pseudoTime)
+{
+  if (pseudoTime >= tStart && pseudoTime <= tFinish) {
+    if (parameterID == 1)
+      return 1.0;
+  }
+
+  return 0.0;
+}
+
+int 
+RectangularSeries::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strncmp(argv[0],"factor",80) == 0) {
+    param.setValue(cFactor);
+    return param.addObject(1, this);
+  }
+
+  return -1;
+}
+   
+int 
+RectangularSeries::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    cFactor = info.theDouble;
+    return 0;
+  }
+
+  return -1;
+}
+
+int
+RectangularSeries::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
 }
