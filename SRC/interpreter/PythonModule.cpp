@@ -497,7 +497,7 @@ static int opensees_clear(PyObject *m) {
 
 static struct PyModuleDef moduledef = {
         PyModuleDef_HEAD_INIT,
-        "OpenSeesPy",
+        "opensees",
         NULL,
         sizeof(struct module_state),
         getmethodsFunc(),
@@ -510,20 +510,20 @@ static struct PyModuleDef moduledef = {
 #define INITERROR return NULL
 
 PyMODINIT_FUNC
-PyInit_OpenSeesPy(void)
+PyInit_opensees(void)
 
 #else
 #define INITERROR return
 
 //void
 PyMODINIT_FUNC
-initopenseespy(void)
+initopensees(void)
 #endif
 {
 #if PY_MAJOR_VERSION >= 3
     PyObject *pymodule = PyModule_Create(&moduledef);
 #else
-    PyObject *pymodule = Py_InitModule("OpenSeesPy", getmethodsFunc());
+    PyObject *pymodule = Py_InitModule("opensees", getmethodsFunc());
 #endif
 
     if (pymodule == NULL)
@@ -531,7 +531,7 @@ initopenseespy(void)
     struct module_state *st = GETSTATE(pymodule);
 
     // add OpenSeesError
-    st->error = PyErr_NewExceptionWithDoc("OpenSeesPy.OpenSeesError", "Internal OpenSees errors.", NULL, NULL);
+    st->error = PyErr_NewExceptionWithDoc("opensees.OpenSeesError", "Internal OpenSees errors.", NULL, NULL);
     if (st->error == NULL) {
         Py_DECREF(pymodule);
         INITERROR;
