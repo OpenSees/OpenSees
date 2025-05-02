@@ -103,17 +103,23 @@ void *OPS_PathSeries() {
             loc++;
 
         } else if (strcmp(arg, "-values") == 0) {
+	  
+	  int size; Vector dataValues;
+	  OPS_GetDoubleListInput(&size, &dataValues);
+	  for (int i=0; i<size; i++)
+	    values.push_back(dataValues[i]);
+	  /*
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 double val;
                 numData = 1;
-                if (OPS_GetDoubleInput(&numData, &val) <
-                    0) {
+                if (OPS_GetDoubleInput(&numData, &val) < 0) {
                     OPS_ResetCurrentInputArg(loc);
                     break;
                 }
                 values.push_back(val);
                 loc++;
             }
+	  */
         } else if (strcmp(arg, "-factor") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING no factor is given\n";
@@ -172,17 +178,24 @@ void *OPS_PathSeries() {
             loc++;
 
         } else if (strcmp(arg, "-time") == 0) {
+
+	  int size; Vector dataValues;
+	  OPS_GetDoubleListInput(&size, &dataValues);
+	  for (int i=0; i<size; i++)
+	    times.push_back(dataValues[i]);
+	  /*
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 double val;
                 numData = 1;
-                if (OPS_GetDoubleInput(&numData, &val) <
-                    0) {
+                if (OPS_GetDoubleInput(&numData, &val) < 0) {
                     OPS_ResetCurrentInputArg(loc);
                     break;
                 }
                 times.push_back(val);
                 loc++;
+		opserr << " -time " << val << " " << loc++ << "\n";
             }
+	  */
         }
     }
 
