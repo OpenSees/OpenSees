@@ -71,6 +71,7 @@ void *OPS_PathSeries() {
     // check inputs
     TimeSeries *theSeries = 0;
     int loc = 2;
+    OPS_ResetCurrentInputArg(loc);
     while (OPS_GetNumRemainingInputArgs() > 0) {
         // next arg
         const char *arg = OPS_GetString();
@@ -105,21 +106,25 @@ void *OPS_PathSeries() {
         } else if (strcmp(arg, "-values") == 0) {
 	  
 	  int size; Vector dataValues;
-	  OPS_GetDoubleListInput(&size, &dataValues);
-	  for (int i=0; i<size; i++)
-	    values.push_back(dataValues[i]);
-	  /*
+	  int ok = OPS_GetDoubleListInput(&size, &dataValues);
+	  if (ok >= 0) {
+	    for (int i=0; i<size; i++)
+	      values.push_back(dataValues[i]);
+	    loc++;
+	  }
+	  else{
+	    OPS_ResetCurrentInputArg(loc);
             while (OPS_GetNumRemainingInputArgs() > 0) {
-                double val;
-                numData = 1;
-                if (OPS_GetDoubleInput(&numData, &val) < 0) {
-                    OPS_ResetCurrentInputArg(loc);
-                    break;
-                }
-                values.push_back(val);
-                loc++;
-            }
-	  */
+	      double val;
+	      numData = 1;
+	      if (OPS_GetDoubleInput(&numData, &val) < 0) {
+		OPS_ResetCurrentInputArg(loc);
+		break;
+	      }
+	      values.push_back(val);
+	      loc++;
+	    }
+	  }
         } else if (strcmp(arg, "-factor") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING no factor is given\n";
@@ -180,10 +185,14 @@ void *OPS_PathSeries() {
         } else if (strcmp(arg, "-time") == 0) {
 
 	  int size; Vector dataValues;
-	  OPS_GetDoubleListInput(&size, &dataValues);
-	  for (int i=0; i<size; i++)
-	    times.push_back(dataValues[i]);
-	  /*
+	  int ok = OPS_GetDoubleListInput(&size, &dataValues);
+	  if (ok >= 0) {
+	    for (int i=0; i<size; i++)
+	      times.push_back(dataValues[i]);
+	    loc++;
+	  }
+	  else{
+	    OPS_ResetCurrentInputArg(loc);	    
             while (OPS_GetNumRemainingInputArgs() > 0) {
                 double val;
                 numData = 1;
@@ -193,9 +202,8 @@ void *OPS_PathSeries() {
                 }
                 times.push_back(val);
                 loc++;
-		opserr << " -time " << val << " " << loc++ << "\n";
             }
-	  */
+	  }
         }
     }
 
