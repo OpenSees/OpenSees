@@ -56,6 +56,8 @@ public:
 		double E = 0.0;
 		// Yield stress
 		double sy = 0.0;
+		// ultimate strain for damage initialization
+		double eu = 0.0;
 		// Chaboche kinematic hardening parameters
 		double H1 = 0.0;
 		double H2 = 0.0;
@@ -64,6 +66,7 @@ public:
 		// misc
 		bool implex = false;
 		bool buckling = false;
+		bool fracture = false;
 		// buckling
 		double radius = 0.0;
 		double length = 0.0;
@@ -75,7 +78,7 @@ public:
 		double tolU = 0.0;
 		double tolR = 0.0;
 		// counter
-		static constexpr int NDATA = 15;
+		static constexpr int NDATA = 17;
 	};
 
 public:

@@ -281,6 +281,7 @@ namespace {
 			// store the previously committed variables for next move from n to n - 1
 			lambda_commit_old = lambda_commit;
 			// state variables
+			epl_commit = epl;
 			alpha1_commit = alpha1;
 			alpha2_commit = alpha2;
 			lambda_commit = lambda;
@@ -291,6 +292,7 @@ namespace {
 		}
 		inline void revertToLastCommit() {
 			// state variables
+			epl = epl_commit;
 			alpha1 = alpha1_commit;
 			alpha2 = alpha2_commit;
 			lambda = lambda_commit;
@@ -299,6 +301,8 @@ namespace {
 		}
 		inline void revertToStart() {
 			// state variables
+			epl = 0.0;
+			epl_commit = 0.0;
 			alpha1 = 0.0;
 			alpha1_commit = 0.0;
 			alpha2 = 0.0;
@@ -324,6 +328,7 @@ namespace {
 			alpha1 = alpha1_commit;
 			alpha2 = alpha2_commit;
 			lambda = lambda_commit;
+			epl = epl_commit;
 			// elastic predictor
 			strain = _strain;
 			double dstrain = strain - strain_commit;
@@ -358,12 +363,15 @@ namespace {
 				};
 			// plastic corrector
 			if (params.implex && do_implex) {
+				// extrapolate plastic flow direction
+				sg = sg_commit;
 				// extrapolate lambda
 				//  xn + time_factor * (xn - xnn);
 				double delta_lambda = time_factor * (lambda_commit - lambda_commit_old);
 				lambda = lambda_commit + delta_lambda;
-				// extrapolate plastic flow direction
-				sg = sg_commit;
+				// update plastic strain
+				if (sg > 0.0)
+					epl = epl_commit + sg * delta_lambda;
 				// update stress
 				sigma -= sg * delta_lambda * params.E;
 				// update backstress
@@ -391,10 +399,13 @@ namespace {
 						// check convergence
 						if (std::abs(F) < F_REL_TOL * params.sy && std::abs(dlambda) < L_ABS_TOL) {
 							converged = true;
+							sg = sign(lam_rel_stress());
 							// update plastic multiplier
 							lambda += delta_lambda;
+							// update plastic strain
+							if (sg > 0.0)
+								epl += sg * delta_lambda;
 							// compute tangent
-							sg = sign(lam_rel_stress());
 							double PE =
 								params.gamma1 * (params.H1 / params.gamma1 - sg * alpha1) +
 								params.gamma2 * (params.H2 / params.gamma2 - sg * alpha2);
@@ -425,6 +436,9 @@ namespace {
 		double alpha1_commit = 0.0;
 		double alpha2 = 0.0;
 		double alpha2_commit = 0.0;
+		// positive plastic strain (for fracture)
+		double epl = 0.0;
+		double epl_commit = 0.0;
 		// state variables - plastic multiplier
 		double lambda = 0.0;
 		double lambda_commit = 0.0;
@@ -580,55 +594,6 @@ namespace {
 			return 0;
 		}
 	};
-	template<>
-	class SectionComponent<0>
-	{
-	public:
-		SteelComponent fib;
-
-	public:
-		SectionComponent() = default;
-		inline int commitState() {
-			return 0;
-		}
-		inline void revertToLastCommit() {
-		}
-		inline void revertToStart() {
-		}
-
-		inline int compute(
-			const  ASDSteel1DMaterial::InputParameters& params, const Vector& strain,
-			bool do_implex, double time_factor,
-			Vector& stress, Matrix& tangent) {
-			/**
-			A section with 0 fiber is used for the elastic element.
-			*/
-			int retval = 0.0;
-			double constexpr poiss = 0.3; // built-in poisson ratio
-			double constexpr kshear = 0.9; // built-in shear correction factor for circular sections
-			// area
-			double area = M_PI * params.radius * params.radius;
-			// compute elastic shear response
-			double G = params.E / (2.0 * (1.0 + poiss));
-			double GAk = G * area * kshear;
-			tangent(2, 2) = GAk;
-			stress(2) = GAk * strain(2);
-			// compute elastic M response (will be zero upon convergence for this model)
-			double I = M_PI * std::pow(params.radius, 4) / 4.0;
-			double EI = params.E * I;
-			stress(1) = EI * strain(1);
-			tangent(1, 1) = EI;
-			// compute elastic shear response
-			double EA = params.E * area;
-			stress(0) = EA * strain(0);
-			tangent(0, 0) = EA;
-			// zero terms
-			tangent(0, 1) = tangent(1, 0) = tangent(0, 2) = tangent(2, 0) = tangent(1, 2) = tangent(2, 1) = 0.0;
-			// done
-			return retval;
-		}
-	};
-
 
 	/**
 	Element Traits:
@@ -690,10 +655,10 @@ namespace {
 		static constexpr int N2 = 1;
 	};
 	template<int EType>
-	inline void getElementDisplacementVector(bool flag, const Vector& G, Vector& L) {
+	inline void getElementDisplacementVector(bool elastic_correction, const Vector& G, Vector& L) {
 		// G = global vector, size = 8 -> full = 12, semi-full 8 (7 free + 1 Uy imposed)
 		// L = local vector , size = 6
-		if (flag) {
+		if (elastic_correction) {
 			for (int i = 0; i < 6; ++i) {
 				int gdof = ETypeTraits<EType>::DOFs[i];
 				if (gdof < 10 ) {
@@ -716,10 +681,10 @@ namespace {
 		}
 	}
 	template<int EType>
-	inline void assembleRHS(bool flag, const Vector& L, Vector& G) {
+	inline void assembleRHS(bool elastic_correction, const Vector& L, Vector& G) {
 		// G = global vector, size = 7 (-> full = 12, semi-full 8 (7 free + 1 Uy imposed) only free)
 		// L = local vector , size = 6
-		if (flag) {
+		if (elastic_correction) {
 			for (int i = 0; i < 6; ++i) {
 				int gdof = ETypeTraits<EType>::DOFs[i];
 				if (gdof < 10) {
@@ -737,11 +702,11 @@ namespace {
 		}		
 	}
 	template<int EType>
-	inline void assembleLHS(bool flag, const Matrix& M, Matrix& G) {
+	inline void assembleLHS(bool elastic_correction, const Matrix& M, Matrix& G) {
 		// G = global matrix, size = 7x7 -> full = 12x12, semi-full 8 (7 free + 1 Uy imposed)
 		// L = local  vector , size = 6
 		// M = local  matrix , size = 6x6
-		if (flag) {
+		if (elastic_correction) {
 			for (int i = 0; i < 6; ++i) {
 				int idof = ETypeTraits<EType>::DOFs[i];
 				if (idof < 10) {
@@ -770,8 +735,8 @@ namespace {
 		
 	}
 	template<int EType>
-	inline void getRetainedComponents(bool flag, const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
-		if (flag) {
+	inline void getRetainedComponents(bool elastic_correction, const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
+		if (elastic_correction) {
 			for (int i = 0; i < 6; ++i) {
 				int idof = ETypeTraits<EType>::DOFs[i];
 				for (int j = 0; j < 6; ++j) {
@@ -835,6 +800,17 @@ namespace {
 		}
 		T(2,2) = T(5,5) = 1.0;
 	}
+	inline void computeLocalFrameLinearKin(const V2D& X1, const V2D& X2, Q2D& Qi, V2D& C, Matrix& T) {
+		M2D Ri = computeLocalFrameInternal(X1, X2, Qi, C);
+		//T matrix :  R
+		for (int i = 0; i < 2;++i) {
+			for (int j = 0; j < 2;++j) {
+				T(i, j) = T(i + 3, j + 3) = Ri(i, j);
+				T(i, j + 3) = T(i + 3, j) = 0.0;
+			}
+		}
+		T(2, 2) = T(5, 5) = 1.0;
+	}
 
 	inline void computeBmatrix(const V2D& X1, const V2D& X2, double& L,Matrix& B) {
 		V2D dx = X2 - X1;
@@ -869,8 +845,9 @@ namespace {
 		
 		ElementComponent() = default;
 		
-		inline int compute(bool flag, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor ) {
+		inline int compute(bool elastic_correction, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor ) {
 
+			// get global variables
 			auto& globals = Globals::instance(); 
 			auto& U = globals.element_U;
 			auto& U_commit = globals.element_U_commit;
@@ -889,9 +866,11 @@ namespace {
 			auto& tangent_s = globals.section_tangent;
 			auto& rve_nodes = globals.rve_nodes;
 			auto& rve_nodes_el = globals.rve_nodes_el;
+
+			// determine node numbering (changes for elastic correction)
 			int inode;
 			int jnode;
-			if (flag) {
+			if (elastic_correction) {
 				inode = ETypeTraits<EType>::N1;
 				jnode = ETypeTraits<EType>::N2;
 			}
@@ -900,22 +879,21 @@ namespace {
 				jnode = ETypeTraits<EType>::N2-1;
 			}
 			
-			
-			if (flag) {
-				getElementDisplacementVector<EType>(flag, rve.UG_el, U);
-				getElementDisplacementVector<EType>(flag, rve.UG_el_commit, U_commit);
+			// obtain global displacement vectors (size changes for elastic correction)
+			if (elastic_correction) {
+				getElementDisplacementVector<EType>(elastic_correction, rve.UG_el, U);
+				getElementDisplacementVector<EType>(elastic_correction, rve.UG_el_commit, U_commit);
 			}
 			else {
-
-				getElementDisplacementVector<EType>(flag, rve.UG, U);
-				getElementDisplacementVector<EType>(flag, rve.UG_commit, U_commit);
+				getElementDisplacementVector<EType>(elastic_correction, rve.UG, U);
+				getElementDisplacementVector<EType>(elastic_correction, rve.UG_commit, U_commit);
 			}
 			
 
 			// undeformed nodes
 			V2D node_i;
 			V2D node_j;
-			if (flag) {
+			if (elastic_correction) {
 				node_i = rve_nodes_el[inode];
 				node_j = rve_nodes_el[jnode];
 			}
@@ -924,61 +902,78 @@ namespace {
 				node_j = rve_nodes[jnode];
 			}
 			
-			
-			//deformed node position
-			V2D deformed_node_i = node_i +V2D(U(0), U(1));
-			V2D deformed_node_j = node_j +V2D(U(3), U(4));
-
-			V2D deformed_node_i_old = node_i + V2D(U_commit(0), U_commit(1));
-			V2D deformed_node_j_old = node_j + V2D(U_commit(3), U_commit(4));
-			
-			Q2D Q, Q0;
-
+			// current orientation and center
+			Q2D Q;
 			V2D C;
-			V2D C0;
-			double L = 0.0;
-			
-			if (do_implex) {
-				computeLocalFrame(deformed_node_i_old, deformed_node_j_old, Q, C, T);  //deformed old nodes
+			if (EType == EType_El) {
+
+				// use linear kinematics
+				computeLocalFrameLinearKin(node_i, node_j, Q, C, T);  // undeformed nodes
+				UL.addMatrixVector(0.0, T, U, 1.0);
 			}
 			else {
-				computeLocalFrame(deformed_node_i, deformed_node_j, Q, C, T);  //deformed nodes
-			}
-			computeLocalFrame(node_i, node_j, Q0, C0);  //rve nodes
+				
+				// use nonlinear (corotational) kinematics
 
-			if (!do_implex) {
-				V2D rn_current = V2D(U(2), U(5)); // rotation at current iteration
-				V2D dtheta = rn_current - rn; // iterative correction
-				rn = rn_current; // save current for next iteration
-				for (int i = 0; i < 2; ++i) {
-					qn[i] = Q2D::fromRotationVector(dtheta(i)) * qn[i]; // increment quaterion from previous iteration
+				if (!do_implex) {
+
+					// computed deformed node position
+					V2D deformed_node_i = node_i + V2D(U(0), U(1));
+					V2D deformed_node_j = node_j + V2D(U(3), U(4));
+
+					// compute local frame in current configuration
+					computeLocalFrame(deformed_node_i, deformed_node_j, Q, C, T);
+
+					// compute also local frame in the undeformed configuration
+					Q2D Q0;
+					V2D C0;
+					computeLocalFrame(node_i, node_j, Q0, C0);
+
+					V2D rn_current = V2D(U(2), U(5)); // rotation at current iteration
+					V2D dtheta = rn_current - rn; // iterative correction
+					rn = rn_current; // save current for next iteration
+					for (int i = 0; i < 2; ++i) {
+						qn[i] = Q2D::fromRotationVector(dtheta(i)) * qn[i]; // increment quaterion from previous iteration
+					}
+
+					//position vectors in local reference frame
+					V2D rf_node1_position = Q0.rotateVector(node_i - C0);
+					V2D rf_node2_position = Q0.rotateVector(node_j - C0);
+
+					//deformed position vectors in local current frame
+					V2D cf_node1_deformed = Q.rotateVector(deformed_node_i - C);
+					V2D cf_node2_deformed = Q.rotateVector(deformed_node_j - C);
+
+					// translational part of deformational local displacements
+					UL(0) = cf_node1_deformed.x - rf_node1_position.x;
+					UL(1) = cf_node1_deformed.y - rf_node1_position.y;
+					UL(3) = cf_node2_deformed.x - rf_node2_position.x;
+					UL(4) = cf_node2_deformed.y - rf_node2_position.y;
+
+					// rotational part of deformational local rotation
+					UL(2) = (Q * qn[0] * Q0.conjugate()).toRotationVector();
+					UL(5) = (Q * qn[1] * Q0.conjugate()).toRotationVector();
+				}
+				else {
+
+					// computed deformed node position with committed displacement
+					V2D deformed_node_i_old = node_i + V2D(U_commit(0), U_commit(1));
+					V2D deformed_node_j_old = node_j + V2D(U_commit(3), U_commit(4));
+
+					// compute local frame in deformed committed configuration
+					computeLocalFrame(deformed_node_i_old, deformed_node_j_old, Q, C, T);
+
+					// transform only the incremental part with this explicit approximation
+					dU = U;
+					dU.addVector(1.0, U_commit, -1.0);
+					UL = UL_commit;
+					UL.addMatrixVector(1.0, T, dU, 1.0);
 				}
 
-				//position vectors in local reference frame
-				V2D rf_node1_position = Q0.rotateVector(node_i - C0);
-				V2D rf_node2_position = Q0.rotateVector(node_j - C0);
-
-				//deformed position vectors in local current frame
-				V2D cf_node1_deformed = Q.rotateVector(deformed_node_i - C);
-				V2D cf_node2_deformed = Q.rotateVector(deformed_node_j - C);
-
-				// translational part of deformational local displacements
-				UL(0) = cf_node1_deformed.x - rf_node1_position.x;
-				UL(1) = cf_node1_deformed.y - rf_node1_position.y;
-				UL(3) = cf_node2_deformed.x - rf_node2_position.x;
-				UL(4) = cf_node2_deformed.y - rf_node2_position.y;
-
-				// rotational part of deformational local rotation
-				UL(2) = (Q * qn[0] * Q0.conjugate()).toRotationVector();
-				UL(5) = (Q * qn[1] * Q0.conjugate()).toRotationVector();
 			}
-			else {
-				dU = U;
-				dU.addVector(1.0, U_commit, -1.0);
-				UL = UL_commit; 
-				UL.addMatrixVector(1.0, T, dU, 1.0);
-			}
-
+			
+			// strain-displacement matrix in local frame
+			double L = 0.0;
 			computeBmatrix(node_i, node_j, L, B);  //rve nodes
 			
 			// section strain = B*U
@@ -1030,21 +1025,21 @@ namespace {
 	};
 
 	template<int NFiber, int EType>
-	inline int rve_process_element(bool flag, ElementComponent<NFiber, EType>& ele, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor) {
-		int retval = ele.compute(flag, rve, params, do_implex, time_factor);
+	inline int rve_process_element(bool elastic_correction, ElementComponent<NFiber, EType>& ele, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor) {
+		int retval = ele.compute(elastic_correction, rve, params, do_implex, time_factor);
 		if (retval != 0) {
 			asd_print_full("ele !converged");
 			return retval;
 		}
 		auto& globals = Globals::instance();
-		if (flag) {
-			assembleRHS<EType>(flag, globals.element_RHS, globals.rve_R_el);
-			assembleLHS<EType>(flag, globals.element_LHS, globals.rve_K_el);
+		if (elastic_correction) {
+			assembleRHS<EType>(elastic_correction, globals.element_RHS, globals.rve_R_el);
+			assembleLHS<EType>(elastic_correction, globals.element_LHS, globals.rve_K_el);
 		}
 		else {
 
-			assembleRHS<EType>(flag, globals.element_RHS, globals.rve_R);
-			assembleLHS<EType>(flag, globals.element_LHS, globals.rve_K);
+			assembleRHS<EType>(elastic_correction, globals.element_RHS, globals.rve_R);
+			assembleLHS<EType>(elastic_correction, globals.element_LHS, globals.rve_K);
 		}
 		return 0;
 	}
@@ -1056,11 +1051,11 @@ namespace {
 		ElementComponent<3, EType_Bot> e1;
 		ElementComponent<1, EType_Mid> e2;
 		ElementComponent<3, EType_Top> e3;
-		ElementComponent<0, EType_El> e0;
+		ElementComponent<1, EType_El> e0; // nonlinear section (1 fiber), but linear kinematics
 
 		RVEModel() = default;
 		
-		inline int compute(bool flag, const ASDSteel1DMaterial::InputParameters& params, double U, bool do_implex, double time_factor, double& N, double& tangent) {
+		inline int compute(bool elastic_correction, const ASDSteel1DMaterial::InputParameters& params, double U, bool do_implex, double time_factor, double& N, double& tangent) {
 
 			// output
 			int retval = -1;
@@ -1078,22 +1073,22 @@ namespace {
 			
 			// utility for assembly
 			// note: do it in reverse order, so that we can access the element RHS for element Bottom to get reaction
-			auto lam_assemble = [this, flag, &globals, &params, &do_implex, &time_factor]() -> int {
+			auto lam_assemble = [this, elastic_correction, &globals, &params, &do_implex, &time_factor]() -> int {
 				// zero R and K for element integration
 				globals.rve_R.Zero();
 				globals.rve_K.Zero();
 				globals.rve_R_el.Zero();
 				globals.rve_K_el.Zero();
-				if (flag) {
-					if (rve_process_element< 3, EType_Top>(flag, e3, sv, params, do_implex, time_factor) != 0) return -1;
-					if (rve_process_element< 1, EType_Mid>(flag, e2, sv, params, do_implex, time_factor) != 0) return -1;
-					if (rve_process_element< 3, EType_Bot>(flag, e1, sv, params, do_implex, time_factor) != 0) return -1;
-					if (rve_process_element< 0, EType_El>(flag, e0, sv, params, do_implex, time_factor) != 0) return -1;
+				if (elastic_correction) {
+					if (rve_process_element< 3, EType_Top>(elastic_correction, e3, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 1, EType_Mid>(elastic_correction, e2, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 3, EType_Bot>(elastic_correction, e1, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 1, EType_El>(elastic_correction, e0, sv, params, do_implex, time_factor) != 0) return -1;
 				}
 				else {
-					if (rve_process_element< 3, EType_Top>(flag, e3, sv, params, do_implex, time_factor) != 0) return -1;
-					if (rve_process_element< 1, EType_Mid>(flag, e2, sv, params, do_implex, time_factor) != 0) return -1;
-					if (rve_process_element< 3, EType_Bot>(flag, e1, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 3, EType_Top>(elastic_correction, e3, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 1, EType_Mid>(elastic_correction, e2, sv, params, do_implex, time_factor) != 0) return -1;
+					if (rve_process_element< 3, EType_Bot>(elastic_correction, e1, sv, params, do_implex, time_factor) != 0) return -1;
 					double I = M_PI * std::pow(params.radius, 4) / 4.0;
 					double EI = params.E * I;
 					double fact = 0.04 * params.length / (params.radius * 5.0);
@@ -1106,7 +1101,7 @@ namespace {
 			};
 
 			// impose BC
-			if (flag) {
+			if (elastic_correction) {
 				sv.UG_el(10) = U;
 			}
 			else {
@@ -1131,7 +1126,7 @@ namespace {
 			for (int iter = 0; iter < params.max_iter; ++iter) {
 
 				// solve
-				if (flag) {
+				if (elastic_correction) {
 					if (globals.rve_K_el.Solve(globals.rve_R_el, globals.rve_dU_el) != 0) {
 						asd_print_full("Solve failed");
 						break;
@@ -1237,14 +1232,14 @@ namespace {
 			}
 			double Krc_dot_Kinv_Kcr = 0.0;
 			// do it outside, element Bottom is the last one
-			if (flag) {
-				getRetainedComponents<EType_El>(flag, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr_el, globals.rve_Krc_el);
+			if (elastic_correction) {
+				getRetainedComponents<EType_El>(elastic_correction, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr_el, globals.rve_Krc_el);
 				globals.rve_K_el.Solve(globals.rve_Kcr_el, globals.rve_Kinv_Kcr_el);
 				Krc_dot_Kinv_Kcr = globals.rve_Krc_el ^ globals.rve_Kinv_Kcr_el;
 			}
 			else {
 
-				getRetainedComponents<EType_Bot>(flag, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr, globals.rve_Krc);
+				getRetainedComponents<EType_Bot>(elastic_correction, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr, globals.rve_Krc);
 				globals.rve_K.Solve(globals.rve_Kcr, globals.rve_Kinv_Kcr);
 				Krc_dot_Kinv_Kcr = globals.rve_Krc ^ globals.rve_Kinv_Kcr;
 			}
@@ -1320,7 +1315,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex>  <-buckling $buckling> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex>  <-buckling $buckling> <-fracture $fracture> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1343,6 +1338,7 @@ void* OPS_ASDSteel1DMaterial()
 	double r;
 	bool implex = false;
 	bool buckling = false;
+	bool fracture = false;
 	double K_alpha = 0.5;
 	double max_iter= 100;
 	double tolU = 1.0e-6;
@@ -1400,6 +1396,9 @@ void* OPS_ASDSteel1DMaterial()
 		if (strcmp(value, "-buckling") == 0) {
 			buckling = true;
 		}
+		if (strcmp(value, "-fracture") == 0) {
+			fracture = true;
+		}
 		if (strcmp(value, "-K_alpha") == 0) {
 			if (!lam_optional_double("K_alpha", K_alpha))
 				return nullptr;
@@ -1456,12 +1455,14 @@ void* OPS_ASDSteel1DMaterial()
 	ASDSteel1DMaterial::InputParameters params;
 	params.E = E;
 	params.sy = sy;
+	params.eu = eu;
 	params.H1 = H1 * alpha;
 	params.gamma1 = gamma1;
 	params.H2 = H2 * (1.0 - alpha);
 	params.gamma2 = gamma2;
 	params.implex = implex;
 	params.buckling = buckling;
+	params.fracture = fracture;
 	params.length = lch / 2.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
 	params.K_alpha = K_alpha;
@@ -1545,22 +1546,36 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	asd_print("MAT set trial (" << (int)params.implex << ")");
 	int retval;
 	// time factor for explicit extrapolation (todo: make a unique function)
-	
+	double epl = 0.0;
 	if (params.buckling) {
 		//regularization for element length lower than physical length (weighted average)
 		retval = homogenize(params.implex);
 		C = C_rve;
 		stress = stress_rve;
+		epl = pdata->rve_m.e2.section.fib.epl;
+
+
 	}
 	else {
-		opserr << "HERE\n";		
 		////computation of sigma and tangent of steel
 		pdata->steel_comp.revertToLastCommit();
-		pdata->steel_comp.compute(params, params.implex, time_factor, strain, stress, C);
+		retval = pdata->steel_comp.compute(params, params.implex, time_factor, strain, stress, C);
+		epl = pdata->steel_comp.epl;
+	}
+	if (params.fracture) {
+		double d = 0.0;
+		double eupl = params.eu - params.sy / params.E;
+		if (epl > eupl) {
+			double epl_max = eupl + eupl * params.length / params.lch_element;
+			double G = (epl_max-eupl) * params.sy / 2.0;
+			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (epl-eupl) / G));
+			d = 1.0 - sigma_damaged / params.sy;
+		}
+		//apply damage on stress e C
+		stress *= (1.0 - d);
+		C *= (1.0 - d);  //tangent for implex, secant for implicit
 	}
 	
-	// then apply damage on stress e C
-
 	// done
 	return retval;
 }
@@ -1668,7 +1683,7 @@ UniaxialMaterial* ASDSteel1DMaterial::getCopy(void)
 	return new ASDSteel1DMaterial(*this);
 }
 
-void ASDSteel1DMaterial::Print(OPS_Stream& s, int flag)
+void ASDSteel1DMaterial::Print(OPS_Stream& s, int  elastic_correction)
 {
 	s << "ASDSteel1D Material, tag: " << this->getTag() << "\n";
 }
