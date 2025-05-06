@@ -1777,9 +1777,47 @@ Brick::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     theResponse =  new ElementResponse(this, 5, Vector(48));
 
-  }
+  } else if (strcmp(argv[0],"stress3D6") == 0) {
+    // this response if for vtkhdf recorder which averages the stresses
+    // over the 8 gauss points and returns the 6 values
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
 
-  
+    output.tag("ResponseType","sigma11");
+    output.tag("ResponseType","sigma22");
+    output.tag("ResponseType","sigma33");
+    output.tag("ResponseType","sigma12");
+    output.tag("ResponseType","sigma23");
+    output.tag("ResponseType","sigma13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+    theResponse =  new ElementResponse(this, 6, Vector(6));
+
+  } else if (strcmp(argv[0],"strain3D6") == 0) { 
+    // this response if for vtkhdf recorder which averages the strains
+    // over the 8 gauss points and returns the 6 values
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
+
+    output.tag("ResponseType","eps11");
+    output.tag("ResponseType","eps22");
+    output.tag("ResponseType","eps33");
+    output.tag("ResponseType","eps12");
+    output.tag("ResponseType","eps23");
+    output.tag("ResponseType","eps13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+
+    theResponse =  new ElementResponse(this, 7, Vector(6));
+  }
   output.endTag(); // ElementOutput
   return theResponse;
 }
@@ -1846,8 +1884,43 @@ Brick::getResponse(int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(stresses);
 
-  }
+  } else if (responseID == 6) {
+    
+    // Loop over the integration points
+    Vector tmpStress(6);
+    for (int i = 0; i < 8; i++) {
+      
+      // Get material stress
+      const Vector &sigma = materialPointers[i]->getStress();
+      tmpStress(0) += sigma(0)*0.125;
+      tmpStress(1) += sigma(1)*0.125;
+      tmpStress(2) += sigma(2)*0.125;
+      tmpStress(3) += sigma(3)*0.125;
+      tmpStress(4) += sigma(4)*0.125;
+      tmpStress(5) += sigma(5)*0.125;
+    }
 
+    return eleInfo.setVector(tmpStress);
+  } else if (responseID == 7) {
+    
+    // Loop over the integration points
+    int cnt = 0;
+    Vector tmpStrain(6);
+    for (int i = 0; i < 8; i++) {
+      
+      // Get material strain
+      const Vector &sigma = materialPointers[i]->getStrain();
+      tmpStrain(0) += sigma(0);
+      tmpStrain(1) += sigma(1);
+      tmpStrain(2) += sigma(2);
+      tmpStrain(3) += sigma(3);
+      tmpStrain(4) += sigma(4);
+      tmpStrain(5) += sigma(5);
+    }
+    tmpStrain /= 8.0;
+
+    return eleInfo.setVector(tmpStrain);
+  } 
   else
     return -1;
 }
