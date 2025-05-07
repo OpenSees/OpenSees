@@ -221,7 +221,8 @@ int PythonModule::getDoubleList(int* size, Vector* data)
         }
     }
     else {
-        opserr << "PythonModule::getDoubleList error: input is neither a list nor a tuple\n";
+      // Removing this error message for Path series list inputs -- MHS
+      //opserr << "PythonModule::getDoubleList error: input is neither a list nor a tuple\n";
         return -1;
     }
 
