@@ -317,12 +317,12 @@ int OPS_GetDoubleInput(int* numData, double* data)
 {
     int size = *numData;
     for (int i = 0; i < size; i++) {
-        if ((currentArg >= maxArg) || (Tcl_GetDouble(theInterp, currentArgv[currentArg], &data[i]) != TCL_OK)) {
-            //opserr << "OPS_GetDoubleInput -- error reading " << currentArg << endln;
-            return -1;
-        }
-        else
-            currentArg++;
+      if ((currentArg >= maxArg) || (Tcl_GetDouble(theInterp, currentArgv[currentArg], &data[i]) != TCL_OK)) {
+	//opserr << "OPS_GetDoubleInput -- error reading " << currentArg << endln;
+	return -1;
+      }
+      else
+	currentArg++;
     }
 
     return 0;
@@ -331,32 +331,58 @@ int OPS_GetDoubleInput(int* numData, double* data)
 extern "C"
 int OPS_GetDoubleListInput(int* size, Vector* data)
 {
-    TCL_Char** strings;
+  int mySize = 0;
+  double val;
+  
+  if ((currentArg < maxArg) &&
+      (Tcl_GetDouble(theInterp, currentArgv[currentArg], &val) == TCL_OK)) {
 
-    if (Tcl_SplitList(theInterp, currentArgv[currentArg],
-        size, &strings) != TCL_OK) {
-
-        opserr << "ERROR problem splitting list " << currentArgv[currentArg] << " \n";
-        return -1;
+    // its a seriues of double values .. go get values till last arg or not a double
+    (*data)[mySize] = val;
+    mySize++;
+    currentArg++;
+    while ((currentArg < maxArg) &&
+	   (Tcl_GetDouble(theInterp, currentArgv[currentArg], &val) == TCL_OK)) {
+      
+      currentArg++;
+      (*data)[mySize] = val;	
+      mySize++;
     }
+    *size = mySize;
+    
+    return 0;
 
+  } else {
+
+    // it's a list
+    TCL_Char** strings;
+  
+    if (Tcl_SplitList(theInterp, currentArgv[currentArg],
+		      size, &strings) != TCL_OK) {
+      
+      opserr << "ERROR problem splitting list " << currentArgv[currentArg] << " \n";
+      return -1;
+    }
+    
     data->resize(*size);
     for (int i = 0; i < *size; i++) {
-        double value;
-        if (Tcl_GetDouble(theInterp, strings[i], &value) != TCL_OK) {
-            opserr << "ERROR problem reading data value " << strings[i] << " \n";
-            // free up the array of strings .. see tcl man pages as to why
-            Tcl_Free((char*)strings);
-            return -1;
-        }
-        (*data)(i) = value;
+      double value;
+      if (Tcl_GetDouble(theInterp, strings[i], &value) != TCL_OK) {
+	opserr << "ERROR problem reading data value " << strings[i] << " \n";
+	// free up the array of strings .. see tcl man pages as to why
+	Tcl_Free((char*)strings);
+	return -1;
+      }
+      (*data)(i) = value;
     }
     // free up the array of strings .. see tcl man pages as to why
     Tcl_Free((char*)strings);
 
     currentArg++;
-
-    return 0;
+    
+  }
+    
+  return 0;
 }
 
 extern "C"
