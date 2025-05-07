@@ -104,7 +104,7 @@ void* OPS_TwoNodeLinkSection()
     int doRayleigh = 0;
     double mass = 0.0;
     if (OPS_GetNumRemainingInputArgs() < 1) {
-        return new TwoNodeLinkSection(idata[0], ndm, idata[1], idata[2], *theSection);
+        return new TwoNodeLinkSection(idata[0], ndm, idata[1], idata[2], *theSection, y, x);
     }
     
     while (OPS_GetNumRemainingInputArgs() > 0) {
