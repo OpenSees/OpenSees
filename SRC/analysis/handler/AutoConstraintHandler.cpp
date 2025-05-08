@@ -63,6 +63,7 @@
 #include <memory>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 
 // for parallel
 #ifdef _PARALLEL_PROCESSING
