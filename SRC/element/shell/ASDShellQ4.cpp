@@ -678,8 +678,8 @@ namespace
         T(4, 3) = s * s;			T(4, 4) = c * c;			T(4, 5) = s * c;
         T(5, 3) = 2.0 * s * c;		T(5, 4) = -2.0 * s * c;		T(5, 5) = c * c - s * s;
 
-        T(6, 6) = c;		T(6, 7) = s;
-        T(7, 6) = -s;		T(7, 7) = c;
+        T(6, 6) = c;		T(6, 7) = -s;
+        T(7, 6) = s;		T(7, 7) = c;
     }
 
     // computes the transformation matrix for generalized stresses
@@ -698,8 +698,8 @@ namespace
         T(4, 3) = s * s;		T(4, 4) = c * c;		T(4, 5) = 2.0 * s * c;
         T(5, 3) = s * c;		T(5, 4) = -s * c;		T(5, 5) = c * c - s * s;
 
-        T(6, 6) = c;		T(6, 7) = s;
-        T(7, 6) = -s;		T(7, 7) = c;
+        T(6, 6) = c;		T(6, 7) = -s;
+        T(7, 6) = s;		T(7, 7) = c;
     }
 
 }
@@ -863,7 +863,7 @@ void  ASDShellQ4::setDomain(Domain* theDomain)
             Vector3Type P2(m_transformation->getNodes()[1]->getCrds());
             Vector3Type P3(m_transformation->getNodes()[2]->getCrds());
             Vector3Type P4(m_transformation->getNodes()[3]->getCrds());
-            Vector3Type e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
+            e1 = (P2 + P3) / 2.0 - (P1 + P4) / 2.0;
             e1.normalize();
         }
         m_angle = std::acos(std::max(-1.0, std::min(1.0, e1.dot(e1_local))));
