@@ -2,7 +2,7 @@ include ../../../Makefile.def
 
 OBJS       = SP_Constraint.o MP_Constraint.o RigidDiaphragm.o \
 	RigidRod.o RigidBeam.o ImposedMotionSP.o ImposedMotionSP1.o \
-	Pressure_Constraint.o
+	Pressure_Constraint.o EQ_Constraint.o
 
 # Compilation control
 
