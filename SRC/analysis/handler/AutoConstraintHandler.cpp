@@ -63,6 +63,16 @@
 #include <memory>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
+
+// for parallel
+#ifdef _PARALLEL_PROCESSING
+extern bool OPS_PARTITIONED;
+#include <mpi.h>
+#endif // _PARALLEL_PROCESSING
+#ifdef _PARALLEL_INTERPRETERS
+#include <mpi.h>
+#endif // _PARALLEL_INTERPRETERS
 
 void* OPS_AutoConstraintHandler()
 {
@@ -152,40 +162,48 @@ namespace {
 		*/
 		PenaltyEvaluator(Domain* domain, const std::vector<MP_Constraint*> mps, double penalty_oom)
 		{
-			// store nodes involved in the input mps and init penalty to 0
+			// store nodes involved in the input mps and init their local penalty to 0
 			for (auto* mp : mps) {
 				if (mp) {
 					m_node_penalty[mp->getNodeRetained()] = 0.0;
 					m_node_penalty[mp->getNodeConstrained()] = 0.0;
 				}
 			}
-			// eval elements connected to those nodes
+			// evaluate global and local stiffness info
+			m_gp_min = 0.0;
+			m_gp_max = 0.0;
+			m_gp_avg = 0.0;
+			m_gp_cnt = 0.0;
 			Element* elePtr;
 			ElementIter& theEles = domain->getElements();
 			while ((elePtr = theEles()) != 0) {
 				if (!elePtr->isSubdomain()) {
-					// element nodes. process only if at least one node is involved
-					const ID& elenodes = elePtr->getExternalNodes();
-					bool found = false;
-					for (int i = 0; i < elenodes.Size(); ++i) {
-						if (m_node_penalty.count(elenodes(i)) > 0) {
-							found = true;
-							break;
-						}
-					}
-					if (!found) continue;
-					// eval max diagonal entry for this element
+					// eval max diagonal entry for this element ...
 					const Matrix& K = elePtr->getInitialStiff();
 					double kmax = 0.0;
 					for (int i = 0; i < K.noRows(); ++i) {
 						double ki = std::abs(K(i, i));
 						kmax = std::max(kmax, ki);
 					}
-					// and accumulte the same to each node (it's just an approximation)
+					// ... and accumulte the same kmax to each node (it's just an approximation)
+					// (process only if at least one node is involved)
+					const ID& elenodes = elePtr->getExternalNodes();
 					for (int i = 0; i < elenodes.Size(); ++i) {
 						auto iter = m_node_penalty.find(elenodes(i));
 						if (iter != m_node_penalty.end())
 							iter->second += kmax;
+					}
+					// now eval the global min/max/avg stiffness
+					m_gp_max = std::max(m_gp_max, kmax);
+					m_gp_min = m_gp_max;
+					double k_tol = 1.0e-12 * kmax;
+					for (int i = 0; i < K.noRows(); ++i) {
+						double ki = std::abs(K(i, i));
+						if (ki > k_tol) {
+							m_gp_min = std::min(m_gp_min, ki);
+							m_gp_avg += ki;
+							m_gp_cnt += 1.0;
+						}
 					}
 				}
 			}
@@ -200,6 +218,42 @@ namespace {
 				// compute the penalty value
 				item.second = std::pow(10.0, koom + penalty_oom);
 			}
+			// finalize the global stiffness info for global penalty
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
+			int pid = 0;
+			int np = 1;
+			MPI_Comm_rank(MPI_COMM_WORLD, &pid);
+			MPI_Comm_size(MPI_COMM_WORLD, &np);
+			// quick return for 1 process or for non-partitioned cases (should not happen)
+			bool do_allreduce = true;
+			if (np == 1) do_allreduce = false;
+#if defined(_PARALLEL_PROCESSING)
+			if (pid == 0 && !OPS_PARTITIONED) do_allreduce = false;
+#endif // defined(_PARALLEL_PROCESSING)
+			if (do_allreduce) {
+				double local_min = m_gp_min;
+				double local_max = m_gp_max;
+				double local_avg = m_gp_avg;
+				double local_cnt = m_gp_cnt;
+				if (MPI_Allreduce(&local_min, &m_gp_min, 1, MPI_DOUBLE, MPI_MIN, MPI_COMM_WORLD) != MPI_SUCCESS) {
+					opserr << "AutoConstraintHandler Warning: MPI_Allreduce failed to get MIN\n";
+				}
+				if (MPI_Allreduce(&local_max, &m_gp_max, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD) != MPI_SUCCESS) {
+					opserr << "AutoConstraintHandler Warning: MPI_Allreduce failed to get MAX\n";
+				}
+				if (MPI_Allreduce(&local_avg, &m_gp_avg, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD) != MPI_SUCCESS) {
+					opserr << "AutoConstraintHandler Warning: MPI_Allreduce failed to get SUM\n";
+				}
+				if (MPI_Allreduce(&local_cnt, &m_gp_cnt, 1, MPI_DOUBLE, MPI_SUM, MPI_COMM_WORLD) != MPI_SUCCESS) {
+					opserr << "AutoConstraintHandler Warning: MPI_Allreduce failed to get CNT\n";
+				}
+			}
+#endif // defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
+			// finalize the average
+			if (m_gp_cnt > 0.0) m_gp_avg /= m_gp_cnt;
+			// compute the global penalty as function of the average
+			double gp_koom = std::round(std::log10(m_gp_avg));
+			m_global_penalty = std::pow(10.0, gp_koom + penalty_oom);
 		}
 		/**
 		returns the penalty value for the input mp constraint
@@ -212,12 +266,19 @@ namespace {
 			if (itr != m_node_penalty.end()) value = std::max(value, itr->second);
 			auto itc = m_node_penalty.find(mp->getNodeConstrained());
 			if (itc != m_node_penalty.end()) value = std::max(value, itc->second);
+			if (value == 0.0) value = m_global_penalty;
 			return value;
 		}
 
 	public:
 		// maps a node id to the penalty value at that node
 		std::unordered_map<int, double> m_node_penalty;
+		// global penalty data
+		double m_gp_min = 0.0;
+		double m_gp_max = 0.0;
+		double m_gp_avg = 0.0;
+		double m_gp_cnt = 0.0;
+		double m_global_penalty = 0.0;
 	};
 
 }
@@ -390,7 +451,6 @@ AutoConstraintHandler::handle(const ID* nodesLast)
 		MP_Constraint* mpPtr;
 		while ((mpPtr = theMPs()) != 0)
 			mps_penalty.push_back(mpPtr);
-
 	}
 	std::shared_ptr<PenaltyEvaluator> peval;
 	if (auto_penalty) 
@@ -440,6 +500,12 @@ AutoConstraintHandler::handle(const ID* nodesLast)
 		ss << "+ MP Constraints:\n";
 		ss << "   + " << mps_penalty.size() << " constraints handled with the Penalty method\n";
 		if (auto_penalty) {
+			ss << "   + Global Penalty values:\n";
+			ss << "      + KMIN = " << std::scientific << peval->m_gp_min << "\n";
+			ss << "      + KMAX = " << std::scientific << peval->m_gp_max << "\n";
+			ss << "      + KAVG = " << std::scientific << peval->m_gp_avg << "\n";
+			ss << "      + PVAL = " << std::scientific << peval->m_global_penalty 
+				<< std::defaultfloat << " ( Selected penalty value = 10^(round(log10(KAVG))+" << auto_penalty_oom << ") )\n";
 			ss << "   + Automatic Penalty values for each MP Constraint:\n";
 			for (MP_Constraint* mp : mps_penalty) 
 				ss << "      + MP(tag = " << mp->getTag() << ") = " << std::scientific << peval->getPenaltyValue(mp) << "\n";
