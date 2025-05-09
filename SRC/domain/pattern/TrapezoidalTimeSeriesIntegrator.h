@@ -49,6 +49,8 @@ class TrapezoidalTimeSeriesIntegrator : public TimeSeriesIntegrator
 
       TimeSeries* integrate(TimeSeries *theTimeSeries, double delta);
 
+      TimeSeries* differentiate(TimeSeries *theTimeSeries, double delta);
+
       // methods for output    
       int sendSelf(int commitTag, Channel &theChannel);
       int recvSelf(int commitTag, Channel &theChannel, 

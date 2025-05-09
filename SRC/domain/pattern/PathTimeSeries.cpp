@@ -298,8 +298,51 @@ PathTimeSeries::getCopy(void)
 double
 PathTimeSeries::getTimeIncr (double pseudoTime)
 {
-  // NEED TO FILL IN, FOR NOW return 1.0
-  return 1.0;
+  // check for a quick return
+  if (time == 0 || time->Size() < 2)
+    return 1.0;
+
+  // determine indexes into the data array whose boundary holds the time
+  double time1 = (*time)(currentTimeLoc);
+  double time2 = (*time)(currentTimeLoc+1);
+
+  // check for another quick return
+  if (pseudoTime < time1 && currentTimeLoc == 0)
+    return time2 - time1;
+  if (pseudoTime == time1)
+    return time2 - time1;
+
+  int size = time->Size();
+  int sizem1 = size - 1;
+  int sizem2 = size - 2;
+  
+  // check we are at the end
+  if (pseudoTime > time1 && currentTimeLoc == sizem1)
+      return (*time)[sizem1] - (*time)[sizem2];
+
+  // otherwise go find the current interval
+  if (pseudoTime > time2) {
+    while ((pseudoTime > time2) && (currentTimeLoc < sizem2)) {
+      currentTimeLoc++;
+      time1 = time2;
+      time2 = (*time)(currentTimeLoc+1);
+    }
+    // if pseudo time greater than ending time return 0
+    if (pseudoTime > time2)
+      return (*time)[sizem1] - (*time)[sizem2];
+
+  } else if (pseudoTime < time1) {
+    while ((pseudoTime < time1) && (currentTimeLoc > 0)) {
+      currentTimeLoc--;
+      time2 = time1;	
+      time1 = (*time)(currentTimeLoc);
+    }
+    // if starting time less than initial starting time return 0
+    if (pseudoTime < time1)
+      return time2 - time1;
+  }
+
+  return time2 - time1;
 }
 
 double
