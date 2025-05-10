@@ -895,6 +895,7 @@
 #define ELE_TAG_ShellNLDKGTThermal		   268 // Giovanni Rinaldin
 #define ELE_TAG_Pipe                      269
 #define ELE_TAG_CurvedPipe                      270
+#define ELE_TAG_PML3DVISCOUS               271 // Amin Pakzad
 
 
 #define FRN_TAG_Coulomb            1
