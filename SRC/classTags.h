@@ -977,6 +977,7 @@
 #define CNSTRNT_TAG_MP_SimpleJoint2D    6
 #define CNSTRNT_TAG_MP_Joint3D          7
 #define CNSTRNT_TAG_Pressure_Constraint 8
+#define CNSTRNT_TAG_EQ_Constraint 	9
 
 
 #define MATRIX_TAG_Matrix 	1
