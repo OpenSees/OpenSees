@@ -24,7 +24,7 @@
                                                                         
                                                                         
 // Written: Yuli Huang (yulee@berkeley.edu)
-// Created: 05/2020
+// Created: 05/2025
 // Revision: A
 //
 // Purpose: This file contains the implementation of class EQ_Constraint.
@@ -62,11 +62,11 @@ int OPS_EquationConstraint()
 
     int numData = 1;
     int cNode, cDOF;
-    if(OPS_GetIntInput(&numData, &cNode)) {
+    if(OPS_GetIntInput(&numData, &cNode) || cNode < 1) {
         opserr<<"WARNING invalid cNodeTag inputs\n";
         return -1;
     }
-    if(OPS_GetIntInput(&numData, &cDOF)) {
+    if(OPS_GetIntInput(&numData, &cDOF) || cDOF < 1) {
         opserr<<"WARNING invalid cDOF inputs\n";
         return -1;
     }
@@ -86,16 +86,16 @@ int OPS_EquationConstraint()
 
     for(int i = 0; i < rdf; i++) {
         int rNodei, rDOFi;
-        if(OPS_GetIntInput(&numData, &rNodei)) {
+        if(OPS_GetIntInput(&numData, &rNodei) || rNodei < 1) {
             opserr<<"WARNING invalid rNodeTag inputs\n";
             return -1;
         }
-        if(OPS_GetIntInput(&numData, &rDOFi)) {
+        if(OPS_GetIntInput(&numData, &rDOFi) || rDOFi < 1) {
             opserr<<"WARNING invalid rDOF inputs\n";
             return -1;
         }
         double rci;
-        if (OPS_GetDouble(&numData, &rci)) {
+        if (OPS_GetDouble(&numData, &rci) || rci == 0.0) {
             opserr<<"WARNING invalid rcoef inputs\n";
             return -1;
         }
