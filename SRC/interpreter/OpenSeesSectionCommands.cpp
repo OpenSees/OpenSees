@@ -79,6 +79,7 @@ void* OPS_CircPatch();
 void* OPS_QuadPatch();
 void* OPS_StraightReinfLayer();
 void* OPS_CircReinfLayer();
+void* OPS_RectReinfLayer();
 void* OPS_RectPatch();
 void* OPS_ElasticMembranePlateSection();
 void* OPS_MembranePlateFiberSection();
@@ -621,6 +622,8 @@ int OPS_Layer()
 	theLayer = (ReinfLayer*) OPS_StraightReinfLayer();
     } else if(strcmp(type,"circ")==0 || strcmp(type,"circular")==0) {
 	theLayer = (ReinfLayer*) OPS_CircReinfLayer();
+    } else if(strcmp(type,"rect")==0 || strcmp(type,"rectangular")==0) {
+	theLayer = (ReinfLayer*) OPS_RectReinfLayer();	
     } else {
 	opserr<<"ERROR unknown layer type\n";
 	return -1;
