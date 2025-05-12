@@ -55,7 +55,6 @@ public:
   
   
   ReinfLayer   *getCopy             (void) const;
-  const Vector &getCenterPosition   (void) const;
   
   void Print(OPS_Stream &s, int flag =0) const;   
   friend OPS_Stream &operator<<(OPS_Stream &s, const RectReinfLayer &CircReinfLayer);
@@ -68,9 +67,8 @@ private:
   int    matID;
   double barDiam;
   double area;
-  Vector centerPosit;
-  double dy;
-  double dz;
+  double yc, zc; // center coordinates
+  double dy, dz; // "diameter" in y,z
 };
 
 

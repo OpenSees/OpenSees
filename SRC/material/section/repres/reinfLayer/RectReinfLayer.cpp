@@ -179,12 +179,6 @@ RectReinfLayer::getReinfBars (void) const
 }
 
 
-const Vector & 
-RectReinfLayer::getCenterPosition(void) const
-{
-   return centerPosit;
-}
-
 ReinfLayer * 
 RectReinfLayer::getCopy (void) const
 {
