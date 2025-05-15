@@ -67,6 +67,8 @@ public:
 		bool implex = false;
 		bool buckling = false;
 		bool fracture = false;
+		bool slip = false;
+		double lch_anchor = 0.0;
 		// buckling
 		double radius = 0.0;
 		double length = 0.0;
@@ -85,7 +87,8 @@ public:
 	// life-cycle
 	ASDSteel1DMaterial(
 		int _tag,
-		const InputParameters& _params);
+		const InputParameters& _params,
+		UniaxialMaterial* slip_material);
 	ASDSteel1DMaterial();
 	ASDSteel1DMaterial(const ASDSteel1DMaterial& other);
 	~ASDSteel1DMaterial();

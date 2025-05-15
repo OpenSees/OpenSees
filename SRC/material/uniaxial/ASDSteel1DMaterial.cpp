@@ -47,7 +47,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-#define ASD_STEEL1D__VERBOSE
+//#define ASD_STEEL1D__VERBOSE
 
 #ifdef ASD_STEEL1D__VERBOSE
 #define asd_print_full(X) opserr  << __func__ << " (Line " << __LINE__ << "): " << X << "\n"
@@ -453,6 +453,129 @@ namespace {
 		static constexpr int NDATA = 12;
 	};
 
+	/*
+	Series comonent.
+	*/
+	class SeriesComponent
+	{
+	public:
+		SteelComponent steel_material;
+		UniaxialMaterial* slip_material = nullptr;
+	public:
+		using param_t = ASDSteel1DMaterial::InputParameters;
+		SeriesComponent() = default;
+		SeriesComponent(const SeriesComponent& c)
+			: steel_material(c.steel_material)
+			, slip_material(nullptr)
+		{
+			setSlipMaterial(c.slip_material);
+		}
+		~SeriesComponent() {
+			if (slip_material)
+				delete slip_material;
+		}
+	
+		inline int commitState() {
+			// store the previously committed variables for next move from n to n - 1
+
+			// state variables
+
+			int retval = 0;
+
+			retval = steel_material.commitState();
+
+			if (slip_material)
+				retval = slip_material->commitState();
+		
+			// done 
+			return retval;
+		}
+		inline void revertToLastCommit() {
+			// state variables
+			steel_material.revertToLastCommit();
+
+			if (slip_material)
+				slip_material->revertToLastCommit();
+		
+		}
+		inline void revertToStart() {
+			// state variables
+			steel_material.revertToStart();
+
+			if (slip_material)
+				slip_material->revertToStart();
+		
+		}
+		inline int compute(const param_t& params, bool do_implex, double time_factor, double _strain, double& sigma, double& tangent) {
+			if (slip_material) {
+
+				// compute series response
+				constexpr int MAX_ITER = 100;
+				constexpr double  TOL = 1e-6;
+
+				// initial guess for the slip strain
+				double strain_slip = slip_material->getStrain() / params.lch_anchor;
+				double strain_steel = _strain - strain_slip;
+				
+				// iterative procedure to impose the iso-stress condition
+				double sigma_steel;
+				double tangent_steel;
+				double Ktol = 1.0e-12 * params.E;
+				double Rtol = TOL * params.sy;
+				double Stol = TOL;
+				for (int iter = 0; iter < MAX_ITER; ++iter) {
+					int Tsteel = steel_material.compute(params, do_implex, time_factor, strain_steel, sigma_steel, tangent_steel);
+					int Tslip = slip_material->setTrialStrain(strain_slip * params.lch_anchor);
+					double sigma_slip = slip_material->getStress() * 2.0 * params.lch_anchor/ params.radius;
+					double tangent_slip = slip_material->getTangent() * 2.0 * params.lch_anchor * params.lch_anchor / params.radius;
+					double residual = sigma_slip - sigma_steel;
+					double residual_derivative = tangent_steel + tangent_slip;
+					if (std::abs(residual_derivative) < Ktol) {
+						residual_derivative = params.E + slip_material->getInitialTangent() * 2.0 * params.lch_anchor * params.lch_anchor / params.radius;
+					}
+					double strain_increment = - residual / residual_derivative;
+					strain_slip += strain_increment;
+					strain_steel = _strain - strain_slip;
+
+					if (std::abs(residual) < Rtol || std::abs(strain_increment) < Stol) {
+						sigma = sigma_steel;
+						if (std::abs(tangent_steel) < Ktol) tangent_steel = Ktol;
+						if (std::abs(tangent_slip) < Ktol) tangent_slip = Ktol;
+						tangent = 1.0 / (1.0 / tangent_steel + 1.0 / tangent_slip);
+						asd_print("iter: " << iter);
+						return 0;
+					}
+					
+
+					
+				}
+				
+				asd_print_full("series failed");
+				return -1;
+			}
+			else {
+				return steel_material.compute(params, do_implex, time_factor, _strain, sigma, tangent);
+			}
+		}
+
+		inline void setSlipMaterial(UniaxialMaterial* prototype) {
+			if (slip_material) {
+				delete slip_material;
+				slip_material = nullptr;
+			}
+			if (prototype) {
+				slip_material = prototype->getCopy();
+				asd_print("setting slip material: " << slip_material->getClassType());
+			}
+		}
+	
+	public:
+		// state variables - backstresses
+		
+		// methods
+		static constexpr int NDATA = 10;
+	};
+
 	/**
 	Section component.
 	*/
@@ -470,19 +593,19 @@ namespace {
 	class SectionComponent<1>
 	{
 	public:
-		SteelComponent fib;
+		SeriesComponent series;
 
 	public:
 		SectionComponent() = default;
 
 		inline int commitState() {
-			return fib.commitState();
+			return series.commitState();
 		}
 		inline void revertToLastCommit() {
-			fib.revertToLastCommit();
+			series.revertToLastCommit();
 		}
 		inline void revertToStart() {
-			fib.revertToStart();
+			series.revertToStart();
 		}
 		inline int compute(
 			const  ASDSteel1DMaterial::InputParameters& params, const Vector& strain,
@@ -511,7 +634,9 @@ namespace {
 			// nonlinear P reponse
 			double fiber_stress;
 			double fiber_tangent;
-			int retval = fib.compute(params, do_implex, time_factor, strain(0), fiber_stress, fiber_tangent);
+			int retval;
+			retval = series.compute(params, do_implex, time_factor, strain(0), fiber_stress, fiber_tangent);
+
 			double fiber_force = fiber_stress * area;
 			stress(0) = fiber_force;
 			tangent(0, 0) = fiber_tangent * area;
@@ -519,6 +644,10 @@ namespace {
 			tangent(0, 1) = tangent(1, 0) = tangent(0, 2) = tangent(2, 0) = tangent(1, 2) = tangent(2, 1) = 0.0;
 			// done
 			return retval;
+		}
+		inline void setSlipMaterial(UniaxialMaterial* prototype)
+		{
+			series.setSlipMaterial(prototype);
 		}
 	};
 
@@ -978,9 +1107,18 @@ namespace {
 			
 			// section strain = B*U
 			strain_s.addMatrixVector(0.0, B, UL, 1.0);
-
+			int retval;
 			//section compute strain - stress tangent
-			int retval = section.compute(params, strain_s, do_implex, time_factor, stress_s, tangent_s);
+			//if (params.slip) {
+			//	if (EType == EType_Mid) {
+			//		retval = section.compute(params, strain_s, do_implex, params.slip, time_factor, stress_s, tangent_s);
+			//	}
+			//	opserr << "slip\n";
+			//}
+			//else {
+			retval = section.compute(params, strain_s, do_implex, time_factor, stress_s, tangent_s);
+			//}
+			
 			if (retval != 0) {
 				asd_print_full("section !converged");
 				return retval;
@@ -1055,6 +1193,10 @@ namespace {
 
 		RVEModel() = default;
 		
+		inline void setSlipMaterial(UniaxialMaterial* prototype) {
+			e2.section.setSlipMaterial(prototype);
+		}
+
 		inline int compute(bool elastic_correction, const ASDSteel1DMaterial::InputParameters& params, double U, bool do_implex, double time_factor, double& N, double& tangent) {
 
 			// output
@@ -1301,6 +1443,9 @@ class ASDSteel1DMaterialPIMPL
 public:
 	ASDSteel1DMaterialPIMPL() = default;
 	ASDSteel1DMaterialPIMPL(const ASDSteel1DMaterialPIMPL&) = default;
+	inline void setSlipMaterial(UniaxialMaterial* prototype) {
+		rve_m.setSlipMaterial(prototype);
+	}
 public:
 	SteelComponent steel_comp;
 	RVEModel rve_m;	
@@ -1315,13 +1460,13 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu $lch $r  <-implex $implex>  <-buckling $buckling> <-fracture $fracture> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex>  <-buckling  $lch < $r>> <-fracture> <-slip $matTag $lch_anc <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
-	if (numArgs < 7) {
+	if (numArgs < 5) {
 		opserr <<
-			"uniaxialMaterial ASDSteel1D Error: Few arguments (< 7).\n" << msg << "\n";
+			"uniaxialMaterial ASDSteel1D Error: Few arguments (< 5).\n" << msg << "\n";
 		return nullptr;
 	}
 
@@ -1336,9 +1481,13 @@ void* OPS_ASDSteel1DMaterial()
 	double eu;
 	double lch;
 	double r;
+	double r_buck;
+	double r_slip;
 	bool implex = false;
 	bool buckling = false;
 	bool fracture = false;
+	bool slip = false;
+	double lch_anc;
 	double K_alpha = 0.5;
 	double max_iter= 100;
 	double tolU = 1.0e-6;
@@ -1347,6 +1496,9 @@ void* OPS_ASDSteel1DMaterial()
 	bool have_max_iter = false;
 	bool have_tolU = false;
 	bool have_tolR = false;
+	bool have_Rbuck = false;
+	bool have_Rslip = false;
+	UniaxialMaterial* matSlip = nullptr;
 
 
 	// get tag
@@ -1358,11 +1510,11 @@ void* OPS_ASDSteel1DMaterial()
 	// get steel base arguments
 	auto lam_get_dparam = [&numData](double* val, const char* valname) -> bool {
 		if (OPS_GetDouble(&numData, val) != 0) {
-			opserr << "nDMaterial ASDSteel1D Error: invalid '" << valname << "'.\n" << msg << "\n";
+			opserr << "1DMaterial ASDSteel1D Error: invalid '" << valname << "'.\n" << msg << "\n";
 			return false;
 		}
 		if (*val <= 0.0) {
-			opserr << "nDMaterial ASDSteel1D Error: invalid value for '" << valname << "' (" << *val << "). It should be strictly positive.\n" << msg << "\n";
+			opserr << "1DMaterial ASDSteel1D Error: invalid value for '" << valname << "' (" << *val << "). It should be strictly positive.\n" << msg << "\n";
 			return false;
 		}
 		return true;
@@ -1371,17 +1523,17 @@ void* OPS_ASDSteel1DMaterial()
 	if (!lam_get_dparam(&sy, "sy")) return nullptr;
 	if (!lam_get_dparam(&su, "su")) return nullptr;
 	if (!lam_get_dparam(&eu, "eu")) return nullptr;
-	if (!lam_get_dparam(&lch, "lch")) return nullptr;
-	if (!lam_get_dparam(&r, "r")) return nullptr;
+	//if (!lam_get_dparam(&lch, "lch")) return nullptr;
+	//if (!lam_get_dparam(&r, "r")) return nullptr;
 	auto lam_optional_double = [&numData](const char* variable, double& value) -> bool {
 		if (OPS_GetNumRemainingInputArgs() > 0) {
 			if (OPS_GetDouble(&numData, &value) < 0) {
-				opserr << "nDMaterial ASDConcrete1D Error: failed to get '" << variable << "'.\n";
+				opserr << "1DMaterial ASDSteel1D Error: failed to get '" << variable << "'.\n";
 				return false;
 			}
 		}
 		else {
-			opserr << "nDMaterial ASDConcrete1D Error: '" << variable << "' requested but not provided.\n";
+			opserr << "1DMaterial ASDSteel1D Error: '" << variable << "' requested but not provided.\n";
 			return false;
 		}
 		return true;
@@ -1395,9 +1547,62 @@ void* OPS_ASDSteel1DMaterial()
 		}
 		if (strcmp(value, "-buckling") == 0) {
 			buckling = true;
+			if (OPS_GetNumRemainingInputArgs() < 2) {
+				opserr << "ASDSteel1D: '-buckling' requires '$lch' after.\n";
+				return nullptr;
+			}
+			if(!lam_optional_double("lch", lch)) return nullptr;
+			//if (lam_optional_double("r", r_buck)) { have_Rbuck = true;
+			//}
+			if (OPS_GetNumRemainingInputArgs() > 0) {
+				const char* peek = OPS_GetString();
+
+				//  flag argument ( "-slip", "-fracture", etc.)
+				if (peek[0] != '-') {
+					
+					OPS_ResetCurrentInputArg(-1);
+					if (lam_optional_double("r", r_buck)) {
+						have_Rbuck = true;
+					}
+				}
+				else {
+					OPS_ResetCurrentInputArg(-1); 
+				}
+			}
 		}
 		if (strcmp(value, "-fracture") == 0) {
 			fracture = true;
+		}
+		if (strcmp(value, "-slip") == 0) {
+			slip = true;
+			if (OPS_GetNumRemainingInputArgs() < 2) {
+				opserr << "ASDSteel1D: '-slip' requires '$matTag'and '$lch_anc' after.\n";
+				return nullptr;
+			}
+
+			int matTag;
+			int one = 1;
+			if (OPS_GetInt(&one, &matTag) != 0) {
+				opserr << "Error: OPS_GetInt\n";
+				return nullptr;
+			}
+			
+			// Retrieve the UniaxialMaterial*
+			matSlip = OPS_getUniaxialMaterial(matTag);
+			if (matSlip == nullptr) {
+				opserr << "ASDSteel1D Error: No existing UniaxialMaterial with tag " << matTag << " for -slip option.\n";
+				return nullptr;
+			}
+
+			
+
+			if (!lam_optional_double( "lch_anc", lch_anc )) return nullptr;
+			
+		
+			
+			if (lam_optional_double("r", r_slip)) {
+				have_Rslip = true;
+			}
 		}
 		if (strcmp(value, "-K_alpha") == 0) {
 			if (!lam_optional_double("K_alpha", K_alpha))
@@ -1423,22 +1628,26 @@ void* OPS_ASDSteel1DMaterial()
 
 	// checks
 	if (sy >= su) {
-		opserr << "nDMaterial ASDSteel1D Error: invalid value for 'su' (" << su << "). It should be larger than sy.\n" << msg << "\n";
+		opserr << "1DMaterial ASDSteel1D Error: invalid value for 'su' (" << su << "). It should be larger than sy  (" << sy << ").\n" << msg << "\n";
 		return nullptr;
 	}
 	if (E == 0) {
-		opserr << "nDMaterial ASDSteel1D Error: invalid value for 'E' (" << E << "). It should be non-zero.\n" << msg << "\n";
+		opserr << "1DMaterial ASDSteel1D Error: invalid value for 'E' (" << E << "). It should be non-zero.\n" << msg << "\n";
 		return nullptr;
 	}
-	if (lch == 0) {
-		opserr << "nDMaterial ASDSteel1D Error: invalid value for 'lch' (" << lch << "). It should be non-zero.\n" << msg << "\n";
-		return nullptr;
+	
+	if (buckling && slip) {
+		if(!have_Rbuck && !have_Rslip) {
+			opserr << "1DMaterial ASDSteel1D Error: when using both -buckling and -slip at least one 'r' must be provided\n" << msg << "\n";
+		}
+		if (have_Rbuck && have_Rslip && std::abs(r_buck-r_slip)>1e-10) {
+			opserr << "1DMaterial ASDSteel1D Error: inconsistent 'r' values for -buckling and -slip, they must be the same\n" << msg << "\n";
+			return nullptr;
+		}
 	}
-	if (r == 0) {
-		opserr << "nDMaterial ASDSteel1D Error: invalid value for 'r' (" << r << "). It should be non-zero.\n" << msg << "\n";
-		return nullptr;
-	}
-
+	if (have_Rbuck) r = r_buck;
+	else if (have_Rslip) r = r_slip;
+	
 	
 
 	
@@ -1463,6 +1672,8 @@ void* OPS_ASDSteel1DMaterial()
 	params.implex = implex;
 	params.buckling = buckling;
 	params.fracture = fracture;
+	params.slip = slip;
+	params.lch_anchor = lch_anc;
 	params.length = lch / 2.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
 	params.K_alpha = K_alpha;
@@ -1473,7 +1684,7 @@ void* OPS_ASDSteel1DMaterial()
 	// create the material
 	UniaxialMaterial* instance = new ASDSteel1DMaterial(
 		// tag
-		tag, params);
+		tag, params, matSlip);
 		// base steel args
 		//E, sy, H1*alpha, gamma1, H2*(1.0-alpha), gamma2
 		// others..
@@ -1488,11 +1699,14 @@ void* OPS_ASDSteel1DMaterial()
 
 ASDSteel1DMaterial::ASDSteel1DMaterial(
 	int _tag,
-	const InputParameters& _params)
+	const InputParameters& _params,
+	UniaxialMaterial* slip_material)
 	: UniaxialMaterial(_tag, MAT_TAG_ASDSteel1DMaterial)
 	, params(_params)
 	, pdata(new ASDSteel1DMaterialPIMPL())
 {
+	// set the slip material if defined
+	pdata->setSlipMaterial(slip_material);
 	// intialize C as C0
 	C = getInitialTangent();
 }
@@ -1552,7 +1766,7 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 		retval = homogenize(params.implex);
 		C = C_rve;
 		stress = stress_rve;
-		epl = pdata->rve_m.e2.section.fib.epl;
+		epl = pdata->rve_m.e2.section.series.steel_material.epl;
 
 
 	}
