@@ -1168,6 +1168,7 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/repres/reinfLayer/ReinfLayer.o \
 	$(FE)/material/section/repres/reinfLayer/StraightReinfLayer.o \
 	$(FE)/material/section/repres/reinfLayer/CircReinfLayer.o \
+	$(FE)/material/section/repres/reinfLayer/RectReinfLayer.o \
 	$(FE)/material/section/repres/section/SectionRepres.o \
 	$(FE)/material/section/repres/section/FiberSectionRepr.o \
 	$(FE)/material/section/yieldSurface/YieldSurfaceSection2d.o \
