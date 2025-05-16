@@ -75,6 +75,10 @@ void* OPS_Concrete07()
 Concrete07::Concrete07 (int tag, double FPC, double EPSC0, double EC, double FPT, double EPST0, double XCRP, double XCRN, double R)
 :UniaxialMaterial(tag, MAT_TAG_Concrete07), fpc(FPC), epsc0(EPSC0), Ec(EC), fpt(FPT), epst0(EPST0), xcrp(XCRP), xcrn(XCRN), r(R) {
 
+	// Ensure negative signs
+	fpc = -fabs(fpc);
+	epsc0 = -fabs(epsc0);
+	
 	// Calculate the variables that are needed to define the envelopw
 	nn = (Ec*epsc0)/fpc;
 	np = (Ec*epst0)/fpt;
