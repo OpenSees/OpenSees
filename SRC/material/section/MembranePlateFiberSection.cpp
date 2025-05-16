@@ -274,9 +274,9 @@ setTrialSectionDeformation( const Vector &strainResultant_from_element)
 
       strain(2) =  strainResultant(2)  - z*strainResultant(5) ;
 
-      strain(3) =  root56*strainResultant(6) ;
+      strain(4) =  root56*strainResultant(6) ;
 
-      strain(4) =  root56*strainResultant(7) ;
+      strain(3) =  root56*strainResultant(7) ;
   
       success += theFibers[i]->setTrialStrain( strain ) ;
 
@@ -329,9 +329,9 @@ const Vector&  MembranePlateFiberSection::getStressResultant( )
       stressResultant(5)  +=  ( z*stress(2) ) * weight ;
 
       //shear
-      stressResultant(6)  += stress(3)*weight ;
+      stressResultant(6)  += stress(4)*weight ;
 
-      stressResultant(7)  += stress(4)*weight ;
+      stressResultant(7)  += stress(3)*weight ;
   
   } //end for i
 
@@ -424,8 +424,8 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
       tangent(0,3) +=  -z*dd(0,0) ;      
       tangent(0,4) +=  -z*dd(0,1) ;
       tangent(0,5) +=  -z*dd(0,2) ;
-      tangent(0,6) +=  root56*dd(0,3) ;
-      tangent(0,7) +=  root56*dd(0,4) ;
+      tangent(0,6) +=  root56*dd(0,4) ;
+      tangent(0,7) +=  root56*dd(0,3) ;
 
       //row 2
 //[      d21,           d22,           d23,        -z*d21,        -z*d22,        -z*d23,    d24*root56,    d25*root56]
@@ -435,8 +435,8 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
       tangent(1,3) +=  -z*dd(1,0) ;      
       tangent(1,4) +=  -z*dd(1,1) ;
       tangent(1,5) +=  -z*dd(1,2) ;
-      tangent(1,6) +=  root56*dd(1,3) ;
-      tangent(1,7) +=  root56*dd(1,4) ;
+      tangent(1,6) +=  root56*dd(1,4) ;
+      tangent(1,7) +=  root56*dd(1,3) ;
 
       //row 3
 //[      d31,           d32,           d33,        -z*d31,        -z*d32,        -z*d33,    d34*root56,    d35*root56]
@@ -446,8 +446,8 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
       tangent(2,3) +=  -z*dd(2,0) ;      
       tangent(2,4) +=  -z*dd(2,1) ;
       tangent(2,5) +=  -z*dd(2,2) ;
-      tangent(2,6) +=  root56*dd(2,3) ;
-      tangent(2,7) +=  root56*dd(2,4) ;
+      tangent(2,6) +=  root56*dd(2,4) ;
+      tangent(2,7) +=  root56*dd(2,3) ;
 
       //row 4
 //[     z*d11,         z*d12,         z*d13,      -z^2*d11,      -z^2*d12,      -z^2*d13,  z*d14*root56,  z*d15*root56]
@@ -457,8 +457,8 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
       tangent(3,3) +=  -z*z*dd(0,0) ;      
       tangent(3,4) +=  -z*z*dd(0,1) ;
       tangent(3,5) +=  -z*z*dd(0,2) ;
-      tangent(3,6) +=  z*root56*dd(0,3) ;
-      tangent(3,7) +=  z*root56*dd(0,4) ;
+      tangent(3,6) +=  z*root56*dd(0,4) ;
+      tangent(3,7) +=  z*root56*dd(0,3) ;
 
       //row 5
 //[     z*d21,         z*d22,         z*d23,      -z^2*d21,      -z^2*d22,      -z^2*d23,  z*d24*root56,  z*d25*root56]
@@ -468,8 +468,8 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
       tangent(4,3) +=  -z*z*dd(1,0) ;      
       tangent(4,4) +=  -z*z*dd(1,1) ;
       tangent(4,5) +=  -z*z*dd(1,2) ;
-      tangent(4,6) +=  z*root56*dd(1,3) ;
-      tangent(4,7) +=  z*root56*dd(1,4) ;
+      tangent(4,6) +=  z*root56*dd(1,4) ;
+      tangent(4,7) +=  z*root56*dd(1,3) ;
 
       //row 6
 //[     z*d31,         z*d32,         z*d33,      -z^2*d31,      -z^2*d32,      -z^2*d33,  z*d34*root56,  z*d35*root56]
@@ -479,30 +479,30 @@ const Matrix&  MembranePlateFiberSection::getSectionTangent( )
       tangent(5,3) +=  -z*z*dd(2,0) ;      
       tangent(5,4) +=  -z*z*dd(2,1) ;
       tangent(5,5) +=  -z*z*dd(2,2) ;
-      tangent(5,6) +=  z*root56*dd(2,3) ;
-      tangent(5,7) +=  z*root56*dd(2,4) ;
+      tangent(5,6) +=  z*root56*dd(2,4) ;
+      tangent(5,7) +=  z*root56*dd(2,3) ;
 
       //row 7
 //[  root56*d41,    root56*d42,    root56*d43, -root56*d41*z, -root56*d42*z, -root56*d43*z,  root56^2*d44,  root56^2*d45]
-      tangent(6,0) +=  root56*dd(3,0) ;
-      tangent(6,1) +=  root56*dd(3,1) ;
-      tangent(6,2) +=  root56*dd(3,2) ;      
-      tangent(6,3) +=  -root56*z*dd(3,0) ;      
-      tangent(6,4) +=  -root56*z*dd(3,1) ;
-      tangent(6,5) +=  -root56*z*dd(3,2) ;
-      tangent(6,6) +=  root56*root56*dd(3,3) ;
-      tangent(6,7) +=  root56*root56*dd(3,4) ;
+      tangent(6,0) +=  root56*dd(4,0) ;
+      tangent(6,1) +=  root56*dd(4,1) ;
+      tangent(6,2) +=  root56*dd(4,2) ;      
+      tangent(6,3) +=  -root56*z*dd(4,0) ;      
+      tangent(6,4) +=  -root56*z*dd(4,1) ;
+      tangent(6,5) +=  -root56*z*dd(4,2) ;
+      tangent(6,6) +=  root56*root56*dd(4,4) ;
+      tangent(6,7) +=  root56*root56*dd(4,3) ;
 
       //row 8 
 //[  root56*d51,    root56*d52,    root56*d53, -root56*d51*z, -root56*d52*z, -root56*d53*z,  root56^2*d54,  root56^2*d55]
-      tangent(7,0) +=  root56*dd(4,0) ;
-      tangent(7,1) +=  root56*dd(4,1) ;
-      tangent(7,2) +=  root56*dd(4,2) ;      
-      tangent(7,3) +=  -root56*z*dd(4,0) ;      
-      tangent(7,4) +=  -root56*z*dd(4,1) ;
-      tangent(7,5) +=  -root56*z*dd(4,2) ;
-      tangent(7,6) +=  root56*root56*dd(4,3) ;
-      tangent(7,7) +=  root56*root56*dd(4,4) ;
+      tangent(7,0) +=  root56*dd(3,0) ;
+      tangent(7,1) +=  root56*dd(3,1) ;
+      tangent(7,2) +=  root56*dd(3,2) ;      
+      tangent(7,3) +=  -root56*z*dd(3,0) ;      
+      tangent(7,4) +=  -root56*z*dd(3,1) ;
+      tangent(7,5) +=  -root56*z*dd(3,2) ;
+      tangent(7,6) +=  root56*root56*dd(3,4) ;
+      tangent(7,7) +=  root56*root56*dd(3,3) ;
 
   } //end for i
 
