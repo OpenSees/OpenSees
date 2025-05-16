@@ -331,7 +331,7 @@ void* OPS_PML3DVISCOUS()
 		return 0;
 	}
 
-	NDMaterial* mat = OPS_GetNDMaterial(matTag);
+	NDMaterial* mat = OPS_getNDMaterial(matTag);
 	if (mat == 0) {
 		opserr << "WARNING material not found\n";
 		opserr << "material tag: " << matTag;
