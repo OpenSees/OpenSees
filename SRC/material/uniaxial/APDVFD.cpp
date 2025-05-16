@@ -1,4 +1,4 @@
-** Developed by:                                                      **
+/** Developed by:                                                      **
 **   Linlin Xie (xielinlin@bucea.edu.cn)                              **
 **   Cantian Yang (yangcantian@bucea.edu.cn)                          **
 **   Haoxiang Wang (buceawhx@163.com)                                 **
