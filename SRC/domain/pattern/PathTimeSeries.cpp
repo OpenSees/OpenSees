@@ -304,7 +304,6 @@ PathTimeSeries::getTimeIncr (double pseudoTime)
 
   // determine indexes into the data array whose boundary holds the time
   double time1 = (*time)(currentTimeLoc);
-  double time2 = (*time)(currentTimeLoc+1);
 
   // check for another quick return
   if (pseudoTime < time1 && currentTimeLoc == 0)
@@ -321,6 +320,7 @@ PathTimeSeries::getTimeIncr (double pseudoTime)
       return (*time)[sizem1] - (*time)[sizem2];
 
   // otherwise go find the current interval
+  double time2 = (*time)(currentTimeLoc+1);
   if (pseudoTime > time2) {
     while ((pseudoTime > time2) && (currentTimeLoc < sizem2)) {
       currentTimeLoc++;
