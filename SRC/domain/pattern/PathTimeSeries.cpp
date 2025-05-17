@@ -306,10 +306,8 @@ PathTimeSeries::getTimeIncr (double pseudoTime)
   double time1 = (*time)(currentTimeLoc);
 
   // check for another quick return
-  if (pseudoTime < time1 && currentTimeLoc == 0)
-    return time2 - time1;
-  if (pseudoTime == time1)
-    return time2 - time1;
+  if (pseudoTime <= time1 && currentTimeLoc == 0)
+    return (*time)(currentTimeLoc+1) - time1;
 
   int size = time->Size();
   int sizem1 = size - 1;
