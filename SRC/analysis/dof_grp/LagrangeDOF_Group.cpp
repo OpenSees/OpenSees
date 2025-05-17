@@ -41,6 +41,7 @@
 #include <TransientIntegrator.h>
 #include <SP_Constraint.h>
 #include <MP_Constraint.h>
+#include <EQ_Constraint.h>
 
 //#define LAG_DOF_VERBOSE
 
@@ -63,6 +64,11 @@ LagrangeDOF_Group::LagrangeDOF_Group(int tag, MP_Constraint &mpPtr)
 
 }
 
+LagrangeDOF_Group::LagrangeDOF_Group(int tag, EQ_Constraint &eqPtr)
+:DOF_Group(tag, 1), m_lagrange_variable(1)
+{
+
+}
 
 // ~LagrangeDOF_Group();    
 //	destructor.
