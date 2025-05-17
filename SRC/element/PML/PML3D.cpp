@@ -197,7 +197,21 @@ void  PML3D::setDomain(Domain* theDomain)
 	int NPROPS = 13;
 	int MCRD = 3;
 	int NNODE = 8;
-	pml3d_(M, C, K, G, &NDOFEL, props, &NPROPS, coords, &MCRD, &NNODE);
+	int LFLAGS = 12;
+	// make props[10] and props[11] zero
+	props[10] = 0.0;
+	props[11] = 0.0;
+	double H[PML3D_NUM_DOF*PML3D_NUM_DOF];
+	pml3d_(M, C, K, G, H, &NDOFEL, props, coords, &MCRD, &NNODE, &LFLAGS);
+	dt = theDomain->getDT();
+
+	// // make C zero 
+	for (int i = 0; i < PML3D_NUM_DOF*PML3D_NUM_DOF; i++) {
+		// C[i] = 0.0;
+		// K[i] = 0.0;
+		// M[i] = 0.0;
+		// G[i] = 0.0;
+	}
 }
 
 // =======================================================================
@@ -205,33 +219,26 @@ void  PML3D::setDomain(Domain* theDomain)
 // =======================================================================
 int PML3D::update(void)
 {
-	// check if the dt has changed
-	if (fabs(Domainptr->getDT() - dt) > 1e-10) {
-		update_dt = 1;
-		dt = Domainptr->getDT();
-	} else {
-		update_dt = 0;
-	}
-
-	if (updateflag == 1) {
-		// get u, v, a from nodes and calculate the ubar vector
-		int loc = 0;
-		double c1 = dt;
-		double c2 = dt * dt * 0.5;
-		double c3 = dt*dt*dt*((1.0/6.0)-eta);
-		double c4 = dt*dt*dt*eta;
-		for (int i = 0; i < PML3D_NUM_NODES; i++) {
-			const Vector& uNode = nodePointers[i]->getDisp();
-			const Vector& vNode = nodePointers[i]->getVel();
-			const Vector& aNode = nodePointers[i]->getAccel();
-			const Vector& atpdt = nodePointers[i]->getTrialAccel();
-			for (int j = 0; j < 9; j++) {
-				ubar(loc) = ubart(loc) + uNode(j)*c1 + vNode(j)*c2 + aNode(j)*c3 + atpdt(j)*c4; 
-				loc++;
-			}
+	dt = Domainptr->getDT();
+	// opserr << "dt = " << dt << "\n";	
+	// get u, v, a from nodes and calculate the ubar vector
+	int loc = 0;
+	double c1 = dt;
+	double c2 = dt * dt * 0.5;
+	double c3 = dt*dt*dt*((1.0/6.0)-eta);
+	double c4 = dt*dt*dt*eta;
+	for (int i = 0; i < PML3D_NUM_NODES; i++) {
+		const Vector& uNode = nodePointers[i]->getDisp();
+		const Vector& vNode = nodePointers[i]->getVel();
+		const Vector& aNode = nodePointers[i]->getAccel();
+		const Vector& atpdt = nodePointers[i]->getTrialAccel();
+		for (int j = 0; j < 9; j++) {
+			ubar(loc) = ubart(loc) + uNode(j)*c1 + vNode(j)*c2 + aNode(j)*c3 + atpdt(j)*c4; 
+			loc++;
 		}
 	}
-	updateflag = 1;
+
+
 	return 0;
 }
 
@@ -241,16 +248,10 @@ int PML3D::update(void)
 const Matrix& PML3D::getTangentStiff()
 {
 	// check if the dt is changed to update the tangent stiffness matrix
-	if (update_dt == 1) {
-		double cg = eta*dt/beta;
-		//keff = k + cg*g( k and g are symmetric matrices)
-		for (int i = 0; i < PML3D_NUM_DOF; i++) {
-			for (int j = i; j < PML3D_NUM_DOF; j++) {  // Loop over the upper triangular part of the matrices.
-				double sum = K[i*PML3D_NUM_DOF + j] + cg * G[i*PML3D_NUM_DOF + j];
-				Keff[i*PML3D_NUM_DOF + j] = sum;
-				Keff[j*PML3D_NUM_DOF + i] = sum;  // Since K and G are symmetric, set the corresponding lower triangular element.
-			}
-		}
+	double cg = eta*dt/beta;
+	//keff = k + cg*g( k and g are symmetric matrices)
+	for (int i = 0; i < PML3D_NUM_DOF*PML3D_NUM_DOF; i++) {
+		Keff[i] = K[i] + cg*G[i];
 	}
 	tangent.setData(Keff, PML3D_NUM_DOF, PML3D_NUM_DOF);
 	return tangent;
@@ -354,14 +355,12 @@ PML3D::getResistingForceIncInertia()
 			theVector(loc++) = vel[j];
 		}
 	}
-
-
 	resid.addMatrixVector(1.0, this->getDamp(), theVector, 1.0);
 
 
 	// R += G*ubar
-	mass.setData(G, PML3D_NUM_DOF, PML3D_NUM_DOF);
-	resid.addMatrixVector(1.0, mass, ubar, 1.0);
+	tangent.setData(G, PML3D_NUM_DOF, PML3D_NUM_DOF);
+	resid.addMatrixVector(1.0, tangent, ubar, 1.0);
 	
 	
 	return resid;
@@ -441,12 +440,10 @@ int  PML3D::revertToStart()
 	int success = 0;
 
 	// set ubar and ubart to zero
-	// for (int i = 0; i < PML3D_NUM_DOF; i++) {
-	// 	ubar[i] = 0.0;
-	// 	ubart[i] = 0.0;
-	// }
-	ubar.Zero();
-	ubart.Zero();
+	for (int i = 0; i < PML3D_NUM_DOF; i++) {
+		ubar(i) = 0.0;
+		ubart(i) = 0.0;
+	}
 
 	return success;
 }

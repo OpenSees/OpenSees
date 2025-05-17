@@ -1,21 +1,7 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
+/** Developed by:                                                      **
+**   Linlin Xie (xielinlin@bucea.edu.cn)                              **
+**   Cantian Yang (yangcantian@bucea.edu.cn)                          **
+**   Haoxiang Wang (buceawhx@163.com)                                 **
 ** ****************************************************************** */
                                                                         
 
@@ -42,7 +28,7 @@ OPS_APDVFD(void)
 {
   if (numAPDVFD == 0) {
     numAPDVFD++;
-    opserr << "APDVFD Model by BUCEA\n";
+    opserr << "APDVFD Model\n";
   }
 
   opserr << "Due to known issues and unreliable results, this material has been" << endln;
