@@ -3,7 +3,8 @@ include ../../../Makefile.def
 OBJS = PML2D.o PML3D.o \
        pml_2d.o pml_3d.o \
 	   PML2D_3.o PML2D_5.o PML2D_12.o \
-	   PML2DVISCOUS.o
+	   PML2DVISCOUS.o \
+	   PML3DVISCOUS.o
 
 all: $(OBJS) 
 
