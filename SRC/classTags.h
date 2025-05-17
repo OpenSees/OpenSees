@@ -1190,6 +1190,7 @@
 #define RECORDER_TAGS_VTK_Recorder               22
 #define RECORDER_TAGS_NodeRecorderRMS               23
 #define RECORDER_TAGS_ElementRecorderRMS               24
+#define RECORDER_TAGS_VTKHDF_Recorder               25
 
 #define OPS_STREAM_TAGS_FileStream		1
 #define OPS_STREAM_TAGS_StandardStream		2
