@@ -716,7 +716,7 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
+	<ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement2d.cpp">
@@ -966,7 +966,7 @@
       <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
-      <Filter>PML</Filter>
+      <Filter>PML</Filter>  
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp">
       <Filter>PML</Filter>
@@ -975,6 +975,9 @@
       <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3DVISCOUS.cpp">
       <Filter>PML</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
@@ -1501,7 +1504,7 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
+	<ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI_MVLEM_3D.h">
       <Filter>mvlem</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement2d.h">
@@ -1755,11 +1758,14 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h">
       <Filter>PML</Filter>
-    </ClInclude>
+    </ClInclude>    
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h">
       <Filter>PML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h">
+      <Filter>PML</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3DVISCOUS.h">
       <Filter>PML</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
