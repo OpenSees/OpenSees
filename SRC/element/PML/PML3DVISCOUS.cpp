@@ -303,13 +303,16 @@ void* OPS_PML3DVISCOUS()
 		opserr << "WARNING: invalid integer data : could be the tag or the node numbers \n";
 		return 0;
 	}
+	// THIS SHOULD BE DONE IN setDomain()
 	// calculate the number center of the element by averaging the node coordinates
 	double elementCenter[3] = {0.0, 0.0, 0.0};
+	/*
 	// OPS_GetNodeCrd(int* nodeTag, int* sizeData, double* data);
 	for (int i = 1; i < 9; i++) {
 		int nodeTag = idata[i];
 		double nodeCoord[3] = {0.0, 0.0, 0.0};
 		num = 3;
+		// REWRITE TO DO THIS IN setDomain of the element, not in the OPS_command
 		if (OPS_GetNodeCrd(&nodeTag, &num, nodeCoord) < 0) {
 			opserr << "WARNING: invalid node tag: " << nodeTag << endln;
 			return 0;
@@ -321,7 +324,7 @@ void* OPS_PML3DVISCOUS()
 	for (int j = 0; j < 3; j++) {
 		elementCenter[j] /= 8;
 	}
-
+	*/
 
 	// get the material tag
 	int matTag;
