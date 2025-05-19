@@ -23,7 +23,7 @@ OBJS       = Recorder.o \
 	RemoveRecorder.o \
 	DamageRecorder.o $(GRAPHIC_OBJECTS) \
 	PVDRecorder.o MPCORecorder.o GmshRecorder.o \
-	VTK_Recorder.o
+	VTK_Recorder.o VTKHDF_Recorder.o 
 
 
 # Compilation control
