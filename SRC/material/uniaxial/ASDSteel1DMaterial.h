@@ -80,7 +80,7 @@ public:
 		double tolU = 0.0;
 		double tolR = 0.0;
 		// counter
-		static constexpr int NDATA = 17;
+		static constexpr int NDATA = 19;
 	};
 
 public:
@@ -127,6 +127,11 @@ public:
 
 private:
 	int homogenize(bool do_implex);
+	const Vector& getBucklingIndicator() const;
+	const Vector& getDamage() const;
+	const Vector& getEqPlStrain() const;
+	const Vector& getSlipResponse() const;
+	const Vector& getSteelResponse() const;
 
 
  private:	

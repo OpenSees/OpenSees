@@ -30,6 +30,7 @@
 #include <ASDSteel1DMaterial.h>
 #include <Channel.h>
 #include <OPS_Globals.h>
+#include <FEM_ObjectBroker.h>
 #include <Information.h>
 #include <Parameter.h>
 #include <elementAPI.h>
@@ -276,7 +277,9 @@ namespace {
 	public:
 		using param_t = ASDSteel1DMaterial::InputParameters;
 		SteelComponent() = default;
-
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos);
+		void deserialize(Vector& data, int& pos);
 		inline int commitState() {
 			// store the previously committed variables for next move from n to n - 1
 			lambda_commit_old = lambda_commit;
@@ -450,9 +453,46 @@ namespace {
 		double stress = 0.0;
 		double stress_commit = 0.0;
 		// methods
-		static constexpr int NDATA = 12;
+		static constexpr int NDATA = 14;
 	};
+	int SteelComponent::serializationDataSize() const
+	{
+		return NDATA; //= 14
+	}
 
+	void SteelComponent::serialize(Vector& data, int& pos)
+	{
+		data(pos++) = epl;
+		data(pos++) = epl_commit;
+		data(pos++) = alpha1;
+		data(pos++) = alpha1_commit;
+		data(pos++) = alpha2;
+		data(pos++) = alpha2_commit;
+		data(pos++) = lambda;
+		data(pos++) = lambda_commit;
+		data(pos++) = sg_commit;
+		data(pos++) = strain;
+		data(pos++) = strain_commit;
+		data(pos++) = stress;
+		data(pos++) = stress_commit;
+	}
+
+	void SteelComponent::deserialize(Vector& data, int& pos)
+	{
+		epl = data(pos++);
+		epl_commit = data(pos++);
+		alpha1 = data(pos++);
+		alpha1_commit = data(pos++);
+		alpha2 = data(pos++);
+		alpha2_commit = data(pos++);
+		lambda = data(pos++);
+		lambda_commit = data(pos++);
+		sg_commit = data(pos++);
+		strain = data(pos++);
+		strain_commit = data(pos++);
+		stress = data(pos++);
+		stress_commit = data(pos++);
+	}
 	/*
 	Series comonent.
 	*/
@@ -461,6 +501,11 @@ namespace {
 	public:
 		SteelComponent steel_material;
 		UniaxialMaterial* slip_material = nullptr;
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos, int commitTag, Channel& theChannel);
+		void deserialize(Vector& data, int& pos, int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
+		void serialize_slip(int commitTag, Channel& theChannel);
+		void deserialize_slip(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
 	public:
 		using param_t = ASDSteel1DMaterial::InputParameters;
 		SeriesComponent() = default;
@@ -568,13 +613,72 @@ namespace {
 				asd_print("setting slip material: " << slip_material->getClassType());
 			}
 		}
-	
-	public:
-		// state variables - backstresses
-		
-		// methods
-		static constexpr int NDATA = 10;
+
 	};
+	int SeriesComponent::serializationDataSize() const
+	{
+		return 2;
+	}
+
+	void SeriesComponent::serialize(Vector& data, int& pos, int commitTag, Channel& theChannel)
+	{
+		if (slip_material) {
+			data(pos++) = static_cast<double>(slip_material->getClassTag());
+			int mat_db_tag = slip_material->getDbTag();
+			if (mat_db_tag == 0) {
+				mat_db_tag = theChannel.getDbTag();
+				if (mat_db_tag != 0)
+					slip_material->setDbTag(mat_db_tag);
+			}
+			data(pos++) = static_cast<double>(mat_db_tag);
+		}
+		else {
+			
+			data(pos++) = -1.0;  // classTag
+			data(pos++) = -1.0;  // dbTag
+		}
+	}
+	
+	void SeriesComponent::deserialize(Vector& data, int& pos, int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker) {
+		if (slip_material) {
+			delete slip_material;
+			slip_material = nullptr;
+		}
+		int classTag = static_cast<int>(data(pos++));
+		int mat_db_tag = static_cast<int>(data(pos++));
+		if (classTag >= 0) {
+			UniaxialMaterial*  new_slip_material = theBroker.getNewUniaxialMaterial(classTag);
+			if (!new_slip_material) {
+				opserr << "SeriesComponent::deserialize - failed to get new UniaxialMaterial from broker\n";
+				return;
+			}
+			new_slip_material->setDbTag(mat_db_tag);
+			slip_material = new_slip_material;
+		}
+
+	}
+
+	void SeriesComponent::serialize_slip(int commitTag, Channel& theChannel)
+	{
+		if (slip_material) {
+			int send_result = slip_material->sendSelf(commitTag, theChannel);
+			if (send_result < 0) {
+				opserr << "SeriesComponent:: serialize - failed to send slip material \n";
+			}
+		}
+	}
+
+	void SeriesComponent::deserialize_slip(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker) {
+
+		if (slip_material) {
+			if (slip_material->recvSelf(commitTag, theChannel, theBroker) < 0) {
+				opserr << "SeriesComponent::deserialize - failed to receive slip material\n";
+				delete slip_material;
+				slip_material = nullptr;
+				return;
+			}
+		}
+	}
 
 	/**
 	Section component.
@@ -584,6 +688,10 @@ namespace {
 	{
 	private:
 		SectionComponent() = delete;
+	public:
+		inline int serializationDataSize() const { return 0; }
+		inline void serialize(Vector& data, int& pos) {}
+		inline void deserialize(Vector& data, int& pos) {}
 	};
 
 	/**
@@ -649,6 +757,10 @@ namespace {
 		{
 			series.setSlipMaterial(prototype);
 		}
+
+		inline int serializationDataSize() const { return series.steel_material.serializationDataSize(); }
+		inline void serialize(Vector& data, int& pos) { series.steel_material.serialize(data, pos); }
+		inline void deserialize(Vector& data, int& pos) { series.steel_material.deserialize(data, pos); }
 	};
 
 	/**
@@ -721,6 +833,21 @@ namespace {
 			}
 			// done
 			return 0;
+		}
+		inline int serializationDataSize() const { 
+			return fibers[0].serializationDataSize() +
+				fibers[1].serializationDataSize() +
+				fibers[2].serializationDataSize();
+		}
+		inline void serialize(Vector& data, int& pos) {
+			for (int i = 0; i < fibers.size(); ++i) {
+				fibers[i].serialize(data, pos);
+			}
+		}
+		inline void deserialize(Vector& data, int& pos) {
+			for (int i = 0; i < fibers.size(); ++i) {
+				fibers[i].deserialize(data, pos);
+			}
 		}
 	};
 
@@ -956,7 +1083,30 @@ namespace {
 		Vector UG_commit = Vector(8);
 		Vector UG_el = Vector(11);
 		Vector UG_el_commit = Vector(11);
+
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos);
+		void deserialize(Vector& data, int& pos);
 	};
+	int RVEStateVariables::serializationDataSize() const
+	{
+		return 38;
+	}
+
+	void RVEStateVariables::serialize(Vector& data, int& pos)
+	{
+		for (int i = 0; i < 8; ++i) data(pos++) = UG[i];
+		for (int i = 0; i < 8; ++i) data(pos++) = UG_commit[i];
+		for (int i = 0; i < 11; ++i) data(pos++) = UG_el[i];
+		for (int i = 0; i < 11; ++i) data(pos++) = UG_el_commit[i];
+	}
+	void RVEStateVariables::deserialize(Vector& data, int& pos)
+	{
+		for (int i = 0; i < 8; ++i) UG[i] = data(pos++);
+		for (int i = 0; i < 8; ++i) UG_commit[i] = data(pos++);
+		for (int i = 0; i < 11; ++i) UG_el[i] = data(pos++);
+		for (int i = 0; i < 11; ++i) UG_el_commit[i] = data(pos++);
+	}
 
 	/**
 	Element component.
@@ -971,6 +1121,11 @@ namespace {
 		std::array<Q2D, 2> qn_commit = { Q2D::identity(), Q2D::identity() };
 		V2D rn = V2D(0.0, 0.0);
 		V2D rn_commit = V2D(0.0, 0.0);
+
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos);
+		void deserialize(Vector& data, int& pos);
+
 		
 		ElementComponent() = default;
 		
@@ -1108,16 +1263,9 @@ namespace {
 			// section strain = B*U
 			strain_s.addMatrixVector(0.0, B, UL, 1.0);
 			int retval;
-			//section compute strain - stress tangent
-			//if (params.slip) {
-			//	if (EType == EType_Mid) {
-			//		retval = section.compute(params, strain_s, do_implex, params.slip, time_factor, stress_s, tangent_s);
-			//	}
-			//	opserr << "slip\n";
-			//}
-			//else {
+		
 			retval = section.compute(params, strain_s, do_implex, time_factor, stress_s, tangent_s);
-			//}
+	
 			
 			if (retval != 0) {
 				asd_print_full("section !converged");
@@ -1159,9 +1307,41 @@ namespace {
 			UL_commit.Zero();
 			section.revertToStart(); 
 		}
+		
+		
+		
 
 	};
+	template<int NFiber, int EType>
+	inline int ElementComponent<NFiber, EType>::serializationDataSize() const{
+		int size = 18 + section.serializationDataSize();		
+		return size;
+	}
 
+	template<int NFiber, int EType>
+	inline void ElementComponent<NFiber, EType>::serialize(Vector& data, int& pos) {
+		for (int i = 0; i < 6; ++i) data(pos++) = UL_commit(i);
+		for (int i = 0; i < 2; ++i) data(pos++) = qn[i].toRotationVector();
+		for (int i = 0; i < 2; ++i) data(pos++) = qn_commit[i].toRotationVector();
+		data(pos++) = rn.x;
+		data(pos++) = rn.y;
+		data(pos++) = rn_commit.x;
+		data(pos++) = rn_commit.y;
+		section.serialize(data, pos);
+	}
+
+	template<int NFiber, int EType>
+	inline void ElementComponent<NFiber, EType>::deserialize(Vector& data, int& pos) {
+		for (int i = 0; i < 6; ++i) UL_commit(i) = data(pos++);
+		for (int i = 0; i < 2; ++i) qn[i] = Q2D::fromRotationVector(data(pos++));
+		for (int i = 0; i < 2; ++i) qn_commit[i] = Q2D::fromRotationVector(data(pos++));
+		rn.x = data(pos++);
+		rn.y = data(pos++);
+		rn_commit.x = data(pos++);
+		rn_commit.y = data(pos++);
+		section.deserialize(data, pos);
+	}
+	
 	template<int NFiber, int EType>
 	inline int rve_process_element(bool elastic_correction, ElementComponent<NFiber, EType>& ele, const RVEStateVariables& rve, const ASDSteel1DMaterial::InputParameters& params, bool do_implex, double time_factor) {
 		int retval = ele.compute(elastic_correction, rve, params, do_implex, time_factor);
@@ -1190,7 +1370,9 @@ namespace {
 		ElementComponent<1, EType_Mid> e2;
 		ElementComponent<3, EType_Top> e3;
 		ElementComponent<1, EType_El> e0; // nonlinear section (1 fiber), but linear kinematics
-
+		int serializationDataSize() const;
+		void serialize(Vector& data, int& pos);
+		void deserialize(Vector& data, int& pos);
 		RVEModel() = default;
 		
 		inline void setSlipMaterial(UniaxialMaterial* prototype) {
@@ -1433,6 +1615,28 @@ namespace {
 		}
 
 	};
+	int RVEModel::serializationDataSize() const {
+		return sv.serializationDataSize()
+			 + e1.serializationDataSize()
+			 + e2.serializationDataSize()
+			 + e3.serializationDataSize()
+			 + e0.serializationDataSize();
+	}
+	void RVEModel::serialize(Vector& data, int& pos) {
+		sv.serialize(data, pos);	
+		e1.serialize(data, pos);
+		e2.serialize(data, pos);
+		e3.serialize(data, pos);
+		e0.serialize(data, pos);
+	}
+	void RVEModel::deserialize(Vector& data, int& pos) {
+		sv.deserialize(data, pos);
+		e1.deserialize(data, pos);
+		e2.deserialize(data, pos);
+		e3.deserialize(data, pos);
+		e0.deserialize(data, pos);
+	}
+
 }
 
 /**
@@ -1891,6 +2095,7 @@ int ASDSteel1DMaterial::revertToStart(void)
 	return 0;
 }
 
+
 UniaxialMaterial* ASDSteel1DMaterial::getCopy(void)
 {
 	// we can safely use the default copy-constructor
@@ -1905,33 +2110,72 @@ void ASDSteel1DMaterial::Print(OPS_Stream& s, int  elastic_correction)
 int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 {
 	//// aux
-	//int counter;
+	int counter;
 
 	//// send DBL data
-	//Vector ddata(InputParameters::NDATA + 1*StateVariablesSteel::NDATA + 10);
-	//counter = 0;
-	//ddata(counter++) = static_cast<double>(getTag());
-	//ddata(counter++) = params.E;
-	//ddata(counter++) = params.sy;
-	//ddata(counter++) = params.H1;
-	//ddata(counter++) = params.H2;
-	//ddata(counter++) = params.gamma1;
-	//ddata(counter++) = params.gamma2;
-	//ddata(counter++) = static_cast<double>(params.implex);
-	//steel.sendSelf(counter, ddata);
-	//ddata(counter++) = dtime_n;
-	//ddata(counter++) = dtime_n_commit;
-	//ddata(counter++) = static_cast<double>(commit_done);
-	//ddata(counter++) = strain;
-	//ddata(counter++) = strain_commit;
-	//ddata(counter++) = stress;
-	//ddata(counter++) = stress_commit;
-	//ddata(counter++) = C;
-	//ddata(counter++) = energy;
-	//if (theChannel.sendVector(getDbTag(), commitTag, ddata) < 0) {
-	//	opserr << "ASDSteel1DMaterial::sendSelf() - failed to send DBL data\n";
-	//	return -1;
-	//}
+	counter = 0;
+
+	// variable DBL data size
+
+	int nv_dbl = 13 + 
+		params.NDATA +
+		pdata->rve_m.serializationDataSize() +  
+		pdata->steel_comp.serializationDataSize() +
+		pdata->rve_m.e2.section.series.serializationDataSize();
+
+
+
+	Vector ddata(nv_dbl);
+
+	// this data
+	ddata(counter++) = static_cast<double>(getTag());
+	ddata(counter++) = dtime_n;
+	ddata(counter++) = dtime_n_commit;
+	ddata(counter++) = static_cast<double>(commit_done);
+	ddata(counter++) = strain;
+	ddata(counter++) = strain_commit;
+	ddata(counter++) = stress;
+	ddata(counter++) = stress_commit;
+	ddata(counter++) = C;
+	ddata(counter++) = stress_rve;
+	ddata(counter++) = stress_rve_commit;
+	ddata(counter++) = C_rve;
+	ddata(counter++) = energy;
+	// params
+	ddata(counter++) = params.E;
+	ddata(counter++) = params.sy;
+	ddata(counter++) = params.eu;
+	ddata(counter++) = params.H1;
+	ddata(counter++) = params.H2;
+	ddata(counter++) = params.gamma1;
+	ddata(counter++) = params.gamma2;
+	ddata(counter++) = static_cast<double>(params.implex);
+	ddata(counter++) = static_cast<double>(params.buckling);
+	ddata(counter++) = static_cast<double>(params.fracture);
+	ddata(counter++) = static_cast<double>(params.slip);
+	ddata(counter++) = params.lch_anchor;
+	ddata(counter++) = params.radius;
+	ddata(counter++) = params.length;
+	ddata(counter++) = params.lch_element;
+	ddata(counter++) = params.K_alpha;
+	ddata(counter++) = params.max_iter;
+	ddata(counter++) = params.tolU;
+	ddata(counter++) = params.tolR;
+	// rve
+	pdata->rve_m.serialize(ddata, counter);
+	// steel for regularization
+	pdata->steel_comp.serialize(ddata, counter);
+	// slip 
+	pdata->rve_m.e2.section.series.serialize(ddata, counter, commitTag, theChannel);
+	
+	
+	
+	if (theChannel.sendVector(getDbTag(), commitTag, ddata) < 0) {
+		opserr << "ASDSteel1DMaterial::sendSelf() - failed to send DBL data\n";
+		return -1;
+	}
+
+	pdata->rve_m.e2.section.series.serialize_slip(commitTag, theChannel);
 
 	//// done
 	return 0;
@@ -1940,33 +2184,70 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
 	//// aux
-	//int counter;
+	int counter;
+
+	// variable DBL data size
+	int nv_dbl = nv_dbl = 13 +
+		params.NDATA +
+		pdata->rve_m.serializationDataSize() +
+		pdata->steel_comp.serializationDataSize();
+
+	//	pdata->rve_m.e0.section.series.serializationDataSize() + pdata->rve_m.e2.section.series.serializationDataSize() + pdata->steel_comp.serializationDataSize();
+	Vector ddata(nv_dbl);
 
 	//// recv DBL data
 	//Vector ddata(InputParameters::NDATA + 1 * StateVariablesSteel::NDATA + 10);
-	//if (theChannel.recvVector(getDbTag(), commitTag, ddata) < 0) {
-	//	opserr << "ASDSteel1DMaterial::recvSelf() - failed to receive DBL data\n";
-	//	return -1;
-	//}
-	//counter = 0;
-	//setTag(ddata(counter++));
-	//params.E = ddata(counter++);
-	//params.sy = ddata(counter++);
-	//params.H1 = ddata(counter++);
-	//params.H2 = ddata(counter++);
-	//params.gamma1 = ddata(counter++);
-	//params.gamma2 = ddata(counter++);
-	//params.implex = static_cast<bool>(ddata(counter++));
-	//steel.recvSelf(counter, ddata);
-	//dtime_n = ddata(counter++);
-	//dtime_n_commit = ddata(counter++);
-	//commit_done = static_cast<bool>(ddata(counter++));
-	//strain = ddata(counter++);
-	//strain_commit = ddata(counter++);
-	//stress = ddata(counter++);
-	//stress_commit = ddata(counter++);
-	//C = ddata(counter++);
-	//energy = ddata(counter++);
+	if (theChannel.recvVector(getDbTag(), commitTag, ddata) < 0) {
+		opserr << "ASDSteel1DMaterial::recvSelf() - failed to receive DBL data\n";
+		return -1;
+	}
+	
+	counter = 0;
+	
+	// this data
+	setTag(ddata(counter++));
+	dtime_n = ddata(counter++);
+	dtime_n_commit = ddata(counter++);
+	commit_done = static_cast<bool>(ddata(counter++));
+	strain = ddata(counter++);
+	strain_commit = ddata(counter++);
+	stress = ddata(counter++);
+	stress_commit = ddata(counter++);
+	C = ddata(counter++);
+	stress_rve_commit = ddata(counter++);
+	C_rve = ddata(counter++);
+	stress_rve = ddata(counter++);
+	energy = ddata(counter++);
+
+	//params
+	params.E = ddata(counter++);
+	params.sy = ddata(counter++);
+	params.eu = ddata(counter++);
+	params.H1 = ddata(counter++);
+	params.H2 = ddata(counter++);
+	params.gamma1 = ddata(counter++);
+	params.gamma2 = ddata(counter++);
+	params.implex = static_cast<bool>(ddata(counter++));
+	params.buckling = static_cast<bool>(ddata(counter++));
+	params.fracture = static_cast<bool>(ddata(counter++));
+	params.slip = static_cast<bool>(ddata(counter++));
+	params.lch_anchor = ddata(counter++);
+	params.radius = ddata(counter++);
+	params.length = ddata(counter++);
+	params.lch_element = ddata(counter++);
+	params.K_alpha = ddata(counter++);
+	params.max_iter = ddata(counter++);
+	params.tolU = ddata(counter++);
+	params.tolR = ddata(counter++);
+	// rve
+	pdata->rve_m.deserialize(ddata, counter);
+	// steel for regularization
+	pdata->steel_comp.deserialize(ddata, counter);
+	// slip 
+	pdata->rve_m.e2.section.series.deserialize(ddata, counter, commitTag, theChannel, theBroker);
+	
+
+	pdata->rve_m.e2.section.series.deserialize_slip(commitTag, theChannel, theBroker);
 
 	//// done
 	return 0;
@@ -2005,16 +2286,30 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 
 	// labels
 	static std::vector<std::string> lb_buckling_ratio = { "BI" };
+	static std::vector<std::string> lb_damage = { "D" };
+	static std::vector<std::string> lb_eqpl_strain = { "PLE" };
 
-	// all outputs are 1D
-	static Vector out1(1);
+	static std::vector<std::string> lb_slip_resp = { "Slip", "Tau" };
+	static std::vector<std::string> lb_steel_resp = { "strain_steel", "stress_steel" };
+
+
 
 	// check specific responses
 	if (argc > 0) {
-		// 1000 - base steel output
 		if (strcmp(argv[0], "BI") == 0 || strcmp(argv[0], "BucklingIndicator") == 0) {
-			out1(0) = pdata->rve_m.sv.UG(6);
-			return make_resp(1001, out1, &lb_buckling_ratio);
+			return make_resp(1001, getBucklingIndicator(), &lb_buckling_ratio);
+		}
+		if (strcmp(argv[0], "D") == 0 || strcmp(argv[0], "Damage") == 0) {
+			return make_resp(1002, getDamage(), &lb_damage);
+		}
+		if (strcmp(argv[0], "PLE") == 0 || strcmp(argv[0], "EquivalentPlasticStrain") == 0) {
+			return make_resp(1003, getEqPlStrain(), &lb_eqpl_strain);
+		}
+		if (strcmp(argv[0], "SlipResponse") == 0){
+			return make_resp(1004, getSlipResponse(), &lb_slip_resp);
+		}
+		if (strcmp(argv[0], "SteelResponse") == 0) {
+			return make_resp(1005, getSteelResponse(), &lb_steel_resp);
 		}
 	}
 
@@ -2025,13 +2320,20 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 {
 	// all outputs are 1D
-	static Vector out1(1);
+	//static Vector out1(1);
 
 	switch (responseID) {
 		// 1000 - base steel output
-	case 1001:
-		out1(0) = pdata->rve_m.sv.UG(6);
-		return matInformation.setVector(out1);
+	case 1001:		
+		return matInformation.setVector(getBucklingIndicator());
+	case 1002:
+		return matInformation.setVector(getDamage());
+	case 1003:
+		return matInformation.setVector(getEqPlStrain());
+	case 1004:
+		return matInformation.setVector(getSlipResponse());
+	case 1005:
+		return matInformation.setVector(getSteelResponse());
 	default:
 		break;
 	}
@@ -2041,6 +2343,59 @@ int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 double ASDSteel1DMaterial::getEnergy(void)
 {
 	return energy;
+}
+
+const Vector& ASDSteel1DMaterial::getBucklingIndicator() const
+{
+	static Vector d(1);
+	d.Zero();
+	d(0) = pdata->rve_m.sv.UG(6);
+	return d;
+}
+
+const Vector& ASDSteel1DMaterial::getDamage() const
+{
+	static Vector d(1);
+	d.Zero();
+	if (params.fracture) {
+		double eupl = params.eu - params.sy / params.E;
+		if (pdata->rve_m.e2.section.series.steel_material.epl > eupl) {
+			double epl_max = eupl + eupl * params.length / params.lch_element;
+			double G = (epl_max - eupl) * params.sy / 2.0;
+			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (pdata->rve_m.e2.section.series.steel_material.epl - eupl) / G));
+			d(0) = 1.0 - sigma_damaged / params.sy;
+		}
+	}
+	return d;
+}
+
+const Vector& ASDSteel1DMaterial::getEqPlStrain() const
+{
+	static Vector d(1);
+	d.Zero();
+	d(0) = pdata->rve_m.e2.section.series.steel_material.epl;
+	return d;
+}
+const Vector& ASDSteel1DMaterial::getSlipResponse() const
+{
+	static Vector d(2);
+	d.Zero();
+	if (params.slip) {		
+		d(0) = pdata->rve_m.e2.section.series.slip_material->getStrain();
+		d(1) = pdata->rve_m.e2.section.series.slip_material->getStress();
+	}
+	return d;
+}
+
+const Vector& ASDSteel1DMaterial::getSteelResponse() const
+{
+	static Vector d(2);
+	d.Zero();
+	if (params.slip) {
+		d(0) = pdata->rve_m.e2.section.series.steel_material.strain;
+		d(1) = pdata->rve_m.e2.section.series.steel_material.stress;
+	}
+	return d;
 }
 
 int ASDSteel1DMaterial::homogenize(bool do_implex)
