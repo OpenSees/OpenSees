@@ -557,6 +557,18 @@ namespace {
 				// compute series response
 				constexpr int MAX_ITER = 100;
 				constexpr double  TOL = 1e-6;
+				double scale_factor = 1.0;
+				// if in RVE for buckling, only 1 element has the slip material (1/3 of the rve length)
+				if (params.buckling) {
+					if (params.lch_element > params.length) {
+						scale_factor = params.length / (3.0 * params.lch_element);
+					}
+					else {
+						scale_factor = 1.0 / 3.0;
+					}
+				}					
+					
+				_strain *= scale_factor;
 
 				// initial guess for the slip strain
 				double strain_slip = slip_material->getStrain() / params.lch_anchor;
@@ -586,15 +598,11 @@ namespace {
 						sigma = sigma_steel;
 						if (std::abs(tangent_steel) < Ktol) tangent_steel = Ktol;
 						if (std::abs(tangent_slip) < Ktol) tangent_slip = Ktol;
-						tangent = 1.0 / (1.0 / tangent_steel + 1.0 / tangent_slip);
+						tangent = scale_factor *  1.0 / (1.0 / tangent_steel + 1.0 / tangent_slip);
 						asd_print("iter: " << iter);
 						return 0;
-					}
-					
-
-					
+					}				
 				}
-				
 				asd_print_full("series failed");
 				return -1;
 			}
@@ -1306,10 +1314,7 @@ namespace {
 			rn_commit = V2D(0.0, 0.0);
 			UL_commit.Zero();
 			section.revertToStart(); 
-		}
-		
-		
-		
+		}		
 
 	};
 	template<int NFiber, int EType>
@@ -1546,8 +1551,7 @@ namespace {
 						break;
 					}
 
-				}
-				
+				}				
 				
 			}
 			
@@ -1651,7 +1655,7 @@ public:
 		rve_m.setSlipMaterial(prototype);
 	}
 public:
-	SteelComponent steel_comp;
+	SeriesComponent steel_comp;
 	RVEModel rve_m;	
 };
 
@@ -1679,19 +1683,17 @@ void* OPS_ASDSteel1DMaterial()
 
 	// data
 	int tag;
-	double E;
-	double sy;
-	double su;
-	double eu;
-	double lch;
-	double r;
-	double r_buck;
-	double r_slip;
+	double E = 0.0;
+	double sy = 0.0;
+	double su = 0.0;
+	double eu = 0.0;
+	double lch = 0.0;
+	double r = 0.0; // default to 0.0, means not provided
 	bool implex = false;
 	bool buckling = false;
 	bool fracture = false;
 	bool slip = false;
-	double lch_anc;
+	double lch_anc = 0.0;
 	double K_alpha = 0.5;
 	double max_iter= 100;
 	double tolU = 1.0e-6;
@@ -1700,25 +1702,23 @@ void* OPS_ASDSteel1DMaterial()
 	bool have_max_iter = false;
 	bool have_tolU = false;
 	bool have_tolR = false;
-	bool have_Rbuck = false;
-	bool have_Rslip = false;
 	UniaxialMaterial* matSlip = nullptr;
 
 
 	// get tag
 	if (OPS_GetInt(&numData, &tag) != 0) {
-		opserr << "nDMaterial ASDSteel1D Error: invalid 'tag'.\n";
+		opserr << "UniaxialMaterial ASDSteel1D Error: invalid 'tag'.\n";
 		return nullptr;
 	}
 
 	// get steel base arguments
 	auto lam_get_dparam = [&numData](double* val, const char* valname) -> bool {
 		if (OPS_GetDouble(&numData, val) != 0) {
-			opserr << "1DMaterial ASDSteel1D Error: invalid '" << valname << "'.\n" << msg << "\n";
+			opserr << "UniaxialMaterial ASDSteel1D Error: invalid '" << valname << "'.\n" << msg << "\n";
 			return false;
 		}
 		if (*val <= 0.0) {
-			opserr << "1DMaterial ASDSteel1D Error: invalid value for '" << valname << "' (" << *val << "). It should be strictly positive.\n" << msg << "\n";
+			opserr << "UniaxialMaterial ASDSteel1D Error: invalid value for '" << valname << "' (" << *val << "). It should be strictly positive.\n" << msg << "\n";
 			return false;
 		}
 		return true;
@@ -1727,17 +1727,15 @@ void* OPS_ASDSteel1DMaterial()
 	if (!lam_get_dparam(&sy, "sy")) return nullptr;
 	if (!lam_get_dparam(&su, "su")) return nullptr;
 	if (!lam_get_dparam(&eu, "eu")) return nullptr;
-	//if (!lam_get_dparam(&lch, "lch")) return nullptr;
-	//if (!lam_get_dparam(&r, "r")) return nullptr;
 	auto lam_optional_double = [&numData](const char* variable, double& value) -> bool {
 		if (OPS_GetNumRemainingInputArgs() > 0) {
 			if (OPS_GetDouble(&numData, &value) < 0) {
-				opserr << "1DMaterial ASDSteel1D Error: failed to get '" << variable << "'.\n";
+				opserr << "UniaxialMaterial ASDSteel1D Error: failed to get '" << variable << "'.\n";
 				return false;
 			}
 		}
 		else {
-			opserr << "1DMaterial ASDSteel1D Error: '" << variable << "' requested but not provided.\n";
+			opserr << "UniaxialMaterial ASDSteel1D Error: '" << variable << "' requested but not provided.\n";
 			return false;
 		}
 		return true;
@@ -1751,26 +1749,30 @@ void* OPS_ASDSteel1DMaterial()
 		}
 		if (strcmp(value, "-buckling") == 0) {
 			buckling = true;
-			if (OPS_GetNumRemainingInputArgs() < 2) {
-				opserr << "ASDSteel1D: '-buckling' requires '$lch' after.\n";
+			// lch is mandatory
+			if (OPS_GetNumRemainingInputArgs() < 1) {
+				opserr << "UniaxialMaterial ASDSteel1D: '-buckling' requires at least '$lch'\n";
 				return nullptr;
 			}
 			if(!lam_optional_double("lch", lch)) return nullptr;
-			//if (lam_optional_double("r", r_buck)) { have_Rbuck = true;
-			//}
+			// radius is optional (can be defined either here or in -slip)
 			if (OPS_GetNumRemainingInputArgs() > 0) {
-				const char* peek = OPS_GetString();
-
-				//  flag argument ( "-slip", "-fracture", etc.)
-				if (peek[0] != '-') {
-					
+				double trial_radius;
+				if (OPS_GetDouble(&numData, &trial_radius) < 0) {
+					// radius not provided, go back
 					OPS_ResetCurrentInputArg(-1);
-					if (lam_optional_double("r", r_buck)) {
-						have_Rbuck = true;
-					}
 				}
 				else {
-					OPS_ResetCurrentInputArg(-1); 
+					// radius give, do cheks
+					if (trial_radius != r && r != 0.0) {
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -buckling (" << trial_radius << ") does not match the one provided in -slip (" << r << "). Please use it only once.\n";
+						return nullptr;
+					}
+					if (trial_radius <= 0.0) {
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -buckling should be strictly positive.\n";
+						return nullptr;
+					}
+					r = trial_radius;
 				}
 			}
 		}
@@ -1780,32 +1782,41 @@ void* OPS_ASDSteel1DMaterial()
 		if (strcmp(value, "-slip") == 0) {
 			slip = true;
 			if (OPS_GetNumRemainingInputArgs() < 2) {
-				opserr << "ASDSteel1D: '-slip' requires '$matTag'and '$lch_anc' after.\n";
+				opserr << "UniaxialMaterial ASDSteel1D: '-slip' requires '$matTag'and '$lch_anc'.\n";
 				return nullptr;
 			}
-
+			// get slip material
 			int matTag;
-			int one = 1;
-			if (OPS_GetInt(&one, &matTag) != 0) {
-				opserr << "Error: OPS_GetInt\n";
+			if (OPS_GetInt(&numData, &matTag) != 0) {
+				opserr << "UniaxialMaterial ASDSteel1D: cannot get slip material tag\n";
 				return nullptr;
 			}
-			
 			// Retrieve the UniaxialMaterial*
 			matSlip = OPS_getUniaxialMaterial(matTag);
 			if (matSlip == nullptr) {
 				opserr << "ASDSteel1D Error: No existing UniaxialMaterial with tag " << matTag << " for -slip option.\n";
 				return nullptr;
 			}
-
-			
-
 			if (!lam_optional_double( "lch_anc", lch_anc )) return nullptr;
-			
-		
-			
-			if (lam_optional_double("r", r_slip)) {
-				have_Rslip = true;
+			// radius is optional (can be defined either here or in -buckling)
+			if (OPS_GetNumRemainingInputArgs() > 0) {
+				double trial_radius;
+				if (OPS_GetDouble(&numData, &trial_radius) < 0) {
+					// radius not provided, go back
+					OPS_ResetCurrentInputArg(-1);
+				}
+				else {
+					// radius give, do cheks
+					if (trial_radius != r && r != 0.0) {
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -slip (" << trial_radius << ") does not match the one provided in -buckling (" << r << "). Please use it only once.\n";
+						return nullptr;
+					}
+					if (trial_radius <= 0.0) {
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -slip should be strictly positive.\n";
+						return nullptr;
+					}
+					r = trial_radius;
+				}
 			}
 		}
 		if (strcmp(value, "-K_alpha") == 0) {
@@ -1840,22 +1851,6 @@ void* OPS_ASDSteel1DMaterial()
 		return nullptr;
 	}
 	
-	if (buckling && slip) {
-		if(!have_Rbuck && !have_Rslip) {
-			opserr << "1DMaterial ASDSteel1D Error: when using both -buckling and -slip at least one 'r' must be provided\n" << msg << "\n";
-		}
-		if (have_Rbuck && have_Rslip && std::abs(r_buck-r_slip)>1e-10) {
-			opserr << "1DMaterial ASDSteel1D Error: inconsistent 'r' values for -buckling and -slip, they must be the same\n" << msg << "\n";
-			return nullptr;
-		}
-	}
-	if (have_Rbuck) r = r_buck;
-	else if (have_Rslip) r = r_slip;
-	
-	
-
-	
-
 	// obtain chaboche params from E, sy, su, eu
 	// we want to use 2 hardening functions as per chaboche model.
 	// so that the initial slope is close to E and the the stress apporaches su at eu
@@ -1909,8 +1904,10 @@ ASDSteel1DMaterial::ASDSteel1DMaterial(
 	, params(_params)
 	, pdata(new ASDSteel1DMaterialPIMPL())
 {
-	// set the slip material if defined
+	// set the slip material if defined for the RVE...
 	pdata->setSlipMaterial(slip_material);
+	// ... and for the base material
+	pdata->steel_comp.setSlipMaterial(slip_material);
 	// intialize C as C0
 	C = getInitialTangent();
 }
@@ -1975,10 +1972,10 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 
 	}
 	else {
-		////computation of sigma and tangent of steel
+		//computation of sigma and tangent of steel
 		pdata->steel_comp.revertToLastCommit();
 		retval = pdata->steel_comp.compute(params, params.implex, time_factor, strain, stress, C);
-		epl = pdata->steel_comp.epl;
+		epl = pdata->steel_comp.steel_material.epl;
 	}
 	if (params.fracture) {
 		double d = 0.0;
@@ -2022,12 +2019,17 @@ int ASDSteel1DMaterial::commitState(void)
 {
 	// implicit stage
 	if (params.implex) {
-		asd_print("MAT commit (" << (int)false << ")");
-		int retval = homogenize(false);
-		if (retval < 0) return retval;
-		double sigma_macro = 0.0;
-		double tangent_macro = 0.0;
-		retval = pdata->steel_comp.compute(params, false, 1.0, strain, sigma_macro, tangent_macro);
+		if (params.buckling) {
+			asd_print("MAT commit (" << (int)false << ")");
+			int retval = homogenize(false);
+			if (retval < 0) return retval;
+		}
+		else {
+			double sigma_macro = 0.0;
+			double tangent_macro = 0.0;
+			int retval = pdata->steel_comp.compute(params, false, 1.0, strain, sigma_macro, tangent_macro);
+			if (retval < 0) return retval;
+		}
 	}
 
 	// compute energy
@@ -2163,8 +2165,8 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = params.tolR;
 	// rve
 	pdata->rve_m.serialize(ddata, counter);
-	// steel for regularization
-	pdata->steel_comp.serialize(ddata, counter);
+	// steel base (no buckling)
+	pdata->steel_comp.serialize(ddata, counter, commitTag, theChannel);
 	// slip 
 	pdata->rve_m.e2.section.series.serialize(ddata, counter, commitTag, theChannel);
 	
@@ -2175,15 +2177,17 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 		return -1;
 	}
 
+	pdata->steel_comp.serialize_slip(commitTag, theChannel);
 	pdata->rve_m.e2.section.series.serialize_slip(commitTag, theChannel);
 
-	//// done
+
+	// done
 	return 0;
 }
 
 int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker)
 {
-	//// aux
+	// aux
 	int counter;
 
 	// variable DBL data size
@@ -2195,7 +2199,7 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	//	pdata->rve_m.e0.section.series.serializationDataSize() + pdata->rve_m.e2.section.series.serializationDataSize() + pdata->steel_comp.serializationDataSize();
 	Vector ddata(nv_dbl);
 
-	//// recv DBL data
+	// recv DBL data
 	//Vector ddata(InputParameters::NDATA + 1 * StateVariablesSteel::NDATA + 10);
 	if (theChannel.recvVector(getDbTag(), commitTag, ddata) < 0) {
 		opserr << "ASDSteel1DMaterial::recvSelf() - failed to receive DBL data\n";
@@ -2241,15 +2245,14 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	params.tolR = ddata(counter++);
 	// rve
 	pdata->rve_m.deserialize(ddata, counter);
-	// steel for regularization
-	pdata->steel_comp.deserialize(ddata, counter);
+	// steel base (in case of no buckling)
+	pdata->steel_comp.deserialize(ddata, counter, commitTag, theChannel, theBroker);
+	pdata->steel_comp.deserialize_slip(commitTag, theChannel, theBroker);
 	// slip 
 	pdata->rve_m.e2.section.series.deserialize(ddata, counter, commitTag, theChannel, theBroker);
-	
-
 	pdata->rve_m.e2.section.series.deserialize_slip(commitTag, theChannel, theBroker);
 
-	//// done
+	// done
 	return 0;
 }
 
