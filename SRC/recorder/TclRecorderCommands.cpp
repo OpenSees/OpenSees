@@ -66,6 +66,7 @@ extern void* OPS_PVDRecorder();
 extern void* OPS_GmshRecorder();
 #ifdef _HDF5
 extern void* OPS_MPCORecorder();
+extern void* OPS_VTKHDF_Recorder();
 #endif // _HDF5
 extern void* OPS_VTK_Recorder();
 extern void* OPS_ElementRecorderRMS();
@@ -1934,6 +1935,10 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
        (*theRecorder) = (Recorder*)OPS_MPCORecorder();
      }
+	 else if (strcmp(argv[1], "vtkhdf") == 0 || strcmp(argv[1], "VTKHDF") == 0) {
+		 OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+		 (*theRecorder) = (Recorder*)OPS_VTKHDF_Recorder();
+	 }
 #endif // _HDF5
      else if (strcmp(argv[1],"gmsh") == 0 || strcmp(argv[1],"GMSH") == 0) {
        OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
