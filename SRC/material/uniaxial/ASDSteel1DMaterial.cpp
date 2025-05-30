@@ -1873,7 +1873,7 @@ void* OPS_ASDSteel1DMaterial()
 	params.fracture = fracture;
 	params.slip = slip;
 	params.lch_anchor = lch_anc;
-	params.length = lch / 2.0; // consider half distance, the RVE uses symmetry
+	params.length = buckling ? lch / 2.0 : 1.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
 	params.K_alpha = K_alpha;
 	params.max_iter = max_iter;
@@ -1898,7 +1898,7 @@ void* OPS_ASDSteel1DMaterial()
 
 ASDSteel1DMaterial::ASDSteel1DMaterial(
 	int _tag,
-	const InputParameters& _params,
+	const ASDSteel1DMaterial::InputParameters& _params,
 	UniaxialMaterial* slip_material)
 	: UniaxialMaterial(_tag, MAT_TAG_ASDSteel1DMaterial)
 	, params(_params)
@@ -1981,7 +1981,7 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 		double d = 0.0;
 		double eupl = params.eu - params.sy / params.E;
 		if (epl > eupl) {
-			double epl_max = eupl + eupl * params.length / params.lch_element;
+			double epl_max = eupl + eupl * 1.0 / params.lch_element;
 			double G = (epl_max-eupl) * params.sy / 2.0;
 			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (epl-eupl) / G));
 			d = 1.0 - sigma_damaged / params.sy;
@@ -2362,10 +2362,11 @@ const Vector& ASDSteel1DMaterial::getDamage() const
 	d.Zero();
 	if (params.fracture) {
 		double eupl = params.eu - params.sy / params.E;
-		if (pdata->rve_m.e2.section.series.steel_material.epl > eupl) {
-			double epl_max = eupl + eupl * params.length / params.lch_element;
+		double epl = params.buckling ? pdata->rve_m.e2.section.series.steel_material.epl : pdata->steel_comp.steel_material.epl;
+		if (epl > eupl) {
+			double epl_max = eupl + eupl * 1.0 / params.lch_element;
 			double G = (epl_max - eupl) * params.sy / 2.0;
-			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (pdata->rve_m.e2.section.series.steel_material.epl - eupl) / G));
+			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (epl - eupl) / G));
 			d(0) = 1.0 - sigma_damaged / params.sy;
 		}
 	}
@@ -2383,9 +2384,15 @@ const Vector& ASDSteel1DMaterial::getSlipResponse() const
 {
 	static Vector d(2);
 	d.Zero();
-	if (params.slip) {		
-		d(0) = pdata->rve_m.e2.section.series.slip_material->getStrain();
-		d(1) = pdata->rve_m.e2.section.series.slip_material->getStress();
+	if (params.slip) {
+		if (params.buckling) {
+			d(0) = pdata->rve_m.e2.section.series.slip_material->getStrain();
+			d(1) = pdata->rve_m.e2.section.series.slip_material->getStress();
+		}
+		else {
+			d(0) = pdata->steel_comp.slip_material->getStrain();
+			d(1) = pdata->steel_comp.slip_material->getStress();
+		}
 	}
 	return d;
 }
