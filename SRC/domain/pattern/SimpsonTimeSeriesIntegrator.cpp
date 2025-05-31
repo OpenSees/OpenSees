@@ -38,105 +38,178 @@
 
 void* OPS_SimpsonTimeSeriesIntegrator()
 {
-    return new SimpsonTimeSeriesIntegrator();
+  return new SimpsonTimeSeriesIntegrator();
 }
 
 SimpsonTimeSeriesIntegrator::SimpsonTimeSeriesIntegrator()
-    : TimeSeriesIntegrator(TIMESERIES_INTEGRATOR_TAG_Simpson)
+  : TimeSeriesIntegrator(TIMESERIES_INTEGRATOR_TAG_Simpson)
 {
-    
+  
 }
 
 
 SimpsonTimeSeriesIntegrator::~SimpsonTimeSeriesIntegrator()
 {
-    
+  
 }
 
 
 TimeSeries* SimpsonTimeSeriesIntegrator::integrate(TimeSeries *theSeries, double delta)
 {
-    // check for zero time step, before dividing to get number of steps
-    if (delta <= 0.0)  {
-        opserr << "SimpsonTimeSeriesIntegrator::integrate() - attempting to integrate time step "
-            << delta << "<= 0.0.\n";
-        return 0;
-    }
-    
-    // check a TimeSeries object was passed
-    if (theSeries == 0)  {
-        opserr << "SimpsonTimeSeriesIntegrator::integrate() - no TimeSeries passed.\n";
-        return 0;
-    }
-    
-    // add one to get ceiling out of type cast
-    long long numSteps = (long long)(theSeries->getDuration()/delta + 1.0);
-    
-    // create new vector for integrated values
-    Vector *theInt = new Vector(numSteps);
-    
-    // check that the Vector was allocated properly
-    if (theInt == 0 || theInt->Size() == 0)  {
-        opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory allocating Vector " << endln;
+  // check for zero time step, before dividing to get number of steps
+  if (delta <= 0.0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::integrate() - attempting to integrate using time step "
+      << delta << "<= 0.0.\n";
+    return 0;
+  }
+  
+  // check a TimeSeries object was passed
+  if (theSeries == 0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::integrate() - no TimeSeries passed.\n";
+    return 0;
+  }
+  
+  // add one to get ceiling out of type cast
+  long long numSteps = (long long)(theSeries->getDuration()/delta + 1.0);
+  
+  // create new vector for integrated values
+  Vector *theInt = new Vector(numSteps);
+  
+  // check that the Vector was allocated properly
+  if (theInt == 0 || theInt->Size() == 0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory allocating Vector " << endln;
 
-        
-        if (theInt != 0)
-            delete theInt;
-        
-        return 0;
-    }
+    if (theInt != 0)
+      delete theInt;
     
-    double t = 0.0;
-    double fi, fj, fk;
+    return 0;
+  }
+  
+  double dummyTime;
+  double fi, fj, fk;  //function values
+  double Fi, Fj, Fk;  //intergral values
+
+  dummyTime = theSeries->getStartTime();
+
+  Fi = 0.0;
+  Fj = 0.0;
+
+  fi = 0.0;
+  fj = 0.0;
+
+  for (long long i = 0; i < numSteps; i++, dummyTime += delta)  {
+
+    fk = theSeries->getFactor(dummyTime);
+    // Apply the Simpson's rule to update the integral
+    Fk = Fi + delta / 3.0 * (fi + 4.0 * fj + fk);
+
+    (*theInt)[i] = Fk;
+
+    fi = fj;
+    fj = fk;
+
+    Fi = Fj;
+    Fj = Fk;
+  }
+
+  // set the method return value
+  PathSeries *returnSeries = new PathSeries(0, *theInt, delta, 1.0, true, false, theSeries->getStartTime());
+  delete theInt;
+  
+  if (returnSeries == 0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory creating PathSeries.\n";
+    return 0;
+  }
+  
+  return returnSeries;
+}
+
+
+TimeSeries* SimpsonTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double delta)
+{
+  // check for zero time step, before dividing to get number of steps
+  if (delta <= 0.0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::differentiate() - attempting to differentiate using time step "
+      << delta << "<= 0.0.\n";
+    return 0;
+  }
+  
+  // check a TimeSeries object was passed
+  if (theSeries == 0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::differentiate() - no TimeSeries passed.\n";
+    return 0;
+  }
+  
+  // add one to get ceiling out of type cast
+  long long numSteps = (long long)(theSeries->getDuration()/delta + 1.0);
+  
+  // create new vector for integrated values
+  Vector *theDif = new Vector(numSteps);
+  
+  // check that the Vector was allocated properly
+  if (theDif == 0 || theDif->Size() == 0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::differentiate() - ran out of memory allocating Vector " << endln;
+
+    if (theDif != 0)
+      delete theDif;
     
-    // set the first two integrated values (assume that f(0) = 0)
-    fi = theSeries->getFactor(0.0);
-    fj = theSeries->getFactor(delta);
-    fk = theSeries->getFactor(2.0*delta);
-    (*theInt)[0] = 0.0;
-    (*theInt)[1] = delta/12.0*(5.0*fi + 8.0*fj - fk);
-    
-    // calculate remaining integrated values
-    for (long long i=2; i<numSteps-1; i++)  {
-        
-        (*theInt)[i] = (*theInt)[i-2] + delta/3.0*(fi + 4.0*fj + fk);
-        
-        // update function values
-        fi = fj;
-        fj = fk;
-        fk = theSeries->getFactor((i+1)*delta);
-    }
-    
-    // calculate the last integrated value
-    (*theInt)[numSteps-1] = (*theInt)[numSteps-3] + delta/3.0*(fi + 4.0*fj + fk);
-    
-    // set the method return value
-    PathSeries *returnSeries = new PathSeries(0, *theInt, delta, true);
-    delete theInt;
-    
-    if (returnSeries == 0)  {
-        opserr << "SimpsonTimeSeriesIntegrator::integrate() - ran out of memory creating PathSeries.\n";
-        return 0;
-    }
-    
-    return returnSeries;
+    return 0;
+  }
+  
+  double dummyTime;
+  double Fi, Fj, Fk;  //function values
+  double fi, fj, fk;  //derivative values
+
+  dummyTime = theSeries->getStartTime();
+
+  Fi = 0.0;
+  Fj = 0.0;
+
+  fi = 0.0;
+  fj = 0.0;
+
+  for (long long i = 0; i < numSteps; i++, dummyTime += delta)  {
+
+    Fk = theSeries->getFactor(dummyTime);
+    // Apply the Simpson's rule to update the derivative
+    fk = 3.0 * (Fk - Fi) / delta - fi - 4.0 * fj;
+
+    (*theDif)[i] = fk;
+
+    fi = fj;
+    fj = fk;
+
+    Fi = Fj;
+    Fj = Fk;
+  }
+
+  // set the method return value
+  PathSeries *returnSeries = new PathSeries(0, *theDif, delta, 1.0, true, false, theSeries->getStartTime());
+  delete theDif;
+  
+  if (returnSeries == 0)  {
+    opserr << "SimpsonTimeSeriesIntegrator::differentiate() - ran out of memory creating PathSeries.\n";
+    return 0;
+  }
+  
+  return returnSeries;
 }
 
 
 int SimpsonTimeSeriesIntegrator::sendSelf(int commitTag, Channel &theChannel)
 {
-    return 0;
+  return 0;
 }
 
 
 int SimpsonTimeSeriesIntegrator::recvSelf(int commitTag, Channel &theChannel, 
-    FEM_ObjectBroker &theBroker)
+  FEM_ObjectBroker &theBroker)
 {
-    return 0;
+  return 0;
 }
 
 
 void SimpsonTimeSeriesIntegrator::Print(OPS_Stream &s, int flag)
 {
-    return;
+  return;
 }
