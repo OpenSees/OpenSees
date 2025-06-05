@@ -18,6 +18,7 @@
 **                                                                    **
 ** ****************************************************************** */
 
+#ifdef _HDF5
 #include "VTKHDF_Recorder.h"
 #include <sstream>
 #include <elementAPI.h>
@@ -212,16 +213,45 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
     strcpy(name, inputName);
 
     
-    VTKHDF_Recorder::setVTKType();
+    VTKHDF_Recorder::setVTKType();    // -----------------------
+    // 1) Create (or overwrite) the HDF5 file using the C API with SWMR support
+    // -----------------------
+    // Create file access property list for SWMR (Single Writer Multiple Reader)
+    hid_t fapl_id = H5Pcreate(H5P_FILE_ACCESS);
+    if (fapl_id < 0) {
+        opserr << "Error: Could not create file access property list for " << name << endln;
+        return;
+    }
+    
+    // Enable latest version of the library format (required for SWMR)
+    herr_t ret = H5Pset_libver_bounds(fapl_id, H5F_LIBVER_LATEST, H5F_LIBVER_LATEST);
+    if (ret < 0) {
+        opserr << "Error: Could not set library version bounds for " << name << endln;
+        H5Pclose(fapl_id);
+        return;
+    }
 
-    // -----------------------
-    // 1) Create (or overwrite) the HDF5 file using the C API
-    // -----------------------
-    file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    // Create the file with SWMR-compatible settings
+    file_id = H5Fcreate(name, H5F_ACC_TRUNC, H5P_DEFAULT, fapl_id);
     if (file_id < 0) {
         opserr << "Error: Could not create HDF5 file " << name << endln;
-        return; // Handle the error as needed, or throw an exception
+        H5Pclose(fapl_id);
+        return;
     }
+    
+    // Close the file temporarily to reopen it in SWMR write mode
+    H5Fclose(file_id);
+    
+    // Reopen the file in SWMR write mode
+    file_id = H5Fopen(name, H5F_ACC_RDWR | H5F_ACC_SWMR_WRITE, fapl_id);
+    if (file_id < 0) {
+        opserr << "Error: Could not reopen HDF5 file in SWMR write mode " << name << endln;
+        H5Pclose(fapl_id);
+        return;
+    }
+    
+    // Close the file access property list
+    H5Pclose(fapl_id);
 
     // 4) Create the group "/VTKHDF"
     group_id = H5Gcreate(file_id, "/VTKHDF",
@@ -1367,12 +1397,16 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
 
 
     initDone = false;
-    numSteps = 0;
-
-    // opserr << "initilization done\n";
+    numSteps = 0;    // opserr << "initilization done\n";
     CurrentDispOffset = 0;
     CurrentVelOffset = 0;
     CurrentAccelOffset = 0;
+
+    // Enable SWMR mode for concurrent reading
+    if (H5Fstart_swmr_write(file_id) < 0) {
+        opserr << "Warning: Could not enable SWMR write mode for " << name << endln;
+        opserr << "         File will still be created but concurrent reading may not work optimally" << endln;
+    }
 
 }
 
@@ -3269,6 +3303,7 @@ void VTKHDF_Recorder::setVTKType()
     vtktypes[ELE_TAG_PML2DVISCOUS] = VTK_QUAD;
     vtktypes[ELE_TAG_PML2D] = VTK_QUAD;
     vtktypes[ELE_TAG_PML3D] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_PML3DVISCOUS] = VTK_HEXAHEDRON;
 }
 
 
@@ -3615,3 +3650,4 @@ int VTKHDF_Recorder::extendOffsetDataset(hid_t group_id,
 
     return 0;
 }
+#endif
