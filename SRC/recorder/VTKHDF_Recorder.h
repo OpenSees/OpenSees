@@ -23,7 +23,7 @@
 // Purpose: Class definition for VTKHDF_Recorder to store responses in HDF5 format.
 
 // Include existing headers plus HDF5
-#ifdef _HDF5
+
 #include <string>
 #include <fstream>
 #include <vector>
@@ -277,7 +277,5 @@ private:
     static std::map<int, VtkType> vtktypes;
     static void setVTKType();
 };
-
-#endif
 
 #endif

@@ -18,7 +18,6 @@
 **                                                                    **
 ** ****************************************************************** */
 
-#ifdef _HDF5
 #include "VTKHDF_Recorder.h"
 #include <sstream>
 #include <elementAPI.h>
@@ -3650,4 +3649,3 @@ int VTKHDF_Recorder::extendOffsetDataset(hid_t group_id,
 
     return 0;
 }
-#endif
