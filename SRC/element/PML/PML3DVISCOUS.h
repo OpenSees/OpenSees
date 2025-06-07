@@ -86,7 +86,7 @@ public:
 	PML3DVISCOUS();                                                                         //null constructor
 	// PML3DVISCOUS(int tag, int* nodeTags, double* newmarks, double* dData);                  // full constructor
 	PML3DVISCOUS(int tag, int* nodeTags,
-				 ElasticIsotropicMaterial* theMat, double PMLThickness,
+				 NDMaterial* theMat, double PMLThickness,
 				 double* Xref, double* Normal,
 				 double alpha_0, double beta_0, bool explicitAB,
 				 double Cp, double m_coeff, double R,
@@ -166,7 +166,8 @@ private:
 	double cp_ref;								    // reference wave speed
 	bool ExplicitAlphaBeta;						 // flag for explicit alpha beta
 	
-	ElasticIsotropicMaterial* theMaterial;         // pointer to the material
+	NDMaterial* theMaterial;         // pointer to the material
+	double E, nu, rho;          // material properties: E, nu, rho
 
 };
 

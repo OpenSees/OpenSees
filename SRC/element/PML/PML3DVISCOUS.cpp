@@ -347,12 +347,31 @@ void* OPS_PML3DVISCOUS()
 		return 0;
 	}
 
-	// cast the material to ElasticIsotropicMaterial
-	ElasticIsotropicMaterial* Elasmat = (ElasticIsotropicMaterial*)mat;
+	double E = 0.0, nu = 0.0, rho = 0.0;
 
-	double E = Elasmat->getElasticModulus();
-	double nu = Elasmat->getPoissonsRatio();
-	double rho = Elasmat->getRho();
+	const char* argv_E[] = {"E"};
+	const char* argv_nu[] = {"nu"};
+
+	Parameter paramE(1);
+	Parameter paramNu(2);
+
+	// This is the intended way to access material properties
+	if (mat->setParameter(argv_E, 1, paramE) >= 0) {
+		E = paramE.getValue();
+	} else {
+		opserr << "Warning: Material doesn't support E parameter\n";
+	}
+
+	if (mat->setParameter(argv_nu, 1, paramNu) >= 0) {
+		nu = paramNu.getValue();
+	} else {
+		opserr << "Warning: Material doesn't support nu parameter\n";
+	}
+
+	// Always available in NDMaterial base class
+	rho = mat->getRho();
+
+	// opserr << "PML3DVISCOUS element: E=" << E << ", nu=" << nu << ", rho=" << rho << endln;
 
 
 
@@ -583,7 +602,7 @@ void* OPS_PML3DVISCOUS()
 	
 
 	return new PML3DVISCOUS(idata[0], &idata[1], 
-							Elasmat, PMLThickness,
+							mat, PMLThickness,
 							Xref, Normal, 
 							alpha_0, beta_0, ExplicitAlphaBeta,
 							Cp, m_coeff, R,
@@ -662,6 +681,9 @@ PML3DVISCOUS::PML3DVISCOUS()
 	alpha0 = 0;
 	beta0 = 0;
 	ExplicitAlphaBeta = false;
+	E = 0.0;
+	nu = 0.0;
+	rho = 0.0;
 
 
 }
@@ -670,7 +692,7 @@ PML3DVISCOUS::PML3DVISCOUS()
 // Full constructor
 // =======================================================================
 PML3DVISCOUS::PML3DVISCOUS(int tag, int* nodeTags,
-						   ElasticIsotropicMaterial* theMat, 
+						   NDMaterial* theMat, 
 						   double PMLThickness,
 						   double* Xref, double* Normal,
 						   double alpha_0, double beta_0, bool explicitAB,
@@ -724,6 +746,26 @@ PML3DVISCOUS::PML3DVISCOUS(int tag, int* nodeTags,
 	nx = Normal[0];
 	ny = Normal[1];
 	nz = Normal[2];
+
+	Parameter paramE(1);
+	Parameter paramNu(2);
+	const char* argv_E[] = {"E"};
+	const char* argv_nu[] = {"nu"};
+		if (strcmp(theMaterial->getClassType(), "ElasticIsotropicMaterial") == 0) {
+		int res = 0;
+		res = theMaterial->setParameter(argv_nu, 1, paramNu);
+		res = theMaterial->setParameter(argv_E, 1, paramE);
+        if (res >= 0) {
+			nu = paramNu.getValue();
+			E = paramE.getValue();
+		} else {
+			opserr << "Error: PML3DVISCOUS element only supports ElasticIsotropicMaterial\n";
+			opserr << "\tMaterial provided is of type: " << theMaterial->getClassType() << endln;
+			return;
+		}
+	}
+	rho = theMaterial->getRho();
+	// opserr << "PML3DVISCOUS element(Domain): E=" << E << ", nu=" << nu << ", rho=" << theMaterial->getRho() << endln;
 
 	// print out the information
 	// opserr << "PML3DVISCOUS element, tag: " << this->getTag() << endln;
@@ -817,9 +859,9 @@ void PML3DVISCOUS::calculateMatrices()
 	double betarayleigh = (betaK0 > betaK) ? betaK0 : betaK;
 	betarayleigh = (betaKc > betarayleigh) ? betaKc : betarayleigh;
 	double props[16];
-	props[0] = theMaterial->getElasticModulus();
-	props[1] = theMaterial->getPoissonsRatio();
-	props[2] = theMaterial->getRho();
+	props[0] = E;
+	props[1] = nu;
+	props[2] = rho;
 	props[3] = 6.0;
 	props[4] = PML_L;
 	props[5] = xref;
