@@ -919,10 +919,10 @@ namespace {
 		static constexpr int N2 = 1;
 	};
 	template<int EType>
-	inline void getElementDisplacementVector(bool elastic_correction, const Vector& G, Vector& L) {
+	inline void getElementDisplacementVector(const ASDSteel1DMaterial::InputParameters& params, bool elastic_correction, const Vector& G, Vector& L) {
 		// G = global vector, size = 8 -> full = 12, semi-full 8 (7 free + 1 Uy imposed)
 		// L = local vector , size = 6
-		if (elastic_correction) {
+		if (elastic_correction && params.auto_regularization) {
 			for (int i = 0; i < 6; ++i) {
 				int gdof = ETypeTraits<EType>::DOFs[i];
 				if (gdof < 10 ) {
@@ -945,10 +945,10 @@ namespace {
 		}
 	}
 	template<int EType>
-	inline void assembleRHS(bool elastic_correction, const Vector& L, Vector& G) {
+	inline void assembleRHS(const ASDSteel1DMaterial::InputParameters& params, bool elastic_correction, const Vector& L, Vector& G) {
 		// G = global vector, size = 7 (-> full = 12, semi-full 8 (7 free + 1 Uy imposed) only free)
 		// L = local vector , size = 6
-		if (elastic_correction) {
+		if (elastic_correction && params.auto_regularization) {
 			for (int i = 0; i < 6; ++i) {
 				int gdof = ETypeTraits<EType>::DOFs[i];
 				if (gdof < 10) {
@@ -966,11 +966,11 @@ namespace {
 		}		
 	}
 	template<int EType>
-	inline void assembleLHS(bool elastic_correction, const Matrix& M, Matrix& G) {
+	inline void assembleLHS(const ASDSteel1DMaterial::InputParameters& params, bool elastic_correction, const Matrix& M, Matrix& G) {
 		// G = global matrix, size = 7x7 -> full = 12x12, semi-full 8 (7 free + 1 Uy imposed)
 		// L = local  vector , size = 6
 		// M = local  matrix , size = 6x6
-		if (elastic_correction) {
+		if (elastic_correction && params.auto_regularization) {
 			for (int i = 0; i < 6; ++i) {
 				int idof = ETypeTraits<EType>::DOFs[i];
 				if (idof < 10) {
@@ -999,8 +999,8 @@ namespace {
 		
 	}
 	template<int EType>
-	inline void getRetainedComponents(bool elastic_correction, const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
-		if (elastic_correction) {
+	inline void getRetainedComponents(const ASDSteel1DMaterial::InputParameters& params,bool elastic_correction, const Matrix& M, double& Krr, Vector& Kcr, Vector& Krc) {
+		if (elastic_correction && params.auto_regularization) {
 			for (int i = 0; i < 6; ++i) {
 				int idof = ETypeTraits<EType>::DOFs[i];
 				for (int j = 0; j < 6; ++j) {
@@ -1162,7 +1162,7 @@ namespace {
 			// determine node numbering (changes for elastic correction)
 			int inode;
 			int jnode;
-			if (elastic_correction) {
+			if (elastic_correction && params.auto_regularization) {
 				inode = ETypeTraits<EType>::N1;
 				jnode = ETypeTraits<EType>::N2;
 			}
@@ -1172,20 +1172,20 @@ namespace {
 			}
 			
 			// obtain global displacement vectors (size changes for elastic correction)
-			if (elastic_correction) {
-				getElementDisplacementVector<EType>(elastic_correction, rve.UG_el, U);
-				getElementDisplacementVector<EType>(elastic_correction, rve.UG_el_commit, U_commit);
-			}
-			else {
-				getElementDisplacementVector<EType>(elastic_correction, rve.UG, U);
-				getElementDisplacementVector<EType>(elastic_correction, rve.UG_commit, U_commit);
+			if (elastic_correction && params.auto_regularization) {
+				getElementDisplacementVector<EType>(params, elastic_correction, rve.UG_el, U);
+				getElementDisplacementVector<EType>(params, elastic_correction, rve.UG_el_commit, U_commit);
+			}										 
+			else {									
+				getElementDisplacementVector<EType>(params, elastic_correction, rve.UG, U);
+				getElementDisplacementVector<EType>(params, elastic_correction, rve.UG_commit, U_commit);
 			}
 			
 
 			// undeformed nodes
 			V2D node_i;
 			V2D node_j;
-			if (elastic_correction) {
+			if (elastic_correction && params.auto_regularization) {
 				node_i = rve_nodes_el[inode];
 				node_j = rve_nodes_el[jnode];
 			}
@@ -1355,14 +1355,14 @@ namespace {
 			return retval;
 		}
 		auto& globals = Globals::instance();
-		if (elastic_correction) {
-			assembleRHS<EType>(elastic_correction, globals.element_RHS, globals.rve_R_el);
-			assembleLHS<EType>(elastic_correction, globals.element_LHS, globals.rve_K_el);
+		if (elastic_correction && params.auto_regularization) {
+			assembleRHS<EType>(params, elastic_correction, globals.element_RHS, globals.rve_R_el);
+			assembleLHS<EType>(params, elastic_correction, globals.element_LHS, globals.rve_K_el);
 		}
 		else {
 
-			assembleRHS<EType>(elastic_correction, globals.element_RHS, globals.rve_R);
-			assembleLHS<EType>(elastic_correction, globals.element_LHS, globals.rve_K);
+			assembleRHS<EType>(params, elastic_correction, globals.element_RHS, globals.rve_R);
+			assembleLHS<EType>(params, elastic_correction, globals.element_LHS, globals.rve_K);
 		}
 		return 0;
 	}
@@ -1408,7 +1408,7 @@ namespace {
 				globals.rve_K.Zero();
 				globals.rve_R_el.Zero();
 				globals.rve_K_el.Zero();
-				if (elastic_correction) {
+				if (elastic_correction && params.auto_regularization) {
 					if (rve_process_element< 3, EType_Top>(elastic_correction, e3, sv, params, do_implex, time_factor) != 0) return -1;
 					if (rve_process_element< 1, EType_Mid>(elastic_correction, e2, sv, params, do_implex, time_factor) != 0) return -1;
 					if (rve_process_element< 3, EType_Bot>(elastic_correction, e1, sv, params, do_implex, time_factor) != 0) return -1;
@@ -1422,7 +1422,13 @@ namespace {
 					double EI = params.E * I;
 					double fact = 0.04 * params.length / (params.radius * 5.0);
 					double penalty = 12.0 * EI * fact / std::pow(2.0*params.length, 3.0);
-					double KReg = std::max(0.0, (params.length / params.lch_element - 1)) * penalty;
+					double KReg;
+					if (!params.auto_regularization) {
+						KReg = 0.0;
+					}
+					else {
+						KReg = std::max(0.0, (params.length / params.lch_element - 1)) * penalty;
+					}
 					globals.rve_K(6, 6) = globals.rve_K(6, 6) + KReg;
 					globals.rve_R(6) = globals.rve_R(6)  + KReg * sv.UG(6);
 				}                            
@@ -1430,7 +1436,7 @@ namespace {
 			};
 
 			// impose BC
-			if (elastic_correction) {
+			if (elastic_correction && params.auto_regularization) {
 				sv.UG_el(10) = U;
 			}
 			else {
@@ -1455,7 +1461,7 @@ namespace {
 			for (int iter = 0; iter < params.max_iter; ++iter) {
 
 				// solve
-				if (elastic_correction) {
+				if (elastic_correction && params.auto_regularization) {
 					if (globals.rve_K_el.Solve(globals.rve_R_el, globals.rve_dU_el) != 0) {
 						asd_print_full("Solve failed");
 						break;
@@ -1560,14 +1566,14 @@ namespace {
 			}
 			double Krc_dot_Kinv_Kcr = 0.0;
 			// do it outside, element Bottom is the last one
-			if (elastic_correction) {
-				getRetainedComponents<EType_El>(elastic_correction, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr_el, globals.rve_Krc_el);
+			if (elastic_correction && params.auto_regularization) {
+				getRetainedComponents<EType_El>(params, elastic_correction, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr_el, globals.rve_Krc_el);
 				globals.rve_K_el.Solve(globals.rve_Kcr_el, globals.rve_Kinv_Kcr_el);
 				Krc_dot_Kinv_Kcr = globals.rve_Krc_el ^ globals.rve_Kinv_Kcr_el;
 			}
 			else {
 
-				getRetainedComponents<EType_Bot>(elastic_correction, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr, globals.rve_Krc);
+				getRetainedComponents<EType_Bot>(params, elastic_correction, globals.element_LHS, globals.rve_Krr, globals.rve_Kcr, globals.rve_Krc);
 				globals.rve_K.Solve(globals.rve_Kcr, globals.rve_Kinv_Kcr);
 				Krc_dot_Kinv_Kcr = globals.rve_Krc ^ globals.rve_Kinv_Kcr;
 			}
@@ -1661,14 +1667,13 @@ public:
 
 void* OPS_ASDSteel1DMaterial()
 {
-	
 	// some kudos
 	static bool first_done = false;
 	if (!first_done) {
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex>  <-buckling  $lch < $r>> <-fracture> <-slip $matTag $lch_anc <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  $r_frac> <-slip $matTag $lch_anc <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1689,7 +1694,9 @@ void* OPS_ASDSteel1DMaterial()
 	double eu = 0.0;
 	double lch = 0.0;
 	double r = 0.0; // default to 0.0, means not provided
+	double r_frac = 0.0;
 	bool implex = false;
+	bool auto_regularization = false;
 	bool buckling = false;
 	bool fracture = false;
 	bool slip = false;
@@ -1742,10 +1749,14 @@ void* OPS_ASDSteel1DMaterial()
 	};
 	
 	// parse optional arguments
+	int trials = 0;
 	while (OPS_GetNumRemainingInputArgs() > 0) {
 		const char* value = OPS_GetString();
 		if (strcmp(value, "-implex") == 0) {
 			implex = true;
+		}
+		if (strcmp(value, "-auto_regularization") == 0) {
+			auto_regularization = true;
 		}
 		if (strcmp(value, "-buckling") == 0) {
 			buckling = true;
@@ -1758,14 +1769,17 @@ void* OPS_ASDSteel1DMaterial()
 			// radius is optional (can be defined either here or in -slip)
 			if (OPS_GetNumRemainingInputArgs() > 0) {
 				double trial_radius;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
 				if (OPS_GetDouble(&numData, &trial_radius) < 0) {
 					// radius not provided, go back
-					OPS_ResetCurrentInputArg(-1);
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
 				}
 				else {
 					// radius give, do cheks
 					if (trial_radius != r && r != 0.0) {
-						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -buckling (" << trial_radius << ") does not match the one provided in -slip (" << r << "). Please use it only once.\n";
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -buckling (" << trial_radius << ") does not match the one provided in -slip or -fracture (" << r << "). Please use it only once.\n";
 						return nullptr;
 					}
 					if (trial_radius <= 0.0) {
@@ -1778,6 +1792,33 @@ void* OPS_ASDSteel1DMaterial()
 		}
 		if (strcmp(value, "-fracture") == 0) {
 			fracture = true;
+			//if (OPS_GetNumRemainingInputArgs() < 1) {
+			//	opserr << "UniaxialMaterial ASDSteel1D: '-fracture' requires at least '$r'\n";
+			//	return nullptr;
+			//}
+			//if (!lam_optional_double("r_frac", r_frac)) return nullptr;
+			if (OPS_GetNumRemainingInputArgs() > 0) {
+				double trial_radius;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
+				if (OPS_GetDouble(&numData, &trial_radius) < 0) {
+					// radius not provided, go back
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
+				}
+				else {
+					// radius give, do cheks
+					if (trial_radius != r && r != 0.0) {
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -fracture (" << trial_radius << ") does not match the one provided in -slip or -buckling (" << r << "). Please use it only once.\n";
+						return nullptr;
+					}
+					if (trial_radius <= 0.0) {
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -fracture should be strictly positive.\n";
+						return nullptr;
+					}
+					r = trial_radius;
+				}
+			}
 		}
 		if (strcmp(value, "-slip") == 0) {
 			slip = true;
@@ -1801,14 +1842,17 @@ void* OPS_ASDSteel1DMaterial()
 			// radius is optional (can be defined either here or in -buckling)
 			if (OPS_GetNumRemainingInputArgs() > 0) {
 				double trial_radius;
+				auto old_num_rem = OPS_GetNumRemainingInputArgs();
 				if (OPS_GetDouble(&numData, &trial_radius) < 0) {
 					// radius not provided, go back
-					OPS_ResetCurrentInputArg(-1);
+					auto new_num_rem = OPS_GetNumRemainingInputArgs();
+					if (new_num_rem < old_num_rem)
+						OPS_ResetCurrentInputArg(-1);
 				}
 				else {
 					// radius give, do cheks
 					if (trial_radius != r && r != 0.0) {
-						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -slip (" << trial_radius << ") does not match the one provided in -buckling (" << r << "). Please use it only once.\n";
+						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -slip (" << trial_radius << ") does not match the one provided in -buckling or -fracture (" << r << "). Please use it only once.\n";
 						return nullptr;
 					}
 					if (trial_radius <= 0.0) {
@@ -1854,11 +1898,26 @@ void* OPS_ASDSteel1DMaterial()
 	// obtain chaboche params from E, sy, su, eu
 	// we want to use 2 hardening functions as per chaboche model.
 	// so that the initial slope is close to E and the the stress apporaches su at eu
-	double dy = su - sy;
-	double H1 = E / 1000.0 / eu * dy / 40.0;
-	double gamma1 = H1 / dy;
-	double H2 = H1 * 50;
-	double gamma2 = gamma1 * 50;
+	//double dy = su - sy;
+	//double H1 = E / 1000.0 / eu * dy / 40.0/1000.0;
+	//double gamma1 = H1 / dy;
+	//double H2 = H1 * 50;
+	//double gamma2 = gamma1 * 50;
+	//double alpha = 0.9;
+	double sy_norm = sy / E;
+	double su_norm = su / E;
+	double dy_norm = su_norm - sy_norm;
+
+	double n = 400.0;
+	double m = 50.0;
+
+	double H1_norm = (1.0 / n) / eu;
+	double gamma1_norm = H1_norm / dy_norm;
+	double H1 = H1_norm * E;
+	double gamma1 = gamma1_norm ;
+
+	double H2 = H1 * m;
+	double gamma2 = gamma1 * m;
 	double alpha = 0.9;
 	ASDSteel1DMaterial::InputParameters params;
 	params.E = E;
@@ -1869,12 +1928,14 @@ void* OPS_ASDSteel1DMaterial()
 	params.H2 = H2 * (1.0 - alpha);
 	params.gamma2 = gamma2;
 	params.implex = implex;
+	params.auto_regularization = auto_regularization;
 	params.buckling = buckling;
 	params.fracture = fracture;
 	params.slip = slip;
 	params.lch_anchor = lch_anc;
 	params.length = buckling ? lch / 2.0 : 1.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
+	//params.radius_frac = r_frac;
 	params.K_alpha = K_alpha;
 	params.max_iter = max_iter;
 	params.tolU = tolU;
@@ -1981,8 +2042,14 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 		double d = 0.0;
 		double eupl = params.eu - params.sy / params.E;
 		if (epl > eupl) {
-			double epl_max = eupl + eupl * 1.0 / params.lch_element;
-			double G = (epl_max-eupl) * params.sy / 2.0;
+			double epl_max;
+			if (!params.auto_regularization) {
+				epl_max = eupl + eupl;
+			}
+			else {
+				epl_max = eupl + eupl * (16.0 * params.radius) / (2.0 * params.lch_element);
+			}
+			double G = (epl_max-eupl) * params.sy/4.0;
 			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (epl-eupl) / G));
 			d = 1.0 - sigma_damaged / params.sy;
 		}
@@ -2152,6 +2219,7 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = params.gamma1;
 	ddata(counter++) = params.gamma2;
 	ddata(counter++) = static_cast<double>(params.implex);
+	ddata(counter++) = static_cast<double>(params.auto_regularization);
 	ddata(counter++) = static_cast<double>(params.buckling);
 	ddata(counter++) = static_cast<double>(params.fracture);
 	ddata(counter++) = static_cast<double>(params.slip);
@@ -2232,6 +2300,7 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	params.gamma1 = ddata(counter++);
 	params.gamma2 = ddata(counter++);
 	params.implex = static_cast<bool>(ddata(counter++));
+	params.auto_regularization = static_cast<bool>(ddata(counter++));
 	params.buckling = static_cast<bool>(ddata(counter++));
 	params.fracture = static_cast<bool>(ddata(counter++));
 	params.slip = static_cast<bool>(ddata(counter++));
@@ -2364,8 +2433,14 @@ const Vector& ASDSteel1DMaterial::getDamage() const
 		double eupl = params.eu - params.sy / params.E;
 		double epl = params.buckling ? pdata->rve_m.e2.section.series.steel_material.epl : pdata->steel_comp.steel_material.epl;
 		if (epl > eupl) {
-			double epl_max = eupl + eupl * 1.0 / params.lch_element;
-			double G = (epl_max - eupl) * params.sy / 2.0;
+			double epl_max;
+			if (!params.auto_regularization) {
+				epl_max = eupl + eupl;
+			}
+			else {
+				epl_max = eupl + eupl * (16.0 * params.radius) / (2.0 * params.lch_element);
+			}
+			double G = (epl_max - eupl) * params.sy / 4.0;
 			double sigma_damaged = std::max(1.0e-4 * params.sy, params.sy * exp(-params.sy * (epl - eupl) / G));
 			d(0) = 1.0 - sigma_damaged / params.sy;
 		}
@@ -2417,7 +2492,7 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	bool elastic_correction = params.lch_element > params.length;
 
 	auto& globals = Globals::instance();
-	if (elastic_correction) {
+	if (elastic_correction && params.auto_regularization) {
 		globals.setRVENodes_el(params.length,params.lch_element);
 	}
 	else {
@@ -2432,7 +2507,7 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	// from macro strain to micro strain
 	double macro_strain = strain;
 	double Uy;
-	if (elastic_correction) {
+	if (elastic_correction && params.auto_regularization) {
 		Uy = -macro_strain * params.lch_element;
 	}
 	else {
@@ -2451,7 +2526,7 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	area = M_PI * params.radius * params.radius;
 
 	stress_rve = -N/area;
-	if (elastic_correction) {
+	if (elastic_correction && params.auto_regularization) {
 		C_rve = T * params.lch_element / area;
 	}
 	else {

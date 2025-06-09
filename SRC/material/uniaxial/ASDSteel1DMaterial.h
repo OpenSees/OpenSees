@@ -65,12 +65,14 @@ public:
 		double gamma2 = 0.0;
 		// misc
 		bool implex = false;
+		bool auto_regularization = true;
 		bool buckling = false;
 		bool fracture = false;
 		bool slip = false;
 		double lch_anchor = 0.0;
 		// buckling
 		double radius = 0.0;
+		double radius_frac = 0.0;
 		double length = 0.0;
 		double lch_element = 0.0;
 
@@ -80,7 +82,7 @@ public:
 		double tolU = 0.0;
 		double tolR = 0.0;
 		// counter
-		static constexpr int NDATA = 19;
+		static constexpr int NDATA = 20;
 	};
 
 public:
