@@ -38,10 +38,6 @@ include(${PROJECT_SOURCE_DIR}/Conf.cmake)
 # for ubuntu this has to be before the Compiler SPECIFIC stuff below .. go figure!
 #
 
-find_package(MPI)
-
-
-
 #cmake -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON .
 
 #
@@ -61,7 +57,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  # set(CMAKE_EXE_LINKER_FLAGS "-static")
  add_compile_options(-fPIC)
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
- set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
+ set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -static-libgcc")
  MESSAGE("COMPILER: GNU")
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  MESSAGE("COMPILER: Intel")
@@ -111,7 +107,6 @@ else()
   set(NOT_USING_CONAN TRUE)
   set (CONAN_LIBS )
   find_package(ZLIB REQUIRED)
-  find_package(libaec REQUIRED)
   find_package(HDF5 REQUIRED)
   find_package(TCL REQUIRED)
   find_package(Eigen3 REQUIRED)
@@ -123,7 +118,7 @@ endif()
 
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
-    G3 OpenSees OpenSeesMP OpenSeesSP OpenSeesPy)
+    G3 OpenSees OpenSeesPy)
 
 #
 # OS Configuration:
@@ -135,23 +130,6 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
   add_compile_definitions(_LINUX _UNIX _TCL85)
   if (NOT_USING_CONAN)
     include(OpenSeesDependenciesUnix)
-  endif()
-endif()
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Darwin")
-  set(OPS_Use_Graphics_Option None)
-  set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
-  add_compile_definitions(_LINUX _UNIX _TCL85)
-  if (NOT_USING_CONAN)
-    include(OpenSeesDependenciesUnix)
-  endif()
-endif()
-
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-    target_link_libraries(OPS_OS_Specific_libs INTERFACE wsock32 ws2_32)
-    add_compile_definitions(_WIN32 _TCL85)
-  if (NOT_USING_CONAN)
-    include(OpenSeesDependenciesWin)
   endif()
 endif()
 
@@ -301,6 +279,12 @@ else()
    set (LAPACK_FOUND TRUE CACHE BOOL "providing own lapack lib")
 endif()
 
+if (NOT DEFINED BLAS_LIBRARIES)
+   find_package(BLAS)
+else()
+   set (BLAS_FOUND TRUE CACHE BOOL "providing own blas lib")
+endif()
+
 if (NOT DEFINED Python_LIBRARIES)
    find_package(Python COMPONENTS Interpreter Development)
 else()
@@ -308,7 +292,6 @@ else()
 endif()
 
 
-find_package(MPI)
 find_package(MKL)
 
 #set (LAPACK_FOUND FALSE)
@@ -324,6 +307,13 @@ else()
   set(LAPACK_LIBRARIES LAPACK)
 endif()
 
+if(BLAS_FOUND)
+  message(STATUS "BLAS was found.")
+  message(STATUS "BLAS_LIBRARIES = ${BLAS_LIBRARIES}" )
+else()
+  message(STATUS "BLAS was NOT found.")
+endif()
+
 if(PYTHON_FOUND)
   message("Python_FOUND:${Python_FOUND}")
   #message("Python_VERSION:${Python_VERSION}")
@@ -332,42 +322,6 @@ if(PYTHON_FOUND)
   message("Python_INCLUDES:${Python_INCLUDE_DIRS}")
 else()
   message(STATUS "PYTHON NOT FOUND")
-endif()
-
-
-if(MPI_FOUND)
-  message(STATUS "MPI was found.")
-  message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
-  include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
-  #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
-  #if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
-  if (NOT DEFINED MUMPS_DIR)
-  #    include(ExternalProject)
-  #    ExternalProject_Add(mumps
-  #       GIT_REPOSITORY    https://github.com/scivision/mumps.git
-  #       GIT_TAG           v5.5.1.5
-  #       SOURCE_DIR        "${CMAKE_BINARY_DIR}/mumps-src"
-  #       BINARY_DIR        "${CMAKE_BINARY_DIR}"
-  #       INSTALL_COMMAND   ""
-  #     )
-  #
-  #    set (MUMPS_LIBRARIES "${CMAKE_BINARY_DIR}/libdmumps.lib;${CMAKE_BINARY_DIR}/libmumps_common.lib;${CMAKE_BINARY_DIR}/libpord.lib")
-     set (MUMPS_FLAG -D_NOMUMPS)
-     set (MUMPS_LIBRARIES "")
-  else()
-     set (MUMPS_FLAG -D_MUMPS)
-     if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-       set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
-     else()
-       set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
-     endif()
-
-  endif()
-
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
-  add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")
-else()
-  message(STATUS "MPI was NOT found.")
 endif()
 
 
@@ -408,6 +362,7 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${AMD_LIBRARIES}
        ${AMD_LIBRARIES}
        ${LAPACK_LIBRARIES}
+       ${BLAS_LIBRARIES}
        ${EIGENAPI_LIBRARIES}
 )
 
@@ -586,133 +541,8 @@ target_link_libraries(OpenSees
   ${CMAKE_DL_LIBS}
   ${HDF5_LIBRARIES}
   ${CONAN_LIBS}
+  stdc++
 )
-
-
-#
-# OpenSeesSP Tcl Parallel Interpreter
-#
-
-
-if(MPI_FOUND)
-
-    add_executable(OpenSeesSP EXCLUDE_FROM_ALL
-      ${OPS_SRC_DIR}/tcl/mpiMain.cpp
-      ${OPS_SRC_DIR}/tcl/tclMain.cpp
-      ${OPS_SRC_DIR}/tcl/commands.cpp
-      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
-      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
-      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp
-      ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
-      ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenRowLinSOE.cpp
-      ${OPS_SRC_DIR}/domain/subdomain/ActorSubdomain.cpp
-      ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
-    )
-
-
-    target_include_directories(OpenSeesSP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
-    target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
-
-    if (DEFINED OPENMPI)
-        target_compile_definitions(OpenSeesSP
-        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG} _OPENMPI)
-    else()
-        target_compile_definitions(OpenSeesSP
-        PUBLIC _PARALLEL_PROCESSING ${MUMPS_FLAG})
-    endif()
-
-    target_link_libraries(OpenSeesSP
-       OPS_InterpTcl
-       OpenSeesLIB
-       OPS_Reliability
-       OPS_ReliabilityTcl
-       OPS_Recorder
-       METIS
-       SUPERLU_DIST
-       OPS_Numerics
-       ${MUMPS_LIBRARIES}
-       ${CMAKE_DL_LIBS}
-       ${HDF5_LIBRARIES}
-       ${CONAN_LIBS}
-       ${MPI_CXX_LIBRARIES}
-       ${SCALAPACK_LIBRARIES}
-       ${MPI_Fortran_LIBRARIES}
-       ${MPI_CXX_LINK_FLAGS}
-    )
-
-endif()
-
-
-#
-# OpenSeesMP Tcl MPI Interpreter
-#
-
-if(MPI_FOUND)
-
-    add_executable(OpenSeesMP EXCLUDE_FROM_ALL
-      ${OPS_SRC_DIR}/tcl/mpiParameterMain.cpp
-      ${OPS_SRC_DIR}/tcl/tclMain.cpp
-      ${OPS_SRC_DIR}/tcl/commands.cpp
-      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomain.cpp
-      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainEleIter.cpp
-      ${OPS_SRC_DIR}/domain/domain/partitioned/PartitionedDomainSubIter.cpp
-      ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
-      ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.cpp
-      ${OPS_SRC_DIR}/domain/subdomain/ActorSubdomain.cpp
-      ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
-    )
-
-    target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
-
-    target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
-
-    if (NOT DEFINED MUMPS_DIR)
-        add_dependencies(OpenSeesMP mumps)
-    endif()
-
-    if (DEFINED OPENMPI)
-        target_compile_definitions(OpenSeesMP
-        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG} _OPENMPI)
-    else()
-        target_compile_definitions(OpenSeesMP
-        PUBLIC _PARALLEL_INTERPRETERS ${MUMPS_FLAG})
-    endif()
-
-    target_link_libraries(OpenSeesMP
-       OPS_InterpTcl
-       OpenSeesLIB
-       OPS_Reliability
-       OPS_ReliabilityTcl
-       OPS_Recorder
-       METIS
-       SUPERLU_DIST
-       OPS_Numerics
-       ${MUMPS_LIBRARIES}
-       ${CMAKE_DL_LIBS}
-       ${HDF5_LIBRARIES}
-       ${CONAN_LIBS}
-       ${MPI_CXX_LIBRARIES}
-       ${SCALAPACK_LIBRARIES}
-       ${MPI_Fortran_LIBRARIES}
-       ${MPI_CXX_LINK_FLAGS}
-    )
-
-endif()
 
 
 #

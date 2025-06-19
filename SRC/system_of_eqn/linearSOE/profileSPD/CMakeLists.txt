@@ -15,7 +15,6 @@ target_sources(OPS_SysOfEqn
     ProfileSPDLinDirectSkypackSolver.cpp
     #ProfileSPDLinSolverGather.cpp
     #ProfileSPDLinSOEGather.cpp
-    DistributedProfileSPDLinSOE.cpp
     SProfileSPDLinSOE.cpp
     SProfileSPDLinSolver.cpp
     PUBLIC
@@ -27,16 +26,9 @@ target_sources(OPS_SysOfEqn
     ProfileSPDLinDirectSkypackSolver.h
     #ProfileSPDLinSolverGather.h
     #ProfileSPDLinSOEGather.h
-    DistributedProfileSPDLinSOE.h
     SProfileSPDLinSOE.h
     SProfileSPDLinSolver.h
 )
-
-if(PARALLEL_INTERPRETERS)
-
-elseif(PARALLEL)
-
-endif()
 
 target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

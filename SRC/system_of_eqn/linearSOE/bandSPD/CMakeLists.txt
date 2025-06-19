@@ -10,12 +10,10 @@ target_sources(OPS_SysOfEqn
     BandSPDLinSOE.cpp
     BandSPDLinSolver.cpp
     BandSPDLinLapackSolver.cpp
-    DistributedBandSPDLinSOE.cpp
     PUBLIC
     BandSPDLinSOE.h
     BandSPDLinSolver.h
     BandSPDLinLapackSolver.h
-    DistributedBandSPDLinSOE.h
 )
 
 target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})

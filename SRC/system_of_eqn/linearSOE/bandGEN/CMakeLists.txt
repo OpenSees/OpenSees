@@ -10,12 +10,10 @@ target_sources(OPS_SysOfEqn
     BandGenLinSOE.cpp
     BandGenLinSolver.cpp
     BandGenLinLapackSolver.cpp
-    DistributedBandGenLinSOE.cpp
     PUBLIC
     BandGenLinSOE.h
     BandGenLinSolver.h
     BandGenLinLapackSolver.h
-    DistributedBandGenLinSOE.h
 )
 
 

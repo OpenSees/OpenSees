@@ -34,7 +34,6 @@ target_sources(OPS_PFEM
         PFEMSolver_LumpM.cpp
         PFEMSolver_LumpM.cpp
         PFEMSolver_Umfpack.cpp
-        PFEMSolver_Mumps.cpp	
     PUBLIC
         PFEMCompressibleLinSOE.h
         PFEMCompressibleSolver.h
@@ -48,45 +47,7 @@ target_sources(OPS_PFEM
         PFEMSolver_LumpM.h
         PFEMSolver_LumpM.h
         PFEMSolver_Umfpack.h
-        PFEMSolver_Mumps.h	
 )
-
-if(MPI_FOUND)
-
-target_sources(OpenSeesMP
-    PRIVATE 
-        DistributedSuperLU.cpp
-        DistributedSparseGenColLinSOE.cpp
-        DistributedSparseGenRowLinSOE.cpp
-        PFEMSolver_Mumps.cpp
-        PFEMSolver_LumpM.cpp
-        PFEMCompressibleSolver_Mumps.cpp
-    PUBLIC
-        DistributedSuperLU.h
-        DistributedSparseGenColLinSOE.h
-        DistributedSparseGenRowLinSOE.h
-        PFEMSolver_Mumps.h
-        PFEMCompressibleSolver_Mumps.h
-)
-
-target_sources(OpenSeesSP
-    PRIVATE 
-        DistributedSuperLU.cpp
-        DistributedSparseGenColLinSOE.cpp
-        DistributedSparseGenRowLinSOE.cpp
-        PFEMSolver_Mumps.cpp
-        PFEMSolver_LumpM.cpp
-        PFEMCompressibleSolver_Mumps.cpp
-    PUBLIC
-        DistributedSuperLU.h
-        DistributedSparseGenColLinSOE.h
-        DistributedSparseGenRowLinSOE.h
-        PFEMSolver_Mumps.h
-        PFEMCompressibleSolver_Mumps.h
-)
-
-endif()
-
 
 target_include_directories(OPS_SysOfEqn PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
