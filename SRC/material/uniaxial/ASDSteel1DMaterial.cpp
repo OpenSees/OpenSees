@@ -571,7 +571,8 @@ namespace {
 				_strain *= scale_factor;
 
 				// initial guess for the slip strain
-				double strain_slip = slip_material->getStrain() / params.lch_anchor;
+				double lch_ele = 2.0 * params.lch_element; // it was divided in constructor for RVE symmetry
+				double strain_slip = slip_material->getStrain() / lch_ele;
 				double strain_steel = _strain - strain_slip;
 				
 				// iterative procedure to impose the iso-stress condition
@@ -582,13 +583,13 @@ namespace {
 				double Stol = TOL;
 				for (int iter = 0; iter < MAX_ITER; ++iter) {
 					int Tsteel = steel_material.compute(params, do_implex, time_factor, strain_steel, sigma_steel, tangent_steel);
-					int Tslip = slip_material->setTrialStrain(strain_slip * params.lch_anchor);
+					int Tslip = slip_material->setTrialStrain(strain_slip * lch_ele);
 					double sigma_slip = slip_material->getStress() * 2.0 * params.lch_anchor/ params.radius;
-					double tangent_slip = slip_material->getTangent() * 2.0 * params.lch_anchor * params.lch_anchor / params.radius;
+					double tangent_slip = slip_material->getTangent() * 2.0 * lch_ele * params.lch_anchor / params.radius;
 					double residual = sigma_slip - sigma_steel;
 					double residual_derivative = tangent_steel + tangent_slip;
 					if (std::abs(residual_derivative) < Ktol) {
-						residual_derivative = params.E + slip_material->getInitialTangent() * 2.0 * params.lch_anchor * params.lch_anchor / params.radius;
+						residual_derivative = params.E + slip_material->getInitialTangent() * 2.0 * lch_ele * params.lch_anchor / params.radius;
 					}
 					double strain_increment = - residual / residual_derivative;
 					strain_slip += strain_increment;
@@ -1673,7 +1674,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  $r_frac> <-slip $matTag $lch_anc <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  <$r>> <-slip $matTag $lch_anc <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1694,7 +1695,6 @@ void* OPS_ASDSteel1DMaterial()
 	double eu = 0.0;
 	double lch = 0.0;
 	double r = 0.0; // default to 0.0, means not provided
-	double r_frac = 0.0;
 	bool implex = false;
 	bool auto_regularization = false;
 	bool buckling = false;
@@ -1792,11 +1792,6 @@ void* OPS_ASDSteel1DMaterial()
 		}
 		if (strcmp(value, "-fracture") == 0) {
 			fracture = true;
-			//if (OPS_GetNumRemainingInputArgs() < 1) {
-			//	opserr << "UniaxialMaterial ASDSteel1D: '-fracture' requires at least '$r'\n";
-			//	return nullptr;
-			//}
-			//if (!lam_optional_double("r_frac", r_frac)) return nullptr;
 			if (OPS_GetNumRemainingInputArgs() > 0) {
 				double trial_radius;
 				auto old_num_rem = OPS_GetNumRemainingInputArgs();
@@ -2362,7 +2357,6 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 	static std::vector<std::string> lb_eqpl_strain = { "PLE" };
 
 	static std::vector<std::string> lb_slip_resp = { "Slip", "Tau" };
-	static std::vector<std::string> lb_steel_resp = { "strain_steel", "stress_steel" };
 
 
 
@@ -2379,9 +2373,6 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 		}
 		if (strcmp(argv[0], "SlipResponse") == 0){
 			return make_resp(1004, getSlipResponse(), &lb_slip_resp);
-		}
-		if (strcmp(argv[0], "SteelResponse") == 0) {
-			return make_resp(1005, getSteelResponse(), &lb_steel_resp);
 		}
 	}
 
@@ -2404,8 +2395,6 @@ int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 		return matInformation.setVector(getEqPlStrain());
 	case 1004:
 		return matInformation.setVector(getSlipResponse());
-	case 1005:
-		return matInformation.setVector(getSteelResponse());
 	default:
 		break;
 	}
@@ -2452,9 +2441,10 @@ const Vector& ASDSteel1DMaterial::getEqPlStrain() const
 {
 	static Vector d(1);
 	d.Zero();
-	d(0) = pdata->rve_m.e2.section.series.steel_material.epl;
+	d(0) = params.buckling ? pdata->rve_m.e2.section.series.steel_material.epl : pdata->steel_comp.steel_material.epl;
 	return d;
 }
+
 const Vector& ASDSteel1DMaterial::getSlipResponse() const
 {
 	static Vector d(2);
@@ -2468,17 +2458,6 @@ const Vector& ASDSteel1DMaterial::getSlipResponse() const
 			d(0) = pdata->steel_comp.slip_material->getStrain();
 			d(1) = pdata->steel_comp.slip_material->getStress();
 		}
-	}
-	return d;
-}
-
-const Vector& ASDSteel1DMaterial::getSteelResponse() const
-{
-	static Vector d(2);
-	d.Zero();
-	if (params.slip) {
-		d(0) = pdata->rve_m.e2.section.series.steel_material.strain;
-		d(1) = pdata->rve_m.e2.section.series.steel_material.stress;
 	}
 	return d;
 }

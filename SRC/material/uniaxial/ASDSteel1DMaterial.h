@@ -72,7 +72,6 @@ public:
 		double lch_anchor = 0.0;
 		// buckling
 		double radius = 0.0;
-		double radius_frac = 0.0;
 		double length = 0.0;
 		double lch_element = 0.0;
 
