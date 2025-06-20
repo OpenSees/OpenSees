@@ -24,6 +24,9 @@ sudo dnf config-manager --set-enabled crb
 # Install EPEL repository for additional packages
 sudo dnf install -y epel-release
 
+# Install OpenMP libraries for MKL threading support
+sudo dnf install -y libgomp-devel
+
 # Install Intel MKL (if available) or use alternative
 # Note: Intel MKL may not be directly available in Rocky Linux 9 repos
 # We'll use the standard BLAS/LAPACK libraries instead
@@ -69,12 +72,22 @@ PYTHON_INCLUDE_PATH="/usr/include/python${PYTHON_VERSION}"
 # Find the correct library paths for Rocky Linux 9
 LAPACK_LIBS="/lib64/liblapack.so"
 
+# Source Intel MKL environment
+source /opt/intel/oneapi/setvars.sh
+
+# Set environment variables for MKL
+export MKLROOT=/opt/intel/oneapi/mkl/2025.1
+export LD_LIBRARY_PATH=$MKLROOT/lib/intel64:$LD_LIBRARY_PATH
+
 # Use the Conan toolchain file directly instead of CMake preset
+# Fix MKL linking by using sequential libraries instead of threaded ones
 cmake .. \
     -DCMAKE_BUILD_TYPE=Release \
     -DPython_LIBRARIES="$PYTHON_LIB_PATH" \
     -DPython_INCLUDE_DIRS="$PYTHON_INCLUDE_PATH" \
-    -DLAPACK_LIBRARIES="$LAPACK_LIBS"
+    -DBLAS_LIBRARIES="$MKLROOT/lib/intel64/libmkl_gf_lp64.so;$MKLROOT/lib/intel64/libmkl_sequential.so;$MKLROOT/lib/intel64/libmkl_core.so" \
+    -DLAPACK_LIBRARIES="$MKLROOT/lib/intel64/libmkl_gf_lp64.so;$MKLROOT/lib/intel64/libmkl_sequential.so;$MKLROOT/lib/intel64/libmkl_core.so" \
+    -DMKL_FOUND=TRUE
 
 # Build only the serial targets (removed OpenSeesSP and OpenSeesMP)
 make OpenSees -j32
