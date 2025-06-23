@@ -36,6 +36,7 @@
 
 #include <Element.h>
 #include <Vector.h>
+#include <Versor.h>
 #include <Matrix.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -227,6 +228,7 @@ Node::Node(int theClassTag)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0), 
  incrDeltaDisp(0),
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
  index(-1), reaction(0), displayLocation(0), temperature(0)
 {
@@ -250,6 +252,7 @@ Node::Node(int tag, int theClassTag)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
   R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
  index(-1), reaction(0), displayLocation(0), temperature(0)
 {
@@ -273,6 +276,7 @@ Node::Node(int tag, int ndof, double Crd1, Vector *dLoc)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
  index(-1), reaction(0), displayLocation(0), temperature(0)
 {
@@ -305,6 +309,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
  reaction(0), displayLocation(0), temperature(0)
 {
@@ -339,6 +344,7 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
  reaction(0), displayLocation(0), temperature(0)
 {
@@ -374,6 +380,7 @@ Node::Node(const Node &otherNode, bool copyMass)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
    reaction(0), displayLocation(0), temperature(0)
 {
@@ -481,6 +488,10 @@ Node::~Node()
 
     if (trialAccel != 0)
 	delete trialAccel;
+
+    if (rotation != nullptr)
+      delete rotation;
+
 
     if (incrDisp != 0)
 	delete incrDisp;
@@ -693,6 +704,18 @@ Node::getIncrDeltaDisp(void)
     return *incrDeltaDisp;
 }
 
+Versor
+Node::getTrialRotation()
+{
+  if (rotation == nullptr) [[unlikely]] {
+    if (this->getNumberDOF() < 6)
+      return Versor();
+    else
+      rotation = new Versor{{0.0, 0.0, 0.0}, 1.0};
+  }
+
+  return *rotation;
+}
 
 int
 Node::setTrialDisp(double value, int dof)
@@ -814,6 +837,10 @@ Node::incrTrialDisp(const Vector &incrDispl)
 	opserr << "WARNING Node::incrTrialDisp() - incompatible sizes\n";
 	return -2;
     }    
+
+    if (rotation != nullptr && this->getNumberDOF() >= 6)
+      (*rotation) = (*rotation)*Versor::from_vector(&disp[3*numberDOF+3]);
+
 
     // create a copy if no trial exists and add committed
     if (trialDisp == 0) {
@@ -1147,6 +1174,8 @@ Node::revertToStart()
 	(*unbalLoad) *= 0;
 
 
+  if (rotation != nullptr)
+    *rotation = Versor{{0.0, 0.0, 0.0}, 1.0};
 
 
 // AddingSensitivity: BEGIN /////////////////////////////////
