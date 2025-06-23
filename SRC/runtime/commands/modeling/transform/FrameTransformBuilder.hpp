@@ -16,7 +16,7 @@
 #include <LinearFrameTransf.hpp>
 #include <SouzaFrameTransf.hpp>
 #include <PDeltaFrameTransf3d.hpp>
-#include <RigidFrameTransf.hpp>
+#include <EuclidFrameTransf.hpp>
 #include <Orient/CrisfieldTransform.h>
 #include <Orient/FrameBasis.h>
 
@@ -61,7 +61,7 @@ public:
         return new PDeltaFrameTransf<nn, ndf> (tag, vz, offset_array, offset_flags);
 
       else if (strcmp(name, "Isometric") == 0 || strstr(name, "Rigid") != nullptr)
-        return new RigidFrameTransf<nn, ndf, RankineBasis<nn>> (tag, vz, offset_array, offset_flags);
+        return new EuclidFrameTransf<nn, ndf, RankineBasis<nn>> (tag, vz, offset_array, offset_flags);
 
       return nullptr;
     }

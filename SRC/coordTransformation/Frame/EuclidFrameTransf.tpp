@@ -7,7 +7,7 @@
 //===----------------------------------------------------------------------===//
 //
 // Description: This file contains the implementation for the
-// RigidFrameTransf class. RigidFrameTransf is a nonlinear
+// EuclidFrameTransf class. EuclidFrameTransf is a nonlinear
 // transformation for a space frame
 //
 // Written: cmp
@@ -21,13 +21,13 @@
 #include <Channel.h>
 #include <Logging.h>
 #include <Rotations.hpp>
-#include <RigidFrameTransf.hpp>
+#include <EuclidFrameTransf.hpp>
 
 using namespace OpenSees;
 
 
 template <int nn, int ndf, typename BasisT>
-RigidFrameTransf<nn,ndf,BasisT>::RigidFrameTransf(int tag, 
+EuclidFrameTransf<nn,ndf,BasisT>::EuclidFrameTransf(int tag, 
                                            const Vector3D &vecxz, 
                                            const std::array<Vector3D, nn> *offset,
                                            int offset_flags)
@@ -56,7 +56,7 @@ RigidFrameTransf<nn,ndf,BasisT>::RigidFrameTransf(int tag,
 
 
 template <int nn, int ndf, typename BasisT>
-RigidFrameTransf<nn,ndf,BasisT>::~RigidFrameTransf()
+EuclidFrameTransf<nn,ndf,BasisT>::~EuclidFrameTransf()
 {
   if (offsets != nullptr)
     delete offsets;
@@ -64,21 +64,21 @@ RigidFrameTransf<nn,ndf,BasisT>::~RigidFrameTransf()
 
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::commit()
+EuclidFrameTransf<nn,ndf,BasisT>::commit()
 {
   return 0;
 }
 
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::revertToLastCommit()
+EuclidFrameTransf<nn,ndf,BasisT>::revertToLastCommit()
 {
   return 0;
 }
 
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::revertToStart()
+EuclidFrameTransf<nn,ndf,BasisT>::revertToStart()
 {
   return 0;
 }
@@ -86,7 +86,7 @@ RigidFrameTransf<nn,ndf,BasisT>::revertToStart()
 
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::initialize(std::array<Node*, nn>& new_nodes)
+EuclidFrameTransf<nn,ndf,BasisT>::initialize(std::array<Node*, nn>& new_nodes)
 {
 
   for (int i=0; i<nn; i++) {
@@ -111,7 +111,7 @@ RigidFrameTransf<nn,ndf,BasisT>::initialize(std::array<Node*, nn>& new_nodes)
 
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::computeElemtLengthAndOrient()
+EuclidFrameTransf<nn,ndf,BasisT>::computeElemtLengthAndOrient()
 {
 
   const Vector &XI = nodes[   0]->getCrds();
@@ -143,7 +143,7 @@ RigidFrameTransf<nn,ndf,BasisT>::computeElemtLengthAndOrient()
 
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::getLocalAxes(Vector3D &e1, Vector3D &e2, Vector3D &e3) const
+EuclidFrameTransf<nn,ndf,BasisT>::getLocalAxes(Vector3D &e1, Vector3D &e2, Vector3D &e3) const
 {
   Matrix3D R = basis.getRotation();
   for (int i = 0; i < 3; i++) {
@@ -156,14 +156,14 @@ RigidFrameTransf<nn,ndf,BasisT>::getLocalAxes(Vector3D &e1, Vector3D &e2, Vector
 
 template <int nn, int ndf, typename BasisT>
 double
-RigidFrameTransf<nn,ndf,BasisT>::getInitialLength()
+EuclidFrameTransf<nn,ndf,BasisT>::getInitialLength()
 {
   return L;
 }
 
 template <int nn, int ndf, typename BasisT>
 double
-RigidFrameTransf<nn,ndf,BasisT>::getDeformedLength()
+EuclidFrameTransf<nn,ndf,BasisT>::getDeformedLength()
 {
   return L;
 }
@@ -174,7 +174,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getDeformedLength()
 //
 template <int nn, int ndf, typename BasisT>
 int
-RigidFrameTransf<nn,ndf,BasisT>::update()
+EuclidFrameTransf<nn,ndf,BasisT>::update()
 {
   if (basis.update() < 0) 
     return -1;
@@ -190,7 +190,7 @@ RigidFrameTransf<nn,ndf,BasisT>::update()
 
 template <int nn, int ndf, typename BasisT>
 Versor
-RigidFrameTransf<nn,ndf,BasisT>::getNodeRotation(int tag)
+EuclidFrameTransf<nn,ndf,BasisT>::getNodeRotation(int tag)
 {
   return nodes[tag]->getTrialRotation();
 }
@@ -198,7 +198,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getNodeRotation(int tag)
 
 template <int nn, int ndf, typename BasisT>
 Vector3D
-RigidFrameTransf<nn,ndf,BasisT>::getNodePosition(int node)
+EuclidFrameTransf<nn,ndf,BasisT>::getNodePosition(int node)
 {
 #if 0
   const Vector& ug = nodes[node]->getTrialDisp();
@@ -225,7 +225,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getNodePosition(int node)
 
 template <int nn, int ndf, typename BasisT>
 Vector3D
-RigidFrameTransf<nn,ndf,BasisT>::getNodeRotationLogarithm(int node)
+EuclidFrameTransf<nn,ndf,BasisT>::getNodeRotationLogarithm(int node)
 {
   return ur[node];
 }
@@ -233,7 +233,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getNodeRotationLogarithm(int node)
 
 template <int nn, int ndf, typename BasisT>
 VectorND<nn*ndf>
-RigidFrameTransf<nn,ndf,BasisT>::getStateVariation()
+EuclidFrameTransf<nn,ndf,BasisT>::getStateVariation()
 {
 
   static VectorND<nn*ndf> ul;
@@ -245,7 +245,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getStateVariation()
   }
 
   Matrix3D R = basis.getRotation();
-  // return RigidFrameTransf<nn,ndf,BasisT>::pullVariation(ug, R, offsets, offset_flags);
+  // return EuclidFrameTransf<nn,ndf,BasisT>::pullVariation(ug, R, offsets, offset_flags);
 
 
   // VectorND<N> ul = ug;
@@ -315,7 +315,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getStateVariation()
 //
 template <int nn, int ndf, typename BasisT>
 VectorND<nn*ndf>
-RigidFrameTransf<nn,ndf,BasisT>::pushResponse(VectorND<nn*ndf>&p)
+EuclidFrameTransf<nn,ndf,BasisT>::pushResponse(VectorND<nn*ndf>&p)
 {
   VectorND<nn*ndf> pa = p;
 
@@ -340,7 +340,7 @@ RigidFrameTransf<nn,ndf,BasisT>::pushResponse(VectorND<nn*ndf>&p)
 
 template <int nn, int ndf, typename BasisT>
 MatrixND<nn*ndf,nn*ndf>
-RigidFrameTransf<nn,ndf,BasisT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const VectorND<nn*ndf>&pb)
+EuclidFrameTransf<nn,ndf,BasisT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const VectorND<nn*ndf>&pb)
 {
   MatrixND<nn*ndf,nn*ndf> Kb = kb;
   VectorND<nn*ndf> p = pb;
@@ -411,9 +411,9 @@ RigidFrameTransf<nn,ndf,BasisT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const 
 
 template <int nn, int ndf, typename BasisT>
 FrameTransform<nn,ndf> *
-RigidFrameTransf<nn,ndf,BasisT>::getCopy() const
+EuclidFrameTransf<nn,ndf,BasisT>::getCopy() const
 {
-  return new RigidFrameTransf<nn,ndf,BasisT>(this->getTag(), vz, offsets);
+  return new EuclidFrameTransf<nn,ndf,BasisT>(this->getTag(), vz, offsets);
 }
 
 
@@ -422,7 +422,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getCopy() const
 //
 template <int nn, int ndf, typename BasisT>
 bool
-RigidFrameTransf<nn,ndf,BasisT>::isShapeSensitivity()
+EuclidFrameTransf<nn,ndf,BasisT>::isShapeSensitivity()
 {
   int nodeParameterI = nodes[   0]->getCrdsSensitivity();
   int nodeParameterJ = nodes[nn-1]->getCrdsSensitivity();
@@ -434,7 +434,7 @@ RigidFrameTransf<nn,ndf,BasisT>::isShapeSensitivity()
 
 template <int nn, int ndf, typename BasisT>
 double
-RigidFrameTransf<nn,ndf,BasisT>::getLengthGrad()
+EuclidFrameTransf<nn,ndf,BasisT>::getLengthGrad()
 {
   const int di = nodes[0]->getCrdsSensitivity();
   const int dj = nodes[1]->getCrdsSensitivity();
@@ -452,7 +452,7 @@ RigidFrameTransf<nn,ndf,BasisT>::getLengthGrad()
 
 template <int nn, int ndf, typename BasisT>
 double
-RigidFrameTransf<nn,ndf,BasisT>::getd1overLdh()
+EuclidFrameTransf<nn,ndf,BasisT>::getd1overLdh()
 {
   return -getLengthGrad()/(L*L);
 }
@@ -460,12 +460,12 @@ RigidFrameTransf<nn,ndf,BasisT>::getd1overLdh()
 
 template <int nn, int ndf, typename BasisT>
 void
-RigidFrameTransf<nn,ndf,BasisT>::Print(OPS_Stream &s, int flag)
+EuclidFrameTransf<nn,ndf,BasisT>::Print(OPS_Stream &s, int flag)
 {
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
     s << OPS_PRINT_JSON_MATE_INDENT << "{";
     s << "\"name\": " << this->getTag() << ", ";
-    s << "\"type\": \"RigidFrameTransf\"";
+    s << "\"type\": \"EuclidFrameTransf\"";
     s << ", \"vecxz\": [" 
       << vz[0] << ", " 
       << vz[1] << ", "

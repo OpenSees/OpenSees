@@ -7,15 +7,15 @@
 //===----------------------------------------------------------------------===//
 //
 // Description: This file contains the class definition for
-// RigidFrameTransf.h. RigidFrameTransf provides the
+// EuclidFrameTransf.h. EuclidFrameTransf provides the
 // abstraction of a linear transformation for a spatial frame
 // between the global and basic coordinate systems
 //
 // Written: cmp
 // Created: 04/2025
 //
-#ifndef RigidFrameTransf_hpp
-#define RigidFrameTransf_hpp
+#ifndef EuclidFrameTransf_hpp
+#define EuclidFrameTransf_hpp
 
 #include <array>
 #include <FrameTransform.h>
@@ -23,19 +23,19 @@
 #include <MatrixND.h>
 
 template <int nn, int ndf, typename BasisT>
-class RigidFrameTransf: public FrameTransform<nn,ndf>
+class EuclidFrameTransf: public FrameTransform<nn,ndf>
 {
 public:
     constexpr static int n = nn*ndf;
 
-    RigidFrameTransf(int tag, 
+    EuclidFrameTransf(int tag, 
                       const Vector3D &vecxz,
                       const std::array<Vector3D, nn> *offset=nullptr,
                       int offset_flags = 0);
 
-    ~RigidFrameTransf();
+    ~EuclidFrameTransf();
 
-    const char *getClassType() const {return "RigidFrameTransf";}
+    const char *getClassType() const {return "EuclidFrameTransf";}
     
     virtual int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const;
     
@@ -135,6 +135,6 @@ private:
     BasisT basis;
 };
 
-#include "RigidFrameTransf.tpp"
+#include "EuclidFrameTransf.tpp"
 #endif
 
