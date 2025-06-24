@@ -191,18 +191,19 @@ SouzaFrameTransf<nn,ndf>::initialize(std::array<Node*, nn>& new_nodes)
     initialDispChecked = true;
   }
 
-  // if (nodeIInitialDisp != nullptr) {
-  //   dX[0] -= nodeIInitialDisp[0];
-  //   dX[1] -= nodeIInitialDisp[1];
-  //   dX[2] -= nodeIInitialDisp[2];
-  // }
+#if 0
+  if (nodeIInitialDisp != nullptr) {
+    dX[0] -= nodeIInitialDisp[0];
+    dX[1] -= nodeIInitialDisp[1];
+    dX[2] -= nodeIInitialDisp[2];
+  }
 
-  // if (nodeJInitialDisp != nullptr) {
-  //   dX[0] += nodeJInitialDisp[0];
-  //   dX[1] += nodeJInitialDisp[1];
-  //   dX[2] += nodeJInitialDisp[2];
-  // }
-
+  if (nodeJInitialDisp != nullptr) {
+    dX[0] += nodeJInitialDisp[0];
+    dX[1] += nodeJInitialDisp[1];
+    dX[2] += nodeJInitialDisp[2];
+  }
+#endif
 
   //
   // Length and Orientation
