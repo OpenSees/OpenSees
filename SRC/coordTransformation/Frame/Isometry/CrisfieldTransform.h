@@ -13,6 +13,8 @@
 #include <Vector3D.h>
 #include <Rotations.hpp>
 
+namespace OpenSees {
+
 class CrisfieldTransform {
 public:
   CrisfieldTransform() {}
@@ -268,7 +270,5 @@ private:
     Vector3D e[3];
     double Ln;
 
-    // Auxiliary
-//  Matrix3D A;
-//  MatrixND<12,3> Lr2, Lr3;   // auxiliary matrices
 };
+}

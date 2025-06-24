@@ -1,9 +1,12 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
-//
-//===----------------------------------------------------------------------===//
 //                              https://xara.so
+//===----------------------------------------------------------------------===//
+//
+//                                  FEDEASLab
+//       Finite Elements for Design Evaluation and Analysis of Structures
+//
 //===----------------------------------------------------------------------===//
 //
 // Description: This file contains the class definition for
@@ -65,12 +68,12 @@ public:
 
     // Sensitivity
     //
-    bool isShapeSensitivity();
-    double getLengthGrad();
+    bool isShapeSensitivity() final;
+    double getLengthGrad() final;
     double getd1overLdh();
 
     // TaggedObject
-    void Print(OPS_Stream &s, int flag = 0);
+    void Print(OPS_Stream &s, int flag = 0) override;
 
 private:
 

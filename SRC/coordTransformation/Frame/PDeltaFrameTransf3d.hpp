@@ -53,15 +53,15 @@ public:
     virtual VectorND<nn*ndf>    pushResponse(VectorND<nn*ndf>&pl) final;
     virtual MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
 
-    virtual FrameTransform<nn,ndf> *getCopy() const;
+    FrameTransform<nn,ndf> *getCopy() const final;
 
     virtual int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const;
 
     // Sensitivity
-    double getLengthGrad();
+    double getLengthGrad() final;
 
     // Tagged Object
-    void Print(OPS_Stream &s, int flag = 0);
+    void Print(OPS_Stream &s, int flag = 0) final;
 
     private:
       int offset_flags;

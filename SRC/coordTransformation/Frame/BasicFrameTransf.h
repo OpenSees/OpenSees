@@ -12,6 +12,14 @@
 //
 // cmp
 //
+//
+// Please cite the following resource in any derivative works:
+//
+// [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
+//
+//===----------------------------------------------------------------------===//
 #ifndef BasicFrameTransf3d_h
 #define BasicFrameTransf3d_h
 
@@ -30,30 +38,30 @@ public:
 
     ~BasicFrameTransf3d();
 
-    virtual int getLocalAxes(Vector &x, Vector &y, Vector &z);
+    int getLocalAxes(Vector &x, Vector &y, Vector &z) final;
 
-    virtual CrdTransf *getCopy3d() final;
+    CrdTransf *getCopy3d() final;
 
     virtual double getInitialLength();
     virtual double getDeformedLength();
 
-    virtual int initialize(Node *ni, Node *nj) final;
-    virtual int update() final;
-    virtual int commitState() final;
-    virtual int revertToLastCommit() final;
-    virtual int revertToStart() final;
+    int initialize(Node *ni, Node *nj) final;
+    int update() final;
+    int commitState() final;
+    int revertToLastCommit() final;
+    int revertToStart() final;
 
-    virtual const Vector &getBasicTrialDisp() final;
-    virtual const Vector &getBasicIncrDisp() final;
-    virtual const Vector &getBasicIncrDeltaDisp() final;
-    virtual const Vector &getBasicTrialVel() final;
+    const Vector &getBasicTrialDisp()     final;
+    const Vector &getBasicIncrDisp()      final;
+    const Vector &getBasicIncrDeltaDisp() final;
+    const Vector &getBasicTrialVel()      final;
 
-    virtual const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &p0) final;
-    virtual const Matrix &getGlobalStiffMatrix(const Matrix &basicStiff, const Vector &basicForce) final;
-    virtual const Matrix &getInitialGlobalStiffMatrix(const Matrix &basicStiff) final;
+    const Vector &getGlobalResistingForce(const Vector &basicForce, const Vector &p0) final;
+    const Matrix &getGlobalStiffMatrix(const Matrix &basicStiff, const Vector &basicForce) final;
+    const Matrix &getInitialGlobalStiffMatrix(const Matrix &basicStiff) final;
 
     // rotate consistent mass matrix
-    const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
+    const Matrix &getGlobalMatrixFromLocal(const Matrix &local) final;
     
     // methods used in post-processing only
     const Vector &getPointGlobalCoordFromLocal(const Vector &localCoords);
@@ -102,7 +110,6 @@ private:
     };
 
     constexpr static int iq[] = {
-        // jnx, imz, jmz, imy, jmy, imx
         inx, iny, inz, imx, imy, imz,
         jnx, jny, jnz, jmx, jmy, jmz
     };

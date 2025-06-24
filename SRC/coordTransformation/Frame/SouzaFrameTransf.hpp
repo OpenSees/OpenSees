@@ -26,7 +26,7 @@
 #include <Versor.h>
 #include <Matrix3D.h>
 #include <Vector3D.h>
-#include "Orient/CrisfieldTransform.h"
+#include "Isometry/CrisfieldTransform.h"
 
 struct Triad;
 using namespace OpenSees; // TODO: Clean namespace use
@@ -59,12 +59,12 @@ public:
     double getInitialLength();
     double getDeformedLength();
 
-    virtual VectorND<nn*ndf> getStateVariation() final;
-    virtual Vector3D getNodePosition(int tag) final;
-    virtual Vector3D getNodeRotationLogarithm(int tag) final;
+    VectorND<nn*ndf> getStateVariation() final;
+    Vector3D getNodePosition(int tag) final;
+    Vector3D getNodeRotationLogarithm(int tag) final;
 
-    virtual VectorND<nn*ndf>    pushResponse(VectorND<nn*ndf>&pl) final;
-    virtual MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
+    VectorND<nn*ndf>    pushResponse(VectorND<nn*ndf>&pl) final;
+    MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
 
     // Sensitivity
     double getLengthGrad();
@@ -73,14 +73,14 @@ public:
     virtual const Vector &getGlobalResistingForceShapeSensitivity(const Vector &pb, const Vector &p0, int gradNumber);
 
     // Tagged Object
-    void Print(OPS_Stream &s, int flag = 0);
+    void Print(OPS_Stream &s, int flag = 0) final;
 
 protected:
     int addTangent(MatrixND<12,12>& M, const VectorND<12>& pl);
 
     VectorND<6>   pushResponse(const VectorND<6>& pa, int a, int b);
-    MatrixND<6,6> pushResponse(const MatrixND<6,6>& K, const VectorND<12>& pl, int a, int b);
-    int addTangent(MatrixND<6,6>& K, const VectorND<6>& p, int a, int b, int c);
+    // MatrixND<6,6> pushResponse(const MatrixND<6,6>& K, const VectorND<12>& pl, int a, int b);
+    // int addTangent(MatrixND<6,6>& K, const VectorND<6>& p, int a, int b, int c);
 
 protected:
 
@@ -88,7 +88,7 @@ private:
     constexpr static int n = nn*ndf;
 
     // compute the transformation matrix
-    void compTransfMatrixBasicGlobal(const Versor&, const Versor* Q);
+    void compTransfMatrixBasicGlobal(const Versor&, const Versor*);
 
     enum {
       inx= 0, // axial
@@ -114,7 +114,6 @@ private:
     Vector3D xAxis;                              // local x axis
     Vector3D vz;                                 // Vector that lies in local plane xz
     Vector3D dX;
-
    
     std::array<Vector3D, nn> *offsets;
 

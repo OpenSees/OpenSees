@@ -19,7 +19,7 @@
 #define TRIAD C2
 namespace OpenSees {
 
-class FrameBasis
+class Isometry
 {
 public:
   virtual int       initialize() =0;
@@ -40,10 +40,10 @@ public:
 
 
 template <int nn>
-class RankineBasis : public FrameBasis
+class RankineIsometry : public Isometry
 {
 public:
-  RankineBasis(std::array<Node*,nn>& nodes, const Vector3D& vecxz)
+  RankineIsometry(std::array<Node*,nn>& nodes, const Vector3D& vecxz)
   : nodes{nodes}, vz(vecxz), Xc{}, c{}, R{} {
   }
 

@@ -1,18 +1,26 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
-//
-//===----------------------------------------------------------------------===//
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
-// Description: This file contains the implementation for the
-// EuclidFrameTransf class. EuclidFrameTransf is a nonlinear
-// transformation for a space frame
+//                                  FEDEASLab
+//       Finite Elements for Design Evaluation and Analysis of Structures
+//
+//===----------------------------------------------------------------------===//
+//
+// Description: This file contains the implementation for the 
+// EuclidFrameTransf class. EuclidFrameTransf is a nonlinear transformation 
+// for a space frame.
+//
+// [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
 //
 // Written: cmp
 // Created: 04/2025
 //
+//===----------------------------------------------------------------------===//
 #pragma once
 #include <Vector.h>
 #include <Matrix.h>

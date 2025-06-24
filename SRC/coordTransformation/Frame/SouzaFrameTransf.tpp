@@ -30,7 +30,7 @@
 #include <MatrixND.h>
 #include <Matrix3D.h>
 #include <Rotations.hpp>
-#include "Orient/CrisfieldTransform.h"
+#include "Isometry/CrisfieldTransform.h"
 
 using namespace OpenSees;
 

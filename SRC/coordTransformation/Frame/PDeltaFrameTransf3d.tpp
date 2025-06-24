@@ -1,7 +1,9 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation    
+//                                   xara
 //
+//===----------------------------------------------------------------------===//
+//                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
 // Description: This file contains the implementation for the
@@ -23,8 +25,6 @@
 using OpenSees::Matrix3D;
 
 #define THREAD_LOCAL static
-
-
 
 
 template <int nn, int ndf>
