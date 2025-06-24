@@ -48,14 +48,14 @@ public:
     VectorND<nn*ndf> getStateVariation() final;
     Vector3D getNodePosition(int tag) final;
     Vector3D getNodeRotationLogarithm(int tag) final;
-    virtual const std::array<Vector3D,nn> *getRigidOffsets() const { return linear.getRigidOffsets();}
+    const std::array<Vector3D,nn> *getRigidOffsets() const final { return linear.getRigidOffsets();}
 
     virtual VectorND<nn*ndf>    pushResponse(VectorND<nn*ndf>&pl) final;
     virtual MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
 
     FrameTransform<nn,ndf> *getCopy() const final;
 
-    virtual int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const;
+    int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const final;
 
     // Sensitivity
     double getLengthGrad() final;

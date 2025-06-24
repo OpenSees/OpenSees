@@ -48,13 +48,13 @@ public:
     // NOTE: maybe add arg for rotation parameterization
     FrameTransform<nn,ndf> *getCopy() const;
 
-    int initialize(std::array<Node*, nn>& new_nodes);
-    int update();
-    int commit();
-    int revertToLastCommit();        
-    int revertToStart();
-    int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const;
-    virtual const std::array<Vector3D,nn> *getRigidOffsets() const { return offsets; }
+    int initialize(std::array<Node*, nn>& new_nodes) final;
+    int update() final;
+    int commit() final;
+    int revertToLastCommit() final;        
+    int revertToStart() final;
+    int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const final;
+    const std::array<Vector3D,nn> *getRigidOffsets() const final { return offsets; }
 
     double getInitialLength();
     double getDeformedLength();
@@ -67,7 +67,7 @@ public:
     MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
 
     // Sensitivity
-    double getLengthGrad();
+    double getLengthGrad() final;
     virtual const Vector &getBasicDisplTotalGrad(int grad);
     virtual const Vector &getBasicDisplFixedGrad();
     virtual const Vector &getGlobalResistingForceShapeSensitivity(const Vector &pb, const Vector &p0, int gradNumber);

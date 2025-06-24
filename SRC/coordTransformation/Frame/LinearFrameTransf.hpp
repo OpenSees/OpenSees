@@ -43,15 +43,15 @@ public:
     virtual double getDeformedLength();
     virtual const std::array<Vector3D,nn> *getRigidOffsets() const {return offsets;}
     
-    virtual int initialize(std::array<Node*, nn>& new_nodes) final;
-    virtual int update() final;
-    virtual int commit() final;
-    virtual int revertToLastCommit() final;
-    virtual int revertToStart() final;
+    int initialize(std::array<Node*, nn>& new_nodes) final;
+    int update() final;
+    int commit() final;
+    int revertToLastCommit() final;
+    int revertToStart() final;
 
-    virtual VectorND<nn*ndf> getStateVariation() final;
-    virtual Vector3D getNodePosition(int tag) final;
-    virtual Vector3D getNodeRotationLogarithm(int tag) final;
+    VectorND<nn*ndf> getStateVariation() final;
+    Vector3D getNodePosition(int tag) final;
+    Vector3D getNodeRotationLogarithm(int tag) final;
 
     virtual VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
     virtual MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
@@ -65,12 +65,12 @@ public:
     const Vector & getBasicDisplFixedGrad();
     const Vector & getBasicDisplTotalGrad(int gradNumber);
     const Vector &getGlobalResistingForceShapeSensitivity (const Vector &basicForce, const Vector &p0, int grad);
-    bool isShapeSensitivity();
-    double getLengthGrad();
-    double getd1overLdh();
+    bool isShapeSensitivity() final;
+    double getLengthGrad() final;
+    double getd1overLdh() final;
 
     // TaggedObject
-    void Print(OPS_Stream &s, int flag = 0);
+    void Print(OPS_Stream &s, int flag = 0) final;
 
     // Personal
     Vector3D getDelta() {return Du;}
