@@ -22,9 +22,9 @@
 // $Date: 2025-01-03 11:29:01 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ASDSteel1DMaterial.cpp,v $
 
-// Alessia Casalucci - ASDEA Software, Italy
+// Alessia Casalucci,Massimo Petracca, Guido Camata - ASDEA Software, Italy
 //
-// todo...
+// A unified and efficient plastic-damage material model for steel bars including fracture, bond-slip, and buckling via multiscale homogenization
 //
 
 #include <ASDSteel1DMaterial.h>
@@ -326,7 +326,6 @@ namespace {
 			constexpr int MAX_ITER = 1000;
 			constexpr double F_REL_TOL = 1.0e-6;
 			constexpr double L_ABS_TOL = 1.0e-8;
-			//constexpr double K_alpha = 0.8;  
 			// base steel response
 			alpha1 = alpha1_commit;
 			alpha2 = alpha2_commit;
@@ -470,6 +469,7 @@ namespace {
 		data(pos++) = alpha2_commit;
 		data(pos++) = lambda;
 		data(pos++) = lambda_commit;
+		data(pos++) = lambda_commit_old;
 		data(pos++) = sg_commit;
 		data(pos++) = strain;
 		data(pos++) = strain_commit;
@@ -487,6 +487,7 @@ namespace {
 		alpha2_commit = data(pos++);
 		lambda = data(pos++);
 		lambda_commit = data(pos++);
+		lambda_commit_old = data(pos++);
 		sg_commit = data(pos++);
 		strain = data(pos++);
 		strain_commit = data(pos++);
@@ -626,11 +627,12 @@ namespace {
 	};
 	int SeriesComponent::serializationDataSize() const
 	{
-		return 2;
+		return 2 + steel_material.serializationDataSize();
 	}
 
 	void SeriesComponent::serialize(Vector& data, int& pos, int commitTag, Channel& theChannel)
 	{
+		steel_material.serialize(data, pos);
 		if (slip_material) {
 			data(pos++) = static_cast<double>(slip_material->getClassTag());
 			int mat_db_tag = slip_material->getDbTag();
@@ -642,13 +644,13 @@ namespace {
 			data(pos++) = static_cast<double>(mat_db_tag);
 		}
 		else {
-			
 			data(pos++) = -1.0;  // classTag
 			data(pos++) = -1.0;  // dbTag
 		}
 	}
 	
 	void SeriesComponent::deserialize(Vector& data, int& pos, int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker) {
+		steel_material.deserialize(data, pos);
 		if (slip_material) {
 			delete slip_material;
 			slip_material = nullptr;
@@ -1398,7 +1400,6 @@ namespace {
 			// globals
 			double tolR = params.tolR * params.sy;
 			double tolU = params.tolU * params.length;
-			//constexpr int max_iter = 200;
 			auto& globals = Globals::instance();
 			
 			// utility for assembly
@@ -1930,7 +1931,6 @@ void* OPS_ASDSteel1DMaterial()
 	params.lch_anchor = lch_anc;
 	params.length = buckling ? lch / 2.0 : 1.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
-	//params.radius_frac = r_frac;
 	params.K_alpha = K_alpha;
 	params.max_iter = max_iter;
 	params.tolU = tolU;
@@ -2254,10 +2254,11 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	int counter;
 
 	// variable DBL data size
-	int nv_dbl = nv_dbl = 13 +
+	int nv_dbl = 13 +
 		params.NDATA +
 		pdata->rve_m.serializationDataSize() +
-		pdata->steel_comp.serializationDataSize();
+		pdata->steel_comp.serializationDataSize() +
+		pdata->rve_m.e2.section.series.serializationDataSize();
 
 	//	pdata->rve_m.e0.section.series.serializationDataSize() + pdata->rve_m.e2.section.series.serializationDataSize() + pdata->steel_comp.serializationDataSize();
 	Vector ddata(nv_dbl);
@@ -2282,8 +2283,8 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	stress_commit = ddata(counter++);
 	C = ddata(counter++);
 	stress_rve_commit = ddata(counter++);
-	C_rve = ddata(counter++);
 	stress_rve = ddata(counter++);
+	C_rve = ddata(counter++);
 	energy = ddata(counter++);
 
 	//params
