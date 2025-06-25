@@ -7,4 +7,4 @@ gfortran -o myprogram dtst2c.f dsrc2c.f jcg.f jsi.f rscg.f rssi.f sor.f ssorcg.f
 Additional compilation notes
 
 + Rename `IRAND` to `IRANDBLH` (due to name conflict)
-+ Changed `PROGRAM` line (on line 1) to `PROGRAM ITPTST` (removed args)
++ Changed line 1 to `PROGRAM ITPTST` (removed args)
