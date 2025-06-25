@@ -113,13 +113,22 @@ BoucWenInfill::BoucWenInfill(int tag,
 	double p_epsp,
 	double ptolerance,
 	int pMaxNumIter)
- :UniaxialMaterial(tag, 0),
+ :UniaxialMaterial(tag, MAT_TAG_BoucWenInfill),
   xmax(0.0), xmaxp(0.0), mass(p_mass), alpha(p_alpha), beta0(p_beta0), eta0(p_eta0), n(p_n),
   k(p_k), xy(p_xy), deltak(p_deltak), deltaf(p_deltaf), psi(p_psi), 
   Zs(p_Zs), As(p_As), epsp(p_epsp), tolerance(ptolerance), maxNumIter(pMaxNumIter)
 {
   // Initialize variables
   this->revertToStart();
+}
+
+BoucWenInfill::BoucWenInfill()
+ :UniaxialMaterial(0, MAT_TAG_BoucWenInfill),
+  xmax(0.0), xmaxp(0.0), mass(0.0), alpha(0.0), beta0(0.0), eta0(0.0), n(0.0),
+  k(0.0), xy(0.0), deltak(0.0), deltaf(0.0), psi(0.0), 
+  Zs(0.0), As(0.0), epsp(0.0), tolerance(0.0), maxNumIter(0)
+{
+
 }
 
 
@@ -397,13 +406,34 @@ BoucWenInfill::getCopy(void)
 int 
 BoucWenInfill::sendSelf(int cTag, Channel &theChannel)
 {
-	int res = 0;
-  static Vector data(2);
+  int res = 0;
+  static Vector data(1+15+4);
   data(0) = this->getTag();
-  data(1) = xmaxp;
+  
+  data(1) = mass;
+  data(2) = alpha;
+  data(3) = beta0;
+  data(4) = eta0;
+  data(5) = n;
+  data(6) = k;
+  data(7) = xy;
+  data(8) = deltak;
+  data(9) = deltaf;
+  data(10) = psi;
+  data(11) = Zs;
+  data(12) = As;
+  data(13) = epsp;
+  data(14) = tolerance;
+  data(15) = maxNumIter;
+
+  data(16) = xmaxp;
+  data(17) = Cstrain;
+  data(18) = Cz;
+  data(19) = Ce;
+  
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
-    opserr << "BoucWenInfill::sendSelf() - failed to send data\n";
+    opserr << "BoucWenInfill::sendSelf() - failed to send data" << endln;
 
   return res;
 }
@@ -411,11 +441,43 @@ BoucWenInfill::sendSelf(int cTag, Channel &theChannel)
 int 
 BoucWenInfill::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	int res = 0;
-  static Vector data(2);
+  int res = 0;
+  static Vector data(20);
+  
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
+  if (res < 0) {
+    opserr << "BoucWenInfill::recvSelf() - failed to receive Vector" << endln;
+    return res;
+  }
+  
   this->setTag(int(data(0)));
-  xmaxp = data(1);
+
+  mass = data(1);
+  alpha = data(2);
+  beta0 = data(3);
+  eta0 = data(4);
+  n = data(5);
+  k = data(6);
+  xy = data(7);
+  deltak = data(8);
+  deltaf = data(9);
+  psi = data(10);
+  Zs = data(11);
+  As = data(12);
+  epsp = data(13);
+  tolerance = data(14);
+  maxNumIter = (int)data(15);
+
+  xmaxp = data(16);
+  Cstrain = data(17);
+  Cz = data(18);
+  Ce = data(19);
+  
+  xmax = xmaxp;
+  Tstrain = Cstrain;
+  Tz = Cz;
+  Te = Ce;
+  
   this->revertToLastCommit();
     
   return res;

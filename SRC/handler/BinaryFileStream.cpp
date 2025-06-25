@@ -31,6 +31,7 @@
 #include <Channel.h>
 #include <Message.h>
 #include <Matrix.h>
+#include <string.h>
 
 using std::cerr;
 using std::ios;

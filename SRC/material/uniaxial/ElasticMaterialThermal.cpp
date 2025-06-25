@@ -316,7 +316,7 @@ ElasticMaterialThermal::setParameter(const char **argv, int argc, Parameter &par
 		param.setValue(Eneg);
 		return param.addObject(3, this);
 	}
-	else if (strcmp(argv[0], "eta") == 0) {
+	if (strcmp(argv[0], "eta") == 0) {
 		param.setValue(eta);
 		return param.addObject(4, this);
 	}
@@ -479,6 +479,7 @@ ElasticMaterialThermal::getElongTangent(double TempT, double& ET, double& Elong,
   else {
     ET = E0;
     ThermalElongation = Alpha * TempT;
+    Elong = ThermalElongation;
   }
   
   return 0.0; // We have to return something, why is this function not void? ... MHS

@@ -43,6 +43,7 @@
 #include <math.h>
 #include <float.h>
 #include <vector>
+#include <map>
 
 #include <HystereticSMMaterial.h>
 #include <Channel.h>
@@ -300,7 +301,6 @@ OPS_HystereticSMMaterial(void)
 
 
 
-
     if (numArgs != 1 || nposEnv < 4 || nposEnv >14 || nnegEnv > 14 || npinchArray > 2 || ndamageArray > 2 || nposEnv == 1 || nposEnv == 3 || nposEnv == 5 || nposEnv == 7 || nposEnv == 9 || nposEnv == 11 || nposEnv == 13 || nnegEnv == 1 || nnegEnv == 3 || nnegEnv == 5 || nnegEnv == 7 || nnegEnv == 9 || nnegEnv == 11 || nnegEnv == 13) {
         /*opserr << "numargs0 HystereticSM " << numargs0 << endln;
         opserr << "numOptionalArgs HystereticSM " << numOptionalArgs << endln;
@@ -324,8 +324,8 @@ OPS_HystereticSMMaterial(void)
     Vector thepinchArray(&pinchArray[0], (int)pinchArray.size());
     Vector thedamageArray(&damageArray[0], (int)damageArray.size());
     Vector thedegEnvArray(&degEnvArray[0], (int)degEnvArray.size());
-    Vector theLSdefo(&defoLimitStates[0], (int)defoLimitStates.size());
     Vector theLSforce(&forceLimitStates[0], (int)forceLimitStates.size());
+    Vector theLSdefo(&defoLimitStates[0], (int)defoLimitStates.size());
 
     double tmp = 0;
     if (YXorder == -1) {
@@ -407,10 +407,10 @@ OPS_HystereticSMMaterial(void)
 
     // back to being user-defined
     for (int i = 0; i < theLSforce.Size(); i += 1) {
-        returnData["LSforce"].push_back(theLSforce[i]);
+        returnData["forceLimitStates"].push_back(theLSforce[i]);
     }
     for (int i = 0; i < theLSdefo.Size(); i += 1) {
-        returnData["LSdefo"].push_back(theLSdefo[i]);
+        returnData["defoLimitStates"].push_back(theLSdefo[i]);
     }
     //returnData["mom1p"].push_back(mom1p);
 
@@ -2132,6 +2132,12 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
         return new MaterialResponse(this, 21, 0.0);
     }
 
+    if (strcmp(argv[0], "strain") == 0 ) {
+        return new MaterialResponse(this, 111, 0.0);
+    }
+    if (strcmp(argv[0], "stress") == 0 ) {
+        return new MaterialResponse(this, 112, 0.0);
+    }
 
     // backbone pts DCR
     // deformation
@@ -2163,11 +2169,11 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
     // user-defined limit states DCR
     // force
     else if (strcmp(argv[0], "forceLimitStates") == 0) {
-        return new MaterialResponse(this, 97, Vector(nDefoLimitStates));
+        return new MaterialResponse(this, 97, Vector(nForceLimitStates));
     }
 
     else if (strcmp(argv[0], "forceLimitStatesDCR") == 0) {
-        return new MaterialResponse(this, 971, Vector(7));
+        return new MaterialResponse(this, 971, Vector(nForceLimitStates));
     }
 
     else if (strcmp(argv[0], "AllData") == 0) {
@@ -2197,6 +2203,12 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
             return matInfo.setDouble(this->Cstrain / rot1p);
         else
             return matInfo.setDouble(this->Cstrain / rot1n);
+    }
+    if (responseID == 111) {
+        return matInfo.setDouble(this->Cstrain);
+    }
+    if (responseID == 112) {
+        return matInfo.setDouble(this->Cstress);
     }
 
     // plastic deformation
@@ -2319,8 +2331,8 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     }
     // current step
     else if (responseID == 971) {
-        static Vector data(nDefoLimitStates);
-        for (int i = 0; i < nDefoLimitStates; i++) {
+        static Vector data(nForceLimitStates);
+        for (int i = 0; i < nForceLimitStates; i++) {
             data(i) = this->Cstress / forceLimitStates[i];
         }
         return matInfo.setVector(data);

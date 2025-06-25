@@ -43,19 +43,84 @@
 #include <Information.h>
 #include <MaterialResponse.h>
 #include <UniaxialMaterial.h>
+#include <ElasticMaterial.h>
+#include <SectionIntegration.h>
 #include <math.h>
+#include <elementAPI.h>
 
-ID FiberSection3dThermal::code(3);
+ID FiberSection3dThermal::code(4);
+
+void* OPS_FiberSection3dThermal()
+{
+    int numData = OPS_GetNumRemainingInputArgs();
+    if(numData < 1) {
+	    opserr<<"insufficient arguments for FiberSection3d\n";
+	    return 0;
+    }
+    
+    numData = 1;
+    int tag;
+    if (OPS_GetIntInput(&numData, &tag) < 0) return 0;
+
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
+      opserr << "Use either -GJ $GJ or -torsion $matTag\n";
+      opserr << "\nFiberSection3d section: " << tag << endln;
+      return 0;
+    }
+    
+    UniaxialMaterial *torsion = 0;
+    bool deleteTorsion = false;
+    bool computeCentroid = true;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* opt = OPS_GetString();
+      if (strcmp(opt,"-noCentroid") == 0) {
+	computeCentroid = false;
+      }
+      if (strcmp(opt, "-GJ") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	double GJ;
+	if (OPS_GetDoubleInput(&numData, &GJ) < 0) {
+	  opserr << "WARNING: failed to read GJ\n";
+	  return 0;
+	}
+	torsion = new ElasticMaterial(0,GJ);
+	deleteTorsion = true;
+      }
+      if (strcmp(opt, "-torsion") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	int torsionTag;
+	if (OPS_GetIntInput(&numData, &torsionTag) < 0) {
+	  opserr << "WARNING: failed to read torsion\n";
+	  return 0;
+	}
+	torsion = OPS_getUniaxialMaterial(torsionTag);
+      }
+    }
+
+    if (torsion == 0) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
+      opserr << "\nFiberSection3d section: " << tag << endln;
+      return 0;
+    }
+    
+    int num = 30;
+    SectionForceDeformation *section = new FiberSection3dThermal(tag, num, *torsion, computeCentroid);
+    if (deleteTorsion)
+      delete torsion;
+    return section;
+}
 
 // constructors:
-FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, bool compCentroid):
+FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers,
+						UniaxialMaterial &torsion,  bool compCentroid):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3dThermal),
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
-  e(3), eCommit(3), s(0), ks(0), sT(0), Fiber_T(0), Fiber_TMax(0),
-  parameterID(0), SHVs(0)
+  sectionIntegr(0), e(4), eCommit(4), s(0), ks(0), theTorsion(0), sT(3), Fiber_T(0), Fiber_TMax(0),
+  parameterID(0), SHVs(0), AverageThermalElong(4)
 {
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -70,6 +135,18 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, b
       exit(-1);
     }
 
+    Fiber_T = new double [numFibers];
+    if (Fiber_T == 0) {
+      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+
+    Fiber_TMax = new double [numFibers];
+    if (Fiber_TMax == 0) {
+      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }    
+    
     for (int i = 0; i < numFibers; i++) {
       Fiber *theFiber = fibers[i];
       double yLoc, zLoc, Area;
@@ -89,6 +166,9 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, b
 	opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to get copy of a Material\n";
 	exit(-1);
       }
+
+      Fiber_T[i] = 0.0;
+      Fiber_TMax[i] = 0.0;
     }
 
     if (computeCentroid) {
@@ -97,6 +177,10 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, b
     }
   }
 
+  theTorsion = torsion.getCopy();
+  if (theTorsion == 0)
+    opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
+
   s = new Vector(sData, 3);
   ks = new Matrix(kData, 3, 3);
 
@@ -104,43 +188,29 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers, b
   sData[1] = 0.0;
   sData[2] = 0.0;
 
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
+  code(3) = SECTION_RESPONSE_T;
 
  // AddingSensitivity:BEGIN ////////////////////////////////////
   parameterID = 0;
   SHVs=0;
   // AddingSensitivity:END //////////////////////////////////////
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
-
-  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-  Fiber_T = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_T[i] = 0;
-   }
-  Fiber_TMax = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_TMax[i] = 0;
-   }
 }
 
-FiberSection3dThermal::FiberSection3dThermal(int tag, int num, bool compCentroid):
+FiberSection3dThermal::FiberSection3dThermal(int tag, int num, UniaxialMaterial &torsion, bool compCentroid):
   SectionForceDeformation(tag, SEC_TAG_FiberSection3dThermal),
   numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
-  e(3), eCommit(3), s(0), ks(0),
-  sT(0), Fiber_T(0), Fiber_TMax(0),
-  parameterID(0), SHVs(0)
+  sectionIntegr(0), e(4), eCommit(4), s(0), ks(0), theTorsion(0),
+  sT(3), Fiber_T(0), Fiber_TMax(0),
+  parameterID(0), SHVs(0), AverageThermalElong(4)
 {
-  if(sizeFibers != 0) {
+  if(sizeFibers > 0) {
     theMaterials = new UniaxialMaterial *[sizeFibers];
     
     if (theMaterials == 0) {
@@ -154,48 +224,52 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, bool compCentroid
       opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for material data\n";
       exit(-1);
     }
+
+    Fiber_T = new double [sizeFibers];
+    if (Fiber_T == 0) {
+      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+
+    Fiber_TMax = new double [sizeFibers];
+    if (Fiber_TMax == 0) {
+      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
     
     for (int i = 0; i < sizeFibers; i++) {
       matData[i*3] = 0.0;
       matData[i*3+1] = 0.0;
       matData[i*3+2] = 0.0;
       theMaterials[i] = 0;
+      Fiber_T[i] = 0.0;
+      Fiber_TMax[i] = 0.0;
     }
   }
+
+    theTorsion = torsion.getCopy();
+    if (theTorsion == 0) 
+      opserr << "FiberSection3d::FiberSection3d -- failed to get copy of torsion material\n";
   
-  s = new Vector(sData, 3);
-  ks = new Matrix(kData, 3, 3);
+  s = new Vector(sData, 4);
+  ks = new Matrix(kData, 4, 4);
 
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
 
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
+  code(3) = SECTION_RESPONSE_T;
 
  // AddingSensitivity:BEGIN ////////////////////////////////////
   parameterID = 0;
   SHVs=0;
   // AddingSensitivity:END //////////////////////////////////////
-  //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
-
-  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-  Fiber_T = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_T[i] = 0;
-   }
-  Fiber_TMax = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_TMax[i] = 0;
-   }
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
@@ -203,45 +277,29 @@ FiberSection3dThermal::FiberSection3dThermal():
   SectionForceDeformation(0, SEC_TAG_FiberSection3dThermal),
   numFibers(0), sizeFibers(0), theMaterials(0), matData(0),
   QzBar(0.0), QyBar(0.0), ABar(0.0), yBar(0.0), zBar(0.0), computeCentroid(true),
-  e(3), eCommit(3), s(0), ks(0),
-  sT(0), Fiber_T(0), Fiber_TMax(0),
-  parameterID(0), SHVs(0)
+  sectionIntegr(0), e(4), eCommit(4), s(0), ks(0), theTorsion(0),
+  sT(3), Fiber_T(0), Fiber_TMax(0),
+  parameterID(0), SHVs(0), AverageThermalElong(4)
 {
-  s = new Vector(sData, 3);
-  ks = new Matrix(kData, 3, 3);
+  s = new Vector(sData, 4);
+  ks = new Matrix(kData, 4, 4);
 
   sData[0] = 0.0;
   sData[1] = 0.0;
   sData[2] = 0.0;
 
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     kData[i] = 0.0;
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
   code(2) = SECTION_RESPONSE_MY;
+  code(3) = SECTION_RESPONSE_T;
 
  // AddingSensitivity:BEGIN ////////////////////////////////////
   parameterID = 0;
   SHVs=0;
   // AddingSensitivity:END //////////////////////////////////////
-
-    //J.Jiang add to see fiberLocsZ[i] = zLoc;
-  sT = new Vector(sTData, 3);
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sTData[2] = 0.0;
-
-  //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-  Fiber_T = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_T[i] = 0;
-   }
-  Fiber_TMax = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_TMax[i] = 0;
-   }
-
 }
 
 int
@@ -252,9 +310,10 @@ FiberSection3dThermal::addFiber(Fiber &newFiber)
       int newSize = 2*sizeFibers;
       UniaxialMaterial **newArray = new UniaxialMaterial *[newSize];
       double *newMatData = new double [3 * newSize];
-
-      if (newArray == 0 || newMatData == 0) {
-	  opserr << "FiberSection3d::addFiber -- failed to allocate Fiber pointers\n";
+      double *newFiberT = new double [newSize];
+      double *newFiberTMax = new double [newSize];
+      if (newArray == 0 || newMatData == 0 || newFiberT == 0 || newFiberTMax == 0) {
+	  opserr << "FiberSection3dThermal::addFiber -- failed to allocate Fiber pointers\n";
 	  exit(-1);
       }
 
@@ -264,6 +323,8 @@ FiberSection3dThermal::addFiber(Fiber &newFiber)
 	  newMatData[3*i] = matData[3*i];
 	  newMatData[3*i+1] = matData[3*i+1];
 	  newMatData[3*i+2] = matData[3*i+2];
+	  newFiberT[i] = Fiber_T[i];
+	  newFiberTMax[i] = Fiber_TMax[i];
       }
 
       // initialize new memory
@@ -272,17 +333,25 @@ FiberSection3dThermal::addFiber(Fiber &newFiber)
 	  newMatData[3*i] = 0.0;
 	  newMatData[3*i+1] = 0.0;
 	  newMatData[3*i+2] = 0.0;
+	  newFiberT[i] = 0.0;
+	  newFiberTMax[i] = 0.0;
       }
       sizeFibers = newSize;
 
       // set new memory
-      if (theMaterials != 0) {
+      if (theMaterials != 0)
 	  delete [] theMaterials;
+      if (matData != 0)
 	  delete [] matData;
-      }
+      if (Fiber_T != 0)
+	delete [] Fiber_T;
+      if (Fiber_TMax != 0)
+	delete [] Fiber_TMax;      
 
       theMaterials = newArray;
       matData = newMatData;
+      Fiber_T = newFiberT;
+      Fiber_TMax = newFiberTMax;
   }
 
   // set the new pointers
@@ -296,7 +365,7 @@ FiberSection3dThermal::addFiber(Fiber &newFiber)
   theMaterials[numFibers] = theMat->getCopy();
 
   if (theMaterials[numFibers] == 0) {
-    opserr << "FiberSection3d::addFiber -- failed to get copy of a Material\n";
+    opserr << "FiberSection3dThermal::addFiber -- failed to get copy of a Material\n";
     return -1;
   }
 
@@ -336,15 +405,20 @@ FiberSection3dThermal::~FiberSection3dThermal()
 
   if (ks != 0)
     delete ks;
-  if (sT != 0)
-    delete sT;
+
   //if (TemperatureTangent != 0)
     //delete [] TemperatureTangent;
 
   if (Fiber_T != 0)
     delete [] Fiber_T;
   if (Fiber_TMax != 0)
-    delete [] Fiber_TMax;  
+    delete [] Fiber_TMax;
+
+  if (sectionIntegr != 0)
+    delete sectionIntegr;
+
+  if (theTorsion != 0)
+    delete theTorsion;  
 }
 
 int
@@ -353,18 +427,19 @@ FiberSection3dThermal::setTrialSectionDeformation (const Vector &deforms)
   int res = 0;
   e = deforms;
 
-  kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
-  kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
-  kData[8] = 0.0;
-  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0;
+  for (int i = 0; i < 4; i++)
+      sData[i] = 0.0;
+  for (int i = 0; i < 16; i++)
+      kData[i] = 0.0;
 
   int loc = 0;
 
   double d0 = deforms(0);
   double d1 = deforms(1);
   double d2 = deforms(2);
+  double d3 = deforms(3);
 
-
+  double tangent, stress;
   for (int i = 0; i < numFibers; i++) {
     UniaxialMaterial *theMat = theMaterials[i];
     double y = matData[loc++] - yBar;
@@ -416,10 +491,10 @@ FiberSection3dThermal::setTrialSectionDeformation (const Vector &deforms)
     kData[1] += vas1;
     kData[2] += vas2;
 
-    kData[4] += vas1 * y;
-    kData[5] += vas1as2;
+    kData[5] += vas1 * y;
+    kData[6] += vas1as2;
 
-    kData[8] += vas2 * z;
+    kData[10] += vas2 * z;
 
     double fs0 = stress * A;
 
@@ -428,9 +503,15 @@ FiberSection3dThermal::setTrialSectionDeformation (const Vector &deforms)
     sData[2] += fs0 * z;
   }
 
-  kData[3] = kData[1];
-  kData[6] = kData[2];
-  kData[7] = kData[5];
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  if (theTorsion != 0) {
+    res += theTorsion->setTrial(d3, stress, tangent);
+    sData[3] = stress;
+    kData[15] = tangent;
+  }
 
   return res;
 }
@@ -438,14 +519,10 @@ FiberSection3dThermal::setTrialSectionDeformation (const Vector &deforms)
 const Matrix&
 FiberSection3dThermal::getInitialTangent(void)
 {
-  static double kInitialData[9];
-  static Matrix kInitial(kInitialData, 3, 3);
-
-  kInitialData[0] = 0.0; kInitialData[1] = 0.0;
-  kInitialData[2] = 0.0; kInitialData[3] = 0.0;
-  kInitialData[4] = 0.0; kInitialData[5] = 0.0;
-  kInitialData[6] = 0.0; kInitialData[7] = 0.0;
-  kInitialData[8] = 0.0;
+  static double kInitialData[16];
+  static Matrix kInitial(kInitialData, 4, 4);
+  
+  kInitial.Zero();
 
   int loc = 0;
 
@@ -466,15 +543,18 @@ FiberSection3dThermal::getInitialTangent(void)
     kInitialData[1] += vas1;
     kInitialData[2] += vas2;
 
-    kInitialData[4] += vas1 * y;
-    kInitialData[5] += vas1as2;
+    kInitialData[5] += vas1 * y;
+    kInitialData[6] += vas1as2;
 
-    kInitialData[8] += vas2 * z;
+    kInitialData[10] += vas2 * z;
   }
 
-  kInitialData[3] = kInitialData[1];
-  kInitialData[6] = kInitialData[2];
-  kInitialData[7] = kInitialData[5];
+  kInitialData[4] = kInitialData[1];
+  kInitialData[8] = kInitialData[2];
+  kInitialData[9] = kInitialData[6];
+
+  if (theTorsion != 0)
+    kInitialData[15] = theTorsion->getInitialTangent();
 
   return kInitial;
 }
@@ -502,11 +582,8 @@ FiberSection3dThermal::getStressResultant(void)
 const Vector&
 FiberSection3dThermal::getTemperatureStress(const Vector& dataMixed)
 {
-
-   sTData[0]=0;
-   sTData[1]=0;
-   sTData[2]=0;
-
+  sT.Zero();
+  AverageThermalElong.Zero();
   //JJadd, 12/2010, updata yBar = Ai*Ei*yi/(Ai*E*)  start
   double ThermalTangent[1000];
   double ThermalElong[1000];
@@ -564,21 +641,43 @@ FiberSection3dThermal::getTemperatureStress(const Vector& dataMixed)
  // calculate section resisting force due to thermal load
 
   double FiberForce;
+  double SectionArea = 0;
+  double ThermalForce = 0;
+  double ThermalMomentY = 0; double ThermalMomentZ = 0;
+  double SectionMomofAreaY = 0; double SectionMomofAreaZ = 0;
+
   for (int i = 0; i < numFibers; i++) {
 	  FiberForce = ThermalTangent[i]*matData[3*i+2]*ThermalElong[i];
-      sTData[0] += FiberForce;
-      sTData[1] += FiberForce*(matData[3*i] - yBar);
-	  sTData[2] += FiberForce*(matData[3*i+1] - zBar);
+	  sT(0) += FiberForce;
+	  sT(1) += FiberForce*(matData[3*i] - yBar);
+	  sT(2) += FiberForce*(matData[3*i+1] - zBar);
+      // added GR
+      SectionArea += matData[3 * i+2];
+      SectionMomofAreaY += (matData[3 * i + 2] * (matData[3 * i] - yBar) * (matData[3 * i] - yBar));
+      SectionMomofAreaZ += (matData[3 * i + 2] * (matData[3 * i+1] - zBar) * (matData[3 * i+1] - zBar));
+      ThermalForce += ThermalElong[i] * matData[3 * i + 2];
+      ThermalMomentY += ThermalElong[i] * matData[3 * i + 2] * (matData[3 * i] - yBar);
+      ThermalMomentZ += ThermalElong[i] * matData[3 * i + 2] * (matData[3 * i+1] - zBar);
   }
   //double ThermalMoment;
   //ThermalMoment = abs(sTData[1]);
  // sTData[1] = ThermalMoment;
+  AverageThermalElong(0) = ThermalForce / SectionArea;
+  AverageThermalElong(1) = ThermalMomentY / SectionMomofAreaY;
+  AverageThermalElong(2) = ThermalMomentZ / SectionMomofAreaZ;
+  AverageThermalElong(3) = 0.0; // no contribution in torsion
 
-  return *sT;
+  return sT;
 }
 //JJadd--12.2010---to get section force due to thermal load----end-----
 
-
+//UoE group///Calculating Thermal stresses at each /////////////////////////////////////////////////////end
+const Vector&
+FiberSection3dThermal::getThermalElong(void)
+{
+    return AverageThermalElong;
+}
+//Retuning ThermalElongation
 
 SectionForceDeformation*
 FiberSection3dThermal::getCopy(void)
@@ -587,8 +686,8 @@ FiberSection3dThermal::getCopy(void)
   theCopy->setTag(this->getTag());
 
   theCopy->numFibers = numFibers;
-
-  if (numFibers != 0) {
+  theCopy->sizeFibers = numFibers;
+  if (numFibers > 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theCopy->theMaterials == 0) {
@@ -599,10 +698,16 @@ FiberSection3dThermal::getCopy(void)
     theCopy->matData = new double [numFibers*3];
 
     if (theCopy->matData == 0) {
-      opserr << "FiberSection3dThermal::FiberSection3dThermal -- failed to allocate double array for material data\n";
+      opserr << "FiberSection3dThermal::getCopy -- failed to allocate double array for material data\n";
       exit(-1);
     }
 
+    theCopy->Fiber_T = new double [numFibers];
+    theCopy->Fiber_TMax = new double [numFibers];
+    if (theCopy->Fiber_TMax == 0 || theCopy->Fiber_T == 0) {
+      opserr << "FiberSection3dThermal::getCopy -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }        
 
     for (int i = 0; i < numFibers; i++) {
       theCopy->matData[i*3] = matData[i*3];
@@ -614,6 +719,9 @@ FiberSection3dThermal::getCopy(void)
 	opserr << "FiberSection3dThermal::getCopy -- failed to get copy of a Material\n";
 	exit(-1);
       }
+
+      theCopy->Fiber_T[i] = Fiber_T[i];
+      theCopy->Fiber_TMax[i] = Fiber_TMax[i];
     }
   }
 
@@ -626,12 +734,24 @@ FiberSection3dThermal::getCopy(void)
   theCopy->zBar = zBar;
   theCopy->computeCentroid = computeCentroid;
   
-  for (int i=0; i<9; i++)
+  for (int i=0; i<16; i++)
     theCopy->kData[i] = kData[i];
 
   theCopy->sData[0] = sData[0];
   theCopy->sData[1] = sData[1];
   theCopy->sData[2] = sData[2];
+  theCopy->sData[3] = sData[3];
+  theCopy->sT = sT;
+  
+  if (theTorsion != 0)
+    theCopy->theTorsion = theTorsion->getCopy();
+  else
+    theCopy->theTorsion = 0;
+
+  if (sectionIntegr != 0)
+    theCopy->sectionIntegr = sectionIntegr->getCopy();
+  else
+    theCopy->sectionIntegr = 0;
 
   return theCopy;
 }
@@ -645,7 +765,7 @@ FiberSection3dThermal::getType ()
 int
 FiberSection3dThermal::getOrder () const
 {
-  return 3;
+  return 4;
 }
 
 int
@@ -656,6 +776,9 @@ FiberSection3dThermal::commitState(void)
   for (int i = 0; i < numFibers; i++)
     err += theMaterials[i]->commitState();
 
+  if (theTorsion != 0)
+    err += theTorsion->commitState();
+  
   eCommit = e;
 
   return err;
@@ -673,7 +796,8 @@ FiberSection3dThermal::revertToLastCommit(void)
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
   kData[8] = 0.0;
-  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0;
+  kData[15] = 0.0;
+  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; sData[3] = 0.0;
 
   int loc = 0;
 
@@ -698,10 +822,10 @@ FiberSection3dThermal::revertToLastCommit(void)
     kData[1] += vas1;
     kData[2] += vas2;
 
-    kData[4] += vas1 * y;
-    kData[5] += vas1as2;
+    kData[5] += vas1 * y;
+    kData[6] += vas1as2;
 
-    kData[8] += vas2 * z;
+    kData[10] += vas2 * z;
 
     double fs0 = stress * A;
     sData[0] += fs0;
@@ -709,9 +833,15 @@ FiberSection3dThermal::revertToLastCommit(void)
     sData[2] += fs0 * z;
   }
 
-  kData[3] = kData[1];
-  kData[6] = kData[2];
-  kData[7] = kData[5];
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  if (theTorsion != 0) {
+    err += theTorsion->revertToLastCommit();
+    kData[15] = theTorsion->getTangent();
+  } else
+    kData[15] = 0.0;
 
   return err;
 }
@@ -725,8 +855,8 @@ FiberSection3dThermal::revertToStart(void)
 
   kData[0] = 0.0; kData[1] = 0.0; kData[2] = 0.0; kData[3] = 0.0;
   kData[4] = 0.0; kData[5] = 0.0; kData[6] = 0.0; kData[7] = 0.0;
-  kData[8] = 0.0;
-  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0;
+  kData[8] = 0.0; kData[15] = 0.0;
+  sData[0] = 0.0; sData[1] = 0.0;  sData[2] = 0.0; sData[3] = 0.0;
 
   int loc = 0;
 
@@ -751,10 +881,10 @@ FiberSection3dThermal::revertToStart(void)
     kData[1] += vas1;
     kData[2] += vas2;
 
-    kData[4] += vas1 * y;
-    kData[5] += vas1as2;
+    kData[5] += vas1 * y;
+    kData[6] += vas1as2;
 
-    kData[8] += vas2 * z;
+    kData[10] += vas2 * z;
 
     double fs0 = stress * A;
     sData[0] += fs0;
@@ -762,9 +892,18 @@ FiberSection3dThermal::revertToStart(void)
     sData[2] += fs0 * z;
   }
 
-  kData[3] = kData[1];
-  kData[6] = kData[2];
-  kData[7] = kData[5];
+  kData[4] = kData[1];
+  kData[8] = kData[2];
+  kData[9] = kData[6];
+
+  if (theTorsion != 0) {
+    err += theTorsion->revertToStart();
+    kData[15] = theTorsion->getTangent();
+    sData[3] = theTorsion->getStress();
+  } else {
+    kData[15] = 0.0;
+    sData[3] = 0.0;
+  }
 
   return err;
 }
@@ -776,19 +915,54 @@ FiberSection3dThermal::sendSelf(int commitTag, Channel &theChannel)
 
   // create an id to send objects tag and numFibers,
   //     size 3 so no conflict with matData below if just 1 fiber
-  static ID data(3);
+  static ID data(9);
   data(0) = this->getTag();
   data(1) = numFibers;
-  data(2) = computeCentroid ? 1 : 0; // Now the ID data is really 3
-  int dbTag = this->getDbTag();
-  res += theChannel.sendID(dbTag, commitTag, data);
-  if (res < 0) {
-    opserr << "FiberSection2d::sendSelf - failed to send ID data\n";
-    return res;
+  //data(2) = computeCentroid ? 1 : 0; // Now the ID data is really 3
+  data(2) = (theTorsion != 0) ? 1 : 0;
+  if (theTorsion != 0) {
+    data(3) = theTorsion->getClassTag();
+    int torsionDbTag = theTorsion->getDbTag();
+    if (torsionDbTag == 0) {
+      torsionDbTag = theChannel.getDbTag();
+      if (torsionDbTag != 0)
+	theTorsion->setDbTag(torsionDbTag);
+    }
+    data(4) = torsionDbTag;
+  }
+  data(5) = computeCentroid ? 1 : 0; // Now the ID data is really 5
+  data(6) = sectionIntegr != 0 ? 1 : 0;
+  if (sectionIntegr != 0) {
+    data(7) = sectionIntegr->getClassTag();
+    int sectionIntegrDbTag = sectionIntegr->getDbTag();
+    if (sectionIntegrDbTag == 0) {
+      sectionIntegrDbTag = theChannel.getDbTag();
+      if (sectionIntegrDbTag != 0)
+	sectionIntegr->setDbTag(sectionIntegrDbTag);
+    }
+    data(8) = sectionIntegrDbTag;
   }
 
-  if (numFibers != 0) {
+  int dbTag = this->getDbTag();  
+  res += theChannel.sendID(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "FiberSection3d::sendSelf - failed to send ID data\n";
+    return res;
+  }    
 
+  if (theTorsion != 0)
+    theTorsion->sendSelf(commitTag, theChannel);
+
+  if (sectionIntegr != 0) {
+    res = sectionIntegr->sendSelf(commitTag, theChannel);
+    if (res < 0) {
+      opserr << "FiberSection3d::sendSelf - failed to send section integration" << endln;
+      return res;
+    }
+  }
+  
+  if (numFibers != 0) {
+    
     // create an id containingg classTag and dbTag for each material & send it
     ID materialData(2*numFibers);
     for (int i=0; i<numFibers; i++) {
@@ -801,16 +975,23 @@ FiberSection3dThermal::sendSelf(int commitTag, Channel &theChannel)
 	  theMat->setDbTag(matDbTag);
       }
       materialData(2*i+1) = matDbTag;
-    }
-
+    }    
+    
     res += theChannel.sendID(dbTag, commitTag, materialData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::sendSelf - failed to send material data\n";
      return res;
-    }
+    }    
 
-    // send the fiber data, i.e. area and loc
-    Vector fiberData(matData, 3*numFibers);
+    // send the fiber data, i.e. area and loc, T, and Tmax
+    Vector fiberData(5*numFibers);
+    for (int i = 0; i < numFibers; i++) {
+      fiberData(            i) = matData[i];
+      fiberData(  numFibers+i) = matData[numFibers+i];
+      fiberData(2*numFibers+i) = matData[2*numFibers+i];      
+      fiberData(3*numFibers+i) = Fiber_T[i];
+      fiberData(4*numFibers+i) = Fiber_TMax[i];
+    }    
     res += theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
      opserr << "FiberSection2d::sendSelf - failed to send material data\n";
@@ -818,8 +999,14 @@ FiberSection3dThermal::sendSelf(int commitTag, Channel &theChannel)
     }
 
     // now invoke send(0 on all the materials
-    for (int j=0; j<numFibers; j++)
+    for (int j=0; j<numFibers; j++) {
       theMaterials[j]->sendSelf(commitTag, theChannel);
+      if (res < 0) {
+	opserr << "FiberSection3d::sendSelf - failed to send material with tag "
+	       << theMaterials[j]->getTag() << endln;
+	return res;
+      }
+    }
   }
 
   return res;
@@ -831,26 +1018,68 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
 {
   int res = 0;
 
-  static ID data(3);
-
+  static ID data(9);
+  
   int dbTag = this->getDbTag();
   res += theChannel.recvID(dbTag, commitTag, data);
-
   if (res < 0) {
-   opserr << "FiberSection2d::sendSelf - failed to recv ID data\n";
+   opserr << "FiberSection3d::recvSelf - failed to recv ID data\n";
    return res;
-  }
-
+  } 
   this->setTag(data(0));
 
+  if (data(2) == 1 && theTorsion == 0) {	
+    int torsionClassTag = data(3);
+    int torsionDbTag = data(4);
+    theTorsion = theBroker.getNewUniaxialMaterial(torsionClassTag);
+    if (theTorsion == 0) {
+      opserr << "FiberSection3d::recvSelf - failed to get torsion material \n";
+      return -1;
+    }
+    theTorsion->setDbTag(torsionDbTag);
+  }
+
+  if (theTorsion->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	   opserr << "FiberSection3d::recvSelf - torsion failed to recvSelf \n";
+       return -2;
+  }
+
+  if (data(6) == 1) {
+    int sectionIntegrClassTag = data(7);
+    int sectionIntegrDbTag = data(8);
+
+    // create a new section integration object if one needed
+    if (sectionIntegr == 0 || sectionIntegr->getClassTag() != sectionIntegrClassTag) {
+      if (sectionIntegr != 0)
+	delete sectionIntegr;
+      
+      sectionIntegr = theBroker.getNewSectionIntegration(sectionIntegrClassTag);
+      
+      if (sectionIntegr == 0) {
+	opserr << "FiberSection3d::recvSelf() - failed to obtain a SectionIntegration object with classTag "
+	       << sectionIntegrClassTag << endln;
+	exit(-1);
+      }
+    }
+    
+    sectionIntegr->setDbTag(sectionIntegrDbTag);
+    
+    // invoke recvSelf on the section integration object
+    if (sectionIntegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+      opserr << "FiberSection3d::sendSelf() - failed to recv SectionIntegration\n";
+      return -3;
+    }      
+  } else
+    sectionIntegr = 0;
+  
   // recv data about materials objects, classTag and dbTag
   if (data(1) != 0) {
     ID materialData(2*data(1));
     res += theChannel.recvID(dbTag, commitTag, materialData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::recvSelf - failed to recv material data\n";
      return res;
-    }
+    }    
 
     // if current arrays not of correct size, release old and resize
     if (theMaterials == 0 || numFibers != data(1)) {
@@ -864,53 +1093,79 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
 	matData = 0;
 	theMaterials = 0;
       }
+      if (Fiber_T != 0)
+	delete [] Fiber_T;
+      if (Fiber_TMax != 0)
+	delete [] Fiber_TMax;	
+      Fiber_T = 0;
+      Fiber_TMax = 0;	
+      matData = 0;
 
       // create memory to hold material pointers and fiber data
       numFibers = data(1);
+      sizeFibers = data(1);
       if (numFibers != 0) {
 
 	theMaterials = new UniaxialMaterial *[numFibers];
-
+	
 	if (theMaterials == 0) {
-	  opserr << "FiberSection2d::recvSelf -- failed to allocate Material pointers\n";
+	  opserr << "FiberSection3d::recvSelf -- failed to allocate Material pointers\n";
 	  exit(-1);
 	}
 
 	for (int j=0; j<numFibers; j++)
 	  theMaterials[j] = 0;
-
+	
 	matData = new double [numFibers*3];
 
 	if (matData == 0) {
-	  opserr << "FiberSection2d::recvSelf  -- failed to allocate double array for material data\n";
+	  opserr << "FiberSection3d::recvSelf  -- failed to allocate double array for material data\n";
 	  exit(-1);
 	}
+
+	Fiber_T = new double [numFibers];
+	if (Fiber_T == 0) {
+	  opserr <<"FiberSection3dThermal::recvSelf  -- failed to allocate double array for fiber T\n";
+	  exit(-1);
+	}
+	Fiber_TMax = new double [numFibers];
+	if (Fiber_TMax == 0) {
+	  opserr <<"FiberSection3dThermal::recvSelf  -- failed to allocate double array for fiber TMax\n";
+	  exit(-1);
+	}			
       }
     }
 
-    Vector fiberData(matData, 3*numFibers);
+    Vector fiberData(5*numFibers);
     res += theChannel.recvVector(dbTag, commitTag, fiberData);
     if (res < 0) {
-     opserr << "FiberSection2d::sendSelf - failed to send material data\n";
+     opserr << "FiberSection3d::recvSelf - failed to recv fiber data\n";
      return res;
     }
+    for (int i = 0; i < numFibers; i++) {
+      matData[i] =             fiberData(          i);
+      matData[numFibers+i] =   fiberData(numFibers+i);
+      matData[2*numFibers+i] = fiberData(2*numFibers+i);
+      Fiber_T[i]    = fiberData(3*numFibers+i);
+      Fiber_TMax[i] = fiberData(4*numFibers+i);
+    }       
 
     int i;
     for (i=0; i<numFibers; i++) {
       int classTag = materialData(2*i);
       int dbTag = materialData(2*i+1);
 
-      // if material pointed to is blank or not of corrcet type,
+      // if material pointed to is blank or not of corrcet type, 
       // release old and create a new one
       if (theMaterials[i] == 0)
 	theMaterials[i] = theBroker.getNewUniaxialMaterial(classTag);
       else if (theMaterials[i]->getClassTag() != classTag) {
 	delete theMaterials[i];
-	theMaterials[i] = theBroker.getNewUniaxialMaterial(classTag);
+	theMaterials[i] = theBroker.getNewUniaxialMaterial(classTag);      
       }
 
       if (theMaterials[i] == 0) {
-	opserr << "FiberSection2d::recvSelf -- failed to allocate double array for material data\n";
+	opserr << "FiberSection3d::recvSelf -- failed to allocate double array for material data\n";
 	exit(-1);
       }
 
@@ -922,8 +1177,23 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
     QyBar = 0.0;
     ABar = 0.0;
 
-    computeCentroid = data(2) ? true : false;
-    
+    computeCentroid = data(5) ? true : false;
+
+    if (sectionIntegr != 0) {
+      static double yLocs[10000];
+      static double zLocs[10000];
+      sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+      
+      static double fiberArea[10000];
+      sectionIntegr->getFiberWeights(numFibers, fiberArea);
+      
+      for (int i = 0; i < numFibers; i++) {
+		ABar  += fiberArea[i];
+		QzBar += yLocs[i]*fiberArea[i];
+		QyBar += zLocs[i]*fiberArea[i];
+      }
+    }
+    else {
     // Recompute centroid
     double yLoc, zLoc, Area;    
     for (i = 0; computeCentroid && i < numFibers; i++) {
@@ -933,6 +1203,7 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
       ABar  += Area;
       QzBar += yLoc*Area;
       QyBar += zLoc*Area;
+    	}
     }
 
     if (computeCentroid) {
@@ -940,9 +1211,9 @@ FiberSection3dThermal::recvSelf(int commitTag, Channel &theChannel,
       zBar = QyBar/ABar;
     } else {
       yBar = 0.0;
-      zBar = 0.0;
+      zBar = 0.0;      
     }
-  }
+  }   
 
   return res;
 }
@@ -960,6 +1231,8 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
     s << "\tSection code: " << code;
     s << "\tNumber of Fibers: " << numFibers << endln;
     s << "\tCentroid: (" << yBar << ", " << zBar << ')' << endln;
+    if (theTorsion != 0)
+        theTorsion->Print(s, flag); 
 
     if (flag == 1) {
       for (int i = 0; i < numFibers; i++) {
@@ -968,6 +1241,39 @@ FiberSection3dThermal::Print(OPS_Stream &s, int flag)
       theMaterials[i]->Print(s, flag);
       }
     }
+  }
+  if (flag == 3) {
+    for (int i = 0; i < numFibers; i++) {
+      s << theMaterials[i]->getTag() << " " << matData[3*i] << " "  << matData[3*i+1] << " "  << matData[3*i+2] << " " ;
+      s << theMaterials[i]->getStress() << " "  << theMaterials[i]->getStrain() << endln;
+    } 
+  }
+    
+  if (flag == 4) {
+    for (int i = 0; i < numFibers; i++) {
+      s << "add fiber # " << i+1 << " using material # " << theMaterials[i]->getTag() << " to section # 1\n";
+      s << "fiber_cross_section = " << matData[3*i+2] << "*m^2\n";
+      s << "fiber_location = (" << matData[3*i] << "*m, " << matData[3*i+1] << "*m);\n\n";
+    }
+  }
+
+  if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	  s << "\t\t\t{";
+	  s << "\"name\": \"" << this->getTag() << "\", ";
+	  s << "\"type\": \"FiberSection3d\", ";
+	  if (theTorsion != 0)
+	    s << "\"torsion\": " << theTorsion->getInitialTangent() << ", ";
+	  s << "\"fibers\": [\n";
+	  for (int i = 0; i < numFibers; i++) {
+		  s << "\t\t\t\t{\"coord\": [" << matData[3*i] << ", " << matData[3*i+1] << "], ";
+		  s << "\"area\": " << matData[3*i+2] << ", ";
+		  s << "\"material\": \"" << theMaterials[i]->getTag() << "\"";
+		  if (i < numFibers - 1)
+			  s << "},\n";
+		  else
+			  s << "}\n";
+	  }
+	  s << "\t\t\t]}";
   }
 }
 
@@ -980,7 +1286,7 @@ FiberSection3dThermal::setResponse(const char **argv, int argc, OPS_Stream &outp
 
     int key = numFibers;
     int passarg = 2;
-
+    
     if (argc <= 3)	{  // fiber number was input directly
       
       key = atoi(argv[1]);
@@ -989,7 +1295,7 @@ FiberSection3dThermal::setResponse(const char **argv, int argc, OPS_Stream &outp
       int matTag = atoi(argv[3]);
       double yCoord = atof(argv[1]);
       double zCoord = atof(argv[2]);
-      double closestDist;
+      double closestDist = 0.0;
       double ySearch, zSearch, dy, dz;
       double distance;
       int j;
@@ -1060,14 +1366,14 @@ FiberSection3dThermal::setResponse(const char **argv, int argc, OPS_Stream &outp
       
       output.endTag();
     }
-
+  
   } else if (strcmp(argv[0],"fiberData") == 0) {
     int numData = numFibers*5;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
       output.attr("yLoc", matData[3*j]);
       output.attr("zLoc", matData[3*j+1]);
-      output.attr("area", matData[3*j+2]);
+      output.attr("area", matData[3*j+2]);    
       output.tag("ResponseType","yCoord");
       output.tag("ResponseType","zCoord");
       output.tag("ResponseType","area");
@@ -1096,7 +1402,7 @@ FiberSection3dThermal::getResponse(int responseID, Information &sectInfo)
     for (int j = 0; j < numFibers; j++) {
       double yLoc, zLoc, A, stress, strain;
       yLoc = -matData[3*j];
-      zLoc =  matData[3*j+1];
+      zLoc = matData[3*j+1];
       A = matData[3*j+2];
       stress = theMaterials[j]->getStress();
       strain = theMaterials[j]->getStrain();
@@ -1132,8 +1438,21 @@ FiberSection3dThermal::setParameter(const char **argv, int argc, Parameter &para
 	if (ok != -1)
 	  result = ok;
       }
-
+    
+    if (paramMatTag == theTorsion->getTag()) {
+	ok = theTorsion->setParameter(&argv[2], argc-2, param);
+	if (ok != -1)
+	  result = ok;
+    }
     return result;
+  }    
+
+  // Check if it belongs to the section integration
+  else if (strstr(argv[0],"integration") != 0) {
+    if (sectionIntegr != 0)
+      return sectionIntegr->setParameter(&argv[1], argc-1, param);
+    else
+      return -1;
   }
 
   int ok = 0;
@@ -1141,6 +1460,17 @@ FiberSection3dThermal::setParameter(const char **argv, int argc, Parameter &para
   // loop over every material
   for (int i = 0; i < numFibers; i++) {
     ok = theMaterials[i]->setParameter(argv, argc, param);
+    if (ok != -1)
+      result = ok;
+  }
+
+  // Don't really need to do this in "default" mode
+  //ok = theTorsion->setParameter(argv, argc, param);
+  //if (ok != -1)
+  //  result = ok;
+
+  if (sectionIntegr != 0) {
+    ok = sectionIntegr->setParameter(argv, argc, param);
     if (ok != -1)
       result = ok;
   }
@@ -1165,9 +1495,8 @@ FiberSection3dThermal::getSectionDeformationSensitivity(int gradIndex)
 const Vector &
 FiberSection3dThermal::getStressResultantSensitivity(int gradIndex, bool conditional)
 {
-
-  static Vector ds(3);
-
+  static Vector ds(4);
+  
   ds.Zero();
 
   double  stressGradient;
@@ -1185,6 +1514,8 @@ FiberSection3dThermal::getStressResultantSensitivity(int gradIndex, bool conditi
     ds(2) += stressGradient * z;
 
   }  //for
+  
+  ds(3) = theTorsion->getStressSensitivity(gradIndex, conditional);
 
   return ds;
 }
@@ -1192,10 +1523,12 @@ FiberSection3dThermal::getStressResultantSensitivity(int gradIndex, bool conditi
 const Matrix &
 FiberSection3dThermal::getSectionTangentSensitivity(int gradIndex)
 {
-  static Matrix something(2,2);
+  static Matrix something(4,4);
 
   something.Zero();
 
+  something(3,3) = theTorsion->getTangentSensitivity(gradIndex);
+  
   return something;
 }
 
@@ -1206,19 +1539,19 @@ FiberSection3dThermal::commitSensitivity(const Vector& defSens, int gradIndex, i
   // here add SHVs to store the strain sensitivity.
 
   if (SHVs == 0) {
-    SHVs = new Matrix(3,numGrads);
+    SHVs = new Matrix(4,numGrads);
   }
 
   (*SHVs)(0,gradIndex) = defSens(0);
   (*SHVs)(1,gradIndex) = defSens(1);
   (*SHVs)(2,gradIndex) = defSens(2);
-
+  (*SHVs)(3,gradIndex) = defSens(3);
   int loc = 0;
 
   double d0 = defSens(0);
   double d1 = defSens(1);
   double d2 = defSens(2);
-
+  double d3 = defSens(3);
   for (int i = 0; i < numFibers; i++) {
    	double y = matData[loc++] - yBar;
 	double z = matData[loc++] - zBar;
@@ -1228,6 +1561,8 @@ FiberSection3dThermal::commitSensitivity(const Vector& defSens, int gradIndex, i
 
 	theMaterials[i]->commitSensitivity(strainSens,gradIndex,numGrads);
   }
+
+  theTorsion->commitSensitivity(d3, gradIndex, numGrads);
 
   return 0;
 }
@@ -1300,7 +1635,7 @@ FiberSection3dThermal::determineFiberTemperature(const Vector& DataMixed, double
 			dataTempe[i] = DataMixed(i);
 		}
 
-		if ( fabs(dataTempe[0]) <= 1e-10 && fabs(dataTempe[10]) <= 1e-10 &&fabs(dataTempe[11]) <= 1e-10) //no tempe load
+		if ( fabs(dataTempe[0]) <= 1e-10 && fabs(dataTempe[2]) <= 1e-10 && fabs(dataTempe[10]) <= 1e-10 && fabs(dataTempe[11]) <= 1e-10) //no tempe load
 		{
 			return 0;
 		}
@@ -1365,5 +1700,50 @@ FiberSection3dThermal::determineFiberTemperature(const Vector& DataMixed, double
 			}
 		}
 	}
+    else if (DataMixed.Size() == 35) {
+        //---------------GR mod - if temperature Data has 35 elements--------------------
+        double py[5], pz[5];
+        for (int i = 0; i < 5; i++) {
+            py[i] = DataMixed(i);
+            pz[i] = DataMixed(5 + i);
+        }
+        double dataTempe[5][5];
+        for (int i = 0; i < 5; i++) {
+            for (int j = 0; j < 5; j++) {
+                dataTempe[i][j] = DataMixed(10 + 5 * i + j);
+            }
+        }
+        // check grid corners
+        if (fabs(dataTempe[0][0]) <= 1e-10 && fabs(dataTempe[4][4]) <= 1e-10 && fabs(dataTempe[4][0]) <= 1e-10 && fabs(dataTempe[0][4]) <= 1e-10) // no tempe load
+            return 0;
+
+        // calculate the fiber temperature, weighted with inverse of the distance from grid nodes
+        // check if coords are inside the grid, otherwise first or last temperature is returned
+        if (fiberLocy < py[0] || fiberLocz < pz[0])      return dataTempe[0][0];
+        if (fiberLocy > py[4] || fiberLocz > pz[4])      return dataTempe[4][4];
+        // first, find nearest grid points
+        for (int i = 1; i < 5; i++) {
+            for (int j = 1; j < 5; j++) {
+                if ((fiberLocy >= py[i - 1] && fiberLocy <= py[i]) && (fiberLocz >= pz[j - 1] && fiberLocz <= pz[j])) {
+                    double sy[4], sz[4], sT[4], d[4], dsum = 0, Tdsum = 0;
+                    // selecting the 4 points of the grid, ordered anti-clockwise
+                    sy[0] = py[i - 1]; sy[1] = py[i - 1]; sy[2] = py[i]; sy[3] = py[i];
+                    sz[0] = pz[j - 1]; sz[1] = pz[j]; sz[2] = pz[j]; sz[3] = pz[j - 1];
+                    // select grid temperatures
+                    sT[0] = dataTempe[i - 1][j - 1]; sT[1] = dataTempe[i - 1][j]; sT[2] = dataTempe[i][j]; sT[3] = dataTempe[i][j - 1];
+                    // calculate distance
+                    for (int k = 0; k < 4; k++) {
+                        d[k] = sqrt(pow(fiberLocy - sy[k], 2) + pow(fiberLocz - sz[k], 2));
+                        if (d[k] == 0) d[k] = 1.e-6;
+                        dsum += 1.0 / d[k]; Tdsum += sT[k] / d[k];
+                    }
+                    if (dsum == 0) return 0;
+                    return Tdsum / dsum;
+                } // if
+
+            } //j
+        } //i
+
+    }
 	return FiberTemperature;
 }

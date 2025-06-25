@@ -17,11 +17,8 @@
 #include <ID.h>
 #include <MaterialResponse.h>
 #include <Parameter.h>
+#include <FEM_ObjectBroker.h>
 
-
-
-
-# define ND_TAG_PlaneStress   34526557578673
 
 
 Matrix PlaneStressSimplifiedJ2::tmpMatrix(3,3);
@@ -88,9 +85,9 @@ OPS_PlaneStressSimplifiedJ2(void) {
 PlaneStressSimplifiedJ2::PlaneStressSimplifiedJ2 (int pTag, 
 						   int nd, 
 						   NDMaterial &passed3DMaterial)
-  : NDMaterial(pTag,ND_TAG_PlaneStress), the3DMaterial(0), stress(3),
-    strain(3), Cstress(3), Cstrain(3),theTangent(3,3)	
-    
+  : NDMaterial(pTag,ND_TAG_PlaneStressSimplifiedJ2), the3DMaterial(0), stress(3),
+    strain(3), Cstress(3), Cstrain(3),theTangent(3,3),
+    savedStrain33(0.0), CsavedStrain33(0.0)
 {
   this->ndm = 2;    
   the3DMaterial = passed3DMaterial.getCopy();  
@@ -100,12 +97,15 @@ PlaneStressSimplifiedJ2::PlaneStressSimplifiedJ2 (int pTag,
   
   Cstress.Zero();
   Cstrain.Zero();
-  
-  savedStrain33=0.0;
-  CsavedStrain33 = 0.0;
 }
 
+PlaneStressSimplifiedJ2::PlaneStressSimplifiedJ2()
+  :NDMaterial(0,ND_TAG_PlaneStressSimplifiedJ2), the3DMaterial(0), stress(3),
+   strain(3), Cstress(3), Cstrain(3),theTangent(3,3),
+   savedStrain33(0.0), CsavedStrain33(0.0)
+{
 
+}
 
 PlaneStressSimplifiedJ2::~PlaneStressSimplifiedJ2()
 {
@@ -333,22 +333,27 @@ int PlaneStressSimplifiedJ2::commitState (void){
 	CsavedStrain33 = savedStrain33; 
 	Cstress = stress;
 	Cstrain = strain;
-	the3DMaterial->commitState();
 	//CcumPlastStrainDev = cumPlastStrainDev;
 
-	return 0;
-
+	return the3DMaterial->commitState();
 };
 
-int PlaneStressSimplifiedJ2::revertToLastCommit (void){
+int PlaneStressSimplifiedJ2::revertToLastCommit (void)
+{
+  savedStrain33 = CsavedStrain33;
+  stress = Cstress;
+  strain = Cstrain;
 
-// -- to be implemented.
-	return 0;
+  return the3DMaterial->revertToLastCommit();
 };
 
-int PlaneStressSimplifiedJ2::revertToStart(void) {
-	// -- to be implemented.
-	return 0;
+int PlaneStressSimplifiedJ2::revertToStart(void)
+{
+  CsavedStrain33 = 0.0;
+  Cstress.Zero();
+  Cstrain.Zero();
+
+  return the3DMaterial->revertToStart();
 }
 
 
@@ -369,17 +374,103 @@ NDMaterial * PlaneStressSimplifiedJ2::getCopy (const char *type){
  
 
 
-int PlaneStressSimplifiedJ2::sendSelf(int commitTag, Channel &theChannel){
-	// -- to be implemented.
+int PlaneStressSimplifiedJ2::sendSelf(int commitTag, Channel &theChannel)
+{
+  int res = 0;
+  int dbTag = this->getDbTag();
 
+  static ID idData(4);
+  idData(0) = this->getTag();
+  idData(1) = the3DMaterial->getClassTag();
+  int matDbTag = the3DMaterial->getDbTag();
+  if (matDbTag == 0) {
+    matDbTag = theChannel.getDbTag();
+    the3DMaterial->setDbTag(matDbTag);
+  }
+  idData(2) = matDbTag;
+  idData(3) = ndm;
 
-	return 0;
+  res = theChannel.sendID(dbTag, commitTag, idData);
+  if (res < 0) {
+    opserr << "PlaneStressSimplifiedJ2::sendSelf -- could not send ID" << endln;
+    return res;
+  }
+  
+  static Vector data(7);
+
+  data(0) = CsavedStrain33;
+  for (int i = 0; i < 3; i++)
+    data(1+i) = Cstress(i);
+  for (int i = 0; i < 3; i++)
+    data(1+3+i) = Cstrain(i);  
+
+  res = theChannel.sendVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "PlaneStressSimplifiedJ2::sendSelf -- could not send Vector" << endln;
+    return res;
+  }
+
+  res = the3DMaterial->sendSelf(commitTag, theChannel);
+  if (res < 0) { 
+    opserr << "PlaneStressMaterial::sendSelf() - failed to send vector material" << endln;
+    return res;
+  }
+  
+  return res;
 };  
 
-int PlaneStressSimplifiedJ2::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker){
-	// -- to be implemented.
+int PlaneStressSimplifiedJ2::recvSelf(int commitTag, Channel &theChannel,
+				      FEM_ObjectBroker &theBroker)
+{
+  int res = 0;
+  int dbTag = this->getDbTag();
 
-	return 0;
+  static ID idData(4);
+  res = theChannel.recvID(dbTag, commitTag, idData);
+  if (res < 0) {
+    opserr << "PlasticDamageConcrete3d::recvSelf -- could not receive ID" << endln;
+    return res;
+  }  
+
+  this->setTag(idData(0));
+  int matClassTag = idData(1);
+  ndm = idData(3);
+
+  // if the associated material has not yet been created or is of the wrong type
+  // create a new material for recvSelf later
+  if (the3DMaterial == 0 || the3DMaterial->getClassTag() != matClassTag) {
+    if (the3DMaterial != 0)
+      delete the3DMaterial;
+    the3DMaterial = theBroker.getNewNDMaterial(matClassTag);
+    if (the3DMaterial == 0) {
+      opserr << "PlaneStressSimplifiedJ2::recvSelf() - failed to get a material of type: " << matClassTag << endln;
+      return -1;
+    }
+  }
+  the3DMaterial->setDbTag(idData(2));
+  
+  static Vector data(7);
+  res = theChannel.recvVector(dbTag, commitTag, data);
+  if (res < 0) {
+    opserr << "PlaneStressSimplifiedJ2::recvSelf -- could not receive Vector" << endln;
+    return res;
+  }
+
+  CsavedStrain33 = data(0);
+  for (int i = 0; i < 3; i++)
+    Cstress(i) = data(1+i);
+  for (int i = 0; i < 3; i++)
+    Cstrain(i) = data(1+3+i);
+
+  res = the3DMaterial->recvSelf(commitTag, theChannel, theBroker);
+  if (res < 0) { 
+    opserr << "PlaneStressSimplifiedJ2::recvSelf() - failed to recv vector material" << endln;
+    return res;
+  }
+
+  this->revertToLastCommit();
+    
+  return res;
 };    
   
      

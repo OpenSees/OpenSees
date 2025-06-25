@@ -38,11 +38,20 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
+#include <string>
 
 void* OPS_DiagonalDirectSolver()
 {
-    DiagonalSolver *theSolver = new DiagonalDirectSolver();   
-    return new DiagonalSOE(*theSolver);
+  bool lumped = false;
+  if (OPS_GetNumRemainingInputArgs() > 0) {
+    std::string arg = OPS_GetString();
+    if (arg == "lumped" || arg == "-lumped")
+      lumped = true;
+  }
+  
+  DiagonalSolver *theSolver = new DiagonalDirectSolver();   
+  return new DiagonalSOE(*theSolver, lumped);
 }
 
 DiagonalDirectSolver::DiagonalDirectSolver(double tol)

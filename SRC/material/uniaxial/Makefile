@@ -23,6 +23,7 @@ OBJS       = UniaxialMaterial.o \
         ElasticPPMaterial.o \
         ElasticBilin.o \
 	ParallelMaterial.o \
+	PipeMaterial.o \
 	ResilienceLow.o \
 	AxialSp.o \
 	BWBN.o \
@@ -36,6 +37,7 @@ OBJS       = UniaxialMaterial.o \
         HardeningMaterial.o \
         HardeningMaterial2.o \
 	ASD_SMA_3K.o \
+	ASDConcrete1DMaterial.o \
 	Concrete01.o \
 	Concrete02Thermal.o \
 	Steel02Thermal.o \
@@ -161,6 +163,12 @@ OBJS       = UniaxialMaterial.o \
 	CoulombDamperMaterial.o \
 	FlagShapeMaterial.o \
 	GMG_CyclicReinforcedConcrete.o \
+	CreepMaterial.o \
+	APDFMD.o \
+	APDMD.o \
+	APDVFD.o \
+	QbSandCPT.o \
+	TzSandCPT.o \
     TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)

@@ -44,6 +44,9 @@
 class Beam3dThermalAction : public ElementalLoad
 {
   public:
+	  // GR added
+	  Beam3dThermalAction(int tag, double indata[], int theElementTag);
+
   // Constructors based on 9, 5 or 2 temperature points
   // t-temperature; locY-coordinate through the depth of section
   Beam3dThermalAction(int tag,
@@ -90,8 +93,8 @@ class Beam3dThermalAction : public ElementalLoad
  protected:
   
  private:
-  double Temp[15]; //Initial Temperature for using plain patterns
-  double TempApp[15]; // Temperature applied
+  double Temp[25]; //Initial Temperature for using plain patterns
+  double TempApp[25]; // Temperature applied
   double Loc[10]; // 5 Locsthrough the depth of section+ 5 locs through the width
   static Vector data; // data for temperature and locations
   int ThermalActionType;

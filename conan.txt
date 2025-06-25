@@ -1,0 +1,10 @@
+[requires]
+hdf5/1.14.0
+tcl/8.6.11
+zlib/1.2.13
+eigen/3.4.0
+
+[generators]
+CMakeDeps
+CMakeToolchain
+

@@ -51,7 +51,7 @@ void* OPS_FiberSection2dThermal()
 {
     int numData = OPS_GetNumRemainingInputArgs();
     if(numData < 1) {
-	opserr<<"insufficient arguments for FiberSection2d\n";
+	opserr<<"insufficient arguments for FiberSection2dThermal\n";
 	return 0;
     }
 
@@ -69,10 +69,10 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers, b
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(2), eCommit(2), s(0), ks(0),
-  DataMixed(27), sT(0), Fiber_Tangent(0), Fiber_ElongP(0), AverageThermalElong(2),
+  DataMixed(27), sT(2), Fiber_Tangent(0), Fiber_ElongP(0), AverageThermalElong(2),
   dedh(2)//,theTemperatures(temperatures),theTemperatureFactor(0)
 {
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -87,6 +87,13 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers, b
       exit(-1);
     }
 
+    Fiber_Tangent = new double [numFibers];
+    Fiber_ElongP = new double [numFibers];
+    if (Fiber_Tangent == 0 || Fiber_ElongP == 0) {
+      opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to allocate double array for fiber data data\n";
+      exit(-1);
+    }
+    
     for (int i = 0; i < numFibers; i++) {
       Fiber *theFiber = fibers[i];
       double yLoc, zLoc, Area;
@@ -103,6 +110,9 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers, b
 	opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to get copy of a Material\n";
 	exit(-1);
       }
+
+      Fiber_Tangent[i] = 0;
+      Fiber_ElongP[i] = 0;      
     }
 
     if (computeCentroid)
@@ -122,21 +132,6 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, Fiber **fibers, b
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
-
-//JZ 07/10 /////////////////////////////////////////////////////////////start
-  sTData[0] = 0.0;
-  sTData[1] = 0.0;
-  sT = new Vector(sTData,2);
-
- //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-   Fiber_Tangent = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_Tangent[i] = 0;
-   }
-   Fiber_ElongP = new double [1000];
-   for(int i =0;i<1000;i++) {
-	   Fiber_ElongP[i] = 0;
-   }
 }
 
 // allocate memory for fibers
@@ -145,21 +140,29 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, bool compCentroid
   numFibers(0), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(2), eCommit(2), s(0), ks(0),
-  DataMixed(27), sT(0), Fiber_Tangent(0), Fiber_ElongP(0), AverageThermalElong(2),
+  DataMixed(27), sT(2), Fiber_Tangent(0), Fiber_ElongP(0), AverageThermalElong(2),
   dedh(2)
 {
     if(sizeFibers > 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
 
 	if(theMaterials == 0) {
-	    opserr << "FiberSection2d::FiberSection2d -- failed to allocate Material pointers";
+	    opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to allocate Material pointers";
 	    exit(-1);
 	}
 
 	matData = new double [sizeFibers*2];
 
 	if(matData == 0) {
-	    opserr << "FiberSection2d::FiberSection2d -- failed to allocate double array for material data\n";
+	    opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to allocate double array for material data\n";
+	    exit(-1);
+	}
+
+
+	Fiber_Tangent = new double [sizeFibers];
+	Fiber_ElongP = new double [sizeFibers];
+	if (Fiber_Tangent == 0 || Fiber_ElongP == 0) {
+	    opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to allocate double array for fiber data data\n";
 	    exit(-1);
 	}
 
@@ -167,6 +170,8 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, bool compCentroid
 	    matData[i*2] = 0.0;
 	    matData[i*2+1] = 0.0;
 	    theMaterials[i] = 0;
+	    Fiber_Tangent[i] = 0.0;
+	    Fiber_ElongP[i] = 0.0;
 	}
     }
 
@@ -183,21 +188,6 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, bool compCentroid
 
     code(0) = SECTION_RESPONSE_P;
     code(1) = SECTION_RESPONSE_MZ;
-
-    //JZ 07/10 /////////////////////////////////////////////////////////////start
-    sTData[0] = 0.0;
-    sTData[1] = 0.0;
-    sT = new Vector(sTData,2);
-
-    //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-    Fiber_Tangent = new double [1000];
-    for (int i = 0;i<1000; i++) {
-	Fiber_Tangent[i] = 0;
-    }
-    Fiber_ElongP = new double [1000];
-    for(int i =0;i<1000;i++) {
-	Fiber_ElongP[i] = 0;
-    }
 }
 
 
@@ -207,10 +197,10 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(2), eCommit(2), s(0), ks(0),
-  DataMixed(27), sT(0), Fiber_Tangent(0), Fiber_ElongP(0), AverageThermalElong(2),
+  DataMixed(27), sT(2), Fiber_Tangent(0), Fiber_ElongP(0), AverageThermalElong(2),
   dedh(2)//,theTemperature(0)
 {
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -223,6 +213,13 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
       opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to allocate double array for material data\n";
       exit(-1);
     }
+
+    Fiber_Tangent = new double [numFibers];
+    Fiber_ElongP = new double [numFibers];
+    if (Fiber_Tangent == 0 || Fiber_ElongP == 0) {
+      opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to allocate double array for fiber data data\n";
+      exit(-1);
+    }    
   }
 
   sectionIntegr = si.getCopy();
@@ -248,6 +245,9 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
       opserr << "FiberSection2dThermal::FiberSection2dThermal -- failed to get copy of a Material\n";
       exit(-1);
     }
+
+    Fiber_Tangent[i] = 0.0;
+    Fiber_ElongP[i] = 0.0;
   }
 
   if (computeCentroid)
@@ -266,22 +266,6 @@ FiberSection2dThermal::FiberSection2dThermal(int tag, int num, UniaxialMaterial 
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
-
-//JZ 07/10 /////////////////////////////////////////////////////////////start
-   sT = new Vector(sTData,2);
-   sTData[0] = 0.0;
-   sTData[1] = 0.0;
-
- //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-     Fiber_Tangent = new double [1000];
-  for (int i = 0;i<1000; i++) {
-	   Fiber_Tangent[i] = 0;
-   }
-   Fiber_ElongP = new double [1000];
-   for(int i =0;i<1000;i++) {
-	   Fiber_ElongP[i] = 0;
-   }
-
 }
 
 // constructor for blank object that recvSelf needs to be invoked upon
@@ -306,23 +290,6 @@ FiberSection2dThermal::FiberSection2dThermal():
 
   code(0) = SECTION_RESPONSE_P;
   code(1) = SECTION_RESPONSE_MZ;
-
-//JZ 07/10 /////////////////////////////////////////////////////////////start
-   sT = new Vector(sTData,2);
-   sTData[0] = 0.0;
-   sTData[1] = 0.0;
-
-
-   //An array storing the current fiber Temperature and Maximum Temperature and initializing it.
-   Fiber_Tangent = new double [1000];
-   for(int i = 0;i<1000; i++) {
-	   Fiber_Tangent[i] = 0;
-   }
-   Fiber_ElongP = new double [1000];
-   for(int i = 0;i<1000;i++) {
-	   Fiber_ElongP[i] = 0;
-   }
-
 }
 
 int
@@ -334,8 +301,10 @@ FiberSection2dThermal::addFiber(Fiber &newFiber)
 	if(newsize == 0) newsize = 30;
 	UniaxialMaterial **newArray = new UniaxialMaterial *[newsize];
 	double *newMatData = new double [2 * newsize];
-	if (newArray == 0 || newMatData == 0) {
-	    opserr <<"FiberSection2d::addFiber -- failed to allocate Fiber pointers\n";
+	double *newFiberElongP = new double [newsize];
+	double *newFiberTangent = new double [newsize];
+	if (newArray == 0 || newMatData == 0 || newFiberElongP == 0 || newFiberTangent == 0) {
+	    opserr <<"FiberSection2dThermal::addFiber -- failed to allocate Fiber pointers\n";
 	    return -1;
 	}
 
@@ -345,6 +314,8 @@ FiberSection2dThermal::addFiber(Fiber &newFiber)
 	    newArray[i] = theMaterials[i];
 	    newMatData[2*i] = matData[2*i];
 	    newMatData[2*i+1] = matData[2*i+1];
+	    newFiberElongP[i] = Fiber_ElongP[i];
+	    newFiberTangent[i] = Fiber_Tangent[i];	    
 	}
 
 	// initialize new memory
@@ -352,18 +323,26 @@ FiberSection2dThermal::addFiber(Fiber &newFiber)
 	    newArray[i] = 0;
 	    newMatData[2*i] = 0.0;
 	    newMatData[2*i+1] = 0.0;
+	    newFiberElongP[i] = 0.0;
+	    newFiberTangent[i] = 0.0;
 	}
 
 	sizeFibers = newsize;
 
 	// set new memory
-	if (theMaterials != 0) {
+	if (theMaterials != 0)
 	    delete [] theMaterials;
+	if (matData != 0)
 	    delete [] matData;
-	}
+	if (Fiber_ElongP != 0)
+	  delete [] Fiber_ElongP;
+	if (Fiber_Tangent != 0)
+	  delete [] Fiber_Tangent;	
 
 	theMaterials = newArray;
 	matData = newMatData;
+	Fiber_ElongP = newFiberElongP;
+	Fiber_Tangent = newFiberTangent;
     }
 
     // set the new pointers and data
@@ -376,7 +355,7 @@ FiberSection2dThermal::addFiber(Fiber &newFiber)
     theMaterials[numFibers] = theMat->getCopy();
 
     if(theMaterials[numFibers] == 0) {
-	opserr <<"FiberSection2d::addFiber -- failed to get copy of a Material\n";
+	opserr <<"FiberSection2dThermal::addFiber -- failed to get copy of a Material\n";
 	return -1;
     }
 
@@ -415,10 +394,6 @@ FiberSection2dThermal::~FiberSection2dThermal()
 
   if (sectionIntegr != 0)
     delete sectionIntegr;
-
-
-  if (sT != 0)
-    delete sT;
 
   if (Fiber_Tangent != 0)
     delete [] Fiber_Tangent;
@@ -592,14 +567,11 @@ FiberSection2dThermal::getTemperatureStress(const Vector &dataMixed)
 
   AverageThermalElong.Zero();
   DataMixed = dataMixed;
-  #ifdef _DEBUG
- // opserr<<"FiberSectionThermal:getTemperaturestress, DataMixed "<<endln<<DataMixed;
-  #endif
 
   double fiberLocs[10000];
   double fiberArea[10000];
-  sTData[0] = 0.0; sTData[1] = 0.0;
-
+  sT.Zero();
+  
   if (sectionIntegr != 0) {
     sectionIntegr->getFiberLocations(numFibers, fiberLocs);
     sectionIntegr->getFiberWeights(numFibers, fiberArea);
@@ -666,12 +638,12 @@ FiberSection2dThermal::getTemperatureStress(const Vector &dataMixed)
 	  SectionMomofArea += (fiberArea[i]*(fiberLocs[i] - yBar)*(fiberLocs[i] - yBar));
 	  ThermalForce += Fiber_ElongP[i]*fiberArea[i];
 	  ThermalMoment += Fiber_ElongP[i]*fiberArea[i]*(fiberLocs[i] - yBar);
-      sTData[0] += FiberForce;
-      sTData[1] -= FiberForce*(fiberLocs[i] - yBar);
+	  sT(0) += FiberForce;
+	  sT(1) -= FiberForce*(fiberLocs[i] - yBar);
   }
   AverageThermalElong(0) = ThermalForce/SectionArea;
   AverageThermalElong(1) = ThermalMoment/SectionMomofArea;
-  return *sT;
+  return sT;
 
 }
 //UoE group///Calculating Thermal stresses at each /////////////////////////////////////////////////////end
@@ -692,7 +664,7 @@ FiberSection2dThermal::getCopy(void)
 
   theCopy->numFibers = numFibers;
 
-  if (numFibers != 0) {
+  if (numFibers > 0) {
     theCopy->theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theCopy->theMaterials == 0) {
@@ -707,6 +679,13 @@ FiberSection2dThermal::getCopy(void)
       exit(-1);
     }
 
+    theCopy->Fiber_Tangent = new double [numFibers];
+    theCopy->Fiber_ElongP = new double [numFibers];
+    if (theCopy->Fiber_Tangent == 0 || theCopy->Fiber_ElongP == 0) {
+      opserr << "FiberSection2dThermal::getCopy -- failed to allocate double array for fiber data\n";
+      exit(-1);
+    }
+    
     for (int i = 0; i < numFibers; i++) {
       theCopy->matData[i*2] = matData[i*2];
       theCopy->matData[i*2+1] = matData[i*2+1];
@@ -716,6 +695,8 @@ FiberSection2dThermal::getCopy(void)
 	opserr <<"FiberSection2dThermal::getCopy -- failed to get copy of a Material";
 	exit(-1);
       }
+      theCopy->Fiber_Tangent[i] = Fiber_Tangent[i];
+      theCopy->Fiber_ElongP[i] = Fiber_ElongP[i];
     }
     //retrieve temperatures
 	//theCopy->theTemperatures = theTemperatures->getCopy();
@@ -731,6 +712,7 @@ FiberSection2dThermal::getCopy(void)
   theCopy->eCommit = eCommit;
   theCopy->e = e;
   theCopy->yBar = yBar;
+  theCopy->sT = sT;
 
   theCopy->kData[0] = kData[0];
   theCopy->kData[1] = kData[1];
@@ -918,8 +900,14 @@ FiberSection2dThermal::sendSelf(int commitTag, Channel &theChannel)
       return res;
     }
 
-    // send the fiber data, i.e. area and loc
-    Vector fiberData(matData, 2*numFibers);
+    // send the fiber data, i.e. area and loc, tangent, and elongP
+    Vector fiberData(4*numFibers);
+    for (int i = 0; i < numFibers; i++) {
+      fiberData(            i) = matData[i];
+      fiberData(  numFibers+i) = matData[numFibers+i];
+      fiberData(2*numFibers+i) = Fiber_Tangent[i];
+      fiberData(3*numFibers+i) = Fiber_ElongP[i];
+    }
     res += theChannel.sendVector(dbTag, commitTag, fiberData);
     if (res < 0) {
       opserr <<  "FiberSection2dThermal::sendSelf - failed to send material data\n";
@@ -967,11 +955,17 @@ FiberSection2dThermal::recvSelf(int commitTag, Channel &theChannel,
 	for (int i=0; i<numFibers; i++)
 	  delete theMaterials[i];
 	delete [] theMaterials;
-	if (matData != 0)
-	  delete [] matData;
-	matData = 0;
 	theMaterials = 0;
       }
+      if (matData != 0)
+	delete [] matData;
+      if (Fiber_Tangent != 0)
+	delete [] Fiber_Tangent;
+      if (Fiber_ElongP != 0)
+	delete [] Fiber_ElongP;	
+      Fiber_Tangent = 0;
+      Fiber_ElongP = 0;	
+      matData = 0;
 
       // create memory to hold material pointers and fiber data
       numFibers = data(1);
@@ -992,15 +986,32 @@ FiberSection2dThermal::recvSelf(int commitTag, Channel &theChannel,
 	  opserr <<"FiberSection2dThermal::recvSelf  -- failed to allocate double array for material data\n";
 	  exit(-1);
 	}
+
+	Fiber_Tangent = new double [numFibers];
+	if (Fiber_Tangent == 0) {
+	  opserr <<"FiberSection2dThermal::recvSelf  -- failed to allocate double array for fiber tangent\n";
+	  exit(-1);
+	}
+	Fiber_ElongP = new double [numFibers];
+	if (Fiber_ElongP == 0) {
+	  opserr <<"FiberSection2dThermal::recvSelf  -- failed to allocate double array for fiber elongation\n";
+	  exit(-1);
+	}		
       }
     }
 
-    Vector fiberData(matData, 2*numFibers);
+    Vector fiberData(4*numFibers);
     res += theChannel.recvVector(dbTag, commitTag, fiberData);
     if (res < 0) {
       opserr <<  "FiberSection2dThermal::recvSelf - failed to recv material data\n";
       return res;
     }
+    for (int i = 0; i < numFibers; i++) {
+      matData[i] =           fiberData(          i);
+      matData[numFibers+i] = fiberData(numFibers+i);
+      Fiber_Tangent[i] = fiberData(2*numFibers+i);
+      Fiber_ElongP[i]  = fiberData(3*numFibers+i);
+    }    
 
     int i;
     for (i=0; i<numFibers; i++) {
@@ -1051,7 +1062,7 @@ FiberSection2dThermal::recvSelf(int commitTag, Channel &theChannel,
 void
 FiberSection2dThermal::Print(OPS_Stream &s, int flag)
 {
-  s << "\nFiberSection2dTemperature, tag: " << this->getTag() << endln;
+  s << "\nFiberSection2dThermal, tag: " << this->getTag() << endln;
   s << "\tSection code: " << code;
   s << "\tNumber of Fibers: " << numFibers << endln;
   s << "\tCentroid: " << yBar << endln;

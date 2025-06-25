@@ -1132,15 +1132,35 @@ SSPbrickUP::Print(OPS_Stream &s, int flag)
 Response*
 SSPbrickUP::setResponse(const char **argv, int argc, OPS_Stream &eleInfo)
 {
-	// no special recorders for this element, call the method in the material class
-	return theMaterial->setResponse(argv, argc, eleInfo);
+	
+	if (strcmp(argv[0],"stress3D6") == 0) {
+		return new ElementResponse(this, 1, Vector(6));
+	}
+	if (strcmp(argv[0],"strain3D6") == 0) {
+		return new ElementResponse(this, 2, Vector(6));
+	} else {
+		// no special recorders for this element, call the method in the material class
+		return theMaterial->setResponse(argv, argc, eleInfo);
+	}
 }
 
 int
 SSPbrickUP::getResponse(int responseID, Information &eleInfo)
 {
 	// no special recorders for this element, call the method in the material class
-	return theMaterial->getResponse(responseID, eleInfo);
+	if (responseID == 1) {
+		// get stress from the material
+		const Vector &mStress = theMaterial->getStress();
+		return eleInfo.setVector(mStress);
+	} else if (responseID == 2) {
+		// get strain from the material
+
+		const Vector &mStrain = theMaterial->getStrain();
+		return eleInfo.setVector(mStrain);
+	} else {
+		// no special recorders for this element, call the method in the material class
+		return theMaterial->getResponse(responseID, eleInfo);
+	}
 }
 
 int

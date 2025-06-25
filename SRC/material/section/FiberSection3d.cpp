@@ -1149,7 +1149,15 @@ FiberSection3d::Print(OPS_Stream &s, int flag)
 		  else
 			  s << "}\n";
 	  }
-	  s << "\t\t\t]}";
+	  s << "\t\t\t]";
+	  FiberSectionRepr *sectionRepres = (FiberSectionRepr *)OPS_getSectionRepres(this->getTag());
+		if (sectionRepres == 0) 
+		{
+		   s<<'}';
+		} else {
+		   sectionRepres->Print(s,flag);
+		   s<<'}';
+		}
   }
 }
 
@@ -1158,21 +1166,23 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 {
   Response *theResponse = 0;
   
+  static double yLocs[10000];
+  static double zLocs[10000];
+  static double fiberArea[10000];
+  
+  if (sectionIntegr != 0) {
+    sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+  }  
+  else {
+    for (int i = 0; i < numFibers; i++) {
+      yLocs[i] = matData[3*i];
+      zLocs[i] = matData[3*i+1];
+      fiberArea[i] = matData[3*i+2];      
+    }
+  }
+    
   if (argc > 2 && strcmp(argv[0],"fiber") == 0) {
 
-    static double yLocs[10000];
-    static double zLocs[10000];
-    
-    if (sectionIntegr != 0) {
-      sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
-    }  
-    else {
-      for (int i = 0; i < numFibers; i++) {
-	yLocs[i] = matData[3*i];
-	zLocs[i] = matData[3*i+1];
-      }
-    }
-    
     int key = numFibers;
     int passarg = 2;
     
@@ -1235,7 +1245,7 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
       zSearch = zLocs[0];
       dy = ySearch-yCoord;
       dz = zSearch-zCoord;
-      closestDist = sqrt(dy*dy + dz*dz);
+      closestDist = dy*dy + dz*dz;
       key = 0;
       for (int j = 1; j < numFibers; j++) {
 	//ySearch = matData[3*j];
@@ -1244,7 +1254,7 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 	zSearch = zLocs[j];	    	    	  
 	dy = ySearch-yCoord;
 	dz = zSearch-zCoord;
-	distance = sqrt(dy*dy + dz*dz);
+	distance = dy*dy + dz*dz;
 	if (distance < closestDist) {
 	  closestDist = distance;
 	  key = j;
@@ -1255,9 +1265,9 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     
     if (key < numFibers && key >= 0) {
       output.tag("FiberOutput");
-      output.attr("yLoc",matData[3*key]);
-      output.attr("zLoc",matData[3*key+1]);
-      output.attr("area",matData[3*key+2]);
+      output.attr("yLoc",yLocs[key]);
+      output.attr("zLoc",zLocs[key]);
+      output.attr("area",fiberArea[key]);
       
       theResponse = theMaterials[key]->setResponse(&argv[passarg], argc-passarg, output);
       
@@ -1268,9 +1278,9 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     int numData = numFibers*5;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
-      output.attr("yLoc", matData[3*j]);
-      output.attr("zLoc", matData[3*j+1]);
-      output.attr("area", matData[3*j+2]);    
+      output.attr("yLoc", yLocs[j]);
+      output.attr("zLoc", zLocs[j]);
+      output.attr("area", fiberArea[j]);    
       output.tag("ResponseType","yCoord");
       output.tag("ResponseType","zCoord");
       output.tag("ResponseType","area");
@@ -1285,9 +1295,9 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
     int numData = numFibers*6;
     for (int j = 0; j < numFibers; j++) {
       output.tag("FiberOutput");
-      output.attr("yLoc", matData[3*j]);
-      output.attr("zLoc", matData[3*j+1]);
-      output.attr("area", matData[3*j+2]);    
+      output.attr("yLoc", yLocs[j]);
+      output.attr("zLoc", zLocs[j]);
+      output.attr("area", fiberArea[j]);    
       output.attr("material", theMaterials[j]->getTag());
       output.tag("ResponseType","yCoord");
       output.tag("ResponseType","zCoord");
@@ -1314,7 +1324,12 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
   }
   //by SAJalali
   else if ((strcmp(argv[0], "energy") == 0) || (strcmp(argv[0], "Energy") == 0)) {
+      output.tag("SectionOutput");
+      output.attr("secType", this->getClassType());
+      output.attr("secTag", this->getTag());
+      output.tag("ResponseType", "energy");
 	  theResponse = new MaterialResponse(this, 10, getEnergy());
+      output.endTag();
   }
   else if (strcmp(argv[0],"centroid") == 0) 
     theResponse = new MaterialResponse(this, 20, Vector(2));
@@ -1329,14 +1344,29 @@ FiberSection3d::setResponse(const char **argv, int argc, OPS_Stream &output)
 int 
 FiberSection3d::getResponse(int responseID, Information &sectInfo)
 {
+  static double yLocs[10000];
+  static double zLocs[10000];
+  static double fiberArea[10000];
+  
+  if (sectionIntegr != 0) {
+    sectionIntegr->getFiberLocations(numFibers, yLocs, zLocs);
+  }  
+  else {
+    for (int i = 0; i < numFibers; i++) {
+      yLocs[i] = matData[3*i];
+      zLocs[i] = matData[3*i+1];
+      fiberArea[i] = matData[3*i+2];      
+    }
+  }
+  
   if (responseID == 5) {
     int numData = 5*numFibers;
     Vector data(numData);
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
-      data(count)   = matData[3*j]; // y
-      data(count+1) = matData[3*j+1]; // z
-      data(count+2) = matData[3*j+2]; // A
+      data(count)   = yLocs[j]; // y
+      data(count+1) = zLocs[j]; // z
+      data(count+2) = fiberArea[j]; // A
       data(count+3) = theMaterials[j]->getStress();
       data(count+4) = theMaterials[j]->getStrain();
       count += 5;
@@ -1347,9 +1377,9 @@ FiberSection3d::getResponse(int responseID, Information &sectInfo)
     Vector data(numData);
     int count = 0;
     for (int j = 0; j < numFibers; j++) {
-      data(count)   = matData[3*j]; // y
-      data(count+1) = matData[3*j+1]; // z
-      data(count+2) = matData[3*j+2]; // A
+      data(count)   = yLocs[j]; // y
+      data(count+1) = zLocs[j]; // z
+      data(count+2) = fiberArea[j]; // A
       data(count+3) = (double)theMaterials[j]->getTag();
       data(count+4) = theMaterials[j]->getStress();
       data(count+5) = theMaterials[j]->getStrain();	    
@@ -1642,14 +1672,14 @@ double FiberSection3d::getEnergy() const
 	}
 	else {
 		for (int i = 0; i < numFibers; i++) {
-			fiberArea[i] = matData[2 * i + 1];
+            fiberArea[i] = matData[3 * i + 2];
 		}
 	}
 	double energy = 0;
 	for (int i = 0; i < numFibers; i++)
 	{
 		double A = fiberArea[i];
-		energy += A * theMaterials[i]->getEnergy();
+        energy += A *theMaterials[i]->getEnergy();
 	}
 	return energy;
 }
