@@ -323,7 +323,7 @@ ItpackLinSolver::solve(void)
   iparm[0] = maxIter;
 
   // Print flag
-  iparm[1] = 1;
+  iparm[1] = 0;
   
   // Sparse matrix storage scheme (0 = symmetric, 1 = nonsymmetric)
   iparm[4] = 1;
