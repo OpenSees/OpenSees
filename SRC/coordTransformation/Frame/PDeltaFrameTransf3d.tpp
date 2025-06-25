@@ -14,18 +14,16 @@
 // Adapted: Remo Magalhaes de Souza
 //          04/2000
 //
+// Written: cmp
+//
 #include <Vector.h>
 #include <Matrix.h>
 #include <Matrix3D.h>
 #include <Node.h>
-#include <Channel.h>
-#include <Logging.h>
-#include <PDeltaFrameTransf3d.hpp>
 
-using OpenSees::Matrix3D;
+#include "PDeltaFrameTransf3d.h"
 
-#define THREAD_LOCAL static
-
+namespace OpenSees {
 
 template <int nn, int ndf>
 PDeltaFrameTransf<nn,ndf>::PDeltaFrameTransf(int tag, 
@@ -193,4 +191,6 @@ void
 PDeltaFrameTransf<nn,ndf>::Print(OPS_Stream &s, int flag)
 {
   linear.Print(s, flag);
+}
+
 }

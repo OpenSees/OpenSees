@@ -1,11 +1,13 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
-//
-//===----------------------------------------------------------------------===//
 //                              https://xara.so
-//===----------------------------------------------------------------------===//
+//----------------------------------------------------------------------------//
 //
+//                                 FEDEASLab
+//       Finite Elements for Design Evaluation and Analysis of Structures
+//
+//----------------------------------------------------------------------------//
 //
 // Please cite the following resource in any derivative works:
 //
@@ -22,8 +24,9 @@
 #include <Channel.h>
 #include <Logging.h>
 #include <BasicFrameTransf.h>
+#include "FrameTransform.h"
 
-using namespace OpenSees;
+namespace OpenSees {
 
 template<int ndf>
 BasicFrameTransf3d<ndf>::BasicFrameTransf3d(FrameTransform<2,ndf> *t)
@@ -419,4 +422,6 @@ BasicFrameTransf3d<ndf>::recvSelf(int cTag, Channel &,
                             FEM_ObjectBroker &theBroker)
 {
   return -1;
+}
+
 }

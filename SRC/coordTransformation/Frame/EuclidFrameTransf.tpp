@@ -2,36 +2,39 @@
 //
 //                                   xara
 //                              https://xara.so
-//===----------------------------------------------------------------------===//
+//----------------------------------------------------------------------------//
 //
-//                                  FEDEASLab
+//                                 FEDEASLab
 //       Finite Elements for Design Evaluation and Analysis of Structures
 //
-//===----------------------------------------------------------------------===//
+//----------------------------------------------------------------------------//
 //
-// Description: This file contains the implementation for the 
-// EuclidFrameTransf class. EuclidFrameTransf is a nonlinear transformation 
-// for a space frame.
+// Please cite the following resource in any derivative works:
 //
 // [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
 //     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
 //     https://doi.org/10.1002/nme.7506
 //
+//===----------------------------------------------------------------------===//
+
+//
+// Description: This file contains the implementation for the 
+// EuclidFrameTransf class. EuclidFrameTransf is a nonlinear transformation 
+// for a space frame.
+//
 // Written: cmp
 // Created: 04/2025
 //
-//===----------------------------------------------------------------------===//
 #pragma once
 #include <Vector.h>
 #include <Matrix.h>
 #include <Matrix3D.h>
 #include <Node.h>
-#include <Channel.h>
 #include <Logging.h>
 #include <Rotations.hpp>
-#include <EuclidFrameTransf.hpp>
+#include "EuclidFrameTransf.h"
 
-using namespace OpenSees;
+namespace OpenSees {
 
 
 template <int nn, int ndf, typename BasisT>
@@ -96,7 +99,6 @@ template <int nn, int ndf, typename BasisT>
 int
 EuclidFrameTransf<nn,ndf,BasisT>::initialize(std::array<Node*, nn>& new_nodes)
 {
-
   for (int i=0; i<nn; i++) {
     nodes[i] = new_nodes[i];
     if (nodes[i] == nullptr) {
@@ -496,3 +498,4 @@ EuclidFrameTransf<nn,ndf,BasisT>::Print(OPS_Stream &s, int flag)
   }
 }
 
+}
