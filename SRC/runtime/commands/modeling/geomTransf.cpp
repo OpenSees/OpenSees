@@ -30,6 +30,8 @@
 #include <BasicFrameTransf.h>
 #include <transform/FrameTransformBuilder.hpp>
 
+using namespace OpenSees;
+
 int 
 TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, int argc,
                          const char ** const argv)
