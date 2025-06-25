@@ -48,10 +48,10 @@
 
 #include <stdlib.h>
 
-ItpackLinSOE::ItpackLinSOE(ItpackLinSolver &the_Solver)
+ItpackLinSOE::ItpackLinSOE(ItpackLinSolver &the_Solver, bool symm)
 :LinearSOE(the_Solver, LinSOE_TAGS_ItpackLinSOE),
  size(0), nnz(0), A(0), B(0), X(0), colA(0), rowStartA(0),
- vectX(0), vectB(0), Asize(0), Bsize(0), Aformed(false)
+ vectX(0), vectB(0), Asize(0), Bsize(0), Aformed(false), symmetric(symm)
 {
   the_Solver.setLinearSOE(*this);
 }
@@ -256,7 +256,7 @@ ItpackLinSOE::addA(const Matrix &m, const ID &id, double fact)
 	int endRowLoc = rowStartA[row+1];
 	for (int j=0; j<idSize; j++) {
 	  int col = id(j);
-	  if (col < row) continue;	  
+	  if (symmetric && col < row) continue;	  
 	  if (col <size && col >= 0) {
 	    // find place in A using colA
 	    for (int k=startRowLoc; k<endRowLoc; k++)
@@ -277,7 +277,7 @@ ItpackLinSOE::addA(const Matrix &m, const ID &id, double fact)
 	int endRowLoc = rowStartA[row+1];
 	for (int j=0; j<idSize; j++) {
 	  int col = id(j);
-	  if (col < row) continue;
+	  if (symmetric && col < row) continue;
 	  if (col <size && col >= 0) {
 	    // find place in A using colA
 	    for (int k=startRowLoc; k<endRowLoc; k++)

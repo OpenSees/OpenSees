@@ -43,8 +43,7 @@ void* OPS_ItpackLinSolver()
   
   int nArgs = OPS_GetNumRemainingInputArgs();
   if (nArgs == 0) {
-    opserr << "WARNING Itpack -- no method specified\n";
-    return 0;
+    opserr << "WARNING Itpack -- no method specified, using JCG" << endln;
   }
   if (nArgs > 0 && OPS_GetIntInput(&numData,&method) < 0) {
     opserr << "WARNING Itpack -- error reading method\n";
@@ -53,6 +52,7 @@ void* OPS_ItpackLinSolver()
   
   int iter = 100;
   double omega = 1.0;
+  bool symmetric = true;
   while (OPS_GetNumRemainingInputArgs() > 1) {
     const char *arg = OPS_GetString();
     if (strcmp(arg,"-iter") == 0) {
@@ -62,11 +62,17 @@ void* OPS_ItpackLinSolver()
     if (strcmp(arg,"-omega") == 0) {
       if (OPS_GetDoubleInput(&numData,&omega) < 0)
 	return 0;
-    }    
+    }
+    if (strcmp(arg,"-symmetric") == 0) {
+      int symm;
+      if (OPS_GetIntInput(&numData,&symm) < 0)
+	return 0;
+      symmetric = (symm != 0) ? true : false;
+    }        
   }
   
   ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega);
-  return new ItpackLinSOE(*theSolver);  
+  return new ItpackLinSOE(*theSolver, symmetric);  
 }
 
 ItpackLinSolver::ItpackLinSolver(int meth, int iter, double om)
