@@ -7,6 +7,7 @@ This script creates visualizations using matplotlib
 import numpy as np
 import matplotlib.pyplot as plt
 import os
+import matplotlib.patches as patches
 
 def parse_nodes_file(filename):
     """Parse the nodes.txt file to extract coordinates"""
@@ -76,6 +77,38 @@ def parse_displacement_file(filename):
     displacements = values[1:]
     
     return time_step, displacements
+
+def parse_element_stress(filename):
+    """Parse elements.txt to extract and average stress from Gauss points."""
+    element_stresses = []
+    with open(filename, 'r') as f:
+        lines = f.readlines()
+    
+    i = 0
+    while i < len(lines):
+        if 'Stress (xx yy xy)' in lines[i]:
+            gauss_stresses = []
+            # Next 4 lines should be Gauss point stresses
+            for j in range(1, 5):
+                if i + j < len(lines) and 'Gauss point' in lines[i+j]:
+                    try:
+                        parts = lines[i+j].split(':')[1].strip().split()
+                        stress_vals = [float(p) for p in parts]
+                        gauss_stresses.append(stress_vals)
+                    except (ValueError, IndexError):
+                        continue
+            
+            if len(gauss_stresses) > 0:
+                # Average the stresses (xx, yy, xy)
+                avg_stress = np.mean(gauss_stresses, axis=0)
+                element_stresses.append(avg_stress)
+            
+            # Move index past this stress block
+            i += 4
+        else:
+            i += 1
+            
+    return np.array(element_stresses)
 
 def plot_displacement_history():
     """Plot displacement history from OpenSees output"""
@@ -245,6 +278,91 @@ def plot_mesh_and_deformed():
     plt.savefig('RESULTS/mesh_comparison.png', dpi=300, bbox_inches='tight')
     plt.show()
 
+def plot_stress_distribution():
+    """Plot sigma_xx, sigma_yy, and tau_xy stress distributions on undeformed mesh as subplots"""
+    if not os.path.exists('RESULTS/elements.txt'):
+        print("ERROR: elements.txt not found")
+        return
+
+    # Parse nodes, elements, and displacements
+    nodes = parse_nodes_file('RESULTS/nodes.txt')
+    elements = parse_elements_file('RESULTS/elements.txt')
+    
+    # Parse element stress
+    stress = parse_element_stress('RESULTS/elements.txt')
+    
+    if stress.shape[0] == 0:
+        print("ERROR: No stress data found in elements.txt. The analysis may have failed.")
+        return
+        
+    if stress.shape[0] != len(elements):
+        print(f"Warning: Number of stresses ({stress.shape[0]}) does not match number of elements ({len(elements)}).")
+        return
+
+    # Create node dictionary for easy lookup
+    node_dict = {node[0]: (node[1], node[2]) for node in nodes}
+
+    # Get axis limits from node coordinates
+    all_x = [node[1] for node in nodes]
+    all_y = [node[2] for node in nodes]
+    xlim = (min(all_x), max(all_x))
+    ylim = (min(all_y), max(all_y))
+
+    # Prepare stress components and titles
+    stress_names = [r'$\sigma_{xx}$', r'$\sigma_{yy}$', r'$\tau_{xy}$']
+    fig, axes = plt.subplots(3, 1, figsize=(10, 8), sharex=True, sharey=True)
+    for k, ax in enumerate(axes):
+        cmap = plt.get_cmap('jet')
+        vals = stress[:, k]
+        vmin = np.min(vals)
+        vmax = np.max(vals)
+        max_idx = np.argmax(vals)
+        min_idx = np.argmin(vals)
+        centroids = []
+        for idx, (ele_id, node_ids) in enumerate(elements):
+            if len(node_ids) == 4 and idx < len(vals):
+                coords = [node_dict[nid] for nid in node_ids if nid in node_dict]
+                if len(coords) == 4:
+                    color_val = (vals[idx] - vmin) / (vmax - vmin) if vmax > vmin else 0.5
+                    poly_x = [c[0] for c in coords]
+                    poly_y = [c[1] for c in coords]
+                    ax.fill(poly_x, poly_y, color=cmap(color_val), alpha=0.8, edgecolor='k', linewidth=0.5)
+                    # Store centroid for annotation
+                    centroid = (np.mean(poly_x), np.mean(poly_y))
+                    centroids.append(centroid)
+                else:
+                    centroids.append((None, None))
+            else:
+                centroids.append((None, None))
+        ax.set_title(f'{stress_names[k]} Stress')
+        ax.set_xlabel('X (inches)')
+        if k == 0:
+            ax.set_ylabel('Y (inches)')
+        ax.set_aspect('equal')
+        ax.grid(True, alpha=0.3)
+        ax.set_xlim(xlim)
+        ax.set_ylim(ylim)
+        norm = plt.Normalize(vmin=vmin, vmax=vmax)
+        sm = plt.cm.ScalarMappable(cmap=cmap, norm=norm)
+        sm.set_array([])
+        # Add colorbar with height matching the axis
+        from mpl_toolkits.axes_grid1 import make_axes_locatable
+        divider = make_axes_locatable(ax)
+        cax = divider.append_axes("right", size="3%", pad=0.1)
+        cb = fig.colorbar(sm, cax=cax, label=stress_names[k] + ' (ksi)')
+        # Annotate max and min
+        if centroids[max_idx][0] is not None:
+            ax.annotate(f"max: {vmax:.2f}", xy=centroids[max_idx], xytext=(centroids[max_idx][0], centroids[max_idx][1]),
+                        color='red', fontsize=10, fontweight='bold', ha='center', va='center',
+                        bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="red", lw=1, alpha=0.7))
+        if centroids[min_idx][0] is not None:
+            ax.annotate(f"min: {vmin:.2f}", xy=centroids[min_idx], xytext=(centroids[min_idx][0], centroids[min_idx][1]),
+                        color='blue', fontsize=10, fontweight='bold', ha='center', va='center',
+                        bbox=dict(boxstyle="round,pad=0.2", fc="white", ec="blue", lw=1, alpha=0.7))
+    plt.tight_layout()
+    plt.savefig('RESULTS/stress_distribution.png', dpi=300, bbox_inches='tight')
+    plt.show()
+
 def main():
     """Main function"""
     print("=== OpenSees Results Visualization ===")
@@ -261,10 +379,14 @@ def main():
     print("Creating mesh comparison plot...")
     plot_mesh_and_deformed()
     
+    print("Creating stress distribution plot...")
+    plot_stress_distribution()
+    
     print("\nVisualization complete!")
     print("Check the RESULTS directory for output images:")
     print("  - displacement_history.png")
     print("  - mesh_comparison.png")
+    print("  - stress_distribution.png")
 
 if __name__ == "__main__":
     main() 

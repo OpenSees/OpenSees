@@ -20,9 +20,6 @@ set(OPS_FINAL_TARGET "OpenSees" CACHE STRING "OpenSees final target")
 #                            Basic Switches
 #==============================================================================
 
-option(OPS_Use_Dev_Directories
-  "Include files in DEVELOPER directory"                   OFF)
-
 option(FMK
   "Special FMK Code"                                       OFF)
 

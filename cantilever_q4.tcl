@@ -8,7 +8,7 @@ wipe
 model BasicBuilder -ndm 2 -ndf 2
 
 # Material properties
-set E 30000.0    ;# Young's modulus (ksi)
+set E 30000000.0 ;# Young's modulus (ksi)
 set nu 0.3       ;# Poisson's ratio
 set rho 0.0      ;# Density (negligible for static analysis)
 
@@ -16,13 +16,13 @@ set rho 0.0      ;# Density (negligible for static analysis)
 nDMaterial ElasticIsotropic 1 $E $nu $rho
 
 # Beam geometry
-set L 100.0      ;# Length (in)
-set H 10.0       ;# Height (in)
+set L 48.0      ;# Length (in)
+set H 12.0       ;# Height (in)
 set t 1.0        ;# Thickness (in)
 
 # Mesh parameters
-set nx 5        ;# Number of elements in x-direction
-set ny 2         ;# Number of elements in y-direction
+set nx 24        ;# Number of elements in x-direction
+set ny 6         ;# Number of elements in y-direction
 set dx [expr $L/$nx]
 set dy [expr $H/$ny]
 
@@ -60,7 +60,7 @@ for {set j 0} {$j <= $ny} {incr j} {
 # Create load pattern
 pattern Plain 1 "Linear" {
     # Apply tip load at right end (distributed among top nodes)
-    set loadPerNode [expr -100.0 / ($ny + 1)]
+    set loadPerNode [expr -1000.0 / ($ny + 1)]
     for {set j 0} {$j <= $ny} {incr j} {
         set nodeID [expr $j*($nx+1) + $nx + 1]
         load $nodeID 0.0 $loadPerNode
@@ -82,16 +82,16 @@ file mkdir RESULTS
 set totalNodes [expr ($nx+1)*($ny+1)]
 set totalElements [expr $nx * $ny]
 
-# Print model information to files (simplified)
-print -file RESULTS/model_info.txt
-print -file RESULTS/nodes.txt -node
-print -file RESULTS/elements.txt -ele
-
 # Create recorders (simplified to match working version)
 recorder Node -file RESULTS/displacements.out -time -nodeRange 1 $totalNodes -dof 1 2 disp
 
 # Perform analysis
 analyze 1
+
+# Print model information to files (simplified)
+print -file RESULTS/model_info.txt
+print -file RESULTS/nodes.txt -node
+print -file RESULTS/elements.txt -ele
 
 # Print results
 puts "Analysis completed successfully!"

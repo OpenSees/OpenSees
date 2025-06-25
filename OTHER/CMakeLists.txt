@@ -18,10 +18,11 @@ set(CMAKE_DISABLE_IN_SOURCE_BUILD ON)
 
 add_subdirectory(AMD/)
 add_subdirectory(UMFPACK/)
-add_subdirectory(ITPACK/)
 add_subdirectory(ARPACK/)
 add_subdirectory(SuperLU_5.1.1/)
 add_subdirectory(CSPARSE/)
+add_subdirectory(Triangle/)
+add_subdirectory(eigenAPI/)
 
 if(MPI_FOUND)
 message("adding MUMPS and SUPERLU_DIST")

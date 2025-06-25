@@ -1,0 +1,21 @@
+Earthquake Model Information:
+================================
+Mesh Parameters:
+  Width: 10.0 m
+  Height: 5.0 m
+  Elements: 10 x 5 = 50
+  Nodes: (10+1) x (5+1) = 66
+
+Material Properties:
+  Young's Modulus (E): 3.0e7 Pa
+  Poisson's Ratio (ν): 0.3
+  Density (ρ): 2000.0 kg/m³
+  Shear Wave Velocity (Vs): 75.96 m/s
+  P-Wave Velocity (Vp): 142.10 m/s
+
+Analysis Parameters:
+  Time Duration: 5.0 s
+  Time Step: 0.01 s
+  Earthquake Period: 0.5 s
+  Acceleration Factor: 50.0
+  Rayleigh Damping (ζ): 0.02
