@@ -1,10 +1,11 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 //
-// 
 //  Objectives:
 //  - little to no overhead above C-style arrays
 //  - value semantics; objects do not decay to pointers;
@@ -34,8 +35,6 @@
 #include <math.h>
 #include <assert.h>
 #include <array>
-// #include <stdexcept>
-// #include <functional>
 #include <Vector.h>
 #include <Matrix.h>
 #include "blasdecl.h"
@@ -110,16 +109,16 @@ struct VectorND {
 
   // Tensor product, also known as the "bun" product
   template <int nc>
-  constexpr inline OpenSees::MatrixND<N,nc,double>
+  constexpr inline MatrixND<N,nc,double>
   bun(const VectorND<nc> &other) const {
     if constexpr (N == 3 && nc == 3)
-      return OpenSees::MatrixND<N,nc,double> {{
+      return MatrixND<N,nc,double> {{
         {values[0]*other[0], values[1]*other[0], values[2]*other[0]},
         {values[0]*other[1], values[1]*other[1], values[2]*other[1]},
         {values[0]*other[2], values[1]*other[2], values[2]*other[2]}
       }};
     else {
-      OpenSees::MatrixND<N,nc,double> prod;
+      MatrixND<N,nc,double> prod;
 
       for (index_t j = 0; j < other.size(); ++j)
         for (index_t i = 0; i < this->size(); ++i)
