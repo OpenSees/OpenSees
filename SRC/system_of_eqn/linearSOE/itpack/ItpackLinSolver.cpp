@@ -187,8 +187,8 @@ ItpackLinSolver::setSize(void)
   for (i = 0; i <= n; i++) 
     IA[i] = iaPtr[i] + 1;
 
-  opserr << "ItpackLinSolver::setSize() -- method = " << method
-	 << ", ITMAX = " << maxIter << endln;
+  //opserr << "ItpackLinSolver::setSize() -- method = " << method
+  //	 << ", ITMAX = " << maxIter << endln;
 
   return 0;
 }
@@ -327,6 +327,7 @@ ItpackLinSolver::solve(void)
   
   // Sparse matrix storage scheme (0 = symmetric, 1 = nonsymmetric)
   iparm[4] = 1;
+  iparm[4] = 0;  
 
   double *aPtr = theSOE->A;
   double *xPtr = theSOE->X;
@@ -353,8 +354,8 @@ ItpackLinSolver::solve(void)
   int nb = theSOE->size-1; // I think this is what it should be
 
   // Fill the x vector with zeros as initial guess to solution of Ax=b
-  //double val = 0.0;
-  //vfill_(&n, xPtr, &val);
+  double val = 0.0;
+  vfill_(&n, xPtr, &val);
 
   switch (method) {
   case ItpackJCG:
@@ -401,7 +402,7 @@ ItpackLinSolver::solve(void)
     return -ier;
   }
   else {
-    opserr << "Converged in " << iparm[0] << " iterations" << endln;
+    //opserr << "Converged in " << iparm[0] << " iterations" << endln;
     return 0;
   }
 }

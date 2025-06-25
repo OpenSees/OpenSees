@@ -90,7 +90,7 @@ ItpackLinSOE::setSize(Graph &theGraph)
   }
   nnz = newNNZ;
   
-  opserr << "ItpackLinSOE::setSize - n " << size << " nnz " << nnz << endln;
+  //opserr << "ItpackLinSOE::setSize - n " << size << " nnz " << nnz << endln;
   
   if (nnz > Asize) { // we have to get more space for A and colA
     
@@ -256,6 +256,7 @@ ItpackLinSOE::addA(const Matrix &m, const ID &id, double fact)
 	int endRowLoc = rowStartA[row+1];
 	for (int j=0; j<idSize; j++) {
 	  int col = id(j);
+	  if (col < row) continue;	  
 	  if (col <size && col >= 0) {
 	    // find place in A using colA
 	    for (int k=startRowLoc; k<endRowLoc; k++)
@@ -276,6 +277,7 @@ ItpackLinSOE::addA(const Matrix &m, const ID &id, double fact)
 	int endRowLoc = rowStartA[row+1];
 	for (int j=0; j<idSize; j++) {
 	  int col = id(j);
+	  if (col < row) continue;
 	  if (col <size && col >= 0) {
 	    // find place in A using colA
 	    for (int k=startRowLoc; k<endRowLoc; k++)
