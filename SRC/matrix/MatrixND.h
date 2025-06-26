@@ -4,15 +4,11 @@
 //
 //===----------------------------------------------------------------------===//
 //                              https://xara.so
-//
-//===--- MatrixND.h - Matrix with fixed size ------------------------------===//
+//===----------------------------------------------------------------------===//
 // 
 // Desctiption: MatrixND is a fixed-size matrix class that is suitable for
 // stack-allocation.
 //
-// Objectives:
-// - little to no overhead above C-style arrays
-// - value semantics; objects do not decay to pointers;
 //
 // This code is influenced by the following sources
 //  List initialization:
@@ -44,7 +40,6 @@
 #include "VectorND.h"
 #include "Matrix.h"
 #include "Vector.h"
-#include "routines/cmx.h"
 #include "routines/SY3.h"
 
 #if __cplusplus < 202000L
@@ -61,10 +56,11 @@ requires(NR > 0 && NC > 0)
 struct MatrixND {
   double values[NC][NR];
 
-//MatrixND<NR, NC, T>(const MatrixND<NR, NC, T>&) = default;
+  //MatrixND<NR, NC, T>(const MatrixND<NR, NC, T>&) = default;
 
   // Convert to regular Matrix class
   operator Matrix() { return Matrix(&values[0][0], NR, NC);}
+
   operator const Matrix() const { return Matrix(&values[0][0], NR, NC);}
 
   int symeig(VectorND<NR>& vals) requires(NR == NC == 3) {
@@ -81,7 +77,7 @@ struct MatrixND {
     void addMatrix(const MatT& A, const double scale);
 
   template <class VecA, class VecB>  constexpr MatrixND<NR,NC,T>& 
-    addTensorProduct(const VecA& V, const VecB& W, const double scale);
+    addTensorProduct(const VecA& V, const VecB& W, const double scale) noexcept;
 
   template <class MatT, int nk> void 
     addMatrixProduct(const MatrixND<NR, nk, T> &, const MatT&, double scale);
@@ -402,8 +398,7 @@ struct MatrixND {
     for (int i=0; i<nc; i++) {
        int pos_Cols = init_col + i;
        for (int j=0; j<nr; j++) {
-          int pos_Rows = init_row + j; 
-          (*this)(pos_Rows,pos_Cols) += M(j,i)*fact;
+          (*this)(init_row + j, pos_Cols) += M(j,i)*fact;
        }
     }
   }
@@ -561,19 +556,7 @@ struct MatrixND {
     mat /= scalar; 
     return mat;
   }
-  
-  // friend std::ostream &
-  // operator<<(std::ostream &out, MatrixND const &mat) {
-  //   out << "{";
-  //   for (int r=0; r<NR; r++){
-  //     out << "{";
-  //     for (int c=0; c<NC; c++)
-  //       out << mat(r,c);
-  //     out << "}, ";
-  //   }
-  //   return out << "}\n";
-  // }
-}; // class MatrixND
+};
 
 } // namespace OpenSees
 #include "MatrixND.tpp"
