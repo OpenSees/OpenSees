@@ -86,7 +86,7 @@ struct MatrixND {
     addMatrixProduct(double, const MatrixND<NR, nk, T> &, const MatT&, double scale);
 
   // += A'B
-  template <class MatT, int nk> void 
+  template <class MatT, int nk> void
     addMatrixTransposeProduct(double thisFact, const MatrixND<nk, NR, T> &, const MatT&, double scale);
 
   // += A'BA

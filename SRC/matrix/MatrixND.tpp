@@ -170,7 +170,7 @@ void
 MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
                                                const MatrixND<nk, nr, T>& B,
                                                const MatT& C,
-                                               const double otherFact)
+                                               double otherFact)
 {
   if constexpr (nr*nc > 16) {
     int m = nr,

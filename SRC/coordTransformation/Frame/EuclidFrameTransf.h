@@ -53,7 +53,7 @@ public:
   
   virtual int getLocalAxes(Vector3D &x, Vector3D &y, Vector3D &z) const;
   
-  virtual FrameTransform<nn,ndf> *getCopy() const;
+  FrameTransform<nn,ndf> *getCopy() const final;
 
   double getInitialLength() final;
   double getDeformedLength() final;
@@ -82,7 +82,7 @@ public:
   //
   bool isShapeSensitivity() final;
   double getLengthGrad() final;
-  double getd1overLdh();
+  double getd1overLdh() final;
 
   // TaggedObject
   void Print(OPS_Stream &s, int flag = 0) final;

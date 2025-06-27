@@ -36,7 +36,6 @@
 
 namespace OpenSees {
 
-
 template <int nn, int ndf, typename BasisT>
 EuclidFrameTransf<nn,ndf,BasisT>::EuclidFrameTransf(int tag, 
                                            const Vector3D &vecxz, 

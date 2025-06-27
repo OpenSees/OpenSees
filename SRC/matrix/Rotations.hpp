@@ -1,10 +1,22 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
+//----------------------------------------------------------------------------//
+//
+//                                 FEDEASLab
+//       Finite Elements for Design Evaluation and Analysis of Structures
+//
+//----------------------------------------------------------------------------//
+//
+// Please cite the following resource in any derivative works:
+//
+// [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
-//===----------------------------------------------------------------------===//
+
 //
 // Functions related to exponential coordinates on SO(3). The implementation
 // follows value semantics with the expectation that RVO will make this
@@ -12,11 +24,6 @@
 //
 // Written: cmp
 //
-// [1] Perez, C. M., and Filippou F. C. (2024) "On Nonlinear Geometric 
-//     Transformations of Finite Elements" 
-//     Int. J. Numer. Meth. Engrg. https://doi.org/10.1002/nme.7506
-//
-//===----------------------------------------------------------------------===//
 #pragma once
 
 #include <cmath>
@@ -39,9 +46,9 @@ static constexpr Matrix3D Eye3 {{
 static inline Vector3D
 Vee(const Matrix3D &X)
 {
-//===----------------------------------------------------------------------===//
+//
 // Return the axial vector x of the given skew-symmetric 3x3 matrix X.
-//===----------------------------------------------------------------------===//
+//
   return {X(2,1), X(0,2), X(1,0)};
 }
 
@@ -299,8 +306,6 @@ VersorFromMatrix(const Matrix3D &R)
 static inline Matrix3D
 ExpSO3(const Vector3D &theta)
 {
-  //===--------------------------------------------------------------------===//
-
   // Form the first Gib coefficients
   double a[4];
   GibSO3(theta, a);
@@ -315,6 +320,7 @@ ExpSO3(const Vector3D &theta)
 static inline Matrix3D
 CaySO3(const Vector3D &cayley)
 {
+  //
   // Cayley map for a rotation matrix given the "tangent-scaled pseudo-vector"
   //
   // R = I + (S + S*S/2)/(1 + w' * w / 4);
@@ -552,7 +558,7 @@ inline Matrix3D
 dLogSO3(const Vector3D &v, double* a=nullptr)
 {
 //
-// d_R LogSO3(v)
+// d_R LogSO3(v) = Eye3 - 0.5*Sv + eta*Sv*Sv;
 //
 // =========================================================================================
 // function by Claudio Perez                                                            2023
@@ -583,7 +589,6 @@ dLogSO3(const Vector3D &v, double* a=nullptr)
   dH.addSpin(u, -0.5);
   dH.addSpinSquare(u, eta);
   return dH;
-  // return Eye3 - 0.5*Sv + eta*Sv*Sv;
 }
 
 inline Matrix3D 

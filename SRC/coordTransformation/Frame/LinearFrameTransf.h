@@ -34,6 +34,7 @@
 #include <MatrixND.h>
 
 namespace OpenSees {
+
 template <int nn, int ndf>
 class LinearFrameTransf: public FrameTransform<nn,ndf>
 {
