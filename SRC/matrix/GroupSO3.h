@@ -639,33 +639,3 @@ ddLogSO3(const Vector3D& u, const Vector3D& v)
 
   return dH*dLogSO3(th);
 }
-
-#if 0
-
-class Align {
-public:
-  Align(Vector3D& original, Vector3D& target)
-  : original(original), target(target)
-  {
-  }
-
-  // Align a vector to another vector using the exponential map
-  static Vector3D
-  rot(const Vector3D &v, const Vector3D &target)
-  {
-    // e3 = r3 - (e1 + r1)*((r3^e1)*0.5);
-    // e2 = r2 - (e1 + r1)*((r2^e1)*0.5);
-    Vector3D axis = v.cross(target);
-    double angle = std::acos(v.dot(target)/(v.norm()*target.norm()));
-
-    if (angle < 1e-10) return v;
-
-    return ExpSO3(axis*angle)*v;
-  }
-
-  private:
-  Vector3D original;
-  Vector3D target;
-};
-
-#endif

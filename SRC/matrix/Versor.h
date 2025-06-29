@@ -8,6 +8,8 @@
 //
 // Description: Versor implements a unit-normalized quaternion.
 //
+// Claudio Perez
+//
 #pragma once
 #include <cmath>
 #include <Vector3D.h>

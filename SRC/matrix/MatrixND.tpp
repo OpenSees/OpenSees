@@ -201,22 +201,6 @@ MatrixND<nr, nc, T>::addMatrixProduct(const MatrixND<nr, nk, T>& A, const MatT& 
   }
 }
 
-#if 0
-template <index_t nr, index_t nc, typename T> 
-template <class MatT, int nk> inline
-void
-MatrixND<nr, nc, T>::addMatrixProduct(double scale_this, const MatrixND<nr, nk, T>& A, const MatT& B, double scale)
-{
-  int m = nr,
-      n = nc,
-      k = nk;
-  DGEMM("N", "N", &m, &n, &k, &scale, 
-                              const_cast<double*>(&A(0,0)), &m,
-                              const_cast<double*>(&B(0,0)), &k,
-                              &scale_this,   &(*this)(0,0), &m);
-}
-#endif
-
 // B'*C
 template <index_t nr, index_t nc, typename T> 
 template <class MatT, int nk> inline

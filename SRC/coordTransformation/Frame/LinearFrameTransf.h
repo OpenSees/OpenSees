@@ -18,12 +18,10 @@
 //===----------------------------------------------------------------------===//
 
 //
-// Description: This file contains the class definition for
-// LinearFrameTransf.h. LinearFrameTransf provides the
-// abstraction of a linear transformation for a spatial frame
-// between the global and basic coordinate systems
+// Description: LinearFrameTransf implements a linear axis-aligning transformation 
+// for a spatial frame element.
 //
-// Adapted: Remo Magalhaes de Souza (rmsouza@ce.berkeley.edu)
+// Claudio Perez
 //
 #ifndef LinearFrameTransf_hpp
 #define LinearFrameTransf_hpp
@@ -70,11 +68,8 @@ public:
 
   VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
   MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
-
-  // // method used to rotate consistent mass matrix
-  // const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
   
-
+  //
   // Sensitivity
   //
   const Vector & getBasicDisplFixedGrad();

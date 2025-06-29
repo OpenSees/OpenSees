@@ -5,28 +5,12 @@
 //===----------------------------------------------------------------------===//
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
+
 // 
 // Desctiption: MatrixND is a fixed-size matrix class that is suitable for
 // stack-allocation.
 //
-//
-// This code is influenced by the following sources
-//  List initialization:
-//  - https://stackoverflow.com/questions/42068882/list-initialization-for-a-matrix-class
-//
-//  Style/practices
-//  - https://quuxplusone.github.io/blog/2021/04/03/static-constexpr-whittling-knife/
-// 
-//  Operator overloading / semantics
-//  - https://stackoverflow.com/questions/9851188/does-it-make-sense-to-use-move-semantics-for-operator-and-or-operator/9851423#9851423
-//
-//  Compile-time template restrictions/concepts:
-//  - https://codereview.stackexchange.com/questions/259038/compile-time-matrix-class
-//    (C++ 20)
-//  - https://github.com/calebzulawski/cotila/
-//    (C++ 17)
-//
-//===----------------------------------------------------------------------===//
+//----------------------------------------------------------------------------//
 //
 // Claudio Perez
 //
@@ -109,19 +93,6 @@ struct MatrixND {
   int invert() {
     return Matrix(*this).Invert();
   }
-
-#if 0
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, size_t row_index);
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, size_t vector_index, size_t matrix_row_index);
-//template<class VecT>
-//MatrixND<NR,NC,T>& addSpin(const VecT& V, double mult) requires(NR == 3);
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, double mult, size_t row_index);
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, double mult, size_t vector_index, size_t matrix_row_index);
-#endif
 
   //
   // Indexing
@@ -408,11 +379,6 @@ struct MatrixND {
   inline constexpr friend MatrixND<NR, J>
   operator*(const MatrixND<NR, NC> &left, const MatrixND<NC, J> &right) {
     MatrixND<NR, J> prod;
-#if 0
-    if constexpr (NR*NC > 16)
-      prod.addMatrixProduct(0, left, right, 1);
-    else
-#endif
       for (index_t i = 0; i < NR; ++i) {
         for (index_t j = 0; j < J; ++j) {
           prod(i, j) = 0.0;

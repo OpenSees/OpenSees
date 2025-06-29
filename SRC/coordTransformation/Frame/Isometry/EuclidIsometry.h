@@ -57,10 +57,8 @@ public:
 
   virtual Vector3D
   getRotationVariation(int ndf, double* du) {
-    // psi_r = omega
     Vector3D w{};
     for (int i=0; i<nn; i++) {
-      // const Vector &du = nodes[i]->getIncrDeltaDisp();
       auto Wi = this->getRotationGradient(i);
       for (int j=0; j<3; j++)
         for (int k=0; k<6; k++)
@@ -68,8 +66,6 @@ public:
     }
     return w;
   }
-
-protected:
 };
 
 } // namespace OpenSees

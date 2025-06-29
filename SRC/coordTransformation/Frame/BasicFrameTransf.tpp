@@ -22,7 +22,6 @@
 #include <Matrix3D.h>
 #include <Node.h>
 #include <Channel.h>
-#include <Logging.h>
 #include <BasicFrameTransf.h>
 #include "FrameTransform.h"
 
