@@ -122,6 +122,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
   }
 
   L = dx.norm();
+  Ln = L;
 
   if (L == 0.0)
     return -2;
@@ -156,7 +157,7 @@ template <int nn, int ndf, typename IsoT>
 double
 EuclidFrameTransf<nn,ndf,IsoT>::getDeformedLength()
 {
-  return L;
+  return Ln;
 }
 
 
@@ -169,6 +170,8 @@ EuclidFrameTransf<nn,ndf,IsoT>::update()
 {
   if (basis.update() < 0) 
     return -1;
+
+  Ln = basis.getLength();
 
   Matrix3D R = basis.getRotation();
   for (int i=0; i<nn; i++) {
@@ -191,25 +194,9 @@ template <int nn, int ndf, typename IsoT>
 Vector3D
 EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
 {
-#if 0
-  const Vector& ug = nodes[node]->getTrialDisp();
-
-  Vector3D u;
-  for (int i=0; i<3; i++)
-    u[i] = ug[i];
-
-  if (offsets != nullptr) [[unlikely]] {
-    u.addVector(1.0, (*offsets)[node], -1.0);
-    u.addVector(1.0, nodes[node]->getTrialRotation().rotate((*offsets)[node]), 1.0);
-  }
-
-  u.addVector(1.0, basis.getPosition(), -1.0);
-#else
-  Vector3D u = this->pullPosition<&Node::getTrialDisp>(node) 
-             - basis.getPosition();
-#endif
+  Vector3D u = this->pullPosition<&Node::getTrialDisp>(node);
+  u -= basis.getPosition();
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
-
   return u;
 }
 
@@ -236,10 +223,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
   }
 
   Matrix3D R = basis.getRotation();
-  // return EuclidFrameTransf<nn,ndf,IsoT>::pullVariation(ug, R, offsets, offset_flags);
-
-
-  // VectorND<N> ul = ug;
 
   // (1) Global Offsets
   // Do ui -= ri x wi

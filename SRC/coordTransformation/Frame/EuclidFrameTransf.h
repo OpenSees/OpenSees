@@ -141,6 +141,7 @@ private:
   Matrix3D R0;
   Vector3D xi, xj, vz;
   double L;           // undeformed element length
+  double Ln;          // deformed element length
 
   IsoT basis;
 };

@@ -216,7 +216,6 @@ BasicFrameTransf3d<ndf>::getGlobalStiffMatrix(const Matrix &kb, const Vector &q_
 
   for (int i=0; i<NDF*2; i++) {
     int ii = std::abs(iq[i]);
-    double c = 1.0;
     if (ii >= NBV)
       continue;
 
@@ -225,7 +224,7 @@ BasicFrameTransf3d<ndf>::getGlobalStiffMatrix(const Matrix &kb, const Vector &q_
       if (jj >= NBV)
         continue;
 
-      kl(i,j) = kb(ii, jj)*c;
+      kl(i,j) = kb(ii, jj);
     }
   }
 

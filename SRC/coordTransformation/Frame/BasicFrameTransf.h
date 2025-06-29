@@ -29,8 +29,8 @@
 
 #include <CrdTransf.h>
 #include <FrameTransform.h>
-#include <Vector.h>
-#include <Matrix.h>
+class Matrix;
+class Vector;
 
 namespace OpenSees {
 

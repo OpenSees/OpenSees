@@ -6,6 +6,7 @@
 //
 //                                 FEDEASLab
 //       Finite Elements for Design Evaluation and Analysis of Structures
+//                            https://fedeas.net
 //
 //----------------------------------------------------------------------------//
 //
@@ -17,13 +18,12 @@
 //
 //===----------------------------------------------------------------------===//
 #include <array>
+#include <Node.h>
 #include <Vector3D.h>
 #include <Matrix3D.h>
 #include <MatrixND.h>
 #include "EuclidIsometry.h"
 
-class Node;
-#define TRIAD C2
 
 namespace OpenSees {
 
@@ -77,12 +77,10 @@ public:
       R[init](i,2) = e3[i];
     }
 
-#if 1
     Xc = nodes[ic]->getCrds();
     c[init] = R[init]^(Xc);
-#endif
 
-    update();
+    this->update();
     return 0;
   }
 
@@ -120,7 +118,6 @@ public:
     }
 
     {
-#if 1 // TRIAD==R2
       constexpr static Vector3D D2 {0,1,0};
       const Vector3D E2 = R[init]*D2;
       Vector3D e2 = MatrixFromVersor(nodes[0]->getTrialRotation())*E2; //*R[init];
@@ -136,37 +133,6 @@ public:
         R[pres](i,1) = e2[i];
         R[pres](i,2) = e3[i];
       }
-
-#elif 1 // TRIAD==C2
-      Versor q0 = VersorFromMatrix(R[init]);
-      Versor qI = nodes[0]->getTrialRotation()*q0;
-      Versor qJ = nodes[nn-1]->getTrialRotation()*q0;
-      Vector3D gammaw = CayleyFromVersor(qJ.mult_conj(qI));
-
-      gammaw *= 0.5;
-
-      //  Qbar = VersorProduct(VersorFromMatrix(CaySO3(gammaw)), qI);
-      Matrix3D Rbar = CaySO3(gammaw)*MatrixFromVersor(qI); // *q0);
-      Vector3D v { Rbar(0,0), Rbar(1,0), Rbar(2,0) };
-      double dot = v.dot(e1);
-      if (std::fabs(std::fabs(dot)-1.0) < 1.0e-10) {
-        R[pres] = Rbar;
-      } else {
-        v  = v.cross(e1);
-        double scale = std::acos(dot)/v.norm();
-        v *= scale; // ::acos(r1.dot(e1));
-
-        R[pres] = ExpSO3(v)*Rbar;
-
-        Vector3D r1 { R[pres](0,0), R[pres](1,0), R[pres](2,0) };
-        Vector3D r2 { R[pres](0,1), R[pres](1,1), R[pres](2,1) };
-        Vector3D r3 { R[pres](0,2), R[pres](1,2), R[pres](2,2) };
-        // opserr << Vector(r1-e1);
-        // R[pres] = Rbar^ExpSO3(v);
-      }
-#else 
-      Vector3D e2 = vz.cross(e1);
-#endif
     }
 
     Vector3D uc = nodes[ic]->getTrialDisp();
