@@ -127,7 +127,7 @@ QuadMeshGenerator::mesh(double size)
     }
 
     // create points
-    if (m<=1 || n<=1) return 0;
+    if (m<1 || n<1) return 0;
     Matrix grid(m+1, n+1);
 
     for (int i=0; i<m+1; ++i) {
