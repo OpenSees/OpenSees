@@ -33,6 +33,7 @@
 #ifndef VectorND_H
 #define VectorND_H
 #include <math.h>
+#include <assert.h>
 #include <Vector.h>
 #include <Matrix.h>
 
@@ -74,14 +75,14 @@ struct VectorND {
   extract(int a) noexcept;
 
   int
-  addVector(const T thisFact, const Vector &other, const T otherFact) noexcept;
-
-  int
   addVector(const T thisFact, const VectorND<N> &other, const T otherFact) noexcept;
 
-  template <int NC>
-  inline int
-  addMatrixVector(double thisFact, const MatrixND<N, NC, double> &m, const Vector& v, double otherFact);
+  // int
+  // addVector(const T thisFact, const Vector &other, const T otherFact) noexcept;
+
+  // template <int NC>
+  // inline VectorND<N,T>&
+  // addMatrixVector(double thisFact, const MatrixND<N, NC, double> &m, const Vector& v, double otherFact);
 
   template <int NR>
   inline int
