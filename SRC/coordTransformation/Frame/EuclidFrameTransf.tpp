@@ -100,24 +100,9 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
       opserr << "invalid pointers to the element nodes\n";
       return -1;
     }
-    // ensure the node is initialized
+    // ensure the node rotation is initialized
     nodes[i]->getTrialRotation();
   }
-
-  int error;
-  // set element length and orientation
-  if ((error = this->computeElemtLengthAndOrient()))
-    return error;
-
-  R0 = basis.getRotation();
-  return 0;
-}
-
-
-template <int nn, int ndf, typename IsoT>
-int
-EuclidFrameTransf<nn,ndf,IsoT>::computeElemtLengthAndOrient()
-{
 
   const Vector &XI = nodes[   0]->getCrds();
   const Vector &XJ = nodes[nn-1]->getCrds();
@@ -136,13 +121,14 @@ EuclidFrameTransf<nn,ndf,IsoT>::computeElemtLengthAndOrient()
       dx(i) += (*offsets)[nn-1][i];
   }
 
-  // calculate the element length
   L = dx.norm();
 
   if (L == 0.0)
     return -2;
 
-  return basis.initialize();
+  int status = basis.initialize();
+  R0    = basis.getRotation();
+  return status;
 }
 
 

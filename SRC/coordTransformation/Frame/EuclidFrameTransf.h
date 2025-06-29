@@ -87,8 +87,6 @@ public:
 
 private:
 
-  int computeElemtLengthAndOrient();
-
   inline MatrixND<nn*ndf,nn*ndf> 
   getProjection() {
 
