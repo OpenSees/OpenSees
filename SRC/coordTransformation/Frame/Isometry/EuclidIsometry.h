@@ -27,7 +27,7 @@
 #include <MatrixND.h>
 #include <Matrix3D.h>
 
-#define TRIAD C2
+
 namespace OpenSees {
 
 class Isometry

@@ -23,6 +23,7 @@
 #include "EuclidIsometry.h"
 
 class Node;
+#define TRIAD C2
 
 namespace OpenSees {
 
@@ -85,8 +86,8 @@ public:
     return 0;
   }
 
-  virtual int
-  update() {
+  int
+  update() final {
 
     Vector3D e1 = dX;
     {
