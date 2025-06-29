@@ -73,11 +73,7 @@ public:
   VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
   MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
 
-#if 0
-  // method used to rotate consistent mass matrix
-  const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
-#endif
-
+  //
   // Sensitivity
   //
   bool isShapeSensitivity() final;

@@ -579,53 +579,7 @@ LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
   // Form ug
   //
   // TODO(sensitivity)
-#if 0
-  VectorND<nn*ndf> ug;
-  for (int i = 0; i < nn; i++) {
-    const Vector& u = nodes[i]->getTrialDisp();
-    for (int j = 0; j < ndf; j++) {
-      ug[i*ndf+j] = u(j);
-    }
-  }
-
-  if (u_init[0] != 0) {
-    for (int j = 0; j < ndf; j++)
-      ug[j] -= (*u_init[0])[j];
-  }
-
-  if (u_init[nn-1] != 0) {
-    for (int j = 0; j < ndf; j++)
-      ug[j + 6] -= (*u_init[nn-1])[j];
-  }
-
   //
-  // dub += (T_{bl}' T_{lg} + T_{bl} T_{lg}') * ug
-  //
-  int dv = 0; // TODO(sensitivity)
-
-  // TODO: Sensitivity
-  int di = nodes[0]->getCrdsSensitivity();
-  int dj = nodes[1]->getCrdsSensitivity();
-
-
-  // TODO(sensitivity)
-  // Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
-  // dub = getBasic(ug, 1/L);
-
-  //
-  //
-  VectorND<nn*ndf> ul = LinearFrameTransf<nn,ndf>::pullConstant(ug, R, offsets);
-  //
-  dub[0] += 0;
-  double dL = this->getLengthGrad();
-  double doneOverL = -dL/(L*L);
-  double tmp   = doneOverL * (ul[1] - ul[7]);
-  dub[1] +=  tmp;
-  dub[2] +=  tmp;
-  tmp   = doneOverL * (ul[8] - ul[2]);
-  dub[3] +=  tmp;
-  dub[4] +=  tmp;
-#endif
   return wrapper;
 }
 
