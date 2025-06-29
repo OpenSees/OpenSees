@@ -27,7 +27,6 @@
 #ifndef BasicFrameTransf3d_h
 #define BasicFrameTransf3d_h
 
-#include <array>
 #include <CrdTransf.h>
 #include <FrameTransform.h>
 #include <Vector.h>

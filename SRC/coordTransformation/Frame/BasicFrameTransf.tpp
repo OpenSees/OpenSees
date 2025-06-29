@@ -17,6 +17,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
+#include <array>
 #include <Vector.h>
 #include <Matrix.h>
 #include <Matrix3D.h>

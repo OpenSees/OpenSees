@@ -262,27 +262,6 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
       }
     } 
   }
-#if 0
-  if (thisFact == 1.0) {
-    for (int j=0; j<nc; j++)
-      for (int i=0; i<nr; i++)
-        for (int k=0; k < nk; k++)
-          (*this)(i,j) += A(k,i)*B(k,j)*scale;
-  } else if (thisFact == 0.0) {
-    for (int j=0; j<nc; j++)
-      for (int i=0; i<nr; i++) {
-        double sum = 0.0;
-        for (int k=0; k < nk; k++)
-          sum  += A(k,i)*B(k,j);
-        (*this)(i,j) = sum*scale;
-      }
-  } else {
-    for (int j=0; j<nc; j++)
-      for (int i=0; i<nr; i++)
-        for (int k=0; k < nk; k++)
-          (*this)(i,j)  = (*this)(i,j)*thisFact + A(k,i)*B(k,j)*scale;
-  }
-#endif
 }
 
 // A'BA
@@ -303,27 +282,6 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(
   BT.zero();
   BT.addMatrixProduct(B, T, otherFact);
   this->addMatrixTransposeProduct(thisFact, T, BT, 1.0);
-
-#if 0
-  {
-  int m   = B.numRows,
-      n   = T.numCols,
-      k   = B.numCols,
-      nrT = T.numRows;
-    //k = T.numRows;
-  double zero = 0.0,
-          one  = 1.0;
-
-  DGEMM ("N", "N", &m      , &n      , &k,&one      , B.data, &m, // m
-                                                      T.data, &nrT, // k
-                                          &zero,  matrixWork, &m);
-
-  DGEMM ("T", "N", &numRows, &numCols, &k,&otherFact, T.data, &nrT,
-                                                  matrixWork, &m, // k
-                                          &thisFact,    data, &numRows);
-  return 0;
-  }
-#endif
   return 0;
 }
 
