@@ -118,13 +118,6 @@ public:
   }
 };
 
-enum {
- CRDTR_TAG_CorotFrameTransfWarping3d,
- CRDTR_TAG_CorotFrameTransf3d,
- CRDTR_TAG_LinearFrameTransf3d,
- CRDTR_TAG_PDeltaFrameTransf3d
-};
-
 } // namespace OpenSees
 
 #include "FrameTransform.tpp"
