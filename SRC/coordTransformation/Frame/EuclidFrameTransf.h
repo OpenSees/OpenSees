@@ -18,10 +18,11 @@
 //===----------------------------------------------------------------------===//
 
 //
-// Description: This file contains the class definition for
-// EuclidFrameTransf.h. EuclidFrameTransf provides the
-// abstraction of a linear transformation for a spatial frame
-// between the global and basic coordinate systems
+// Description: This file contains the implementation for the 
+// EuclidFrameTransf class. EuclidFrameTransf is a euclidean transformation 
+// of 3D space.
+// When used with the RankineIsometry, it furnishes an improved corotational
+// transformation for 3D frames.
 //
 // Written: cmp
 // Created: 04/2025
@@ -36,7 +37,7 @@
 
 namespace OpenSees {
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 class EuclidFrameTransf: public FrameTransform<nn,ndf>
 {
 public:
@@ -73,7 +74,11 @@ public:
   VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
   MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
 
-  //
+#if 0
+  // method used to rotate consistent mass matrix
+  const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
+#endif
+
   // Sensitivity
   //
   bool isShapeSensitivity() final;
@@ -85,6 +90,8 @@ public:
 
 
 private:
+
+  int computeElemtLengthAndOrient();
 
   inline MatrixND<nn*ndf,nn*ndf> 
   getProjection() {
@@ -108,8 +115,6 @@ private:
 
     return A;
   }
-
-  int computeElemtLengthAndOrient();
 
   template<const Vector& (Node::*Getter)()>
   const Vector3D
@@ -144,7 +149,7 @@ private:
   Vector3D xi, xj, vz;
   double L;           // undeformed element length
 
-  BasisT basis;
+  IsoT basis;
 };
 
 } // namespace OpenSees

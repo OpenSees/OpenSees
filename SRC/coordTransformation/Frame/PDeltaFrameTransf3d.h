@@ -1,15 +1,16 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
-//
-//===----------------------------------------------------------------------===//
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
-// Description: This file contains the class definition for
-// PDeltaFrameTransf.h. PDeltaFrameTransf provides the
-// abstraction of a linear transformation for a spatial frame
-// between the global and basic coordinate systems
+//        OpenSees - Open System for Earthquake Engineering Simulation
+//
+//===----------------------------------------------------------------------===//
+
+//
+// Description:  PDeltaFrameTransf generalizes the original PDeltaCrdTransf3d
+// class to a more general FrameTransform interface.
 //
 // Adapted: Remo Magalhaes de Souza (rmsouza@ce.berkeley.edu)
 // Created: 04/2000
@@ -72,6 +73,8 @@ private:
   LinearFrameTransf<nn,ndf> linear;
 
 };
-}
+
+} // namespace OpenSees
+
 #include "PDeltaFrameTransf3d.tpp"
 #endif

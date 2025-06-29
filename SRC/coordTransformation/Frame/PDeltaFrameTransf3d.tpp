@@ -1,15 +1,13 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
-//
-//===----------------------------------------------------------------------===//
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
-// Description: This file contains the implementation for the
-// PDeltaFrameTransf class. PDeltaFrameTransf is a nonlinear
-// transformation for a 3D frame between the global
-// and basic coordinate systems
+//        OpenSees - Open System for Earthquake Engineering Simulation
+//
+//===----------------------------------------------------------------------===//
+
 //
 // Adapted: Remo Magalhaes de Souza
 //          04/2000
@@ -193,4 +191,4 @@ PDeltaFrameTransf<nn,ndf>::Print(OPS_Stream &s, int flag)
   linear.Print(s, flag);
 }
 
-}
+} // namespace OpenSees

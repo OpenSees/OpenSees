@@ -26,7 +26,6 @@
 // Adapted: Remo Magalhaes de Souza
 // Created: 04/2000
 //
-//
 #pragma once
 #include <Vector.h>
 #include <Matrix.h>
@@ -132,12 +131,14 @@ LinearFrameTransf<nn,ndf>::~LinearFrameTransf()
       delete u_init[i];
 }
 
+
 template <int nn, int ndf>
 int
 LinearFrameTransf<nn,ndf>::commit()
 {
   return 0;
 }
+
 
 template <int nn, int ndf>
 int
@@ -184,55 +185,42 @@ LinearFrameTransf<nn,ndf>::initialize(std::array<Node*, nn>& new_nodes)
     initialDispChecked = true;
   }
 
-  int error;
-  // get element length and orientation
-  if ((error = this->computeElemtLengthAndOrient()))
-    return error;
+  {
+    const Vector &XI = nodes[   0]->getCrds();
+    const Vector &XJ = nodes[nn-1]->getCrds();
 
-  return 0;
-}
+    for (int i=0; i<3; i++) {
+      xi[i] = XI[i];
+      xj[i] = XJ[i];
+    }
+    
+    Vector3D dx = xj - xi;
+
+    if (offsets != nullptr) {
+      for (int i=0; i<3; i++)
+        dx(i) -= (*offsets)[   0][i];
+      for (int i=0; i<3; i++)
+        dx(i) += (*offsets)[nn-1][i];
+    }
 
 
-template <int nn, int ndf>
-int
-LinearFrameTransf<nn,ndf>::computeElemtLengthAndOrient()
-{
+    if (u_init[0] != 0) {
+      for (int i=0; i<3; i++)
+        dx(i) -= (*u_init[0])[i];
+    }
 
-  const Vector &XI = nodes[   0]->getCrds();
-  const Vector &XJ = nodes[nn-1]->getCrds();
+    if (u_init[nn-1] != 0) {
+      for (int i=0; i<3; i++)
+        dx(i) += (*u_init[nn-1])[i];
+    }
 
-  for (int i=0; i<3; i++) {
-    xi[i] = XI[i];
-    xj[i] = XJ[i];
+    L = dx.norm();
+
+    if (L == 0.0)
+      return -2;
+
+    return FrameTransform<nn,ndf>::Orient(dx, vz, R);
   }
-  
-  Vector3D dx = xj - xi;
-
-  if (offsets != nullptr) {
-    for (int i=0; i<3; i++)
-      dx(i) -= (*offsets)[   0][i];
-    for (int i=0; i<3; i++)
-      dx(i) += (*offsets)[nn-1][i];
-  }
-
-
-  if (u_init[0] != 0) {
-    for (int i=0; i<3; i++)
-      dx(i) -= (*u_init[0])[i];
-  }
-
-  if (u_init[nn-1] != 0) {
-    for (int i=0; i<3; i++)
-      dx(i) += (*u_init[nn-1])[i];
-  }
-
-  // calculate the element length
-  L = dx.norm();
-
-  if (L == 0.0)
-    return -2;
-
-  return FrameTransform<nn,ndf>::Orient(dx, vz, R);
 }
 
 
@@ -512,6 +500,7 @@ LinearFrameTransf<nn,ndf>::getLengthGrad()
   return 1/L*(xj - xi).dot(dxj - dxi);
 }
 
+
 template <int nn, int ndf>
 double
 LinearFrameTransf<nn,ndf>::getd1overLdh()
@@ -579,7 +568,53 @@ LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
   // Form ug
   //
   // TODO(sensitivity)
+#if 0
+  VectorND<nn*ndf> ug;
+  for (int i = 0; i < nn; i++) {
+    const Vector& u = nodes[i]->getTrialDisp();
+    for (int j = 0; j < ndf; j++) {
+      ug[i*ndf+j] = u(j);
+    }
+  }
+
+  if (u_init[0] != 0) {
+    for (int j = 0; j < ndf; j++)
+      ug[j] -= (*u_init[0])[j];
+  }
+
+  if (u_init[nn-1] != 0) {
+    for (int j = 0; j < ndf; j++)
+      ug[j + 6] -= (*u_init[nn-1])[j];
+  }
+
   //
+  // dub += (T_{bl}' T_{lg} + T_{bl} T_{lg}') * ug
+  //
+  int dv = 0; // TODO(sensitivity)
+
+  // TODO: Sensitivity
+  int di = nodes[0]->getCrdsSensitivity();
+  int dj = nodes[1]->getCrdsSensitivity();
+
+
+  // TODO(sensitivity)
+  // Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
+  // dub = getBasic(ug, 1/L);
+
+  //
+  //
+  VectorND<nn*ndf> ul = LinearFrameTransf<nn,ndf>::pullConstant(ug, R, offsets);
+  //
+  dub[0] += 0;
+  double dL = this->getLengthGrad();
+  double doneOverL = -dL/(L*L);
+  double tmp   = doneOverL * (ul[1] - ul[7]);
+  dub[1] +=  tmp;
+  dub[2] +=  tmp;
+  tmp   = doneOverL * (ul[8] - ul[2]);
+  dub[3] +=  tmp;
+  dub[4] +=  tmp;
+#endif
   return wrapper;
 }
 

@@ -92,8 +92,6 @@ public:
           
 private:
 
-  int computeElemtLengthAndOrient();
-
   inline VectorND<nn*ndf> 
   pullConstant(const VectorND<nn*ndf>& ug, 
               const Matrix3D& R, 

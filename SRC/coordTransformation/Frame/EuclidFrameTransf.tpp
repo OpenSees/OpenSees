@@ -18,13 +18,10 @@
 //===----------------------------------------------------------------------===//
 
 //
-// Description: This file contains the implementation for the 
-// EuclidFrameTransf class. EuclidFrameTransf is a nonlinear transformation 
-// for a space frame.
-//
 // Written: cmp
 // Created: 04/2025
 //
+
 #pragma once
 #include <Vector.h>
 #include <Matrix.h>
@@ -36,8 +33,8 @@
 
 namespace OpenSees {
 
-template <int nn, int ndf, typename BasisT>
-EuclidFrameTransf<nn,ndf,BasisT>::EuclidFrameTransf(int tag, 
+template <int nn, int ndf, typename IsoT>
+EuclidFrameTransf<nn,ndf,IsoT>::EuclidFrameTransf(int tag, 
                                            const Vector3D &vecxz, 
                                            const std::array<Vector3D, nn> *offset,
                                            int offset_flags)
@@ -65,38 +62,38 @@ EuclidFrameTransf<nn,ndf,BasisT>::EuclidFrameTransf(int tag,
 
 
 
-template <int nn, int ndf, typename BasisT>
-EuclidFrameTransf<nn,ndf,BasisT>::~EuclidFrameTransf()
+template <int nn, int ndf, typename IsoT>
+EuclidFrameTransf<nn,ndf,IsoT>::~EuclidFrameTransf()
 {
   if (offsets != nullptr)
     delete offsets;
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::commit()
+EuclidFrameTransf<nn,ndf,IsoT>::commit()
 {
   return 0;
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::revertToLastCommit()
+EuclidFrameTransf<nn,ndf,IsoT>::revertToLastCommit()
 {
   return 0;
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::revertToStart()
+EuclidFrameTransf<nn,ndf,IsoT>::revertToStart()
 {
   return 0;
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::initialize(std::array<Node*, nn>& new_nodes)
+EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
 {
   for (int i=0; i<nn; i++) {
     nodes[i] = new_nodes[i];
@@ -118,9 +115,9 @@ EuclidFrameTransf<nn,ndf,BasisT>::initialize(std::array<Node*, nn>& new_nodes)
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::computeElemtLengthAndOrient()
+EuclidFrameTransf<nn,ndf,IsoT>::computeElemtLengthAndOrient()
 {
 
   const Vector &XI = nodes[   0]->getCrds();
@@ -150,9 +147,9 @@ EuclidFrameTransf<nn,ndf,BasisT>::computeElemtLengthAndOrient()
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::getLocalAxes(Vector3D &e1, Vector3D &e2, Vector3D &e3) const
+EuclidFrameTransf<nn,ndf,IsoT>::getLocalAxes(Vector3D &e1, Vector3D &e2, Vector3D &e3) const
 {
   Matrix3D R = basis.getRotation();
   for (int i = 0; i < 3; i++) {
@@ -163,16 +160,16 @@ EuclidFrameTransf<nn,ndf,BasisT>::getLocalAxes(Vector3D &e1, Vector3D &e2, Vecto
   return 0;
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 double
-EuclidFrameTransf<nn,ndf,BasisT>::getInitialLength()
+EuclidFrameTransf<nn,ndf,IsoT>::getInitialLength()
 {
   return L;
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 double
-EuclidFrameTransf<nn,ndf,BasisT>::getDeformedLength()
+EuclidFrameTransf<nn,ndf,IsoT>::getDeformedLength()
 {
   return L;
 }
@@ -181,9 +178,9 @@ EuclidFrameTransf<nn,ndf,BasisT>::getDeformedLength()
 //
 // Pull
 //
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 int
-EuclidFrameTransf<nn,ndf,BasisT>::update()
+EuclidFrameTransf<nn,ndf,IsoT>::update()
 {
   if (basis.update() < 0) 
     return -1;
@@ -197,39 +194,52 @@ EuclidFrameTransf<nn,ndf,BasisT>::update()
   return 0;
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 Versor
-EuclidFrameTransf<nn,ndf,BasisT>::getNodeRotation(int tag)
+EuclidFrameTransf<nn,ndf,IsoT>::getNodeRotation(int tag)
 {
   return nodes[tag]->getTrialRotation();
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 Vector3D
-EuclidFrameTransf<nn,ndf,BasisT>::getNodePosition(int node)
+EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
 {
+#if 0
+  const Vector& ug = nodes[node]->getTrialDisp();
 
+  Vector3D u;
+  for (int i=0; i<3; i++)
+    u[i] = ug[i];
+
+  if (offsets != nullptr) [[unlikely]] {
+    u.addVector(1.0, (*offsets)[node], -1.0);
+    u.addVector(1.0, nodes[node]->getTrialRotation().rotate((*offsets)[node]), 1.0);
+  }
+
+  u.addVector(1.0, basis.getPosition(), -1.0);
+#else
   Vector3D u = this->pullPosition<&Node::getTrialDisp>(node) 
              - basis.getPosition();
-
+#endif
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
 
   return u;
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 Vector3D
-EuclidFrameTransf<nn,ndf,BasisT>::getNodeRotationLogarithm(int node)
+EuclidFrameTransf<nn,ndf,IsoT>::getNodeRotationLogarithm(int node)
 {
   return ur[node];
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 VectorND<nn*ndf>
-EuclidFrameTransf<nn,ndf,BasisT>::getStateVariation()
+EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
 {
 
   static VectorND<nn*ndf> ul;
@@ -241,7 +251,7 @@ EuclidFrameTransf<nn,ndf,BasisT>::getStateVariation()
   }
 
   Matrix3D R = basis.getRotation();
-  // return EuclidFrameTransf<nn,ndf,BasisT>::pullVariation(ug, R, offsets, offset_flags);
+  // return EuclidFrameTransf<nn,ndf,IsoT>::pullVariation(ug, R, offsets, offset_flags);
 
 
   // VectorND<N> ul = ug;
@@ -309,9 +319,9 @@ EuclidFrameTransf<nn,ndf,BasisT>::getStateVariation()
 //
 // Push
 //
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 VectorND<nn*ndf>
-EuclidFrameTransf<nn,ndf,BasisT>::pushResponse(VectorND<nn*ndf>&p)
+EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
 {
   VectorND<nn*ndf> pa = p;
 
@@ -334,9 +344,9 @@ EuclidFrameTransf<nn,ndf,BasisT>::pushResponse(VectorND<nn*ndf>&p)
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 MatrixND<nn*ndf,nn*ndf>
-EuclidFrameTransf<nn,ndf,BasisT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const VectorND<nn*ndf>&pb)
+EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const VectorND<nn*ndf>&pb)
 {
   MatrixND<nn*ndf,nn*ndf> Kb = kb;
   VectorND<nn*ndf> p = pb;
@@ -405,20 +415,20 @@ EuclidFrameTransf<nn,ndf,BasisT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 FrameTransform<nn,ndf> *
-EuclidFrameTransf<nn,ndf,BasisT>::getCopy() const
+EuclidFrameTransf<nn,ndf,IsoT>::getCopy() const
 {
-  return new EuclidFrameTransf<nn,ndf,BasisT>(this->getTag(), vz, offsets);
+  return new EuclidFrameTransf<nn,ndf,IsoT>(this->getTag(), vz, offsets);
 }
 
 
 //
 // Sensitivity
 //
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 bool
-EuclidFrameTransf<nn,ndf,BasisT>::isShapeSensitivity()
+EuclidFrameTransf<nn,ndf,IsoT>::isShapeSensitivity()
 {
   int nodeParameterI = nodes[   0]->getCrdsSensitivity();
   int nodeParameterJ = nodes[nn-1]->getCrdsSensitivity();
@@ -428,9 +438,9 @@ EuclidFrameTransf<nn,ndf,BasisT>::isShapeSensitivity()
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 double
-EuclidFrameTransf<nn,ndf,BasisT>::getLengthGrad()
+EuclidFrameTransf<nn,ndf,IsoT>::getLengthGrad()
 {
   const int di = nodes[0]->getCrdsSensitivity();
   const int dj = nodes[1]->getCrdsSensitivity();
@@ -446,17 +456,17 @@ EuclidFrameTransf<nn,ndf,BasisT>::getLengthGrad()
   return 1/L*(xj - xi).dot(dxj - dxi);
 }
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 double
-EuclidFrameTransf<nn,ndf,BasisT>::getd1overLdh()
+EuclidFrameTransf<nn,ndf,IsoT>::getd1overLdh()
 {
   return -getLengthGrad()/(L*L);
 }
 
 
-template <int nn, int ndf, typename BasisT>
+template <int nn, int ndf, typename IsoT>
 void
-EuclidFrameTransf<nn,ndf,BasisT>::Print(OPS_Stream &s, int flag)
+EuclidFrameTransf<nn,ndf,IsoT>::Print(OPS_Stream &s, int flag)
 {
   if (flag == OPS_PRINT_PRINTMODEL_JSON) {
     s << OPS_PRINT_JSON_MATE_INDENT << "{";
@@ -484,4 +494,4 @@ EuclidFrameTransf<nn,ndf,BasisT>::Print(OPS_Stream &s, int flag)
   }
 }
 
-}
+} // namespace OpenSees

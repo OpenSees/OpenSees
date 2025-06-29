@@ -16,12 +16,16 @@
 
 namespace OpenSees {
 
+template <int nr, int nc, typename T=double>
+MatrixND(const T (&)[nc][nr])->MatrixND<nr, nc, T>;
+
+
 template <index_t nr, index_t nc, typename T>
 void
 MatrixND<nr, nc, T>::zero()
 {
-    for (index_t j = 0; j < nr; ++j) {
-      for (index_t i = 0; i < nc; ++i) {
+    for (index_t j = 0; j < nc; ++j) {
+      for (index_t i = 0; i < nr; ++i) {
         values[j][i] = 0.0;
       }
     }
@@ -61,7 +65,57 @@ MatrixND<nr, nc, T>::map(F func, MatrixND<nr,nc,T>& destination)
       destination(i,j) = func((*this)(i,j));
 }
 
+//
+//
+//
+template <index_t NR, index_t NC, typename T>
+template <int nr> inline void
+MatrixND<NR,NC,T>::assemble(const VectorND<nr> &v, int init_row, int init_col, double fact) noexcept
+{
 
+  [[maybe_unused]] int final_row = init_row + nr - 1;
+  assert((init_row >= 0) && (final_row < NR));
+
+  for (int j=0; j<nr; j++)
+      (*this)(init_row+j, init_col) += v(j)*fact;
+}
+
+
+template <index_t NR, index_t NC, typename T>
+template<int nr, int nc> void
+MatrixND<NR,NC,T>::assembleTranspose(const MatrixND<nr, nc, double> &M, int init_row, int init_col, double fact) noexcept
+{ 
+  {
+    [[maybe_unused]] int final_row = init_row + nc - 1;
+    [[maybe_unused]] int final_col = init_col + nr - 1; 
+    assert((init_row >= 0) && (final_row < NR) && (init_col >= 0) && (final_col < NC));
+  }
+
+  for (int i=0; i<nr; i++) {
+      int pos_Cols = init_col + i;
+      for (int j=0; j<nc; j++) {
+        int pos_Rows = init_row + j; 
+        (*this)(pos_Rows,pos_Cols) += M(i,j)*fact;
+      }
+  }
+}
+
+template <index_t NR, index_t NC, typename T>
+template<int nr> void
+MatrixND<NR,NC,T>::assembleTranspose(const VectorND<nr> &v, int init_row, int init_col, double scale) noexcept
+{ 
+  {
+    [[maybe_unused]] int final_col = init_col + nr - 1; 
+    assert((init_row >= 0) && (init_col >= 0) && (final_col < NC));
+  }
+
+  for (int i=0; i<nr; i++)
+    (*this)(init_row, init_col+i) += v[i]*scale;
+}
+
+//
+// Solve
+//
 template <index_t nr, index_t nc, typename T> inline int
 MatrixND<nr,nc,T>::invert(MatrixND<nr,nc,T> &M) const
 {
@@ -148,6 +202,7 @@ MatrixND<nr, nc, T>::addMatrixProduct(const MatrixND<nr, nk, T>& A, const MatT& 
   }
 }
 
+#if 0
 template <index_t nr, index_t nc, typename T> 
 template <class MatT, int nk> inline
 void
@@ -160,8 +215,8 @@ MatrixND<nr, nc, T>::addMatrixProduct(double scale_this, const MatrixND<nr, nk, 
                               const_cast<double*>(&A(0,0)), &m,
                               const_cast<double*>(&B(0,0)), &k,
                               &scale_this,   &(*this)(0,0), &m);
-  
 }
+#endif
 
 // B'*C
 template <index_t nr, index_t nc, typename T> 
@@ -266,25 +321,26 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(
   BT.addMatrixProduct(B, T, otherFact);
   this->addMatrixTransposeProduct(thisFact, T, BT, 1.0);
 
-//{
-//  int m   = B.numRows,
-//      n   = T.numCols,
-//      k   = B.numCols,
-//      nrT = T.numRows;
-//    //k = T.numRows;
-//  double zero = 0.0,
-//         one  = 1.0;
+#if 0
+  {
+  int m   = B.numRows,
+      n   = T.numCols,
+      k   = B.numCols,
+      nrT = T.numRows;
+    //k = T.numRows;
+  double zero = 0.0,
+          one  = 1.0;
 
-//  DGEMM ("N", "N", &m      , &n      , &k,&one      , B.data, &m, // m
-//                                                      T.data, &nrT, // k
-//                                          &zero,  matrixWork, &m);
+  DGEMM ("N", "N", &m      , &n      , &k,&one      , B.data, &m, // m
+                                                      T.data, &nrT, // k
+                                          &zero,  matrixWork, &m);
 
-//  DGEMM ("T", "N", &numRows, &numCols, &k,&otherFact, T.data, &nrT,
-//                                                  matrixWork, &m, // k
-//                                          &thisFact,    data, &numRows);
-//  return 0;
-//}
-
+  DGEMM ("T", "N", &numRows, &numCols, &k,&otherFact, T.data, &nrT,
+                                                  matrixWork, &m, // k
+                                          &thisFact,    data, &numRows);
+  return 0;
+  }
+#endif
   return 0;
 }
 
@@ -306,8 +362,6 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(double thisFact,
 }
 
 
-template <int nr, int nc, typename T=double>
-MatrixND(const T (&)[nc][nr])->MatrixND<nr, nc, T>;
 
 
 //
@@ -423,4 +477,4 @@ void MatrixND<NR,NC,T>::addSpinMatrixProduct(const VectorND<NR,T>& a, const MatT
   (*this)(2, 1) += scale*( -B(0,1)*a[1] + B(1,1)*a[0]);
   (*this)(2, 2) += scale*( -B(0,2)*a[1] + B(1,2)*a[0]);
 }
-}
+} // namespace OpenSees
