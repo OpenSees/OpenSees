@@ -107,7 +107,6 @@ private:
       for (int b = 0; b<nn; b++) {
         
         Gb.template insert<0,0>(basis.getRotationGradient(b), 1.0);
-        // TODO(nn>2): Interpolate coordinate?
         A.assemble(ix*Gb, a*ndf  , b*ndf,  double(a)/double(nn-1)*L);
         A.assemble(   Gb, a*ndf+3, b*ndf, -1.0);
       }

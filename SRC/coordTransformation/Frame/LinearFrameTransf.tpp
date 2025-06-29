@@ -623,20 +623,8 @@ const Vector &
 LinearFrameTransf<nn,ndf>::getBasicDisplTotalGrad(int gradNumber)
 {
 
-  double dug[12];
-  for (int i = 0; i < 6; i++) {
-    dug[i]     = nodes[0]->getDispSensitivity((i + 1), gradNumber);
-    dug[i + 6] = nodes[1]->getDispSensitivity((i + 1), gradNumber);
-  }
-
   static VectorND<6> dub;
   static Vector wrapper(dub);
-
-  // dub = T_{bl} T_{lg} * ug'
-  // TODO
-  // dub = getBasic(dug, R, offsets[0], offsets[nn-1], 1/L);
-
-  wrapper += getBasicDisplFixedGrad();
 
   return wrapper;
 }
