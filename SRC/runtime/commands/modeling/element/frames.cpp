@@ -6,9 +6,9 @@
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
-// Description: This file implements the parsing of inelastic beam elements.
-// We need to support *all* forms of the command that have been used in the past,
-// which considerable complicates the logic.
+// Description: This file implements parsing for inelastic beam elements.
+// We support *all* forms of the command that have been used in the past,
+// which considerably complicates things.
 // 
 // The various forms are
 //
@@ -114,6 +114,7 @@
 //
 // Created: Feb 2023
 //
+
 // Standard library
 #include <string>
 #include <array>
