@@ -77,18 +77,6 @@ struct VectorND {
   int
   addVector(const T thisFact, const VectorND<N> &other, const T otherFact) noexcept;
 
-  // int
-  // addVector(const T thisFact, const Vector &other, const T otherFact) noexcept;
-
-  // template <int NC>
-  // inline VectorND<N,T>&
-  // addMatrixVector(double thisFact, const MatrixND<N, NC, double> &m, const Vector& v, double otherFact);
-
-  template <int NR>
-  inline int
-  addMatrixTransposeVector(double thisFact, const MatrixND<NR, N, double> &m, 
-                           const Vector &v, double otherFact);
-
   inline int
   addMatrixVector(const double thisFact, const Matrix &m, const Vector &v, const double otherFact);
 
