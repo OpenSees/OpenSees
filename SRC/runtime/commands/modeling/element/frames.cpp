@@ -6,90 +6,194 @@
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
+// Description: This file implements the parsing of inelastic beam elements.
+// We need to support *all* forms of the command that have been used in the past,
+// which considerable complicates the logic.
+// 
+// The various forms are
+//
+//
+// 0         1    2  3  4 
+// element <name> 1 $i $j 0 1 2
+//
+//  a)
+//     0       1     2    3    4    5    6
+//                                  0    1
+//     element $type $tag $ndi $ndj $trn "Gauss arg1 arg2 ..." 
+//             <-mass $mass> <-iter $iter $tol>
+//
+//  b) OpenSeesPy
+//                                  0    1
+//     element(type, tag, ndi, ndj, trn, itag, 
+//              iter=(10, 1e-12), mass=0.0)
+//
+//  c) Original/Obsolete
+//                                  0    1    2
+//     element $type $tag $ndi $ndj $nip $sec $trn 
+//             <-mass $mass> <-iter $iter $tol> <-integration $ityp>
+//
+//  d) 
+//                                  0    1         ... (2 + nIP)
+//     element $type $tag $ndi $ndj $nip -sections ... $trn 
+//             <-mass $massDens> <-cMass> <-integration $ityp>
+//
+//  e)
+//                                   0
+//     element $type $tag $ndi $ndj  $trn 
+//             -sections {...}
+//             <-mass $massDens> <-cMass> <-integration $ityp>
+//
+//
+// Integration may be specitied as either 
+//   i  ) a single name, 
+//   ii ) a pattern spec, or 
+//   iii) a tag for a pattern
+// 
+// If a list of sections is given with -sections, or nIP is provided, then 
+// we must have an integration with the form (i)
+//
+// 1) Parse common keyword args: 
+//      "-mass" $mass, 
+//      "-cMass"/"-lMass"
+//      "-mass-form" $form
+//
+//      "-iter" $iter $tol, 
+//      
+//      "-integration" $Integration
+//        - first try parsing $Integration as integer ($itag, form (iii))
+//          if successfull, populate section_tags and continue
+//        - next try parsing $Integration as basic quadrature ($ityp, form (i))
+//        - finally, try parsing as full pattern spec
+//
+//      "-section" $Tag
+//
+//      "-transform" $Tag
+//      "-vertical" {}
+//      "-horizontal" {}
+//
+//      "-sections" $SectionTags
+//        - if cannot split $SectionTags as list, then
+//          mark "-sections" as positional and continue
+//          with keyword loop
+//        - Check if "-integration" was provided already; if so, it must have been in form (i);
+//          otherwise throw an error.
+//        - Parse $SectionTags
+//          -sections {...} may occur anywhere
+//          -sections ...   must occur after nIP is obtained
+//
+//
+//  2) 
+//     If pos[1] == "-sections" then command is Form (d):
+//        nIP = pos[0]
+//        trn = pos[2+nIP]
+//
+//     else
+//
+//     switch (pos.size())
+//     case 1: // Form (e)
+//        trn = pos[0]
+//        if (section_tags.size() == 0)
+//          ERROR
+//
+//     case 2: 
+//        // Form (a) or (b)
+//        trn = pos[0]
+//        if GetInt(interp, pos[1]):
+//           itag = pos[1]
+//        else
+//           ParseHingeScheme(pos[1])
+//
+//      case 3: 
+//         // Form (c)
+//         nip = int(pos[0])
+//         sec = int(pos[1])
+//         trn = int(pos[2])
+//
+//
 // Written: cmp, mhs, rms, fmk
 //
 // Created: Feb 2023
 //
 // Standard library
-  #include <string>
-  #include <array>
-  #include <algorithm>
-  #include <vector>
-  #include <utility>
-  #include <stdlib.h>
-  #include <string.h>
-  #include <assert.h>
-  #include <math.h>
-  #ifdef _MSC_VER 
-  #  include <string.h>
-  #  define strcasecmp _stricmp
-  #else
-  #  include <strings.h>
-  #endif
-  #define strcmp strcasecmp
-  
-  // Parsing
-  #include <tcl.h>
-  #include <Logging.h>
-  #include <Parsing.h>
-  #include <ArgumentTracker.h>
-  
-  // Model
-  #include <Node.h>
-  #include <Domain.h>
-  #include <BasicModelBuilder.h>
-  
-  // Sections
-  #include <FrameSection.h>
-  #include <ElasticSection2d.h>
-  #include <ElasticSection3d.h>
-  
-  // Elements
-  #include "ElasticBeam2d.h"
-  #include "ElasticBeam2d.h"
-  #include "ElasticBeam3d.h"
-  #include "ElasticBeam3d.h"
-  #include "PrismFrame2d.h"
-  #include "PrismFrame2d.h"
-  #include "PrismFrame3d.h"
-  #include "PrismFrame3d.h"
-  
-  #include <CubicFrame3d.h>
-  #include <ForceFrame3d.h>
-  #include <ForceDeltaFrame3d.h>
-  #include <EulerFrame3d.h>
-  #include <EulerDeltaFrame3d.h>
-  #include <ExactFrame3d.h>
-  
-  #include <DispBeamColumn2d.h>
-  #include <DispBeamColumn2dThermal.h>
-  #include <DispBeamColumn3d.h>
-  #include <DispBeamColumn3dThermal.h>
-  #include <DispBeamColumnNL2d.h>
-  
-  #include <ElasticForceBeamColumn2d.h>
-  #include <ElasticForceBeamColumn3d.h>
-  #include <ElasticForceBeamColumnWarping2d.h>
-  
-  #include <ForceBeamColumn2d.h>
-  #include <ForceBeamColumn2d.h>
-  #include <ForceBeamColumn2dThermal.h>
-  #include <ForceBeamColumn3d.h>
-  #include <ForceBeamColumnCBDI2d.h>
-  #include <ForceBeamColumnCBDI3d.h>
-  #include <ForceBeamColumnWarping2d.h>
-  #include <TimoshenkoBeamColumn2d.h>
-  
-  // Quadrature
-  #include <BeamIntegration.h>
-  #include <LobattoBeamIntegration.h>
-  #include <LegendreBeamIntegration.h>
-  #include <HingeEndpointBeamIntegration.h>
-  #include <HingeMidpointBeamIntegration.h>
-  #include <HingeRadauBeamIntegration.h>
-  #include <HingeRadauTwoBeamIntegration.h>
+#include <string>
+#include <array>
+#include <algorithm>
+#include <vector>
+#include <utility>
+#include <stdlib.h>
+#include <string.h>
+#include <assert.h>
+#include <math.h>
+#ifdef _MSC_VER 
+#  include <string.h>
+#  define strcasecmp _stricmp
+#else
+#  include <strings.h>
+#endif
+#define strcmp strcasecmp
 
-  #include <transform/FrameTransformBuilder.hpp>
+// Parsing
+#include <tcl.h>
+#include <Logging.h>
+#include <Parsing.h>
+#include <ArgumentTracker.h>
+
+// Model
+#include <Node.h>
+#include <Domain.h>
+#include <BasicModelBuilder.h>
+
+// Sections
+#include <FrameSection.h>
+#include <ElasticSection2d.h>
+#include <ElasticSection3d.h>
+
+// Elements
+#include "ElasticBeam2d.h"
+#include "ElasticBeam2d.h"
+#include "ElasticBeam3d.h"
+#include "ElasticBeam3d.h"
+#include "PrismFrame2d.h"
+#include "PrismFrame2d.h"
+#include "PrismFrame3d.h"
+#include "PrismFrame3d.h"
+
+#include <CubicFrame3d.h>
+#include <ForceFrame3d.h>
+#include <ForceDeltaFrame3d.h>
+#include <EulerFrame3d.h>
+#include <EulerDeltaFrame3d.h>
+#include <ExactFrame3d.h>
+
+#include <DispBeamColumn2d.h>
+#include <DispBeamColumn2dThermal.h>
+#include <DispBeamColumn3d.h>
+#include <DispBeamColumn3dThermal.h>
+#include <DispBeamColumnNL2d.h>
+
+#include <ElasticForceBeamColumn2d.h>
+#include <ElasticForceBeamColumn3d.h>
+#include <ElasticForceBeamColumnWarping2d.h>
+
+#include <ForceBeamColumn2d.h>
+#include <ForceBeamColumn2d.h>
+#include <ForceBeamColumn2dThermal.h>
+#include <ForceBeamColumn3d.h>
+#include <ForceBeamColumnCBDI2d.h>
+#include <ForceBeamColumnCBDI3d.h>
+#include <ForceBeamColumnWarping2d.h>
+#include <TimoshenkoBeamColumn2d.h>
+
+// Quadrature
+#include <BeamIntegration.h>
+#include <LobattoBeamIntegration.h>
+#include <LegendreBeamIntegration.h>
+#include <HingeEndpointBeamIntegration.h>
+#include <HingeMidpointBeamIntegration.h>
+#include <HingeRadauBeamIntegration.h>
+#include <HingeRadauTwoBeamIntegration.h>
+
+#include <transform/FrameTransformBuilder.hpp>
 
 using namespace OpenSees;
 
@@ -143,7 +247,8 @@ CreateFrame(BasicModelBuilder& builder,
   // Finalize the coordinate transform
   Transform* theTransf = builder.getTypedObject<Transform>(transfTag);
   if (theTransf == nullptr) {
-    opserr << OpenSees::PromptValueError << "transformation not found with tag " << transfTag << "\n";
+    opserr << OpenSees::PromptValueError 
+           << "transformation not found with tag " << transfTag << "\n";
     return nullptr;
   }
 
@@ -284,10 +389,6 @@ CreateFrame(BasicModelBuilder& builder,
 
             static_loop<0, 3>([&](auto nwm) constexpr {
               if (nwm.value + 6 == ndf) {
-                // Create the transform
-#if 0 || defined(NEW_TRANSFORM)
-                FrameTransform<2,6+nwm.value> *tran = tb->template create<2,6+nwm.value>();
-#endif
                 if (!options.shear_flag) {
                   static_loop<2,30>([&](auto nip) constexpr {
                     if (nip.value == sections.size())
@@ -370,114 +471,6 @@ CreateFrame(BasicModelBuilder& builder,
 }
 
 
-#if 0
-Element*
-CreateInelasticFrame(std::string, std::vector<int>& nodes,
-                                  std::vector<FrameSection>&, 
-                                  BeamIntegration&, 
-                              //  FrameQuadrature&,
-                                  FrameTransform&,
-                                  Options&);
-Element*
-CreatePrismaticFrame(std::string);
-#endif
-
-// 0       1    2 3  4
-// element beam 1 $i $j 0 1 2
-//
-//  a)
-//     0       1     2    3    4    5    6
-//                                  0    1
-//     element $type $tag $ndi $ndj $trn "Gauss arg1 arg2 ..." 
-//             <-mass $mass> <-iter $iter $tol>
-//
-//  b)
-//                                  0    1
-//     element(type, tag, ndi, ndj, trn, itag, 
-//              iter=(10, 1e-12), mass=0.0)
-//
-//  c) "Original/Obsolete"
-//                                  0    1    2
-//     element $type $tag $ndi $ndj $nip $sec $trn 
-//             <-mass $mass> <-iter $iter $tol> <-integration $ityp>
-//
-//  d) 
-//                                  0    1         ... (2 + nIP)
-//     element $type $tag $ndi $ndj $nip -sections ... $trn 
-//             <-mass $massDens> <-cMass> <-integration $ityp>
-//
-//  e)
-//                                   0
-//     element $type $tag $ndi $ndj  $trn 
-//             -sections {...}
-//             <-mass $massDens> <-cMass> <-integration $ityp>
-//
-//
-// Integration may be specitied as either 
-//   i  ) a single name, 
-//   ii ) a pattern spec, or 
-//   iii) a tag for a pattern
-// 
-// if a list of sections is given with -sections, or nIP is provided, then 
-// we must have an integration with the form (i)
-//
-// 1) Parse common keyword args: 
-//      "-mass" $mass, 
-//      "-cMass"/"-lMass"
-//      "-mass-form" $form
-//
-//      "-iter" $iter $tol, 
-//      
-//      "-integration" $Integration
-//        - first try parsing $Integration as integer ($itag, form (iii))
-//          if successfull, populate section_tags and continue
-//        - next try parsing $Integration as basic quadrature ($ityp, form (i))
-//        - finally, try parsing as full pattern spec
-//
-//      "-section" $Tag
-//
-//      "-transform" $Tag
-//      "-vertical" {}
-//      "-horizontal" {}
-//
-//      "-sections" $SectionTags
-//        - if cannot split $SectionTags as list, then
-//          mark "-sections" as positional and continue
-//          with keyword loop
-//        - Check if "-integration" was provided already; if so, it must have been in form (i);
-//          otherwise throw an error.
-//        - Parse $SectionTags
-//          -sections {...} may occur anywhere
-//          -sections ...   must occur after nIP is obtained
-//
-//
-//  2) 
-//     If pos[1] == "-sections" then command is Form (d):
-//        nIP = pos[0]
-//        trn = pos[2+nIP]
-//
-//     else
-//
-//     switch (pos.size())
-//     case 1: // Form (e)
-//        trn = pos[0]
-//        if (section_tags.size() == 0)
-//          ERROR
-//
-//     case 2: 
-//        // Form (a) or (b)
-//        trn = pos[0]
-//        if GetInt(interp, pos[1]):
-//           itag = pos[1]
-//        else
-//           ParseHingeScheme(pos[1])
-//
-//      case 3: 
-//         // Form (c)
-//         nip = int(pos[0])
-//         sec = int(pos[1])
-//         trn = int(pos[2])
-//
 int
 TclBasicBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
                                    int argc, TCL_Char **const argv)
