@@ -70,6 +70,7 @@ public:
     int recvSelf(int commitTag, Channel &theChannel, 
 		 FEM_ObjectBroker &theBroker); 
 
+    int saveSparseA(OPS_Stream& output, int baseIndex = 0);
     friend class UmfpackGenLinSolver;
 
 protected:
