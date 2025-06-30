@@ -2406,6 +2406,10 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           *output << "% (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
           res = theSOE->saveSparseA(*output, baseIndex);
           outputFile.close();
+          if (res != 0) {
+            opserr << "WARNING: printA -sparse failed to save sparse matrix" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+          }
           return res == 0 ? res : TCL_ERROR;
         } else {
           opserr << "WARNING: printA -sparse is not supported with -ret. Ignoring -sparse flag" << endln;

@@ -2239,6 +2239,11 @@ int OPS_printA()
                 *output << mm_comment << " (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
                 int result = theSOE->saveSparseA(*output, baseIndex);
                 outputFile.close();
+                if (result != 0) {
+                    opserr << "WARNING: printA -sparse failed to save sparse matrix" << endln;
+                    opserr << "The selected system type may not support sparse matrix output" << endln;
+                    return -1;
+                }
                 return result;
             } else {
                 opserr << "WARNING: printA -sparse is not supported with -ret. Ignoring -sparse flag" << endln;
