@@ -40,7 +40,7 @@
 // What: "@(#) LinearSOE.h, revA"
 
 #include <MovableObject.h>
-
+#include <OPS_Stream.h>
 class LinearSOESolver;
 class Graph;
 class Matrix;
@@ -77,6 +77,7 @@ class LinearSOE : public MovableObject
     virtual const Vector &getX(void) = 0;
     virtual const Vector &getB(void) = 0;    
     virtual const Matrix *getA(void) {return 0;};    
+    virtual int saveSparseA(OPS_Stream& output, int baseIndex = 0); 
     virtual double getDeterminant(void);
     virtual double normRHS(void) = 0;
 

@@ -324,6 +324,36 @@ UmfpackGenLinSOE::normRHS(void)
     return B.Norm();
 }
 
+int
+UmfpackGenLinSOE::saveSparseA(OPS_Stream& output, int baseIndex)
+{
+    int size = X.Size();
+    if (size == 0) {
+        opserr << "WARNING: UmfpackGenLinSOE::saveSparseA() - size is 0\n";
+        return -1;
+    }
+    
+    // Assume the header is already written to output stream
+        
+    output << size << " " << size << " " << Ax.size() << "\n";
+    
+    // Write the sparse matrix entries
+    int nnz_written = 0;
+    for (int col = 0; col < size; col++) {
+        for (int k = Ap[col]; k < Ap[col+1]; k++) {
+            int row = Ai[k];
+            double value = Ax[k];
+            output << (row + baseIndex) << " " << (col + baseIndex) << " " << value << "\n";
+            nnz_written++;
+        }
+    }
+    if (nnz_written != Ax.size()) {
+        opserr << "WARNING: UmfpackGenLinSOE::saveSparseA() - nnz_written != nnz\n";
+        return -1;
+    }
+    
+    return 0;
+}
 
 int
 UmfpackGenLinSOE::setUmfpackGenLinSolver(UmfpackGenLinSolver &newSolver)

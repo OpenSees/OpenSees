@@ -32,6 +32,7 @@
 
 #include<LinearSOE.h>
 #include<LinearSOESolver.h>
+#include<Matrix.h>
 
 LinearSOE::LinearSOE(LinearSOESolver &theLinearSOESolver, int classtag)
     :MovableObject(classtag), theModel(0), theSolver(&theLinearSOESolver)
@@ -107,4 +108,45 @@ LinearSOE::addA(const Matrix &) {
 int
 LinearSOE::addColA(const Vector &col, int colIndex, double fact) {
   return -1;
+}
+
+int LinearSOE::saveSparseA(OPS_Stream& output, int baseIndex) {
+  Matrix* A = const_cast<Matrix*>(this->getA());
+  
+  if (A == nullptr) {
+    return -1;
+  }
+  
+  int rows = A->noRows();
+  int cols = A->noCols();
+  
+  // Count non-zero elements
+  int nnz = 0;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      if ((*A)(i,j) != 0.0) {
+        nnz++;
+      }
+    }
+  }
+  
+  // Assume the header is already written to output stream
+  
+  output << rows << " " << cols << " " << nnz << "\n";
+  
+  // Write non-zero elements with base index
+  int nnz_written = 0;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      double val = (*A)(i,j);
+      if (val != 0.0) {
+        output << i + baseIndex << " " << j + baseIndex << " " << val << "\n";
+        nnz_written++;
+      }
+    }
+  }
+  if (nnz_written != nnz) {
+    return -1;
+  }
+  return 0;
 }

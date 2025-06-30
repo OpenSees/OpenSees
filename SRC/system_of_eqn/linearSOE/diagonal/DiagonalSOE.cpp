@@ -387,6 +387,33 @@ DiagonalSOE::normRHS(void)
   
 }    
 
+int
+DiagonalSOE::saveSparseA(OPS_Stream &output, int baseIndex)
+{
+  if (A == nullptr) {
+    opserr << "FATAL DiagonalSOE::saveSparseA - A == nullptr";
+    return -1;
+  }
+
+  // Assume the header is already written to output stream
+
+  output << size << " " << size << " " << size << "\n";
+  
+  // Write the sparse matrix entries
+  int nnz_written = 0;
+  for (int col = 0; col < size; col++) {
+      int index = col + baseIndex;
+      output << index << " " << index << " " << A[col] << "\n";
+      nnz_written++;
+  }
+  if (nnz_written != size) {
+      opserr << "WARNING: DiagonalSOE::saveSparseA() - nnz_written != size\n";
+      return -1;
+  }
+  
+  return 0;
+}
+
 
 int
 DiagonalSOE::setDiagonalSolver(DiagonalSolver &newSolver)

@@ -494,6 +494,35 @@ SparseGenColLinSOE::normRHS(void)
     
 }    
 
+int
+SparseGenColLinSOE::saveSparseA(OPS_Stream& output, int baseIndex)
+{
+    if (size == 0 || A == nullptr || colStartA == nullptr || rowA == nullptr) {
+        opserr << "WARNING: SparseGenColLinSOE::saveSparseA() - size is 0 or A, colStartA, or rowA is nullptr\n";
+        return -1;
+    }
+    
+    // Assume the header is already written to output stream
+        
+    output << size << " " << size << " " << nnz << "\n";
+    
+    // Write the sparse matrix entries
+    int nnz_written = 0;
+    for (int col = 0; col < size; col++) {
+        for (int k = colStartA[col]; k < colStartA[col+1]; k++) {
+            int row = rowA[k];
+            double value = A[k];
+            output << (row + baseIndex) << " " << (col + baseIndex) << " " << value << "\n";
+            nnz_written++;
+        }
+    }
+    if (nnz_written != nnz) {
+        opserr << "WARNING: SparseGenColLinSOE::saveSparseA() - nnz_written != nnz\n";
+        return -1;
+    }
+    
+    return 0;
+}
 
 int
 SparseGenColLinSOE::setSparseGenColSolver(SparseGenColLinSolver &newSolver)

@@ -2339,6 +2339,10 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_Stream *output = &opserr;
 
   bool ret = false;
+  bool fileSparse = false;
+  int baseIndex = 0;
+  int precision = 6;
+
   int currentArg = 1;
   while (currentArg < argc) {
       if ((strcmp(argv[currentArg], "file") == 0) ||
@@ -2355,6 +2359,31 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           (strcmp(argv[currentArg], "-ret") == 0)) {
           ret = true;
       }
+      else if ((strcmp(argv[currentArg], "sparse") == 0) ||
+          (strcmp(argv[currentArg], "-sparse") == 0)) {
+          fileSparse = true;
+          currentArg++;
+          if (currentArg < argc) {
+              if (Tcl_GetInt(interp, argv[currentArg], &baseIndex) != TCL_OK) {
+                  opserr << "WARNING: printA - failed to read -sparse <baseIndex>\n";
+                  return TCL_ERROR;
+              }
+          }
+      }
+      else if ((strcmp(argv[currentArg], "precision") == 0) ||
+          (strcmp(argv[currentArg], "-precision") == 0)) {
+          currentArg++;
+          if (currentArg < argc) {
+              if (Tcl_GetInt(interp, argv[currentArg], &precision) != TCL_OK) {
+                  opserr << "WARNING: printA - failed to read precision\n";
+                  return TCL_ERROR;
+              }
+              if (precision < 0 || precision > 16) {
+                  opserr << "WARNING: printA - precision must be between 0 and 16\n";
+                  return TCL_ERROR;
+              }
+          }
+      }
       currentArg++;
   }
   if (theSOE != 0) {
@@ -2362,7 +2391,27 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theStaticIntegrator->formTangent();
     else if (theTransientIntegrator != 0)
       theTransientIntegrator->formTangent(0);
-      
+    
+    output->setPrecision(precision);
+    if (fileSparse) {
+        if (!ret) {
+          if (baseIndex == 1) {
+              *output << "%%MatrixMarket matrix coordinate real general\n";
+          } else {
+              *output << "%%Sparse matrix in COO format\n";
+          }
+          *output << "% First non-commented line contains the number of rows, columns, and non-zero elements\n";
+          *output << "% The remaining lines contain the indices and values of the non-zero elements\n";
+          *output << "% Indices are " << baseIndex << "-based\n";
+          *output << "% (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
+          res = theSOE->saveSparseA(*output, baseIndex);
+          outputFile.close();
+          return res == 0 ? res : TCL_ERROR;
+        } else {
+          opserr << "WARNING: printA -sparse is not supported with -ret. Ignoring -sparse flag" << endln;
+          fileSparse = false;
+        }
+    }
     const Matrix *A = theSOE->getA();
     if (A != 0) {
         if (ret) {
