@@ -2226,15 +2226,17 @@ int OPS_printA()
         if (fileSparse) {
             if (!ret) {
                 // Write Matrix Market header
+                const char* mm_comment = (output == &opserr) ? "%%" : "%";
+
                 if (baseIndex == 1) {
-                    *output << "%%MatrixMarket matrix coordinate real general\n";
+                    *output << mm_comment << mm_comment << "MatrixMarket matrix coordinate real general\n";
                 } else {
-                    *output << "%%Sparse matrix in COO format\n";
+                    *output << mm_comment << mm_comment << "Sparse matrix in COO format\n";
                 }
-                *output << "% First non-commented line contains the number of rows, columns, and non-zero elements\n";
-                *output << "% The remaining lines contain the indices and values of the non-zero elements\n";
-                *output << "% Indices are " << baseIndex << "-based\n";
-                *output << "% (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
+                *output << mm_comment << " First non-commented line contains the number of rows, columns, and non-zero elements\n";
+                *output << mm_comment << " The remaining lines contain the indices and values of the non-zero elements\n";
+                *output << mm_comment << " Indices are " << baseIndex << "-based\n";
+                *output << mm_comment << " (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
                 int result = theSOE->saveSparseA(*output, baseIndex);
                 outputFile.close();
                 return result;
