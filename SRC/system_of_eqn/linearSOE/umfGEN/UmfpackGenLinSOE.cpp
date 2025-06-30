@@ -334,8 +334,8 @@ UmfpackGenLinSOE::saveSparseA(OPS_Stream& output, int baseIndex)
     }
     
     // Assume the header is already written to output stream
-        
-    output << size << " " << size << " " << Ax.size() << "\n";
+    int nnz = Ax.size();
+    output << size << " " << size << " " << nnz << "\n";
     
     // Write the sparse matrix entries
     int nnz_written = 0;
@@ -347,7 +347,7 @@ UmfpackGenLinSOE::saveSparseA(OPS_Stream& output, int baseIndex)
             nnz_written++;
         }
     }
-    if (nnz_written != Ax.size()) {
+    if (nnz_written != nnz) {
         opserr << "WARNING: UmfpackGenLinSOE::saveSparseA() - nnz_written != nnz\n";
         return -1;
     }
