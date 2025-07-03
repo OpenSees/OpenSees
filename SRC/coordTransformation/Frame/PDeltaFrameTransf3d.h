@@ -20,10 +20,12 @@
 
 #include <array>
 #include <FrameTransform.h>
-#include <Vector.h>
-#include <Matrix.h>
+#include "LinearFrameTransf.h"
 #include <VectorND.h>
 #include <MatrixND.h>
+
+class Vector;
+class Matrix;
 
 namespace OpenSees {
 

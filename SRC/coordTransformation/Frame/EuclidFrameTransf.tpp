@@ -2,10 +2,6 @@
 //
 //                                   xara
 //                              https://xara.so
-//----------------------------------------------------------------------------//
-//
-//                                 FEDEASLab
-//       Finite Elements for Design Evaluation and Analysis of Structures
 //
 //----------------------------------------------------------------------------//
 //
@@ -27,7 +23,8 @@
 #include <Matrix.h>
 #include <Matrix3D.h>
 #include <Node.h>
-#include <GroupSO3.h>
+#include <Logging.h>
+#include <Rotations.hpp>
 #include "EuclidFrameTransf.h"
 
 namespace OpenSees {
@@ -43,7 +40,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::EuclidFrameTransf(int tag,
     ur{},
     offsets{nullptr},
     offset_flags(offset_flags),
-    basis{nodes, vecxz}
+    basis{vecxz}
 {
   R0.zero();
   R0.addDiagonal(1.0);
@@ -100,10 +97,10 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
       opserr << "invalid pointers to the element nodes\n";
       return -1;
     }
-    // ensure the node rotation is initialized
+    // ensure the node is initialized
     nodes[i]->getTrialRotation();
   }
-
+  
   const Vector &XI = nodes[   0]->getCrds();
   const Vector &XJ = nodes[nn-1]->getCrds();
 
@@ -121,16 +118,19 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
       dx(i) += (*offsets)[nn-1][i];
   }
 
+  // calculate the element length
   L = dx.norm();
   Ln = L;
 
   if (L == 0.0)
     return -2;
 
-  int status = basis.initialize();
-  R0    = basis.getRotation();
-  return status;
+  int error = basis.initialize(nodes);
+
+  R0 = basis.getRotation();
+  return error;
 }
+
 
 
 template <int nn, int ndf, typename IsoT>
@@ -168,12 +168,13 @@ template <int nn, int ndf, typename IsoT>
 int
 EuclidFrameTransf<nn,ndf,IsoT>::update()
 {
-  if (basis.update() < 0) 
+  if (basis.update(nodes) < 0) 
     return -1;
+
+  Matrix3D R = basis.getRotation();
 
   Ln = basis.getLength();
 
-  Matrix3D R = basis.getRotation();
   for (int i=0; i<nn; i++) {
     Versor q = nodes[i]->getTrialRotation();
     ur[i] = LogSO3(R^(MatrixFromVersor(q)*R0));
@@ -189,14 +190,41 @@ EuclidFrameTransf<nn,ndf,IsoT>::getNodeRotation(int tag)
   return nodes[tag]->getTrialRotation();
 }
 
+template <int nn, int ndf, typename IsoT>
+Vector3D 
+EuclidFrameTransf<nn,ndf,IsoT>::getNodeLocation(int node)
+{
+  Vector3D xn = basis.getRotation()^nodes[node]->getCrds();
+
+  xn += this->pullPosition<&Node::getTrialDisp>(node);
+  
+  return xn - basis.getLocation();
+}
+
 
 template <int nn, int ndf, typename IsoT>
 Vector3D
 EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
 {
-  Vector3D u = this->pullPosition<&Node::getTrialDisp>(node);
-  u -= basis.getPosition();
+#if 0
+  const Vector& ug = nodes[node]->getTrialDisp();
+
+  Vector3D u;
+  for (int i=0; i<3; i++)
+    u[i] = ug[i];
+
+  if (offsets != nullptr) [[unlikely]] {
+    u.addVector(1.0, (*offsets)[node], -1.0);
+    u.addVector(1.0, nodes[node]->getTrialRotation().rotate((*offsets)[node]), 1.0);
+  }
+
+  u.addVector(1.0, basis.getPosition(), -1.0);
+#else
+  Vector3D u = this->pullPosition<&Node::getTrialDisp>(node) 
+             - basis.getPosition();
+#endif
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
+
   return u;
 }
 
@@ -296,14 +324,29 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
   // 1) Logarithm
   if (1) { // !(offset_flags & LogIter)) {
     for (int i=0; i<nn; i++) {
-      const int j = i*ndf + 3;
-      Vector3D m {p[j+0], p[j+1], p[j+2]};
-      pa.insert(j, dLogSO3(ur[i])^m, 1.0);
+      Vector3D m {p[i*ndf + 3], p[i*ndf + 4], p[i*ndf + 5]};
+      pa.insert(i*ndf + 3, dLogSO3(ur[i])^m, 1.0);
     }
   }
 
+#if 0
   MatrixND<nn*ndf,nn*ndf> A = getProjection();
   pa = A^pa;
+#else
+  // 2.1) Sum of moments: m = sum_i mi + sum_i (xi x ni)
+  Vector3D m{};
+  for (int i=0; i<nn; i++) {
+    // m += mi
+    for (int j=0; j<3; j++)
+      m[j] += pa[i*ndf+3+j];
+    // m += xi x ni
+    m += this->getNodeLocation(i).cross(Vector3D{pa[i*ndf+0], pa[i*ndf+1], pa[i*ndf+2]});
+  }
+  // 2.2) Adjust
+  for (int i=0; i<nn; i++)
+    pa.template assemble<6>(i*ndf, basis.getRotationGradient(i)^m, -1.0);
+#endif
+
 
   // 3,4) Rotate and joint offsets
   auto pg = this->FrameTransform<nn,ndf>::pushConstant(pa);
@@ -341,9 +384,9 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const V
               {Kb(i*ndf+3*k+0, j*ndf+3*l+2), Kb(i*ndf+3*k+1, j*ndf+3*l+2), Kb(i*ndf+3*k+2, j*ndf+3*l+2)}
             }};
             if (k == 1)
-              Kab = Kab*Aj;
+              Kab = Ai^Kab; // row rotation block
             if (l == 1)
-              Kab = Ai^Kab;
+              Kab = Kab*Aj; // column rotation block
 
             Kb.insert(Kab, i*ndf+3*k, j*ndf+3*l, 1.0);
             if (i == j && k == 1 && l == 1)
@@ -360,20 +403,39 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const V
   MatrixND<nn*ndf,nn*ndf> A = getProjection();
   Kl.addMatrixTripleProduct(0, A, Kb, 1);
 
+
+  VectorND<nn*ndf> Ap = A^p;
+#if 0
+  p = A^p;
+
+#else
+  Kb.zero();
+  VectorND<12> qwx{};
+  for (int i=0; i<nn; i++)
+    for (int j=0; j<6; j++)
+      qwx[i*6+j] = p[i*ndf+j] - Ap[i*ndf+j];
+
+  MatrixND<12,12> Kw = basis.getRotationJacobian(qwx);
+  Kb.assemble(Kw.template extract<0, 6,  0, 6>(),   0,   0, 1.0);
+  Kb.assemble(Kw.template extract<0, 6,  6,12>(),   0, ndf, 1.0);
+  Kb.assemble(Kw.template extract<6,12,  0, 6>(), ndf,   0, 1.0);
+  Kb.assemble(Kw.template extract<6,12,  6,12>(), ndf, ndf, 1.0);
+  Kl.addMatrixProduct(Kb, A, 1.0);
+  // p = A^p;
+#endif
+
   //
   // Kl += -W'*Pn'*A
   //
-  p = A^p;
   Kb.zero();
   for (int j=0; j<nn; j++) {
     MatrixND<3,6> Gj = basis.getRotationGradient(j);
     for (int i=0; i<nn; i++) {
-      auto PnGj = Hat(&p[i*ndf+0])*Gj;
-      Kb.assemble(PnGj,                i*ndf+0, j*ndf, -1.0);
+      Kb.assemble(Hat(&p[i*ndf+0])*Gj,  i*ndf+0, j*ndf, -1.0);
 
       // Kl += -Pnm*W
-      Kl.assemble(PnGj,                i*ndf+0, j*ndf, -1.0);
-      Kl.assemble(Hat(&p[i*ndf+3])*Gj, i*ndf+3, j*ndf, -1.0);
+      Kl.assemble(Hat(&Ap[i*ndf+0])*Gj, i*ndf+0, j*ndf, -1.0);
+      Kl.assemble(Hat(&Ap[i*ndf+3])*Gj, i*ndf+3, j*ndf, -1.0);
     }
   }
   Kl.addMatrixTransposeProduct(1.0, Kb, A,  -1.0);

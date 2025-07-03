@@ -2,10 +2,6 @@
 //
 //                                   xara
 //                              https://xara.so
-//----------------------------------------------------------------------------//
-//
-//                                 FEDEASLab
-//       Finite Elements for Design Evaluation and Analysis of Structures
 //
 //----------------------------------------------------------------------------//
 //
@@ -22,15 +18,17 @@
 // templates to reproduce the legacy CrdTransf classes that were derived
 // for elements in a "basic" coordinate system.
 //
-// cmp
+//
+// Written: Claudio M. Perez
 //
 #ifndef BasicFrameTransf3d_h
 #define BasicFrameTransf3d_h
 
+#include <array>
 #include <CrdTransf.h>
 #include <FrameTransform.h>
-class Matrix;
-class Vector;
+#include <Vector.h>
+#include <Matrix.h>
 
 namespace OpenSees {
 
@@ -115,8 +113,8 @@ private:
   };
 
   constexpr static int iq[] = {
-      inx, iny, inz, imx, imy, imz,
-      jnx, jny, jnz, jmx, jmy, jmz
+    inx, iny, inz, imx, imy, imz,
+    jnx, jny, jnz, jmx, jmy, jmz
   };
 
 };

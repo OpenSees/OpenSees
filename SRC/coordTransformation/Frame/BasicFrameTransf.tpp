@@ -2,10 +2,6 @@
 //
 //                                   xara
 //                              https://xara.so
-//----------------------------------------------------------------------------//
-//
-//                                 FEDEASLab
-//       Finite Elements for Design Evaluation and Analysis of Structures
 //
 //----------------------------------------------------------------------------//
 //
@@ -16,13 +12,13 @@
 //     https://doi.org/10.1002/nme.7506
 //
 //===----------------------------------------------------------------------===//
-//
-#include <array>
+
 #include <Vector.h>
 #include <Matrix.h>
 #include <Matrix3D.h>
 #include <Node.h>
 #include <Channel.h>
+#include <Logging.h>
 #include <BasicFrameTransf.h>
 #include "FrameTransform.h"
 
@@ -254,8 +250,8 @@ BasicFrameTransf3d<ndf>::getInitialGlobalStiffMatrix(const Matrix &KB)
     for (int j = 0; j < 6; j++)
       kb[i][j] = KB(i, j);
 
-  //
-  //
+  // Transform basic stiffness to local system
+  // First compute kb*T_{bl}
   for (int i = 0; i < 6; i++) {
     tmp[i][0]  = -kb[i][0];
     tmp[i][3]  = -kb[i][5];
@@ -266,12 +262,13 @@ BasicFrameTransf3d<ndf>::getInitialGlobalStiffMatrix(const Matrix &KB)
     tmp[i][10] =  kb[i][4];
     tmp[i][11] =  kb[i][2];
   }
-  //
+  // TODO:
+  // Now compute T'_{bl}*(kb*T_{bl})
   for (int i = 0; i < 12; i++) {
     kl( 0, i) = -tmp[0][i];
     kl( 3, i) = -tmp[5][i];
-    kl( 4, i) =  tmp[3][i];
-    kl( 5, i) =  tmp[1][i];
+    kl( 4, i) = tmp[3][i];
+    kl( 5, i) = tmp[1][i];
 
     kl( 6, i) = tmp[0][i];
     kl( 9, i) = tmp[5][i];
@@ -292,8 +289,7 @@ template<int ndf>
 CrdTransf *
 BasicFrameTransf3d<ndf>::getCopy3d()
 {
-  BasicFrameTransf3d *theCopy = new BasicFrameTransf3d(t.getCopy());
-  return theCopy;
+  return new BasicFrameTransf3d(t.getCopy());
 }
 
 
@@ -422,4 +418,4 @@ BasicFrameTransf3d<ndf>::recvSelf(int cTag, Channel &,
   return -1;
 }
 
-} // namespace OpenSees
+}

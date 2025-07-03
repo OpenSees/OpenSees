@@ -17,12 +17,22 @@
 //
 //===----------------------------------------------------------------------===//
 
+//
+// Description: This file contains the implementation for the
+// LinearFrameTransf class. LinearFrameTransf is a linear
+// transformation for a space frame between the global
+// and basic coordinate systems
+//
+// Adapted: Remo Magalhaes de Souza
+// Created: 04/2000
+//
 #pragma once
 #include <Vector.h>
 #include <Matrix.h>
 #include <Matrix3D.h>
 #include <Node.h>
-#include <GroupSO3.h>
+#include <Logging.h>
+#include <Rotations.hpp>
 #include "LinearFrameTransf.h"
 
 namespace OpenSees {
@@ -38,6 +48,8 @@ FrameOrientationGradient(const Vector3D& xi, const Vector3D& xj,
   Vector3D v2  = vz.cross(e1);
 
   Vector3D e2 = v2 / v2.norm();
+//  Vector3D v3 = e1.cross(e2);
+//  Vector3D e3 = v3 / v3.norm();
 
   //
   Vector3D dvz{0.0};
@@ -261,7 +273,6 @@ LinearFrameTransf<nn,ndf>::pullConstant(const VectorND<nn*ndf>& ug,
 
   constexpr static int N = nn * ndf;
 
-  // Initialize ul = ug
   VectorND<N> ul = ug;
 
   // (1)
@@ -392,7 +403,7 @@ LinearFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&p)
   // 1.2) Adjust force part
   for (int i=0; i<nn; i++) {
     pa.assemble(i*ndf,  ixm,  (i? 1.0:-1.0)/L);
-    pa[i*ndf+3] += m[0]*(i? -1:1)*0.5;
+    pa[i*ndf+3] += m[0]*(i? -1.0:1.0)*0.5;
   }
 
   // 2) Rotate and do joint offsets
@@ -408,8 +419,8 @@ LinearFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const Vector
   MatrixND<nn*ndf,nn*ndf> A{};
   A.addDiagonal(1.0);
   constexpr Vector3D axis{1, 0, 0};
-  constexpr Matrix3D ix = Hat(axis);
-  constexpr Matrix3D ioi = axis.bun(axis);
+  constexpr Matrix3D ix  = Hat(Vector3D{1, 0, 0});
+  constexpr Matrix3D ioi = axis.bun(Vector3D{1, 0, 0});
 
   MatrixND<3,ndf> Gb{};
   Gb.template insert<0, 3>(ioi, 0.5);
@@ -465,6 +476,7 @@ LinearFrameTransf<nn,ndf>::isShapeSensitivity()
   int nodeParameterI = nodes[   0]->getCrdsSensitivity();
   int nodeParameterJ = nodes[nn-1]->getCrdsSensitivity();
   // TODO(sensitivity): implement dvz
+
   return (nodeParameterI != 0 || nodeParameterJ != 0);
 }
 
@@ -552,8 +564,56 @@ LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
   static VectorND<6> dub;
   static Vector wrapper(dub);
   //
-  // TODO(sensitivity)
+  // Form ug
   //
+  // TODO(sensitivity)
+#if 0
+  VectorND<nn*ndf> ug;
+  for (int i = 0; i < nn; i++) {
+    const Vector& u = nodes[i]->getTrialDisp();
+    for (int j = 0; j < ndf; j++) {
+      ug[i*ndf+j] = u(j);
+    }
+  }
+
+  if (u_init[0] != 0) {
+    for (int j = 0; j < ndf; j++)
+      ug[j] -= (*u_init[0])[j];
+  }
+
+  if (u_init[nn-1] != 0) {
+    for (int j = 0; j < ndf; j++)
+      ug[j + 6] -= (*u_init[nn-1])[j];
+  }
+
+  //
+  // dub += (T_{bl}' T_{lg} + T_{bl} T_{lg}') * ug
+  //
+  int dv = 0; // TODO(sensitivity)
+
+  // TODO: Sensitivity
+  int di = nodes[0]->getCrdsSensitivity();
+  int dj = nodes[1]->getCrdsSensitivity();
+
+
+  // TODO(sensitivity)
+  // Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
+  // dub = getBasic(ug, 1/L);
+
+  //
+  //
+  VectorND<nn*ndf> ul = LinearFrameTransf<nn,ndf>::pullConstant(ug, R, offsets);
+  //
+  dub[0] += 0;
+  double dL = this->getLengthGrad();
+  double doneOverL = -dL/(L*L);
+  double tmp   = doneOverL * (ul[1] - ul[7]);
+  dub[1] +=  tmp;
+  dub[2] +=  tmp;
+  tmp   = doneOverL * (ul[8] - ul[2]);
+  dub[3] +=  tmp;
+  dub[4] +=  tmp;
+#endif
   return wrapper;
 }
 
@@ -562,8 +622,21 @@ const Vector &
 LinearFrameTransf<nn,ndf>::getBasicDisplTotalGrad(int gradNumber)
 {
 
+  double dug[12];
+  for (int i = 0; i < 6; i++) {
+    dug[i]     = nodes[0]->getDispSensitivity((i + 1), gradNumber);
+    dug[i + 6] = nodes[1]->getDispSensitivity((i + 1), gradNumber);
+  }
+
   static VectorND<6> dub;
   static Vector wrapper(dub);
+
+  // dub = T_{bl} T_{lg} * ug'
+  // TODO
+  // dub = getBasic(dug, R, offsets[0], offsets[nn-1], 1/L);
+
+  wrapper += getBasicDisplFixedGrad();
+
   return wrapper;
 }
 
