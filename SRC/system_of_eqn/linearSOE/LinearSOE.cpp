@@ -119,30 +119,19 @@ int LinearSOE::saveSparseA(OPS_Stream& output, int baseIndex) {
   
   int rows = A->noRows();
   int cols = A->noCols();
-  
-  // Count non-zero elements
-  int nnz = 0;
-  for (int i = 0; i < rows; i++) {
-    for (int j = 0; j < cols; j++) {
-      if ((*A)(i,j) != 0.0) {
-        nnz++;
-      }
-    }
-  }
+  int nnz = rows * cols;
   
   // Assume the header is already written to output stream
   
   output << rows << " " << cols << " " << nnz << "\n";
   
-  // Write non-zero elements with base index
+  // Write all elements with base index
   int nnz_written = 0;
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
       double val = (*A)(i,j);
-      if (val != 0.0) {
-        output << i + baseIndex << " " << j + baseIndex << " " << val << "\n";
-        nnz_written++;
-      }
+      output << i + baseIndex << " " << j + baseIndex << " " << val << "\n";
+      nnz_written++;
     }
   }
   if (nnz_written != nnz) {
