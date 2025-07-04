@@ -7,7 +7,7 @@
 //
 // Please cite the following resource in any derivative works:
 //
-// [1] Perez, C.M., and Filippou F.C.. (2024) 
+// [1] Perez, C.M., and Filippou F.C. (2024)
 //     "On Nonlinear Geometric Transformations of Finite Elements" 
 //     Int. J. Numer. Meth. Engrg.; https://doi.org/10.1002/nme.7506
 //
@@ -31,7 +31,6 @@
 //     Available at: https://doi.org/10.1016/0045-7825(91)90248-5.
 //
 #pragma once
-#include <array>
 #include <Vector3D.h>
 #include <Matrix3D.h>
 #include <MatrixND.h>
@@ -88,7 +87,7 @@ public:
   getRotationJacobian(const VectorND<12>&pwx) final 
   {
     MatrixND<3,12> NWL{};
-    double Ln = this->getLength();
+    const double Ln = this->getLength();
 
     constexpr static Vector3D e1 {1,0,0};
     constexpr static Matrix3D ex = Hat(e1);
@@ -148,7 +147,7 @@ public:
     constexpr Vector3D axis{1, 0, 0};
     constexpr Matrix3D ix = Hat(axis);
 
-    double Ln = this->getLength();
+    const double Ln = this->getLength();
 
     if (node == 0) {
       Gb.template insert<0,0>( ix, -1.0/Ln);

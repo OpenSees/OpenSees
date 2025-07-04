@@ -94,7 +94,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
   for (int i=0; i<nn; i++) {
     nodes[i] = new_nodes[i];
     if (nodes[i] == nullptr) {
-      opserr << "invalid pointers to the element nodes\n";
+      opserr << "invalid pointers to element nodes\n";
       return -1;
     }
     // ensure the node is initialized
@@ -357,7 +357,8 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
 
 template <int nn, int ndf, typename IsoT>
 MatrixND<nn*ndf,nn*ndf>
-EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const VectorND<nn*ndf>&pb)
+EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
+                                             const VectorND<nn*ndf>&pb)
 {
   MatrixND<nn*ndf,nn*ndf> Kb = kb;
   VectorND<nn*ndf> p = pb;
@@ -415,7 +416,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const V
     for (int j=0; j<6; j++)
       qwx[i*6+j] = p[i*ndf+j] - Ap[i*ndf+j];
 
-  MatrixND<12,12> Kw = basis.getRotationJacobian(qwx);
+  const MatrixND<12,12> Kw = basis.getRotationJacobian(qwx);
   Kb.assemble(Kw.template extract<0, 6,  0, 6>(),   0,   0, 1.0);
   Kb.assemble(Kw.template extract<0, 6,  6,12>(),   0, ndf, 1.0);
   Kb.assemble(Kw.template extract<6,12,  0, 6>(), ndf,   0, 1.0);
@@ -441,7 +442,8 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const V
   Kl.addMatrixTransposeProduct(1.0, Kb, A,  -1.0);
 
   // Kl = diag(R) * Kl * diag(R)^T
-  return this->FrameTransform<nn,ndf>::pushConstant(Kl);
+  FrameTransform<nn,ndf>::pushRotation(Kl, basis.getRotation());
+  return Kl;
 }
 
 

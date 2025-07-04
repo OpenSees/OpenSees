@@ -39,10 +39,11 @@ namespace OpenSees {
 
 static inline MatrixND<3,3>
 FrameOrientationGradient(const Vector3D& xi, const Vector3D& xj, 
-                         const Vector3D& vz, int di, int dj, int dv)
+                         const Vector3D& vz,
+                         int di, int dj, int dv)
 {
   Vector3D v1  = xj - xi;
-  double L     = v1.norm();
+  const double L     = v1.norm();
   Vector3D e1  = v1/L;
 
   Vector3D v2  = vz.cross(e1);

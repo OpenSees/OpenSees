@@ -7,7 +7,7 @@
 //
 // The following resource should be cited in derivative works:
 //
-// [1] Perez, C.M., and Filippou F.C.. (2024) 
+// [1] Perez, C.M., and Filippou F.C. (2024)
 //     "On Nonlinear Geometric Transformations of Finite Elements" 
 //     Int. J. Numer. Meth. Engrg.; 
 //     Available at: https://doi.org/10.1002/nme.7506
@@ -32,13 +32,11 @@
 //     https://doi.org/10.1016/0045-7825(90)90106-V.
 //
 #pragma once
-#include <array>
 #include <limits>
 #include <cmath>
 #include <MatrixND.h>
 #include <Matrix3D.h>
 #include <Triad.h>
-#include <Vector3D.h>
 #include <Rotations.hpp>
 #include "EuclidIsometry.h"
 
@@ -57,7 +55,7 @@ public:
 
   MatrixND<3,6> 
   getRotationGradient(int node) final {
-    constexpr Vector3D e1{1, 0, 0};
+    constexpr static Vector3D e1{1, 0, 0};
 
     double Ln = this->getLength();
 
@@ -79,8 +77,6 @@ public:
 
 
     #if 0
-    constexpr Matrix3D ix = Hat(e1);
-    auto de2 = this->getLMatrix(r2, r1, e1, A).transpose();
     auto de3 = this->getLMatrix(r3, r1, e1, A).transpose();
     #else
     auto de3 = this->getBasisVariation(r3, r1, e1, v, A);
@@ -95,16 +91,16 @@ public:
     G.template insert<1,0, 1,12>(E3*de1, -1.0);
     G.template insert<2,0, 1,12>(E2*de1,  1.0);
 
-    if (node == 0) {
-      MatrixND<3,6> Gb = G.template extract<0,3,  0, 6>();
-      return Gb;
-    }
-    else {
-      MatrixND<3,6> Gb = G.template extract<0,3,  6,12>();
-      return Gb;
-    }
+    if (node == 0)
+      return G.template extract<0,3,  0, 6>();
+    else if (node == nn-1)
+      return G.template extract<0,3,  6,12>();
+    else
+      return MatrixND<3,6>{};
+
 #else
     MatrixND<3,6> Gb{};
+    constexpr Matrix3D ix = Hat(e1);
 
     if (node == 0) {
       Gb.template insert<0,0>( ix, -1.0/Ln);
@@ -123,7 +119,7 @@ public:
   {
     Ln = dx.norm();
     {
-      Triad TrI{RI}, TrJ{RJ};
+      const Triad TrI{RI}, TrJ{RJ};
       rI[0] = TrI[1];
       rI[1] = TrI[2];
       rI[2] = TrI[3];
@@ -133,15 +129,15 @@ public:
     }
 
     {
-      Versor qI = VersorFromMatrix(RI);
-      Versor qJ = VersorFromMatrix(RJ);
-      Vector3D gammaw = CayleyFromVersor(qJ.mult_conj(qI));
+      const Versor qI = VersorFromMatrix(RI);
+      const Versor qJ = VersorFromMatrix(RJ);
+      Vector3D gw = CayleyFromVersor(qJ.mult_conj(qI));
 
-      gammaw *= 0.5;
+      gw *= 0.5;
 
-      Rbar = CaySO3(gammaw)*RI;
+      Rbar = CaySO3(gw)*RI;
 
-      Triad r{Rbar};
+      const Triad r{Rbar};
       r1 = r[1];
       r2 = r[2];
       r3 = r[3];
@@ -323,8 +319,8 @@ public:
     // T(:,3) += Lr3*rI1          ; y
 
     // T(:,4) += Lr3*rJ2 - Lr2*rJ3;
-    // T(:,5) += Lr2*rJ1          ; z    // ?????? check sign
-    // T(:,6) += Lr3*rJ1          ; y    // ?????? check sign
+    // T(:,5) += Lr2*rJ1          ; z    // TODO ?????? check sign
+    // T(:,6) += Lr3*rJ1          ; y    // TODO ?????? check sign
 
     // Bending Z
     for (int i = 0; i < 12; i++) {
@@ -434,31 +430,6 @@ public:
     //
     // Ksigma3
     //
-    //  ks3 = [o kbar2  |  o kbar4];
-    //
-    //  where
-    //
-    //    kbar2 = -Lr2*(m(3)*S(rI3) + m(1)*S(rI1)) + Lr3*(m(3)*S(rI2) - m(2)*S(rI1)) ;
-    //
-    //    kbar4 =  Lr2*(m(3)*S(rJ3) - m(4)*S(rJ1)) - Lr3*(m(3)*S(rJ2) + m(5)*S(rJ1));
-    //
-    // or
-    //
-    //  ks3 = [o ka+kb  |  o kc+kd];
-    //      = [o ka     |  o kc] + [o kb  |  o kd];
-    //
-    //  where
-    //
-    //    ka = -Lr2*S(rI3)*m(3)  
-    //         +Lr2*S(rI1)*m(1);
-    //    kb =  Lr3*S(rI2)*m(3)  
-    //         -Lr3*S(rI1)*m(2);
-    //
-    //    kc =  Lr2*S(rJ3)*m(3)
-    //         -Lr2*S(rJ1)*m(4);
-    //    kd = -Lr3*S(rJ2)*m(3)  
-    //         +Lr3*S(rJ1)*m(5);
-
     VectorND<6> m;
     m[0] =  0.5*pl[imx]/std::cos(ul(imx));
     m[2] = -0.5*pl[imy]/std::cos(ul(imy));
@@ -489,16 +460,16 @@ public:
     // Ksigma4
     //
     {
-      Matrix3D ks33;
-      ks33.zero();
-      ks33.addSpinProduct(e2, rJ3, -m[3]);
-      ks33.addSpinProduct(e3, rJ2,  m[3]);
-      ks33.addSpinProduct(e2, rJ1,  m[4]);
-      ks33.addSpinProduct(e1, rJ2, -m[4]);
-      ks33.addSpinProduct(e3, rJ1,  m[5]);
-      ks33.addSpinProduct(e1, rJ3, -m[5]);
+      Matrix3D ks99;
+      ks99.zero();
+      ks99.addSpinProduct(e2, rJ3, -m[3]);
+      ks99.addSpinProduct(e3, rJ2,  m[3]);
+      ks99.addSpinProduct(e2, rJ1,  m[4]);
+      ks99.addSpinProduct(e1, rJ2, -m[4]);
+      ks99.addSpinProduct(e3, rJ1,  m[5]);
+      ks99.addSpinProduct(e1, rJ3, -m[5]);
 
-      kg.assemble(ks33, 9, 9, 1.0);
+      kg.assemble(ks99, 9, 9, 1.0);
     }
 
     //
@@ -572,21 +543,14 @@ public:
       kg.assembleTranspose(ks33, 9, 6, -1.0);
     }
 
-    // Ksigma -------------------------------
-    Vector3D rm = rI3;
+    // Ksigma
 
-    rm.addVector(1.0, rJ3, -1.0);
-    this->getKs2Matrix(kg, r2,  rm, m[3]);
-
-  //  rm = rJ2;
-    rm.addVector(0.0, rJ2,  1.0);
-    rm.addVector(1.0, rI2, -1.0);
-    this->getKs2Matrix(kg, r3,  rm, m[3]);
-    this->getKs2Matrix(kg, r2, rI1, m[1]);
-    this->getKs2Matrix(kg, r3, rI1, m[2]);
-    //
-    this->getKs2Matrix(kg, r2, rJ1, m[4]);
-    this->getKs2Matrix(kg, r3, rJ1, m[5]);
+    this->getKs2Matrix(kg, r2, rI3-rJ3, m[3]);
+    this->getKs2Matrix(kg, r3, rJ2-rI2, m[3]);
+    this->getKs2Matrix(kg, r2,     rI1, m[1]);
+    this->getKs2Matrix(kg, r3,     rI1, m[2]);
+    this->getKs2Matrix(kg, r2,     rJ1, m[4]);
+    this->getKs2Matrix(kg, r3,     rJ1, m[5]);
 
     return 0;
   }
@@ -596,10 +560,10 @@ private:
 
   inline MatrixND<3,12>
   getBasisVariation(const Vector3D &ri, 
-             const Vector3D& r1, 
-             const Vector3D& e1, 
-             const Vector3D& v,
-             const Matrix3D& A) const noexcept
+                    const Vector3D& r1, 
+                    const Vector3D& e1, 
+                    const Vector3D& v,
+                    const Matrix3D& A) const noexcept
   {
     double nu = v.norm();
     Matrix3D L1 = ExpSO3(v)^dExpSO3(v, ri)*Hat(r1)*A; // nu
@@ -619,9 +583,11 @@ private:
     return L;
   }
 
-  inline MatrixND<12,3>
+  [[nodiscard]] inline MatrixND<12,3>
   getLMatrix(const Vector3D &ri, 
-             const Vector3D& r1, const Vector3D& e1, const Matrix3D& A) const noexcept
+             const Vector3D& r1,
+             const Vector3D& e1,
+             const Matrix3D& A) const noexcept
   {
 
     static Matrix3D rie1r1;
@@ -677,6 +643,34 @@ private:
   inline void
   getKs3Matrix(MatrixND<12,12> &Kg, const VectorND<6>& m) const noexcept
   {
+    //
+    // Ksigma3
+    //
+    //  ks3 = [o kbar2  |  o kbar4];
+    //
+    //  where
+    //
+    //    kbar2 = -Lr2*(m(3)*S(rI3) + m(1)*S(rI1)) + Lr3*(m(3)*S(rI2) - m(2)*S(rI1)) ;
+    //
+    //    kbar4 =  Lr2*(m(3)*S(rJ3) - m(4)*S(rJ1)) - Lr3*(m(3)*S(rJ2) + m(5)*S(rJ1));
+    //
+    // or
+    //
+    //  ks3 = [o ka+kb  |  o kc+kd];
+    //      = [o ka     |  o kc] + [o kb  |  o kd];
+    //
+    //  where
+    //
+    //    ka = -Lr2*S(rI3)*m(3)  
+    //         +Lr2*S(rI1)*m(1);
+    //    kb =  Lr3*S(rI2)*m(3)  
+    //         -Lr3*S(rI1)*m(2);
+    //
+    //    kc =  Lr2*S(rJ3)*m(3)
+    //         -Lr2*S(rJ1)*m(4);
+    //    kd = -Lr3*S(rJ2)*m(3)  
+    //         +Lr3*S(rJ1)*m(5);
+
     const Vector3D &rI1 = rI[0],
                    &rI2 = rI[1],
                    &rI3 = rI[2],
@@ -721,6 +715,7 @@ private:
     const Vector3D &e1 = e[0];
 
     // const double Ln = this->getLength();
+
     //  Ksigma2 = [ K11   K12 -K11   K12
     //              K12'  K22 -K12'  K22
     //             -K11  -K12  K11  -K12

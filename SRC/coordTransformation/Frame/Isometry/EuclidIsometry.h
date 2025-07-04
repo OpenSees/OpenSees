@@ -46,12 +46,9 @@ public:
   virtual Vector3D  getPositionVariation(int ndf, double* du) =0; 
   virtual Vector3D  getRotationVariation(int ndf, double* du) =0;
   virtual MatrixND<12,12> getRotationJacobian(const VectorND<12>&pl) {
-    MatrixND<12,12> K;
-    K.zero();
-    return K;
+    return MatrixND<12,12> {};
   }
   virtual Matrix3D  getRotationDelta() =0;
-  //
   virtual MatrixND<3,6> getRotationGradient(int node) =0;
 };
 
