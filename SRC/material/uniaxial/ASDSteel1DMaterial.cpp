@@ -1,4 +1,4 @@
-/* ****************************************************************** **
+﻿/* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
@@ -22,7 +22,7 @@
 // $Date: 2025-01-03 11:29:01 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ASDSteel1DMaterial.cpp,v $
 
-// Alessia Casalucci,Massimo Petracca, Guido Camata - ASDEA Software, Italy
+// Alessia Casalucci, Massimo Petracca, Guido Camata - ASDEA Software, Italy
 //
 // A unified and efficient plastic-damage material model for steel bars including fracture, bond-slip, and buckling via multiscale homogenization
 //
@@ -500,6 +500,7 @@ namespace {
 	class SeriesComponent
 	{
 	public:
+		double lch_anchor = 0.0;
 		SteelComponent steel_material;
 		UniaxialMaterial* slip_material = nullptr;
 		int serializationDataSize() const;
@@ -507,8 +508,22 @@ namespace {
 		void deserialize(Vector& data, int& pos, int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
 		void serialize_slip(int commitTag, Channel& theChannel);
 		void deserialize_slip(int commitTag, Channel& theChannel, FEM_ObjectBroker& theBroker);
+		
 	public:
 		using param_t = ASDSteel1DMaterial::InputParameters;
+		inline void initialize_lch_anchor(const param_t& params) {
+			if (lch_anchor == 0.0) { 
+				lch_anchor = lch_anchor_compute(params);
+				if (slip_material) {
+					// if the slip material supports the lch_ref parameter, let's set it to the anchorage length
+					Parameter lch_param(0, 0, 0, 0);
+					const char* the_args[] = { "lch_ref" };
+					if (slip_material->setParameter(the_args, 1, lch_param) != -1) {
+						lch_param.update(lch_anchor);
+					}
+				}
+			}
+		}
 		SeriesComponent() = default;
 		SeriesComponent(const SeriesComponent& c)
 			: steel_material(c.steel_material)
@@ -552,8 +567,78 @@ namespace {
 				slip_material->revertToStart();
 		
 		}
+		inline double lch_anchor_compute(const param_t& params) {
+			//lch_anchor estimation 
+
+			// compute the gradient
+			double max_slip = params.radius * 100.0;
+			double tol = params.sy * 1.0e-6;
+			auto compute_gradient = [&](double slip) {
+				double epsilon = max_slip * 1.0e-8;
+				slip_material->setTrialStrain(slip);
+				slip_material->commitState();
+				double stress_0 = slip_material->getStress();
+				slip_material->revertToStart();
+				slip_material->setTrialStrain(slip + epsilon);
+				slip_material->commitState();
+				double stress_1 = slip_material->getStress();
+				slip_material->revertToStart();
+				double K = (stress_1 - stress_0) / epsilon;
+				if (std::abs(K) < tol)
+					K = 0.0;
+				return K;
+			};
+
+			double X0 = 0.0;
+			double Y0 = compute_gradient(X0);
+			double S0 = sign(Y0);
+			double X1 = max_slip;
+			double Y1 = compute_gradient(X1);
+			double S1 = sign(Y1);
+			double XM = (X1 + X0)/2.0;
+			bool found_peak = false;
+			for (int i = 0; i < 20; i++) {
+				double YM = compute_gradient(XM);				
+				double SM = sign(YM);
+				if (S0 != SM) {
+					X1 = XM;
+					Y1 = YM;
+					S1 = SM;
+					found_peak = true;
+				}
+				else if (SM != S1) {
+					X0 = XM;
+					Y0 = YM;
+					S0 = SM;
+					found_peak = true;
+				}
+				else {
+					opserr << "Failed " << S0 << ", " << SM << ", " << S1 << "\n";
+					break;
+				}
+				XM = (X1 + X0) / 2.0;
+			}
+
+			double tau_max = 0.0;
+			double lch_anchor = 0.0;
+			if (found_peak) {
+				slip_material->setTrialStrain(XM);
+				slip_material->commitState();
+				tau_max = slip_material->getStress();
+				slip_material->revertToStart();
+
+				lch_anchor = (params.sy * params.radius) / (2.0 * tau_max);
+			}
+			else {
+				opserr << "No peak found — using default lch_anchor\n";
+				lch_anchor = 80.0 * params.radius;
+			}
+			return lch_anchor;
+		}
 		inline int compute(const param_t& params, bool do_implex, double time_factor, double _strain, double& sigma, double& tangent) {
 			if (slip_material) {
+
+				initialize_lch_anchor(params);
 
 				// compute series response
 				constexpr int MAX_ITER = 100;
@@ -573,7 +658,7 @@ namespace {
 
 				// initial guess for the slip strain
 				double lch_ele = 2.0 * params.lch_element; // it was divided in constructor for RVE symmetry
-				double strain_slip = slip_material->getStrain() / lch_ele;
+				double strain_slip = slip_material->getStrain() / lch_anchor;
 				double strain_steel = _strain - strain_slip;
 				
 				// iterative procedure to impose the iso-stress condition
@@ -584,13 +669,13 @@ namespace {
 				double Stol = TOL;
 				for (int iter = 0; iter < MAX_ITER; ++iter) {
 					int Tsteel = steel_material.compute(params, do_implex, time_factor, strain_steel, sigma_steel, tangent_steel);
-					int Tslip = slip_material->setTrialStrain(strain_slip * lch_ele);
-					double sigma_slip = slip_material->getStress() * 2.0 * params.lch_anchor/ params.radius;
-					double tangent_slip = slip_material->getTangent() * 2.0 * lch_ele * params.lch_anchor / params.radius;
+					int Tslip = slip_material->setTrialStrain(strain_slip * lch_anchor);
+					double sigma_slip = slip_material->getStress() * 2.0 * lch_anchor/ params.radius;
+					double tangent_slip = slip_material->getTangent() * 2.0 * lch_anchor *lch_anchor / params.radius;
 					double residual = sigma_slip - sigma_steel;
 					double residual_derivative = tangent_steel + tangent_slip;
 					if (std::abs(residual_derivative) < Ktol) {
-						residual_derivative = params.E + slip_material->getInitialTangent() * 2.0 * lch_ele * params.lch_anchor / params.radius;
+						residual_derivative = params.E + slip_material->getInitialTangent() * 2.0 * lch_anchor * lch_anchor / params.radius;
 					}
 					double strain_increment = - residual / residual_derivative;
 					strain_slip += strain_increment;
@@ -627,7 +712,7 @@ namespace {
 	};
 	int SeriesComponent::serializationDataSize() const
 	{
-		return 2 + steel_material.serializationDataSize();
+		return 3 + steel_material.serializationDataSize();
 	}
 
 	void SeriesComponent::serialize(Vector& data, int& pos, int commitTag, Channel& theChannel)
@@ -642,10 +727,12 @@ namespace {
 					slip_material->setDbTag(mat_db_tag);
 			}
 			data(pos++) = static_cast<double>(mat_db_tag);
+			data(pos++) = lch_anchor;
 		}
 		else {
 			data(pos++) = -1.0;  // classTag
 			data(pos++) = -1.0;  // dbTag
+			data(pos++) = -1.0;  //lch_anchor
 		}
 	}
 	
@@ -666,6 +753,7 @@ namespace {
 			new_slip_material->setDbTag(mat_db_tag);
 			slip_material = new_slip_material;
 		}
+		lch_anchor = data(pos++);
 
 	}
 
@@ -1675,7 +1763,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  <$r>> <-slip $matTag $lch_anc <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  <$r>> <-slip $matTag <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1701,7 +1789,6 @@ void* OPS_ASDSteel1DMaterial()
 	bool buckling = false;
 	bool fracture = false;
 	bool slip = false;
-	double lch_anc = 0.0;
 	double K_alpha = 0.5;
 	double max_iter= 100;
 	double tolU = 1.0e-6;
@@ -1818,8 +1905,8 @@ void* OPS_ASDSteel1DMaterial()
 		}
 		if (strcmp(value, "-slip") == 0) {
 			slip = true;
-			if (OPS_GetNumRemainingInputArgs() < 2) {
-				opserr << "UniaxialMaterial ASDSteel1D: '-slip' requires '$matTag'and '$lch_anc'.\n";
+			if (OPS_GetNumRemainingInputArgs() < 1) {
+				opserr << "UniaxialMaterial ASDSteel1D: '-slip' requires '$matTag'.\n";
 				return nullptr;
 			}
 			// get slip material
@@ -1834,7 +1921,7 @@ void* OPS_ASDSteel1DMaterial()
 				opserr << "ASDSteel1D Error: No existing UniaxialMaterial with tag " << matTag << " for -slip option.\n";
 				return nullptr;
 			}
-			if (!lam_optional_double( "lch_anc", lch_anc )) return nullptr;
+			
 			// radius is optional (can be defined either here or in -buckling)
 			if (OPS_GetNumRemainingInputArgs() > 0) {
 				double trial_radius;
@@ -1928,7 +2015,6 @@ void* OPS_ASDSteel1DMaterial()
 	params.buckling = buckling;
 	params.fracture = fracture;
 	params.slip = slip;
-	params.lch_anchor = lch_anc;
 	params.length = buckling ? lch / 2.0 : 1.0; // consider half distance, the RVE uses symmetry
 	params.radius = r;
 	params.K_alpha = K_alpha;
@@ -2218,7 +2304,6 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = static_cast<double>(params.buckling);
 	ddata(counter++) = static_cast<double>(params.fracture);
 	ddata(counter++) = static_cast<double>(params.slip);
-	ddata(counter++) = params.lch_anchor;
 	ddata(counter++) = params.radius;
 	ddata(counter++) = params.length;
 	ddata(counter++) = params.lch_element;
@@ -2300,7 +2385,6 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	params.buckling = static_cast<bool>(ddata(counter++));
 	params.fracture = static_cast<bool>(ddata(counter++));
 	params.slip = static_cast<bool>(ddata(counter++));
-	params.lch_anchor = ddata(counter++);
 	params.radius = ddata(counter++);
 	params.length = ddata(counter++);
 	params.lch_element = ddata(counter++);
