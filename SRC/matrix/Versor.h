@@ -10,14 +10,14 @@
 //
 #pragma once
 #include <cmath>
-#include <VectorND.h>
+#include <Vector3D.h>
 
 #if 0
 namespace OpenSees {
 #endif
 
 struct Versor {
-  Vector3D vector;
+  OpenSees::Vector3D vector;
   double   scalar;
 
   template <typename Vec3T>
