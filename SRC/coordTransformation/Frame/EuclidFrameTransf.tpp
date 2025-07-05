@@ -206,23 +206,9 @@ template <int nn, int ndf, typename IsoT>
 Vector3D
 EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
 {
-#if 0
-  const Vector& ug = nodes[node]->getTrialDisp();
-
-  Vector3D u;
-  for (int i=0; i<3; i++)
-    u[i] = ug[i];
-
-  if (offsets != nullptr) [[unlikely]] {
-    u.addVector(1.0, (*offsets)[node], -1.0);
-    u.addVector(1.0, nodes[node]->getTrialRotation().rotate((*offsets)[node]), 1.0);
-  }
-
-  u.addVector(1.0, basis.getPosition(), -1.0);
-#else
   Vector3D u = this->pullPosition<&Node::getTrialDisp>(node) 
              - basis.getPosition();
-#endif
+
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
 
   return u;
@@ -329,10 +315,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
     }
   }
 
-#if 0
-  MatrixND<nn*ndf,nn*ndf> A = getProjection();
-  pa = A^pa;
-#else
   // 2.1) Sum of moments: m = sum_i mi + sum_i (xi x ni)
   Vector3D m{};
   for (int i=0; i<nn; i++) {
@@ -345,7 +327,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
   // 2.2) Adjust
   for (int i=0; i<nn; i++)
     pa.template assemble<6>(i*ndf, basis.getRotationGradient(i)^m, -1.0);
-#endif
+
 
 
   // 3,4) Rotate and joint offsets
@@ -406,10 +388,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
 
 
   VectorND<nn*ndf> Ap = A^p;
-#if 0
-  p = A^p;
 
-#else
   Kb.zero();
   VectorND<12> qwx{};
   for (int i=0; i<nn; i++)
@@ -423,7 +402,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
   Kb.assemble(Kw.template extract<6,12,  6,12>(), ndf, ndf, 1.0);
   Kl.addMatrixProduct(Kb, A, 1.0);
   // p = A^p;
-#endif
+
 
   //
   // Kl += -W'*Pn'*A

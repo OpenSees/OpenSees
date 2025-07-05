@@ -76,11 +76,7 @@ public:
         A(i,j) = (double(i==j) - e1[i]*e1[j])/Ln;
 
 
-    #if 0
-    auto de3 = this->getLMatrix(r3, r1, e1, A).transpose();
-    #else
     auto de3 = this->getBasisVariation(r3, r1, e1, v, A);
-    #endif
 
     MatrixND<3,12> de1{};
     de1.template insert<0,0>(A, -1.0);
