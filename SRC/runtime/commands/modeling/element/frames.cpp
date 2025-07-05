@@ -104,6 +104,29 @@ struct Options {
 extern BeamIntegration*     GetBeamIntegration(TCL_Char* type, int);
 extern BeamIntegrationRule* GetHingeStencil(int argc, TCL_Char ** const argv);
 
+static inline int
+CheckTransformation(Domain& domain, int iNode, int jNode, CrdTransf& transform)
+{
+  Node* ni = domain.getNode(iNode);
+  Node* nj = domain.getNode(jNode);
+  if (ni == nullptr || nj == nullptr) {
+    opserr << OpenSees::PromptValueError << "nodes not found with tags "
+           << iNode << " and " << jNode
+           << OpenSees::SignalMessageEnd;
+  }
+
+  if (transform.initialize(ni, nj) != 0) {
+    opserr << OpenSees::PromptValueError 
+           << "transformation with tag " << transform.getTag()
+           << " could not be initialized with nodes "
+           << iNode << " and " << jNode
+           << "; check orientation"
+           << OpenSees::SignalMessageEnd;
+    return TCL_ERROR;
+  }
+  return TCL_OK;
+}
+
 
 template <int ndm, typename Transform, typename Section>
 static Element*
@@ -141,7 +164,7 @@ CreateFrame(BasicModelBuilder& builder,
   }
 
   // Finalize the coordinate transform
-  Transform* theTransf = builder.getTypedObject<Transform>(transfTag);
+  CrdTransf* theTransf = builder.getTypedObject<CrdTransf>(transfTag);
   if (theTransf == nullptr) {
     opserr << OpenSees::PromptValueError << "transformation not found with tag " << transfTag << "\n";
     return nullptr;
@@ -209,6 +232,10 @@ CreateFrame(BasicModelBuilder& builder,
     //
     // ndm == 3
     //
+
+    if (CheckTransformation(*builder.getDomain(), nodev[0], nodev[1], *theTransf) != TCL_OK)
+      return nullptr;
+
     if (strstr(name, "Frame") != nullptr) {
       if (strstr(name, "Exact") == nullptr) {
         std::array<int, 2> nodes {nodev[0], nodev[1]};

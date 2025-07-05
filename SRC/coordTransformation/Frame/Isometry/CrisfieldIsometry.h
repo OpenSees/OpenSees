@@ -157,7 +157,8 @@ public:
       Vector3D r1 { Rbar(0,0), Rbar(1,0), Rbar(2,0) };
 
       // Clamp to avoid NaNs from acos
-      double dot = std::clamp(r1.dot(e[0]), -1.0, 1.0);
+      // double dot = std::clamp(r1.dot(e[0]), -1.0, 1.0);
+      double dot = std::max(-1.0, std::min(1.0, r1.dot(e[0])));
 
       if (std::fabs(dot - 1.0) < ktol) {                         // Rbar already aligned
           v.zero();
