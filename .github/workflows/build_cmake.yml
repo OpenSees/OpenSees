@@ -48,6 +48,9 @@ jobs:
           cd mumps
           mkdir build
           cd build
+          rem stop the linker from pulling in libmmt.lib
+          set "CL=/NODEFAULTLIB:libmmt.lib %CL%"
+          set "LINK=/NODEFAULTLIB:libmmt.lib %LINK%"
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
           cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
           cmake --build . --config Release --parallel 4
