@@ -12,7 +12,7 @@ on:
 jobs:
   build-win:
     name: Build Windows10
-    runs-on: windows-2019
+    runs-on: windows-2022
     steps:
       - name: 2.1. Obtaining OpenSees Source Code
         uses: actions/checkout@v4
