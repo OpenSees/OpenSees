@@ -44,6 +44,7 @@
 class Element;
 class Vector;
 class Matrix;
+struct Versor;
 class Channel;
 class Renderer;
 
@@ -86,6 +87,7 @@ class Node : public DomainComponent
     virtual const Vector &getTrialDisp(void);    
     virtual const Vector &getTrialVel(void);    
     virtual const Vector &getTrialAccel(void);    
+    virtual       Versor  getTrialRotation(void);
 
     // public methods for updating the trial response quantities
     virtual int setTrialDisp(double value, int dof);    
@@ -187,6 +189,7 @@ class Node : public DomainComponent
     Vector *commitDisp, *commitVel, *commitAccel; // committed quantities
     Vector *trialDisp, *trialVel, *trialAccel;     // trial quantities
     Vector *unbalLoad;                // unbalanced load
+    Versor *rotation;
     Vector *incrDisp;
     Vector *incrDeltaDisp;
     
