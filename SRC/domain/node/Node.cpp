@@ -490,7 +490,7 @@ Node::~Node()
 	delete trialAccel;
 
     if (rotation != nullptr)
-      delete rotation;
+      delete[] rotation;
 
 
     if (incrDisp != 0)
@@ -708,13 +708,12 @@ Versor
 Node::getTrialRotation()
 {
   if (rotation == nullptr) [[unlikely]] {
-    if (this->getNumberDOF() < 6)
-      return Versor();
-    else
-      rotation = new Versor{{0.0, 0.0, 0.0}, 1.0};
+    rotation = new Versor[2];
+    rotation[0] = Versor{{0.0, 0.0, 0.0}, 1.0};
+    rotation[1] = Versor{{0.0, 0.0, 0.0}, 1.0};
   }
 
-  return *rotation;
+  return rotation[1];
 }
 
 int
@@ -839,7 +838,7 @@ Node::incrTrialDisp(const Vector &incrDispl)
     }    
 
     if (rotation != nullptr && this->getNumberDOF() >= 6)
-      (*rotation) = (*rotation)*Versor::from_vector(&disp[3*numberDOF+3]);
+      rotation[1] = rotation[1]*Versor::from_vector(&disp[3*numberDOF+3]);
 
 
     // create a copy if no trial exists and add committed
@@ -1114,6 +1113,8 @@ Node::commitState()
 	accel[i+numberDOF] = accel[i];
     }
 
+    if (rotation != nullptr)
+        rotation[0] = rotation[1];
     // if we get here we are done
     return 0;
 }
@@ -1144,6 +1145,8 @@ Node::revertToLastCommit()
 	accel[i] = accel[numberDOF+i];
     }
 
+    if (rotation != nullptr)
+        rotation[1] = rotation[0];
     // if we get here we are done
     return 0;
 }
@@ -1174,8 +1177,10 @@ Node::revertToStart()
 	(*unbalLoad) *= 0;
 
 
-  if (rotation != nullptr)
-    *rotation = Versor{{0.0, 0.0, 0.0}, 1.0};
+    if (rotation != nullptr) {
+      rotation[0] = Versor{{0.0, 0.0, 0.0}, 1.0};
+      rotation[1] = rotation[0];
+    }
 
 
 // AddingSensitivity: BEGIN /////////////////////////////////
