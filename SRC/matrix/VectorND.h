@@ -70,24 +70,6 @@ struct VectorND {
   VectorND<nr> 
   extract(int a) noexcept;
 
-  int
-  addVector(const T thisFact, const Vector &other, const T otherFact) noexcept;
-
-  int
-  addVector(const T thisFact, const VectorND<N> &other, const T otherFact) noexcept;
-
-  template <int NC>
-  inline int
-  addMatrixVector(double thisFact, const MatrixND<N, NC, double> &m, const Vector& v, double otherFact);
-
-  template <int NR>
-  inline int
-  addMatrixTransposeVector(double thisFact, const MatrixND<NR, N, double> &m, 
-                           const Vector &v, double otherFact);
-
-  inline int
-  addMatrixVector(const double thisFact, const Matrix &m, const Vector &v, const double otherFact);
-
   consteval int
   size() const {
     return N;
