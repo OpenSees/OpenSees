@@ -20,12 +20,6 @@ struct Versor {
   Vector3D vector;
   double   scalar;
 
-  template <typename Vec3T>
-  inline Vec3T 
-  rotate(const Vec3T& u) const {
-    return u + 2.0 * vector.cross( scalar*u + vector.cross(u) );
-  }
-
   inline Versor 
   conjugate() const {
     Versor c;

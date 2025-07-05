@@ -1,5 +1,9 @@
 //===----------------------------------------------------------------------===//
 //
+//        OpenSees - Open System for Earthquake Engineering Simulation
+//
+//===----------------------------------------------------------------------===//
+//
 //                                   xara
 //
 //===----------------------------------------------------------------------===//
@@ -8,13 +12,14 @@
 //
 // Description: Geometric transformation command
 //
-// cmp
+// Written: cmp
 //
 #include <tcl.h>
 #include <string>
 #include <string.h>
 #include <assert.h>
 #include <Logging.h>
+#include <Parsing.h>
 #include <BasicModelBuilder.h>
 
 #include <LinearCrdTransf2d.h>
@@ -33,15 +38,18 @@
 using namespace OpenSees;
 
 int 
-TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, int argc,
-                         const char ** const argv)
+TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, 
+                               Tcl_Size argc,
+                               const char ** const argv)
 {
   assert(clientData != nullptr);
   BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
 
   // Make sure there is a minimum number of arguments
   if (argc < 3) {
-    opserr << OpenSees::PromptValueError << "insufficient number of arguments\n";
+    opserr << OpenSees::PromptValueError 
+           << "insufficient number of arguments"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -54,7 +62,8 @@ TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, int ar
   const char *name = argv[1];
   if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
     opserr << OpenSees::PromptValueError 
-           << "invalid tag\n";
+           << "invalid tag"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -71,7 +80,9 @@ TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, int ar
       for (int i = 0; i < ndm; ++i) {
         if (argi == argc ||
             Tcl_GetDouble(interp, argv[argi++], &transform.offsets[1][i]) != TCL_OK) {
-          opserr << OpenSees::PromptValueError << "invalid offset at end I\n";
+          opserr << OpenSees::PromptValueError 
+                 << "invalid offset at end I"
+                 << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
       }
@@ -80,7 +91,9 @@ TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, int ar
       for (int i = 0; i < ndm; ++i) {
         if (argi == argc ||
             Tcl_GetDouble(interp, argv[argi++], &transform.offsets[2][i]) != TCL_OK) {
-          opserr << OpenSees::PromptValueError << "invalid offset at end J\n";
+          opserr << OpenSees::PromptValueError 
+                 << "invalid offset at end J"
+                 << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
       }
