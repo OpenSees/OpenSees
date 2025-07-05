@@ -17,7 +17,7 @@ namespace OpenSees {
 #endif
 
 struct Versor {
-  OpenSees::Vector3D vector;
+  Vector3D vector;
   double   scalar;
 
   template <typename Vec3T>
