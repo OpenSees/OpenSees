@@ -12,6 +12,7 @@
 #include "MatrixND.h"
 #include "blasdecl.h"
 #include "routines/cmx.h"
+#include "routines/SY3.h"
 
 namespace OpenSees {
 
@@ -201,6 +202,22 @@ MatrixND<nr, nc, T>::addMatrixProduct(const MatrixND<nr, nk, T>& A, const MatT& 
   }
 }
 
+#if 0
+template <index_t nr, index_t nc, typename T> 
+template <class MatT, int nk> inline
+void
+MatrixND<nr, nc, T>::addMatrixProduct(double scale_this, const MatrixND<nr, nk, T>& A, const MatT& B, double scale)
+{
+  int m = nr,
+      n = nc,
+      k = nk;
+  DGEMM("N", "N", &m, &n, &k, &scale, 
+                              const_cast<double*>(&A(0,0)), &m,
+                              const_cast<double*>(&B(0,0)), &k,
+                              &scale_this,   &(*this)(0,0), &m);
+}
+#endif
+
 // B'*C
 template <index_t nr, index_t nc, typename T> 
 template <class MatT, int nk> inline
@@ -262,6 +279,27 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
       }
     } 
   }
+#if 0
+  if (thisFact == 1.0) {
+    for (int j=0; j<nc; j++)
+      for (int i=0; i<nr; i++)
+        for (int k=0; k < nk; k++)
+          (*this)(i,j) += A(k,i)*B(k,j)*scale;
+  } else if (thisFact == 0.0) {
+    for (int j=0; j<nc; j++)
+      for (int i=0; i<nr; i++) {
+        double sum = 0.0;
+        for (int k=0; k < nk; k++)
+          sum  += A(k,i)*B(k,j);
+        (*this)(i,j) = sum*scale;
+      }
+  } else {
+    for (int j=0; j<nc; j++)
+      for (int i=0; i<nr; i++)
+        for (int k=0; k < nk; k++)
+          (*this)(i,j)  = (*this)(i,j)*thisFact + A(k,i)*B(k,j)*scale;
+  }
+#endif
 }
 
 // A'BA
@@ -282,6 +320,27 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(
   BT.zero();
   BT.addMatrixProduct(B, T, otherFact);
   this->addMatrixTransposeProduct(thisFact, T, BT, 1.0);
+
+#if 0
+  {
+  int m   = B.numRows,
+      n   = T.numCols,
+      k   = B.numCols,
+      nrT = T.numRows;
+    //k = T.numRows;
+  double zero = 0.0,
+          one  = 1.0;
+
+  DGEMM ("N", "N", &m      , &n      , &k,&one      , B.data, &m, // m
+                                                      T.data, &nrT, // k
+                                          &zero,  matrixWork, &m);
+
+  DGEMM ("T", "N", &numRows, &numCols, &k,&otherFact, T.data, &nrT,
+                                                  matrixWork, &m, // k
+                                          &thisFact,    data, &numRows);
+  return 0;
+  }
+#endif
   return 0;
 }
 

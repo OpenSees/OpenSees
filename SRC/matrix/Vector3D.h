@@ -32,4 +32,5 @@ static_assert(std::is_trivial<Vector3D>::value, "Vector3D is not trivial.");
 
 static_assert(std::is_nothrow_constructible<Vector3D>::value, "Vector3D is not nothrow constructible.");
 static_assert(std::is_nothrow_move_assignable<Vector3D>::value, "Vector3D is not nothrow move assignable.");
+
 #endif // Vector3D_h

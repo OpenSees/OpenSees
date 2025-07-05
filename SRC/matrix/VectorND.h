@@ -6,12 +6,33 @@
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
+//  Objectives:
+//  - little to no overhead above C-style arrays
+//  - value semantics; objects do not decay to pointers;
+//
+//  This code is influenced by the following sources
+//   list initialization:
+//   - https://stackoverflow.com/questions/42068882/list-initialization-for-a-matrix-class
+//
+//   style/practices
+//   - https://quuxplusone.github.io/blog/2021/04/03/static-constexpr-whittling-knife/
+//  
+//   Operator overloading / semantics
+//   - https://stackoverflow.com/questions/9851188/does-it-make-sense-to-use-move-semantics-for-operator-and-or-operator/9851423#9851423
+//
+//   compile-time template restrictions/concepts:
+//   - https://codereview.stackexchange.com/questions/259038/compile-time-matrix-class
+//     (C++ 20)
+//   - https://github.com/calebzulawski/cotila/
+//     (C++ 17)
+//
+//===----------------------------------------------------------------------===//
+//
 // Claudio Perez
 //
 #ifndef VectorND_H
 #define VectorND_H
 #include <math.h>
-#include <assert.h>
 #include <Vector.h>
 #include <Matrix.h>
 
@@ -53,7 +74,19 @@ struct VectorND {
   extract(int a) noexcept;
 
   int
+  addVector(const T thisFact, const Vector &other, const T otherFact) noexcept;
+
+  int
   addVector(const T thisFact, const VectorND<N> &other, const T otherFact) noexcept;
+
+  template <int NC>
+  inline int
+  addMatrixVector(double thisFact, const MatrixND<N, NC, double> &m, const Vector& v, double otherFact);
+
+  template <int NR>
+  inline int
+  addMatrixTransposeVector(double thisFact, const MatrixND<NR, N, double> &m, 
+                           const Vector &v, double otherFact);
 
   inline int
   addMatrixVector(const double thisFact, const Matrix &m, const Vector &v, const double otherFact);

@@ -5,12 +5,28 @@
 //===----------------------------------------------------------------------===//
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
-
 // 
 // Desctiption: MatrixND is a fixed-size matrix class that is suitable for
 // stack-allocation.
 //
-//----------------------------------------------------------------------------//
+//
+// This code is influenced by the following sources
+//  List initialization:
+//  - https://stackoverflow.com/questions/42068882/list-initialization-for-a-matrix-class
+//
+//  Style/practices
+//  - https://quuxplusone.github.io/blog/2021/04/03/static-constexpr-whittling-knife/
+// 
+//  Operator overloading / semantics
+//  - https://stackoverflow.com/questions/9851188/does-it-make-sense-to-use-move-semantics-for-operator-and-or-operator/9851423#9851423
+//
+//  Compile-time template restrictions/concepts:
+//  - https://codereview.stackexchange.com/questions/259038/compile-time-matrix-class
+//    (C++ 20)
+//  - https://github.com/calebzulawski/cotila/
+//    (C++ 17)
+//
+//===----------------------------------------------------------------------===//
 //
 // Claudio Perez
 //
@@ -23,6 +39,7 @@
 #include "VectorND.h"
 #include "Matrix.h"
 #include "Vector.h"
+#include "routines/SY3.h"
 
 #if __cplusplus < 202000L
 #  define consteval
@@ -38,10 +55,18 @@ requires(NR > 0 && NC > 0)
 struct MatrixND {
   double values[NC][NR];
 
-  // Convert to dynamic Matrix class
+  // MatrixND<NR, NC, T>(const MatrixND<NR, NC, T>&) = default;
+
+  // Convert to regular Matrix class
   operator Matrix() { return Matrix(&values[0][0], NR, NC);}
 
   operator const Matrix() const { return Matrix(&values[0][0], NR, NC);}
+
+  int symeig(VectorND<NR>& vals) requires(NR == NC == 3) {
+    double work[3][3];
+    cmx_eigSY3(values, work, vals.values);
+    return 0;
+  }
 
   consteval void zero();
 
@@ -93,6 +118,19 @@ struct MatrixND {
   int invert() {
     return Matrix(*this).Invert();
   }
+
+#if 0
+//template<class VecT>
+//void addSpinAtRow(const VecT& V, size_t row_index);
+//template<class VecT>
+//void addSpinAtRow(const VecT& V, size_t vector_index, size_t matrix_row_index);
+//template<class VecT>
+//MatrixND<NR,NC,T>& addSpin(const VecT& V, double mult) requires(NR == 3);
+//template<class VecT>
+//void addSpinAtRow(const VecT& V, double mult, size_t row_index);
+//template<class VecT>
+//void addSpinAtRow(const VecT& V, double mult, size_t vector_index, size_t matrix_row_index);
+#endif
 
   //
   // Indexing
@@ -232,38 +270,63 @@ struct MatrixND {
   }
 
 
-  int solve(const Vector &V, Vector &res) const
-    requires(NR == NC)
+  template<index_t n>
+  // requires (NR == NC) && (n == NR) && (n > 0)
+  int solve(const MatrixND<n, n>& M, MatrixND<n, n>& X) const
   {
+      static_assert(n == NR, "RHS row-count must match A.");
 
-    MatrixND<NR,NC> work = *this;
-    int pivot_ind[NR];
-    int nrhs = 1;
-    int nr = NR;
-    int nc = NC;
-    int info = 0;
-    res = V; // X will be overwritten with the solution
-    DGESV(&nr, &nrhs, &work.values[0][0], &nr, &pivot_ind[0], res.theData, &nc, &info);
-    return -abs(info);
+      MatrixND<NR,NC,T> work = *this;               // copy of A to be factorised
+      int ipiv[NR]{};
+
+      int n_eq  = NR;               // order of the system
+      int nrhs  = n;                // number of RHS columns
+      int lda   = NR;               // leading dim of A
+      int ldb   = NR;               // leading dim of X
+      int info  = 0;
+
+      X = M;                               // copy RHS, DGESV overwrites
+      DGESV(&n_eq, &nrhs,
+            work.values[0], &lda,
+            &ipiv[0],
+            X.values[0], &ldb,
+            &info);
+
+      return -std::abs(info);
   }
 
+  // int solve(const Vector &V, Vector &res) const
+  //   requires(NR == NC)
+  // {
 
-  int
-  solve(const Matrix &M, Matrix &res)
-  {
-    Matrix slver(*this);
-    return slver.Solve(M, res);
+  //   MatrixND<NR,NC> work = *this;
+  //   int pivot_ind[NR];
+  //   int nrhs = 1;
+  //   int nr = NR;
+  //   int nc = NC;
+  //   int info = 0;
+  //   res = V; // X will be overwritten with the solution
+  //   DGESV(&nr, &nrhs, &work.values[0][0], &nr, &pivot_ind[0], res.theData, &nc, &info);
+  //   return -abs(info);
+  // }
 
-    MatrixND<NR,NC> work = *this;
-    int pivot_ind[NR];
-    int nrhs = M.noCols();
-    int nr = NR;
-    int nc = NC;
-    int info = 0;
-    res = M; // M will be overwritten with the solution
-    DGESV(&nr, &nrhs, &work(0,0), &nr, &pivot_ind[0], &res(0,0), &nc, &info);
-    return -abs(info);
-  }
+
+  // int
+  // solve(const Matrix &M, Matrix &res)
+  // {
+  //   Matrix slver(*this);
+  //   return slver.Solve(M, res);
+
+  //   MatrixND<NR,NC> work = *this;
+  //   int pivot_ind[NR];
+  //   int nrhs = M.noCols();
+  //   int nr = NR;
+  //   int nc = NC;
+  //   int info = 0;
+  //   res = M; // M will be overwritten with the solution
+  //   DGESV(&nr, &nrhs, &work(0,0), &nr, &pivot_ind[0], &res(0,0), &nc, &info);
+  //   return -abs(info);
+  // }
  
 
   template <int row0, int row1, int col0, int col1>
@@ -292,9 +355,10 @@ struct MatrixND {
   insert(const MatrixND<nr, nc, double> &M, double fact) 
   {
  
-    [[maybe_unused]] int final_row = init_row + nr - 1;
-    [[maybe_unused]] int final_col = init_col + nc - 1; 
-    assert((init_row >= 0) && (final_row < NR) && (init_col >= 0) && (final_col < NC));
+    constexpr int final_row = init_row + nr - 1;
+    constexpr int final_col = init_col + nc - 1;
+    static_assert((init_row >= 0) && (final_row < NR) && (init_col >= 0) && (final_col < NC), 
+                  "MatrixND::insert: init_row, init_col, nr, nc out of bounds");
 
     for (int i=0; i<nc; i++) {
        int pos_Cols = init_col + i;
@@ -379,6 +443,11 @@ struct MatrixND {
   inline constexpr friend MatrixND<NR, J>
   operator*(const MatrixND<NR, NC> &left, const MatrixND<NC, J> &right) {
     MatrixND<NR, J> prod;
+#if 0
+    if constexpr (NR*NC > 16)
+      prod.addMatrixProduct(0, left, right, 1);
+    else
+#endif
       for (index_t i = 0; i < NR; ++i) {
         for (index_t j = 0; j < J; ++j) {
           prod(i, j) = 0.0;

@@ -6,195 +6,90 @@
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
-// Description: This file implements parsing for inelastic beam elements.
-// We support *all* forms of the command that have been used in the past,
-// which considerably complicates things.
-// 
-// The various forms are
-//
-//
-// 0         1    2  3  4 
-// element <name> 1 $i $j 0 1 2
-//
-//  a)
-//     0       1     2    3    4    5    6
-//                                  0    1
-//     element $type $tag $ndi $ndj $trn "Gauss arg1 arg2 ..." 
-//             <-mass $mass> <-iter $iter $tol>
-//
-//  b) OpenSeesPy
-//                                  0    1
-//     element(type, tag, ndi, ndj, trn, itag, 
-//              iter=(10, 1e-12), mass=0.0)
-//
-//  c) Original/Obsolete
-//                                  0    1    2
-//     element $type $tag $ndi $ndj $nip $sec $trn 
-//             <-mass $mass> <-iter $iter $tol> <-integration $ityp>
-//
-//  d) 
-//                                  0    1         ... (2 + nIP)
-//     element $type $tag $ndi $ndj $nip -sections ... $trn 
-//             <-mass $massDens> <-cMass> <-integration $ityp>
-//
-//  e)
-//                                   0
-//     element $type $tag $ndi $ndj  $trn 
-//             -sections {...}
-//             <-mass $massDens> <-cMass> <-integration $ityp>
-//
-//
-// Integration may be specitied as either 
-//   i  ) a single name, 
-//   ii ) a pattern spec, or 
-//   iii) a tag for a pattern
-// 
-// If a list of sections is given with -sections, or nIP is provided, then 
-// we must have an integration with the form (i)
-//
-// 1) Parse common keyword args: 
-//      "-mass" $mass, 
-//      "-cMass"/"-lMass"
-//      "-mass-form" $form
-//
-//      "-iter" $iter $tol, 
-//      
-//      "-integration" $Integration
-//        - first try parsing $Integration as integer ($itag, form (iii))
-//          if successfull, populate section_tags and continue
-//        - next try parsing $Integration as basic quadrature ($ityp, form (i))
-//        - finally, try parsing as full pattern spec
-//
-//      "-section" $Tag
-//
-//      "-transform" $Tag
-//      "-vertical" {}
-//      "-horizontal" {}
-//
-//      "-sections" $SectionTags
-//        - if cannot split $SectionTags as list, then
-//          mark "-sections" as positional and continue
-//          with keyword loop
-//        - Check if "-integration" was provided already; if so, it must have been in form (i);
-//          otherwise throw an error.
-//        - Parse $SectionTags
-//          -sections {...} may occur anywhere
-//          -sections ...   must occur after nIP is obtained
-//
-//
-//  2) 
-//     If pos[1] == "-sections" then command is Form (d):
-//        nIP = pos[0]
-//        trn = pos[2+nIP]
-//
-//     else
-//
-//     switch (pos.size())
-//     case 1: // Form (e)
-//        trn = pos[0]
-//        if (section_tags.size() == 0)
-//          ERROR
-//
-//     case 2: 
-//        // Form (a) or (b)
-//        trn = pos[0]
-//        if GetInt(interp, pos[1]):
-//           itag = pos[1]
-//        else
-//           ParseHingeScheme(pos[1])
-//
-//      case 3: 
-//         // Form (c)
-//         nip = int(pos[0])
-//         sec = int(pos[1])
-//         trn = int(pos[2])
-//
-//
 // Written: cmp, mhs, rms, fmk
 //
 // Created: Feb 2023
 //
-
 // Standard library
-#include <string>
-#include <array>
-#include <algorithm>
-#include <vector>
-#include <utility>
-#include <stdlib.h>
-#include <string.h>
-#include <assert.h>
-#include <math.h>
-#ifdef _MSC_VER 
-#  include <string.h>
-#  define strcasecmp _stricmp
-#else
-#  include <strings.h>
-#endif
-#define strcmp strcasecmp
+  #include <string>
+  #include <array>
+  #include <algorithm>
+  #include <vector>
+  #include <utility>
+  #include <stdlib.h>
+  #include <string.h>
+  #include <assert.h>
+  #include <math.h>
+  #ifdef _MSC_VER 
+  #  include <string.h>
+  #  define strcasecmp _stricmp
+  #else
+  #  include <strings.h>
+  #endif
+  #define strcmp strcasecmp
+  
+  // Parsing
+  #include <tcl.h>
+  #include <Logging.h>
+  #include <Parsing.h>
+  #include <ArgumentTracker.h>
+  
+  // Model
+  #include <Node.h>
+  #include <Domain.h>
+  #include <BasicModelBuilder.h>
+  
+  // Sections
+  #include <FrameSection.h>
+  #include <ElasticSection2d.h>
+  #include <ElasticSection3d.h>
+  
+  // Elements
+  #include "ElasticBeam2d.h"
+  #include "ElasticBeam2d.h"
+  #include "ElasticBeam3d.h"
+  #include "ElasticBeam3d.h"
+  #include "PrismFrame2d.h"
+  #include "PrismFrame2d.h"
+  #include "PrismFrame3d.h"
+  #include "PrismFrame3d.h"
+  
+  #include <CubicFrame3d.h>
+  #include <ForceFrame3d.h>
+  #include <ForceDeltaFrame3d.h>
+  #include <EulerFrame3d.h>
+  #include <EulerDeltaFrame3d.h>
+  #include <ExactFrame3d.h>
+  
+  #include <DispBeamColumn2d.h>
+  #include <DispBeamColumn2dThermal.h>
+  #include <DispBeamColumn3d.h>
+  #include <DispBeamColumn3dThermal.h>
+  #include <DispBeamColumnNL2d.h>
+  
+  #include <ElasticForceBeamColumn2d.h>
+  #include <ElasticForceBeamColumn3d.h>
+  #include <ElasticForceBeamColumnWarping2d.h>
+  
+  #include <ForceBeamColumn2d.h>
+  #include <ForceBeamColumn2d.h>
+  #include <ForceBeamColumn2dThermal.h>
+  #include <ForceBeamColumn3d.h>
+  #include <ForceBeamColumnCBDI2d.h>
+  #include <ForceBeamColumnCBDI3d.h>
+  #include <ForceBeamColumnWarping2d.h>
+  #include <TimoshenkoBeamColumn2d.h>
+  
+  // Quadrature
+  #include <BeamIntegration.h>
+  #include <LobattoBeamIntegration.h>
+  #include <LegendreBeamIntegration.h>
+  #include <HingeEndpointBeamIntegration.h>
+  #include <HingeMidpointBeamIntegration.h>
+  #include <HingeRadauBeamIntegration.h>
+  #include <HingeRadauTwoBeamIntegration.h>
 
-// Parsing
-#include <tcl.h>
-#include <Logging.h>
-#include <Parsing.h>
-#include <ArgumentTracker.h>
-
-// Model
-#include <Node.h>
-#include <Domain.h>
-#include <BasicModelBuilder.h>
-
-// Sections
-#include <FrameSection.h>
-#include <ElasticSection2d.h>
-#include <ElasticSection3d.h>
-
-// Elements
-#include "ElasticBeam2d.h"
-#include "ElasticBeam2d.h"
-#include "ElasticBeam3d.h"
-#include "ElasticBeam3d.h"
-#include "PrismFrame2d.h"
-#include "PrismFrame2d.h"
-#include "PrismFrame3d.h"
-#include "PrismFrame3d.h"
-
-#include <CubicFrame3d.h>
-#include <ForceFrame3d.h>
-#include <ForceDeltaFrame3d.h>
-#include <EulerFrame3d.h>
-#include <EulerDeltaFrame3d.h>
-#include <ExactFrame3d.h>
-
-#include <DispBeamColumn2d.h>
-#include <DispBeamColumn2dThermal.h>
-#include <DispBeamColumn3d.h>
-#include <DispBeamColumn3dThermal.h>
-#include <DispBeamColumnNL2d.h>
-
-#include <ElasticForceBeamColumn2d.h>
-#include <ElasticForceBeamColumn3d.h>
-#include <ElasticForceBeamColumnWarping2d.h>
-
-#include <ForceBeamColumn2d.h>
-#include <ForceBeamColumn2d.h>
-#include <ForceBeamColumn2dThermal.h>
-#include <ForceBeamColumn3d.h>
-#include <ForceBeamColumnCBDI2d.h>
-#include <ForceBeamColumnCBDI3d.h>
-#include <ForceBeamColumnWarping2d.h>
-#include <TimoshenkoBeamColumn2d.h>
-
-// Quadrature
-#include <BeamIntegration.h>
-#include <LobattoBeamIntegration.h>
-#include <LegendreBeamIntegration.h>
-#include <HingeEndpointBeamIntegration.h>
-#include <HingeMidpointBeamIntegration.h>
-#include <HingeRadauBeamIntegration.h>
-#include <HingeRadauTwoBeamIntegration.h>
-
-#include <transform/FrameTransformBuilder.hpp>
+  #include <transform/FrameTransformBuilder.hpp>
 
 using namespace OpenSees;
 
@@ -248,8 +143,7 @@ CreateFrame(BasicModelBuilder& builder,
   // Finalize the coordinate transform
   Transform* theTransf = builder.getTypedObject<Transform>(transfTag);
   if (theTransf == nullptr) {
-    opserr << OpenSees::PromptValueError 
-           << "transformation not found with tag " << transfTag << "\n";
+    opserr << OpenSees::PromptValueError << "transformation not found with tag " << transfTag << "\n";
     return nullptr;
   }
 
@@ -390,6 +284,10 @@ CreateFrame(BasicModelBuilder& builder,
 
             static_loop<0, 3>([&](auto nwm) constexpr {
               if (nwm.value + 6 == ndf) {
+                // Create the transform
+#if 0 || defined(NEW_TRANSFORM)
+                FrameTransform<2,6+nwm.value> *tran = tb->template create<2,6+nwm.value>();
+#endif
                 if (!options.shear_flag) {
                   static_loop<2,30>([&](auto nip) constexpr {
                     if (nip.value == sections.size())
@@ -472,6 +370,114 @@ CreateFrame(BasicModelBuilder& builder,
 }
 
 
+#if 0
+Element*
+CreateInelasticFrame(std::string, std::vector<int>& nodes,
+                                  std::vector<FrameSection>&, 
+                                  BeamIntegration&, 
+                              //  FrameQuadrature&,
+                                  FrameTransform&,
+                                  Options&);
+Element*
+CreatePrismaticFrame(std::string);
+#endif
+
+// 0       1    2 3  4
+// element beam 1 $i $j 0 1 2
+//
+//  a)
+//     0       1     2    3    4    5    6
+//                                  0    1
+//     element $type $tag $ndi $ndj $trn "Gauss arg1 arg2 ..." 
+//             <-mass $mass> <-iter $iter $tol>
+//
+//  b)
+//                                  0    1
+//     element(type, tag, ndi, ndj, trn, itag, 
+//              iter=(10, 1e-12), mass=0.0)
+//
+//  c) "Original/Obsolete"
+//                                  0    1    2
+//     element $type $tag $ndi $ndj $nip $sec $trn 
+//             <-mass $mass> <-iter $iter $tol> <-integration $ityp>
+//
+//  d) 
+//                                  0    1         ... (2 + nIP)
+//     element $type $tag $ndi $ndj $nip -sections ... $trn 
+//             <-mass $massDens> <-cMass> <-integration $ityp>
+//
+//  e)
+//                                   0
+//     element $type $tag $ndi $ndj  $trn 
+//             -sections {...}
+//             <-mass $massDens> <-cMass> <-integration $ityp>
+//
+//
+// Integration may be specitied as either 
+//   i  ) a single name, 
+//   ii ) a pattern spec, or 
+//   iii) a tag for a pattern
+// 
+// if a list of sections is given with -sections, or nIP is provided, then 
+// we must have an integration with the form (i)
+//
+// 1) Parse common keyword args: 
+//      "-mass" $mass, 
+//      "-cMass"/"-lMass"
+//      "-mass-form" $form
+//
+//      "-iter" $iter $tol, 
+//      
+//      "-integration" $Integration
+//        - first try parsing $Integration as integer ($itag, form (iii))
+//          if successfull, populate section_tags and continue
+//        - next try parsing $Integration as basic quadrature ($ityp, form (i))
+//        - finally, try parsing as full pattern spec
+//
+//      "-section" $Tag
+//
+//      "-transform" $Tag
+//      "-vertical" {}
+//      "-horizontal" {}
+//
+//      "-sections" $SectionTags
+//        - if cannot split $SectionTags as list, then
+//          mark "-sections" as positional and continue
+//          with keyword loop
+//        - Check if "-integration" was provided already; if so, it must have been in form (i);
+//          otherwise throw an error.
+//        - Parse $SectionTags
+//          -sections {...} may occur anywhere
+//          -sections ...   must occur after nIP is obtained
+//
+//
+//  2) 
+//     If pos[1] == "-sections" then command is Form (d):
+//        nIP = pos[0]
+//        trn = pos[2+nIP]
+//
+//     else
+//
+//     switch (pos.size())
+//     case 1: // Form (e)
+//        trn = pos[0]
+//        if (section_tags.size() == 0)
+//          ERROR
+//
+//     case 2: 
+//        // Form (a) or (b)
+//        trn = pos[0]
+//        if GetInt(interp, pos[1]):
+//           itag = pos[1]
+//        else
+//           ParseHingeScheme(pos[1])
+//
+//      case 3: 
+//         // Form (c)
+//         nip = int(pos[0])
+//         sec = int(pos[1])
+//         trn = int(pos[2])
+//
 int
 TclBasicBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
                                    int argc, TCL_Char **const argv)
@@ -963,4 +969,451 @@ clean_up:
   }
 
   return status;
+}
+
+
+//
+//  BeamWithHinges
+//
+//     element beamWithHinges tag? ndI? ndJ? secTagI? lenI? secTagJ? lenJ? 
+//        E? A? I? transfTag? <-shear shearLength?> <-mass massDens?> 
+//        <-iter maxIters tolerance>
+//
+int
+TclBasicBuilder_addBeamWithHinges(ClientData clientData, Tcl_Interp *interp,
+                                  int argc, TCL_Char ** const argv)
+{
+  BasicModelBuilder *builder = (BasicModelBuilder*)clientData;
+
+  int NDM = builder->getNDM();
+  int NDF = builder->getNDF();
+
+  // Plane frame element
+  if (NDM == 2 && NDF == 3) {
+    if (argc < 13) {
+      opserr << "WARNING insufficient arguments\n";
+      opserr << "Want: element beamWithHinges tag? ndI? ndJ? secTagI? lenI? "
+                "secTagJ? lenJ? ";
+      opserr << "E? A? I? transfTag? <-shear shearLength?> <-mass massDens?> "
+                "<-iter maxIters tolerance>"
+             << "\n";
+      return TCL_ERROR;
+    }
+
+    double massDens = 0.0;
+    int max_iters = 10;
+    double tol = 1.0e-10;
+    int tag, ndI, ndJ, secTagI, secTagJ, transfTag;
+    double lenI, lenJ, E, A, I;
+
+    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+      opserr << "WARNING invalid beamWithHinges tag" << "\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[3], &ndI) != TCL_OK) {
+      opserr << "WARNING invalid ndI\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[4], &ndJ) != TCL_OK) {
+      opserr << "WARNING invalid ndJ\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[5], &secTagI) != TCL_OK) {
+      opserr << "WARNING invalid secTagI\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[6], &lenI) != TCL_OK) {
+      opserr << "WARNING invalid lenI\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[7], &secTagJ) != TCL_OK) {
+      opserr << "WARNING invalid ndJ\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[8], &lenJ) != TCL_OK) {
+      opserr << "WARNING invalid lenJ\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[9], &E) != TCL_OK) {
+      opserr << "WARNING invalid E\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[10], &A) != TCL_OK) {
+      opserr << "WARNING invalid A\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[11], &I) != TCL_OK) {
+      opserr << "WARNING invalid I\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[12], &transfTag) != TCL_OK) {
+      opserr << "WARNING invalid transfTag\n";
+      return TCL_ERROR;
+    }
+
+    bool isShear = false;
+    int shearTag = 0;
+
+    if (argc > 13) {
+      for (int i = 13; i < argc; ++i) {
+        if (strcmp(argv[i], "-mass") == 0 && ++i < argc) {
+          if (Tcl_GetDouble(interp, argv[i], &massDens) != TCL_OK) {
+            opserr << "WARNING invalid massDens\n";
+            opserr << "BeamWithHinges: " << tag << "\n";
+            return TCL_ERROR;
+          }
+        }
+
+        if (strcmp(argv[i], "-constHinge") == 0 && ++i < argc) {
+          if (Tcl_GetInt(interp, argv[i], &shearTag) != TCL_OK) {
+            opserr << "WARNING invalid constHinge tag\n";
+            opserr << "BeamWithHinges: " << tag << "\n";
+            return TCL_ERROR;
+          }
+          isShear = true;
+        }
+
+        if (strcmp(argv[i], "-iter") == 0 && i + 2 < argc) {
+          if (Tcl_GetInt(interp, argv[++i], &max_iters) != TCL_OK) {
+            opserr << "WARNING invalid maxIters\n";
+            opserr << "BeamWithHinges: " << tag << "\n";
+            return TCL_ERROR;
+          }
+          if (Tcl_GetDouble(interp, argv[++i], &tol) != TCL_OK) {
+            opserr << "WARNING invalid tolerance\n";
+            opserr << "BeamWithHinges: " << tag << "\n";
+            return TCL_ERROR;
+          }
+        }
+      }
+    }
+
+    // Retrieve section I from the model builder
+    FrameSection *sectionI = builder->getTypedObject<FrameSection>(secTagI);
+    if (sectionI == nullptr)
+      return TCL_ERROR;
+
+    // Retrieve section J from the model builder
+    FrameSection *sectionJ = builder->getTypedObject<FrameSection>(secTagJ);
+    if (sectionJ == nullptr)
+      return TCL_ERROR;
+
+
+    CrdTransf *theTransf = builder->getTypedObject<CrdTransf>(transfTag);
+    if (theTransf == nullptr)
+      return TCL_ERROR;
+
+    Element *theElement = nullptr;
+    int numSections = 0;
+    SectionForceDeformation *sections[10];
+    BeamIntegration *theBeamIntegr = nullptr;
+
+    ElasticSection2d elastic(8, E, A, I);
+
+    if (strcmp(argv[1], "beamWithHinges1") == 0) {
+      theBeamIntegr = new HingeMidpointBeamIntegration(lenI, lenJ);
+
+      numSections = 4;
+
+      sections[0] = sectionI;
+      sections[1] = &elastic;
+      sections[2] = &elastic;
+      sections[3] = sectionJ;
+
+    } else if (strcmp(argv[1], "beamWithHinges2") == 0) {
+      theBeamIntegr = new HingeRadauTwoBeamIntegration(lenI, lenJ);
+
+      numSections = 6;
+      sections[0] = sectionI;
+      sections[1] = sectionI;
+      sections[2] = &elastic;
+      sections[3] = &elastic;
+      sections[4] = sectionJ;
+      sections[5] = sectionJ;
+
+    } else if (strcmp(argv[1], "beamWithHinges3") == 0 ||
+               strcmp(argv[1], "beamWithHinges") == 0) {
+      theBeamIntegr = new HingeRadauBeamIntegration(lenI, lenJ);
+
+      numSections = 6;
+      sections[0] = sectionI;
+      sections[1] = &elastic;
+      sections[2] = &elastic;
+      sections[3] = &elastic;
+      sections[4] = &elastic;
+      sections[5] = sectionJ;
+
+    } else if (strcmp(argv[1], "beamWithHinges4") == 0) {
+      theBeamIntegr = new HingeEndpointBeamIntegration(lenI, lenJ);
+
+      numSections = 4;
+      sections[0] = sectionI;
+      sections[1] = &elastic;
+      sections[2] = &elastic;
+      sections[3] = sectionJ;
+    }
+
+    if (theBeamIntegr == nullptr) {
+      opserr << "Unknown element type: " << argv[1] << "\n";
+      return TCL_ERROR;
+    }
+
+    if (isShear) {
+      FrameSection *sectionL = builder->getTypedObject<FrameSection>(shearTag);
+      if (sectionL == nullptr)
+        return TCL_ERROR;
+
+      sections[numSections++] = sectionL;
+    }
+
+    theElement = new ForceBeamColumn2d(tag, ndI, ndJ, numSections, 
+                                       sections,
+                                       *theBeamIntegr, *theTransf, massDens,
+                                       max_iters, tol);
+
+    delete theBeamIntegr;
+
+    if (builder->getDomain()->addElement(theElement) == false) {
+      opserr << "WARNING could not add element to domain.\n";
+      return TCL_ERROR;
+    }
+  }
+
+  else if (NDM == 3 && NDF == 6) {
+    if (argc < 16) {
+      opserr << "WARNING insufficient arguments\n";
+      opserr << "Want: element beamWithHinges tag? ndI? ndJ? secTagI? lenI? "
+                "secTagJ? lenJ? ";
+      opserr << "E? A? Iz? Iy? G? J? transfTag? <-shear shearLength?> <-mass "
+                "massDens?> <-iter maxIters tolerance>"
+             << "\n";
+      return TCL_ERROR;
+    }
+
+    int tag, ndI, ndJ, secTagI, secTagJ, transfTag;
+    double lenI, lenJ, E, A, Iz, Iy, G, J;
+    double massDens = 0.0;
+    int max_iters = 10;
+    double tol = 1.0e-10;
+    double shearLength = 1.0;
+
+    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
+      opserr << "WARNING invalid beamWithHinges tag" << "\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[3], &ndI) != TCL_OK) {
+      opserr << "WARNING invalid ndI\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[4], &ndJ) != TCL_OK) {
+      opserr << "WARNING invalid ndJ\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[5], &secTagI) != TCL_OK) {
+      opserr << "WARNING invalid secTagI\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[6], &lenI) != TCL_OK) {
+      opserr << "WARNING invalid lenI\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[7], &secTagJ) != TCL_OK) {
+      opserr << "WARNING invalid ndJ\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[8], &lenJ) != TCL_OK) {
+      opserr << "WARNING invalid lenJ\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[9], &E) != TCL_OK) {
+      opserr << "WARNING invalid E\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[10], &A) != TCL_OK) {
+      opserr << "WARNING invalid A\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[11], &Iz) != TCL_OK) {
+      opserr << "WARNING invalid Iz\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[12], &Iy) != TCL_OK) {
+      opserr << "WARNING invalid Iy\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[13], &G) != TCL_OK) {
+      opserr << "WARNING invalid G\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetDouble(interp, argv[14], &J) != TCL_OK) {
+      opserr << "WARNING invalid J\n";
+      return TCL_ERROR;
+    }
+
+    if (Tcl_GetInt(interp, argv[15], &transfTag) != TCL_OK) {
+      opserr << "WARNING invalid transfTag\n";
+      return TCL_ERROR;
+    }
+
+
+    if (argc > 16) {
+      for (int i = 16; i < argc; ++i) {
+        if (strcmp(argv[i], "-mass") == 0 && ++i < argc) {
+          if (Tcl_GetDouble(interp, argv[i], &massDens) != TCL_OK) {
+            opserr << "WARNING invalid massDens\n";
+            opserr << "BeamWithHinges: " << tag << "\n";
+            return TCL_ERROR;
+          }
+        }
+
+        if (strcmp(argv[i], "-shear") == 0 && ++i < argc) {
+          if (Tcl_GetDouble(interp, argv[i], &shearLength) != TCL_OK) {
+            opserr << "WARNING invalid shear\n";
+            return TCL_ERROR;
+          }
+        }
+
+        if (strcmp(argv[i], "-iter") == 0 && i + 2 < argc) {
+          if (Tcl_GetInt(interp, argv[++i], &max_iters) != TCL_OK) {
+            opserr << "WARNING invalid maxIters\n";
+            return TCL_ERROR;
+          }
+          if (Tcl_GetDouble(interp, argv[++i], &tol) != TCL_OK) {
+            opserr << "WARNING invalid tolerance\n";
+            return TCL_ERROR;
+          }
+        }
+      }
+    }
+
+    // Retrieve section I from the model builder
+    SectionForceDeformation *sectionI = builder->getTypedObject<FrameSection>(secTagI);
+    if (sectionI == nullptr)
+      return TCL_ERROR;
+
+    // Retrieve section J from the model builder
+    SectionForceDeformation *sectionJ = builder->getTypedObject<FrameSection>(secTagJ);
+    if (sectionJ == nullptr)
+      return TCL_ERROR;
+
+
+    CrdTransf *theTransf = builder->getTypedObject<CrdTransf>(transfTag);
+    if (theTransf == nullptr)
+      return TCL_ERROR;
+
+
+    Element *theElement = nullptr;
+    int numSections = 0;
+    SectionForceDeformation *sections[10];
+    BeamIntegration *theBeamIntegr = nullptr;
+
+    ElasticSection3d elastic(0, E, A, Iz, Iy, G, J);
+
+    if (strcmp(argv[1], "beamWithHinges1") == 0) {
+      theBeamIntegr = new HingeMidpointBeamIntegration(lenI, lenJ);
+
+      numSections = 4;
+      sections[0] = sectionI;
+      sections[1] = &elastic;
+      sections[2] = &elastic;
+      sections[3] = sectionJ;
+
+    } else if (strcmp(argv[1], "beamWithHinges2") == 0) {
+      theBeamIntegr = new HingeRadauTwoBeamIntegration(lenI, lenJ);
+
+      numSections = 6;
+      sections[0] = sectionI;
+      sections[1] = sectionI;
+      sections[2] = &elastic;
+      sections[3] = &elastic;
+      sections[4] = sectionJ;
+      sections[5] = sectionJ;
+
+    } else if (strcmp(argv[1], "beamWithHinges3") == 0 ||
+               strcmp(argv[1], "beamWithHinges") == 0) {
+      theBeamIntegr = new HingeRadauBeamIntegration(lenI, lenJ);
+
+      numSections = 6;
+      sections[0] = sectionI;
+      sections[1] = &elastic;
+      sections[2] = &elastic;
+      sections[3] = &elastic;
+      sections[4] = &elastic;
+      sections[5] = sectionJ;
+
+    } else if (strcmp(argv[1], "beamWithHinges4") == 0) {
+      theBeamIntegr = new HingeEndpointBeamIntegration(lenI, lenJ);
+
+      numSections = 4;
+      sections[0] = sectionI;
+      sections[1] = &elastic;
+      sections[2] = &elastic;
+      sections[3] = sectionJ;
+    }
+
+    if (theBeamIntegr == nullptr) {
+      opserr << "Unknown element type: " << argv[1] << "\n";
+      return TCL_ERROR;
+    }
+
+    // TODO fix shear for beamWithHinges
+    /*
+    if (isShear) {
+      SectionForceDeformation *sectionL = builder->getTypedObject<SectionForceDeformation>(shearTag);
+
+      if (sectionL == 0) {
+        opserr << "WARNING section L does not exist\n";
+        opserr << "section: " << shearTag;
+        opserr << "\nBeamWithHinges: " << tag << "\n";
+        return TCL_ERROR;
+      }
+      sections[numSections++] = sectionL;
+    }
+    */
+
+    theElement = new ForceBeamColumn3d(tag, ndI, ndJ, numSections, sections,
+                                       *theBeamIntegr, *theTransf, massDens,
+                                       max_iters, tol);
+
+    delete theBeamIntegr;
+
+    // Add to the domain
+    if (builder->getDomain()->addElement(theElement) == false) {
+      opserr << "WARNING could not add "
+                "element to domain ";
+      opserr << tag << "\n";
+      return TCL_ERROR;
+    }
+  }
+
+  else {
+    opserr << "ERROR -- model dimension: " << NDM
+           << " and nodal degrees of freedom: " << NDF
+           << " are incompatible for BeamWithHinges element" << "\n";
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
 }

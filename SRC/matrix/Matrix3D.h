@@ -24,5 +24,4 @@ namespace OpenSees {
   static_assert(std::is_aggregate<Matrix3D>::value, "Matrix3D is not an aggregate type.");
 }
 
-
 #endif // Matrix3D_H
