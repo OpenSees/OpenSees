@@ -39,7 +39,6 @@
 #include "VectorND.h"
 #include "Matrix.h"
 #include "Vector.h"
-#include "routines/SY3.h"
 
 #if __cplusplus < 202000L
 #  define consteval
@@ -61,12 +60,6 @@ struct MatrixND {
   operator Matrix() { return Matrix(&values[0][0], NR, NC);}
 
   operator const Matrix() const { return Matrix(&values[0][0], NR, NC);}
-
-  int symeig(VectorND<NR>& vals) requires(NR == NC == 3) {
-    double work[3][3];
-    cmx_eigSY3(values, work, vals.values);
-    return 0;
-  }
 
   consteval void zero();
 

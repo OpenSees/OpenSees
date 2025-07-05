@@ -6,10 +6,6 @@
 //                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
-//  Objectives:
-//  - little to no overhead above C-style arrays
-//  - value semantics; objects do not decay to pointers;
-//
 //  This code is influenced by the following sources
 //   list initialization:
 //   - https://stackoverflow.com/questions/42068882/list-initialization-for-a-matrix-class
@@ -33,6 +29,7 @@
 #ifndef VectorND_H
 #define VectorND_H
 #include <math.h>
+#include <assert.h>
 #include <Vector.h>
 #include <Matrix.h>
 

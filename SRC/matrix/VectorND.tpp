@@ -19,8 +19,8 @@ VectorND<N,T>::assemble(const VectorND<nr> &v, double fact)
 {
   static_assert((ir >= 0) && ((ir + nr - 1) < N));
 
-    for (int j=0; j<nr; j++)
-      (*this)(ir + j) += v[j]*fact;
+  for (int j=0; j<nr; j++)
+    (*this)(ir + j) += v[j]*fact;
 }
 
 template <index_t N, typename T>
@@ -37,8 +37,8 @@ VectorND<N,T>::insert(const VectorND<nr> &v, double fact)
 {
   static_assert((ir >= 0) && ((ir + nr - 1) < N));
 
-    for (int j=0; j<nr; j++)
-      (*this)(ir + j) = v[j]*fact;
+  for (int j=0; j<nr; j++)
+    (*this)(ir + j) = v[j]*fact;
 }
 
 
@@ -120,7 +120,6 @@ VectorND<N,T>::addVector(const T thisFact, const Vector &other, const T otherFac
     }
   }
 
-  // successfull
   return 0;
 }
 
@@ -185,7 +184,7 @@ VectorND<N,T>::addVector(const T thisFact, const VectorND<N> &other, const T oth
   return 0;
 }
 
-
+#ifdef VECTOR_BLAS
 template <index_t N, typename T>
 template <int NC>
 inline int
@@ -240,7 +239,7 @@ VectorND<N,T>::addMatrixTransposeVector(double thisFact, const MatrixND<NR, N, d
     return 0;
   } 
 }
-
+#endif // VECTOR_BLAS
 
 template <index_t N, typename T>
 inline int
