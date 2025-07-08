@@ -24,15 +24,16 @@
 // and basic coordinate systems
 //
 // Adapted: Remo Magalhaes de Souza
-// Created: 04/2000
 //
 #pragma once
 #include <Vector.h>
+#include <Versor.h>
 #include <Matrix.h>
+#include <Vector3D.h>
 #include <Matrix3D.h>
 #include <Node.h>
 #include <Logging.h>
-#include <Rotations.hpp>
+#include <GroupSO3.h>
 #include "LinearFrameTransf.h"
 
 namespace OpenSees {
@@ -382,8 +383,9 @@ LinearFrameTransf<nn,ndf>::getNodeRotationLogarithm(int node)
 // Push
 //
 template <int nn, int ndf>
-VectorND<nn*ndf>
-LinearFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&p)
+// VectorND<nn*ndf>
+int
+LinearFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&p, Operation op)
 {
   VectorND<nn*ndf> pa = p;
   constexpr Vector3D iv{1, 0, 0};
@@ -408,13 +410,16 @@ LinearFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&p)
   }
 
   // 2) Rotate and do joint offsets
-  auto pg = this->FrameTransform<nn,ndf>::pushConstant(pa);
-  return pg;
+  p = this->FrameTransform<nn,ndf>::pushConstant(pa);
+  return 0;
 }
 
 template <int nn, int ndf>
-MatrixND<nn*ndf,nn*ndf>
-LinearFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const VectorND<nn*ndf>&)
+// MatrixND<nn*ndf,nn*ndf>
+int
+LinearFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>&kb, 
+                                const VectorND<nn*ndf>&, 
+                                Operation op)
 {
 
   MatrixND<nn*ndf,nn*ndf> A{};
@@ -438,9 +443,17 @@ LinearFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb, const Vector
     }
   }
 
+#if 0
   MatrixND<nn*ndf,nn*ndf> kl;
   kl.addMatrixTripleProduct(0, A, kb, 1);
-  return this->FrameTransform<nn,ndf>::pushConstant(kl);
+  this->FrameTransform<nn,ndf>::pushConstant(kl);
+#else 
+  MatrixND<nn*ndf,nn*ndf> kl;;
+  kl.addMatrixTripleProduct(0, A, kb, 1);
+  kb = this->FrameTransform<nn,ndf>::pushConstant(kl);
+  // this->pushRotation(kb, R);
+  return 0;
+#endif
 }
 
 
@@ -568,6 +581,53 @@ LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
   // Form ug
   //
   // TODO(sensitivity)
+#if 0
+  VectorND<nn*ndf> ug;
+  for (int i = 0; i < nn; i++) {
+    const Vector& u = nodes[i]->getTrialDisp();
+    for (int j = 0; j < ndf; j++) {
+      ug[i*ndf+j] = u(j);
+    }
+  }
+
+  if (u_init[0] != 0) {
+    for (int j = 0; j < ndf; j++)
+      ug[j] -= (*u_init[0])[j];
+  }
+
+  if (u_init[nn-1] != 0) {
+    for (int j = 0; j < ndf; j++)
+      ug[j + 6] -= (*u_init[nn-1])[j];
+  }
+
+  //
+  // dub += (T_{bl}' T_{lg} + T_{bl} T_{lg}') * ug
+  //
+  int dv = 0; // TODO(sensitivity)
+
+  // TODO: Sensitivity
+  int di = nodes[0]->getCrdsSensitivity();
+  int dj = nodes[1]->getCrdsSensitivity();
+
+
+  // TODO(sensitivity)
+  // Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
+  // dub = getBasic(ug, 1/L);
+
+  //
+  //
+  VectorND<nn*ndf> ul = LinearFrameTransf<nn,ndf>::pullConstant(ug, R, offsets);
+  //
+  dub[0] += 0;
+  double dL = this->getLengthGrad();
+  double doneOverL = -dL/(L*L);
+  double tmp   = doneOverL * (ul[1] - ul[7]);
+  dub[1] +=  tmp;
+  dub[2] +=  tmp;
+  tmp   = doneOverL * (ul[8] - ul[2]);
+  dub[3] +=  tmp;
+  dub[4] +=  tmp;
+#endif
   return wrapper;
 }
 

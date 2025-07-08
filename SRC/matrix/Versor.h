@@ -10,37 +10,72 @@
 //
 #pragma once
 #include <cmath>
+#include <type_traits>
 #include <Vector3D.h>
+#include <Matrix3D.h>
 
-#if 0
+
 namespace OpenSees {
-#endif
 
 struct Versor {
   Vector3D vector;
   double   scalar;
 
-  inline Versor 
-  conjugate() const {
-    Versor c;
-    c.scalar = scalar; 
-    c.vector = -1.0*vector;  // element-wise negation
-    return c;
+  template<typename Vec3T>
+  static inline Versor from_vector(const Vec3T  &);
+
+  static inline Versor from_matrix(const Matrix3D  &);
+
+  template <typename Vec3T>
+  inline Vec3T 
+  rotate(const Vec3T& u) const {
+    return u + 2.0 * vector.cross( scalar*u + vector.cross(u) );
+  }
+
+  inline void 
+  normalize() {
+    static constexpr double eps = 1e-12;
+
+    double n2 = scalar*scalar + vector.dot(vector);
+
+    // bad numbers; reset to identity
+    if (!std::isfinite(n2) || n2 < eps) {
+      scalar    = 1.0;
+      vector[0] = vector[1] = vector[2] = 0.0;
+      return;
+    }
+
+    // already close enough to unit
+    constexpr double tol = 1e-6; 
+    if (std::abs(n2 - 1.0) < tol)
+      return;
+
+    // normalize
+    double inv_n = 1.0 / std::sqrt(n2);
+    scalar      *= inv_n;
+    vector[0]   *= inv_n;
+    vector[1]   *= inv_n;
+    vector[2]   *= inv_n;
+  }
+
+  inline constexpr Versor 
+  conjugate() const noexcept {
+    return Versor{{-vector[0], -vector[1], -vector[2]}, scalar};
   }
 
   inline Versor 
-  conj_mult(const Versor& other) const 
+  conj_mult(const Versor& other) const noexcept
   {
     // Equivalent to R_IJ = R_I.T @ R_J, 
     // i.e.  q_IJ = conj(q_I)*q_J.
-    Versor out;
-    out.scalar = scalar * other.scalar + vector.dot(other.vector);
-    out.vector = (other.vector * scalar) - (vector * other.scalar) - vector.cross(other.vector);
-    return out;
+    Versor qij;
+    qij.scalar = scalar * other.scalar + vector.dot(other.vector);
+    qij.vector = (other.vector * scalar) - (vector * other.scalar) - vector.cross(other.vector);
+    return qij;
   }
 
   inline Versor 
-  mult_conj(const Versor& other) const 
+  mult_conj(const Versor& other) const noexcept
   {
     // Equivalent to R_IJ = R_I @ R_J^T, 
     // i.e.  q_IJ = q_I * conj(q_J).
@@ -53,67 +88,98 @@ struct Versor {
     return out;
   }
 
-  template<typename Vec3T>
-  static inline Versor from_vector(const Vec3T  &theta);
+
+  // Unary plus
+  Versor operator+() const {
+    return *this;
+  }
+
+  // Unary minus.
+  Versor operator-() const {
+    return {{-vector[0], -vector[1], -vector[2]}, -scalar};
+  }
 };
 
+static_assert(std::is_trivially_copyable<Versor>::value, "Versor must be trivially copyable");
 
 inline Versor
-operator*(const Versor &qa, const Versor &qb)
+Versor::from_matrix(const Matrix3D &R)
 {
-  const double qa0 = qa.vector[0],
-                qa1 = qa.vector[1],
-                qa2 = qa.vector[2],
-                qa3 = qa.scalar,
-                qb0 = qb.vector[0],
-                qb1 = qb.vector[1],
-                qb2 = qb.vector[2],
-                qb3 = qb.scalar;
+  //===--------------------------------------------------------------------===//
+  // Form a normalized quaternion (Versor) from a proper orthogonal matrix
+  // using Spurrier's algorithm
+  //===--------------------------------------------------------------------===//
+  Versor q;
 
-  // Calculate the dot product qa.qb
-  const double qaTqb = qa0*qb0 + qa1*qb1 + qa2*qb2;
+  // Trace of the rotation R
+  const double trR = R(0,0) + R(1,1) + R(2,2);
 
-  // Calculate the cross-product qa x qb
-  const double
-    qaxqb0 = qa1*qb2 - qa2*qb1,
-    qaxqb1 = qa2*qb0 - qa0*qb2,
-    qaxqb2 = qa0*qb1 - qa1*qb0;
+  // a = max([trR R(0,0) R(1,1) R(2,2)]);
+  double a = trR;
+  for (int i = 0; i < 3; i++)
+    if (R(i,i) > a)
+      a = R(i,i);
 
-  // Calculate the quaternion product
-  Versor q12;
-  q12.vector[0] = qa3*qb0 + qb3*qa0 - qaxqb0;
-  q12.vector[1] = qa3*qb1 + qb3*qa1 - qaxqb1;
-  q12.vector[2] = qa3*qb2 + qb3*qa2 - qaxqb2;
-  q12.scalar = qa3*qb3 - qaTqb;
-  return q12;
+  if (a == trR) {
+    q.scalar = std::sqrt(1.0 + a)*0.5;
+
+    for (int i = 0; i < 3; i++) {
+      int j = (i+1)%3;
+      int k = (i+2)%3;
+      q.vector[i] = (R(k,j) - R(j,k))/(4.0*q.scalar);
+    }
+  }
+  else {
+    for (int i = 0; i < 3; i++)
+      if (a == R(i,i)) {
+        int j = (i+1)%3;
+        int k = (i+2)%3;
+
+        q.vector[i] = std::sqrt(std::max(a*0.5 + (1.0 - trR)/4.0, 0.0));
+        q.scalar    = (R(k,j) - R(j,k))/(4.0*q.vector[i]);
+        q.vector[j] = (R(j,i) + R(i,j))/(4.0*q.vector[i]);
+        q.vector[k] = (R(k,i) + R(i,k))/(4.0*q.vector[i]);
+      }
+  }
+  return q;
 }
-
-
 
 template<typename Vec3T>
 inline Versor
 Versor::from_vector(const Vec3T  &theta)
 {
-  double t = 0.0;
+  double angle2 = 0.0;
   for (int i=0; i<3; i++)
-    t += theta[i]*theta[i];
+    angle2 += theta[i]*theta[i];
 
-  t = std::sqrt(t);
+  double angle = std::sqrt(angle2);
 
   Versor q;
-  if (t == 0)
-    q.vector.zero();
-
+  double sc, cs;
+  if (angle2 < 1e-12) {
+    sc = 0.5 - angle2 / 48.0; // + angle2*angle2 / 3840.0 - angle2*angle2*angle2 / 362880.0;
+    cs = 1.0 - angle2 /  8.0; // + angle2*angle2 / 384.0 - angle2*angle2*angle2 / 40320.0;
+  }
   else {
-    const double factor = std::sin(t*0.5) / t;
-    for (int i = 0; i < 3; i++)
-      q.vector[i] = theta[i] * factor;
+    sc = std::sin(angle*0.5) / angle;
+    cs = std::cos(angle*0.5);
   }
 
-  q.scalar = std::cos(t*0.5);
+  for (int i = 0; i < 3; i++)
+    q.vector[i] = theta[i] * sc;
+
+  q.scalar = cs;
   return q;
 }
 
-#if 0
+
 } //  namespace OpenSees
-#endif
+
+inline OpenSees::Versor
+operator*(const OpenSees::Versor &qa, const OpenSees::Versor &qb)
+{
+  OpenSees::Versor q12;
+  q12.scalar = qa.scalar * qb.scalar - qa.vector.dot(qb.vector);
+  q12.vector = (qb.vector * qa.scalar) + (qa.vector * qb.scalar) + qa.vector.cross(qb.vector);
+  return q12;
+}

@@ -24,7 +24,8 @@
 #include <Matrix3D.h>
 #include <Node.h>
 #include <Logging.h>
-#include <Rotations.hpp>
+#include <AxisAngle.h>
+#include <GroupSO3.h>
 #include "EuclidFrameTransf.h"
 
 namespace OpenSees {
@@ -177,7 +178,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::update()
 
   for (int i=0; i<nn; i++) {
     Versor q = nodes[i]->getTrialRotation();
-    ur[i] = LogSO3(R^(MatrixFromVersor(q)*R0));
+    ur[i] = AxisAngle(R^(MatrixFromVersor(q)*R0));
   }
 
   return 0;
@@ -206,9 +207,23 @@ template <int nn, int ndf, typename IsoT>
 Vector3D
 EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
 {
-  Vector3D u = this->pullPosition<&Node::getTrialDisp>(node) 
-             - basis.getPosition();
+#if 0
+  const Vector& ug = nodes[node]->getTrialDisp();
 
+  Vector3D u;
+  for (int i=0; i<3; i++)
+    u[i] = ug[i];
+
+  if (offsets != nullptr) [[unlikely]] {
+    u.addVector(1.0, (*offsets)[node], -1.0);
+    u.addVector(1.0, nodes[node]->getTrialRotation().rotate((*offsets)[node]), 1.0);
+  }
+
+  u.addVector(1.0, basis.getPosition(), -1.0);
+#else
+  Vector3D u = this->pullPosition<&Node::getTrialDisp>(node);
+  u -= basis.getPosition();
+#endif
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
 
   return u;
@@ -219,7 +234,7 @@ template <int nn, int ndf, typename IsoT>
 Vector3D
 EuclidFrameTransf<nn,ndf,IsoT>::getNodeRotationLogarithm(int node)
 {
-  return ur[node];
+  return ur[node].vector;
 }
 
 
@@ -260,7 +275,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
     ul.insert(j+3, R^Vector3D{ul[j+3], ul[j+4], ul[j+5]}, 1.0);
   }
 
-  // Isometry
+  // Projection
   {
     Vector3D wr = basis.getRotationVariation(ndf, &ul[0]);
     Vector3D dc = basis.getPositionVariation(ndf, &ul[0]);
@@ -291,7 +306,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
     for (int i=0; i<nn; i++) {
       const int j = i * ndf+3;
       Vector3D v {ul[j+0], ul[j+1], ul[j+2]};
-      ul.insert(i*ndf+3, dLogSO3(ur[i])*v, 1.0);
+      ul.insert(i*ndf+3, ur[i].dLog(v), 1.0);
     }
   }
 
@@ -302,18 +317,20 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
 // Push
 //
 template <int nn, int ndf, typename IsoT>
-VectorND<nn*ndf>
-EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
+// VectorND<nn*ndf>
+int
+EuclidFrameTransf<nn,ndf,IsoT>::push(VectorND<nn*ndf>&p, Operation op)
 {
-  VectorND<nn*ndf> pa = p;
+  VectorND<nn*ndf>& pa = p;
 
   // 1) Logarithm
   if (1) { // !(offset_flags & LogIter)) {
     for (int i=0; i<nn; i++) {
-      Vector3D m {p[i*ndf + 3], p[i*ndf + 4], p[i*ndf + 5]};
-      pa.insert(i*ndf + 3, dLogSO3(ur[i])^m, 1.0);
+      Vector3D m {pa[i*ndf + 3], pa[i*ndf + 4], pa[i*ndf + 5]};
+      pa.insert(i*ndf + 3, ur[i].dLog()^m, 1.0);
     }
   }
+
 
   // 2.1) Sum of moments: m = sum_i mi + sum_i (xi x ni)
   Vector3D m{};
@@ -329,18 +346,18 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(VectorND<nn*ndf>&p)
     pa.template assemble<6>(i*ndf, basis.getRotationGradient(i)^m, -1.0);
 
 
-
   // 3,4) Rotate and joint offsets
-  auto pg = this->FrameTransform<nn,ndf>::pushConstant(pa);
-
-  return pg;
+  pa = this->FrameTransform<nn,ndf>::pushConstant(pa);
+  return 0;
 }
 
 
 template <int nn, int ndf, typename IsoT>
-MatrixND<nn*ndf,nn*ndf>
-EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
-                                             const VectorND<nn*ndf>&pb)
+// MatrixND<nn*ndf,nn*ndf>
+int
+EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
+                                     const VectorND<nn*ndf>& pb, 
+                                     Operation op)
 {
   MatrixND<nn*ndf,nn*ndf> Kb = kb;
   VectorND<nn*ndf> p = pb;
@@ -348,13 +365,13 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
   if (1) {//!(offset_flags & LogIter)) {
     for (int i=0; i<nn; i++) {
       Vector3D m{pb[i*ndf+3], pb[i*ndf+4], pb[i*ndf+5]};
-      const Matrix3D Ai = dLogSO3(ur[i]);
+      const Matrix3D Ai = ur[i].dLog();
       p.insert(i*ndf+3, Ai^m, 1.0);
 
-      Matrix3D kg = ddLogSO3(ur[i], m);
+      const Matrix3D kg = ur[i].ddLog(m);
 
       for (int j=0; j<nn; j++) {
-        const Matrix3D Aj = dLogSO3(ur[j]);
+        const Matrix3D Aj = ur[j].dLog();
         // loop over 3x3 blocks for n and m
         for (int k=0; k<2; k++) {
           for (int l=0; l<2; l++) {
@@ -362,9 +379,9 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
               continue;
 
             Matrix3D Kab {{
-              {Kb(i*ndf+3*k+0, j*ndf+3*l  ), Kb(i*ndf+3*k+1, j*ndf+3*l  ), Kb(i*ndf+3*k+2, j*ndf+3*l  )},
-              {Kb(i*ndf+3*k+0, j*ndf+3*l+1), Kb(i*ndf+3*k+1, j*ndf+3*l+1), Kb(i*ndf+3*k+2, j*ndf+3*l+1)},
-              {Kb(i*ndf+3*k+0, j*ndf+3*l+2), Kb(i*ndf+3*k+1, j*ndf+3*l+2), Kb(i*ndf+3*k+2, j*ndf+3*l+2)}
+              Kb(i*ndf+3*k+0, j*ndf+3*l  ), Kb(i*ndf+3*k+1, j*ndf+3*l  ), Kb(i*ndf+3*k+2, j*ndf+3*l  ),
+              Kb(i*ndf+3*k+0, j*ndf+3*l+1), Kb(i*ndf+3*k+1, j*ndf+3*l+1), Kb(i*ndf+3*k+2, j*ndf+3*l+1),
+              Kb(i*ndf+3*k+0, j*ndf+3*l+2), Kb(i*ndf+3*k+1, j*ndf+3*l+2), Kb(i*ndf+3*k+2, j*ndf+3*l+2)
             }};
             if (k == 1)
               Kab = Ai^Kab; // row rotation block
@@ -382,13 +399,16 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
 
   // Kb = kb;
 
-  MatrixND<nn*ndf,nn*ndf> Kl;
-  MatrixND<nn*ndf,nn*ndf> A = getProjection();
+  MatrixND<nn*ndf,nn*ndf>& Kl = kb;
+  const MatrixND<nn*ndf,nn*ndf> A = getProjection();
   Kl.addMatrixTripleProduct(0, A, Kb, 1);
 
 
   VectorND<nn*ndf> Ap = A^p;
+#if 0
+  p = A^p;
 
+#else
   Kb.zero();
   VectorND<12> qwx{};
   for (int i=0; i<nn; i++)
@@ -402,14 +422,14 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
   Kb.assemble(Kw.template extract<6,12,  6,12>(), ndf, ndf, 1.0);
   Kl.addMatrixProduct(Kb, A, 1.0);
   // p = A^p;
-
+#endif
 
   //
   // Kl += -W'*Pn'*A
   //
   Kb.zero();
   for (int j=0; j<nn; j++) {
-    MatrixND<3,6> Gj = basis.getRotationGradient(j);
+    const MatrixND<3,6> Gj = basis.getRotationGradient(j);
     for (int i=0; i<nn; i++) {
       Kb.assemble(Hat(&p[i*ndf+0])*Gj,  i*ndf+0, j*ndf, -1.0);
 
@@ -422,7 +442,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::pushResponse(MatrixND<nn*ndf,nn*ndf>&kb,
 
   // Kl = diag(R) * Kl * diag(R)^T
   FrameTransform<nn,ndf>::pushRotation(Kl, basis.getRotation());
-  return Kl;
+  return 0;
 }
 
 

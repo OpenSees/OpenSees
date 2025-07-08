@@ -36,15 +36,33 @@
 #include <cmath>
 #include <MatrixND.h>
 #include <Matrix3D.h>
-#include <Triad.h>
-#include <Rotations.hpp>
+#include <GroupSO3.h>
 #include "EuclidIsometry.h"
 
 class Node;
 
 namespace OpenSees {
 
-template <int nn>
+namespace {
+struct Triad {
+
+  Triad(const OpenSees::Matrix3D &E)
+    : e{{E(0,0),E(1,0),E(2,0)}, // e1
+        {E(0,1),E(1,1),E(2,1)}, // e2
+        {E(0,2),E(1,2),E(2,2)}} // e3
+  {  
+  }
+
+  constexpr inline
+  const Vector3D& operator[](int i) const {
+    return e[i-1];
+  }
+
+  const Vector3D e[3];
+};
+}
+
+template <int nn, bool orthogonal>
 class CrisfieldIsometry : public AlignedIsometry<nn> {
 public:
   CrisfieldIsometry(const Vector3D& vecxz)
@@ -52,6 +70,137 @@ public:
   {
 
   }
+
+  Matrix3D
+  update_basis(const Matrix3D& RI, const Matrix3D& RJ, const Vector3D& dx)
+  {
+    // Ln = dx.norm();
+    this->AlignedIsometry<nn>::Ln = dx.norm();
+    double Ln = this->getLength();
+    {
+      const Triad TrI{RI}, TrJ{RJ};
+      rI[0] = TrI[1];
+      rI[1] = TrI[2];
+      rI[2] = TrI[3];
+      rJ[0] = TrJ[1];
+      rJ[1] = TrJ[2];
+      rJ[2] = TrJ[3];
+    }
+
+    {
+      // const Versor qI = Versor::from_matrix(RI);
+      // const Versor qJ = Versor::from_matrix(RJ);
+      // Versor qij = qJ.mult_conj(qI);
+      // qij.normalize();
+      Versor qij = Versor::from_matrix(RJ*RI.transpose());
+      Vector3D gw = CayleyFromVersor(qij);
+
+      gw *= 0.5;
+
+      Rbar = CaySO3(gw)*RI;
+
+      const Triad r{Rbar};
+      r1 = r[1];
+      r2 = r[2];
+      r3 = r[3];
+    }
+
+    e[0]  = dx;
+    e[0] /= Ln;
+
+    //
+    // Compute the base vectors e2, e3
+    //
+    // 'rotate' the mean rotation matrix Rbar on to e1 to
+    // obtain e2 and e3 
+
+    Matrix3D E;
+    if constexpr (orthogonal)
+    {
+      constexpr double ktol = 1.0*std::numeric_limits<double>::epsilon();
+      Vector3D r1 { Rbar(0,0), Rbar(1,0), Rbar(2,0) };
+
+      // Clamp to avoid NaNs from acos
+      double dot = std::max(-1.0, std::min(1.0, r1.dot(e[0])));
+
+      if (std::fabs(dot - 1.0) < ktol) {                         // Rbar already aligned
+        v.zero();
+        for (int i=0; i<3; i++) {
+          E(i,0) = e[0][i];
+          E(i,1) = Rbar(i,1);
+          E(i,2) = Rbar(i,2);
+        }
+      }
+      else if (std::fabs(dot + 1.0) < ktol) {                    // opposite direction
+        // choose any axis with numerical separation from r1
+        v = r1.cross(Vector3D{1.0, 0.0, 0.0});
+        if (v.dot(v) < ktol)
+          v = r1.cross(Vector3D{0.0, 1.0, 0.0});
+        v *= M_PI / v.norm();
+        E = ExpSO3(v)*Rbar;
+      }
+      else {                                                     // general case
+        v     = r1.cross(e[0]);
+        double angle = std::atan2(v.norm(), dot);
+        v    *= angle / v.norm();
+        E = ExpSO3(v)*Rbar;
+      }
+
+      for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+          e[j][i] = E(i,j);
+    }
+    else
+    {
+      // Not working with frame-1007?
+      //
+      // Use the 'mid-point' procedure
+
+      // e2 = r2 - (e1 + r1)*((r2^e1)*0.5);
+  
+      Vector3D tmp;
+      tmp  = e[0];
+      tmp += r1;
+  
+      e[1] = tmp;
+      {
+        e[1] *= 0.5*r2.dot(e[0]);
+        e[1].addVector(-1.0,  r2, 1.0);
+      }
+  
+      // e3 = r3 - (e1 + r1)*((r3^e1)*0.5);
+      e[2] = tmp;
+      {
+        e[2] *= r3.dot(e[0])*0.5;
+        e[2].addVector(-1.0,  r3, 1.0);
+      }
+      for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+          E(i,j) = e[j][i];
+    }
+
+
+    //
+    //
+    //
+    for (int i = 0; i < 3; i++)
+      for (int j = 0; j < 3; j++)
+        A(i,j) = (double(i==j) - e[0][i]*e[0][j])/Ln;
+
+    Lr2 = this->getLMatrix(r2, r1, e[0], A);
+    Lr3 = this->getLMatrix(r3, r1, e[0], A);
+
+    return E;
+  }
+
+  MatrixND<12,12>
+  getRotationJacobian(const VectorND<12>&pl) final {
+    MatrixND<12,12> dG{};
+
+    return dG;
+  }
+
+  // MatrixND<3,6> getRotationGradient(int node) final;
 
   MatrixND<3,6> 
   getRotationGradient(int node) final {
@@ -61,9 +210,8 @@ public:
 
 #if 1
     static constexpr
-    MatrixND<1,3> E3 {{{0.0}, {0.0},  {1.0}}},
-                  E2 {{{0.0}, {1.0},  {0.0}}};
-
+    MatrixND<1,3> E3 {{0.0, 0.0, 1.0}},
+                  E2 {{0.0, 1.0, 0.0}};
 
     const Matrix3D& Tr = this->getRotation();
     Triad r{Tr^Rbar};
@@ -75,8 +223,11 @@ public:
       for (int j = 0; j < 3; j++)
         A(i,j) = (double(i==j) - e1[i]*e1[j])/Ln;
 
-
-    auto de3 = this->getBasisVariation(r3, r1, e1, v, A);
+    MatrixND<3,12> de3;
+    if constexpr (!orthogonal)
+      de3 = this->getLMatrix(r3, r1, e1, A).transpose();
+    else
+      de3 = this->getBasisVariation(r3, r1, e1, v, A);
 
     MatrixND<3,12> de1{};
     de1.template insert<0,0>(A, -1.0);
@@ -110,118 +261,6 @@ public:
 #endif
   }
 
-  Matrix3D
-  update_basis(const Matrix3D& RI, const Matrix3D& RJ, const Vector3D& dx)
-  {
-    Ln = dx.norm();
-    {
-      const Triad TrI{RI}, TrJ{RJ};
-      rI[0] = TrI[1];
-      rI[1] = TrI[2];
-      rI[2] = TrI[3];
-      rJ[0] = TrJ[1];
-      rJ[1] = TrJ[2];
-      rJ[2] = TrJ[3];
-    }
-
-    {
-      const Versor qI = VersorFromMatrix(RI);
-      const Versor qJ = VersorFromMatrix(RJ);
-      Vector3D gw = CayleyFromVersor(qJ.mult_conj(qI));
-
-      gw *= 0.5;
-
-      Rbar = CaySO3(gw)*RI;
-
-      const Triad r{Rbar};
-      r1 = r[1];
-      r2 = r[2];
-      r3 = r[3];
-    }
-
-    e[0]  = dx;
-    e[0] /= Ln;
-
-    //
-    // Compute the base vectors e2, e3
-    //
-
-    Matrix3D E;
-#if 1
-    {
-      constexpr double ktol = 50.0*std::numeric_limits<double>::epsilon();
-      Vector3D r1 { Rbar(0,0), Rbar(1,0), Rbar(2,0) };
-
-      // Clamp to avoid NaNs from acos
-      // double dot = std::clamp(r1.dot(e[0]), -1.0, 1.0);
-      double dot = std::max(-1.0, std::min(1.0, r1.dot(e[0])));
-
-      if (std::fabs(dot - 1.0) < ktol) {                         // Rbar already aligned
-          v.zero();
-          E = Rbar;
-      }
-      else if (std::fabs(dot + 1.0) < ktol) {                    // opposite direction
-        // choose any axis with numerical separation from r1
-        v = r1.cross(Vector3D{1.0, 0.0, 0.0});
-        if (v.dot(v) < ktol)
-          v = r1.cross(Vector3D{0.0, 1.0, 0.0});
-        v *= M_PI / v.norm();
-      }
-      else {                                                     // general case
-        v     = r1.cross(e[0]);
-        double angle = std::atan2(v.norm(), dot);
-        v    *= angle / v.norm();
-      }
-      E = ExpSO3(v)*Rbar;
-
-      for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-          e[j][i] = E(i,j);
-    }
-#else
-    {
-      // Not working with frame-1007?
-      //
-      // 'rotate' the mean rotation matrix Rbar on to e1 to
-      // obtain e2 and e3 (using the 'mid-point' procedure)
-
-      // e2 = r2 - (e1 + r1)*((r2^e1)*0.5);
-  
-      Vector3D tmp;
-      tmp  = e[0];
-      tmp += r1;
-  
-      e[1] = tmp;
-      {
-        e[1] *= 0.5*r2.dot(e[0]);
-        e[1].addVector(-1.0,  r2, 1.0);
-      }
-  
-      // e3 = r3 - (e1 + r1)*((r3^e1)*0.5);
-      e[2] = tmp;
-      {
-        e[2] *= r3.dot(e[0])*0.5;
-        e[2].addVector(-1.0,  r3, 1.0);
-      }
-      for (int i = 0; i < 3; i++)
-        for (int j = 0; j < 3; j++)
-          E(i,j) = e[j][i];
-    }
-#endif
-
-    //
-    //
-    //
-    for (int i = 0; i < 3; i++)
-      for (int j = 0; j < 3; j++)
-        A(i,j) = (double(i==j) - e[0][i]*e[0][j])/Ln;
-
-    Lr2 = this->getLMatrix(r2, r1, e[0], A);
-    Lr3 = this->getLMatrix(r3, r1, e[0], A);
-
-    return E;
-  }
-
   //
   //
   //
@@ -252,7 +291,6 @@ public:
     Vector3D Se  = rI2.cross(e3);
     Se -= rI3.cross(e2);
     for (int i = 0; i < 3; i++)
-      // T(jmx,i+3) =  -Se[i];
       T(imx,i+3) =  Se[i];
 
     //   T2 = [(A*rI2)', (-S(rI2)*e1 + S(rI1)*e2)', -(A*rI2)', O']';
@@ -379,12 +417,6 @@ public:
         T(jnx,i+6) =  e1[i];
     }
 
-    // Combine torsion
-    for (int i=0; i<12; i++) {
-      T(jmx,i) -= T(imx,i);
-      T(imx,i) = 0;
-    }
-
     return T;
   }
 
@@ -453,9 +485,6 @@ public:
       kg.assemble(ks33, 3, 3, 1.0);
     }
 
-    //
-    // Ksigma4
-    //
     {
       Matrix3D ks99;
       ks99.zero();
@@ -711,7 +740,7 @@ private:
   {
     const Vector3D &e1 = e[0];
 
-    // const double Ln = this->getLength();
+    const double Ln = this->getLength();
 
     //  Ksigma2 = [ K11   K12 -K11   K12
     //              K12'  K22 -K12'  K22
@@ -839,6 +868,6 @@ private:
   Vector3D r1, r2, r3;
   Vector3D e[3], rI[3], rJ[3];
   MatrixND<12,3> Lr2, Lr3;
-  double Ln;
+  // double Ln;
 };
 }

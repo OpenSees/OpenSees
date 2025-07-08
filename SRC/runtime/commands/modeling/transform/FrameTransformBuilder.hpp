@@ -72,7 +72,9 @@ public:
         if (getenv("Battini"))
           return new EuclidFrameTransf<nn, ndf, BattiniIsometry<nn>> (tag, vz, offset_array, offset_flags);
         else if (getenv("Crisfield"))
-          return new EuclidFrameTransf<nn, ndf, CrisfieldIsometry<nn>> (tag, vz, offset_array, offset_flags);
+          return new EuclidFrameTransf<nn, ndf, CrisfieldIsometry<nn,true>> (tag, vz, offset_array, offset_flags);
+        else if (getenv("Crisfield02"))
+          return new EuclidFrameTransf<nn, ndf, CrisfieldIsometry<nn,false>> (tag, vz, offset_array, offset_flags);
         else
           return new EuclidFrameTransf<nn, ndf, RankinIsometry<nn>> (tag, vz, offset_array, offset_flags);
       }

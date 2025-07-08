@@ -25,7 +25,8 @@ namespace OpenSees {
 template<int ndf>
 BasicFrameTransf3d<ndf>::BasicFrameTransf3d(FrameTransform<2,ndf> *t)
 : CrdTransf(t->getTag(), 0),
-  t(*t)
+  t(*t),
+  linear(t->getTag(), t->getNormalVector(), t->getRigidOffsets())
 {
 
 }
@@ -70,6 +71,7 @@ int
 BasicFrameTransf3d<ndf>::initialize(Node *i, Node *j)
 {
   std::array<Node*, 2> nodes = {i, j};
+  linear.initialize(nodes);
   return t.initialize(nodes);
 }
 
@@ -110,7 +112,7 @@ BasicFrameTransf3d<ndf>::getBasicTrialDisp()
   static Vector wrapper(ub);
   Vector3D wi = t.getNodeRotationLogarithm(0),
            wj = t.getNodeRotationLogarithm(1);
-  ub[0] = t.getNodePosition(1)[0];
+  ub[0] = t.getDeformedLength() - t.getInitialLength(); // t.getNodePosition(1)[0];
   ub[1] = wi[2];
   ub[2] = wj[2];
   ub[3] = wi[1];
@@ -184,7 +186,7 @@ BasicFrameTransf3d<ndf>::getGlobalResistingForce(const Vector &q_pres, const Vec
   static Vector wrapper(pg);
 
   pg  = t.pushResponse(pl);
-  pg += t.pushConstant(pf);
+  pg += linear.pushResponse(pf);
   return wrapper;
 }
 
@@ -193,26 +195,31 @@ template<int ndf>
 const Matrix &
 BasicFrameTransf3d<ndf>::getGlobalStiffMatrix(const Matrix &kb, const Vector &q_pres)
 {
+  static constexpr int nwm = ndf - 6; // Number of warping DOFs
 
   VectorND<NDF*2> pl{};
-  pl[0*NDF+0]  = -q_pres[jnx];      // Ni
-  pl[0*NDF+3]  = -q_pres[jmx];      // Ti
   pl[0*NDF+4]  =  q_pres[imy];
   pl[0*NDF+5]  =  q_pres[imz];
   pl[1*NDF+0]  =  q_pres[jnx];      // Nj
   pl[1*NDF+3]  =  q_pres[jmx];      // Tj
   pl[1*NDF+4]  =  q_pres[jmy];
   pl[1*NDF+5]  =  q_pres[jmz];
-  
+  for (int i=0; i<nwm; i++) {
+    // TODO
+    pl[0*NDF+6+i] = -q_pres[6+i];
+    pl[1*NDF+6+i] =  q_pres[6+i];
+  }
+  //
+  pl[0*NDF+0]  = -q_pres[jnx];      // Ni
+  pl[0*NDF+3]  = -q_pres[jmx];      // Ti
 
-  MatrixND<2*NDF,2*NDF> kl;
+  static MatrixND<2*NDF,2*NDF> kl;
   kl.zero();
 
   for (int i=0; i<NDF*2; i++) {
     int ii = std::abs(iq[i]);
     if (ii >= NBV)
       continue;
-
     for (int j=0; j<NDF*2; j++) {
       int jj = std::abs(iq[j]);
       if (jj >= NBV)
@@ -223,14 +230,20 @@ BasicFrameTransf3d<ndf>::getGlobalStiffMatrix(const Matrix &kb, const Vector &q_
   }
 
   for (int i = 0; i < 2*NDF; i++) {
-    kl(0*NDF+0, i) = kl(i, 0*NDF+0) = i==0? kl(NDF+0, NDF+0): (i==3? kl(NDF+0, NDF+3) : -kl( NDF+0, i));
-    kl(0*NDF+3, i) = kl(i, 0*NDF+3) = i==0? kl(NDF+3, NDF+0): (i==3? kl(NDF+3, NDF+3) : -kl( NDF+3, i));
+    kl(0*NDF+0, i) = kl(i, 0*NDF+0) =  i==0? kl(NDF+0, NDF+0): (i==3? kl(NDF+0, NDF+3) : -kl( NDF+0, i));
+    kl(0*NDF+3, i) = kl(i, 0*NDF+3) =  i==0? kl(NDF+3, NDF+0): (i==3? kl(NDF+3, NDF+3) : -kl( NDF+3, i));
   }
 
+#if 0
   static MatrixND<2*NDF,2*NDF> Kg;
   static Matrix Wrapper(Kg);
 
   Kg = t.pushResponse(kl, pl);
+#else 
+  static Matrix Wrapper(kl);
+  t.push(kl, pl, Operation::Total);
+#endif
+
 
   return Wrapper;
 }
@@ -276,8 +289,9 @@ BasicFrameTransf3d<ndf>::getInitialGlobalStiffMatrix(const Matrix &KB)
 
   static MatrixND<ndf*2,ndf*2> kg;
   static Matrix M(kg);
+  static constexpr VectorND<ndf*2> p0{};
 
-  kg = t.pushConstant(kl);
+  kg = linear.pushResponse(kl, p0);
 
   return M;
 }
@@ -300,8 +314,9 @@ BasicFrameTransf3d<ndf>::getGlobalMatrixFromLocal(const Matrix &M)
   //
   static MatrixND<ndf*2,ndf*2> Kout;
   static Matrix wrapper(Kout);
+  static constexpr VectorND<ndf*2> p0{};
   wrapper = M;
-  MatrixND<ndf*2,ndf*2> Kg = t.pushConstant(Kout);
+  MatrixND<ndf*2,ndf*2> Kg = linear.pushResponse(Kout, p0);
   Kout = Kg;
   return wrapper;
 }

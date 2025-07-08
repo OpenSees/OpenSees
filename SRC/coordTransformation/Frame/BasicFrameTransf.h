@@ -26,6 +26,7 @@
 
 #include <CrdTransf.h>
 #include <FrameTransform.h>
+#include <LinearFrameTransf.h>
 class Vector;
 class Matrix;
 
@@ -92,8 +93,10 @@ public:
 
 
   FrameTransform<2,ndf> &t;
+  LinearFrameTransf<2,ndf> linear;
 
 private:
+  using Operation = typename FrameTransform<2,ndf>::Operation;
   constexpr static int NBV = 6;
   constexpr static int NDF = ndf;
   enum : int {
@@ -103,18 +106,31 @@ private:
       imx = -12, //  3
       imy =   3, //  4
       imz =   1, //  5
+      iwx =   6, //  6
       jnx =   0, //  6
       jny = -12, //  7
       jnz = -12, //  8
       jmx =   5, //  9
       jmy =   4, // 10
       jmz =   2, // 11
+      jwx =   7,
   };
 
-  constexpr static int iq[] = {
-    inx, iny, inz, imx, imy, imz,
-    jnx, jny, jnz, jmx, jmy, jmz
-  };
+
+  static constexpr std::array<int, NDF*2> set_indices() {
+    if constexpr (ndf-6 > 0) {
+      return {
+        inx, iny, inz, imx, imy, imz, iwx,
+        jnx, jny, jnz, jmx, jmy, jmz, jwx
+      };
+    } else {
+      return {
+        inx, iny, inz, imx, imy, imz,
+        jnx, jny, jnz, jmx, jmy, jmz
+      };
+    }
+  }
+  static constexpr auto iq = set_indices();
 
 };
 } // namespace OpenSees

@@ -167,56 +167,6 @@ public:
     return 0;
   }
 
-
-  // int
-  // update(std::array<Node*,nn>& nodes) final
-  // {
-  //   Matrix3D RI = MatrixFromVersor(nodes[0]->getTrialRotation());
-  //   Matrix3D RJ = MatrixFromVersor(nodes[nn-1]->getTrialRotation());
-
-  //   Vector3D dx = dX;
-  //   //
-  //   // Update position
-  //   //
-  //   {
-  //     const Vector& uI = nodes[   0]->getTrialDisp();
-  //     const Vector& uJ = nodes[nn-1]->getTrialDisp();
-  //     for (int k = 0; k < 3; k++)
-  //       dx[k] += uJ(k) - uI(k);
-
-  //     if (offsets != nullptr) [[unlikely]] {
-  //       dx.addVector(1.0, (*offsets)[   0],  1.0);
-  //       dx.addVector(1.0, RI*((*offsets)[0]), -1.0);
-  //       dx.addVector(1.0, (*offsets)[nn-1], -1.0);
-  //       dx.addVector(1.0, RJ*((*offsets)[nn-1]), 1.0);
-  //     }
-  //   }
-
-  //   // Calculate the deformed length
-  //   Ln = dx.norm();
-
-  //   if (Ln == 0.0) [[unlikely]] {
-  //     opserr << "\nSouzaFrameTransf: deformed length is 0.0\n";
-  //     return -2;
-  //   }
-
-  //   //
-  //   //
-  //   //
-  //   R[pres] = this->update_basis(RI, RJ, dx);
-    
-  //   //
-  //   //
-  //   //
-  //   Vector3D uc = nodes[ic]->getTrialDisp();
-  //   if (offsets != nullptr) {
-  //     uc.addVector(1.0, (*offsets)[ic], -1.0);
-  //     uc.addVector(1.0, nodes[ic]->getTrialRotation().rotate((*offsets)[ic]), 1.0);
-  //   }
-  //   c[pres] = R[pres]^(Xc + uc);
-  //   return 0;
-  // }
-
   virtual Vector3D
   getRotationVariation(int ndf, double* du) {
     // psi_r = omega

@@ -28,6 +28,7 @@
 #define EuclidFrameTransf_hpp
 
 #include <array>
+#include <AxisAngle.h>
 #include <FrameTransform.h>
 #include <Vector3D.h>
 #include <MatrixND.h>
@@ -46,6 +47,8 @@ public:
                     int offset_flags = 0);
 
   ~EuclidFrameTransf();
+
+  using Operation = typename FrameTransform<nn,ndf>::Operation;
 
   const char *getClassType() const {return "EuclidFrameTransf";}
   
@@ -68,8 +71,8 @@ public:
   Versor   getNodeRotation(int tag) /* final */;
   Vector3D getNodeRotationLogarithm(int tag) final;
 
-  VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
-  MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
+  int push(VectorND<nn*ndf>&pl, Operation) final;
+  int push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl, Operation) final;
 
   // Sensitivity
   //
@@ -78,7 +81,7 @@ public:
   double getd1overLdh() final;
 
   // TaggedObject
-  void Print(OPS_Stream &s, int flag = 0) final;
+  void Print(OPS_Stream &s, int flag) final;
 
 
 private:
@@ -129,7 +132,7 @@ private:
   }
 
   std::array<Node*, nn> nodes;
-  std::array<Vector3D, nn> ur; // rotation vector
+  std::array<AxisAngle, nn> ur; // rotation vector
   std::array<Vector3D, nn> ux; // displacement vector
 
   std::array<Vector3D, nn> *offsets;

@@ -36,14 +36,13 @@
 #include <Logging.h>
 #include "SouzaFrameTransf.h"
 
-#include <Triad.h>
 #include <Vector.h>
 #include <Matrix.h>
 #include <VectorND.h>
 #include <Vector3D.h>
 #include <MatrixND.h>
 #include <Matrix3D.h>
-#include <Rotations.hpp>
+#include <GroupSO3.h>
 #include "Isometry/CrisfieldIsometry.h"
 
 namespace OpenSees {
@@ -124,7 +123,7 @@ int
 SouzaFrameTransf<nn,ndf>::revertToStart()
 {
   ul.zero();
-  Q_pres[0] = VersorFromMatrix(R0);
+  Q_pres[0] = Versor::from_matrix(R0);
   for (int i=1; i<nn; i++)
     Q_pres[i] = Q_pres[0];
 
@@ -231,7 +230,7 @@ SouzaFrameTransf<nn,ndf>::initialize(std::array<Node*, nn>& new_nodes)
     return error;
 
   // Compute initial pseudo-vectors for nodal triads
-  Q_pres[0] = Q_pres[1] = VersorFromMatrix(R0);
+  Q_pres[0] = Q_pres[1] = Versor::from_matrix(R0);
 
   ul.zero();
   ulpr.zero();
@@ -315,13 +314,11 @@ SouzaFrameTransf<nn,ndf>::update()
       alphaJ[k]  =  dispJ(k+3);
     }
 
-    // Update the nodal rotations
-    Q_pres[0] = VersorProduct(Q_pres[0],  Versor::from_vector(dAlphaI));
-    Q_pres[1] = VersorProduct(Q_pres[1],  Versor::from_vector(dAlphaJ));
-    // Q_pres[0] = VersorFromMatrix(MatrixFromVersor(Q_pres[0]) *
-    //                              MatrixFromVersor(Versor::from_vector(dAlphaI)));
-    // Q_pres[1] = VersorFromMatrix(MatrixFromVersor(Q_pres[1]) *
-    //                              MatrixFromVersor(Versor::from_vector(dAlphaJ)));
+    // Update the nodal rotations; Note the Hamilton product is assumed!
+    if (dAlphaI.norm() != 0)
+      Q_pres[0] = Versor::from_vector(dAlphaI)*Q_pres[0];
+    if (dAlphaJ.norm() != 0)
+      Q_pres[1] = Versor::from_vector(dAlphaJ)*Q_pres[1];
   }
 
   //
@@ -353,8 +350,8 @@ SouzaFrameTransf<nn,ndf>::update()
 
   // Axial
   ul(inx) = 0;
-  // ul(jnx) = Ln - L;
-  ul(jnx) = (dX + (dx-dX)*0.5).dot(dx-dX)*2.0/(Ln+L);
+  ul(jnx) = Ln - L;
+  // ul(jnx) = (dX + (dx-dX)*0.5).dot(dx-dX)*2.0/(Ln+L);
 
   // Form the transformation tangent
   T = crs.compute_tangent(ul);
@@ -363,8 +360,9 @@ SouzaFrameTransf<nn,ndf>::update()
 
 
 template <int nn, int ndf>
-inline VectorND<nn*ndf>
-SouzaFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&pl)
+// inline VectorND<nn*ndf>
+int
+SouzaFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&pl, Operation)
 {
   // return T^pl;
   VectorND<nn*ndf> pg{};
@@ -373,31 +371,28 @@ SouzaFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&pl)
                     pl(a*ndf+3), pl(a*ndf+4), pl(a*ndf+5)};
 
     for (int b = 0; b<2; b++) {
-      VectorND<6> pab = pushResponse(pa, a, b);
+      VectorND<6> pab{};
+      for (int i = 0; i < 6; i++)
+        for (int j = 0; j < 6; j++)
+          pab[j] += T(a*6 + i, b*6+j) * pa[i];
+      // VectorND<6> pab = pushResponse(pa, a, b);
       pg.assemble(b*6, pab, 1.0);
     }
   }
-  return pg;
+  pl = pg; // TODO: optimize
+  return 0;
 }
 
-template <int nn, int ndf>
-VectorND<6>
-SouzaFrameTransf<nn,ndf>::pushResponse(const VectorND<6>&pa, int a, int b)
-{
-  VectorND<6> pg{};
-  for (int i = 0; i < 6; i++)
-    for (int j = 0; j < 6; j++)
-      pg[j] += T(a*6 + i, b*6+j) * pa[i];
-
-  return pg;
-}
 
 // do 
 //    K = ag'*Km*ag + Kp
 //
 template <int nn, int ndf>
-MatrixND<nn*ndf,nn*ndf>
-SouzaFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl)
+// MatrixND<nn*ndf,nn*ndf>
+int
+SouzaFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>& kl, 
+                               const VectorND<nn*ndf>& pl,
+                               Operation op)
 {    
   MatrixND<12,12> K;
   K.addMatrixTripleProduct(0.0, T, kl, 1.0);
@@ -405,7 +400,8 @@ SouzaFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const Vector
   // Add geometric part kg
   this->addTangent(K, pl, ul);
 
-  return K;
+  kl = K; // TODO: optimize
+  return 0;
 }
 
 
@@ -429,7 +425,6 @@ SouzaFrameTransf<nn,ndf>::addTangent(MatrixND<12,12>& kg,
   //
   //  T' * diag (M .* tan(thetal))*T
   //
-
   for (int node=0; node<2; node++) {
     for (int k = 0; k < 3; k++) {
       const double factor =  pl[(node ? jmx : imx) + k] // pl[6*node+3+k]
@@ -438,8 +433,9 @@ SouzaFrameTransf<nn,ndf>::addTangent(MatrixND<12,12>& kg,
 
       for (int i = 0; i < 12; i++) {
         const double Tki = T((node ? jmx : imx) + k,i);
-        for (int j = 0; j < 12; j++)
+        for (int j = 0; j < 12; j++) {
           kg(i,j) += Tki * factor * T((node ? jmx : imx) + k, j);
+        }
       }
     }
   }

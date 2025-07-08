@@ -100,8 +100,9 @@ PDeltaFrameTransf<nn,ndf>::getDeformedLength()
 
 
 template <int nn, int ndf>
-VectorND<nn*ndf>
-PDeltaFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&pl)
+// VectorND<nn*ndf>
+int
+PDeltaFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&pl, Operation op)
 {
   //
   // Include leaning column effects (P-Delta)
@@ -117,13 +118,14 @@ PDeltaFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&pl)
   pl[0*ndf+2] -= Du[2] * N;
   pl[1*ndf+2] += Du[2] * N;
 
-  return linear.pushResponse(pl);
+  return linear.push(pl, op);
 }
 
 
 template <int nn, int ndf>
-MatrixND<nn*ndf,nn*ndf>
-PDeltaFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf> &pl)
+// MatrixND<nn*ndf,nn*ndf>
+int
+PDeltaFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf> &pl, Operation op)
 {
   // Include geometric stiffness effects in local system;
   //
@@ -138,7 +140,7 @@ PDeltaFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const Vecto
   kl(7, 1) -= NoverL;
   kl(2, 8) -= NoverL;
   kl(8, 2) -= NoverL;
-  return linear.pushResponse(kl, pl);
+  return linear.push(kl, pl, op);
 }
 
 

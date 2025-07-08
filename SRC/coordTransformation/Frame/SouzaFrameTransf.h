@@ -45,7 +45,6 @@
 #include <Vector3D.h>
 #include "Isometry/CrisfieldIsometry.h"
 
-struct Triad;
 
 namespace OpenSees {
 
@@ -81,10 +80,14 @@ public:
   VectorND<nn*ndf> getStateVariation() final;
   Vector3D getNodePosition(int tag) final;
   Vector3D getNodeRotationLogarithm(int tag) final;
-
+#if 0
   VectorND<nn*ndf>    pushResponse(VectorND<nn*ndf>&pl) final;
   MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
-
+#else
+  using Operation = typename FrameTransform<nn,ndf>::Operation;
+  int push(VectorND<nn*ndf>&pl, Operation) final;
+  int push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl, Operation) final;
+#endif
   // Sensitivity
   double getLengthGrad() final;
   const Vector &getBasicDisplTotalGrad(int grad); //  final;
@@ -92,11 +95,11 @@ public:
   const Vector &getGlobalResistingForceShapeSensitivity(const Vector &pb, const Vector &p0, int gradNumber);
 
   // Tagged Object
-  void Print(OPS_Stream &s, int flag = 0) final;
+  void Print(OPS_Stream &s, int flag) final;
 
 protected:
 
-  VectorND<6> pushResponse(const VectorND<6>& pa, int a, int b);
+  // VectorND<6> pushResponse(const VectorND<6>& pa, int a, int b);
 
 private:
   constexpr static int n = nn*ndf;
@@ -152,7 +155,7 @@ private:
   OpenSees::MatrixND<n,n> T;     // transformation from local to global system
 
   OpenSees::Matrix3D R0;         // rotation from local to global coordinates
-  CrisfieldIsometry<2> crs;
+  CrisfieldIsometry<2,false> crs;
 
 };
 

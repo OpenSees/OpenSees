@@ -233,11 +233,11 @@ CreateFrame(BasicModelBuilder& builder,
     // ndm == 3
     //
 
-    if (CheckTransformation(*builder.getDomain(), nodev[0], nodev[1], *theTransf) != TCL_OK)
-      return nullptr;
-
     if (strstr(name, "Frame") != nullptr) {
       if (strstr(name, "Exact") == nullptr) {
+
+        if (CheckTransformation(*builder.getDomain(), nodev[0], nodev[nodev.size()-1], *theTransf) != TCL_OK)
+          return nullptr;
         std::array<int, 2> nodes {nodev[0], nodev[1]};
 
         FrameTransformBuilder* tb = builder.getTypedObject<FrameTransformBuilder>(transfTag);
@@ -341,7 +341,9 @@ CreateFrame(BasicModelBuilder& builder,
 
       else if (strcmp(name, "ExactFrame") == 0) {
         if (!options.shear_flag) {
-          opserr << OpenSees::PromptValueError << "ExactFrame3d requires shear formulation\n";
+          opserr << OpenSees::PromptValueError 
+                 << "ExactFrame3d requires shear formulation"
+                 << OpenSees::SignalMessageEnd;
           return nullptr;
         }
         int ndf = builder.getNDF();
@@ -361,8 +363,9 @@ CreateFrame(BasicModelBuilder& builder,
           }
         });
         if (theElement == nullptr) {
-          opserr << OpenSees::PromptValueError << "invalid number of dofs for ExactFrame; got " << ndf 
-                 << "\n";
+          opserr << OpenSees::PromptValueError 
+                 << "invalid number of dofs for ExactFrame; got " << ndf 
+                 << OpenSees::SignalMessageEnd;
           return nullptr;
         }
       }

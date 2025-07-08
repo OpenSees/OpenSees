@@ -41,6 +41,7 @@ public:
                     int offset_flags = 0);
 
   ~LinearFrameTransf();
+
   
   const char *getClassType() const {return "LinearFrameTransf";}
   
@@ -61,10 +62,15 @@ public:
   VectorND<nn*ndf> getStateVariation() final;
   Vector3D getNodePosition(int tag) final;
   Vector3D getNodeRotationLogarithm(int tag) final;
-
+#if 0
   VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
   MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
+#else
+  using Operation = typename FrameTransform<nn,ndf>::Operation;
 
+  int push(VectorND<nn*ndf>&pl, Operation) final;
+  int push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl, Operation) final;
+#endif
   // // method used to rotate consistent mass matrix
   // const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
   
@@ -79,7 +85,7 @@ public:
   double getd1overLdh() final;
 
   // TaggedObject
-  void Print(OPS_Stream &s, int flag = 0) final;
+  void Print(OPS_Stream &s, int flag) final;
 
   // Personal
   Vector3D getDelta() {return Du;}
@@ -91,6 +97,7 @@ private:
               const Matrix3D& R, 
               const std::array<Vector3D, nn> *offset = nullptr,
               int offset_flags = 0);
+
 
   template<const Vector& (Node::*Getter)()>
   const Vector3D
