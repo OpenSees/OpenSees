@@ -121,68 +121,6 @@ VectorND<N,T>::addVector(const T thisFact, const Vector &other, const T otherFac
 
   return 0;
 }
-#endif // XARA_VECTOR_FRIENDS
-
-template <index_t N, typename T>
-int
-VectorND<N,T>::addVector(const T thisFact, const VectorND<N> &other, const T otherFact) noexcept
-{
-  if (otherFact == 0.0 && thisFact == 1.0)
-    return 0; 
-
-  else if (thisFact == 1.0) {
-    // want: this += other * otherFact
-    double *dataPtr = values;
-    const double * otherDataPtr = other.values;
-    if (otherFact == 1.0) { // no point doing a multiplication if otherFact == 1.0
-      for (int i=0; i<N; i++) 
-        *dataPtr++ += *otherDataPtr++;
-    } else if (otherFact == -1.0) { // no point doing a multiplication if otherFact == 1.0
-      for (int i=0; i<N; i++) 
-        *dataPtr++ -= *otherDataPtr++;
-    } else 
-      for (int i=0; i<N; i++) 
-        *dataPtr++ += *otherDataPtr++ * otherFact;
-
-  } else if (thisFact == 0.0) {
-      // want: this = other * otherFact
-      double *dataPtr = values;
-      const double *otherDataPtr = other.values;
-      if (otherFact == 1.0) {
-        // no point doing a multiplication if otherFact == 1.0
-        for (int i=0; i<N; i++) 
-          *dataPtr++ = *otherDataPtr++;
-      } else if (otherFact == -1.0) {
-        // no point doing a multiplication if otherFact == 1.0
-        for (int i=0; i<N; i++) 
-          *dataPtr++ = -(*otherDataPtr++);
-      } else 
-        for (int i=0; i<N; i++) 
-          *dataPtr++ = *otherDataPtr++ * otherFact;
-  } else {
-    // want: this = this * thisFact + other * otherFact
-    double *dataPtr = values;
-    const double *otherDataPtr = other.values;
-    if (otherFact == 1.0) { // no point doing a multiplication if otherFact == 1.0
-      for (int i=0; i<N; i++) {
-        double value = *dataPtr * thisFact + *otherDataPtr++;
-        *dataPtr++ = value;
-      }
-    } else if (otherFact == -1.0) { // no point doing a multiplication if otherFact ==-1.0
-      for (int i=0; i<N; i++) {
-        double value = *dataPtr * thisFact - *otherDataPtr++;
-        *dataPtr++ = value;
-      }
-    } else 
-      for (int i=0; i<N; i++) {
-        double value = *dataPtr * thisFact + *otherDataPtr++ * otherFact;
-        *dataPtr++ = value;
-    }
-  }
-
-  return 0;
-}
-
 
 template <index_t N, typename T>
 template <int NC>
@@ -382,5 +320,67 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
   // successfull
   return 0;
 }
+#endif // XARA_VECTOR_FRIENDS
+
+template <index_t N, typename T>
+int
+VectorND<N,T>::addVector(const T thisFact, const VectorND<N> &other, const T otherFact) noexcept
+{
+  if (otherFact == 0.0 && thisFact == 1.0)
+    return 0; 
+
+  else if (thisFact == 1.0) {
+    // want: this += other * otherFact
+    double *dataPtr = values;
+    const double * otherDataPtr = other.values;
+    if (otherFact == 1.0) { // no point doing a multiplication if otherFact == 1.0
+      for (int i=0; i<N; i++) 
+        *dataPtr++ += *otherDataPtr++;
+    } else if (otherFact == -1.0) { // no point doing a multiplication if otherFact == 1.0
+      for (int i=0; i<N; i++) 
+        *dataPtr++ -= *otherDataPtr++;
+    } else 
+      for (int i=0; i<N; i++) 
+        *dataPtr++ += *otherDataPtr++ * otherFact;
+
+  } else if (thisFact == 0.0) {
+      // want: this = other * otherFact
+      double *dataPtr = values;
+      const double *otherDataPtr = other.values;
+      if (otherFact == 1.0) {
+        // no point doing a multiplication if otherFact == 1.0
+        for (int i=0; i<N; i++) 
+          *dataPtr++ = *otherDataPtr++;
+      } else if (otherFact == -1.0) {
+        // no point doing a multiplication if otherFact == 1.0
+        for (int i=0; i<N; i++) 
+          *dataPtr++ = -(*otherDataPtr++);
+      } else 
+        for (int i=0; i<N; i++) 
+          *dataPtr++ = *otherDataPtr++ * otherFact;
+  } else {
+    // want: this = this * thisFact + other * otherFact
+    double *dataPtr = values;
+    const double *otherDataPtr = other.values;
+    if (otherFact == 1.0) { // no point doing a multiplication if otherFact == 1.0
+      for (int i=0; i<N; i++) {
+        double value = *dataPtr * thisFact + *otherDataPtr++;
+        *dataPtr++ = value;
+      }
+    } else if (otherFact == -1.0) { // no point doing a multiplication if otherFact ==-1.0
+      for (int i=0; i<N; i++) {
+        double value = *dataPtr * thisFact - *otherDataPtr++;
+        *dataPtr++ = value;
+      }
+    } else 
+      for (int i=0; i<N; i++) {
+        double value = *dataPtr * thisFact + *otherDataPtr++ * otherFact;
+        *dataPtr++ = value;
+    }
+  }
+
+  return 0;
+}
+
 
 } //  namespace OpenSees
