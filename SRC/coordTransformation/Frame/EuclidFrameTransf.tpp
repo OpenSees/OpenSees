@@ -121,7 +121,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
 
   // calculate the element length
   L = dx.norm();
-  Ln = L;
 
   if (L == 0.0)
     return -2;
@@ -158,7 +157,7 @@ template <int nn, int ndf, typename IsoT>
 double
 EuclidFrameTransf<nn,ndf,IsoT>::getDeformedLength()
 {
-  return Ln;
+  return basis.getLength();
 }
 
 
@@ -172,9 +171,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::update()
   if (basis.update(nodes) < 0) 
     return -1;
 
-  Matrix3D R = basis.getRotation();
-
-  Ln = basis.getLength();
+  const Matrix3D R = basis.getRotation();
 
   for (int i=0; i<nn; i++) {
     Versor q = nodes[i]->getTrialRotation();
@@ -190,6 +187,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::getNodeRotation(int tag)
 {
   return nodes[tag]->getTrialRotation();
 }
+
 
 template <int nn, int ndf, typename IsoT>
 Vector3D 
@@ -347,13 +345,20 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(VectorND<nn*ndf>&p, Operation op)
 
 
   // 3,4) Rotate and joint offsets
-  pa = this->FrameTransform<nn,ndf>::pushConstant(pa);
+  // pa = this->FrameTransform<nn,ndf>::pushConstant(pa);
+  Matrix3D R = basis.getRotation();
+  for (int i=0; i<nn; i++) {
+    const int base = i * ndf;
+    pa.insert(base,   R*Vector3D{pa[base  ], pa[base+1], pa[base+2]}, 1.0);
+    pa.insert(base+3, R*Vector3D{pa[base+3], pa[base+4], pa[base+5]}, 1.0);
+  }
+
+  // Offset
   return 0;
 }
 
 
 template <int nn, int ndf, typename IsoT>
-// MatrixND<nn*ndf,nn*ndf>
 int
 EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
                                      const VectorND<nn*ndf>& pb, 

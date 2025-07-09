@@ -168,7 +168,7 @@ public:
   }
 
   virtual Vector3D
-  getRotationVariation(int ndf, double* du) {
+  getRotationVariation(int ndf, double* du) final {
     // psi_r = omega
     Vector3D w{};
     for (int i=0; i<nn; i++) {
@@ -223,11 +223,11 @@ public:
 
 protected:
   constexpr static int ic = 0; // std::floor(0.5*(nn+1));
-  enum { pres, prev, init};
+  enum { pres, init};
   double L, Ln;
   Vector3D vz, dX, Xc;
-  Matrix3D R[3];
-  Vector3D c[3];
+  Matrix3D R[2];
+  Vector3D c[2];
   Matrix3D dR;
   // std::array<Node*,nn>& nodes;
   std::array<Vector3D, nn>* offsets = nullptr; // offsets

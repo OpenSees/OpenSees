@@ -21,25 +21,46 @@ MatrixND(const T (&)[nc][nr])->MatrixND<nr, nc, T>;
 
 
 template <index_t nr, index_t nc, typename T>
-void
-MatrixND<nr, nc, T>::zero()
+constexpr void
+MatrixND<nr, nc, T>::zero() noexcept
 {
-    for (index_t j = 0; j < nc; ++j) {
-      for (index_t i = 0; i < nr; ++i) {
-        values[j][i] = 0.0;
-      }
+#if 1
+  for (index_t j = 0; j < nc; ++j) {
+    for (index_t i = 0; i < nr; ++i) {
+      values[j][i] = 0.0;
     }
+  }
+#else 
+  values.fill(T{});
+#endif
 }
 
+#if 0
+template <index_t nr, index_t nc, typename T>
+constexpr double
+MatrixND<nr, nc, T>::determinant() const
+{
+  static_assert(nr == nc, "Matrix must be square");
+  static_assert(nr > 1 && nr < 4, "Matrix must be between 2x2 and 3x3");
+  if constexpr (nr == 2) {
+    return values[0][0] * values[1][1] - values[0][1] * values[1][0];
+  }
+  if constexpr (nr == 3) {
+    return values[0][0] * (values[1][1] * values[2][2] - values[1][2] * values[2][1]) -
+           values[0][1] * (values[1][0] * values[2][2] - values[1][2] * values[2][0]) +
+           values[0][2] * (values[1][0] * values[2][1] - values[1][1] * values[2][0]);
+  }
+}
+#endif
 
 template <index_t nr, index_t nc, typename T>
 constexpr MatrixND<nc, nr>
-MatrixND<nr, nc, T>::transpose() const 
+MatrixND<nr, nc, T>::transpose() const noexcept
 {
   MatrixND<nc, nr> result = {};
   for (index_t j = 0; j < nc; ++j) {
     for (index_t i = 0; i < nr; ++i) {
-      result.values[i][j] = values[j][i];
+      result(j,i) = (*this)(i,j);
     }
   }
   return result;
@@ -120,35 +141,56 @@ template <index_t nr, index_t nc, typename T> inline int
 MatrixND<nr,nc,T>::invert(MatrixND<nr,nc,T> &M) const
 {
   static_assert(nr == nc, "Matrix must be square");
-  static_assert(nr > 1 && nr < 7, "Matrix must be between 2x2 and 6x6");
+  // static_assert(nr > 1 && nr < 7, "Matrix must be between 2x2 and 6x6");
 
   int status = -1;
   if constexpr (nr == 2) {
-    cmx_inv2(&this->values[0][0], &M.values[0][0], &status);
+    cmx_inv2(&(*this)(0,0), &M(0,0), &status);
     return status;
   }
   if constexpr (nr == 3) {
-    cmx_inv3(&this->values[0][0], &M.values[0][0], &status);
+    cmx_inv3(&(*this)(0,0), &M(0,0), &status);
     return status;
   }
   if constexpr (nr == 4) {
-    cmx_inv4(&this->values[0][0], &M.values[0][0], &status);
+    cmx_inv4(&(*this)(0,0), &M(0,0), &status);
     return status;
   }
   if constexpr (nr == 5) {
-    cmx_inv5(&this->values[0][0], &M.values[0][0], &status);
+    cmx_inv5(&(*this)(0,0), &M(0,0), &status);
     return status;
   }
   if constexpr (nr == 6) {
-    cmx_inv6(&this->values[0][0], &M.values[0][0], &status);
+    cmx_inv6(&(*this)(0,0), &M(0,0), &status);
     return status;
   }
+
+  // Use Lapack
+  M.zero();
+  M.addDiagonal(1.0); // Identity matrix 
+
+  MatrixND<nr, nc, T> work = *this;
+
+  int pivot_ind[nr];
+  int nrhs = nr;
+  int info = 0;
+  int m = nr;
+  int n = nc;
+  DGESV(&m, 
+        &nrhs,
+        &work(0,0), &m,
+        pivot_ind, 
+        &M(0,0), 
+        &n, 
+        &info);
+  if (info != 0)
+    status = -std::abs(info);
   return status;
 }
 
-template <index_t nr, index_t nc, typename T> inline
-MatrixND<nr, nc, T>& 
-MatrixND<nr, nc, T>::addDiagonal(const double diag)
+template <index_t nr, index_t nc, typename T>
+constexpr MatrixND<nr, nc, T>& 
+MatrixND<nr, nc, T>::addDiagonal(const double diag) noexcept
 {
   for (int i=0; i<nr; i++)
     (*this)(i,i) += diag;
@@ -185,12 +227,13 @@ template <class MatT, int nk> inline
 void
 MatrixND<nr, nc, T>::addMatrixProduct(const MatrixND<nr, nk, T>& A, const MatT& B, double scale)
 {
-  if constexpr (nr*nc < 16)
+  if constexpr (nr*nc < 48)
     for (int i=0; i<nr; i++)
       for (int j=0; j<nc; j++)
         for (int k=0; k < nk; k++)
           (*this)(i,j) += scale*A(i,k)*B(k,j);
-  else {
+  else
+  {
     int m = nr,
         n = nc,
         k = nk;
@@ -202,11 +245,13 @@ MatrixND<nr, nc, T>::addMatrixProduct(const MatrixND<nr, nk, T>& A, const MatT& 
   }
 }
 
-#if 0
+#if 1
 template <index_t nr, index_t nc, typename T> 
 template <class MatT, int nk> inline
 void
-MatrixND<nr, nc, T>::addMatrixProduct(double scale_this, const MatrixND<nr, nk, T>& A, const MatT& B, double scale)
+MatrixND<nr, nc, T>::addMatrixProduct(double scale_this, 
+                                      const MatrixND<nr, nk, T>& A, 
+                                      const MatT& B, double scale)
 {
   int m = nr,
       n = nc,
@@ -242,8 +287,8 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
     double *aijPtr = &values[0][0];
     for (int j=0; j<nc; j++) {
       for (int i=0; i<nr; i++) {
-        const double *bkiPtr  = &(&B.values[0][0])[i*nk];
-        const double *cjkPtr  = &(&C.values[0][0])[j*nk];
+        const double *bkiPtr  = &(&B(0,0))[i*nk];
+        const double *cjkPtr  = &(&C(0,0))[j*nk];
         double sum = 0.0;
         for (int k=0; k<nk; k++) {
           sum += *bkiPtr++ * *cjkPtr++;
@@ -255,8 +300,8 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
     double *aijPtr = &values[0][0];
     for (int j=0; j<nc; j++) {
       for (int i=0; i<nr; i++) {
-        const double *bkiPtr  = &(&B.values[0][0])[i*nk];
-        const double *cjkPtr  = &(&C.values[0][0])[j*nk];
+        const double *bkiPtr  = &(&B(0,0))[i*nk];
+        const double *cjkPtr  = &(&C(0,0))[j*nk];
         double sum = 0.0;
         for (int k=0; k<nk; k++) {
           sum += *bkiPtr++ * *cjkPtr++;
@@ -268,8 +313,8 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
     double *aijPtr = &values[0][0];
     for (int j=0; j<nc; j++) {
       for (int i=0; i<nr; i++) {
-        const double *bkiPtr  = &(&B.values[0][0])[i*nk];
-        const double *cjkPtr  = &(&C.values[0][0])[j*nk];
+        const double *bkiPtr  = &(&B(0,0))[i*nk];
+        const double *cjkPtr  = &(&C(0,0))[j*nk];
         double sum = 0.0;
         for (int k=0; k<nk; k++) {
           sum += *bkiPtr++ * *cjkPtr++;
@@ -279,27 +324,6 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
       }
     } 
   }
-#if 0
-  if (thisFact == 1.0) {
-    for (int j=0; j<nc; j++)
-      for (int i=0; i<nr; i++)
-        for (int k=0; k < nk; k++)
-          (*this)(i,j) += A(k,i)*B(k,j)*scale;
-  } else if (thisFact == 0.0) {
-    for (int j=0; j<nc; j++)
-      for (int i=0; i<nr; i++) {
-        double sum = 0.0;
-        for (int k=0; k < nk; k++)
-          sum  += A(k,i)*B(k,j);
-        (*this)(i,j) = sum*scale;
-      }
-  } else {
-    for (int j=0; j<nc; j++)
-      for (int i=0; i<nr; i++)
-        for (int k=0; k < nk; k++)
-          (*this)(i,j)  = (*this)(i,j)*thisFact + A(k,i)*B(k,j)*scale;
-  }
-#endif
 }
 
 // A'BA
@@ -311,7 +335,7 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(
                                const  MatrixND<ncB, nr, scalar_t> &T, 
                                const  MatrixND<ncB, ncB, scalar_t> &B, 
                                double otherFact)
-  requires(nr == nc)
+  //requires(nr == nc)
 {
   if (otherFact == 0.0 && thisFact == 1.0)
     return 0;
@@ -320,27 +344,6 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(
   BT.zero();
   BT.addMatrixProduct(B, T, otherFact);
   this->addMatrixTransposeProduct(thisFact, T, BT, 1.0);
-
-#if 0
-  {
-  int m   = B.numRows,
-      n   = T.numCols,
-      k   = B.numCols,
-      nrT = T.numRows;
-    //k = T.numRows;
-  double zero = 0.0,
-          one  = 1.0;
-
-  DGEMM ("N", "N", &m      , &n      , &k,&one      , B.data, &m, // m
-                                                      T.data, &nrT, // k
-                                          &zero,  matrixWork, &m);
-
-  DGEMM ("T", "N", &numRows, &numCols, &k,&otherFact, T.data, &nrT,
-                                                  matrixWork, &m, // k
-                                          &thisFact,    data, &numRows);
-  return 0;
-  }
-#endif
   return 0;
 }
 
@@ -370,9 +373,11 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(double thisFact,
 
 template<int NR, int NC, typename T>
 template<class VecT>
-inline MatrixND<NR,NC,T>& 
-MatrixND<NR,NC,T>::addSpin(const VecT& v)  requires(NR == 3)
+constexpr MatrixND<NR,NC,T>& 
+MatrixND<NR,NC,T>::addSpin(const VecT& v) noexcept
 {
+  static_assert(NR == 3 && NC == 3, "addSpin requires a 3x3 matrix");
+
    const double v0 = v[0],
                 v1 = v[1],
                 v2 = v[2];
@@ -387,8 +392,8 @@ MatrixND<NR,NC,T>::addSpin(const VecT& v)  requires(NR == 3)
 
 template<int NR, int NC, typename T>
 template<class VecT>
-inline MatrixND<NR,NC,T>&
-MatrixND<NR,NC,T>::addSpin(const VecT& v, double mult)
+constexpr MatrixND<NR,NC,T>&
+MatrixND<NR,NC,T>::addSpin(const VecT& v, double mult) noexcept
 {
    const double v0 = mult*v[0],
                 v1 = mult*v[1],
@@ -402,11 +407,12 @@ MatrixND<NR,NC,T>::addSpin(const VecT& v, double mult)
 
 
 template<int NR, int NC, typename T>
-template <class VecT> inline
+template <class VecT> 
+constexpr
 MatrixND<NR,NC,T>& 
-MatrixND<NR,NC,T>::addSpinSquare(const VecT& v, const double scale)
-  requires(NR == NC == 3)
+MatrixND<NR,NC,T>::addSpinSquare(const VecT& v, const double scale) noexcept
 {
+  static_assert(NR == 3 && NC == 3, "addSpinSquare requires a 3x3 matrix");
   const double v1 = v[0],
                v2 = v[1],
                v3 = v[2];
@@ -427,21 +433,21 @@ MatrixND<NR,NC,T>::addSpinSquare(const VecT& v, const double scale)
 
 template<int NR, int NC, typename T>
 template<class VecT> 
-inline void 
-MatrixND<NR,NC,T>::addSpinProduct(const VecT& a, const VectorND<NR,T>& b, const double scale)
-  requires(NR == NC == 3)
+constexpr void 
+MatrixND<NR,NC,T>::addSpinProduct(const VecT& a, const VectorND<NR,T>& b, const double scale) noexcept
 {
   // a^b^ = boa - a.b 1
   // where 'o' denotes the tensor product and '.' the dot product
   //
+  static_assert(NR == 3 && NC == 3, "Matrix must be 3x3");
   this->addTensorProduct(b, a, scale);
   this->addDiagonal(-b.dot(a)*scale);
 }
 
 template<int NR, int NC, typename T>
 template<class VecT>
-inline void 
-MatrixND<NR,NC,T>::addMatrixSpinProduct(const MatrixND<NR,NC,T>& A, const VecT& b, const double scale)
+constexpr void 
+MatrixND<NR,NC,T>::addMatrixSpinProduct(const MatrixND<NR,NC,T>& A, const VecT& b, const double scale) noexcept
 {
   // this += s*A*[b^]
   // where b^ is the skew-symmetric representation of the three-vector b, s is a scalar,
@@ -459,10 +465,11 @@ MatrixND<NR,NC,T>::addMatrixSpinProduct(const MatrixND<NR,NC,T>& A, const VecT& 
 }
 
 template<int NR, int NC, typename T>
-template<class MatT> inline
-void MatrixND<NR,NC,T>::addSpinMatrixProduct(const VectorND<NR,T>& a, const MatT& B, const double scale)
-  requires(NR == NC == 3)
+template<class MatT>
+constexpr void 
+MatrixND<NR,NC,T>::addSpinMatrixProduct(const VectorND<NR,T>& a, const MatT& B, const double scale) noexcept
 {
+  static_assert(NR == 3 && NC == 3, "Matrix must be 3x3");
   // this += s*[a^]*B
   // where a^ is the skew-symmetric representation of the three-vector a, s is a scalar,
   // and B a 3x3 matrix.

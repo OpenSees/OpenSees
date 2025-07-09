@@ -394,7 +394,7 @@ SouzaFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>& kl,
                                const VectorND<nn*ndf>& pl,
                                Operation op)
 {    
-  MatrixND<12,12> K;
+  static MatrixND<12,12> K;
   K.addMatrixTripleProduct(0.0, T, kl, 1.0);
 
   // Add geometric part kg

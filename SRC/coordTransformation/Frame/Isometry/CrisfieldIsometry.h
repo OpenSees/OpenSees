@@ -66,7 +66,9 @@ template <int nn, bool orthogonal>
 class CrisfieldIsometry : public AlignedIsometry<nn> {
 public:
   CrisfieldIsometry(const Vector3D& vecxz)
-   : AlignedIsometry<nn>{vecxz}, Lr2{}, Lr3{}, v{}
+   : AlignedIsometry<nn>{vecxz}, 
+  //  Lr2{}, Lr3{}, 
+   v{}
   {
 
   }
@@ -187,9 +189,6 @@ public:
       for (int j = 0; j < 3; j++)
         A(i,j) = (double(i==j) - e[0][i]*e[0][j])/Ln;
 
-    Lr2 = this->getLMatrix(r2, r1, e[0], A);
-    Lr3 = this->getLMatrix(r3, r1, e[0], A);
-
     return E;
   }
 
@@ -279,7 +278,9 @@ public:
       &rJ1 = rJ[0],
       &rJ2 = rJ[1],
       &rJ3 = rJ[2];
-
+    MatrixND<12,3> Lr2,Lr3;
+    Lr2 = this->getLMatrix(r2, r1, e[0], A);
+    Lr3 = this->getLMatrix(r3, r1, e[0], A);
     //
     //
     //
@@ -703,10 +704,17 @@ private:
                    &rJ1 = rJ[0],
                    &rJ2 = rJ[1],
                    &rJ3 = rJ[2];
+
+    
+    MatrixND<12,3> Lr2,Lr3;
+    Lr2 = this->getLMatrix(r2, r1, e[0], A);
+    Lr3 = this->getLMatrix(r3, r1, e[0], A);
+
     Matrix3D Sm{};
     Sm.addSpin(rI3,  m[3]);
     Sm.addSpin(rI1,  m[1]);
-    MatrixND<12,3> kbar{};
+    static MatrixND<12,3> kbar;
+    kbar.zero();
     kbar.addMatrixProduct(Lr2, Sm, -1.0);
 
     Sm.zero();
@@ -867,7 +875,7 @@ private:
   Vector3D v;
   Vector3D r1, r2, r3;
   Vector3D e[3], rI[3], rJ[3];
-  MatrixND<12,3> Lr2, Lr3;
+  // MatrixND<12,3> Lr2, Lr3;
   // double Ln;
 };
 }
