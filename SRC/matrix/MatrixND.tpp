@@ -11,6 +11,9 @@
 #pragma once
 #include "MatrixND.h"
 
+#include "blasdecl.h"
+#include "routines/cmx.h"
+#include "routines/SY3.h"
 
 namespace OpenSees {
 
@@ -40,7 +43,9 @@ MatrixND<nr,nc,T>::symeig(VectorND<nr>& vals)
 {
   static_assert(nr == nc, "Matrix must be square");
   static_assert(rc == 3 && nc == 3);
-  return -1;
+  double work[3][3];
+  cmx_eigSY3(values, work, vals.values);
+  return 0;
 }
 
 #if 0
@@ -172,6 +177,27 @@ MatrixND<nr,nc,T>::invert(MatrixND<nr,nc,T> &M) const
     return status;
   }
 
+  // Use Lapack
+  M.zero();
+  M.addDiagonal(1.0); // Identity matrix 
+
+  MatrixND<nr, nc, T> work = *this;
+
+  int pivot_ind[nr];
+  int nrhs = nr;
+  int info = 0;
+  int m = nr;
+  int n = nc;
+  DGESV(&m, 
+        &nrhs,
+        &work(0,0), &m,
+        pivot_ind, 
+        &M(0,0), 
+        &n, 
+        &info);
+
+  if (info != 0)
+    status = -std::abs(info);
   return status;
 }
 
@@ -214,12 +240,41 @@ template <class MatT, int nk> inline
 void
 MatrixND<nr, nc, T>::addMatrixProduct(const MatrixND<nr, nk, T>& A, const MatT& B, double scale)
 {
-  for (int i=0; i<nr; i++)
-    for (int j=0; j<nc; j++)
-      for (int k=0; k < nk; k++)
-        (*this)(i,j) += scale*A(i,k)*B(k,j);
+  if constexpr (nr*nc < 48)
+    for (int i=0; i<nr; i++)
+      for (int j=0; j<nc; j++)
+        for (int k=0; k < nk; k++)
+          (*this)(i,j) += scale*A(i,k)*B(k,j);
+  else
+  {
+    int m = nr,
+        n = nc,
+        k = nk;
+    double one = 1.0;
+    DGEMM("N", "N", &m, &n, &k, &scale, 
+                                const_cast<double*>(&A(0,0)), &m,
+                                const_cast<double*>(&B(0,0)), &k,
+                                &one,   &(*this)(0,0),        &m);
+  }
 }
 
+#if 1
+template <index_t nr, index_t nc, typename T> 
+template <class MatT, int nk> inline
+void
+MatrixND<nr, nc, T>::addMatrixProduct(double scale_this, 
+                                      const MatrixND<nr, nk, T>& A, 
+                                      const MatT& B, double scale)
+{
+  int m = nr,
+      n = nc,
+      k = nk;
+  DGEMM("N", "N", &m, &n, &k, &scale, 
+                              const_cast<double*>(&A(0,0)), &m,
+                              const_cast<double*>(&B(0,0)), &k,
+                              &scale_this,   &(*this)(0,0), &m);
+}
+#endif
 
 // B'*C
 template <index_t nr, index_t nc, typename T> 
@@ -230,7 +285,6 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
                                                const MatT& C,
                                                double otherFact)
 {
-#if 0
   if constexpr (nr*nc > 16) {
     int m = nr,
         n = nc,
@@ -241,7 +295,6 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
                                 &thisFact,   &(*this)(0,0),   &m);
     return;
   }
-#endif
 
   if (thisFact == 1.0) {
     double *aijPtr = &values[0][0];

@@ -38,6 +38,7 @@
 // performant.
 //
 // Written: Claudio M. Perez
+// 2023
 //
 #pragma once
 
@@ -304,8 +305,6 @@ TanSO3(const Vector3D &vec, char repr='L')
   //  Compute right or left differential of the exponential.
   //
   //===--------------------------------------------------------------------===//
-  // function by Claudio Perez                                            2023
-  //===--------------------------------------------------------------------===//
   double a[4];
   GibSO3(vec, a);
 
@@ -350,8 +349,6 @@ TExpSO3(const Vector3D &v)
 //
 //        T = a[1]*Eye3 + a[2]*v.hat() + a[3]*v.bun(v);
 //
-// =========================================================================================
-// function by Claudio Perez                                                            2023
 // -----------------------------------------------------------------------------------------
 
   // Form first Gib coefficients
@@ -379,9 +376,6 @@ ddTanSO3(const Vector3D &v, const Vector3D &p, const Vector3D &q)
   //         + vov*(c[1]*p.dot(q) + c[2]*(vxp.dot(q)) + c[3]*v.dot(p)*v.dot(q));
   //    
   // =========================================================================================
-  // function by Claudio Perez                                                            2023
-  // -----------------------------------------------------------------------------------------
-  //
   double a[4], b[4], c[4];
   GibSO3(v, a, b, c);
 
@@ -418,9 +412,6 @@ dTanSO3(const Vector3D &v, const Vector3D &p, char repr='L')
   //
   // repr     'L' or 'R' indicating left or right representation, 
   //          respectively, for the tangent space of SO(3)
-  // =========================================================================================
-  // function by Claudio Perez                                                            2023
-  // -----------------------------------------------------------------------------------------
 
 
   double a[4], b[4];
@@ -440,11 +431,6 @@ dTanSO3(const Vector3D &v, const Vector3D &p, char repr='L')
 inline Matrix3D
 dExpSO3(const Vector3D &v, const Vector3D &p)
 {
-  //
-  // =========================================================================================
-  // function by Claudio Perez                                                            2023
-  // -----------------------------------------------------------------------------------------
-  //
   double a[4], b[4];
   GibSO3(v, a, b);
 
@@ -484,8 +470,6 @@ LogSO3(const Matrix3D &R)
   //    derivatives.
   //
   //===--------------------------------------------------------------------===//
-  // function by Claudio Perez                                            2023
-  //===--------------------------------------------------------------------===//
 
   return VectorFromVersor(Versor::from_matrix(R));
 }
@@ -496,13 +480,12 @@ LogC90(const Matrix3D &R)
 {
   //===--------------------------------------------------------------------===//
   //
-  //   Crisfield M (1990) A consistent co-rotational formulation for non-linear,
+  // Crisfield's approximation to the logarithm on SO(3)
+  //
+  // - Crisfield M (1990) A consistent co-rotational formulation for non-linear,
   //   three-dimensional, beam-elements
   //
   //===--------------------------------------------------------------------===//
-  // function by Claudio Perez                                            2024
-  //===--------------------------------------------------------------------===//
-  // Crisfield's approximation to the logarithm on SO(3)
 
   return Vector3D {
     -std::asin(0.5*(R(1,2) - R(2,1))),
@@ -627,13 +610,12 @@ RescaleVector(const Vector3D &v, double &angle)
 inline Matrix3D
 dLogSO3(const Vector3D &v, double* a=nullptr)
 {
-//
-// d_R LogSO3(v) = Eye3 - 0.5*Sv + eta*Sv*Sv;
-//
-// =========================================================================================
-// function by Claudio Perez                                                            2023
-// -----------------------------------------------------------------------------------------
-//
+  //===--------------------------------------------------------------------===//
+  //
+  // d_R LogSO3(v) = Eye3 - 0.5*Sv + eta*Sv*Sv;
+  //
+  //===--------------------------------------------------------------------===//
+  //
 
   double angle = v.norm();
   const Vector3D u = Utility::RescaleVector(v, angle);
