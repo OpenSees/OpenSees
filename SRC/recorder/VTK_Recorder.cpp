@@ -1191,7 +1191,6 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeTetrahedron] = VTK_TETRA;
     vtktypes[ELE_TAG_PFEMElement3DBubble] = VTK_TETRA;
     vtktypes[ELE_TAG_TriSurfaceLoad] = VTK_TRIANGLE;
-    vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
@@ -1200,6 +1199,12 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_FSIFluidElement2D] = VTK_QUAD;
     vtktypes[ELE_TAG_FSIInterfaceElement2D] = VTK_LINE;
     vtktypes[ELE_TAG_FSIFluidBoundaryElement2D] = VTK_LINE;
+    vtktypes[ELE_TAG_PML2D_3] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2D_5] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2D_12] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2DVISCOUS] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_PML3D] = VTK_HEXAHEDRON;
 }
 
 

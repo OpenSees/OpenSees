@@ -178,6 +178,10 @@ ContinuumUniaxial::setTrialStrain(double strain, double strainRate)
   static Vector threeDstrain(6);
   static Matrix dd22(5,5);
 
+  int count = 0;
+  const int maxCount = 20;
+  double norm0;
+  
   //newton loop to solve for out-of-plane strains
   do {
     //set three dimensional strain
@@ -211,7 +215,9 @@ ContinuumUniaxial::setTrialStrain(double strain, double strainRate)
 
     //set norm
     norm = condensedStress.Norm();
-
+    if (count == 0)
+      norm0 = norm;
+    
     //condensation 
     dd22.Solve(condensedStress, strainIncrement);
 
@@ -222,7 +228,7 @@ ContinuumUniaxial::setTrialStrain(double strain, double strainRate)
     Tgamma23  -= strainIncrement(3);
     Tgamma31  -= strainIncrement(4);
 
-  } while (norm > tolerance);
+  } while (count++ < maxCount && norm > 0.0 && norm/norm0 > tolerance);
 
   return 0;
 }

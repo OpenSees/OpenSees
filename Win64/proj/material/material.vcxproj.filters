@@ -157,6 +157,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -374,6 +377,12 @@
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\pyUCLA.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\..\SRC\material\uniaxial\QbSandCPT.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+	<ClCompile Include="..\..\..\SRC\material\uniaxial\TzSandCPT.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond1Material.cpp">
@@ -1382,6 +1391,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurfacePlaneStrain.cpp">
       <Filter>nD\UWmaterials</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\ASDCoupledHinge3D.cpp">
+      <Filter>section</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HystereticPoly.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1529,8 +1541,23 @@
     <ClCompile Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.cpp">
       <Filter>section\LayeredMembraneSection</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\material\nD\ASDPlasticMaterial\OPS_AllASDPlasticMaterials.cpp">
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDFMD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDMD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\APDVFD.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.cpp">
       <Filter>nD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\PipeMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\PipeSection.cpp">
+      <Filter>section</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1568,6 +1595,9 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h">
@@ -1778,6 +1808,12 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\pyUCLA.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+	<ClInclude Include="..\..\..\SRC\material\uniaxial\QbSandCPT.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+	<ClInclude Include="..\..\..\SRC\material\uniaxial\TzSandCPT.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\fedeas\FedeasBond1Material.h">
@@ -2576,6 +2612,9 @@
     <ClInclude Include="..\..\..\SRC\material\section\WSection2d.h">
       <Filter>section</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\section\ASDCoupledHinge3D.h">
+      <Filter>section</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\backbone\CappedBackbone.h">
       <Filter>uniaxial\backbone</Filter>
     </ClInclude>
@@ -2797,6 +2836,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\section\LayeredMembraneSection\ElasticMembraneSection.h">
       <Filter>section\LayeredMembraneSection</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\MinMaxNDMaterial.h">
+      <Filter>nD</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

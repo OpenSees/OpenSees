@@ -432,7 +432,8 @@ ShellMITC9::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
   } 
 
-  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0) {
+  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0 ||
+	   strcmp(argv[0],"section") == 0) {
     if (argc < 2) {
       opserr << "ShellMITC9::setResponse() - need to specify more data\n";
       return 0;
@@ -563,6 +564,19 @@ ShellMITC9::getResponse(int responseID, Information &eleInfo)
   }
 }
 
+int
+ShellMITC9::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int res = -1;
+  // Send to all sections
+  for (int i = 0; i < 9; i++) {
+    int secRes = materialPointers[i]->setParameter(argv, argc, param);
+    if (secRes != -1) {
+      res = secRes;
+    }
+  }
+  return res;
+}
 
 //return stiffness matrix 
 const Matrix&  ShellMITC9::getTangentStiff( ) 

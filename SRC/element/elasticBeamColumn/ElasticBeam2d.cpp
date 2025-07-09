@@ -1070,6 +1070,8 @@ ElasticBeam2d::getResistingForce()
   Vector p0Vec(p0, 3);
   
   P = theCoordTransf->getGlobalResistingForce(q, p0Vec);
+  if (rho != 0)
+    P.addVector(1.0, Q, -1.0);
 
   return P;
 }
@@ -1633,7 +1635,16 @@ ElasticBeam2d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(release);
     return param.addObject(5, this);
   }  
-  
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
+  }
+    
   return -1;
 }
 

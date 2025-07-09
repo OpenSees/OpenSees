@@ -233,7 +233,7 @@ void *OPS_DispBeamColumn3d(const ID &info) {
 
         // get the data for a mesh
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 5) return 0;
+        if (mdata.Size() < 4) return 0;
 
         iData[0] = info(2);
         iData[1] = info(3);
@@ -1978,6 +1978,15 @@ DispBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"rho") == 0) {
     param.setValue(rho);
     return param.addObject(1, this);
+  }
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
   }
 
   if (strstr(argv[0],"sectionX") != 0) {

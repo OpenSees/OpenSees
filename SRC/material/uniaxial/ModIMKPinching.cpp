@@ -49,7 +49,7 @@ OPS_ModIMKPinching()
 {
   if (numModIMKPinchingMaterials == 0) {
     numModIMKPinchingMaterials++;
-    opserr << "WARNING: DO NOT USE THE \"ModIMKPeakOriented\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKPinching\" or \"HystereticSM\" INSTEAD.\n";        
+    opserr << "WARNING: DO NOT USE THE \"ModIMKPinching\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKPinching\" or \"HystereticSM\" INSTEAD.\n";        
 
   }
  

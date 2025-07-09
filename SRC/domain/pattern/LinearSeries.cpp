@@ -38,6 +38,7 @@
 #include <LinearSeries.h>
 #include <Vector.h>
 #include <Channel.h>
+#include <Parameter.h>
 
 #include <elementAPI.h>
 
@@ -91,7 +92,7 @@ OPS_LinearSeries(void)
 
 LinearSeries::LinearSeries(int tag, double theFactor)
   :TimeSeries(tag, TSERIES_TAG_LinearSeries),
-   cFactor(theFactor)
+   cFactor(theFactor), parameterID(0)
 {
   // does nothing
 }
@@ -153,4 +154,43 @@ LinearSeries::Print(OPS_Stream &s, int flag)
 {
     s << "Linear Series: constant factor: " << cFactor << "\n";
 
+}
+
+double
+LinearSeries::getFactorSensitivity(double pseudoTime)
+{
+  if (parameterID == 1)
+    return pseudoTime;
+  else
+    return 0.0;
+}
+
+int 
+LinearSeries::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (strncmp(argv[0],"factor",80) == 0) {
+    param.setValue(cFactor);
+    return param.addObject(1, this);
+  }
+
+  return -1;
+}
+   
+int 
+LinearSeries::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID == 1) {
+    cFactor = info.theDouble;
+    return 0;
+  }
+
+  return -1;
+}
+
+int
+LinearSeries::activateParameter(int paramID)
+{
+  parameterID = paramID;
+
+  return 0;
 }

@@ -397,10 +397,26 @@ PySimple1::setTrialStrain (double newy, double yRate)
 	//
 	int numSteps = 1;
 	double stepSize = 1.0;
-	if(fabs(dp/pult) > 0.5) numSteps = 1 + int(fabs(dp/(0.5*pult)));
-	if(fabs(dy/y50)  > 1.0 ) numSteps = 1 + int(fabs(dy/(1.0*y50)));
-	stepSize = 1.0/float(numSteps);
+	double temp = fabs(dp/pult);
+	if(temp > 0.5) {
+		if (temp > 50) {
+			numSteps = 100;
+		} else {
+			numSteps = 1 + int(temp * 2.0);
+		}
+	}
+
+	temp = fabs(dy/y50);
+	if(temp > 1.0) {
+		if (temp > 100) {
+			numSteps = 100;
+		} else {
+			numSteps = 1 + int(temp);
+		}
+	}
+
 	if(numSteps > 100) numSteps = 100;
+	stepSize = 1.0/double(numSteps);
 
 	dy = stepSize * dy;
 

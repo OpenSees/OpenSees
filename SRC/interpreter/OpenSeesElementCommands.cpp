@@ -58,7 +58,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <ShellMITC4.h>
 #include <ShellDKGQ.h>
 #include <ShellNLDKGQ.h>
-#include <ShellANDeS.h>
 #include <FourNodeTetrahedron.h>
 #include <TenNodeTetrahedron.h>
 
@@ -70,8 +69,6 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TrapezoidalBeamIntegration.h>
 #include <ForceBeamColumn2d.h>
 #include <ForceBeamColumn3d.h>
-
-// no 'beamWithHinges', 'flBrick'
 
 void* OPS_ZeroLengthND();
 void* OPS_ZeroLengthSection();
@@ -113,7 +110,6 @@ void* OPS_MEFI();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
-void* OPS_ShellANDeS();
 void* OPS_ShellDKGQ();
 void* OPS_ShellDKGT();
 void* OPS_ShellNLDKGQ();
@@ -144,7 +140,7 @@ void* OPS_AC3D8HexWithSensitivity();
 void* OPS_AV3D4QuadWithSensitivity();
 void* OPS_ASI3D8QuadWithSensitivity();
 void* OPS_ElastomericBearingBoucWenMod3d();
-void* OPS_VS3D4WuadWithSensitivity();
+void* OPS_VS3D4QuadWithSensitivity();
 void* OPS_PFEMElement2DBubble(const ID& info);
 void* OPS_PFEMElement3DBubble(const ID& info);
 //void* OPS_TaylorHood2D();
@@ -159,7 +155,7 @@ void* OPS_ForceBeamColumn2d(const ID& info);
 void* OPS_NonlinearBeamColumn();
 void* OPS_ForceBeamColumn3d();
 void* OPS_ForceBeamColumn2dThermal();
-//void* OPS_ForceBeamColumn3dThermal();
+void* OPS_ForceBeamColumn3dThermal();
 void* OPS_DispBeamColumn2d(const ID& info);
 void* OPS_DispBeamColumnNL2d(const ID& info);
 void* OPS_DispBeamColumn3d();
@@ -235,6 +231,7 @@ void* OPS_ElastomericBearingUFRP2d();
 void* OPS_Inerter();
 void* OPS_LinearElasticSpring();
 void* OPS_TwoNodeLink();
+void* OPS_TwoNodeLinkSection();
 void* OPS_MultipleShearSpring();
 void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
@@ -262,6 +259,13 @@ void* OPS_PML2D_12(void);
 void* OPS_PML2DVISCOUS(void);
 void* OPS_PML3D(void);
 void* OPS_Inno3DPnPJoint();
+void* OPS_ShellMITC4Thermal();
+void* OPS_ShellNLDKGQThermal();
+void* OPS_ShellNLDKGTThermal();
+void* OPS_PipeElement();
+void* OPS_CurvedPipeElement();
+void* OPS_PML3DVISCOUS(void);
+
 
 namespace {
 
@@ -316,8 +320,7 @@ namespace {
 	if(ndm == 2) {
 	    return OPS_ForceBeamColumn2dThermal();
 	} else {
-		return 0;
-	  //return OPS_ForceBeamColumn3dThermal();
+	    return OPS_ForceBeamColumn3dThermal();
 	}
     }
   
@@ -369,6 +372,16 @@ namespace {
 	    return OPS_SFI_MVLEM();
 	if(ndm == 3)
 	    return OPS_SFI_MVLEM_3D();	
+	return 0;
+    }
+
+    static void* OPS_E_SFI_MVLEM2d3d()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2)
+	    return OPS_E_SFI();
+	if(ndm == 3)
+	    return OPS_E_SFI_MVLEM_3D();	
 	return 0;
     }    
 
@@ -454,7 +467,7 @@ namespace {
 	    return OPS_BeamColumnJoint3d();
 	}
     }
-	
+
     static void* OPS_FlatSliderBearing()
     {
 	int ndm = OPS_GetNDM();
@@ -582,7 +595,7 @@ namespace {
 	  return OPS_PML2D();
 	}
 	else {
-	  return OPS_PML3D();
+	  return OPS_PML3DVISCOUS();
 	}
   }
 
@@ -597,6 +610,7 @@ namespace {
     functionMap.insert(std::make_pair("inerter", &OPS_Inerter));
     functionMap.insert(std::make_pair("linearElasticSpring", &OPS_LinearElasticSpring));
     functionMap.insert(std::make_pair("twoNodeLink", &OPS_TwoNodeLink));
+        functionMap.insert(std::make_pair("twoNodeLinkSection", &OPS_TwoNodeLinkSection));
 	functionMap.insert(std::make_pair("elastomericBearingUFRP", &OPS_ElastomericBearingUFRP));
 	functionMap.insert(std::make_pair("elastomericBearingPlasticity", &OPS_ElastomericBearingPlasticity));
 	functionMap.insert(std::make_pair("elastomericBearingBoucWen", &OPS_ElastomericBearingBoucWen));
@@ -660,7 +674,7 @@ namespace {
 	functionMap.insert(std::make_pair("PFEMElementBubble", &OPS_PFEMElementBubble));
 	functionMap.insert(std::make_pair("MINI", &OPS_PFEMElementmini));
 	//functionMap.insert(std::make_pair("TaylorHood2D", &OPS_TaylorHood2D));
-	functionMap.insert(std::make_pair("VS3D4", &OPS_VS3D4WuadWithSensitivity));
+	functionMap.insert(std::make_pair("VS3D4", &OPS_VS3D4QuadWithSensitivity));
 	functionMap.insert(std::make_pair("elastomericBearingBoucWenMod", &OPS_ElastomericBearingBoucWenMod3d));
 	functionMap.insert(std::make_pair("AV3D4", &OPS_AV3D4QuadWithSensitivity));
 	functionMap.insert(std::make_pair("AC3D8", &OPS_AC3D8HexWithSensitivity));
@@ -716,11 +730,12 @@ namespace {
 	functionMap.insert(std::make_pair("LeadRubberX", &OPS_LeadRubberX));
 	functionMap.insert(std::make_pair("ElastomericX", &OPS_ElastomericX));
 	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEM2d3d));
-	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MVLEM_3D", &OPS_MVLEM2d3d));
+	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("SFI_MVLEM_3D", &OPS_SFI_MVLEM2d3d));
-	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM_3D));
-	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI));  
+	functionMap.insert(std::make_pair("E_SFI", &OPS_E_SFI_MVLEM2d3d));
+	functionMap.insert(std::make_pair("E_SFI_MVLEM", &OPS_E_SFI_MVLEM2d3d));  
+	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MEFI", &OPS_MEFI));	
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
@@ -728,7 +743,6 @@ namespace {
 	functionMap.insert(std::make_pair("MultiFP2d", &OPS_MultiFP2d));
 	functionMap.insert(std::make_pair("shell", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("Shell", &OPS_ShellMITC4));
-	functionMap.insert(std::make_pair("ShellANDeS", &OPS_ShellANDeS));
 	functionMap.insert(std::make_pair("shellMITC4", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("ShellMITC4", &OPS_ShellMITC4));
 	functionMap.insert(std::make_pair("shellNL", &OPS_ShellMITC9));
@@ -802,6 +816,16 @@ namespace {
 	functionMap.insert(std::make_pair("PML2D_5", &OPS_PML2D_5));
 	functionMap.insert(std::make_pair("PML2D_12", &OPS_PML2D_12));
 	functionMap.insert(std::make_pair("PML2DVISCOUS", &OPS_PML2DVISCOUS));
+	functionMap.insert(std::make_pair("PML3DVISCOUS", &OPS_PML3DVISCOUS));
+	functionMap.insert(std::make_pair("ShellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
+	functionMap.insert(std::make_pair("shellNLDKGQThermal", &OPS_ShellNLDKGQThermal));
+	functionMap.insert(std::make_pair("ShellNLDKGTThermal", &OPS_ShellNLDKGTThermal));
+	functionMap.insert(std::make_pair("shellNLDKGTThermal", &OPS_ShellNLDKGTThermal));
+	functionMap.insert(std::make_pair("shellMITC4Thermal", &OPS_ShellMITC4Thermal));
+	functionMap.insert(std::make_pair("ShellMITC4Thermal", &OPS_ShellMITC4Thermal));
+	functionMap.insert(std::make_pair("Pipe", &OPS_PipeElement));
+	functionMap.insert(std::make_pair("pipe", &OPS_PipeElement));
+	functionMap.insert(std::make_pair("CurvedPipe", &OPS_CurvedPipeElement));
 	return 0;
     }
 }

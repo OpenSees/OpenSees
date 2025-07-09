@@ -119,7 +119,9 @@ class PlasticDamageConcrete3d : public NDMaterial
     // tangent matrices
     Matrix Ce; 
     Matrix C; 
-    Matrix Ccommit; 
+    Matrix Ccommit;
+
+  void setCe(void);
 };
 
 #endif

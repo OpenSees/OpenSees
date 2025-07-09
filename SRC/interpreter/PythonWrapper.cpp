@@ -1132,6 +1132,18 @@ static PyObject *Py_ops_nodeDisp(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_nodeCrd(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_nodeCoord() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeVel(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -1161,6 +1173,30 @@ static PyObject *Py_ops_setNodeDisp(PyObject *self, PyObject *args)
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_setNodeDisp() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_getNodeTemperature(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_getNodeTemperature() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_setNodeTemperature(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_setNodeTemperature() < 0) {
 	opserr<<(void*)0;
 	return NULL;
     }
@@ -2393,6 +2429,42 @@ static PyObject *Py_ops_randomVariable(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_filter(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_filter() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_spectrum(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_spectrum() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_modulatingFunction(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_modulatingFunction() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_getRVTags(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -2832,10 +2904,33 @@ static PyObject *Py_ops_findDesignPoint(PyObject *self,
   return wrapper->getResults();
 }
 
+static PyObject *Py_ops_findCurvatures(PyObject *self,
+				       PyObject *args) {
+  wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+  if (OPS_findCurvatures() < 0) {
+    opserr << (void *)0;
+    return NULL;
+  }
+
+  return wrapper->getResults();
+}
+
 static PyObject *Py_ops_runFORMAnalysis(PyObject *self, PyObject *args) {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
 
     if (OPS_runFORMAnalysis() < 0) {
+        opserr << (void *)0;
+        return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
+static PyObject *Py_ops_runSORMAnalysis(PyObject *self, PyObject *args) {
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_runSORMAnalysis() < 0) {
         opserr << (void *)0;
         return NULL;
     }
@@ -2968,6 +3063,8 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("nodeUnbalance", &Py_ops_nodeUnbalance);
     addCommand("nodeDisp", &Py_ops_nodeDisp);
     addCommand("setNodeDisp", &Py_ops_setNodeDisp);
+    addCommand("setNodeTemperature", &Py_ops_setNodeTemperature);
+    addCommand("getNodeTemperature", &Py_ops_getNodeTemperature);
     addCommand("nodeVel", &Py_ops_nodeVel);
     addCommand("setNodeVel", &Py_ops_setNodeVel);
     addCommand("nodeAccel", &Py_ops_nodeAccel);
@@ -3073,6 +3170,9 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("getNodeLoadTags", &Py_ops_getNodeLoadTags);
     addCommand("getNodeLoadData", &Py_ops_getNodeLoadData);
     addCommand("randomVariable", &Py_ops_randomVariable);
+    addCommand("filter", &Py_ops_filter);
+    addCommand("modulatingFunction", &Py_ops_modulatingFunction);
+    addCommand("spectrum", &Py_ops_spectrum);
     addCommand("getRVTags", &Py_ops_getRVTags);
     addCommand("getRVParamTag", &Py_ops_getRVParamTag);
     addCommand("getRVValue", &Py_ops_getRVValue);
@@ -3112,7 +3212,9 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("domainCommitTag", &Py_ops_domainCommitTag);
     addCommand("runFOSMAnalysis", &Py_ops_runFOSMAnalysis);
     addCommand("findDesignPoint", &Py_ops_findDesignPoint);
+    addCommand("findCurvatures", &Py_ops_findCurvatures);
     addCommand("runFORMAnalysis", &Py_ops_runFORMAnalysis);
+    addCommand("runSORMAnalysis", &Py_ops_runSORMAnalysis);    
     addCommand("getLSFTags", &Py_ops_getLSFTags);
     addCommand("runImportanceSamplingAnalysis", &Py_ops_runImportanceSamplingAnalysis);
     addCommand("IGA", &Py_ops_IGA);

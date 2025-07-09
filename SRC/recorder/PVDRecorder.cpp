@@ -111,10 +111,9 @@ void* OPS_PVDRecorder()
 	    }
 	    PVDRecorder::EleData edata;
 	    numdata = OPS_GetNumRemainingInputArgs();
-	    edata.resize(numdata);
-	    for(int i=0; i<numdata; i++) {
-		edata[i] = OPS_GetString();
-	    }
+	    edata.resize(1);
+	    edata[0] = OPS_GetString();
+	    // opserr << "WARNING - EDATA[i]="<< edata[0].c_str() << "\n";
 	    eledata.push_back(edata);
 	} else if(strcmp(type, "-dT") == 0) {
 	    numdata = OPS_GetNumRemainingInputArgs();
@@ -1996,7 +1995,6 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeTetrahedron] = VTK_TETRA;
     vtktypes[ELE_TAG_PFEMElement3DBubble] = VTK_TETRA;
     vtktypes[ELE_TAG_TriSurfaceLoad] = VTK_TRIANGLE;
-    vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
