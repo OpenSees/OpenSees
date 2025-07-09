@@ -2174,6 +2174,10 @@ int OPS_printA()
         const char* flag = OPS_GetString();
         if ((strcmp(flag,"file") == 0) || (strcmp(flag,"-file") == 0)) {
             const char* filename = OPS_GetString();
+            if (strcmp(filename, "Invalid String Input!") == 0) {
+                opserr << "WARNING: printA - filename is not a valid string\n";
+                return -1;
+            }
             if (outputFile.setFile(filename) != 0) {
                 opserr << "printA <filename> .. - failed to open file: " << filename << endln;
                 return -1;
