@@ -37,7 +37,6 @@
 #include "EuclidIsometry.h"
 
 class Node;
-#define TRIAD C2
 
 namespace OpenSees {
 
@@ -173,7 +172,7 @@ private:
   double n   = 0;
 
 
-  #if __cplusplus >= 202000L
+#if __cplusplus >= 202000L
   static inline consteval MatrixND<12,3> 
   MakePsi()
   {
@@ -193,7 +192,7 @@ private:
     Gamma.template insert<6,0>(ex, -1.0);
     return Gamma;
   }
-  #endif
+#endif
 
 };
 } // namespace OpenSees

@@ -31,7 +31,8 @@ public:
     : ndm(ndm), 
       TaggedObject(t), 
       vz{{0, 0, 0}}, offsets{}, offset_flags(0) {
-      strncpy(name, n, 128);
+      // strncpy(name, n, 128);
+      snprintf(name, sizeof(name), "%s", n);
       // offset_flags |= LogIter;
     }
 

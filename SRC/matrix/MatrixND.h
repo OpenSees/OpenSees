@@ -34,12 +34,10 @@
 #include <math.h>
 #include <assert.h>
 #include <array>
-#include <stdexcept>
 
 #include "VectorND.h"
 #include "Matrix.h"
 #include "Vector.h"
-#include "routines/SY3.h"
 
 
 #define G23_STACK_MAX 10
@@ -57,14 +55,7 @@ struct alignas(64) MatrixND {
 
   operator const Matrix() const { return Matrix(&(*this)(0,0), NR, NC);}
 
-  int
-  symeig(VectorND<NR>& vals)
-  {
-    static_assert(NR == 3 && NC == 3);
-    double work[3][3];
-    cmx_eigSY3(values, work, vals.values);
-    return 0;
-  }
+  int symeig(VectorND<NR>& vals);
 
   constexpr void zero() noexcept;
   constexpr double determinant() const ;

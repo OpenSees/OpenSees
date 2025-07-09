@@ -223,13 +223,12 @@ public:
 
 protected:
   constexpr static int ic = 0; // std::floor(0.5*(nn+1));
-  enum { pres, init};
+  enum {pres, init};
   double L, Ln;
   Vector3D vz, dX, Xc;
   Matrix3D R[2];
   Vector3D c[2];
   Matrix3D dR;
-  // std::array<Node*,nn>& nodes;
   std::array<Vector3D, nn>* offsets = nullptr; // offsets
 };
 

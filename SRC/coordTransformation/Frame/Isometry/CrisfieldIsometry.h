@@ -289,21 +289,21 @@ public:
     //   T1 = [      O', (-S(rI3)*e2 + S(rI2)*e3)',        O', O']';
 
     // (-S(rI3)*e2 + S(rI2)*e3)
-    Vector3D Se  = rI2.cross(e3);
-    Se -= rI3.cross(e2);
+    Vector3D rxe  = rI2.cross(e3);
+    rxe -= rI3.cross(e2);
     for (int i = 0; i < 3; i++)
-      T(imx,i+3) =  Se[i];
+      T(imx,i+3) =  rxe[i];
 
     //   T2 = [(A*rI2)', (-S(rI2)*e1 + S(rI1)*e2)', -(A*rI2)', O']';
 
     Vector3D At = A*rI2;
 
     // (-S(rI2)*e1 + S(rI1)*e2)'
-    Se  = rI1.cross(e2);
-    Se -= rI2.cross(e1);
+    rxe  = rI1.cross(e2);
+    rxe -= rI2.cross(e1);
     for (int i = 0; i < 3; i++) {
       T(imz,i  ) =  At[i];
-      T(imz,i+3) =  Se[i];
+      T(imz,i+3) =  rxe[i];
       T(imz,i+6) = -At[i];
     }
 
@@ -312,38 +312,38 @@ public:
     At = A*rI3;
     
     // -S(rI3)*e1 + S(rI1)*e3
-    Se  = rI1.cross(e3);
-    Se -= rI3.cross(e1);
+    rxe  = rI1.cross(e3);
+    rxe -= rI3.cross(e1);
     for (int i = 0; i < 3; i++) {
-      T(imy,i  ) =  At[i]*-1;
-      T(imy,i+3) =  Se[i]*-1;
-      T(imy,i+6) = -At[i]*-1;
+      T(imy,i  ) = - At[i];
+      T(imy,i+3) = -rxe[i];
+      T(imy,i+6) =   At[i];
     }
 
     //   T4 = [      O', O',        O', (-S(rJ3)*e2 + S(rJ2)*e3)']';
-    Se  = rJ2.cross(e3);
-    Se -= rJ3.cross(e2);
+    rxe  = rJ2.cross(e3);
+    rxe -= rJ3.cross(e2);
     for (int i = 0; i < 3; i++)
-      T(jmx, i+9) =  Se[i];   // S(rJ2)*e3 - S(rJ3)*e2
+      T(jmx, i+9) =  rxe[i];   // S(rJ2)*e3 - S(rJ3)*e2
 
     // T5 = [(A*rJ2)', O', -(A*rJ2)', (-S(rJ2)*e1 + S(rJ1)*e2)']';
     At = A*rJ2;
-    Se  = rJ1.cross(e2); 
-    Se -= rJ2.cross(e1);
+    rxe  = rJ1.cross(e2); 
+    rxe -= rJ2.cross(e1);
     for (int i = 0; i < 3; i++) {
         T(jmz, i  ) =  At[i];
         T(jmz, i+6) = -At[i];
-        T(jmz, i+9) =  Se[i]; // (-S(rJ2)*e1 + S(rJ1)*e2)
+        T(jmz, i+9) = rxe[i]; // (-S(rJ2)*e1 + S(rJ1)*e2)
     }
 
     // T6 = [(A*rJ3)', O', -(A*rJ3)', (-S(rJ3)*e1 + S(rJ1)*e3)']'
-    At  = A*rJ3;
-    Se  = rJ1.cross(e3);  // (-S(rJ3)*e1 + S(rJ1)*e3)
-    Se -= rJ3.cross(e1);
+    At   = A*rJ3;
+    rxe  = rJ1.cross(e3);  // (-S(rJ3)*e1 + S(rJ1)*e3)
+    rxe -= rJ3.cross(e1);
     for (int i = 0; i < 3; i++) {
-        T(jmy,i  ) =  At[i]*-1;
-        T(jmy,i+6) = -At[i]*-1;
-        T(jmy,i+9) =  Se[i]*-1;
+        T(jmy,i  ) =  -At[i];
+        T(jmy,i+6) =   At[i];
+        T(jmy,i+9) = -rxe[i];
     }
 
     //
