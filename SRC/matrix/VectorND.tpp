@@ -190,7 +190,7 @@ inline int
 VectorND<N,T>::addMatrixVector(double thisFact, const MatrixND<N, NC, double> &m, const Vector& v, double otherFact)
 {
   // check the sizes are compatable
-  assert(NC == v.sz);
+  assert(NC == v.Size());
 
   // see if quick return
   if (thisFact == 1.0 && otherFact == 0.0)
@@ -219,7 +219,7 @@ inline int
 VectorND<N,T>::addMatrixTransposeVector(double thisFact, const MatrixND<NR, N, double> &m, const Vector &v, double otherFact)
 {
   // check the sizes are compatable
-  assert(NR == v.sz);
+  assert(NR == v.Size());
 
 
   if (thisFact == 1.0 && otherFact == 0.0)
@@ -246,14 +246,14 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
 {
   // check the sizes are compatable
   assert(N == m.noRows());
-  assert(m.noCols() == v.sz);
+  assert(m.noCols() == v.Size());
 
   // see if quick return
   if (thisFact == 1.0 && otherFact == 0.0)
     return 0;
 
 #ifdef VECTOR_BLAS
-  else if (v.sz > 10) {
+  else if (v.Size() > 10) {
     int incr = 1,
             i = m.numRows,
             n = m.numCols;
@@ -271,7 +271,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
 
     // want: this += m * v * otherFact
     if (otherFact == 1.0) { // no point doing multiplication if otherFact = 1.0
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       const double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -281,7 +281,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
       }
     } 
     else if (otherFact == -1.0) { // no point doing multiplication if otherFact = -1.0
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       const double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -291,7 +291,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
       }
     } 
     else { // have to do the multiplication
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -310,7 +310,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
 
     if (otherFact == 1.0) { 
       // avoid multiplication when otherFact = 1.0
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       const double *matrixDataPtr = m.data;
       const double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -322,7 +322,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
 
     else if (otherFact == -1.0) { 
       // avoid multiplication when otherFact = -1.0
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       const double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -332,7 +332,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
       }
 
     } else {
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -350,7 +350,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
       values[i] *= thisFact;
 
     if (otherFact == 1.0) { // no point doing multiplication if otherFact = 1.0
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -359,7 +359,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
           values[j] += *matrixDataPtr++ * otherData;
       }
     } else if (otherFact == -1.0) { // no point doing multiplication if otherFact = 1.0
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
@@ -368,7 +368,7 @@ VectorND<N,T>::addMatrixVector(const double thisFact, const Matrix &m, const Vec
           values[j] -= *matrixDataPtr++ * otherData;
       }
     } else {
-      int otherSize = v.sz;
+      int otherSize = v.Size();
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
