@@ -41,6 +41,7 @@ template<int ndf>
 int
 BasicFrameTransf3d<ndf>::commitState()
 {
+  // linear.commit();
   return t.commit();
 }
 
@@ -48,6 +49,7 @@ template<int ndf>
 int
 BasicFrameTransf3d<ndf>::revertToLastCommit()
 {
+  // linear.revertToLastCommit();
   return t.revertToLastCommit();
 }
 
@@ -55,6 +57,7 @@ template<int ndf>
 int
 BasicFrameTransf3d<ndf>::revertToStart()
 {
+  // linear.revertToStart();
   return t.revertToStart();
 }
 
@@ -62,6 +65,7 @@ template<int ndf>
 int
 BasicFrameTransf3d<ndf>::update()
 {
+  // linear.update();
   return t.update();
 }
 
@@ -93,7 +97,7 @@ template<int ndf>
 double
 BasicFrameTransf3d<ndf>::getInitialLength()
 {
-  return t.getInitialLength();
+  return linear.getInitialLength();
 }
 
 template<int ndf>
@@ -112,7 +116,7 @@ BasicFrameTransf3d<ndf>::getBasicTrialDisp()
   static Vector wrapper(ub);
   Vector3D wi = t.getNodeRotationLogarithm(0),
            wj = t.getNodeRotationLogarithm(1);
-  ub[0] = t.getDeformedLength() - t.getInitialLength(); // t.getNodePosition(1)[0];
+  ub[0] = t.getDeformedLength() - t.getInitialLength(); // t.getNodePosition(1)[0]; //
   ub[1] = wi[2];
   ub[2] = wj[2];
   ub[3] = wi[1];
@@ -164,15 +168,24 @@ BasicFrameTransf3d<ndf>::getGlobalResistingForce(const Vector &q_pres, const Vec
 {
   // transform resisting forces from the basic system to local coordinates
   
+  static constexpr int nwm = ndf - 6; // Number of warping DOFs
+
   static VectorND<NDF*2> pl{};
-  pl[0*NDF+0]  = -q_pres[jnx];      // Ni
-  pl[0*NDF+3]  = -q_pres[jmx];      // Ti
+  pl.zero();
   pl[0*NDF+4]  =  q_pres[imy];
   pl[0*NDF+5]  =  q_pres[imz];
   pl[1*NDF+0]  =  q_pres[jnx];      // Nj
   pl[1*NDF+3]  =  q_pres[jmx];      // Tj
   pl[1*NDF+4]  =  q_pres[jmy];
   pl[1*NDF+5]  =  q_pres[jmz];
+  for (int i=0; i<nwm; i++) {
+    // TODO
+    pl[0*NDF+6+i] = -q_pres[6+i];
+    pl[1*NDF+6+i] =  q_pres[6+i];
+  }
+  //
+  pl[0*NDF+0]  = -q_pres[jnx];      // Ni
+  pl[0*NDF+3]  = -q_pres[jmx];      // Ti
 
   static VectorND<NDF*2> pf;
   pf.zero();
@@ -182,11 +195,11 @@ BasicFrameTransf3d<ndf>::getGlobalResistingForce(const Vector &q_pres, const Vec
   pf[1*NDF + 1] = p0[2];
   pf[1*NDF + 2] = p0[4];
 
-  static VectorND<NDF*2> pg;
-  static Vector wrapper(pg);
+  static Vector wrapper(pl);
+  t.push(pl, Operation::Total);
+  linear.push(pf, Operation::Total);
+  pl += pf;
 
-  pg  = t.pushResponse(pl);
-  pg += linear.pushResponse(pf);
   return wrapper;
 }
 
@@ -214,7 +227,9 @@ BasicFrameTransf3d<ndf>::getGlobalStiffMatrix(const Matrix &kb, const Vector &q_
   pl[0*NDF+0]  = -q_pres[jnx];      // Ni
   pl[0*NDF+3]  = -q_pres[jmx];      // Ti
 
+  //
   static MatrixND<2*NDF,2*NDF> kl;
+  static Matrix Wrapper(kl);
   kl.zero();
 
   for (int i=0; i<NDF*2; i++) {
@@ -235,15 +250,7 @@ BasicFrameTransf3d<ndf>::getGlobalStiffMatrix(const Matrix &kb, const Vector &q_
     kl(0*NDF+3, i) = kl(i, 0*NDF+3) =  i==0? kl(NDF+3, NDF+0): (i==3? kl(NDF+3, NDF+3) : -kl( NDF+3, i));
   }
 
-#if 0
-  static MatrixND<2*NDF,2*NDF> Kg;
-  static Matrix Wrapper(Kg);
-
-  Kg = t.pushResponse(kl, pl);
-#else 
-  static Matrix Wrapper(kl);
   t.push(kl, pl, Operation::Total);
-#endif
 
   return Wrapper;
 }
@@ -254,6 +261,7 @@ const Matrix &
 BasicFrameTransf3d<ndf>::getInitialGlobalStiffMatrix(const Matrix &KB)
 {
   static double kb[6][6];     // Basic stiffness
+
   static MatrixND<2*ndf,2*ndf> kl;  // Local stiffness
   double tmp[6][12]{};
 
@@ -273,6 +281,8 @@ BasicFrameTransf3d<ndf>::getInitialGlobalStiffMatrix(const Matrix &KB)
     tmp[i][10] =  kb[i][4];
     tmp[i][11] =  kb[i][2];
   }
+
+  kl.zero();
   // TODO:
   // Now compute T'_{bl}*(kb*T_{bl})
   for (int i = 0; i < 12; i++) {
@@ -321,6 +331,7 @@ BasicFrameTransf3d<ndf>::getGlobalMatrixFromLocal(const Matrix &M)
   return wrapper;
 }
 
+
 template<int ndf>
 const Vector &
 BasicFrameTransf3d<ndf>::getPointGlobalCoordFromLocal(const Vector &xl)
@@ -328,6 +339,7 @@ BasicFrameTransf3d<ndf>::getPointGlobalCoordFromLocal(const Vector &xl)
   static Vector xg(3);
   return xg;
 }
+
 
 template<int ndf>
 const Vector &

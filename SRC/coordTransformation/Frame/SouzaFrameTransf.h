@@ -97,10 +97,6 @@ public:
   // Tagged Object
   void Print(OPS_Stream &s, int flag) final;
 
-protected:
-
-  // VectorND<6> pushResponse(const VectorND<6>& pa, int a, int b);
-
 private:
   constexpr static int n = nn*ndf;
 

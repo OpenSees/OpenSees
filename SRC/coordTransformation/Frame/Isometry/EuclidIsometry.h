@@ -35,7 +35,8 @@ public:
   virtual int initialize(std::array<Node*,nn>& nodes) =0;
   virtual int update(std::array<Node*,nn>& nodes) =0;
 
-  virtual int update(const Matrix3D& RI, const Matrix3D& RJ, const Vector3D& dx, 
+  virtual int update(const Matrix3D& RI, 
+                     const Matrix3D& RJ, const Vector3D& dx, 
                      std::array<Node*,nn>& nodes) =0;
 
   virtual double    getLength() const =0;

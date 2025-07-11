@@ -2,6 +2,7 @@
 //
 //                                   xara
 //                              https://xara.so
+//
 //----------------------------------------------------------------------------//
 //
 //        OpenSees - Open System for Earthquake Engineering Simulation
@@ -324,10 +325,10 @@ SouzaFrameTransf<nn,ndf>::update()
   //
   // 2) Form transformation
   //
+  const Matrix3D RIR0 = MatrixFromVersor(Q_pres[0]),
+                 RJR0 = MatrixFromVersor(Q_pres[1]);
 
-  crs.update(MatrixFromVersor(Q_pres[0]), 
-             MatrixFromVersor(Q_pres[1]), 
-             dx, nodes);
+  crs.update(RIR0, RJR0, dx, nodes);
 
   //
   // 3) Local deformations
@@ -338,12 +339,12 @@ SouzaFrameTransf<nn,ndf>::update()
 
   // Rotations
   {
-    Matrix3D e = crs.getRotation();
-    vr[0] = LogC90(e^MatrixFromVersor(Q_pres[0]));
+    const Matrix3D e = crs.getRotation();
+    vr[0] = LogC90(e^RIR0);
     for (int i=0; i<3; i++)
       ul[imx+i] = vr[0][i];
 
-    vr[1] = LogC90(e^MatrixFromVersor(Q_pres[1]));
+    vr[1] = LogC90(e^RJR0);
     for (int i=0; i<3; i++)
       ul[jmx+i] = vr[1][i];
   }
@@ -375,7 +376,6 @@ SouzaFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&pl, Operation)
       for (int i = 0; i < 6; i++)
         for (int j = 0; j < 6; j++)
           pab[j] += T(a*6 + i, b*6+j) * pa[i];
-      // VectorND<6> pab = pushResponse(pa, a, b);
       pg.assemble(b*6, pab, 1.0);
     }
   }

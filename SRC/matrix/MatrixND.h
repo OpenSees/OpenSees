@@ -46,8 +46,30 @@ namespace OpenSees {
 
 template <index_t NR, index_t NC, typename T=double>
 struct alignas(64) MatrixND {
-  double values[NC][NR];
-  // std::array<T, NR*NC> values;
+  // double values[NC][NR];
+  std::array<T, NR*NC> values;
+
+  //
+  // Indexing
+  //
+  // (i,j) indexing
+  // constexpr T &
+  // operator()(index_t index_r, index_t index_c) noexcept {
+  //   assert(index_r >= 0 && index_c >= 0);
+  //   assert(index_r < NR && index_c < NC);
+  //   return values[index_c][index_r];
+  // }
+
+  // inline constexpr const T & 
+  // operator()(index_t index_r, index_t index_c) const noexcept {
+  //   assert(index_r >= 0 && index_c >= 0);
+  //   assert(index_r < NR && index_c < NC);
+  //   return values[index_c][index_r];
+  // }
+  constexpr       T& operator()(int i, int j)       noexcept { return values[j*NR + i]; }
+  constexpr const T& operator()(int i, int j) const noexcept { return values[j*NR + i]; }
+
+  constexpr T* data() noexcept { return &(*this)(0,0); }
 
 
   // Convert to regular Matrix class
@@ -58,6 +80,7 @@ struct alignas(64) MatrixND {
   int symeig(VectorND<NR>& vals);
 
   constexpr void zero() noexcept;
+
   constexpr double determinant() const ;
 
   constexpr MatrixND<NC, NR> transpose() const noexcept;
@@ -108,41 +131,6 @@ struct alignas(64) MatrixND {
 
   int invert(MatrixND<NR, NC, T> &) const;
 
-#if 0
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, size_t row_index);
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, size_t vector_index, size_t matrix_row_index);
-//template<class VecT>
-//MatrixND<NR,NC,T>& addSpin(const VecT& V, double mult) requires(NR == 3);
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, double mult, size_t row_index);
-//template<class VecT>
-//void addSpinAtRow(const VecT& V, double mult, size_t vector_index, size_t matrix_row_index);
-#endif
-
-  //
-  // Indexing
-  //
-  // (i,j) indexing
-  constexpr T &
-  operator()(index_t index_r, index_t index_c) noexcept {
-    assert(index_r >= 0 && index_c >= 0);
-    assert(index_r < NR && index_c < NC);
-    return values[index_c][index_r];
-  }
-
-  inline constexpr const T & 
-  operator()(index_t index_r, index_t index_c) const noexcept {
-    assert(index_r >= 0 && index_c >= 0);
-    assert(index_r < NR && index_c < NC);
-    return values[index_c][index_r];
-  }
-  // constexpr       T& operator()(int i, int j)       noexcept { return values[j*NR + i]; }
-  // constexpr const T& operator()(int i, int j) const noexcept { return values[j*NR + i]; }
-
-
-
   constexpr MatrixND &
   operator=(const Matrix &other) noexcept
   {
@@ -175,7 +163,7 @@ struct alignas(64) MatrixND {
   }
   
   constexpr MatrixND &
-  operator-=(const MatrixND &other) 
+  operator-=(const MatrixND &other) noexcept
   {
     for (index_t j = 0; j < NC; ++j)
       for (index_t i = 0; i < NR; ++i)
@@ -207,16 +195,16 @@ struct alignas(64) MatrixND {
   inline constexpr VectorND<NC>
   operator^(const VectorND<NR> &V) const noexcept
   {
-      VectorND<NC> result;
+    VectorND<NC> result;
 
-      const double *dataPtr = &(*this)(0,0);
-      for (int i=0; i<NC; i++) {
-        result[i] = 0.0;
-        for (int j=0; j<NR; j++)
-          result[i] += *dataPtr++ * V[j];
-      }
+    const double *dataPtr = &(*this)(0,0);
+    for (int i=0; i<NC; i++) {
+      result[i] = 0.0;
+      for (int j=0; j<NR; j++)
+        result[i] += *dataPtr++ * V[j];
+    }
 
-      return result;
+    return result;
   }
 
   //
@@ -224,7 +212,7 @@ struct alignas(64) MatrixND {
   //
 
   constexpr T
-  trace() const
+  trace() const noexcept
   {
     static_assert(NR == NC);
     T sum = 0.0;
@@ -401,32 +389,32 @@ struct alignas(64) MatrixND {
 // Operators
 //
   friend constexpr MatrixND
-  operator+(MatrixND left, const MatrixND &right) {
+  operator+(MatrixND left, const MatrixND &right) noexcept {
     left += right; 
     return left;
   }
 
   friend constexpr MatrixND
-  operator-(MatrixND left, const MatrixND &right) {
+  operator-(MatrixND left, const MatrixND &right) noexcept {
     left -= right; 
     return left;
   }
   
   friend constexpr MatrixND // scalar * Matrix
-  operator*(T scalar, MatrixND mat) {
+  operator*(T scalar, MatrixND mat) noexcept {
     mat *= scalar;
     return mat;
   }
 
   friend constexpr MatrixND // Matrix * scalar
-  operator*(MatrixND mat, T scalar) {
+  operator*(MatrixND mat, T scalar) noexcept {
     mat *= scalar;
     return mat;
   }
 
   template <index_t J>
   inline constexpr friend MatrixND<NR, J>
-  operator*(const MatrixND<NR, NC> &left, const MatrixND<NC, J> &right) {
+  operator*(const MatrixND<NR, NC> &left, const MatrixND<NC, J> &right) noexcept {
     MatrixND<NR, J> prod;
     if constexpr (NR*NC > 16)
       prod.addMatrixProduct(0, left, right, 1);
@@ -444,7 +432,7 @@ struct alignas(64) MatrixND {
 
   template <index_t J>
   friend  MatrixND<NR, J>
-  operator*(const MatrixND<NR, NC> &left, const Matrix &right) {
+  operator*(const MatrixND<NR, NC> &left, const Matrix &right) noexcept {
     MatrixND<NR, J> prod;
     for (index_t i = 0; i < NR; ++i) {
       for (index_t j = 0; j < J; ++j) {
@@ -459,7 +447,7 @@ struct alignas(64) MatrixND {
 
   // Matrix*Vector
   constexpr friend  VectorND<NR>
-  operator*(const MatrixND<NR, NC> &left, const VectorND<NC> &right) {
+  operator*(const MatrixND<NR, NC> &left, const VectorND<NC> &right) noexcept {
     VectorND<NR> prod;
     for (index_t i = 0; i < NR; ++i) {
         prod[i] = 0.0;
@@ -471,7 +459,7 @@ struct alignas(64) MatrixND {
   }
 
   friend  VectorND<NR>
-  operator*(const MatrixND<NR, NC> &left, const Vector &right) {
+  operator*(const MatrixND<NR, NC> &left, const Vector &right) noexcept {
     VectorND<NR> prod;
     for (index_t i = 0; i < NR; ++i) {
         prod[i] = 0.0;
@@ -487,7 +475,7 @@ struct alignas(64) MatrixND {
   inline constexpr friend MatrixND<NC,K>
   operator^(const MatrixND<NR, NC> &left, const MatrixND<NR, K> &right) {
     MatrixND<NC, K> prod;
-    if constexpr (NR*NC > 16)
+    if constexpr (NR*NC > 48)
       prod.addMatrixTransposeProduct(0.0, left, right, 1.0);
     else {
       for (index_t i = 0; i < NC; ++i) {

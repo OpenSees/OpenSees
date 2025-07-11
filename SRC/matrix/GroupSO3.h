@@ -55,9 +55,9 @@ static constexpr double SmallAngle = 1e-12; // threshold for small angles
 static constexpr double SmallAngle2 = SmallAngle * SmallAngle; // threshold for small angles squared
 
 static constexpr Matrix3D Eye3 {{
-  {1, 0, 0},
-  {0, 1, 0},
-  {0, 0, 1}
+  1, 0, 0,
+  0, 1, 0,
+  0, 0, 1
 }};
 
 
@@ -75,9 +75,9 @@ template <typename Vec3Type>
 static inline constexpr Matrix3D
 Hat(const Vec3Type &u) noexcept
 {
-  return Matrix3D {{{  0  ,  u[2], -u[1]},
-                    {-u[2],   0  ,  u[0]},
-                    { u[1], -u[0],   0  }}};
+  return Matrix3D {{  0  ,  u[2], -u[1],
+                    -u[2],   0  ,  u[0],
+                     u[1], -u[0],   0  }};
 }
 
 

@@ -92,6 +92,7 @@ public:
 
     for (int i=0; i<nn; i++)
       NWL.assemble(Hat(&pwx[i*6]), 0, i*6,  -1.0);
+
 #if __cplusplus >= 202000L
     static constinit MatrixND<12,3> Gamma = MakeGamma();
     static constinit MatrixND<12,3> Psi0  = MakePsi();

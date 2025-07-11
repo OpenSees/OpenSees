@@ -14,7 +14,7 @@
 //===----------------------------------------------------------------------===//
 
 //
-// Written: cmp
+// Written: Claudio M. Perez
 // Created: 04/2025
 //
 
@@ -249,7 +249,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
     }
   }
 
-  Matrix3D R = basis.getRotation();
+  const Matrix3D R = basis.getRotation();
 
   // (1) Global Offsets
   // Do ui -= ri x wi
@@ -275,8 +275,8 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
 
   // Projection
   {
-    Vector3D wr = basis.getRotationVariation(ndf, &ul[0]);
-    Vector3D dc = basis.getPositionVariation(ndf, &ul[0]);
+    const Vector3D wr = basis.getRotationVariation(ndf, &ul[0]);
+    const Vector3D dc = basis.getPositionVariation(ndf, &ul[0]);
 
     for (int i=0; i<nn; i++) {
       Vector3D ui = this->getNodePosition(i);
@@ -409,7 +409,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
   Kl.addMatrixTripleProduct(0, A, Kb, 1);
 
 
-  VectorND<nn*ndf> Ap = A^p;
+  const VectorND<nn*ndf> Ap = A^p;
 #if 0
   p = A^p;
 
@@ -420,12 +420,17 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
     for (int j=0; j<6; j++)
       qwx[i*6+j] = p[i*ndf+j] - Ap[i*ndf+j];
 
-  const MatrixND<12,12> Kw = basis.getRotationJacobian(qwx);
-  Kb.assemble(Kw.template extract<0, 6,  0, 6>(),   0,   0, 1.0);
-  Kb.assemble(Kw.template extract<0, 6,  6,12>(),   0, ndf, 1.0);
-  Kb.assemble(Kw.template extract<6,12,  0, 6>(), ndf,   0, 1.0);
-  Kb.assemble(Kw.template extract<6,12,  6,12>(), ndf, ndf, 1.0);
-  Kl.addMatrixProduct(Kb, A, 1.0);
+  if constexpr (ndf == 6) {
+    Kl.addMatrixProduct(basis.getRotationJacobian(qwx), A, 1.0);
+  }
+  else {
+    const MatrixND<12,12> Kw = basis.getRotationJacobian(qwx);
+    Kb.assemble(Kw.template extract<0, 6,  0, 6>(),   0,   0, 1.0);
+    Kb.assemble(Kw.template extract<0, 6,  6,12>(),   0, ndf, 1.0);
+    Kb.assemble(Kw.template extract<6,12,  0, 6>(), ndf,   0, 1.0);
+    Kb.assemble(Kw.template extract<6,12,  6,12>(), ndf, ndf, 1.0);
+    Kl.addMatrixProduct(Kb, A, 1.0);
+  }
   // p = A^p;
 #endif
 

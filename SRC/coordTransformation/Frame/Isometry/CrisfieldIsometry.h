@@ -163,7 +163,7 @@ public:
       Vector3D tmp;
       tmp  = e[0];
       tmp += r1;
-  
+
       e[1] = tmp;
       {
         e[1] *= 0.5*r2.dot(e[0]);

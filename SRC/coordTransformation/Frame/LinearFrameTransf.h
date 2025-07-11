@@ -59,9 +59,9 @@ public:
   int revertToLastCommit() final;
   int revertToStart() final;
 
-  VectorND<nn*ndf> getStateVariation() final;
   Vector3D getNodePosition(int tag) final;
   Vector3D getNodeRotationLogarithm(int tag) final;
+  VectorND<nn*ndf> getStateVariation() final;
 #if 0
   VectorND<nn*ndf>        pushResponse(VectorND<nn*ndf>&pl) final;
   MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;

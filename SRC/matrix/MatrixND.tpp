@@ -25,7 +25,7 @@ template <index_t nr, index_t nc, typename T>
 constexpr void
 MatrixND<nr, nc, T>::zero() noexcept
 {
-#if 1
+#if 0
   for (index_t j = 0; j < nc; ++j) {
     for (index_t i = 0; i < nr; ++i) {
       values[j][i] = 0.0;
@@ -42,9 +42,10 @@ int
 MatrixND<nr,nc,T>::symeig(VectorND<nr>& vals)
 {
   static_assert(nr == nc, "Matrix must be square");
-  static_assert(rc == 3 && nc == 3);
+  static_assert(nr == 3 && nc == 3);
   double work[3][3];
-  cmx_eigSY3(values, work, vals.values);
+  return -1;
+  // cmx_eigSY3(data(), work, &vals[0]);
   return 0;
 }
 
@@ -111,7 +112,7 @@ MatrixND<NR,NC,T>::assemble(const VectorND<nr> &v, int init_row, int init_col, d
   assert((init_row >= 0) && (final_row < NR));
 
   for (int j=0; j<nr; j++)
-      (*this)(init_row+j, init_col) += v(j)*fact;
+    (*this)(init_row+j, init_col) += v[j]*fact;
 }
 
 
@@ -297,7 +298,7 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
   }
 
   if (thisFact == 1.0) {
-    double *aijPtr = &values[0][0];
+    double *aijPtr =this->data();
     for (int j=0; j<nc; j++) {
       for (int i=0; i<nr; i++) {
         const double *bkiPtr  = &(&B(0,0))[i*nk];
@@ -310,7 +311,7 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
       }
     } 
   } else if (thisFact == 0.0) {
-    double *aijPtr = &values[0][0];
+    double *aijPtr =this->data();
     for (int j=0; j<nc; j++) {
       for (int i=0; i<nr; i++) {
         const double *bkiPtr  = &(&B(0,0))[i*nk];
@@ -323,7 +324,7 @@ MatrixND<nr, nc, T>::addMatrixTransposeProduct(double thisFact,
       }
     } 
   } else {
-    double *aijPtr = &values[0][0];
+    double *aijPtr =this->data();
     for (int j=0; j<nc; j++) {
       for (int i=0; i<nr; i++) {
         const double *bkiPtr  = &(&B(0,0))[i*nk];

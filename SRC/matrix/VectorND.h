@@ -33,8 +33,9 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-
-// #define XARA_VECTOR_FRIENDS
+#ifndef NO_XARA_VECTOR_FRIENDS
+#define XARA_VECTOR_FRIENDS
+#endif
 
 namespace OpenSees {
 
@@ -128,9 +129,9 @@ struct VectorND {
   bun(const VectorND<nc> &other) const noexcept {
     if constexpr (N == 3 && nc == 3)
       return MatrixND<N,nc,double> {{
-        {values[0]*other[0], values[1]*other[0], values[2]*other[0]},
-        {values[0]*other[1], values[1]*other[1], values[2]*other[1]},
-        {values[0]*other[2], values[1]*other[2], values[2]*other[2]}
+         values[0]*other[0], values[1]*other[0], values[2]*other[0] ,
+         values[0]*other[1], values[1]*other[1], values[2]*other[1] ,
+         values[0]*other[2], values[1]*other[2], values[2]*other[2] 
       }};
 
     else {
