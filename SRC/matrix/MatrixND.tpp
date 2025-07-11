@@ -11,7 +11,7 @@
 #pragma once
 #include "MatrixND.h"
 
-#include "blasdecl.h"
+#include "routines/xblas.h"
 #include "routines/cmx.h"
 #include "routines/SY3.h"
 
@@ -127,11 +127,11 @@ MatrixND<NR,NC,T>::assembleTranspose(const MatrixND<nr, nc, double> &M, int init
   }
 
   for (int i=0; i<nr; i++) {
-      int pos_Cols = init_col + i;
-      for (int j=0; j<nc; j++) {
-        int pos_Rows = init_row + j; 
-        (*this)(pos_Rows,pos_Cols) += M(i,j)*fact;
-      }
+    int pos_Cols = init_col + i;
+    for (int j=0; j<nc; j++) {
+      int pos_Rows = init_row + j; 
+      (*this)(pos_Rows,pos_Cols) += M(i,j)*fact;
+    }
   }
 }
 

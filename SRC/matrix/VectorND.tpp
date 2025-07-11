@@ -8,7 +8,7 @@
 //
 #include <assert.h>
 #include "VectorND.h"
-#include "blasdecl.h"
+#include "routines/xblas.h"
 
 
 namespace OpenSees {

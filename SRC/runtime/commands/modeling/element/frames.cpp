@@ -116,12 +116,21 @@ CheckTransformation(Domain& domain, int iNode, int jNode, CrdTransf& transform)
   }
 
   if (transform.initialize(ni, nj) != 0) {
-    opserr << OpenSees::PromptValueError 
-           << "transformation with tag " << transform.getTag()
-           << " could not be initialized with nodes "
-           << iNode << " and " << jNode
-           << "; check orientation"
-           << OpenSees::SignalMessageEnd;
+    if (transform.getInitialLength() <= 0.0) {
+      opserr << OpenSees::PromptValueError 
+            << "element has zero or negative initial length "
+            << transform.getInitialLength()
+            << "; check for duplicate nodes"
+            << OpenSees::SignalMessageEnd;
+    }
+    else {
+      opserr << OpenSees::PromptValueError 
+            << "transformation with tag " << transform.getTag()
+            << " could not be initialized with nodes "
+            << iNode << " and " << jNode
+            << "; check orientation"
+            << OpenSees::SignalMessageEnd;
+    }
     return TCL_ERROR;
   }
   return TCL_OK;

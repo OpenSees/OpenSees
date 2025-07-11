@@ -39,9 +39,6 @@
 #include "Matrix.h"
 #include "Vector.h"
 
-
-#define G23_STACK_MAX 10
-
 namespace OpenSees {
 
 template <index_t NR, index_t NC, typename T=double>
@@ -450,10 +447,10 @@ struct alignas(64) MatrixND {
   operator*(const MatrixND<NR, NC> &left, const VectorND<NC> &right) noexcept {
     VectorND<NR> prod;
     for (index_t i = 0; i < NR; ++i) {
-        prod[i] = 0.0;
-        for (index_t k = 0; k < NC; ++k) {
-          prod[i] += left(i,k) * right[k];
-        }
+      prod[i] = 0.0;
+      for (index_t k = 0; k < NC; ++k) {
+        prod[i] += left(i,k) * right[k];
+      }
     }
     return prod;
   }

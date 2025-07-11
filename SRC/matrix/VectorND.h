@@ -33,9 +33,6 @@
 #include <Vector.h>
 #include <Matrix.h>
 
-#ifndef NO_XARA_VECTOR_FRIENDS
-#define XARA_VECTOR_FRIENDS
-#endif
 
 namespace OpenSees {
 
