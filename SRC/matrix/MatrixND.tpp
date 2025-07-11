@@ -13,7 +13,6 @@
 
 #include "routines/xblas.h"
 #include "routines/cmx.h"
-#include "routines/SY3.h"
 
 namespace OpenSees {
 
@@ -25,47 +24,10 @@ template <index_t nr, index_t nc, typename T>
 constexpr void
 MatrixND<nr, nc, T>::zero() noexcept
 {
-#if 0
-  for (index_t j = 0; j < nc; ++j) {
-    for (index_t i = 0; i < nr; ++i) {
-      values[j][i] = 0.0;
-    }
-  }
-#else 
   values.fill(T{});
-#endif
 }
 
 
-template <index_t nr, index_t nc, typename T>
-int
-MatrixND<nr,nc,T>::symeig(VectorND<nr>& vals)
-{
-  static_assert(nr == nc, "Matrix must be square");
-  static_assert(nr == 3 && nc == 3);
-  double work[3][3];
-  return -1;
-  // cmx_eigSY3(data(), work, &vals[0]);
-  return 0;
-}
-
-#if 0
-template <index_t nr, index_t nc, typename T>
-constexpr double
-MatrixND<nr, nc, T>::determinant() const
-{
-  static_assert(nr == nc, "Matrix must be square");
-  static_assert(nr > 1 && nr < 4, "Matrix must be between 2x2 and 3x3");
-  if constexpr (nr == 2) {
-    return values[0][0] * values[1][1] - values[0][1] * values[1][0];
-  }
-  if constexpr (nr == 3) {
-    return values[0][0] * (values[1][1] * values[2][2] - values[1][2] * values[2][1]) -
-           values[0][1] * (values[1][0] * values[2][2] - values[1][2] * values[2][0]) +
-           values[0][2] * (values[1][0] * values[2][1] - values[1][1] * values[2][0]);
-  }
-}
-#endif
 
 template <index_t nr, index_t nc, typename T>
 constexpr MatrixND<nc, nr>
