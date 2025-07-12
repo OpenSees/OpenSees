@@ -113,8 +113,9 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING setNodeCoord nodeTag? dim? value? - could not read "
-              "nodeTag? \n";
+    opserr << OpenSees::PromptValueError
+           << "could not read nodeTag"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -145,10 +146,104 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   Vector coords(theNode->getCrds());
   coords(dim - 1) = value;
   theNode->setCrds(coords);
+  domain->domainChange();
 
   return TCL_OK;
 }
 
+
+
+#if 1
+
+template <NodeData Response>
+int
+nodeResponseTemplate(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  assert(clientData != nullptr);
+  Domain *domain = (Domain*)clientData;
+
+  if (argc < 2) {
+    opserr << "WARNING want - nodeDisp nodeTag? <dof?>\n";
+    return TCL_ERROR;
+  }
+
+  int tag;
+  int dof = -1;
+
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING could not read nodeTag? \n";
+    return TCL_ERROR;
+  }
+
+  if (argc > 2) {
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeDisp nodeTag? dof? - could not read dof? \n";
+      return TCL_ERROR;
+    }
+  }
+
+  dof--;
+
+  const Vector *nodalResponse = domain->getNodeResponse(tag, Response);
+
+  if (nodalResponse == nullptr)
+    // TODO: add error message
+    return TCL_ERROR;
+
+  int size = nodalResponse->Size();
+
+  if (dof >= 0) {
+
+    if (dof >= size) {
+      opserr << OpenSees::PromptValueError 
+             << "dofTag too large"
+             << OpenSees::SignalMessageEnd;
+      return TCL_ERROR;
+    }
+
+    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
+
+  } else {
+    char buffer[40];
+    for (int i = 0; i < size; ++i) {
+      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
+  }
+
+  return TCL_OK;
+}
+
+int 
+nodeDisp(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  return nodeResponseTemplate<NodeData::Disp>(clientData, interp, argc, argv);
+}
+int
+nodeVel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  return nodeResponseTemplate<NodeData::Vel>(clientData, interp, argc, argv);
+}
+
+int 
+nodeAccel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  return nodeResponseTemplate<NodeData::Accel>(clientData, interp, argc, argv);
+}
+
+int
+nodeUnbalance(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  return nodeResponseTemplate<NodeData::UnbalancedLoad>(clientData, interp, argc, argv);
+}
+
+int 
+nodeReaction(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  return nodeResponseTemplate<NodeData::Reaction>(clientData, interp, argc, argv);
+}
+
+#else
 int
 nodeDisp(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
@@ -164,7 +259,7 @@ nodeDisp(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** c
   int dof = -1;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeDisp nodeTag? dof? - could not read nodeTag? \n";
+    opserr << "WARNING could not read nodeTag? \n";
     return TCL_ERROR;
   }
 
@@ -204,6 +299,235 @@ nodeDisp(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** c
 
   return TCL_OK;
 }
+
+int
+nodeVel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  assert(clientData != nullptr);
+  Domain *the_domain = (Domain*)clientData;
+
+  if (argc < 2) {
+    opserr << "WARNING want - nodeVel nodeTag? <dof?>\n";
+    return TCL_ERROR;
+  }
+
+  int tag;
+  int dof = -1;
+
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING nodeVel nodeTag? dof? - could not read nodeTag? \n";
+    return TCL_ERROR;
+  }
+  if (argc > 2) {
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeVel nodeTag? dof? - could not read dof? \n";
+      return TCL_ERROR;
+    }
+  }
+
+  dof--;
+
+  const Vector *nodalResponse = the_domain->getNodeResponse(tag, NodeData::Vel);
+
+  if (nodalResponse == nullptr)
+    // TODO: add error message
+    return TCL_ERROR;
+
+  int size = nodalResponse->Size();
+
+  if (dof >= 0) {
+    if (size < dof)
+    // TODO: add error message
+      return TCL_ERROR;
+
+    double value = (*nodalResponse)(dof);
+
+    // now we copy the value to the tcl string that is returned
+    char buffer[40];
+    sprintf(buffer, "%35.20f", value);
+    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+  } else {
+
+    char buffer[40];
+    for (int i = 0; i < size; ++i) {
+      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
+  }
+
+  return TCL_OK;
+}
+
+int
+nodeAccel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
+{
+  assert(clientData != nullptr);
+
+  Domain *the_domain = (Domain *)clientData;
+
+  if (argc < 2) {
+    opserr << "WARNING want - nodeAccel nodeTag? dof?\n";
+    return TCL_ERROR;
+  }
+
+  int tag;
+  int dof = -1;
+
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING nodeAccel nodeTag? dof? - could not read nodeTag? \n";
+    return TCL_ERROR;
+  }
+  if (argc > 2) {
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeAccel nodeTag? dof? - could not read dof? \n";
+      return TCL_ERROR;
+    }
+  }
+
+  dof--;
+
+  const Vector *nodalResponse = the_domain->getNodeResponse(tag, NodeData::Accel);
+  if (nodalResponse == nullptr)
+    // TODO: add error message
+    return TCL_ERROR;
+
+  int size = nodalResponse->Size();
+
+  if (dof >= 0) {
+    if (size < dof)
+      return TCL_ERROR;
+
+    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
+
+  } else {
+    char buffer[40];
+    for (int i = 0; i < size; ++i) {
+      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
+  }
+
+  return TCL_OK;
+}
+
+
+int
+nodeUnbalance(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
+              TCL_Char ** const argv)
+{
+  assert(clientData != nullptr);
+  Domain *domain = (Domain*)clientData;
+
+  if (argc < 2) {
+    opserr << "WARNING want - nodeUnbalance nodeTag? <dof?>\n";
+    return TCL_ERROR;
+  }
+
+  int tag;
+  int dof = -1;
+
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr
+        << "WARNING nodeUnbalance nodeTag? dof? - could not read nodeTag? \n";
+    return TCL_ERROR;
+  }
+
+  if (argc > 2) {
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeUnbalance nodeTag? dof? - could not read dof? \n";
+      return TCL_ERROR;
+    }
+  }
+
+  dof--;
+
+  const Vector *nodalResponse = domain->getNodeResponse(tag, NodeData::UnbalancedLoad);
+
+  if (nodalResponse == nullptr)
+    // TODO: add error message
+    return TCL_ERROR;
+
+  int size = nodalResponse->Size();
+
+  if (dof >= 0) {
+
+    if (dof >= size) {
+      opserr << "WARNING nodeUnbalance nodeTag? dof? - dofTag? too large\n";
+      return TCL_ERROR;
+    }
+
+    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
+
+  } else {
+    char buffer[40];
+    for (int i = 0; i < size; ++i) {
+      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
+  }
+
+  return TCL_OK;
+}
+
+
+int
+nodeReaction(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
+             TCL_Char ** const argv)
+{
+  assert(clientData != nullptr);
+  Domain *domain = (Domain*)clientData;
+
+  if (argc < 2) {
+    opserr << "WARNING want - nodeReaction nodeTag? <dof?>\n";
+    return TCL_ERROR;
+  }
+
+  int tag;
+  int dof = -1;
+
+  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+    opserr << "WARNING nodeReaction nodeTag? dof? - could not read nodeTag? \n";
+    return TCL_ERROR;
+  }
+
+  if (argc > 2) {
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeReaction nodeTag? dof? - could not read dof? \n";
+      return TCL_ERROR;
+    }
+  }
+
+  dof--;
+
+  const Vector *nodalResponse = domain->getNodeResponse(tag, NodeData::Reaction);
+
+  if (nodalResponse == nullptr)
+    // TODO: add error message
+    return TCL_ERROR;
+
+  int size = nodalResponse->Size();
+
+  if (dof >= 0) {
+
+    if (dof >= size) {
+      opserr << "WARNING nodeReaction nodeTag? dof? - dofTag? too large\n";
+      return TCL_ERROR;
+    }
+
+    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
+
+  } else {
+    char buffer[40];
+    for (int i = 0; i < size; ++i) {
+      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
+  }
+
+  return TCL_OK;
+}
+#endif 
 
 int
 nodeMass(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
@@ -302,64 +626,6 @@ nodeBounds(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char **
   return TCL_OK;
 }
 
-int
-nodeVel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
-{
-  assert(clientData != nullptr);
-  Domain *the_domain = (Domain*)clientData;
-
-  if (argc < 2) {
-    opserr << "WARNING want - nodeVel nodeTag? <dof?>\n";
-    return TCL_ERROR;
-  }
-
-  int tag;
-  int dof = -1;
-
-  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeVel nodeTag? dof? - could not read nodeTag? \n";
-    return TCL_ERROR;
-  }
-  if (argc > 2) {
-    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << "WARNING nodeVel nodeTag? dof? - could not read dof? \n";
-      return TCL_ERROR;
-    }
-  }
-
-  dof--;
-
-  const Vector *nodalResponse = the_domain->getNodeResponse(tag, NodeData::Vel);
-
-  if (nodalResponse == nullptr)
-    // TODO: add error message
-    return TCL_ERROR;
-
-  int size = nodalResponse->Size();
-
-  if (dof >= 0) {
-    if (size < dof)
-    // TODO: add error message
-      return TCL_ERROR;
-
-    double value = (*nodalResponse)(dof);
-
-    // now we copy the value to the tcl string that is returned
-    char buffer[40];
-    sprintf(buffer, "%35.20f", value);
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-
-  } else {
-
-    char buffer[40];
-    for (int i = 0; i < size; ++i) {
-      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
-  }
-
-  return TCL_OK;
-}
 
 int
 setNodeVel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
@@ -538,115 +804,7 @@ setNodeAccel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   return TCL_OK;
 }
 
-int
-nodeAccel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
-{
-  assert(clientData != nullptr);
 
-  Domain *the_domain = (Domain *)clientData;
-
-  if (argc < 2) {
-    opserr << "WARNING want - nodeAccel nodeTag? dof?\n";
-    return TCL_ERROR;
-  }
-
-  int tag;
-  int dof = -1;
-
-  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeAccel nodeTag? dof? - could not read nodeTag? \n";
-    return TCL_ERROR;
-  }
-  if (argc > 2) {
-    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << "WARNING nodeAccel nodeTag? dof? - could not read dof? \n";
-      return TCL_ERROR;
-    }
-  }
-
-  dof--;
-
-  const Vector *nodalResponse = the_domain->getNodeResponse(tag, NodeData::Accel);
-  if (nodalResponse == nullptr)
-    // TODO: add error message
-    return TCL_ERROR;
-
-  int size = nodalResponse->Size();
-
-  if (dof >= 0) {
-    if (size < dof)
-      return TCL_ERROR;
-
-    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
-
-  } else {
-    char buffer[40];
-    for (int i = 0; i < size; ++i) {
-      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
-  }
-
-  return TCL_OK;
-}
-
-int
-nodeUnbalance(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
-              TCL_Char ** const argv)
-{
-  assert(clientData != nullptr);
-  Domain *domain = (Domain*)clientData;
-
-  if (argc < 2) {
-    opserr << "WARNING want - nodeUnbalance nodeTag? <dof?>\n";
-    return TCL_ERROR;
-  }
-
-  int tag;
-  int dof = -1;
-
-  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr
-        << "WARNING nodeUnbalance nodeTag? dof? - could not read nodeTag? \n";
-    return TCL_ERROR;
-  }
-
-  if (argc > 2) {
-    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << "WARNING nodeUnbalance nodeTag? dof? - could not read dof? \n";
-      return TCL_ERROR;
-    }
-  }
-
-  dof--;
-
-  const Vector *nodalResponse = domain->getNodeResponse(tag, NodeData::UnbalancedLoad);
-
-  if (nodalResponse == nullptr)
-    // TODO: add error message
-    return TCL_ERROR;
-
-  int size = nodalResponse->Size();
-
-  if (dof >= 0) {
-
-    if (dof >= size) {
-      opserr << "WARNING nodeUnbalance nodeTag? dof? - dofTag? too large\n";
-      return TCL_ERROR;
-    }
-
-    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
-
-  } else {
-    char buffer[40];
-    for (int i = 0; i < size; ++i) {
-      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
-  }
-
-  return TCL_OK;
-}
 
 int
 nodeRotation(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
@@ -847,62 +1005,6 @@ calculateNodalReactions(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc
   return TCL_OK;
 }
 
-int
-nodeReaction(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
-             TCL_Char ** const argv)
-{
-  assert(clientData != nullptr);
-  Domain *domain = (Domain*)clientData;
-
-  if (argc < 2) {
-    opserr << "WARNING want - nodeReaction nodeTag? <dof?>\n";
-    return TCL_ERROR;
-  }
-
-  int tag;
-  int dof = -1;
-
-  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeReaction nodeTag? dof? - could not read nodeTag? \n";
-    return TCL_ERROR;
-  }
-
-  if (argc > 2) {
-    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << "WARNING nodeReaction nodeTag? dof? - could not read dof? \n";
-      return TCL_ERROR;
-    }
-  }
-
-  dof--;
-
-  const Vector *nodalResponse = domain->getNodeResponse(tag, NodeData::Reaction);
-
-  if (nodalResponse == nullptr)
-    // TODO: add error message
-    return TCL_ERROR;
-
-  int size = nodalResponse->Size();
-
-  if (dof >= 0) {
-
-    if (dof >= size) {
-      opserr << "WARNING nodeReaction nodeTag? dof? - dofTag? too large\n";
-      return TCL_ERROR;
-    }
-
-    Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*nodalResponse)(dof)));
-
-  } else {
-    char buffer[40];
-    for (int i = 0; i < size; ++i) {
-      sprintf(buffer, "%35.20f", (*nodalResponse)(i));
-      Tcl_AppendResult(interp, buffer, NULL);
-    }
-  }
-
-  return TCL_OK;
-}
 
 int
 nodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
