@@ -101,7 +101,6 @@ SphericalIsometry<nn>::update() {
   }
 
   {
-#if 1 // TRIAD==R2
     constexpr static Vector3D D2 {0,1,0};
     const Vector3D E2 = R[init]*D2;
     Vector3D e2 = MatrixFromVersor(nodes[0]->getTrialRotation())*E2; //*R[init];
@@ -118,7 +117,6 @@ SphericalIsometry<nn>::update() {
       R[pres](i,2) = e3[i];
     }
     Vector3D e2 = vz.cross(e1);
-#endif
   }
 
   Vector3D uc = nodes[ic]->getTrialDisp();

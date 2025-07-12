@@ -440,17 +440,12 @@ LinearFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>&kb,
     }
   }
 
-#if 0
-  MatrixND<nn*ndf,nn*ndf> kl;
-  kl.addMatrixTripleProduct(0, A, kb, 1);
-  this->FrameTransform<nn,ndf>::pushConstant(kl);
-#else 
+
   MatrixND<nn*ndf,nn*ndf> kl;
   kl.addMatrixTripleProduct(0, A, kb, 1);
   kb = this->FrameTransform<nn,ndf>::pushConstant(kl);
   // this->pushRotation(kb, R);
   return 0;
-#endif
 }
 
 

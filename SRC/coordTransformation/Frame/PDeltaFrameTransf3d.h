@@ -56,14 +56,11 @@ public:
   Vector3D getNodePosition(int tag) final;
   Vector3D getNodeRotationLogarithm(int tag) final;
   const std::array<Vector3D,nn> *getRigidOffsets() const final { return linear.getRigidOffsets();}
-#if 0
-  VectorND<nn*ndf>    pushResponse(VectorND<nn*ndf>&pl) final;
-  MatrixND<nn*ndf,nn*ndf> pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl) final;
-#else
+
   using Operation = typename FrameTransform<nn,ndf>::Operation;
   int push(VectorND<nn*ndf>&pl, Operation) final;
   int push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl, Operation) final;
-#endif 
+
 
   FrameTransform<nn,ndf> *getCopy() const final;
 

@@ -134,11 +134,12 @@ public:
         }
       }
       else if (std::fabs(dot + 1.0) < ktol) {                    // opposite direction
+	static constexpr double pi = 3.14159265358979323846;
         // choose any axis with numerical separation from r1
         v = r1.cross(Vector3D{1.0, 0.0, 0.0});
         if (v.dot(v) < ktol)
           v = r1.cross(Vector3D{0.0, 1.0, 0.0});
-        v *= M_PI / v.norm();
+        v *= pi / v.norm();
         E = ExpSO3(v)*Rbar;
       }
       else {                                                     // general case

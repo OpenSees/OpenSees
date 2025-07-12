@@ -205,23 +205,8 @@ template <int nn, int ndf, typename IsoT>
 Vector3D
 EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
 {
-#if 0
-  const Vector& ug = nodes[node]->getTrialDisp();
-
-  Vector3D u;
-  for (int i=0; i<3; i++)
-    u[i] = ug[i];
-
-  if (offsets != nullptr) [[unlikely]] {
-    u.addVector(1.0, (*offsets)[node], -1.0);
-    u.addVector(1.0, nodes[node]->getTrialRotation().rotate((*offsets)[node]), 1.0);
-  }
-
-  u.addVector(1.0, basis.getPosition(), -1.0);
-#else
   Vector3D u = this->pullPosition<&Node::getTrialDisp>(node);
   u -= basis.getPosition();
-#endif
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
 
   return u;
