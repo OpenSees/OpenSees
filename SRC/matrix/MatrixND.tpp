@@ -28,7 +28,6 @@ MatrixND<nr, nc, T>::zero() noexcept
 }
 
 
-
 template <index_t nr, index_t nc, typename T>
 constexpr MatrixND<nc, nr>
 MatrixND<nr, nc, T>::transpose() const noexcept
@@ -339,8 +338,6 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(double thisFact,
   this->addMatrixTransposeProduct(thisFact, A, BC, 1.0);
   return 0;
 }
-
-
 
 
 //
