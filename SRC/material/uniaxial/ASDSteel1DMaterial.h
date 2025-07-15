@@ -22,9 +22,9 @@
 // $Date: 2025-01-03 11:29:01 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ASDSteel1DMaterial.cpp,v $
 
-// Alessia Casalucci - ASDEA Software, Italy
+// Alessia Casalucci, Massimo Petracca, Guido Camata - ASDEA Software, Italy
 //
-// todo...
+// A unified and efficient plastic-damage material model for steel bars including fracture, bond-slip, and buckling via multiscale homogenization
 //
 
 #ifndef ASDSteel1DMaterial_h
@@ -37,13 +37,6 @@
 #include <memory>
 #include <vector>
 #include <map>
-
-/**
-todo: global material
-	flag computed_once -> if false -> call update
-		revert to start -> call update (TO SET INITIAL DATA)
-
-*/
 
 class ASDSteel1DMaterialPIMPL;
 
@@ -65,6 +58,9 @@ public:
 		double gamma2 = 0.0;
 		// misc
 		bool implex = false;
+		bool implex_control = false;
+		double implex_error_tolerance = 0.0;
+		double implex_time_redution_limit = 0.0;
 		bool auto_regularization = true;
 		bool buckling = false;
 		bool fracture = false;
@@ -132,6 +128,8 @@ private:
 	const Vector& getEqPlStrain() const;
 	const Vector& getSlipResponse() const;
 	const Vector& getSteelResponse() const;
+	const Vector& getTimeIncrements() const;
+	const Vector& getImplexError() const;
 
 
  private:	
@@ -140,7 +138,10 @@ private:
 	 // state variables - implex
 	 double dtime_n = 0.0;
 	 double dtime_n_commit = 0.0;
+	 double dtime_0 = 0.0;
+	 bool dtime_is_user_defined = false;
 	 bool commit_done = false;
+	 double implex_error = 0.0;
 	 // strain, stress and tangent (homogenized)
 	 double strain = 0.0;
 	 double strain_commit = 0.0;
@@ -150,6 +151,7 @@ private:
 	 double stress_rve = 0.0;
 	 double stress_rve_commit = 0.0;
 	 double C_rve = 0.0;
+	 double N_rve_last = 0.0;
 	 
 	 // other variables for output purposes
 	 double energy = 0.0;

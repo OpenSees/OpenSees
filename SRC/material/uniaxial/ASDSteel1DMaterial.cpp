@@ -61,6 +61,12 @@
 // anonymous namespace for utilities
 namespace {
 
+
+	enum ErrorCodes {
+		EC_Generic = -1,
+		EC_IMPLEX_Error_Control = -10
+	};
+
 	inline double sign(double x) { return x == 0.0 ? 0.0 : (x > 0.0 ? 1.0 : -1.0); }
 
 	/**
@@ -495,7 +501,7 @@ namespace {
 		stress_commit = data(pos++);
 	}
 	/*
-	Series comonent.
+	Series component.
 	*/
 	class SeriesComponent
 	{
@@ -515,11 +521,13 @@ namespace {
 			if (lch_anchor == 0.0) { 
 				lch_anchor = lch_anchor_compute(params);
 				if (slip_material) {
-					// if the slip material supports the lch_ref parameter, let's set it to the anchorage length
-					Parameter lch_param(0, 0, 0, 0);
-					const char* the_args[] = { "lch_ref" };
-					if (slip_material->setParameter(the_args, 1, lch_param) != -1) {
-						lch_param.update(lch_anchor);
+					if (params.auto_regularization) {
+						// if the slip material supports the lch_ref parameter, let's set it to the anchorage length
+						Parameter lch_param(0, 0, 0, 0);
+						const char* the_args[] = { "lch_ref" };
+						if (slip_material->setParameter(the_args, 1, lch_param) != -1) {
+							lch_param.update(lch_anchor);
+						}
 					}
 				}
 			}
@@ -1736,6 +1744,42 @@ namespace {
 		e3.deserialize(data, pos);
 		e0.deserialize(data, pos);
 	}
+	class GlobalParameters {
+	private:
+		double max_error = 0.0;
+		double avg_error = 0.0;
+		int avg_counter = 0;
+	private:
+		GlobalParameters() = default;
+		GlobalParameters(const GlobalParameters&) = delete;
+		GlobalParameters& operator = (const GlobalParameters&) = delete;
+	public:
+		static GlobalParameters& instance() {
+			static GlobalParameters _instance;
+			return _instance;
+		}
+		inline double getMaxError() const {
+			return max_error;
+		}
+		inline void setMaxError(double x) {
+			max_error = x;
+		}
+		inline double getAverageError() {
+			if (avg_counter > 0) {
+				avg_error /= static_cast<double>(avg_counter);
+				avg_counter = 0;
+			}
+			return avg_error;
+		}
+		inline void accumulateAverageError(double x) {
+			avg_error += x;
+			++avg_counter;
+		}
+		inline void setAverageError(double x) {
+			avg_error = x;
+			avg_counter = 0;
+		}
+	};
 
 }
 
@@ -1763,7 +1807,7 @@ void* OPS_ASDSteel1DMaterial()
 		opserr << "Using ASDSteel1D - Developed by: Alessia Casalucci, Massimo Petracca, Guido Camata, ASDEA Software Technology\n";
 		first_done = true;
 	} 
-	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  <$r>> <-slip $matTag <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
+	static const char* msg = "uniaxialMaterial ASDSteel1D $tag $E $sy $su $eu  <-implex> <-implexControl $implexErrorTolerance $implexTimeReductionLimit> <-auto_regularization> <-buckling  $lch < $r>> <-fracture  <$r>> <-slip $matTag <$r>> <-K_alpha $K_alpha> <-max_iter $max_iter> <-tolU $tolU> <-tolR $tolR>";
 
 	// check arguments
 	int numArgs = OPS_GetNumRemainingInputArgs();
@@ -1785,6 +1829,9 @@ void* OPS_ASDSteel1DMaterial()
 	double lch = 0.0;
 	double r = 0.0; // default to 0.0, means not provided
 	bool implex = false;
+	bool implex_control = false;
+	double implex_error_tolerance = 0.05;
+	double implex_time_redution_limit = 0.01;
 	bool auto_regularization = false;
 	bool buckling = false;
 	bool fracture = false;
@@ -1843,6 +1890,17 @@ void* OPS_ASDSteel1DMaterial()
 		if (strcmp(value, "-implex") == 0) {
 			implex = true;
 		}
+		if (strcmp(value, "-implexControl") == 0) {
+			implex_control = true;
+			if (OPS_GetNumRemainingInputArgs() < 2) {
+				opserr << "nDMaterial ASDConcrete1D Error: '-implexControl' given without the next 2 arguments $implexErrorTolerance $implexTimeReductionLimit.\n";
+				return nullptr;
+			}
+			if (!lam_optional_double("implexErrorTolerance", implex_error_tolerance))
+				return nullptr;
+			if (!lam_optional_double("implexTimeReductionLimit", implex_time_redution_limit))
+				return nullptr;
+		}
 		if (strcmp(value, "-auto_regularization") == 0) {
 			auto_regularization = true;
 		}
@@ -1865,7 +1923,7 @@ void* OPS_ASDSteel1DMaterial()
 						OPS_ResetCurrentInputArg(-1);
 				}
 				else {
-					// radius give, do cheks
+					// radius give, do checks
 					if (trial_radius != r && r != 0.0) {
 						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -buckling (" << trial_radius << ") does not match the one provided in -slip or -fracture (" << r << "). Please use it only once.\n";
 						return nullptr;
@@ -1890,7 +1948,7 @@ void* OPS_ASDSteel1DMaterial()
 						OPS_ResetCurrentInputArg(-1);
 				}
 				else {
-					// radius give, do cheks
+					// radius give, do checks
 					if (trial_radius != r && r != 0.0) {
 						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -fracture (" << trial_radius << ") does not match the one provided in -slip or -buckling (" << r << "). Please use it only once.\n";
 						return nullptr;
@@ -1933,7 +1991,7 @@ void* OPS_ASDSteel1DMaterial()
 						OPS_ResetCurrentInputArg(-1);
 				}
 				else {
-					// radius give, do cheks
+					// radius give, do checks
 					if (trial_radius != r && r != 0.0) {
 						opserr << "UniaxialMaterial ASDSteel1D: radius provied in -slip (" << trial_radius << ") does not match the one provided in -buckling or -fracture (" << r << "). Please use it only once.\n";
 						return nullptr;
@@ -2011,6 +2069,9 @@ void* OPS_ASDSteel1DMaterial()
 	params.H2 = H2 * (1.0 - alpha);
 	params.gamma2 = gamma2;
 	params.implex = implex;
+	params.implex_control = implex_control;
+	params.implex_error_tolerance = implex_error_tolerance;
+	params.implex_time_redution_limit = implex_time_redution_limit;
 	params.auto_regularization = auto_regularization;
 	params.buckling = buckling;
 	params.fracture = fracture;
@@ -2088,10 +2149,14 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 {
 	params.lch_element = ops_TheActiveElement ? ops_TheActiveElement->getCharacteristicLength()/2 : params.length;
 	// save dT
-	dtime_n = ops_Dt;
-	if (!commit_done) {
-		dtime_n_commit = dtime_n;
+	if (!dtime_is_user_defined) {
+		dtime_n = ops_Dt;
+		if (!commit_done) {
+			dtime_0 = dtime_n;
+			dtime_n_commit = dtime_n;
+		}
 	}
+	// time factor for explicit extrapolation
 	double time_factor = 1.0;
 	if (params.implex && (dtime_n_commit > 0.0))
 		time_factor = dtime_n / dtime_n_commit;
@@ -2102,11 +2167,53 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 
 	asd_print("MAT set trial (" << (int)params.implex << ")");
 	int retval;
-	// time factor for explicit extrapolation (todo: make a unique function)
+	
 	double epl = 0.0;
-	if (params.buckling) {
+	if (params.buckling) {  // se buckling farlo con l'energia ottenuta da rve (incremento spostamento * incremento forze (u - u commit)*(residuo-residuo commit) e normalizzarlo con una frazione della lunghezza* sigmay * Area
 		//regularization for element length lower than physical length (weighted average)
-		retval = homogenize(params.implex);
+		
+		if (params.implex) {
+			if (params.implex_control) {
+				double area = M_PI * params.radius * params.radius;
+				bool elastic_correction = params.lch_element > params.length;
+				// implicit solution
+				double retval = homogenize(false);             
+				if (retval != 0) return retval;
+
+				Vector U_impl = elastic_correction && params.auto_regularization ? pdata->rve_m.sv.UG_el : pdata->rve_m.sv.UG;
+				double N_impl = N_rve_last;  
+				double sigma_impl = N_impl / stress;
+
+				pdata->rve_m.revertToLastCommit();
+
+				// explicit solution
+				retval = homogenize(true);
+				if (retval != 0) return retval;
+
+				Vector  U_expl = elastic_correction && params.auto_regularization ? pdata->rve_m.sv.UG_el : pdata->rve_m.sv.UG;
+				double N_expl = N_rve_last;
+				double sigma_expl = N_expl / stress;
+				
+				Vector dU_err = U_expl - U_impl;
+
+				// L2 Norm 
+				double norm_dU = dU_err.Norm();
+				double implex_error_u = norm_dU / params.radius;
+				double implex_error_N = (sigma_expl - sigma_impl) / params.sy;
+				implex_error = std::max(implex_error_u, implex_error_N);
+				if (implex_error > params.implex_error_tolerance) {
+					if (dtime_n >= params.implex_time_redution_limit * dtime_0) {
+						retval = EC_IMPLEX_Error_Control;
+					}
+				}				
+			}
+			else {
+				retval = homogenize(true);
+			}
+		}
+		else {
+			retval = homogenize(false);
+		}
 		C = C_rve;
 		stress = stress_rve;
 		epl = pdata->rve_m.e2.section.series.steel_material.epl;
@@ -2116,7 +2223,34 @@ int ASDSteel1DMaterial::setTrialStrain(double v, double r)
 	else {
 		//computation of sigma and tangent of steel
 		pdata->steel_comp.revertToLastCommit();
-		retval = pdata->steel_comp.compute(params, params.implex, time_factor, strain, stress, C);
+		
+		if (params.implex) {
+			if (params.implex_control) {
+				double sigma_macro = 0.0;
+				double tangent_macro = 0.0;
+				// implicit solution
+				int retval = pdata->steel_comp.compute(params, false, 1.0, strain, sigma_macro, tangent_macro);
+				double sigma_impl = sigma_macro;
+				pdata->steel_comp.revertToLastCommit();
+				// explicit solution
+				retval = pdata->steel_comp.compute(params, true, time_factor, strain, stress, C);
+				double sigma_expl = stress;
+				
+				implex_error = std::abs(sigma_expl - sigma_impl) / params.sy; //semplifica
+				if (implex_error > params.implex_error_tolerance) {
+					if (dtime_n >= params.implex_time_redution_limit * dtime_0) {
+						retval = EC_IMPLEX_Error_Control;
+					}
+				}
+			}
+			else {
+				retval = pdata->steel_comp.compute(params, true, time_factor, strain, stress, C);
+			}
+		}
+
+		else {
+			retval = pdata->steel_comp.compute(params, params.implex, time_factor, strain, stress, C);
+		}
 		epl = pdata->steel_comp.steel_material.epl;
 	}
 	if (params.fracture) {
@@ -2169,15 +2303,42 @@ int ASDSteel1DMaterial::commitState(void)
 	if (params.implex) {
 		if (params.buckling) {
 			asd_print("MAT commit (" << (int)false << ")");
-			int retval = homogenize(false);
+			double area = M_PI * params.radius * params.radius;
+			bool elastic_correction = params.lch_element > params.length;
+			Vector  U_expl = elastic_correction && params.auto_regularization ? pdata->rve_m.sv.UG_el : pdata->rve_m.sv.UG;
+			double N_expl = N_rve_last;
+			double sigma_expl = N_expl / stress;
+			
+			// implicit solution
+			double retval = homogenize(false);
+
+			Vector U_impl = elastic_correction && params.auto_regularization ? pdata->rve_m.sv.UG_el : pdata->rve_m.sv.UG;
+			double N_impl = N_rve_last;
+			double sigma_impl = N_impl / stress;
+
+			Vector dU_err = U_expl - U_impl;
+
+			// Norm 
+			double norm_dU = dU_err.Norm();
+			double implex_error_u = norm_dU / params.radius;
+			double implex_error_N = (sigma_expl - sigma_impl) / params.sy;
+			implex_error = std::max(implex_error_u, implex_error_N);
+			GlobalParameters::instance().setMaxError(std::max(implex_error, GlobalParameters::instance().getMaxError()));
+			GlobalParameters::instance().accumulateAverageError(implex_error);
 			if (retval < 0) return retval;
 		}
 		else {
+			double sigma_expl = stress;
 			double sigma_macro = 0.0;
 			double tangent_macro = 0.0;
 			int retval = pdata->steel_comp.compute(params, false, 1.0, strain, sigma_macro, tangent_macro);
+			double sigma_impl = sigma_macro;
+			implex_error = std::abs(sigma_expl - sigma_impl) / params.sy;
+			GlobalParameters::instance().setMaxError(std::max(implex_error, GlobalParameters::instance().getMaxError()));
+			GlobalParameters::instance().accumulateAverageError(implex_error);
 			if (retval < 0) return retval;
 		}
+
 	}
 
 	// compute energy
@@ -2236,6 +2397,11 @@ int ASDSteel1DMaterial::revertToStart(void)
 	// implex
 	dtime_n = 0.0;
 	dtime_n_commit = 0.0;
+	dtime_0 = 0.0;
+	dtime_is_user_defined = false;
+	// IMPL-EX error
+	implex_error = 0.0;
+	// Commit flag
 	commit_done = false;
 
 	// output variables
@@ -2281,6 +2447,9 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = static_cast<double>(getTag());
 	ddata(counter++) = dtime_n;
 	ddata(counter++) = dtime_n_commit;
+	ddata(counter++) = dtime_0;
+	ddata(counter++) = static_cast<int>(dtime_is_user_defined);
+	ddata(counter++) = implex_error;
 	ddata(counter++) = static_cast<double>(commit_done);
 	ddata(counter++) = strain;
 	ddata(counter++) = strain_commit;
@@ -2300,6 +2469,9 @@ int ASDSteel1DMaterial::sendSelf(int commitTag, Channel &theChannel)
 	ddata(counter++) = params.gamma1;
 	ddata(counter++) = params.gamma2;
 	ddata(counter++) = static_cast<double>(params.implex);
+	ddata(counter++) = static_cast<int>(params.implex_control);
+	ddata(counter++) = params.implex_error_tolerance;
+	ddata(counter++) = params.implex_time_redution_limit;
 	ddata(counter++) = static_cast<double>(params.auto_regularization);
 	ddata(counter++) = static_cast<double>(params.buckling);
 	ddata(counter++) = static_cast<double>(params.fracture);
@@ -2361,6 +2533,9 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	setTag(ddata(counter++));
 	dtime_n = ddata(counter++);
 	dtime_n_commit = ddata(counter++);
+	dtime_0 = ddata(counter++);
+	dtime_is_user_defined = static_cast<bool>(ddata(counter++));
+	implex_error = ddata(counter++);
 	commit_done = static_cast<bool>(ddata(counter++));
 	strain = ddata(counter++);
 	strain_commit = ddata(counter++);
@@ -2381,6 +2556,9 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 	params.gamma1 = ddata(counter++);
 	params.gamma2 = ddata(counter++);
 	params.implex = static_cast<bool>(ddata(counter++));
+	params.implex_control = static_cast<bool>(ddata(counter++));
+	params.implex_error_tolerance = ddata(counter++);
+	params.implex_time_redution_limit = ddata(counter++);
 	params.auto_regularization = static_cast<bool>(ddata(counter++));
 	params.buckling = static_cast<bool>(ddata(counter++));
 	params.fracture = static_cast<bool>(ddata(counter++));
@@ -2407,6 +2585,21 @@ int ASDSteel1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_ObjectB
 
 int ASDSteel1DMaterial::setParameter(const char** argv, int argc, Parameter& param)
 {
+
+	// 1000 - time
+	if (strcmp(argv[0], "dTime") == 0) {
+		param.setValue(dtime_n);
+		return param.addObject(2000, this);
+	}
+	if (strcmp(argv[0], "dTimeCommit") == 0) {
+		param.setValue(dtime_n_commit);
+		return param.addObject(2001, this);
+	}
+	if (strcmp(argv[0], "dTimeInitial") == 0) {
+		param.setValue(dtime_0);
+		return param.addObject(2002, this);
+	}
+
 	// default
 	return -1;
 }
@@ -2414,6 +2607,21 @@ int ASDSteel1DMaterial::setParameter(const char** argv, int argc, Parameter& par
 int ASDSteel1DMaterial::updateParameter(int parameterID, Information& info)
 {
 	switch (parameterID) {
+
+		// 2000 - time
+	case 2000:
+		dtime_n = info.theDouble;
+		dtime_is_user_defined = true;
+		return 0;
+	case 2001:
+		dtime_n_commit = info.theDouble;
+		dtime_is_user_defined = true;
+		return 0;
+	case 2002:
+		dtime_0 = info.theDouble;
+		dtime_is_user_defined = true;
+		return 0;
+
 		// default
 	default:
 		return -1;
@@ -2440,8 +2648,9 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 	static std::vector<std::string> lb_buckling_ratio = { "BI" };
 	static std::vector<std::string> lb_damage = { "D" };
 	static std::vector<std::string> lb_eqpl_strain = { "PLE" };
-
 	static std::vector<std::string> lb_slip_resp = { "Slip", "Tau" };
+	static std::vector<std::string> lb_time = { "dTime", "dTimeCommit", "dTimeInitial" };
+	static std::vector<std::string> lb_implex_error = { "Error" };
 
 
 
@@ -2459,6 +2668,12 @@ Response* ASDSteel1DMaterial::setResponse(const char** argv, int argc, OPS_Strea
 		if (strcmp(argv[0], "SlipResponse") == 0){
 			return make_resp(1004, getSlipResponse(), &lb_slip_resp);
 		}
+		if (strcmp(argv[0], "time") == 0 || strcmp(argv[0], "Time") == 0) {
+			return make_resp(1005, getTimeIncrements(), &lb_time);
+		}
+		if (strcmp(argv[0], "implexError") == 0 || strcmp(argv[0], "ImplexError") == 0) {
+			return make_resp(1006, getImplexError(), &lb_implex_error);
+		}
 	}
 
 	// otherwise return base-class response
@@ -2474,12 +2689,16 @@ int ASDSteel1DMaterial::getResponse(int responseID, Information& matInformation)
 		// 1000 - base steel output
 	case 1001:		
 		return matInformation.setVector(getBucklingIndicator());
+		// 1002 - damage
 	case 1002:
 		return matInformation.setVector(getDamage());
 	case 1003:
 		return matInformation.setVector(getEqPlStrain());
 	case 1004:
 		return matInformation.setVector(getSlipResponse());
+		// 1005 - internal time
+	case 1005: return matInformation.setVector(getTimeIncrements());
+	case 1006: return matInformation.setVector(getImplexError());
 	default:
 		break;
 	}
@@ -2547,6 +2766,22 @@ const Vector& ASDSteel1DMaterial::getSlipResponse() const
 	return d;
 }
 
+const Vector& ASDSteel1DMaterial::getTimeIncrements() const
+{
+	static Vector d(3);
+	d(0) = dtime_n;
+	d(1) = dtime_n_commit;
+	d(2) = dtime_0;
+	return d;
+}
+
+const Vector& ASDSteel1DMaterial::getImplexError() const
+{
+	static Vector d(1);
+	d(0) = implex_error;
+	return d;
+}
+
 int ASDSteel1DMaterial::homogenize(bool do_implex)
 {	
 	// return value
@@ -2585,7 +2820,7 @@ int ASDSteel1DMaterial::homogenize(bool do_implex)
 	if (retval != 0) {
 		return retval;
 	}
-
+	N_rve_last = N;
 	// from micro stress/tangent to macro stress/tangent
 	area = M_PI * params.radius * params.radius;
 
