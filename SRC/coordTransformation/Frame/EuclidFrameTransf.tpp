@@ -395,10 +395,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
 
 
   const VectorND<nn*ndf> Ap = A^p;
-#if 0
-  p = A^p;
 
-#else
   Kb.zero();
   VectorND<12> qwx{};
   for (int i=0; i<nn; i++)
@@ -416,8 +413,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
     Kb.assemble(Kw.template extract<6,12,  6,12>(), ndf, ndf, 1.0);
     Kl.addMatrixProduct(Kb, A, 1.0);
   }
-  // p = A^p;
-#endif
 
   //
   // Kl += -W'*Pn'*A

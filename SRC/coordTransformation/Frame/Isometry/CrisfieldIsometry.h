@@ -134,7 +134,7 @@ public:
         }
       }
       else if (std::fabs(dot + 1.0) < ktol) {                    // opposite direction
-	static constexpr double pi = 3.14159265358979323846;
+        static constexpr double pi = 3.14159265358979323846;
         // choose any axis with numerical separation from r1
         v = r1.cross(Vector3D{1.0, 0.0, 0.0});
         if (v.dot(v) < ktol)
@@ -208,7 +208,6 @@ public:
 
     double Ln = this->getLength();
 
-#if 1
     static constexpr
     MatrixND<1,3> E3 {{0.0, 0.0, 1.0}},
                   E2 {{0.0, 1.0, 0.0}};
@@ -244,21 +243,6 @@ public:
       return G.template extract<0,3,  6,12>();
     else
       return MatrixND<3,6>{};
-
-#else
-    MatrixND<3,6> Gb{};
-    constexpr Matrix3D ix = Hat(e1);
-
-    if (node == 0) {
-      Gb.template insert<0,0>( ix, -1.0/Ln);
-      Gb(0,3) =   0.5;
-    }
-    else if (node == nn-1) {
-      Gb.template insert<0,0>( ix,   1.0/Ln);
-      Gb(0,3) =  0.5;
-    }
-    return Gb;
-#endif
   }
 
   //

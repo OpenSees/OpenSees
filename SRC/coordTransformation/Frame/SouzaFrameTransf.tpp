@@ -231,7 +231,8 @@ SouzaFrameTransf<nn,ndf>::initialize(std::array<Node*, nn>& new_nodes)
     return error;
 
   // Compute initial pseudo-vectors for nodal triads
-  Q_pres[0] = Q_pres[1] = Versor::from_matrix(R0);
+  Q_pres[0] = Versor::from_matrix(R0);
+  Q_pres[1] = Q_pres[0];
 
   ul.zero();
   ulpr.zero();
@@ -361,7 +362,6 @@ SouzaFrameTransf<nn,ndf>::update()
 
 
 template <int nn, int ndf>
-// inline VectorND<nn*ndf>
 int
 SouzaFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&pl, Operation)
 {
@@ -388,19 +388,17 @@ SouzaFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&pl, Operation)
 //    K = ag'*Km*ag + Kp
 //
 template <int nn, int ndf>
-// MatrixND<nn*ndf,nn*ndf>
 int
 SouzaFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>& kl, 
                                const VectorND<nn*ndf>& pl,
                                Operation op)
-{    
-  static MatrixND<12,12> K;
-  K.addMatrixTripleProduct(0.0, T, kl, 1.0);
+{
+  MatrixND<12,12> KT = kl*T;
+  kl.addMatrixTransposeProduct(0.0, T, KT, 1.0);
 
-  // Add geometric part kg
-  this->addTangent(K, pl, ul);
+  // Add geometric part
+  this->addTangent(kl, pl, ul);
 
-  kl = K; // TODO: optimize
   return 0;
 }
 
@@ -427,7 +425,7 @@ SouzaFrameTransf<nn,ndf>::addTangent(MatrixND<12,12>& kg,
   //
   for (int node=0; node<2; node++) {
     for (int k = 0; k < 3; k++) {
-      const double factor =  pl[(node ? jmx : imx) + k] // pl[6*node+3+k]
+      const double factor =  pl[(node ? jmx : imx) + k]
                           * std::tan(ul[(node ? jmx : imx) + k]);
 
 
