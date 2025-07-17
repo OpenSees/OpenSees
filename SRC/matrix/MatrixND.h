@@ -14,7 +14,7 @@
 // Claudio Perez
 //
 #pragma once
-#include <math.h>
+#include <cmath>
 #include <assert.h>
 #include <array>
 
