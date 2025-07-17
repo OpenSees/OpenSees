@@ -35,7 +35,7 @@ ElementStateParameter::ElementStateParameter(int tag, double value,
   :Parameter(tag,PARAMETER_TAG_ElementStateParameter),
    currentValue(value),
    flag(Flag),
-   argc(Argc), fromFree(1)
+   argc(Argc), fromFree(0)    // We own memory if this constructor is called
 {
   if (theEle != 0)
     theEleIDs = new ID(*theEle);
@@ -53,23 +53,23 @@ ElementStateParameter::ElementStateParameter()
   :Parameter(0,PARAMETER_TAG_ElementStateParameter),
    currentValue(0.0),
    theEleIDs(0), flag(0),
-   argv(0), argc(0), fromFree(1)
+   argv(0), argc(0), fromFree(0)
 {
 
 }
 
 ElementStateParameter::~ElementStateParameter()
 {
-  if (fromFree == 0) {
+  if (fromFree==0)
+  {
     if (argc != 0) {
       for (int i=0; i<argc; i++)
-	delete argv[i];
-
+        delete [] argv[i];
       delete [] argv;
-      
-      if (theEleIDs != 0)
-	delete theEleIDs;
     }
+
+    if (theEleIDs != 0)
+      delete theEleIDs;
   }
 }
 
@@ -195,7 +195,7 @@ ElementStateParameter::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBr
   theChannel.recvVector(commitTag, 0, dData);
   currentValue = dData(0);
 
-  fromFree = 1;
+  fromFree = 0;
 
   if (theEleIDs != 0) 
     delete theEleIDs;
