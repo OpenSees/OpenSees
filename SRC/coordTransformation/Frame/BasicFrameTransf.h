@@ -92,8 +92,6 @@ public:
   void Print(OPS_Stream &s, int flag) final;
 
 
-  FrameTransform<2,ndf> &t;
-  LinearFrameTransf<2,ndf> linear;
 
 private:
   using Operation = typename FrameTransform<2,ndf>::Operation;
@@ -132,6 +130,8 @@ private:
   }
   static constexpr auto iq = set_indices();
 
+  FrameTransform<2,ndf> &t;
+  LinearFrameTransf<2,ndf> linear;
 };
 } // namespace OpenSees
 
