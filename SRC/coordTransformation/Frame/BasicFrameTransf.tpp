@@ -370,7 +370,7 @@ BasicFrameTransf3d<ndf>::isShapeSensitivity()
 
 template<int ndf>
 double
-BasicFrameTransf3d<ndf>::getLengthGrad()
+BasicFrameTransf3d<ndf>::getdLdh()
 {
   return t.getLengthGrad();
 }
@@ -400,7 +400,7 @@ BasicFrameTransf3d<ndf>::getGlobalResistingForceShapeSensitivity(const Vector &p
 
 template<int ndf>
 const Vector &
-BasicFrameTransf3d<ndf>::getBasicDisplFixedGrad()
+BasicFrameTransf3d<ndf>::getBasicTrialDispShapeSensitivity()
 {
   static VectorND<6> dub;
   static Vector wrapper(dub);

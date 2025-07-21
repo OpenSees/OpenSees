@@ -320,10 +320,6 @@ CreateFrame(BasicModelBuilder& builder,
 
             static_loop<0, 3>([&](auto nwm) constexpr {
               if (nwm.value + 6 == ndf) {
-                // Create the transform
-#if 0 || defined(NEW_TRANSFORM)
-                FrameTransform<2,6+nwm.value> *tran = tb->template create<2,6+nwm.value>();
-#endif
                 if (!options.shear_flag) {
                   static_loop<2,30>([&](auto nip) constexpr {
                     if (nip.value == sections.size())
