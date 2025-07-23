@@ -1347,6 +1347,9 @@ ForceBeamColumn2d::update()
 	    double xL1 = xL-1.0;
 	    double wtL = wt[i]*L;
 
+        // store the length of the current integration point
+        current_section_lch = wtL;
+
 	    // calculate total section forces
 	    // Ss = b*Se + bp*currDistrLoad;
 	    // Ss.addMatrixVector(0.0, b[i], Se, 1.0);
@@ -1510,6 +1513,10 @@ ForceBeamColumn2d::update()
 	    }
 	  }
 	  
+      // reset it to the default (whole length) in case the getChatacteristiLength function
+      // is called in the wrong place
+      current_section_lch = L;
+
 	  // calculate element stiffness matrix
 	  // invert3by3Matrix(f, kv);	  
 	  if (f.Solve(I, kvTrial) < 0)
@@ -3413,6 +3420,17 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
 
   else
     return -1;
+}
+
+double ForceBeamColumn2d::getCharacteristicLength(void)
+{
+    // The default implementation of Element::getCharacteristicLength()
+    // returns the whole element length.
+    // However, FB element localizes only in a 1 integration point
+    // so we should return the i-th integration-point's length
+    if (current_section_lch > 0.0)
+        return current_section_lch;
+    return Element::getCharacteristicLength();
 }
 
 int 
