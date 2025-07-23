@@ -97,8 +97,6 @@ public:
 private:
   constexpr static int n = nn*ndf;
 
-  // compute the transformation matrix
-  // void compute_tangent(const Matrix3D&, const Versor*);
   int  addTangent(MatrixND<12,12>& M, const VectorND<12>& pl, const VectorND<12>&ul);
 
   enum {
