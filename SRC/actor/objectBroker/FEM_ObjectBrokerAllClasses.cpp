@@ -1846,11 +1846,11 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
     case MAT_TAG_QzLiq1:
 		return new QzLiq1();
 
-	//case MAT_TAG_TzSandCPT:
-	//	return new TzSandCPT();
+	case MAT_TAG_TzSandCPT:
+		return new TzSandCPT();
 
-	//case MAT_TAG_QbSandCPT:
-	//	return new QbSandCPT();
+	case MAT_TAG_QbSandCPT:
+		return new QbSandCPT();
 
 	case MAT_TAG_Hysteretic:
 		return new HystereticMaterial();

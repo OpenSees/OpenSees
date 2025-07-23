@@ -2169,7 +2169,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
         else
             return TCL_ERROR;
     }
-   /* if (strcmp(argv[1], "TzSandCPT") == 0) {
+    if (strcmp(argv[1], "TzSandCPT") == 0) {
         void* theMat = OPS_TzSandCPT();
         if (theMat != 0)
             theMaterial = (UniaxialMaterial*)theMat;
@@ -2182,7 +2182,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             theMaterial = (UniaxialMaterial*)theMat;
         else
             return TCL_ERROR;
-    } */       
+    }        
       // Fedeas
  #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
     if (theMaterial == 0)
