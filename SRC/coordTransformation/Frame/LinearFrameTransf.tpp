@@ -36,7 +36,8 @@
 namespace OpenSees {
 
 static inline MatrixND<3,3>
-FrameOrientationGradient(const Vector3D& xi, const Vector3D& xj, 
+FrameOrientationGradient(const Vector3D& xi,
+                         const Vector3D& xj, 
                          const Vector3D& vz,
                          int di, int dj, int dv)
 {
@@ -47,8 +48,6 @@ FrameOrientationGradient(const Vector3D& xi, const Vector3D& xj,
   Vector3D v2  = vz.cross(e1);
 
   Vector3D e2 = v2 / v2.norm();
-//  Vector3D v3 = e1.cross(e2);
-//  Vector3D e3 = v3 / v3.norm();
 
   //
   Vector3D dvz{0.0};
@@ -570,7 +569,6 @@ LinearFrameTransf<nn,ndf>::pushGrad(VectorND<nn*ndf>& dp,
   int di = nodes[0]->getCrdsSensitivity();
   int dj = nodes[1]->getCrdsSensitivity();
 
-  // Matrix3D R = this->getRotationMatrix();
   for (int i=0; i<nn; i++) {
     const int base = i * ndf;
     dp.assemble(base,    R*Vector3D{dp[base  ], dp[base+1], dp[base+2]}, 1.0);
@@ -612,11 +610,8 @@ LinearFrameTransf<nn,ndf>::pullFixedGrad(VectorND<nn*ndf>& du)
 
   int dv = 0; // TODO(sensitivity)
 
-  // TODO: Sensitivity
   int di = nodes[0]->getCrdsSensitivity();
   int dj = nodes[1]->getCrdsSensitivity();
-
-
 
   //
   // du = Tbl dR^ug
@@ -626,17 +621,6 @@ LinearFrameTransf<nn,ndf>::pullFixedGrad(VectorND<nn*ndf>& du)
     VectorND<nn*ndf> u1 = ug;
     LinearFrameTransf<nn,ndf>::pull(u1, dR, offsets, offset_flags);
     du += u1;
-  }
-
-  {
-    // double dL = this->getLengthGrad();
-    // double doneOverL = -dL/(L*L);
-    // double length = L;
-    // L = 1/doneOverL;
-    // VectorND<nn*ndf> u2 = ug;
-    // LinearFrameTransf<nn,ndf>::pull(u2, R, offsets, offset_flags);
-    // L = length; // restore
-    // du += u2;
   }
   return;
 }
