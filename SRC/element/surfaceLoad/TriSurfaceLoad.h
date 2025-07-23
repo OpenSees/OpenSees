@@ -97,11 +97,16 @@ class TriSurfaceLoad : public Element
     int UpdateBase(double Xi, double Eta);
 
     ID  myExternalNodes;      // contains the tags of the end nodes
-    static Matrix tangentStiffness;  // Tangent Stiffness matrix
-    static Matrix mass;  // mass matrix
-    static Matrix damp;  // damping matrix
-    static Vector internalForces;    // vector of Internal Forces
+    static Matrix tangentStiffness9;  // Tangent Stiffness matrix for 3 x 3 dofs/node
+    static Matrix tangentStiffness18;  // Tangent Stiffness matrix for 3 x 6 dofs/node  
+    static Vector internalForces9;    // vector of Internal Forces for 3 x 3 dofs/node
+    static Vector internalForces18;    // vector of Internal Forces for 3 x 6 dofs/node  
+  
+    int numDOF; // number of element dofs (9 or 18)
 
+    Matrix *theMatrix;
+    Vector *theVector;
+  
     double my_pressure;       // pressure applied to surface of element
     double rhoH;              // A density per unit area to compute a mass matrix (lumped)
 
