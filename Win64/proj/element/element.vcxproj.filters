@@ -105,6 +105,7 @@
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_5.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_12.cpp" />
     <ClCompile Include="..\..\..\SRC\element\PML\PML2DVISCOUS.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3DVISCOUS.cpp" />
     <ClCompile Include="..\..\..\SRC\element\RockingBC\RockingBC.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGQ.cpp" />
     <ClCompile Include="..\..\..\SRC\element\shell\ShellDKGT.cpp" />
@@ -407,6 +408,7 @@
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_5.h" />
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_12.h" />
     <ClInclude Include="..\..\..\SRC\element\PML\PML2DVISCOUS.h" />
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3DVISCOUS.h" />
     <ClInclude Include="..\..\..\SRC\element\RockingBC\RockingBC.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGQ.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellDKGT.h" />

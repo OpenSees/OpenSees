@@ -73,6 +73,13 @@ public:
 
     void Print(OPS_Stream &s, int flag = 0);
 
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    double getFactorSensitivity(double pseudoTime);
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+    int activateParameter(int parameterID);
+    // AddingSensitivity:BEGIN //////////////////////////////////////////  
+
 protected:
 
 private:
@@ -82,6 +89,7 @@ private:
     double phaseShift;  // phase shift of trig series (rad)
     double cFactor;     // amplitude of trig series
     double zeroShift;   // zero shift of trig series
+  int parameterID;
 };
 
 #endif
