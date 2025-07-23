@@ -27,7 +27,7 @@
 // Description: This file contains global variables used in OpenSees files.
 // if you change some of the variables, you must recompile ALL the code.
 
-#define OPS_VERSION "3.7.1"
+#define OPS_VERSION "3.7.2"
 
 #ifdef _WIN32
 #ifndef _WIN64
