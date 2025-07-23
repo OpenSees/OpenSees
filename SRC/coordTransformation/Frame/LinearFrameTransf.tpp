@@ -95,11 +95,13 @@ LinearFrameTransf<nn,ndf>::LinearFrameTransf(int tag,
                                              const std::array<Vector3D, nn> *offset,
                                              int offset_flags)
   : FrameTransform<nn,ndf>(tag),
-    Du{0},
-    L(0),
+    Du{},
+    ur{},
+    L(0.0),
     offsets{nullptr},
     offset_flags(offset_flags),
-    u_init{nullptr}, initialDispChecked(false)
+    u_init{nullptr}, 
+    initialDispChecked(false)
 {
   R.zero();
 
@@ -258,23 +260,37 @@ template <int nn, int ndf>
 int
 LinearFrameTransf<nn,ndf>::update()
 {
-  Du = this->pullPosition<&Node::getTrialDisp>(nn-1) - this->pullPosition<&Node::getTrialDisp>(0);
+  constexpr Vector3D iv{1, 0, 0};
+
+  Du  = this->pullPosition<&Node::getTrialDisp>(nn-1);
+  Du -= this->pullPosition<&Node::getTrialDisp>(0);
+
+  for (int node =0 ; node < nn; node++) {
+    const Vector& u = nodes[node]->getTrialDisp();
+    for (int i=0; i<3; i++) {
+      ur[node][i] = 0;
+      for (int j=0; j<3; j++)
+        ur[node][i] += R(j,i) * u[3+j];
+    }
+
+    ur[node].addCrossProduct(iv, Du, -1.0/L);
+  }
   return 0;
 }
 
+
 template <int nn, int ndf>
-VectorND<nn*ndf> 
-LinearFrameTransf<nn,ndf>::pullConstant(const VectorND<nn*ndf>& ug, 
-             const Matrix3D& R, 
+int
+LinearFrameTransf<nn,ndf>::pull(VectorND<nn*ndf>& ul, 
+             const Matrix3D& R,
              const std::array<Vector3D, nn> *offset,
              int offset_flags) 
 {
 
-  constexpr static int N = nn * ndf;
-
-  VectorND<N> ul = ug;
-
   // (1)
+
+  // (2) Global offsets
+  //
   // Do ui -= ri x wi
   if constexpr (ndf >= 6)
     if (offset && !(offset_flags&OffsetLocal)) [[unlikely]] {
@@ -287,15 +303,16 @@ LinearFrameTransf<nn,ndf>::pullConstant(const VectorND<nn*ndf>& ug,
         ul.assemble(j, offsets[i].cross(w), -1.0);
       }
     }
-
-  // (2) Rotations and translations
+  
+  // (3) Rotation
   for (int i=0; i<nn; i++) {
     const int j = i * ndf;
     ul.insert(j  , R^Vector3D{ul[j+0], ul[j+1], ul[j+2]}, 1.0);
     ul.insert(j+3, R^Vector3D{ul[j+3], ul[j+4], ul[j+5]}, 1.0);
   }
 
-  // 3)
+  // 4) Offsets
+  // Do ul -= R^ri x wi
   if constexpr (ndf >= 6)
     if (offset && (offset_flags&OffsetLocal)) [[unlikely]] {
       const std::array<Vector3D, nn>& offsets = *offset;
@@ -308,7 +325,7 @@ LinearFrameTransf<nn,ndf>::pullConstant(const VectorND<nn*ndf>& ug,
       }
     }
 
-  // (4)
+  // (5) Isometry
   // TODO (nn>2)
   constexpr static Vector3D iv {1,0,0};
   Vector3D uI = ul.template extract<3>(0);
@@ -324,7 +341,7 @@ LinearFrameTransf<nn,ndf>::pullConstant(const VectorND<nn*ndf>& ug,
     ul.assemble(i*ndf+3, ixDu, -1.0/L);
   }
 
-  return ul;
+  return 0;
 }
 
 template <int nn, int ndf>
@@ -338,19 +355,18 @@ LinearFrameTransf<nn,ndf>::getStateVariation()
       ug[i*ndf+j] = ddu(j);
     }
   }
-  return LinearFrameTransf<nn,ndf>::pullConstant(ug, R, offsets, offset_flags);
+  LinearFrameTransf<nn,ndf>::pull(ug, R, offsets, offset_flags);
+  return ug;
 }
+
 
 template <int nn, int ndf>
 Vector3D
 LinearFrameTransf<nn,ndf>::getNodePosition(int node)
 {
   Vector3D v{};
-  if (node == 0) {
-    return v;
-  } else if (node == nn-1) {
+  if (node == nn-1) {
     v[0] = Du[0];
-    return v;
   }
   // TODO(nn>2)
   return v;
@@ -361,19 +377,7 @@ template <int nn, int ndf>
 Vector3D
 LinearFrameTransf<nn,ndf>::getNodeRotationLogarithm(int node)
 {
-  constexpr Vector3D iv{1, 0, 0};
-  constexpr Matrix3D ix = Hat(iv);
-
-  Vector3D w;
-  const Vector& u = nodes[node]->getTrialDisp();
-  for (int i=0; i<3; i++) {
-    w[i] = u[3+i];
-  }
-
-  w = R^w;
-
-  w.addMatrixVector(1, ix, Du, -1.0/L);
-  return w;
+  return ur[node];
 }
 
 
@@ -381,13 +385,11 @@ LinearFrameTransf<nn,ndf>::getNodeRotationLogarithm(int node)
 // Push
 //
 template <int nn, int ndf>
-// VectorND<nn*ndf>
 int
 LinearFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&p, Operation op)
 {
-  VectorND<nn*ndf> pa = p;
+  VectorND<nn*ndf> pa = p; // NOTE
   constexpr Vector3D iv{1, 0, 0};
-  constexpr Matrix3D ix = Hat(iv);
 
   // 1.1) Sum of moments: m = sum_i mi + sum_i (xi x ni)
   Vector3D m{};
@@ -399,13 +401,16 @@ LinearFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&p, Operation op)
     const Vector3D n = Vector3D{p[i*ndf+0], p[i*ndf+1], p[i*ndf+2]};
     m.addVector(1, iv.cross(n), double(i)/double(nn-1)*L);
   }
-  const Vector3D ixm = ix*m;
+  const Vector3D ixm = iv.cross(m);
 
   // 1.2) Adjust force part
   for (int i=0; i<nn; i++) {
     pa.assemble(i*ndf,  ixm,  (i? 1.0:-1.0)/L);
     pa[i*ndf+3] += m[0]*(i? -1.0:1.0)*0.5;
   }
+
+  if (op == Operation::Isometry)
+    return 0;
 
   // 2) Rotate and do joint offsets
   p = this->FrameTransform<nn,ndf>::pushConstant(pa);
@@ -419,32 +424,46 @@ LinearFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>&kb,
                                 Operation op)
 {
 
-  MatrixND<nn*ndf,nn*ndf> A{};
-  A.addDiagonal(1.0);
-  constexpr Vector3D axis{1, 0, 0};
-  constexpr Matrix3D ix  = Hat(Vector3D{1, 0, 0});
-  constexpr Matrix3D ioi = axis.bun(Vector3D{1, 0, 0});
+  static constexpr Vector3D axis{1, 0, 0};
+  static constexpr Matrix3D ix  = Hat(Vector3D{1, 0, 0});
+  static constexpr Matrix3D ioi = axis.bun(Vector3D{1, 0, 0});
+  const Matrix3D RT = R.transpose();
+  const Matrix3D ixRT = ix*RT;
 
-  MatrixND<3,ndf> Gb{};
-  Gb.template insert<0, 3>(ioi, 0.5);
-  for (int a = 0; a<nn; a++) {
-    for (int b = 0; b<nn; b++) {
-      // TODO(nn>2): Interpolate coordinate
-      if (b == 0)
-        Gb.template insert<0,0>(ix, -1/L);
-      else if (b == nn-1)
-        Gb.template insert<0,0>(ix,  1/L);
-      // TODO(nn>2): Interpolate coordinate
-      A.assemble(ix*Gb, a*ndf  , b*ndf,  double(a)/double(nn-1)*L);
-      A.assemble(   Gb, a*ndf+3, b*ndf, -1.0);
-    }
+  MatrixND<nn*ndf,nn*ndf> A{};
+  if constexpr (ndf > 6)
+    A.addDiagonal(1.0);
+
+  {
+    MatrixND<3,ndf> Gb{};
+    Gb.template insert<0, 3>(ioi*RT, 0.5);
+    Repeat<nn> ([&](auto a_) {
+      constexpr static int a = a_.value;
+      A.template insert<a*ndf  , a*ndf  >(RT);
+      A.template insert<a*ndf+3, a*ndf+3>(RT);
+      Repeat<nn> ([&](auto b_) {
+        constexpr static int b = b_.value;
+
+        // TODO(nn>2): Interpolate coordinate
+        if constexpr (b == 0)
+          Gb.template insert<0,0>(ixRT, -1/L);
+        else if constexpr (b == nn-1)
+          Gb.template insert<0,0>(ixRT,  1/L);
+
+        // TODO(nn>2): Interpolate coordinate
+        A.assemble(ix*Gb, a*ndf  , b*ndf,  double(a)/double(nn-1)*L);
+        A.assemble(   Gb, a*ndf+3, b*ndf, -1.0);
+      });
+    });
   }
 
+  // MatrixND<nn*ndf,nn*ndf> kl = kb;
+  const MatrixND<nn*ndf,nn*ndf> KA = kb*A;
+  kb.addMatrixTransposeProduct(0.0, A, KA, 1.0);
 
-  MatrixND<nn*ndf,nn*ndf> kl;
-  kl.addMatrixTripleProduct(0, A, kb, 1);
-  kb = this->FrameTransform<nn,ndf>::pushConstant(kl);
-  // this->pushRotation(kb, R);
+  if (offsets != nullptr) [[unlikely]]
+    this->pushOffsets(kb, *offsets);
+
   return 0;
 }
 
@@ -513,14 +532,36 @@ LinearFrameTransf<nn,ndf>::getd1overLdh()
 }
 
 template <int nn, int ndf>
-const Vector &
-LinearFrameTransf<nn,ndf>::getGlobalResistingForceShapeSensitivity(const Vector &pb,
-                                                           const Vector &p0,
-                                                           int gradNumber)
-{
-  
-  static Vector pg(nn*ndf);
-  pg.Zero();
+void
+LinearFrameTransf<nn,ndf>::pushGrad(VectorND<nn*ndf>& dp,
+                                    VectorND<nn*ndf>& pl)
+{  
+  //
+  // dp += T_{gl} dpl
+  //
+  double dL = this->getLengthGrad();
+  double doneOverL = -dL/(L*L);
+
+  constexpr Vector3D iv{1, 0, 0};
+
+  // 1.1) Sum of moments: m = sum_i mi + sum_i (xi x ni)
+  Vector3D m{};
+  for (int i=0; i<nn; i++) {
+    // m += mi
+    for (int j=0; j<3; j++)
+      m[j] += pl[i*ndf+3+j];
+
+    const Vector3D n = Vector3D{pl[i*ndf+0], pl[i*ndf+1], pl[i*ndf+2]};
+    m.addVector(1, iv.cross(n), double(i)/double(nn-1)*L);
+  }
+  const Vector3D ixm = iv.cross(m);
+
+  // 1.2) Adjust force part
+  for (int i=0; i<nn; i++)
+    dp.assemble(i*ndf,  ixm,  (i? 1.0:-1.0)*doneOverL);
+
+
+  // 2) Rotate and do joint offsets
 
   //
   // dp = T_{lg}' pl
@@ -529,50 +570,38 @@ LinearFrameTransf<nn,ndf>::getGlobalResistingForceShapeSensitivity(const Vector 
   int di = nodes[0]->getCrdsSensitivity();
   int dj = nodes[1]->getCrdsSensitivity();
 
-  VectorND<nn*ndf> pl = pushLocal(pb, L);
-  
-  pl[0] += p0[0];
-  pl[1] += p0[1];
-  pl[7] += p0[2];
-  pl[2] += p0[3];
-  pl[8] += p0[4];
+  // Matrix3D R = this->getRotationMatrix();
+  for (int i=0; i<nn; i++) {
+    const int base = i * ndf;
+    dp.assemble(base,    R*Vector3D{dp[base  ], dp[base+1], dp[base+2]}, 1.0);
+    dp.assemble(base+3,  R*Vector3D{dp[base+3], dp[base+4], dp[base+5]}, 1.0);
+  }
 
+  this->push(pl, Operation::Isometry);
   Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
-  for (int i=0; i<4; i++)
-    for (int j=0; j<3; j++)
-      pg(i*3+j) = dR(j,0) * pl(3*i) + dR(j,1) * pl(3*i+1) + dR(j,2) * pl(3*i+2);
-
   
-  //
-  // dp += T_{gl} dpl
-  //
-  double dL = this->getLengthGrad();
-  double doneOverL = -dL/(L*L);
-  VectorND<nn*ndf> dpl{0.0};
-  dpl[1]  =  doneOverL * (pb[1] + pb[2]);  // Viy
-  dpl[2]  = -doneOverL * (pb[3] + pb[4]);  // Viz
-  dpl[7]  = -dpl[1];                       // Vjy
-  dpl[8]  = -dpl[2];                       // Vjz
+  for (int i=0; i<nn; i++) {
+    const int base = i * ndf;
+    dp.assemble(base,   dR*Vector3D{pl[base  ], pl[base+1], pl[base+2]}, 1.0);
+    dp.assemble(base+3, dR*Vector3D{pl[base+3], pl[base+4], pl[base+5]}, 1.0);
+  }
 
-  for (int i=0; i<4; i++)
-    for (int j=0; j<3; j++)
-      pg(i*3+j) += R(j,0) * dpl(3*i) + R(j,1) * dpl(3*i+1) + R(j,2) * dpl(3*i+2);
 
-  return pg;
+  return;
 }
 
 
 template <int nn, int ndf>
-const Vector &
-LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
+void
+LinearFrameTransf<nn,ndf>::pullFixedGrad(VectorND<nn*ndf>& du)
 {
-  static VectorND<6> dub;
-  static Vector wrapper(dub);
+  //
+  // dub += (T_{bl}' T_{lg}  +   T_{bl} T_{lg}') * ug
+  //
+
   //
   // Form ug
   //
-  // TODO(sensitivity)
-#if 0
   VectorND<nn*ndf> ug;
   for (int i = 0; i < nn; i++) {
     const Vector& u = nodes[i]->getTrialDisp();
@@ -581,19 +610,6 @@ LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
     }
   }
 
-  if (u_init[0] != 0) {
-    for (int j = 0; j < ndf; j++)
-      ug[j] -= (*u_init[0])[j];
-  }
-
-  if (u_init[nn-1] != 0) {
-    for (int j = 0; j < ndf; j++)
-      ug[j + 6] -= (*u_init[nn-1])[j];
-  }
-
-  //
-  // dub += (T_{bl}' T_{lg} + T_{bl} T_{lg}') * ug
-  //
   int dv = 0; // TODO(sensitivity)
 
   // TODO: Sensitivity
@@ -601,48 +617,47 @@ LinearFrameTransf<nn,ndf>::getBasicDisplFixedGrad()
   int dj = nodes[1]->getCrdsSensitivity();
 
 
-  // TODO(sensitivity)
-  // Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
-  // dub = getBasic(ug, 1/L);
 
   //
-  //
-  VectorND<nn*ndf> ul = LinearFrameTransf<nn,ndf>::pullConstant(ug, R, offsets);
-  //
-  dub[0] += 0;
-  double dL = this->getLengthGrad();
-  double doneOverL = -dL/(L*L);
-  double tmp   = doneOverL * (ul[1] - ul[7]);
-  dub[1] +=  tmp;
-  dub[2] +=  tmp;
-  tmp   = doneOverL * (ul[8] - ul[2]);
-  dub[3] +=  tmp;
-  dub[4] +=  tmp;
-#endif
-  return wrapper;
-}
-
-template <int nn, int ndf>
-const Vector &
-LinearFrameTransf<nn,ndf>::getBasicDisplTotalGrad(int gradNumber)
-{
-
-  double dug[12];
-  for (int i = 0; i < 6; i++) {
-    dug[i]     = nodes[0]->getDispSensitivity((i + 1), gradNumber);
-    dug[i + 6] = nodes[1]->getDispSensitivity((i + 1), gradNumber);
+  // du = Tbl dR^ug
+  {
+    Matrix3D dR = FrameOrientationGradient(xi, xj, vz, di, dj, dv);
+  
+    VectorND<nn*ndf> u1 = ug;
+    LinearFrameTransf<nn,ndf>::pull(u1, dR, offsets, offset_flags);
+    du += u1;
   }
 
-  static VectorND<6> dub;
-  static Vector wrapper(dub);
+  {
+    // double dL = this->getLengthGrad();
+    // double doneOverL = -dL/(L*L);
+    // double length = L;
+    // L = 1/doneOverL;
+    // VectorND<nn*ndf> u2 = ug;
+    // LinearFrameTransf<nn,ndf>::pull(u2, R, offsets, offset_flags);
+    // L = length; // restore
+    // du += u2;
+  }
+  return;
+}
+
+
+template <int nn, int ndf>
+void
+LinearFrameTransf<nn,ndf>::pullTotalGrad(VectorND<nn*ndf>& du, int gradNumber)
+{
+  for (int n=0; n<nn; n++)
+    for (int i = 0; i < ndf; i++) {
+      du[i + n*ndf] = nodes[n]->getDispSensitivity((i + 1), gradNumber);
+    }
 
   // dub = T_{bl} T_{lg} * ug'
-  // TODO
-  // dub = getBasic(dug, R, offsets[0], offsets[nn-1], 1/L);
+  LinearFrameTransf<nn,ndf>::pull(du, R, offsets, offset_flags);
 
-  wrapper += getBasicDisplFixedGrad();
+  // dub += (T_{bl}' T_{lg}  +   T_{bl} T_{lg}') * ug
+  pullFixedGrad(du);
 
-  return wrapper;
+  return;
 }
 
 

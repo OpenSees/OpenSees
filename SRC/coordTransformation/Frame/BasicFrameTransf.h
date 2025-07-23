@@ -74,8 +74,9 @@ public:
   // Sensitivity
   //
   const Vector & getBasicTrialDispShapeSensitivity() final;
-  const Vector & getBasicDisplTotalGrad(int grad) final;
-  const Vector &getGlobalResistingForceShapeSensitivity(const Vector &basicForce, const Vector &p0, int grad) final;
+  const Vector & getBasicDisplSensitivity(int grad) final;
+  const Vector &getGlobalResistingForceShapeSensitivity(const Vector &basicForce,
+                                                        const Vector &p0, int grad) final;
   bool isShapeSensitivity() final;
   double getdLdh() final;
   double getd1overLdh() final;
@@ -85,7 +86,7 @@ public:
   int sendSelf(int tag, Channel &) final;
   int recvSelf(int tag, Channel &, FEM_ObjectBroker &) final;
   const char *getClassType() const final {
-      return "BasicFrameTransf3d";
+    return "BasicFrameTransf3d";
   }
     
   // TaggedObject

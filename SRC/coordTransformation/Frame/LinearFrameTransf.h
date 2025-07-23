@@ -68,16 +68,13 @@ public:
   int push(VectorND<nn*ndf>&pl, Operation) final;
   int push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf>& pl, Operation) final;
 
-  // // method used to rotate consistent mass matrix
-  // const Matrix &getGlobalMatrixFromLocal(const Matrix &local);
-  
 
   // Sensitivity
   //
-  const Vector & getBasicDisplFixedGrad();
-  const Vector & getBasicDisplTotalGrad(int gradNumber);
-  const Vector &getGlobalResistingForceShapeSensitivity (const Vector &basicForce, const Vector &p0, int grad);
-  bool isShapeSensitivity() final;
+  void   pushGrad(VectorND<nn*ndf>& dp, VectorND<nn*ndf>& pl) override;
+  void   pullFixedGrad(VectorND<nn*ndf>&) override;
+  void   pullTotalGrad(VectorND<nn*ndf>&, int) override;
+  bool   isShapeSensitivity() final;
   double getLengthGrad() final;
   double getd1overLdh() final;
 
@@ -89,8 +86,8 @@ public:
           
 private:
 
-  inline VectorND<nn*ndf> 
-  pullConstant(const VectorND<nn*ndf>& ug, 
+  inline int
+  pull(VectorND<nn*ndf>& ug, 
               const Matrix3D& R, 
               const std::array<Vector3D, nn> *offset = nullptr,
               int offset_flags = 0);
@@ -119,7 +116,7 @@ private:
   }
 
   std::array<Node*, nn> nodes;
-  Vector3D Du;
+  Vector3D Du, ur[nn];
 
   std::array<Vector3D, nn> *offsets;
   int offset_flags;

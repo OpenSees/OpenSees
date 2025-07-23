@@ -243,6 +243,7 @@ public:
       return G.template extract<0,3,  6,12>();
     else
       return MatrixND<3,6>{};
+
   }
 
   //

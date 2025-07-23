@@ -132,6 +132,13 @@ EuclidFrameTransf<nn,ndf,IsoT>::initialize(std::array<Node*, nn>& new_nodes)
 }
 
 
+template <int nn, int ndf, typename IsoT>
+FrameTransform<nn,ndf> *
+EuclidFrameTransf<nn,ndf,IsoT>::getCopy() const
+{
+  return new EuclidFrameTransf<nn,ndf,IsoT>(this->getTag(), vz, offsets);
+}
+
 
 template <int nn, int ndf, typename IsoT>
 int
@@ -208,7 +215,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::getNodePosition(int node)
   Vector3D u = this->pullPosition<&Node::getTrialDisp>(node);
   u -= basis.getPosition();
   u += basis.getRotationDelta()^(nodes[node]->getCrds());
-
   return u;
 }
 
@@ -285,12 +291,11 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
     }
 
   // (5) Logarithm of rotations
-  if (1) { // !(offset_flags & LogIter)) {
-    for (int i=0; i<nn; i++) {
-      const int j = i * ndf+3;
-      Vector3D v {ul[j+0], ul[j+1], ul[j+2]};
-      ul.insert(i*ndf+3, ur[i].dLog(v), 1.0);
-    }
+
+  for (int i=0; i<nn; i++) {
+    const int j = i * ndf+3;
+    Vector3D v {ul[j+0], ul[j+1], ul[j+2]};
+    ul.insert(i*ndf+3, ur[i].dLog(v), 1.0);
   }
 
   return ul;
@@ -300,18 +305,15 @@ EuclidFrameTransf<nn,ndf,IsoT>::getStateVariation()
 // Push
 //
 template <int nn, int ndf, typename IsoT>
-// VectorND<nn*ndf>
 int
 EuclidFrameTransf<nn,ndf,IsoT>::push(VectorND<nn*ndf>&p, Operation op)
 {
   VectorND<nn*ndf>& pa = p;
 
   // 1) Logarithm
-  if (1) { // !(offset_flags & LogIter)) {
-    for (int i=0; i<nn; i++) {
-      Vector3D m {pa[i*ndf + 3], pa[i*ndf + 4], pa[i*ndf + 5]};
-      pa.insert(i*ndf + 3, ur[i].dLog()^m, 1.0);
-    }
+  for (int i=0; i<nn; i++) {
+    Vector3D m {pa[i*ndf + 3], pa[i*ndf + 4], pa[i*ndf + 5]};
+    pa.insert(i*ndf + 3, ur[i].dLog()^m, 1.0);
   }
 
 
@@ -330,7 +332,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(VectorND<nn*ndf>&p, Operation op)
 
 
   // 3,4) Rotate and joint offsets
-  // pa = this->FrameTransform<nn,ndf>::pushConstant(pa);
   Matrix3D R = basis.getRotation();
   for (int i=0; i<nn; i++) {
     const int base = i * ndf;
@@ -349,9 +350,9 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
                                      const VectorND<nn*ndf>& pb, 
                                      Operation op)
 {
-  MatrixND<nn*ndf,nn*ndf> Kb = kb;
   VectorND<nn*ndf> p = pb;
 
+  MatrixND<nn*ndf,nn*ndf> Kb = kb;
   if (1) {//!(offset_flags & LogIter)) {
     for (int i=0; i<nn; i++) {
       Vector3D m{pb[i*ndf+3], pb[i*ndf+4], pb[i*ndf+5]};
@@ -387,7 +388,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
     }
   }
 
-  // Kb = kb;
+  // Kl = A ^ k * A
 
   MatrixND<nn*ndf,nn*ndf>& Kl = kb;
   const MatrixND<nn*ndf,nn*ndf> A = getProjection();
@@ -396,6 +397,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
 
   const VectorND<nn*ndf> Ap = A^p;
 
+  // Kl += Kw * A
   Kb.zero();
   VectorND<12> qwx{};
   for (int i=0; i<nn; i++)
@@ -415,7 +417,7 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
   }
 
   //
-  // Kl += -W'*Pn'*A
+  // Kl += -W'*Pn'*A  - Pnm * W
   //
   Kb.zero();
   for (int j=0; j<nn; j++) {
@@ -435,13 +437,6 @@ EuclidFrameTransf<nn,ndf,IsoT>::push(MatrixND<nn*ndf,nn*ndf>&kb,
   return 0;
 }
 
-
-template <int nn, int ndf, typename IsoT>
-FrameTransform<nn,ndf> *
-EuclidFrameTransf<nn,ndf,IsoT>::getCopy() const
-{
-  return new EuclidFrameTransf<nn,ndf,IsoT>(this->getTag(), vz, offsets);
-}
 
 
 //

@@ -405,18 +405,6 @@ CreateFrame(BasicModelBuilder& builder,
 }
 
 
-#if 0
-Element*
-CreateInelasticFrame(std::string, std::vector<int>& nodes,
-                                  std::vector<FrameSection>&, 
-                                  BeamIntegration&, 
-                              //  FrameQuadrature&,
-                                  FrameTransform&,
-                                  Options&);
-Element*
-CreatePrismaticFrame(std::string);
-#endif
-
 // 0       1    2 3  4
 // element beam 1 $i $j 0 1 2
 //

@@ -386,16 +386,17 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc,
              strcmp(argv[1], "LinearWithPDelta") == 0)
       crdTransf2d = new PDeltaCrdTransf2d(tag, jntOffsetI, jntOffsetJ);
 
-    else if (strcmp(argv[1], "Corotational") == 0 && ndf == 3)
+    else if ((strcmp(argv[1], "Corotational") == 0 || strcmp(argv[1], "Corotational02") == 0) && ndf == 3)
       crdTransf2d = new CorotCrdTransf2d(tag, jntOffsetI, jntOffsetJ);
 
-    else if (strcmp(argv[1], "Corotational") == 0 && ndf == 4)
+    else if ((strcmp(argv[1], "Corotational") == 0 || strcmp(argv[1], "Corotational02") == 0) && ndf == 4)
       crdTransf2d =
           new CorotCrdTransfWarping2d(tag, jntOffsetI, jntOffsetJ);
 
     else {
       opserr << OpenSees::PromptValueError 
-             << "invalid Type: " << argv[1] << "\n";
+             << "invalid Type: " << argv[1]
+             << "\n";
       return TCL_ERROR;
     }
 
