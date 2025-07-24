@@ -3,11 +3,17 @@
 //                                   xara
 //                              https://xara.so
 //
-//----------------------------------------------------------------------------//
+//===----------------------------------------------------------------------===//
 //
-// Please cite the following resource in any derivative works:
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
 //
-// [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+// Please cite the following resources in any derivative works:
+//
+// Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
 //     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
 //     https://doi.org/10.1002/nme.7506
 //
@@ -18,6 +24,22 @@
 // for a spatial frame
 //
 // Written: Claudio Perez
+//
+// References:
+//
+// Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//   of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//   https://doi.org/10.1002/nme.7506
+//
+// Haukaas, Terje, and Michael H. Scott. 
+//   “Shape Sensitivities in the Reliability Analysis of Nonlinear Frame Structures.” 
+//   Computers & Structures 84, nos. 15–16 (2006): 964–77. 
+//   https://doi.org/10.1016/j.compstruc.2006.02.014.
+//
+// Scott, Michael H., Paolo Franchin, Gregory L. Fenves, and Filip C. Filippou. 
+//   “Response Sensitivity for Nonlinear Beam–Column Elements.” 
+//   Journal of Structural Engineering 130, no. 9 (2004): 1281–88. 
+//   https://doi.org/10.1061/(asce)0733-9445(2004)130:9(1281).
 //
 #ifndef LinearFrameTransf_hpp
 #define LinearFrameTransf_hpp

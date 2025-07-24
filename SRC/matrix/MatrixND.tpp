@@ -1,12 +1,17 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
-//
-//===----------------------------------------------------------------------===//
 //                              https://xara.so
+//
 //===----------------------------------------------------------------------===//
 //
-// Claudio Perez
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
 //
 #pragma once
 #include "MatrixND.h"
@@ -310,7 +315,6 @@ MatrixND<nr,nc,scalar_t>::addMatrixTripleProduct(
                                const  MatrixND<ncB, nr, scalar_t> &T, 
                                const  MatrixND<ncB, ncB, scalar_t> &B, 
                                double otherFact)
-  //requires(nr == nc)
 {
   if (otherFact == 0.0 && thisFact == 1.0)
     return 0;

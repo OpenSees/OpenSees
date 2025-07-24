@@ -3,24 +3,28 @@
 //                                   xara
 //                              https://xara.so
 //
-//----------------------------------------------------------------------------//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 // Please cite the following resource in any derivative works:
 //
-// [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+// Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
 //     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
 //     https://doi.org/10.1002/nme.7506
 //
 //===----------------------------------------------------------------------===//
 
 //
-// Description: This file contains the implementation for the
-// LinearFrameTransf class. LinearFrameTransf is a linear
+// Description: LinearFrameTransf is a linear
 // transformation for a space frame between the global
 // and basic coordinate systems
 //
 // Written: Claudio M. Perez
-// Adapted: Remo Magalhaes de Souza
 //
 #pragma once
 #include <Vector.h>
@@ -29,7 +33,7 @@
 #include <Vector3D.h>
 #include <Matrix3D.h>
 #include <Node.h>
-#include <Logging.h>
+#include <OPS_Globals.h>
 #include <GroupSO3.h>
 #include "LinearFrameTransf.h"
 

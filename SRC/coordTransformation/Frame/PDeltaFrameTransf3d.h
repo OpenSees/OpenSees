@@ -2,6 +2,21 @@
 //
 //                                   xara
 //                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+// Please cite the following resource in any derivative works:
+//
+// Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
+//
 //===----------------------------------------------------------------------===//
 //
 //        OpenSees - Open System for Earthquake Engineering Simulation
