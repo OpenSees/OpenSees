@@ -54,8 +54,6 @@ httpGET_File(char const* URL, char const* page, unsigned int port, const char* f
 int
 getLibraryFunction(const char* libName, const char* funcName, void** libHandle, void** funcHandle) {
     
-    int result = 0;
-    
     *libHandle = NULL;
     *funcHandle = NULL;
     
@@ -198,7 +196,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
         funcPtr = (setGlobalPointersFunction)GetProcAddress((HMODULE)hLib, "setGlobalPointers");
         if (funcPtr == 0) {
             FreeLibrary((HMODULE)hLib);
-            return -2;
+            return -3;
         }
         
         // invoke pointer function
@@ -319,7 +317,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
     if (funcPtr == NULL) {
         dlclose(*libHandle);
         delete[] localLibName;
-        return -1;
+        return -2;
     }
     
     *funcHandle = funcPtr;
@@ -344,5 +342,5 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
     
 #endif
     
-    return result;
+    return 0;
 }
