@@ -4806,8 +4806,8 @@ TclCommand_Package(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char
     
 	int res = -1;
 	void* libHandle;
-	int (*funcPtr)(ClientData clientData, Tcl_Interp * interp,
-		int argc, TCL_Char * *argv, Domain*);
+	int (*funcPtr)(ClientData clientData, Tcl_Interp *interp,
+		int argc, TCL_Char **argv, Domain *dom);
     
 	// get the library function
 	if (argc == 2) {
