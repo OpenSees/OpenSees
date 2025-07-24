@@ -59,7 +59,6 @@
 #include "Versor.h"
 #include "Matrix3D.h"
 #include "Vector3D.h"
-#include <logging/Logging.h>
 using OpenSees::Matrix3D;
 using OpenSees::Versor;
 
