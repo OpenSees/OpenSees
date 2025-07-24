@@ -1,9 +1,16 @@
 //===----------------------------------------------------------------------===//
 //
-//                                   xara  
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
 //
 // Written: Claudio M. Perez
@@ -31,9 +38,7 @@ public:
     : ndm(ndm), 
       TaggedObject(t), 
       vz{{0, 0, 0}}, offsets{}, offset_flags(0) {
-      // strncpy(name, n, 128);
       snprintf(name, sizeof(name), "%s", n);
-      // offset_flags |= LogIter;
     }
 
     virtual ~FrameTransformBuilder() {}
