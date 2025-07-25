@@ -43,6 +43,8 @@
 #include <SP_Constraint.h>
 #include <MP_ConstraintIter.h>
 #include <MP_Constraint.h>
+#include <EQ_ConstraintIter.h>
+#include <EQ_Constraint.h>
 #include <Integrator.h>
 #include <ID.h>
 #include <Subdomain.h>
@@ -51,6 +53,7 @@
 #include <LagrangeDOF_Group.h>
 #include <LagrangeSP_FE.h>
 #include <LagrangeMP_FE.h>
+#include <LagrangeEQ_FE.h>
 #include <elementAPI.h>
 
 void* OPS_LagrangeConstraintHandler()
@@ -92,7 +95,7 @@ LagrangeConstraintHandler::handle(const ID *nodesLast)
 	return -1;
     }
 
-    // get number ofelements and nodes in the domain 
+    // get number of elements and nodes in the domain 
     // and init the theFEs and theDOFs arrays
 
     int numConstraints = 0;
@@ -102,12 +105,14 @@ LagrangeConstraintHandler::handle(const ID *nodesLast)
       numConstraints++;
 
     numConstraints += theDomain->getNumMPs();
+	numConstraints += theDomain->getNumEQs();
 
     //create a DOF_Group for each Node and add it to the AnalysisModel.
     //    : must of course set the initial IDs
     NodeIter &theNod = theDomain->getNodes();
     Node *nodPtr;
     MP_Constraint *mpPtr;    
+    EQ_Constraint *eqPtr;    
     DOF_Group *dofPtr;
     
     int numDofGrp = 0;
@@ -223,6 +228,36 @@ LagrangeConstraintHandler::handle(const ID *nodesLast)
 	    opserr << "WARNING LagrangeConstraintHandler::handle()";
 	    opserr << " - ran out of memory";
 	    opserr << " creating LagrangeMP_FE " << endln; 
+	    return -5;
+	}		
+	
+	theModel->addFE_Element(fePtr);
+    }	        
+
+    // create the LagrangeEQ_FE for the EQ_Constraints and 
+    // add to the AnalysisModel    
+
+    EQ_ConstraintIter &theEQs = theDomain->getEQs();
+    while ((eqPtr = theEQs()) != 0) {
+	if ((dofPtr = new LagrangeDOF_Group(numDofGrp++, *eqPtr)) == 0) {
+	    opserr << "WARNING LagrangeConstraintHandler::handle()";
+	    opserr << " - ran out of memory";
+	    opserr << " creating LagrangeDOFGroup " << endln; 
+	    return -5;
+	}		
+	const ID &id = dofPtr->getID();
+	for (int j=0; j < id.Size(); j++) {
+	    dofPtr->setID(j,-2);
+	    countDOF++;
+	}
+
+	theModel->addDOF_Group(dofPtr);    	
+
+	if ((fePtr = new LagrangeEQ_FE(numFeEle++, *theDomain, *eqPtr, 
+				       *dofPtr, alphaMP)) == 0) { 
+	    opserr << "WARNING LagrangeConstraintHandler::handle()";
+	    opserr << " - ran out of memory";
+	    opserr << " creating LagrangeEQ_FE " << endln; 
 	    return -5;
 	}		
 	
