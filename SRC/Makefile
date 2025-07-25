@@ -777,6 +777,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Neoprene.o \
 	$(FE)/material/uniaxial/ASD_SMA_3K.o \
 	$(FE)/material/uniaxial/ASDConcrete1DMaterial.o \
+	$(FE)/material/uniaxial/ASDSteel1DMaterial.o \
 	$(FE)/material/uniaxial/Concrete01.o \
 	$(FE)/material/uniaxial/Concrete02.o \
 	$(FE)/material/uniaxial/Concrete02IS.o \

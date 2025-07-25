@@ -1324,10 +1324,15 @@ int ASDConcrete1DMaterial::recvSelf(int commitTag, Channel& theChannel, FEM_Obje
 
 int ASDConcrete1DMaterial::setParameter(const char** argv, int argc, Parameter& param)
 {
-	// 1000 - elasticity & mass
+	
+	// 1000 - elasticity & mass & length
 	if (strcmp(argv[0], "E") == 0) {
 		param.setValue(E);
 		return param.addObject(1000, this);
+	}
+	if (strcmp(argv[0], "lch_ref") == 0) {
+		param.setValue(lch_ref);
+		return param.addObject(1001, this);
 	}
 
 	// 2000 - time
@@ -1364,6 +1369,11 @@ int ASDConcrete1DMaterial::updateParameter(int parameterID, Information& info)
 		// 1000 - elasticity & mass
 	case 1000:
 		E = info.theDouble;
+		return 0;
+	case 1001:
+		lch_ref = info.theDouble;
+		auto_regularize = true;
+		regularization_done = false;
 		return 0;
 
 		// 2000 - time
