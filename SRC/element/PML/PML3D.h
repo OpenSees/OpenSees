@@ -52,12 +52,13 @@ extern "C" void  pml3d_(double* mMatrix,
 	double* cMatrix,
 	double* kMatrix,
 	double* gMatrix,
+	double* hMatrix,
 	int* NDOFEL,
 	double* PROPS,
-	int* NPROPS,
 	double* COORDS,
 	int* MCRD,
-	int* NNODE);
+	int* NNODE,
+	int* LFLAGS);
 
 #else
 
@@ -67,12 +68,13 @@ extern "C" void  pml3d_(double* mMatrix,
 	double* cMatrix,
 	double* kMatrix,
 	double* gMatrix,
+	double* hMatrix,
 	int* NDOFEL,
 	double* PROPS,
-	int* NPROPS,
 	double* COORDS,
 	int* MCRD,
-	int* NNODE);
+	int* NNODE,
+	int* LFLAGS);
 
 #endif
 

@@ -348,6 +348,11 @@ using namespace OpenSees::Hash::literals;
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
 
+#ifdef _H5DRM
+#include "VTKHDF_Recorder.h"
+#endif
+
+
 // mp_constraint header files
 #include "MP_Constraint.h"
 #include "Joint/MP_Joint2D.h"
@@ -1659,6 +1664,13 @@ TclPackageClassBroker::getPtrNewRecorder(int classTag)
 
   case RECORDER_TAGS_GmshRecorder:
     return new GmshRecorder();
+
+#ifdef _H5DRM
+  case RECORDER_TAGS_VTKHDF_Recorder():
+    return new VTKHDF_Recorder();
+#endif
+
+  
 
     //        case RECORDER_TAGS_MPCORecorder:
     //          return new MPCORecorder();

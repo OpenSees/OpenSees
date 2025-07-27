@@ -164,6 +164,15 @@ PenaltyMaterial::getTangent(void)
 }
 
 double 
+PenaltyMaterial::getInitialTangent(void)
+{
+  if (theMaterial)
+    return theMaterial->getInitialTangent() + penalty;
+  else
+    return 0.0;
+}
+
+double 
 PenaltyMaterial::getDampTangent(void)
 {
   if (theMaterial)

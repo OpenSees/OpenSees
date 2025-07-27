@@ -186,6 +186,11 @@ LagrangeDOF_Group::incrNodeAccel(const Vector &udotdot)
     return;
 }
 
+void
+LagrangeDOF_Group::setEigenvector(int mode, const Vector &eigenvector)
+{
+  return;
+}
 
 const Vector &
 LagrangeDOF_Group::getCommittedDisp(void)
