@@ -4816,16 +4816,19 @@ TclCommand_Package(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char
 	else if (argc == 3) {
 		res = getLibraryFunction(argv[1], argv[2], &libHandle, (void**)&funcPtr);
 	}
-    
-	// finally load the package (i.e., load the function from the library)
-	if (res == 0) {
-		res = (*funcPtr)(clientData, interp, argc, argv, theTclDomain);
+	if (res != 0) {
+		opserr << "Error: Could not find library or function: " << argv[1] << endln;
+		return TCL_ERROR;
 	}
-	else {
-		opserr << "Error: Could not find function: " << argv[1] << endln;
+	
+	// finally import the package (i.e., import the function from the library)
+	res = (*funcPtr)(clientData, interp, argc, argv, theTclDomain);
+	if (res != 0) {
+		opserr << "Error: Could not import the package\n";
+		return TCL_ERROR;
 	}
-    
-	return res;
+	
+	return 0;
 }
 
 // Added by Alborz Ghofrani - U.Washington

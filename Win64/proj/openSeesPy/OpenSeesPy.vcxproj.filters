@@ -105,6 +105,9 @@
     <ClInclude Include="..\..\..\SRC\reliability\domain\functionEvaluator\PythonEvaluator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\api\packages.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Header Files">

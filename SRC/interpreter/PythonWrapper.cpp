@@ -45,6 +45,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 #define OPS_PYVERSION "3.4.0.4"
 
+extern PyObject* getPyModule();
 static PythonWrapper* wrapper = 0;
 
 PythonWrapper::PythonWrapper()
@@ -2970,48 +2971,105 @@ static PyObject *Py_ops_NDTest(PyObject *self, PyObject *args) {
     return wrapper->getResults();
 }
 
-static PyObject* Py_ops_loadPackage(PyObject* self, PyObject* args)
+static PyObject* Py_ops_loadPackage(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
-
+    
+    // make sure correct number of arguments on command line
     if (OPS_GetNumRemainingInputArgs() < 1) {
         opserr << "WARNING insufficient arguments\n";
         opserr << "Want: loadPackage libName? <fncName?>\n";
         return NULL;
     }
-
+    
     const char* libName = 0;
     const char* fncName = 0;
     int res = -1;
     void* libHandle;
-    int (*funcPtr)(PyObject * self, PyObject * args, Domain*);
-
+    int (*funcPtr)(PyObject *self, PyObject *args, PyObject *mod, Domain *dom);
+    
     // get library name
     libName = OPS_GetString();
-
+    
     // get function name
     if (OPS_GetNumRemainingInputArgs() > 0)
         fncName = OPS_GetString();
     else
         fncName = libName;
     
-    opserr << "Got: loadPackage " << libName << " " << fncName << "\n";
-
+    // debugging: output library and function name
+    //opserr << "\nexecuting loadPackage(lib=" << libName << ",fcn=" << fncName << ")\n\n";
+    
     // get the library function
     res = getLibraryFunction(libName, fncName, &libHandle, (void**)&funcPtr);
-    opserr << "getLibraryFunction returned " << res << endln;
-
+    if (res != 0) {
+        opserr << "Error: Could not find library or function\n";
+        return NULL;
+    }
+    
+    // get the Python module
+    PyObject* theModule = getPyModule();
+    if (theModule == nullptr || !PyModule_Check(theModule)) {
+        opserr << "Error: Could not get valid Python module\n";
+        return NULL;
+    }
+    
     // get the Domain
     Domain* theDomain = OPS_GetDomain();
-
-    if (res == 0) {
-        int result = (*funcPtr)(self, args, theDomain);
+    if (theDomain == nullptr) {
+        opserr << "Error: Could not get Domain\n";
+        return NULL;
     }
-    else {
-        opserr << "Error: Could not find library: " << libName << endln;
+    
+    // finally import the package (i.e., import the function from the library)
+    res = (*funcPtr)(self, args, theModule, theDomain);
+    if (res != 0) {
+        opserr << "Error: Could not import the package\n";
         return NULL;
     }
 
+    // debugging: check if first OpenFresco function is available
+    //PyObject* moduleDict2 = PyModule_GetDict(theModule);
+    //PyObject* func2 = PyDict_GetItemString(moduleDict2, "expControlPoint");
+    
+    // reload the module to ensure it is up-to-date
+    PyObject* theReloadedModule = nullptr;
+#if PY_MAJOR_VERSION < 3 || defined(PyImport_ReloadModule)
+    theReloadedModule = PyImport_ReloadModule(theModule);
+#else
+    PyObject* importLib = PyImport_ImportModule("importlib");
+    PyObject* reloadFunc = PyObject_GetAttrString(importLib, "reload");
+    PyObject* reloadArgs = PyTuple_Pack(1, theModule);
+    theReloadedModule = PyObject_CallObject(reloadFunc, reloadArgs);
+    Py_XDECREF(importLib);
+    Py_XDECREF(reloadFunc);
+    Py_XDECREF(reloadArgs);
+#endif
+    Py_DECREF(theModule);
+    if (theReloadedModule == nullptr) {
+        opserr << "Error: Could not reload the Python module\n";
+        return NULL;
+    }
+    
+    // rebind in __main__ so that the module is available globally
+    PyObject* mainModule = PyImport_AddModule("__main__");
+    if (mainModule == nullptr) {
+        opserr << "Error: Could not get __main__ module\n";
+        Py_DECREF(theReloadedModule);
+        return NULL;
+    }
+    PyObject* mainDict = PyModule_GetDict(mainModule);
+    if (mainDict == nullptr) {
+        opserr << "Error: Could not get __main__ module dictionary\n";
+        Py_DECREF(theReloadedModule);
+        return NULL;
+    }
+    if (PyDict_SetItemString(mainDict, libName, theReloadedModule) < 0) {
+        opserr << "Error: Could not set the module in __main__ dictionary\n";
+        Py_DECREF(theReloadedModule);
+        return NULL;
+    }
+    
     return wrapper->getResults();
 }
 

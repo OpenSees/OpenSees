@@ -32,7 +32,8 @@
 #include <OPS_Globals.h>
 //#include <SimulationInformation.h>
 
-/*extern
+/*
+extern
 #ifdef _WIN32
 int __cdecl
 #else
@@ -54,8 +55,8 @@ httpGET_File(char const* URL, char const* page, unsigned int port, const char* f
 int
 getLibraryFunction(const char* libName, const char* funcName, void** libHandle, void** funcHandle) {
     
-    *libHandle = NULL;
-    *funcHandle = NULL;
+    *libHandle = nullptr;
+    *funcHandle = nullptr;
     
     //struct stat stFileInfo;
     //bool blnReturn;
@@ -63,10 +64,7 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
     
 #ifdef _WIN32
     
-    //
     // first try and open dll
-    //
-    
     int libNameLength = (int)strlen(libName);
     char* localLibName = new char[libNameLength + 5];
     strcpy(localLibName, libName);
@@ -76,18 +74,15 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
     
     delete[] localLibName;
     
-    if (hLib != NULL) {
+    if (hLib != nullptr) {
         
         char mod[260];
         GetModuleFileName((HMODULE)hLib, (LPTSTR)mod, 260);
         
-        //
-        // Now look for function with funcName
-        //
-        
+        // now look for function with funcName
         (*funcHandle) = (void*)GetProcAddress((HMODULE)hLib, funcName);
         
-        if (*funcHandle == NULL) {
+        if (*funcHandle == nullptr) {
             char* underscoreFunctionName = new char[strlen(funcName) + 2];
             strcpy(underscoreFunctionName, funcName);
             strcpy(&underscoreFunctionName[strlen(funcName)], "_");
@@ -95,15 +90,13 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
             delete[] underscoreFunctionName;
         }
         
-        if (*funcHandle == NULL) {
+        if (*funcHandle == nullptr) {
             FreeLibrary((HMODULE)hLib);
+            opserr << "packages.cpp: COULD NOT FIND FUNCTION HANDLE: " << funcName << "\n";
             return -2;
         }
         
-        //
         // we need to set the OpenSees pointer global variables if function there
-        //
-        
         typedef int(_cdecl* LocalInitPtrType)();
         typedef int(_cdecl* OPS_GetIntPtrType)();
         typedef int(_cdecl* OPS_ErrorPtrType)(char*, int);
@@ -143,8 +136,8 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
         typedef ConvergenceTest** (*OPS_GetTestPtrType)();
         typedef bool* (*OPS_builtModelPtrType)();
         
-        
-        typedef void(_cdecl* setGlobalPointersFunction)(
+        // declare the global pointers function
+        typedef void(_cdecl* setGlobalPointersFunction) (
             OPS_Stream*,
             Domain*,
             //theSimulationInfoPtr*,
@@ -190,16 +183,16 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
             OPS_GetTestPtrType,
             OPS_builtModelPtrType);
         
-        setGlobalPointersFunction funcPtr;
-        
         // look for pointer function
+        setGlobalPointersFunction funcPtr;
         funcPtr = (setGlobalPointersFunction)GetProcAddress((HMODULE)hLib, "setGlobalPointers");
-        if (funcPtr == 0) {
+        if (funcPtr == nullptr) {
             FreeLibrary((HMODULE)hLib);
+            opserr << "packages.cpp: COULD NOT FIND FUNCTION: " << funcName << "\n";
             return -3;
         }
         
-        // invoke pointer function
+        // invoke the pointer function
         (funcPtr)(
             opserrPtr,
             ops_TheActiveDomain,
@@ -246,21 +239,26 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
             OPS_GetTest,
             OPS_builtModel);
         
+        // call an init function if in library
         LocalInitPtrType initPtr;
         initPtr = (LocalInitPtrType)GetProcAddress((HMODULE)hLib, "localInit");
-        if (initPtr != 0) {
+        if (initPtr != nullptr) {
             initPtr();
         }
         else {
             initPtr = (LocalInitPtrType)GetProcAddress((HMODULE)hLib, "localinit_");
-            if (initPtr != 0) {
+            if (initPtr != nullptr) {
                 initPtr();
             }
         }
     }
-    else // no lib exists
+    // no lib exists
+    else {
+        opserr << "packages.cpp: COULD NOT FIND LIB: " << libName << "\n";
         return -1;
+    }
     
+    // assign to the library handle pointer
     libHandle = (void**)&hLib;
     
 #else
@@ -275,64 +273,58 @@ getLibraryFunction(const char* libName, const char* funcName, void** libHandle, 
     strcpy(&localLibName[libNameLength], ".so");
 #endif
     
-    // Attempt to get the file attributes
-    // intintStat = stat(localLibName, &stFileInfo);
-    /* get library
-    if(intStat != 0) {
-      opserr << "packages.cpp - NO FILE EXISTS: - trying OpenSees" << localLibName << endln;
-      int res = httpGET_File("opensees.berkeley.edu", localLibName, 80, localLibName);
-      if (res != 0) {
-        opserr << "packages.cpp - NO FILE EXISTS: " << localLibName << endln;
-        return -1;
-      }
-    }
-    */
-    char* error;
+    char* error = nullptr;
     
-    *libHandle = dlopen(localLibName, RTLD_NOW);
+    *libHandle = dlopen(localLibName, RTLD_NOW | RTLD_GLOBAL);
     
-    if (*libHandle == NULL) {
+    // no lib exists
+    if (*libHandle == nullptr) {
+        opserr << "packages.cpp: COULD NOT FIND LIB: " << localLibName << "\n";
         delete[] localLibName;
-        return -1; // no lib exists
+        return -1;
     }
     
     void* funcPtr = dlsym(*libHandle, funcName);
     
     error = dlerror();
     
-    //
-    // look for fortran procedure, trailing underscore
-    //
-    
-    if (funcPtr == NULL) {
+    if (error != nullptr || funcPtr == nullptr) {
+        // instead of error, check in case a fortran generated file, trailing unbnderscore
         int funcNameLength = strlen(funcName);
         char* underscoreFunctionName = new char[funcNameLength + 2];
         strcpy(underscoreFunctionName, funcName);
         strcpy(&underscoreFunctionName[funcNameLength], "_");
         strcpy(&underscoreFunctionName[funcNameLength + 1], "");
         funcPtr = dlsym(*libHandle, underscoreFunctionName);
+        error = dlerror();
         delete[] underscoreFunctionName;
     }
     
-    if (funcPtr == NULL) {
+    //if (funcPtr == nullptr) {
+    if (error != nullptr) {
         dlclose(*libHandle);
         delete[] localLibName;
+        opserr << "packages.cpp: COULD NOT FIND FUNCTION: " << funcName << "\n";
         return -2;
     }
     
     *funcHandle = funcPtr;
     
+    // call an init function if in library
     typedef int (*localInitPtrType)();
     localInitPtrType initFunct;
     funcPtr = dlsym(*libHandle, "localInit");
     
-    if (funcPtr != NULL) {
+    if (funcPtr != nullptr) {
         initFunct = (localInitPtrType)funcPtr;
         initFunct();
+
     }
     else {
+        
+        // fortran file again
         funcPtr = dlsym(*libHandle, "localinit_");
-        if (funcPtr != NULL) {
+        if (funcPtr != nullptr) {
             initFunct = (localInitPtrType)funcPtr;
             initFunct();
         }

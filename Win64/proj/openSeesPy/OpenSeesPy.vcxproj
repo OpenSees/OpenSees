@@ -82,12 +82,12 @@
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">true</LinkIncremental>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.pyd</TargetExt>
     <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">.pyd</TargetExt>
-    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">OpenSeesPy</TargetName>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">opensees</TargetName>
     <TargetName Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">opensees</TargetName>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <TargetExt>.pyd</TargetExt>
-    <TargetName>OpenSeesPy</TargetName>
+    <TargetName>opensees</TargetName>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <Midl>
@@ -261,6 +261,7 @@
     </BuildLog>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\api\packages.h" />
     <ClInclude Include="..\..\..\SRC\classTags.h" />
     <ClInclude Include="..\..\..\SRC\interpreter\DL_Interpreter.h" />
     <ClInclude Include="..\..\..\SRC\interpreter\OpenSeesCommands.h" />

@@ -50,6 +50,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // define opserr
 static PythonStream sserr;
 OPS_Stream *opserrPtr = &sserr;
+static PythonModule* module = nullptr;
+static PyObject* pymodule = nullptr;
 
 
 PythonModule::PythonModule()
@@ -319,10 +321,12 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
 #endif
 }
 
-/*int
+/*
+int
 PythonModule::getStringCopy(char **stringPtr) {
     return -1;
-}*/
+}
+*/
 
 int 
 PythonModule::evalDoubleStringExpression(const char* theExpression, double& current_val)
@@ -359,6 +363,11 @@ PythonModule::evalDoubleStringExpression(const char* theExpression, double& curr
 
     // done
     return 0;
+}
+
+void
+PythonModule::resetInput(int nArgs, int cArg, const char** argv) {
+    wrapper.resetCommandLine(nArgs, cArg, (PyObject*)argv);
 }
 
 void
@@ -444,7 +453,17 @@ PythonModule::runCommand(const char *cmd) {
     return PyRun_SimpleString(cmd);
 }
 
-static PythonModule *module = 0;
+PyObject* 
+getPyModule() {
+    if (pymodule == nullptr) {
+        opserr << "getPyModule() error: module not initialized\n";
+        return NULL;
+    }
+    
+    //Py_INCREF(pymodule); // NOT sure if this is needed
+    return pymodule;
+}
+
 
 PyMethodDef *getmethodsFunc() {
     module = new PythonModule;
@@ -456,7 +475,7 @@ PyMethodDef *getmethodsFunc() {
 
 void cleanupFunc() {
     module->getCmds().wipe();
-    if (module != 0) {
+    if (module != nullptr) {
         delete module;
     }
 }
@@ -521,13 +540,19 @@ initopensees(void)
 #endif
 {
 #if PY_MAJOR_VERSION >= 3
-    PyObject *pymodule = PyModule_Create(&moduledef);
-#else
-    PyObject *pymodule = Py_InitModule("opensees", getmethodsFunc());
-#endif
-
+    // create Python module
+    pymodule = PyModule_Create(&moduledef);
     if (pymodule == NULL)
         INITERROR;
+    // attache module object to the interpreter state
+    if (PyState_AddModule(pymodule, &moduledef) != 0)
+        INITERROR;
+#else
+    pymodule = Py_InitModule("opensees", getmethodsFunc());
+    if (pymodule == NULL)
+        INITERROR;
+#endif
+
     struct module_state *st = GETSTATE(pymodule);
 
     // add OpenSeesError

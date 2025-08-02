@@ -1050,7 +1050,7 @@ int OPS_GetNumRemainingInputArgs()
     return interp->getNumRemainingInputArgs();
 }
 
-int OPS_ResetCurrentInputArg(int cArg)
+int OPS_ResetCommandLine(int nArgs, int cArg, const char** argv)
 {
     if (cArg == 0) {
         opserr << "WARNING can't reset to argv[0]\n";
@@ -1058,11 +1058,11 @@ int OPS_ResetCurrentInputArg(int cArg)
     }
     if (cmds == 0) return 0;
     DL_Interpreter* interp = cmds->getInterpreter();
-    interp->resetInput(cArg);
+    interp->resetInput(nArgs, cArg, argv);
     return 0;
 }
 
-int OPS_ResetCommandLine(int nArgs, int cArg, const char** argv)
+int OPS_ResetCurrentInputArg(int cArg)
 {
     if (cArg == 0) {
         opserr << "WARNING can't reset to argv[0]\n";
@@ -1168,24 +1168,18 @@ int OPS_SetDoubleDictListOutput(std::map<const char*, std::vector<double>>& data
 
 const char* OPS_GetString(void)
 {
-    if (cmds == 0) return "Invalid String Input!";
+    const char* res = 0;
+    if (cmds == 0) return res;
     DL_Interpreter* interp = cmds->getInterpreter();
-    const char* res = interp->getString();
-    if (res == 0) {
-	return "Invalid String Input!";
-    }
-    return res;
+    return interp->getString();
 }
 
 const char* OPS_GetStringFromAll(char* buffer, int len)
 {
-    if (cmds == 0) return "Invalid String Input!";
+    const char* res = 0;
+    if (cmds == 0) return res;
     DL_Interpreter* interp = cmds->getInterpreter();
-    const char* res = interp->getStringFromAll(buffer, len);
-    if (res == 0) {
-	return "Invalid String Input!";
-    }
-    return res;
+    return interp->getStringFromAll(buffer, len);
 }
 
 int OPS_SetString(const char* str)
