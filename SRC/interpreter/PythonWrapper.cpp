@@ -1133,6 +1133,18 @@ static PyObject *Py_ops_nodeDisp(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_nodeCrd(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);
+
+    if (OPS_nodeCoord() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_nodeVel(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine((int)PyTuple_Size(args), 1, args);

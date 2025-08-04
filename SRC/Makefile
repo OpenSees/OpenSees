@@ -433,7 +433,8 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
 	$(FE)/recorder/MPCORecorder.o \
-	$(FE)/recorder/VTK_Recorder.o 
+	$(FE)/recorder/VTK_Recorder.o \
+	$(FE)/recorder/VTKHDF_Recorder.o \
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
@@ -683,9 +684,10 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/EmbeddedEPBeamInterface.o \
 	$(FE)/element/UWelements/Tcl_generateInterfacePoints.o \
 	$(FE)/element/PML/pml_3d.o \
-	$(FE)/element/PML/PML3D.o \
-	$(FE)/element/PML/pml_2d.o \
-	$(FE)/element/PML/PML2D.o \
+    $(FE)/element/PML/PML3D.o \
+	$(FE)/element/PML/PML3DVISCOUS.o \
+    $(FE)/element/PML/pml_2d.o \
+    $(FE)/element/PML/PML2D.o \
 	$(FE)/element/PML/PML2D_3.o \
 	$(FE)/element/PML/PML2D_5.o \
 	$(FE)/element/PML/PML2D_12.o \
@@ -971,9 +973,10 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/PlasticDamageConcrete3d.o \
 	$(FE)/material/nD/PlasticDamageConcretePlaneStress.o \
 	$(FE)/element/PML/pml_3d.o \
-	$(FE)/element/PML/PML3D.o \
-	$(FE)/element/PML/pml_2d.o \
-	$(FE)/element/PML/PML2D.o \
+    $(FE)/element/PML/PML3D.o \
+	$(FE)/element/PML/PML3DVISCOUS.o \
+    $(FE)/element/PML/pml_2d.o \
+    $(FE)/element/PML/PML2D.o \
 	$(FE)/element/PML/PML2D_3.o \
 	$(FE)/element/PML/PML2D_5.o \
 	$(FE)/element/PML/PML2D_12.o \

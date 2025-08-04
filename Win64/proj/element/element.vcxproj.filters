@@ -1097,6 +1097,9 @@
     <ClCompile Include="..\..\..\SRC\element\pipe\Pipe.cpp">
       <Filter>pipe</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\PML\PML3DVISCOUS.cpp">
+      <Filter>PML</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\element\Element.h">
@@ -1956,6 +1959,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\pipe\Pipe.h">
       <Filter>pipe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\PML\PML3DVISCOUS.h">
+      <Filter>PML</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

@@ -7315,7 +7315,7 @@ nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   int tag;
   
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+    opserr << "WARNING nodeDOFs nodeTag? nodeDOF? \n";
     return TCL_ERROR;	        
   }    
   
@@ -7345,21 +7345,24 @@ nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 int 
 nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  if (argc < 3) {
-    opserr << "WARNING want - nodeMass nodeTag? nodeDOF?\n";
+  if (argc < 2) {
+    opserr << "WARNING want - nodeMass nodeTag? <nodeDOF?>\n";
     return TCL_ERROR;
   }    
   
-  int tag, dof;
+  int tag;
+  int dof = -1;
   
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
     return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
-    return TCL_ERROR;	        
-  }    
+  }
+
+  if (argc == 3)
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+      return TCL_ERROR;	        
+    }    
   
   char buffer[40];
 
@@ -7369,14 +7372,24 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_ERROR;
   }
   int numDOF = theNode->getNumberDOF();
-  if (dof < 1 || dof > numDOF) {
-    opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
-    return TCL_ERROR;
-  }
-  else {
-    const Matrix &mass = theNode->getMass();
-    sprintf(buffer, "%35.20f", mass(dof-1,dof-1));
-    Tcl_AppendResult(interp, buffer, NULL);
+  if (dof == -1) {
+      const Matrix &mass = theNode->getMass();
+      for (int i =0; i<mass.noRows(); i++) {
+	sprintf(buffer, "%35.20f", mass(i,i));
+	Tcl_AppendResult(interp, buffer, NULL);
+      }
+	
+  } else {
+    if (dof < 1 || dof > numDOF) {
+      opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
+      return TCL_ERROR;
+    }
+    else {
+      const Matrix &mass = theNode->getMass();
+      
+      sprintf(buffer, "%35.20f", mass(dof-1,dof-1));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
   }
   
   return TCL_OK;

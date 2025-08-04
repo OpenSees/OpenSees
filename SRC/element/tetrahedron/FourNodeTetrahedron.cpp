@@ -1919,7 +1919,7 @@ FourNodeTetrahedron::updateParameter(int parameterID, Information &info)
     } 
     else if (parameterID == 1313)
     {
-      int doit = info.theDouble;
+      int doit = (int)info.theDouble;
       if (doit == 1)
       {
         Domain * mydomain = this->getDomain();

@@ -616,7 +616,7 @@ void SFI_MVLEM::setDomain(Domain *theDomain)
     // Create coordinates wrt top and bottom element node
     double xLoc_temp = end1Crd(0) + x[i]; 
     double yLoc_temp = 0.5*(end1Crd(1)+end2Crd(1)); // Mid-height
-    double zloc_temp = end1Crd(2);					// Not currently used since Domain is 2D
+    //double zloc_temp = end1Crd(2);					// Not currently used since Domain is 2D
     
     // Create Node and add it to the domain
     Node *theNode = 0;

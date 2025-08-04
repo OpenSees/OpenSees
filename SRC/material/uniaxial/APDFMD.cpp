@@ -1,3 +1,9 @@
+/** Developed by:                                                      **
+**   Linlin Xie (xielinlin@bucea.edu.cn)                              **
+**   Cantian Yang (yangcantian@bucea.edu.cn)                          **
+**   Bingyan Liu (1373158715@163.com)                                 **
+** ****************************************************************** */
+
 #include <elementAPI.h>
 #include "APDFMD.h"
 #include <iostream>
@@ -12,7 +18,7 @@ void *
 OPS_APDFMD(void)
 {
     if (numAPDFMD == 0) {
-        opserr << "APDFMD unaxial material - Written by BUCEA 2024; \n";
+        opserr << "APDFMD unaxial material; \n";
         numAPDFMD++;
     }
 
