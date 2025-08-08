@@ -32,6 +32,7 @@
 #include <DummyStream.h>
 #include <MaterialResponse.h>
 #include <ID.h>
+#include <Parameter.h>
 #include <cmath>
 #include <string>
 
@@ -227,6 +228,7 @@ Parallel3DMaterial::Parallel3DMaterial(
 		m_materials[i] = the_copy;
 	}
 	computeInitialTangent();
+	computeTangent();
 }
 
 Parallel3DMaterial::Parallel3DMaterial()
@@ -257,7 +259,7 @@ int Parallel3DMaterial::setTrialStrain(const Vector& v)
 	m_strain = v;
 	int result = 0;
 	for (std::size_t i = 0; i < m_materials.size(); ++i) {
-		if (!m_materials[i]->setTrialStrain(v))
+		if (m_materials[i]->setTrialStrain(v) != 0)
 			result = -1;
 	}
 	computeStress();
@@ -270,7 +272,7 @@ int Parallel3DMaterial::setTrialStrain(const Vector& v, const Vector& r)
 	m_strain = v;
 	int result = 0;
 	for (std::size_t i = 0; i < m_materials.size(); ++i) {
-		if (!m_materials[i]->setTrialStrain(v, r))
+		if (m_materials[i]->setTrialStrain(v, r) != 0)
 			result = -1;
 	}
 	computeStress();
@@ -513,6 +515,18 @@ int Parallel3DMaterial::recvSelf(int commitTag, Channel & theChannel, FEM_Object
 
 int Parallel3DMaterial::setParameter(const char** argv, int argc, Parameter& param)
 {
+	// handle parameters
+	if (argc > 0) {
+		if (strcmp(argv[0], "parallelWeight") == 0 || strcmp(argv[0], "ParallelWeight") == 0) {
+			if (argc == 2) {
+				int imat = atoi(argv[1]) - 1;
+				if (imat >= 0 && imat < static_cast<int>(m_weights.size())) {
+					param.setValue(m_weights[static_cast<std::size_t>(imat)]);
+					return param.addObject(1000 + imat, this);
+				}
+			}
+		}
+	}
 	// forward to the sub-materials
 	int res = -1;
 	for (NDMaterial* item : m_materials) {
@@ -520,6 +534,19 @@ int Parallel3DMaterial::setParameter(const char** argv, int argc, Parameter& par
 			res = 0;
 	}
 	return res;
+}
+
+int Parallel3DMaterial::updateParameter(int parameterID, Information& info)
+{
+	if (parameterID >= 1000) {
+		int imat = parameterID - 1000;
+		if (imat >= 0 && imat < static_cast<int>(m_weights.size())) {
+			m_weights[static_cast<std::size_t>(imat)] = info.theDouble;
+			computeInitialTangent();
+			return 0;
+		}
+	}
+	return -1;
 }
 
 Response* Parallel3DMaterial::setResponse(const char** argv, int argc, OPS_Stream& output)
