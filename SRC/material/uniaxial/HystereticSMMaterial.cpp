@@ -324,8 +324,9 @@ OPS_HystereticSMMaterial(void)
     Vector thepinchArray(&pinchArray[0], (int)pinchArray.size());
     Vector thedamageArray(&damageArray[0], (int)damageArray.size());
     Vector thedegEnvArray(&degEnvArray[0], (int)degEnvArray.size());
-    Vector theLSforce(&forceLimitStates[0], (int)forceLimitStates.size());
-    Vector theLSdefo(&defoLimitStates[0], (int)defoLimitStates.size());
+    // Not dereferencing optionally empty forceLimitStates and/or defoLimitStates
+    Vector theLSforce = forceLimitStates.size() > 0 ? Vector(&forceLimitStates[0], (int)forceLimitStates.size()) : Vector();
+    Vector theLSdefo = defoLimitStates.size() > 0 ? Vector(&defoLimitStates[0], (int)defoLimitStates.size()) : Vector();
 
     double tmp = 0;
     if (YXorder == -1) {
