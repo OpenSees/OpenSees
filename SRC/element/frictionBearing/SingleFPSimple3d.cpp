@@ -221,7 +221,7 @@ void* OPS_SingleFPSimple3d()
 		opserr<<"WARNING: invalid tol\n";
 		return 0;
 	    }
-	} else if (strcmp(type,"-inclVertdisp") == 0) {
+	} else if (strcmp(type,"-inclVertDisp") == 0) {
 	    inclVertDisp = 1;
 	} else if (strcmp(type,"-kFactUplift") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() < 1) {
@@ -1338,3 +1338,4 @@ SingleFPSimple3d::updateParameter(int parameterID, Information &info)
     return -1;
   }
 }
+
