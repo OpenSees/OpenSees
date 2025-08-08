@@ -60,7 +60,7 @@ OPS_FSIFluidBoundaryElement2D(void)
     // mandatory int parameters
     int iData[3];
     int numData = 3;
-    if (OPS_GetInt(&numData, iData) != 0) {
+    if (OPS_GetIntInput(&numData, iData) != 0) {
         opserr << "FSIFluidBoundaryElement2D ERROR: Invalid integer mandatory values: element FSIFluidBoundaryElement2D wants 3 integer parameters\n" << descr;
         return 0;
     }
@@ -68,7 +68,7 @@ OPS_FSIFluidBoundaryElement2D(void)
     // mandatory double parameters
     double dData[3];
     numData = 3;
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "FSIFluidBoundaryElement2D ERROR: Invalid double mandatory values: element FSIFluidBoundaryElement2D wants 3 double parameters\n" << descr;
         return 0;
     }

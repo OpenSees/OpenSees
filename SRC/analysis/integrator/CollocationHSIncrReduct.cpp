@@ -57,7 +57,7 @@ void *    OPS_CollocationHSIncrReduct(void)
     }
     
     double dData[4];
-    if (OPS_GetDouble(&argc, dData) != 0) {
+    if (OPS_GetDoubleInput(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want CollocationHSIncrReduct $theta $reduct\n";
         opserr << "          or CollocationHSIncrReduct $theta $beta $gamma $reduct\n";
         return 0;

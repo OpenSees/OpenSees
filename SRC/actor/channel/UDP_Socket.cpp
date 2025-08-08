@@ -51,7 +51,7 @@ static void byte_swap(void *array, long long nArray,int size);
 // constructor to open a socket with my inet_addr and with a port number
 // assigned by the OS from the available free port numbers.
 UDP_Socket::UDP_Socket()
-    : myPort(0), connectType(0),
+    : myPort(0), connectType(0), initialHandshake(false),
     checkEndianness(false), endiannessProblem(false)
 {
     // initialize sockets
@@ -61,7 +61,6 @@ UDP_Socket::UDP_Socket()
     bzero((char *) &my_Addr, sizeof(my_Addr));
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(0);
-    
 #ifdef _WIN32
     my_Addr.addr_in.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 #else
@@ -71,11 +70,20 @@ UDP_Socket::UDP_Socket()
     // open a socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         opserr << "UDP_Socket::UDP_Socket() - could not open socket\n";
+        cleanup_sockets();
+        exit(-1);
     }
     
     // bind local address to it
     if (bind(sockfd, &my_Addr.addr, sizeof(my_Addr.addr)) < 0) {
         opserr << "UDP_Socket::UDP_Socket() - could not bind local address\n";
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        cleanup_sockets();
+        exit(-2);
     }
     
     // get my_address info
@@ -86,8 +94,9 @@ UDP_Socket::UDP_Socket()
 
 // UDP_Socket(unsigned int port):
 // constructor to open a socket with my inet_addr and with a port number port.
-UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
-    : myPort(0), connectType(0),
+UDP_Socket::UDP_Socket(unsigned int port,
+    bool inithandshake, bool checkendianness)
+    : myPort(0), connectType(0), initialHandshake(inithandshake),
     checkEndianness(checkendianness), endiannessProblem(false)
 {
     // initialize sockets
@@ -100,7 +109,6 @@ UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
     bzero((char *) &my_Addr, sizeof(my_Addr));
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(port);
-    
 #ifdef _WIN32
     my_Addr.addr_in.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 #else
@@ -110,11 +118,20 @@ UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
     // open a socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         opserr << "UDP_Socket::UDP_Socket() - could not open socket\n";
+        cleanup_sockets();
+        exit(-1);
     }
     
     // bind local address to it
     if (bind(sockfd, &my_Addr.addr, sizeof(my_Addr.addr)) < 0) {
         opserr << "UDP_Socket::UDP_Socket() - could not bind local address\n";
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        cleanup_sockets();
+        exit(-2);
     }
     
     // get my_address info
@@ -129,8 +146,8 @@ UDP_Socket::UDP_Socket(unsigned int port, bool checkendianness)
 // to an address given by other_InetAddr and other_Port. This is to allow
 // a shadow object to find address of the actor it initiatites.
 UDP_Socket::UDP_Socket(unsigned int other_Port,
-    char *other_InetAddr, bool checkendianness)
-    : myPort(0), connectType(1),
+    const char *other_InetAddr, bool inithandshake, bool checkendianness)
+    : myPort(0), connectType(1), initialHandshake(inithandshake),
     checkEndianness(checkendianness), endiannessProblem(false)
 {
     // initialize sockets
@@ -140,7 +157,6 @@ UDP_Socket::UDP_Socket(unsigned int other_Port,
     bzero((char *) &other_Addr, sizeof(other_Addr));
     other_Addr.addr_in.sin_family = AF_INET;
     other_Addr.addr_in.sin_port = htons(other_Port);
-    
 #ifdef _WIN32
     other_Addr.addr_in.sin_addr.S_un.S_addr = inet_addr(other_InetAddr);
 #else
@@ -151,7 +167,6 @@ UDP_Socket::UDP_Socket(unsigned int other_Port,
     bzero((char *) &my_Addr, sizeof(my_Addr));
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(0);
-    
 #ifdef _WIN32
     my_Addr.addr_in.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 #else
@@ -161,11 +176,20 @@ UDP_Socket::UDP_Socket(unsigned int other_Port,
     // open a socket
     if ((sockfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
         opserr << "UDP_Socket::UDP_Socket() - could not open socket\n";
+        cleanup_sockets();
+        exit(-1);
     }
     
     // bind local address to it
     if (bind(sockfd, &my_Addr.addr, sizeof(my_Addr.addr)) < 0) {
         opserr << "UDP_Socket::UDP_Socket() - could not bind local address\n";
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        cleanup_sockets();
+        exit(-2);
     }
     
     // get my_address info
@@ -179,6 +203,7 @@ UDP_Socket::UDP_Socket(unsigned int other_Port,
 //	destructor
 UDP_Socket::~UDP_Socket()
 {
+    // close socket
 #ifdef _WIN32
     closesocket(sockfd);
 #else
@@ -198,28 +223,45 @@ UDP_Socket::setUpConnection()
     
     if (connectType == 1) {
         
-        // send a 1-byte message to address (try 3-times)
-        data = 'a';
-        addrLength = sizeof(other_Addr.addr);
-        trial = 0;
-        do {
-            ierr = sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
-            trial++;
-        } while (ierr != 1 && trial < 3);
-        if (ierr != 1) {
-            opserr << "UDP_Socket::setUpConnection() - client could not send intial message\n";
-            return -1;
-        }
-        
-        // receive a 1-byte message from other (try 3-times)
-        trial = 0;
-        do {
-            ierr = recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);
-            trial++;
-        } while (ierr != 1 && data != 'b' && trial < 3);
-        if (ierr != 1) {
-            opserr << "UDP_Socket::setUpConnection() - client could not receive intial message\n";
-            return -1;
+        // perform initial handshake if requested
+        if (initialHandshake) {
+            opserr << "UDP_Socket::setUpConnection() - performing initial handshake\n";
+            
+            // send a 1-byte message to address (try 3-times)
+            data = 'a';
+            addrLength = sizeof(other_Addr.addr);
+            trial = 0;
+            do {
+                ierr = sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
+                trial++;
+            } while (ierr != 1 && trial < 3);
+            if (ierr != 1) {
+                opserr << "UDP_Socket::setUpConnection() - client could not send intial handshake message\n";
+#ifdef _WIN32
+                closesocket(sockfd);
+#else
+                close(sockfd);
+#endif
+                cleanup_sockets();
+                return -1;
+            }
+            
+            // receive a 1-byte message from other (try 3-times)
+            trial = 0;
+            do {
+                ierr = recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);
+                trial++;
+            } while (ierr != 1 && data != 'b' && trial < 3);
+            if (ierr != 1) {
+                opserr << "UDP_Socket::setUpConnection() - client could not receive intial handshake message\n";
+#ifdef _WIN32
+                closesocket(sockfd);
+#else
+                close(sockfd);
+#endif
+                cleanup_sockets();
+                return -2;
+            }
         }
         
         // check for endianness problem if requested
@@ -247,28 +289,45 @@ UDP_Socket::setUpConnection()
         
     } else {
         
-        // wait for remote process to send a 1-byte message (try 3-times)
-        addrLength = sizeof(other_Addr.addr);
-        trial = 0;
-        do {
-            ierr = recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);
-            trial++;
-        } while (ierr != 1 && data != 'a' && trial < 3);
-        if (ierr != 1) {
-            opserr << "UDP_Socket::setUpConnection() - server could not receive intial message\n";
-            return -1;
-        }
-        
-        // then send a 1-byte message back (try 3-times)
-        data = 'b';
-        trial = 0;
-        do {
-            ierr = sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
-            trial++;
-        } while (ierr != 1 && trial < 3);
-        if (ierr != 1) {
-            opserr << "UDP_Socket::setUpConnection() - server could not send intial message\n";
-            return -1;
+        // perform initial handshake if requested
+        if (initialHandshake) {
+            opserr << "UDP_Socket::setUpConnection() - performing initial handshake\n";
+            
+            // wait for remote process to send a 1-byte message (try 3-times)
+            addrLength = sizeof(other_Addr.addr);
+            trial = 0;
+            do {
+                ierr = recvfrom(sockfd, &data, 1, 0, &other_Addr.addr, &addrLength);
+                trial++;
+            } while (ierr != 1 && data != 'a' && trial < 3);
+            if (ierr != 1) {
+                opserr << "UDP_Socket::setUpConnection() - server could not receive intial handshake message\n";
+#ifdef _WIN32
+                closesocket(sockfd);
+#else
+                close(sockfd);
+#endif
+                cleanup_sockets();
+                return -1;
+            }
+            
+            // then send a 1-byte message back (try 3-times)
+            data = 'b';
+            trial = 0;
+            do {
+                ierr = sendto(sockfd, &data, 1, 0, &other_Addr.addr, addrLength);
+                trial++;
+            } while (ierr != 1 && trial < 3);
+            if (ierr != 1) {
+                opserr << "UDP_Socket::setUpConnection() - server could not send intial handshake message\n";
+#ifdef _WIN32
+                closesocket(sockfd);
+#else
+                close(sockfd);
+#endif
+                cleanup_sockets();
+                return -2;
+            }
         }
         
         // check for endianness problem if requested

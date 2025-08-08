@@ -541,6 +541,38 @@ TclInterpreter::getDouble(double *data, int numArgs) {
     return 0;
 }
 
+int
+TclInterpreter::getDoubleList(int* size, Vector* data)
+{
+    TCL_Char** strings;
+
+    if (Tcl_SplitList(interp, wrapper.getCurrentArgv()[wrapper.getCurrentArg()],
+        size, &strings) != TCL_OK) {
+        opserr << "TclInterpreter::getDoubleList error: problem splitting list "
+            << wrapper.getCurrentArgv()[wrapper.getCurrentArg()] << " \n";
+        return -1;
+    }
+
+    data->resize(*size);
+    for (int i = 0; i < *size; i++) {
+        double value;
+        if (Tcl_GetDouble(interp, strings[i], &value) != TCL_OK) {
+            opserr << "TclInterpreter::getDoubleList error: problem reading data value "
+                << strings[i] << " \n";
+            // free up the array of strings .. see tcl man pages as to why
+            Tcl_Free((char*)strings);
+            return -1;
+        }
+        (*data)(i) = value;
+    }
+    // free up the array of strings .. see tcl man pages as to why
+    Tcl_Free((char*)strings);
+
+    wrapper.incrCurrentArg();
+
+    return 0;
+}
+
 const char*
 TclInterpreter::getString() {
 
@@ -557,6 +589,19 @@ TclInterpreter::getString() {
 int 
 TclInterpreter::getStringCopy(char **stringPtr) {
   return -1;
+}
+
+int
+TclInterpreter::evalDoubleStringExpression(
+    const char* theExpression, double& current_val) {
+
+    if (Tcl_ExprDouble(interp, theExpression, &current_val) != TCL_OK) {
+        opserr << "TclInterpreter::evalDoubleStringExpression -- expression \"" << theExpression;
+        opserr << "\" caused error:" << endln << Tcl_GetStringResult(interp) << endln;
+        return -1;
+    }
+
+    return 0;
 }
 
 void

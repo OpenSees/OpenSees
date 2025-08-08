@@ -56,7 +56,7 @@ PythonEvaluator::PythonEvaluator(
       current_val(0),
       moduleName() {
     theExpression = 0;
-    int exprLen = strlen(passed_fileName);
+    int exprLen = (int)strlen(passed_fileName);
     fileName = new char[exprLen + 1];
     strcpy(fileName, passed_fileName);
 }
@@ -145,7 +145,7 @@ int PythonEvaluator::setVariables() {
 int PythonEvaluator::setExpression(const char *passedExpression) {
     if (theExpression != 0) delete[] theExpression;
 
-    int exprLen = strlen(passedExpression);
+    int exprLen = (int)strlen(passedExpression);
     theExpression = new char[exprLen + 1];
     strcpy(theExpression, passedExpression);
 
