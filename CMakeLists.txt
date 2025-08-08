@@ -287,6 +287,8 @@ add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ARPACK")
 set (ARPACK_LIBRARIES ARPACK)
 add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/CSPARSE")
 set (CSPARSE_LIBRARIES CSPARSE)
+add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/ITPACK")
+set (ITPACK_LIBRARIES ITPACK)
 add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/tetgen1.4.3")
 set (TETGEN_LIBRARIES tet)
 add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/Triangle")
@@ -406,7 +408,7 @@ target_link_libraries(OPS_Numerics INTERFACE
        ${TETGEN_LIBRARIES}
        ${TRIANGLE_LIBRARIES}
        ${AMD_LIBRARIES}
-       ${AMD_LIBRARIES}
+       ${ITPACK_LIBRARIES}
        ${LAPACK_LIBRARIES}
        ${EIGENAPI_LIBRARIES}
 )
