@@ -391,6 +391,11 @@ PlateRebarMaterialThermal::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   
   return res;
 }
+
+int PlateRebarMaterialThermal::setParameter(const char** argv, int argc, Parameter& param)
+{
+    return theMat->setParameter(argv, argc, param);
+}
  
 
 Response*

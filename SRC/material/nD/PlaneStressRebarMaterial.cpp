@@ -382,4 +382,9 @@ PlaneStressRebarMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Objec
   
   return res;
 }
+
+int PlaneStressRebarMaterial::setParameter(const char** argv, int argc, Parameter& param)
+{
+    return theMat->setParameter(argv, argc, param);
+}
  
