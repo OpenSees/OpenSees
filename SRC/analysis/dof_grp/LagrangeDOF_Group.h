@@ -73,6 +73,8 @@ class LagrangeDOF_Group: public DOF_Group
     virtual void incrNodeVel(const Vector &udot);
     virtual void incrNodeAccel(const Vector &udotdot);
 
+  virtual void setEigenvector(int mode, const Vector &eigenvector);
+  
     virtual void  zeroTangent(void);
     virtual void  addMtoTang(double fact = 1.0);    
     virtual void  zeroUnbalance(void);

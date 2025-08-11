@@ -861,6 +861,26 @@ OpenSeesCommands::setTransientAnalysis(bool suppress)
 	theSOE = new ProfileSPDLinSOE(*theSolver);
     }
 
+    // Get the number of sub-levels and sub-steps
+    OPS_ResetCurrentInputArg(2);
+    int numSubLevels = 0;
+    int numSubSteps = 10;
+    int numData = 1;
+    while (OPS_GetNumRemainingInputArgs() >= 2) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-numSubLevels") == 0 || strcmp(opt, "numSubLevels") == 0) {
+            if (OPS_GetIntInput(&numData, &numSubLevels) < 0) {
+                opserr << "WARNING analysis Transient - failed to read -numSubLevels <numSubLevels>\n";
+                return;
+            }
+        } else if (strcmp(opt, "-numSubSteps") == 0 || strcmp(opt, "numSubSteps") == 0) {
+            if (OPS_GetIntInput(&numData, &numSubSteps) < 0) {
+                opserr << "WARNING analysis Transient - failed to read -numSubSteps <numSubSteps>\n";
+                return;
+            }
+        }
+    }
+
     theTransientAnalysis = new DirectIntegrationAnalysis(*theDomain,
 							 *theHandler,
 							 *theNumberer,
@@ -868,7 +888,7 @@ OpenSeesCommands::setTransientAnalysis(bool suppress)
 							 *theAlgorithm,
 							 *theSOE,
 							 *theTransientIntegrator,
-							 theTest);
+							 theTest, numSubLevels, numSubSteps);
     if (theEigenSOE != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
