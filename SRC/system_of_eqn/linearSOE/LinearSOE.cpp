@@ -111,7 +111,7 @@ LinearSOE::addColA(const Vector &col, int colIndex, double fact) {
 }
 
 int LinearSOE::saveSparseA(OPS_Stream& output, int baseIndex) {
-  Matrix* A = const_cast<Matrix*>(this->getA());
+  const Matrix* A = this->getA();
   
   if (A == nullptr) {
     return -1;
