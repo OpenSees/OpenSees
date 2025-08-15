@@ -589,6 +589,7 @@
 #include "Beam2dPointLoad.h"
 #include "Beam3dUniformLoad.h"
 #include "Beam3dPointLoad.h"
+#include "BeamUniformMoment.h"
 #include "BrickSelfWeight.h"
 #include "SelfWeight.h"
 #include "SurfaceLoader.h"
@@ -1362,6 +1363,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     
     case LOAD_TAG_Beam3dPointLoad:
       return new Beam3dPointLoad();
+
+    case LOAD_TAG_BeamUniformMoment:
+      return new BeamUniformMoment();      
     
     case LOAD_TAG_BrickSelfWeight:
       return new BrickSelfWeight();	     
