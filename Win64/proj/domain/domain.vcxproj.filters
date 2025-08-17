@@ -141,6 +141,9 @@
     <ClCompile Include="..\..\..\Src\domain\load\Beam2dUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Src\domain\load\BeamUniformMoment.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPointLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
@@ -438,6 +441,9 @@
       <Filter>load\beam</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Src\domain\load\Beam2dUniformLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Src\domain\load\BeamUniformMoment.h">
       <Filter>load\beam</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPointLoad.h">
