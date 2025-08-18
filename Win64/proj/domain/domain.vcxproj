@@ -245,6 +245,7 @@
     <ClCompile Include="..\..\..\Src\domain\load\Beam2dPointLoad.cpp" />
     <ClCompile Include="..\..\..\Src\domain\load\Beam2dTempLoad.cpp" />
     <ClCompile Include="..\..\..\Src\domain\load\Beam2dUniformLoad.cpp" />
+    <ClCompile Include="..\..\..\Src\domain\load\BeamUniformMoment.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPointLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dUniformLoad.cpp" />
     <ClCompile Include="..\..\..\Src\domain\load\BrickSelfWeight.cpp" />
@@ -345,6 +346,7 @@
     <ClInclude Include="..\..\..\Src\domain\load\Beam2dPointLoad.h" />
     <ClInclude Include="..\..\..\Src\domain\load\Beam2dTempLoad.h" />
     <ClInclude Include="..\..\..\Src\domain\load\Beam2dUniformLoad.h" />
+    <ClInclude Include="..\..\..\Src\domain\load\BeamUniformMoment.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPointLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dUniformLoad.h" />
     <ClInclude Include="..\..\..\Src\domain\load\BrickSelfWeight.h" />
