@@ -1326,6 +1326,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/load/Beam2dPointLoad.o \
 	$(FE)/domain/load/Beam2dTempLoad.o \
 	$(FE)/domain/load/Beam2dThermalAction.o \
+    $(FE)/domain/load/BeamUniformMoment.o \
 	$(FE)/domain/load/NodalThermalAction.o \
 	$(FE)/domain/load/ThermalActionWrapper.o \
 	$(FE)/domain/load/Beam3dThermalAction.o \
