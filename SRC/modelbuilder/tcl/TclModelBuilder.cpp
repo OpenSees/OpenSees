@@ -51,7 +51,7 @@
 #include <SP_Constraint.h>
 #include <SP_ConstraintIter.h>
 #include <MP_Constraint.h>
-
+#include <BSMPC.h>//Ziping Zhu
 #include <RigidRod.h>
 #include <RigidBeam.h>
 #include <RigidDiaphragm.h>
@@ -245,6 +245,9 @@ TclCommand_addEqualDOF_MP (ClientData clientData, Tcl_Interp *interp,
 int
 TclCommand_addEqualDOF_MP_Mixed (ClientData clientData, Tcl_Interp *interp,
 			   int argc, TCL_Char **argv);
+
+int
+TclCommand_BSMPC(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv);//Ziping Zhu
 
 int 
 TclCommand_RigidLink(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
@@ -575,6 +578,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   Tcl_CreateCommand(interp, "rigidDiaphragm", &TclCommand_RigidDiaphragm, 
 		    (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);   
 
+  Tcl_CreateCommand(interp, "BSMPC", &TclCommand_BSMPC,
+	  (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);  //Ziping Zhu
+	  
   Tcl_CreateCommand(interp, "mp", TclCommand_addMP,
 		    (ClientData)NULL, NULL);
 
@@ -4157,6 +4163,58 @@ TclCommand_RigidDiaphragm(ClientData clientData, Tcl_Interp *interp, int argc, T
   return TCL_OK;
 }
 
+//Ziping Zhu
+int
+TclCommand_BSMPC(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+	if (argc < 3) {
+		opserr << "WARNING rigidLink perpDirn? rNode? <cNodes?>\n";
+		return TCL_ERROR;
+	}
+
+	int rNode1, rNode2, perpDirn;
+
+	if (Tcl_GetInt(interp, argv[1], &rNode1) != TCL_OK) {
+		opserr << "WARNING rigidLink perpDirn rNode cNodes - could not read rNode1 \n";
+		return TCL_ERROR;
+	}
+	else {
+		opserr << "rNode1 ok\n";
+	}
+	if (Tcl_GetInt(interp, argv[2], &rNode2) != TCL_OK) {
+		opserr << "WARNING rigidLink perpDirn rNode cNodes - could not read rNode2 \n";
+		return TCL_ERROR;
+	}
+	else {
+		opserr << "rNode2 ok\n";
+	}
+
+	// read in the constrained Nodes
+	int numConstrainedNodes = argc - 6;//5
+	ID constrainedNodes(numConstrainedNodes);
+	for (int i = 0; i < numConstrainedNodes; i++) {
+		int cNode;
+		if (Tcl_GetInt(interp, argv[3 + i], &cNode) != TCL_OK) {//5
+			opserr << "WARNING rigidLink perpDirn rNode cNodes - could not read a cNode\n";
+			return TCL_ERROR;
+		}
+		constrainedNodes(i) = cNode;
+	}
+	int ndm = theTclBuilder->getNDM();
+	Vector vectorforlocal(3);
+	for (int i = 0; i < 3; i++) {
+		int v;
+		if (Tcl_GetInt(interp, argv[argc - 3 + i], &v) != TCL_OK) {//5
+			opserr << "WARNING rigidLink perpDirn rNode cNodes - could not read a cNode\n";
+			return TCL_ERROR;
+		}
+		vectorforlocal(i) = v;
+	}
+	BSMPC theLink(*theTclDomain, ndm, rNode1, rNode2, constrainedNodes, vectorforlocal);
+
+
+	return TCL_OK;
+}
 
 
 
