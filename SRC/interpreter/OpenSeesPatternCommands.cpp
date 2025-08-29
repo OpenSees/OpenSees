@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <elementAPI.h>
 #include <Domain.h>
 #include <NodalLoad.h>
+#include <BeamUniformMoment.h>
 #include <Beam2dPartialUniformLoad.h>
 #include <Beam2dUniformLoad.h>
 #include <Beam3dUniformLoad.h>
@@ -366,6 +367,53 @@ int OPS_ElementalLoad()
 	    return -1;
 	}
 
+    } else if (strncmp(type,"-beamUniformMoment",80) == 0 || strncmp(type,"beamUniformMoment",80) == 0) {
+      double data[3] = {0.0,0.0,0.0};
+      int numdata = OPS_GetNumRemainingInputArgs();
+      if (ndm == 2) {
+	if (numdata < 1) {
+	  opserr << "WARNING eleLoad - beamUniformMoment want mz" << endln;
+	  return -1;
+	}
+	if (numdata > 1) numdata = 1;
+	if (OPS_GetDoubleInput(&numdata, &data[2]) < 0) {
+	  opserr<<"WARNING eleLoad - invalid value for beamUniformMoment\n";
+	  return -1;
+	}
+      }
+      if (ndm == 3) {
+	if (numdata < 3) {
+	  opserr << "WARNING eleLoad - beamUniformMoment want mx my mz" << endln;
+	  return -1;
+	}
+	if (numdata > 3) numdata = 3;
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	  opserr<<"WARNING eleLoad - invalid value for beamUniformMoment\n";
+	  return -1;
+	}	
+      }
+      for (int i=0; i<theEleTags.Size(); i++) {
+	theLoad = new BeamUniformMoment(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
+
+	if (theLoad == 0) {
+	  opserr << "WARNING eleLoad - out of memory creating load of type " << type;
+	  return -1;
+	}
+	
+	// get the current pattern tag if no tag given in i/p
+	int loadPatternTag = theActiveLoadPattern->getTag();
+	
+	// add the load to the domain
+	if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+	  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+	  opserr << theLoad;
+	  delete theLoad;
+	  return -1;
+	}
+	eleLoadTag++;
+      }
+      
+      return 0;
     } else if (strcmp(type,"-beamPoint") == 0 ||
 	       strcmp(type,"beamPoint") == 0 ) {
 

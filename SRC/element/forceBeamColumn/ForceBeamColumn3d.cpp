@@ -1697,7 +1697,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += x*Vz1;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= Vz1;
+	    sp(ii) += Vz1;
 	    break;
 	  default:
 	    break;
@@ -1715,7 +1715,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += (L-x)*Vz2;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += Vz2;
+	    sp(ii) -= Vz2;
 	    break;
 	  default:
 	    break;

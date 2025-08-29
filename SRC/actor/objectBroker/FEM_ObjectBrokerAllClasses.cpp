@@ -74,6 +74,7 @@
 #include "TensionOnlyMaterial.h"
 #include "ASD_SMA_3K.h"
 #include "ASDConcrete1DMaterial.h"
+#include "ASDSteel1DMaterial.h"
 #include "Concrete01.h"
 #include "Concrete01WithSITC.h"
 #include "Concrete02.h"
@@ -588,6 +589,7 @@
 #include "Beam2dPointLoad.h"
 #include "Beam3dUniformLoad.h"
 #include "Beam3dPointLoad.h"
+#include "BeamUniformMoment.h"
 #include "BrickSelfWeight.h"
 #include "SelfWeight.h"
 #include "SurfaceLoader.h"
@@ -1361,6 +1363,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     
     case LOAD_TAG_Beam3dPointLoad:
       return new Beam3dPointLoad();
+
+    case LOAD_TAG_BeamUniformMoment:
+      return new BeamUniformMoment();      
     
     case LOAD_TAG_BrickSelfWeight:
       return new BrickSelfWeight();	     
@@ -1730,6 +1735,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_ASDConcrete1DMaterial:  
 	     return new ASDConcrete1DMaterial();
+
+	case MAT_TAG_ASDSteel1DMaterial:  
+	     return new ASDSteel1DMaterial();
 
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();

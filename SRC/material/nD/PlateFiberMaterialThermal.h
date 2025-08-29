@@ -100,6 +100,7 @@ class PlateFiberMaterialThermal: public NDMaterial{
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
+    int setParameter(const char** argv, int argc, Parameter& param);
 
   private :
 

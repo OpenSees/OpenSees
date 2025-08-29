@@ -1084,6 +1084,12 @@ ForceBeamColumn2d::computeReactions(double *p0)
       p0[1] -= V;
       p0[2] -= V;
     }
+    if (type == LOAD_TAG_BeamUniformMoment) {
+      double mz = data(2)*loadFactor;  // About z
+      
+      p0[1] += mz;
+      p0[2] -= mz;
+    }    
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double waa = data(2)*loadFactor;  // Axial
       double wab = data(3)*loadFactor;  // Axial
@@ -1734,6 +1740,24 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
 	  break;
 	}
       }
+    }
+    else if (type == LOAD_TAG_BeamUniformMoment) {
+      double mz = data(2)*loadFactor;  // About z
+
+      for (int ii = 0; ii < order; ii++) {
+	
+	switch(code(ii)) {
+	case SECTION_RESPONSE_P:
+	  break;
+	case SECTION_RESPONSE_MZ:
+	  break;
+	case SECTION_RESPONSE_VY:
+	  sp(ii) += mz;
+	  break;
+	default:
+	  break;
+	}
+      }      
     }
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double waa = data(2)*loadFactor;  // Axial

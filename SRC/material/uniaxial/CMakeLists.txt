@@ -73,6 +73,7 @@ target_sources(OPS_Material
     PRIVATE
       ASD_SMA_3K.cpp
       ASDConcrete1DMaterial.cpp
+      ASDSteel1DMaterial.cpp
       BackboneMaterial.cpp
       BarSlipMaterial.cpp
       BilinearOilDamper.cpp
@@ -200,6 +201,7 @@ target_sources(OPS_Material
     PUBLIC
       ASD_SMA_3K.h
       ASDConcrete1DMaterial.h
+      ASDSteel1DMaterial.h
       BackboneMaterial.h
       BarSlipMaterial.h
       BilinearOilDamper.h

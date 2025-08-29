@@ -1,10 +1,38 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
+
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+
 //
 // Description: Geometric transformation command
 //
@@ -29,6 +57,8 @@
 
 #include <BasicFrameTransf.h>
 #include <transform/FrameTransformBuilder.hpp>
+
+using namespace OpenSees;
 
 int 
 TclCommand_addTransformBuilder(ClientData clientData, Tcl_Interp *interp, int argc,
@@ -384,16 +414,17 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp, int argc,
              strcmp(argv[1], "LinearWithPDelta") == 0)
       crdTransf2d = new PDeltaCrdTransf2d(tag, jntOffsetI, jntOffsetJ);
 
-    else if (strcmp(argv[1], "Corotational") == 0 && ndf == 3)
+    else if ((strcmp(argv[1], "Corotational") == 0 || strcmp(argv[1], "Corotational02") == 0) && ndf == 3)
       crdTransf2d = new CorotCrdTransf2d(tag, jntOffsetI, jntOffsetJ);
 
-    else if (strcmp(argv[1], "Corotational") == 0 && ndf == 4)
+    else if ((strcmp(argv[1], "Corotational") == 0 || strcmp(argv[1], "Corotational02") == 0) && ndf == 4)
       crdTransf2d =
           new CorotCrdTransfWarping2d(tag, jntOffsetI, jntOffsetJ);
 
     else {
       opserr << OpenSees::PromptValueError 
-             << "invalid Type: " << argv[1] << "\n";
+             << "invalid Type: " << argv[1]
+             << "\n";
       return TCL_ERROR;
     }
 

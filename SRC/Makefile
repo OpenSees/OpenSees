@@ -432,8 +432,7 @@ RECORDER_LIBS = $(FE)/recorder/Recorder.o \
 	$(FE)/recorder/ElementRecorderRMS.o \
 	$(FE)/recorder/NodeRecorderRMS.o \
 	$(FE)/recorder/MPCORecorder.o \
-	$(FE)/recorder/VTK_Recorder.o \
-	$(FE)/recorder/VTKHDF_Recorder.o \
+	$(FE)/recorder/VTK_Recorder.o
 
 
 DATABASE_LIBS = $(FE)/database/FileDatastore.o \
@@ -777,6 +776,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/Neoprene.o \
 	$(FE)/material/uniaxial/ASD_SMA_3K.o \
 	$(FE)/material/uniaxial/ASDConcrete1DMaterial.o \
+	$(FE)/material/uniaxial/ASDSteel1DMaterial.o \
 	$(FE)/material/uniaxial/Concrete01.o \
 	$(FE)/material/uniaxial/Concrete02.o \
 	$(FE)/material/uniaxial/Concrete02IS.o \
@@ -1326,6 +1326,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/load/Beam2dPointLoad.o \
 	$(FE)/domain/load/Beam2dTempLoad.o \
 	$(FE)/domain/load/Beam2dThermalAction.o \
+    $(FE)/domain/load/BeamUniformMoment.o \
 	$(FE)/domain/load/NodalThermalAction.o \
 	$(FE)/domain/load/ThermalActionWrapper.o \
 	$(FE)/domain/load/Beam3dThermalAction.o \

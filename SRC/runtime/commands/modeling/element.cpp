@@ -11,7 +11,7 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#ifdef _MSC_VER 
+#ifdef _MSC_VER
 #  include <string.h>
 #  define strcasecmp _stricmp
 #else
@@ -22,7 +22,6 @@
 #include <runtimeAPI.h>
 #include <BasicModelBuilder.h>
 
-#include <OPS_Stream.h>
 #include <G3_Logging.h>
 #include <packages.h>
 #include <Domain.h>
@@ -54,17 +53,7 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp *interp
 // THE PROTOTYPES OF THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
-#if 0 // cmp - commented out to eliminate use of TclBasicBuilder
-extern int TclBasicBuilder_addFeapTruss(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv, Domain *, TclBasicBuilder *, int argStart);
-extern int Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv, Domain *, TclBuilder *);
-// Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31 (Xiamen University)
-#endif
 static Tcl_CmdProc TclBasicBuilder_addWheelRail;
-
-
-
-extern OPS_Routine OPS_ElasticBeam3d;
-extern void *OPS_ElasticBeam2d(G3_Runtime *, const ID &);
 
 
 // Frame
@@ -113,16 +102,7 @@ G3_TclElementCommand TclBasicBuilder_addBeamGT;
 
 
 // Shells
-Element* TclDispatch_newASDShellQ4(ClientData, Tcl_Interp*, int, TCL_Char** const);
 Element* TclDispatch_newShellANDeS(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellDKGQ(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellDKGT(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellMITC4(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellMITC4Thermal(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellMITC9(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellNLDKGQ(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellNLDKGQThermal(ClientData, Tcl_Interp*, int, TCL_Char** const);
-Element* TclDispatch_newShellNLDKGT(ClientData, Tcl_Interp*, int, TCL_Char** const);
 
 
 
@@ -140,7 +120,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 
   // check at least two arguments so don't segemnt fault on strcmp
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "insufficient arguments, expected:\n";
+    opserr << OpenSees::PromptValueError << "insufficient arguments, expected:\n";
     opserr << "      element eleType <specific element args> .. \n";
     return TCL_ERROR;
   }
@@ -158,14 +138,6 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
   auto tcl_cmd = element_dispatch_tcl.find(std::string(argv[1]));
   if (tcl_cmd != element_dispatch_tcl.end()) {
     return (*tcl_cmd->second)(clientData, interp, argc, &argv[0]);
-  }
-
-  if (strcasecmp(argv[1], "truss") == 0) {
-    theEle = OPS_TrussElement(rt, argc, argv);
-
-    // for backward compatibility
-    if (theEle == nullptr)
-      theEle = OPS_TrussSectionElement(rt, argc, argv);
   }
 
   else if ((strcasecmp(argv[1], "elasticBeamColumn") == 0) ||
@@ -233,14 +205,6 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
     theEle = OPS_TFP_Bearing(rt, argc, argv);
   }
 
-  else if (strcasecmp(argv[1], "CorotTruss") == 0) {
-    theEle = OPS_CorotTrussElement(rt, argc, argv);
-
-    // for backward compatibility
-    if (theEle == nullptr)
-      theEle = OPS_CorotTrussSectionElement(rt, argc, argv);
-  }
-
   else if ((strcmp(argv[1], "MultiFP2d") == 0) ||
             (strcmp(argv[1], "MultiFPB2d") == 0)) {
 
@@ -282,10 +246,6 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
                                            interp,
                                            argc,
                                            argv);
-//  if (ndm == 2)
-//    theEle = OPS_FlatSliderSimple2d(rt, argc, argv);
-//  else
-//    theEle = OPS_FlatSliderSimple3d(rt, argc, argv);
   }
 
   else if (strcmp(argv[1], "SingleFPBearing") == 0 ||
@@ -296,72 +256,17 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
                                          interp,
                                          argc,
                                          argv);
-//  if (ndm == 2)
-//    theEle = OPS_SingleFPSimple2d(rt, argc, argv);
-//  else
-//    theEle = OPS_SingleFPSimple3d(rt, argc, argv);
   }
 
-  // Xinlong Du
-  else if ((strcmp(argv[1], "DispBeamColumnAsym") == 0) ||
-           (strcmp(argv[1], "DispBeamAsym")) == 0) {
-    if (ndm == 3)
-      theEle = OPS_DispBeamColumnAsym3dTcl(rt, argc, argv);
-  }
-
-  else if ((strcmp(argv[1], "MixedBeamColumnAsym") == 0) ||
-           (strcmp(argv[1], "MixedBeamAsym") == 0)) {
-
-    if (ndm == 3)
-      theEle = OPS_MixedBeamColumnAsym3dTcl(rt, argc, argv);
-  }
-  // Xinlong Du
 
 //
 // Shells
 //
-  else if ((strcmp(argv[1], "Shell") == 0) ||
-           (strcmp(argv[1], "ShellMITC4") == 0)) {
-    theEle = TclDispatch_newShellMITC4(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "ShellMITC4Thermal") == 0) {
-    theEle = TclDispatch_newShellMITC4Thermal(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "ShellNLDKGQThermal") == 0) {
-    theEle = TclDispatch_newShellNLDKGQThermal(clientData, interp, argc, argv);
-  }
-
-  else if ((strcmp(argv[1], "ShellNL") == 0) ||
-             (strcmp(argv[1], "ShellMITC9") == 0)) {
-    theEle = TclDispatch_newShellMITC9(clientData, interp, argc, argv);
-  }
-
-  else if ((strcmp(argv[1], "shellDKGQ") == 0) ||
-           (strcmp(argv[1], "ShellDKGQ") == 0)) {
-    theEle = TclDispatch_newShellDKGQ(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "ShellNLDKGQ") == 0) {
-    theEle = TclDispatch_newShellNLDKGQ(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "ShellDKGT") == 0) {
-    theEle = TclDispatch_newShellDKGT(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "ShellNLDKGT") == 0) {
-    theEle = TclDispatch_newShellNLDKGT(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "ASDShellQ4") == 0) {
-    theEle = TclDispatch_newASDShellQ4(clientData, interp, argc, argv);
-  }
 
   else if (strcmp(argv[1], "ShellANDeS") == 0) {
     theEle = TclDispatch_newShellANDeS(clientData, interp, argc, argv);
   }
+
 
 
   // if one of the above worked
@@ -400,26 +305,28 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
     return TclBasicBuilder_addWheelRail(clientData, interp, argc, argv);
   }
 
-  else if (strcmp(argv[1], "DisplFrame") == 0 ||
-           strcmp(argv[1], "CubicFrame") == 0 ||
-           strcmp(argv[1], "ForceFrame") == 0 ||
-           strcmp(argv[1], "ExactFrame") == 0 ||
-           strcmp(argv[1], "ForceDeltaFrame") == 0 ||
+  else if (strcasecmp(argv[1], "DisplFrame") == 0 ||
+           strcasecmp(argv[1], "CubicFrame") == 0 ||
+           strcasecmp(argv[1], "EulerFrame") == 0 ||
+           strcasecmp(argv[1], "ForceFrame") == 0 ||
+           strcasecmp(argv[1], "MixedFrame") == 0 ||
+           strcasecmp(argv[1], "ExactFrame") == 0 ||
+           strcasecmp(argv[1], "ForceDeltaFrame") == 0 ||
 
-           strcmp(argv[1], "ForceBeamColumn") == 0 ||
-           strcmp(argv[1], "DispBeamColumn") == 0 ||
-           strcmp(argv[1], "DispBeamColumn") == 0 ||
-           strcmp(argv[1], "TimoshenkoBeamColumn") == 0 ||
-           strcmp(argv[1], "ForceBeamColumnCBDI") == 0 ||
-           strcmp(argv[1], "ForceBeamColumnCSBDI") == 0 ||
-           strcmp(argv[1], "ForceBeamColumnWarping") == 0 ||
-           strcmp(argv[1], "ForceBeamColumnThermal") == 0 ||
-           strcmp(argv[1], "ElasticForceBeamColumnWarping") == 0 ||
-           strcmp(argv[1], "DispBeamColumnNL") == 0 ||
-           strcmp(argv[1], "DispBeamColumnThermal") == 0 ||
-           strcmp(argv[1], "ElasticForceBeamColumn") == 0 ||
-           strcmp(argv[1], "NonlinearBeamColumn") == 0 ||
-           strcmp(argv[1], "DispBeamColumnWithSensitivity") == 0) {
+           strcasecmp(argv[1], "ForceBeamColumn") == 0 ||
+           strcasecmp(argv[1], "DispBeamColumn") == 0 ||
+           strcasecmp(argv[1], "DispBeamColumn") == 0 ||
+           strcasecmp(argv[1], "TimoshenkoBeamColumn") == 0 ||
+           strcasecmp(argv[1], "ForceBeamColumnCBDI") == 0 ||
+           strcasecmp(argv[1], "ForceBeamColumnCSBDI") == 0 ||
+           strcasecmp(argv[1], "ForceBeamColumnWarping") == 0 ||
+           strcasecmp(argv[1], "ForceBeamColumnThermal") == 0 ||
+           strcasecmp(argv[1], "ElasticForceBeamColumnWarping") == 0 ||
+           strcasecmp(argv[1], "DispBeamColumnNL") == 0 ||
+           strcasecmp(argv[1], "DispBeamColumnThermal") == 0 ||
+           strcasecmp(argv[1], "ElasticForceBeamColumn") == 0 ||
+           strcasecmp(argv[1], "nonlinearBeamColumn") == 0 ||
+           strcasecmp(argv[1], "DispBeamColumnWithSensitivity") == 0) {
 
     return TclBasicBuilder_addForceBeamColumn(clientData, interp, argc, argv);
 
@@ -427,11 +334,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
              (strcmp(argv[1], "BeamWithHinges") == 0)) {
     return TclBasicBuilder_addBeamWithHinges(clientData, interp, argc, argv);
 
-  //
-  //
-//
-// Brick
-//
+
 //
 // Zero-Length
 //
@@ -442,11 +345,11 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
     return TclCommand_addZeroLengthSection(clientData, interp, argc, argv);
 
   } else if (strcmp(argv[1], "zeroLengthRocking") == 0) {
-    int result = TclCommand_addZeroLengthRocking(clientData, interp, argc, argv);
-    return result;
+    return TclCommand_addZeroLengthRocking(clientData, interp, argc, argv);
+
   } else if (strcmp(argv[1], "zeroLengthContact2D") == 0) {
-    int result = TclCommand_addZeroLengthContact2D(clientData, interp, argc, argv);
-    return result;
+    return TclCommand_addZeroLengthContact2D(clientData, interp, argc, argv);
+
   } else if (strcmp(argv[1], "zeroLengthContact3D") == 0) {
     return TclCommand_addZeroLengthContact3D(clientData, interp, argc, argv);
 
@@ -874,6 +777,7 @@ errDetected(bool ifNoError, const char *msg)
   opserr << "  " << msg << endln;
   return false;
 };
+
 
 int
 TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *interp,
@@ -2030,7 +1934,7 @@ TclBasicBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc
   // -- End of a 2D wheel-rail element(By Quan Gu, Yongdou Liu, et al.) on 2018/10/29
 
   else if (ndm == 3) {
-    opserr << G3_ERROR_PROMPT << "Unimplemented." << endln;
+    opserr << OpenSees::PromptValueError << "Unimplemented." << endln;
     return TCL_ERROR;
   }
 

@@ -1,22 +1,57 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+// Please cite the following resource in any derivative works:
+//
+// Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
+//
 //===----------------------------------------------------------------------===//
+
+//
+// References:
+//
+// [1] Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
+//
+// [2] Ritto-Corrêa, M. and Camotim, D. (2002) "On the differentiation of the
+//     Rodrigues formula and its significance for the vector-like parameterization
+//     of Reissner-Simo beam theory"
+//     Int. J. Numer. Meth. Engrg., 55(9), pp.
+//     1005–1032. Available at: https://doi.org/10.1002/nme.532.
+//
+// [3] Ibrahimbegović, A. and Mikdad, M.A. (1998) ‘Finite rotations in dynamics of
+//     beams and implicit time‐stepping’, 41, pp. 781–814.
+//
+// [4] Pfister, F. (1998) ‘Bernoulli Numbers and Rotational Kinematics’,
+//     Journal of Applied Mechanics, 65(3), pp. 758–763. 
+//     Available at: https://doi.org/10.1115/1.2789120.
+//
+// [5] Nurlanov Z (2021) Exploring SO(3) logarithmic map: degeneracies and 
+//     derivatives.
+//
+//===----------------------------------------------------------------------===//
+
 //
 // Functions related to exponential coordinates on SO(3). The implementation
 // follows value semantics with the expectation that RVO will make this
 // performant.
 //
-// Written: cmp
+// Written: Claudio M. Perez
+// 2023
 //
-// [1] Perez, C. M., and Filippou F. C. (2024) "On Nonlinear Geometric 
-//     Transformations of Finite Elements" 
-//     Int. J. Numer. Meth. Engrg. https://doi.org/10.1002/nme.7506
-//
-//===----------------------------------------------------------------------===//
 #pragma once
 
 #include <cmath>
@@ -25,37 +60,40 @@
 #include "Matrix3D.h"
 #include "Vector3D.h"
 using OpenSees::Matrix3D;
+using OpenSees::Versor;
 
-
-#define cot(x) std::cos(x)/std::sin(x)
+static constexpr double SmallAngle = 1e-12; // threshold for small angles
+static constexpr double SmallAngle2 = SmallAngle * SmallAngle; // threshold for small angles squared
 
 static constexpr Matrix3D Eye3 {{
-  {1, 0, 0},
-  {0, 1, 0},
-  {0, 0, 1}
+  1, 0, 0,
+  0, 1, 0,
+  0, 0, 1
 }};
 
 
-static inline Vector3D
-Vee(const Matrix3D &X)
+
+static inline constexpr Vector3D
+Vee(const Matrix3D &X) noexcept
 {
-//===----------------------------------------------------------------------===//
+//
 // Return the axial vector x of the given skew-symmetric 3x3 matrix X.
-//===----------------------------------------------------------------------===//
+//
   return {X(2,1), X(0,2), X(1,0)};
 }
 
 template <typename Vec3Type>
-inline constexpr Matrix3D
-Hat(const Vec3Type &u)
+static inline constexpr Matrix3D
+Hat(const Vec3Type &u) noexcept
 {
-  return Matrix3D {{{  0  ,  u[2], -u[1]},
-                    {-u[2],   0  ,  u[0]},
-                    { u[1], -u[0],   0  }}};
+  return Matrix3D {{  0  ,  u[2], -u[1],
+                    -u[2],   0  ,  u[0],
+                     u[1], -u[0],   0  }};
 }
 
-static inline void
-GibSO3(const Vector3D &vec, double *a, double *b=nullptr, double *c=nullptr)
+
+static inline double
+GibSO3(const Vector3D &vec, double *a, double *b=nullptr, double *c=nullptr) noexcept
 {
 //
 // Compute coefficients of the Rodrigues formula and their differentials.
@@ -90,24 +128,27 @@ GibSO3(const Vector3D &vec, double *a, double *b=nullptr, double *c=nullptr)
 //
   double angle2 =  vec.dot(vec);
 
-  if (angle2  <= 1e-07) {
+  if (angle2  <= 1e-12) {
     //
-    // Use series formula of Equation (A9) from [1]
+    // Maclaurin series in Horner form
     //
     if (a != nullptr) {
-      a[0]   =   0.0;
+      a[0]   =   1.0        - angle2*(1.0/2.0   - angle2*(1.0/6.0    - angle2/24.0));
       a[1]   =   1.0        - angle2*(1.0/6.0   - angle2*(1.0/120.0  - angle2/5040.0));
       a[2]   =   0.5        - angle2*(1.0/24.0  - angle2*(1.0/720.0  - angle2/40320.0));
-      a[3]   =   1.0/6.0    - angle2/(1.0/120.0 - angle2/(1.0/5040.0 - angle2/362880.0));
+      // a[3]   =   1.0/6.0    - angle2/(1.0/120.0 - angle2/(1.0/5040.0 - angle2/362880.0));
+      a[3]   =   1.0/6.0    - angle2*(1.0/120.0 - angle2*(1.0/5040.0 - angle2/362880.0));
     }
     if (b != nullptr) {
-      b[1]   = - 1.0/3.0    + angle2*(1.0/30.0  - angle2*(1.0/840.0  - angle2/45360.0));
-      b[2]   = - 1.0/12.0   + angle2*(1.0/180.0 - angle2*(1.0/6720.0 - angle2/453600.0));
+      b[0]   = - a[1];
+      b[1]   = - 1.0/3.0    + angle2*(1.0/30.0   - angle2*(1.0/840.0  - angle2/45360.0));
+      b[2]   = - 1.0/12.0   + angle2*(1.0/180.0  - angle2*(1.0/6720.0 - angle2/453600.0));
       b[3]   = - 1.0/60.0   + angle2*(1.0/1260.0 - angle2*(1.0/60480 - angle2/4989600.0));
     }
     if (c != nullptr) {
-      c[1]   = b[3] - b[2]; 
-      c[2]   = 1.0/90.0     - angle2*(1.0/1680.0 - angle2*(1.0/75600.0 - angle2/5987520.0)); 
+      c[0]   = - b[1];
+      c[1]   = b[3] - b[2];
+      c[2]   = 1.0/90.0     - angle2*(1.0/1680.0  - angle2*(1.0/75600.0  - angle2/5987520.0)); 
       c[3]   = 1.0/630.0    - angle2*(1.0/15120.0 - angle2*(1.0/831600.0 - angle2/77837760.0));
     }
 
@@ -115,15 +156,12 @@ GibSO3(const Vector3D &vec, double *a, double *b=nullptr, double *c=nullptr)
     //
     // Use formulas of Equation (A8) from [1]
     //
-
     double angle  = vec.norm();
-//  double angle  = sqrt(angle2);
     double sn     = std::sin(angle);
     double cs     = std::cos(angle);
     double angle3 = angle*angle2;
     double angle4 = angle*angle3;
     double angle5 = angle*angle4;
-//  double angle6 = angle*angle5;
                                                     
     if (a != nullptr) {
       a[0] = cs;
@@ -134,16 +172,21 @@ GibSO3(const Vector3D &vec, double *a, double *b=nullptr, double *c=nullptr)
     }
 
     if (b != nullptr) {
+      b[0] = -a[1];
       b[1] = ( angle*cs - sn)/angle3;  
-      b[2] = ( angle*sn - 2 + 2*cs)/angle4;    
-      b[3] = ( 3*sn - 2*angle -  angle*cs )/angle5;    
+      b[2] = ( angle*sn - 2.0 + 2.0*cs)/angle4;
+      b[3] = ( 3.0*sn - 2.0*angle -  angle*cs )/angle5;    
     }
+
     if (c != nullptr) {
+      c[0] = -b[1];
       c[1] = (3.*sn - angle2*sn - 3.*angle*cs)/(angle5);
       c[2] = (8. - 8.*cs - 5.*angle*sn + angle2*cs)/(angle5*angle);
       c[3] = (8.*angle + 7.*angle*cs + angle2*sn - 15.*sn)/(angle5*angle2);
     }
   }
+
+  return std::sqrt(angle2);
 }
 
 //
@@ -163,53 +206,22 @@ CayleyFromVersor(const Versor &q)
 }
 
 
-static inline Versor
-VersorProduct(const Versor &qa, const Versor &qb)
-{
-  const double  qa0 = qa.vector[0],
-                qa1 = qa.vector[1],
-                qa2 = qa.vector[2],
-                qa3 = qa.scalar,
-                //
-                qb0 = qb.vector[0],
-                qb1 = qb.vector[1],
-                qb2 = qb.vector[2],
-                qb3 = qb.scalar;
-
-  // Dot product qa.qb
-  const double qaTqb = qa0*qb0 + qa1*qb1 + qa2*qb2;
-
-  // Cross-product qa x qb
-  const double
-    qaxqb0 = qa1*qb2 - qa2*qb1,
-    qaxqb1 = qa2*qb0 - qa0*qb2,
-    qaxqb2 = qa0*qb1 - qa1*qb0;
-
-  //
-  Versor q12;
-  q12.vector[0] = qa3*qb0 + qb3*qa0 - qaxqb0;
-  q12.vector[1] = qa3*qb1 + qb3*qa1 - qaxqb1;
-  q12.vector[2] = qa3*qb2 + qb3*qa2 - qaxqb2;
-  q12.scalar = qa3*qb3 - qaTqb;
-  return q12;
-}
-
 
 // R = (q0^2 - q' * q)*I + 2 * q * q' + 2*q0*S(q);
 static inline Matrix3D
 MatrixFromVersor(const Versor &q)
 {
-    Matrix3D R{};
+  Matrix3D R{};
 
-    const double factor = q.scalar*q.scalar - q.vector.dot(q.vector);
+  const double factor = q.scalar*q.scalar - q.vector.dot(q.vector);
 
-    for (int i = 0; i < 3; i++)
-      R(i,i) = factor;
+  for (int i = 0; i < 3; i++)
+    R(i,i) = factor;
 
-    R.addTensorProduct(q.vector, q.vector, 2.0);
-    R.addSpin(q.vector, 2.0*q.scalar);
+  R.addTensorProduct(q.vector, q.vector, 2.0);
+  R.addSpin(q.vector, 2.0*q.scalar);
 
-    return R;
+  return R;
 }
 
 
@@ -250,64 +262,22 @@ VectorFromVersor(const Versor& q)
 
 }
 
-static inline Versor
-VersorFromMatrix(const Matrix3D &R)
-{
-  //===--------------------------------------------------------------------===//
-  // Form a normalised quaternion (Versor) from a proper orthogonal matrix
-  // using Spurrier's algorithm
-  //===--------------------------------------------------------------------===//
-  Versor q;
-
-  // Trace of the rotation R
-  const double trR = R(0,0) + R(1,1) + R(2,2);
-
-  // a = max([trR R(0,0) R(1,1) R(2,2)]);
-  double a = trR;
-  for (int i = 0; i < 3; i++)
-    if (R(i,i) > a)
-      a = R(i,i);
-
-  if (a == trR) {
-    q.scalar = std::sqrt(1.0 + a)*0.5;
-
-    for (int i = 0; i < 3; i++) {
-      int j = (i+1)%3;
-      int k = (i+2)%3;
-      q.vector[i] = (R(k,j) - R(j,k))/(4.0*q.scalar);
-    }
-  }
-  else {
-    for (int i = 0; i < 3; i++)
-      if (a == R(i,i)) {
-        int j = (i+1)%3;
-        int k = (i+2)%3;
-
-        q.vector[i] = sqrt(a*0.5 + (1.0 - trR)/4.0);
-        q.scalar    = (R(k,j) - R(j,k))/(4.0*q.vector[i]);
-        q.vector[j] = (R(j,i) + R(i,j))/(4.0*q.vector[i]);
-        q.vector[k] = (R(k,i) + R(i,k))/(4.0*q.vector[i]);
-      }
-  }
-  return q;
-}
-
 
 // 
 // Exponential Map
 //
+
 static inline Matrix3D
 ExpSO3(const Vector3D &theta)
 {
-  //===--------------------------------------------------------------------===//
-
   // Form the first Gib coefficients
   double a[4];
-  GibSO3(theta, a);
 
   Matrix3D R = Eye3;
-  R.addSpin(theta, a[1]);
-  R.addSpinSquare(theta, a[2]);
+  if (GibSO3(theta, a) > 1e-16) {
+    R.addSpin(theta, a[1]);
+    R.addSpinSquare(theta, a[2]);
+  }
   return R;
 }
 
@@ -315,6 +285,7 @@ ExpSO3(const Vector3D &theta)
 static inline Matrix3D
 CaySO3(const Vector3D &cayley)
 {
+  //
   // Cayley map for a rotation matrix given the "tangent-scaled pseudo-vector"
   //
   // R = I + (S + S*S/2)/(1 + w' * w / 4);
@@ -344,8 +315,6 @@ TanSO3(const Vector3D &vec, char repr='L')
   //
   //  Compute right or left differential of the exponential.
   //
-  //===--------------------------------------------------------------------===//
-  // function by Claudio Perez                                            2023
   //===--------------------------------------------------------------------===//
   double a[4];
   GibSO3(vec, a);
@@ -384,15 +353,13 @@ TanSO3(const Vector3D &vec, char repr='L')
 
 
 inline Matrix3D
-dExpSO3(const Vector3D &v)
+TExpSO3(const Vector3D &v)
 {
 // Compute the right differential of the exponential on SO(3) using the formula in
 // Equation (A11) in [1]:
 //
 //        T = a[1]*Eye3 + a[2]*v.hat() + a[3]*v.bun(v);
 //
-// =========================================================================================
-// function by Claudio Perez                                                            2023
 // -----------------------------------------------------------------------------------------
 
   // Form first Gib coefficients
@@ -420,9 +387,6 @@ ddTanSO3(const Vector3D &v, const Vector3D &p, const Vector3D &q)
   //         + vov*(c[1]*p.dot(q) + c[2]*(vxp.dot(q)) + c[3]*v.dot(p)*v.dot(q));
   //    
   // =========================================================================================
-  // function by Claudio Perez                                                            2023
-  // -----------------------------------------------------------------------------------------
-  //
   double a[4], b[4], c[4];
   GibSO3(v, a, b, c);
 
@@ -459,9 +423,6 @@ dTanSO3(const Vector3D &v, const Vector3D &p, char repr='L')
   //
   // repr     'L' or 'R' indicating left or right representation, 
   //          respectively, for the tangent space of SO(3)
-  // =========================================================================================
-  // function by Claudio Perez                                                            2023
-  // -----------------------------------------------------------------------------------------
 
 
   double a[4], b[4];
@@ -472,8 +433,26 @@ dTanSO3(const Vector3D &v, const Vector3D &p, char repr='L')
     .addDiagonal(a[3]*v.dot(p))
     .addTensorProduct(v, p, a[3])
     .addTensorProduct(p, v, b[1])
-    .addTensorProduct(v.cross(p), v, b[1]*(repr == 'R' ? 1.0 : -1.0))
+    .addTensorProduct(v.cross(p), v, b[2]*(repr == 'R' ? 1.0 : -1.0))
+    .addTensorProduct(v, v, v.dot(p)*b[3]);
+  return Xi;
+}
+
+
+inline Matrix3D
+dExpSO3(const Vector3D &v, const Vector3D &p)
+{
+  double a[4], b[4];
+  GibSO3(v, a, b);
+
+  Matrix3D Xi{};
+  Xi.addSpin(p, -a[1])
+    .addDiagonal(a[2]*v.dot(p))
+    .addTensorProduct(v, p, a[2])
+    .addTensorProduct(p, v, b[0])
+    .addTensorProduct(v.cross(p), v, b[1])
     .addTensorProduct(v, v, v.dot(p)*b[2]);
+
   return Xi;
 }
 
@@ -502,11 +481,8 @@ LogSO3(const Matrix3D &R)
   //    derivatives.
   //
   //===--------------------------------------------------------------------===//
-  // function by Claudio Perez                                            2023
-  //===--------------------------------------------------------------------===//
 
-  return VectorFromVersor(VersorFromMatrix(R));
-
+  return VectorFromVersor(Versor::from_matrix(R));
 }
 
 
@@ -515,13 +491,12 @@ LogC90(const Matrix3D &R)
 {
   //===--------------------------------------------------------------------===//
   //
-  //   Crisfield M (1990) A consistent co-rotational formulation for non-linear,
+  // Crisfield's approximation to the logarithm on SO(3)
+  //
+  // - Crisfield M (1990) A consistent co-rotational formulation for non-linear,
   //   three-dimensional, beam-elements
   //
   //===--------------------------------------------------------------------===//
-  // function by Claudio Perez                                            2024
-  //===--------------------------------------------------------------------===//
-  // Crisfield's approximation to the logarithm on SO(3)
 
   return Vector3D {
     -std::asin(0.5*(R(1,2) - R(2,1))),
@@ -540,6 +515,7 @@ LogC90_Skew(const Matrix3D &R)
   //
   //===--------------------------------------------------------------------===//
   // Crisfield's approximation to the logarithm on SO(3)
+
   return Vector3D {
     std::asin(0.5*(R(1,2) - R(2,1))),
     std::asin(0.5*(R(0,1) - R(1,0))),
@@ -547,120 +523,143 @@ LogC90_Skew(const Matrix3D &R)
   };
 }
 
+namespace Utility {
 
-inline Matrix3D
-dLogSO3(const Vector3D &v, double* a=nullptr)
+template<typename T, std::size_t N>
+constexpr T horner(T x2, const std::array<T,N>& c) noexcept
 {
-//
-// d_R LogSO3(v)
-//
-// =========================================================================================
-// function by Claudio Perez                                                            2023
-// -----------------------------------------------------------------------------------------
-//
-  constexpr double tol = 1./20.;
+  // Evaluate  c0 + c1*x2 + c2*x2² + ...  with Horner's rule (and FMA if available).
+  T y = c.back();
+  for (std::size_t i = N-1; i-- > 0; )
+      y = std::fma(x2, y, c[i]);
+  return y;
+}
 
-  double angle = v.norm();
-  Vector3D u = v;
-  if (abs(angle) > M_PI/1.01) [[unlikely]] {
-    u -= 2.0*v/angle*double(floor(angle + M_PI))/2.0;
-    angle = u.norm();
-  }
+static inline double 
+dLogConst(double angle, double& a3, double& b3)
+{
+  //
+  // a3 == eta
+  //
+  static constexpr double tol = 1.0/20.0;
 
+  double ahalf  = angle/2.0;
   double angle2 = angle*angle;
   double angle3 = angle*angle2;
   double angle4 = angle*angle3;
   double angle5 = angle*angle4;
   double angle6 = angle*angle5;
 
-  double eta;
-  if (angle > tol) [[unlikely]]
-    eta = (1.0 - 0.5*angle*cot(0.5*angle))/angle2;
-  else
-    eta = 1./12. + angle2/720. + angle4/30240. + angle6/1209600.;
+  double a1;
+  if (std::fabs(angle) > tol) [[unlikely]] {
+    // a0 = 1.0 + angle2/2.0;
+    a1 = ahalf/std::tan(ahalf);
+
+    a3 = (1.0 - a1)/angle2;
+    // a3 = (2.0*sn - angle*(1.0+cs))/(2.0*angle2*sn);
+    // a3 = (1.0 - 0.5*angle*cot(0.5*angle))/angle2;
+
+    // b3 = (angle*(angle + 2.0*hsn*hcs) - 8.0*hsn*hsn)/(4.0*angle4*hsn*hsn); // wrong?
+    // b3 = (angle*(angle + std::sin(angle)) - 8.0*hsn*hsn)/(4.0*angle4*hsn*hsn);
+    // b3 = std::fma(angle, angle + sn, 4.0*(cs - 1.0))/(2.0*angle4*(1.0 - cs));
+    // b3 = std::fma(angle, angle + 2.0*hsn*hcs, -8.0*hsn*hsn)/(4.0*angle4*hsn*hsn);
+    b3 = std::fma(a1, a1 + 1.0, 0.25 * angle2 - 2.0)/angle4;
+  }
+  else {
+    // Maclaurin series
+    a1 = 1.0 - angle2/12.0 + angle4/720.0 - angle6/30240.0;
+    a3 = 1.0/12. + angle2/720. + angle4/30240. + angle6/1209600.;
+    b3 = 1.0/360. + angle2/7560. + angle4/201600. + angle6/5987520.;
+  }
+  return 0.0;
+}
+
+static inline Vector3D
+RescaleVector(const Vector3D &v, double &angle)
+{
+  static constexpr double pi     = 3.14159265358979323846;
+  static constexpr double two_pi = 2.0 * pi;
+  static constexpr double eps    = 1e-8;     // pole-avoidance band
+
+  Vector3D u = v;
+
+  // NOTE: Currently we are skipping the rescaling as it is not generally
+  // needed by the formulations that have been ported to OpenSees from
+  // FEDEASLab.
+  return u;
+
+  // Fast exit when |angle| already <= pi (no poles inside)
+  if (std::fabs(angle) <= pi)
+      return u;
+
+  // Wrap once modulo 2pi
+  double wrapped = std::remainder(angle, two_pi);   // (-pi, pi]
+
+  // Nudge away from the sole pole at 0
+  if (std::fabs(wrapped) < eps)
+    wrapped = (wrapped < 0.0 ? -eps : eps);
+
+// #define PRINCIPAL_WRAP
+#ifndef PRINCIPAL_WRAP
+  // Keep original magnitude unless it was near a pole
+  if (std::fabs(angle) > pi && std::fabs(wrapped) >= eps)
+    wrapped = angle;
+#endif
+
+  // Rescale u
+  if (std::fabs(angle) > eps) {  // safe denominator
+    double scale = wrapped / angle;
+    for (int i = 0; i < 3; ++i)
+      u[i] *= scale;
+  }
+
+  angle = wrapped;
+  return u;
+}
+}
+
+inline Matrix3D
+dLogSO3(const Vector3D &v, double* a=nullptr)
+{
+  //===--------------------------------------------------------------------===//
+  //
+  // d_R LogSO3(v) = Eye3 - 0.5*Sv + eta*Sv*Sv;
+  //
+  //===--------------------------------------------------------------------===//
+  //
+
+  double angle = v.norm();
+  const Vector3D u = Utility::RescaleVector(v, angle);
+
+  double eta, mu;
+  Utility::dLogConst(angle, eta, mu);
   
   Matrix3D dH = Eye3;
   dH.addSpin(u, -0.5);
   dH.addSpinSquare(u, eta);
   return dH;
-  // return Eye3 - 0.5*Sv + eta*Sv*Sv;
 }
 
 inline Matrix3D 
-ddLogSO3(const Vector3D& u, const Vector3D& v)
+ddLogSO3(const Vector3D& u, const Vector3D& p)
 {
-// =========================================================================================
-// function by Claudio Perez                                                            2023
-// -----------------------------------------------------------------------------------------
-
-  constexpr double tol = 1./20.;
+  //
+  // -0.5*Hat(v) + eta*(Eye3*th.dot(v) + th.bun(v) - 2.*v.bun(th)) + mu*St2*v.bun(th);
+  //
   double angle = u.norm();
-
-  Vector3D th = u;
-  if (abs(angle) > M_PI/1.01) [[unlikely]] {
-    th -= 2.0*u/angle*double(floor(angle + M_PI))/2.0;
-    angle = th.norm();
-  }
-
-  double angle2 = angle*angle;
-  double angle3 = angle*angle2;
-  double angle4 = angle*angle3;
-  double angle5 = angle*angle4;
-  double angle6 = angle*angle5;
+  const Vector3D th = Utility::RescaleVector(u, angle);
 
   double eta, mu;
-  if (angle < tol) {
-    eta = 1./12. + angle2/720. + angle4/30240. + angle6/1209600.;
-    mu  = 1./360. + angle2/7560. + angle4/201600. + angle6/5987520.;
-  }
-  else {
-    double an2 = angle/2.;
-    double sn  = std::sin(an2);
-    double cs  = std::cos(an2);
-
-    eta = (sn - angle2*cs)/(angle2*sn);
-    mu  = (angle*(angle + 2.*sn*cs) - 8.*sn*sn)/(4.*angle4*sn*sn);
-  }
+  Utility::dLogConst(angle, eta, mu);
 
   Matrix3D St2 = Hat(th);
   St2 = St2*St2;
-  Matrix3D dH{}; // -0.5*Hat(v) + eta*(Eye3*th.dot(v) + th.bun(v) - 2.*v.bun(th)) + mu*St2*v.bun(th);
-  dH.addSpin(v, -0.5);  
-  dH.addDiagonal( eta*th.dot(v));
-  dH.addTensorProduct(th, v, eta);
-  dH.addTensorProduct(v, th, -2.0*eta);
-  dH.addMatrixProduct(St2, v.bun(th), mu);;
-  // dH += mu*St2*v.bun(th);
+  Matrix3D dH{};
+  dH.addSpin(p, -0.5);  
+  dH.addDiagonal( eta*th.dot(p));
+  dH.addTensorProduct(th, p, eta);
+  dH.addTensorProduct(p, th, -2.0*eta);
+  dH.addMatrixProduct(St2, p.bun(th), mu);
 
   return dH*dLogSO3(th);
 }
-
-#if 0
-
-class Align {
-public:
-  Align(Vector3D& original, Vector3D& target)
-  : original(original), target(target)
-  {
-  }
-
-  // Align a vector to another vector using the exponential map
-  static Vector3D
-  rot(const Vector3D &v, const Vector3D &target)
-  {
-    // e3 = r3 - (e1 + r1)*((r3^e1)*0.5);
-    // e2 = r2 - (e1 + r1)*((r2^e1)*0.5);
-    Vector3D axis = v.cross(target);
-    double angle = std::acos(v.dot(target)/(v.norm()*target.norm()));
-
-    if (angle < 1e-10) return v;
-
-    return ExpSO3(axis*angle)*v;
-  }
-
-  private:
-  Vector3D original;
-  Vector3D target;
-};
-
-#endif

@@ -1,31 +1,42 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation    
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
 //
-// Description: This file contains the implementation for the
-// PDeltaFrameTransf class. PDeltaFrameTransf is a nonlinear
-// transformation for a 3D frame between the global
-// and basic coordinate systems
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+// Please cite the following resource in any derivative works:
+//
+// Perez, C.M., and Filippou F.C.. "On Nonlinear Geometric Transformations
+//     of Finite Elements" Int. J. Numer. Meth. Engrg. 2024; 
+//     https://doi.org/10.1002/nme.7506
+//
+//===----------------------------------------------------------------------===//
+//
+//        OpenSees - Open System for Earthquake Engineering Simulation
+//
+//===----------------------------------------------------------------------===//
+
 //
 // Adapted: Remo Magalhaes de Souza
 //          04/2000
+//
+// Written: cmp
 //
 #include <Vector.h>
 #include <Matrix.h>
 #include <Matrix3D.h>
 #include <Node.h>
-#include <Channel.h>
-#include <Logging.h>
-#include <PDeltaFrameTransf3d.hpp>
 
-using OpenSees::Matrix3D;
+#include "PDeltaFrameTransf3d.h"
 
-#define THREAD_LOCAL static
-
-
-
+namespace OpenSees {
 
 template <int nn, int ndf>
 PDeltaFrameTransf<nn,ndf>::PDeltaFrameTransf(int tag, 
@@ -104,8 +115,9 @@ PDeltaFrameTransf<nn,ndf>::getDeformedLength()
 
 
 template <int nn, int ndf>
-VectorND<nn*ndf>
-PDeltaFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&pl)
+// VectorND<nn*ndf>
+int
+PDeltaFrameTransf<nn,ndf>::push(VectorND<nn*ndf>&pl, Operation op)
 {
   //
   // Include leaning column effects (P-Delta)
@@ -121,13 +133,14 @@ PDeltaFrameTransf<nn,ndf>::pushResponse(VectorND<nn*ndf>&pl)
   pl[0*ndf+2] -= Du[2] * N;
   pl[1*ndf+2] += Du[2] * N;
 
-  return linear.pushResponse(pl);
+  return linear.push(pl, op);
 }
 
 
 template <int nn, int ndf>
-MatrixND<nn*ndf,nn*ndf>
-PDeltaFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf> &pl)
+// MatrixND<nn*ndf,nn*ndf>
+int
+PDeltaFrameTransf<nn,ndf>::push(MatrixND<nn*ndf,nn*ndf>& kl, const VectorND<nn*ndf> &pl, Operation op)
 {
   // Include geometric stiffness effects in local system;
   //
@@ -142,7 +155,7 @@ PDeltaFrameTransf<nn,ndf>::pushResponse(MatrixND<nn*ndf,nn*ndf>& kl, const Vecto
   kl(7, 1) -= NoverL;
   kl(2, 8) -= NoverL;
   kl(8, 2) -= NoverL;
-  return linear.pushResponse(kl, pl);
+  return linear.push(kl, pl, op);
 }
 
 
@@ -194,3 +207,5 @@ PDeltaFrameTransf<nn,ndf>::Print(OPS_Stream &s, int flag)
 {
   linear.Print(s, flag);
 }
+
+} // namespace OpenSees
