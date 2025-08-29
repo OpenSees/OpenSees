@@ -18,7 +18,7 @@
 #include <assert.h>
 
 #include <tcl.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <UniaxialMaterial.h>
 #include <BasicModelBuilder.h>
 

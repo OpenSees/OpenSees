@@ -1993,10 +1993,6 @@ TclPackageClassBroker::getNewEigenSOE(int classTagSOE)
 
   switch (classTagSOE) {
 
-  case EigenSOE_TAGS_ArpackSOE:
-    theSOE = new ArpackSOE();
-    return theSOE;
-
   default:
     opserr << "TclPackageClassBroker::getNewEigenSOE - ";
     opserr << " - no EigenSOE type exists for class tag ";
@@ -2006,7 +2002,7 @@ TclPackageClassBroker::getNewEigenSOE(int classTagSOE)
 }
 
 DomainSolver *
-TclPackageClassBroker::getNewDomainSolver(void)
+TclPackageClassBroker::getNewDomainSolver()
 {
   return lastDomainSolver;
 }

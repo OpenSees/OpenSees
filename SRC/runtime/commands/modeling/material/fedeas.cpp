@@ -52,7 +52,7 @@ FedeasConcrParse(ClientData clientData, Tcl_Interp *interp,
 
   int tag;
   double fpc, epsc0, fpcu, epscu;
-  double rat, ft, Ets;
+  double rat=0.1, ft=0, Ets=0;
 
   if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
     opserr << "WARNING invalid uniaxialMaterial tag\n";
@@ -69,6 +69,8 @@ FedeasConcrParse(ClientData clientData, Tcl_Interp *interp,
         opserr << "Invalid value for option " << argv[i-1] << "\n";
         return TCL_ERROR;
       }
+      if (tracker.contains(Positions::ft))
+        ft = 0.1*fpc;
       tracker.consume(Positions::fpc);
     }
     else if ((strcasecmp(argv[i], "-epsc0") == 0) || (strcmp(argv[i], "-ec0") == 0)) {
@@ -655,16 +657,16 @@ TclCommand_newFedeasConcrete(ClientData clientData, Tcl_Interp *interp,
     return FedeasConcrParse<Positions>(clientData, interp, argc, argv);
   }
 
-  else if ((strcmp(argv[1], "Steel02") == 0) || 
-           (strcmp(argv[1], "Steel2") == 0) || 
-           (strcmp(argv[1], "Steel02Thermal") == 0) || 
-           (strcmp(argv[1], "SteelMP") == 0)
+  else if ((strcmp(argv[1], "Concrete02") == 0) || 
+           (strcmp(argv[1], "Concrete2") == 0) || 
+           (strcmp(argv[1], "Concrete02Thermal") == 0)
   ) {
     
     // uniaxialMaterial Concrete02 tag? fpc? epsc0? fpcu? epscu? rat? ft? Ets?
     enum class Positions: int {
       Tag,
-      fpc, epsc0, fpcu, epscu, rat, ft, Ets, EndRequired, 
+      fpc, epsc0, fpcu, epscu, EndRequired,
+      rat, ft, Ets, 
       End
     };
     return FedeasConcrParse<Positions>(clientData, interp, argc, argv);

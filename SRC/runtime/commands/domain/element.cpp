@@ -12,7 +12,7 @@
 #include <Element.h>
 #include <ElementIter.h>
 #include <Vector.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 
 namespace OpenSees {
 namespace DomainCommands {

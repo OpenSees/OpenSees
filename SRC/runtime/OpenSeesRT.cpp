@@ -1,10 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
+//
 // This file contains functions that are required by Tcl to load the
 // OpenSeesRT library.
 //
@@ -14,7 +22,7 @@
 //
 #include <runtimeAPI.h>
 #include "runtime/G3_Runtime.h"
-#include <logging/G3_Logging.h>
+#include <logging/Logging.h>
 #include <handler/OPS_Stream.h>
 #include <StandardStream.h>
 #include "commands/strings.cpp"

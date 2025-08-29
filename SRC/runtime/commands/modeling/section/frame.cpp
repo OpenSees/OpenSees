@@ -147,6 +147,12 @@ TclCommand_newElasticSectionTemplate(ClientData clientData, Tcl_Interp *interp,
           opserr << OpenSees::PromptParseError << "invalid area.\n";
           return TCL_ERROR;
         }
+
+        if (tracker.contains(Position::ky))
+          consts.Ay = consts.A; // Default to A if Ay is not specified
+        if (tracker.contains(Position::kz))
+          consts.Az = consts.A; // Default to A if Az is not specified
+
         tracker.consume(Position::A);
       }
 
@@ -158,6 +164,7 @@ TclCommand_newElasticSectionTemplate(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
         }
         construct_full = true;
+        tracker.consume(Position::ky);
       }
 
       else if ((strcmp(argv[i], "-shear-z") == 0) ||
@@ -167,6 +174,7 @@ TclCommand_newElasticSectionTemplate(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
         }
         construct_full = true;
+        tracker.consume(Position::kz);
       }
 
       else if ((strcmp(argv[i], "-inertia") == 0) ||
@@ -230,50 +238,50 @@ TclCommand_newElasticSectionTemplate(ClientData clientData, Tcl_Interp *interp,
         }
         construct_full = true;
       }
-      else if (strcmp(argv[i], "-Sa")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Sa) != TCL_OK) {
-          opserr << OpenSees::PromptParseError << "invalid Sa.\n";
-          return TCL_ERROR;
-        }
-        construct_full = true;
-      }
+      // else if (strcmp(argv[i], "-Sa")==0) {
+      //   if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Sa) != TCL_OK) {
+      //     opserr << OpenSees::PromptParseError << "invalid Sa.\n";
+      //     return TCL_ERROR;
+      //   }
+      //   construct_full = true;
+      // }
       else if (strcmp(argv[i], "-Sy")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Sy) != TCL_OK) {
+        if (argc == ++i || Tcl_GetDouble(interp, argv[i], &consts.Sy) != TCL_OK) {
           opserr << OpenSees::PromptParseError << "invalid Sy.\n";
           return TCL_ERROR;
         }
         construct_full = true;
       }
       else if (strcmp(argv[i], "-Sz")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Sz) != TCL_OK) {
+        if (argc == ++i || Tcl_GetDouble(interp, argv[i], &consts.Sz) != TCL_OK) {
           opserr << OpenSees::PromptParseError << "invalid Sz.\n";
           return TCL_ERROR;
         }
         construct_full = true;
       }
       else if (strcmp(argv[i], "-Rw")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Rw) != TCL_OK) {
+        if (argc == ++i || Tcl_GetDouble(interp, argv[i], &consts.Rw) != TCL_OK) {
           opserr << OpenSees::PromptParseError << "invalid Rw.\n";
           return TCL_ERROR;
         }
         construct_full = true;
       }
       else if (strcmp(argv[i], "-Ry")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Ry) != TCL_OK) {
+        if (argc == ++i || Tcl_GetDouble(interp, argv[i], &consts.Ry) != TCL_OK) {
           opserr << OpenSees::PromptParseError << "invalid Ry.\n";
           return TCL_ERROR;
         }
         construct_full = true;
       }
       else if (strcmp(argv[i], "-Rz")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Rz) != TCL_OK) {
+        if (argc == ++i || Tcl_GetDouble(interp, argv[i], &consts.Rz) != TCL_OK) {
           opserr << OpenSees::PromptParseError << "invalid Rz.\n";
           return TCL_ERROR;
         }
         construct_full = true;
       }
       else if (strcmp(argv[i], "-Cw")==0) {
-        if (argc == ++i || Tcl_GetDouble (interp, argv[i], &consts.Cw) != TCL_OK) {
+        if (argc == ++i || Tcl_GetDouble(interp, argv[i], &consts.Cw) != TCL_OK) {
           opserr << OpenSees::PromptParseError << "invalid Cw.\n";
           return TCL_ERROR;
         }
@@ -315,6 +323,10 @@ TclCommand_newElasticSectionTemplate(ClientData clientData, Tcl_Interp *interp,
               opserr << OpenSees::PromptParseError << "invalid A.\n";
               return TCL_ERROR;
           } else {
+            if (tracker.contains(Position::ky))
+              consts.Ay = consts.A; // Default to A if Ay is not specified
+            if (tracker.contains(Position::kz))
+              consts.Az = consts.A; // Default to A if Az is not specified
             tracker.increment();
             break;
           }

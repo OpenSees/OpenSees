@@ -14,7 +14,7 @@
 #include "BasicModelBuilder.h"
 #include "BasicAnalysisBuilder.h"
 #include <Domain.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 // Abstract classes
 #include <EquiSolnAlgo.h>
 #include <StaticIntegrator.h>

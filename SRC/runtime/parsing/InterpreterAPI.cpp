@@ -15,9 +15,7 @@
 #include <Logging.h>
 #include <Domain.h>
 #include <Node.h>
-#include <runtimeAPI.h>
-#include <G3_Runtime.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <BasicModelBuilder.h>
 
 #include <UniaxialMaterial.h>
@@ -29,6 +27,8 @@
 
 
 #include <TimeSeries.h>
+#include <runtimeAPI.h>
+#include <G3_Runtime.h>
 
 static Tcl_Interp *theInterp       = nullptr;
 static TCL_Char **currentArgv      = nullptr;

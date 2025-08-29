@@ -31,7 +31,7 @@
 #include <runtimeAPI.h>
 #include <BasicModelBuilder.h>
 
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <packages.h>
 #include <Domain.h>
 #include <Element.h>

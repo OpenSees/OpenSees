@@ -12,7 +12,7 @@
 #include <string>
 #include <unordered_map>
 
-#include <G3_Logging.h>
+#include <Logging.h>
 
 Tcl_CmdProc TclCommand_useUniaxialMaterial;
 Tcl_CmdProc TclCommand_useCrossSection;

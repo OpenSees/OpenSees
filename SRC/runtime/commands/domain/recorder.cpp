@@ -25,9 +25,8 @@
 #define strcmp strcasecmp
 
 
-// #include <BasicModelBuilder.h>
 #include <tcl.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <Domain.h>
 #include <NodeIter.h>
 #include <NodeData.h>

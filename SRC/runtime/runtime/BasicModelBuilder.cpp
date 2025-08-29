@@ -1,9 +1,16 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
 //
 // A BasicModelBuilder stores intermediate "reference" objects like
@@ -34,7 +41,8 @@
 #include <tcl.h> // For TCL_OK/ERROR
 
 
-BasicModelBuilder::BasicModelBuilder(Domain &domain, Tcl_Interp *interp, 
+BasicModelBuilder::BasicModelBuilder(Domain &domain,
+                                     Tcl_Interp *interp, 
                                      int NDM, int NDF)
   : ndm(NDM), ndf(NDF), theInterp(interp),
     section_builder_is_set(false),
@@ -180,27 +188,26 @@ BasicModelBuilder::getDomain() const
 int 
 BasicModelBuilder::printRegistry(const char *partition, OPS_Stream& stream, int flag) const 
 {
-    int count = 0;
-    auto iter = m_registry.find(partition);
-    if (iter == m_registry.end()) {
-      return count;
-    }
-
-    for (auto const& [key, val] : iter->second) {
-      if (count != 0)
-        stream << ",\n";
-
-      val->Print(stream, flag);
-      count++;
-    }
-
+  int count = 0;
+  auto iter = m_registry.find(partition);
+  if (iter == m_registry.end()) {
     return count;
+  }
+
+  for (auto const& [key, val] : iter->second) {
+    if (count != 0)
+      stream << ",\n";
+
+    val->Print(stream, flag);
+    count++;
+  }
+
+  return count;
 }
 
 void* 
 BasicModelBuilder::getRegistryObject(const char* type, const char* specialize, int tag, int flags) const
 {
-
   std::string partition = std::string{type};
   if (specialize)
     partition += std::string{specialize};
@@ -222,7 +229,6 @@ BasicModelBuilder::getRegistryObject(const char* type, const char* specialize, i
   }
 
   return (void*)iter_objs->second;
-
 }
 
 int

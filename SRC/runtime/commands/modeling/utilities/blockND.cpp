@@ -18,7 +18,7 @@
 #include <Node.h>
 #include <NodeND.h>
 #include <ID.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <BasicModelBuilder.h>
 #include "Block2D.h"
 #include "Block3D.h"

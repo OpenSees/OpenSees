@@ -14,8 +14,6 @@ target_compile_definitions(OpenSeesRT PUBLIC USE_TCL_STUBS _TCL85)
 set_property(TARGET OpenSeesRT PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 target_compile_options(OPS_Runtime PRIVATE
-# "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wextra>"
-# "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wpedantic>"
   "$<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wno-unused-parameter>"
   "$<$<CXX_COMPILER_ID:MSVC>:/W3>"
   "$<$<CXX_COMPILER_ID:MSVC>:/bigobj>"

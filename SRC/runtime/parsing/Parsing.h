@@ -1,9 +1,16 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
 #pragma once
 #include <string.h>
@@ -11,7 +18,6 @@
 typedef const char TCL_Char;
 #endif
 #ifndef G3_Char
-// #define G3_Char const char
 typedef const char G3_Char;
 #endif
 

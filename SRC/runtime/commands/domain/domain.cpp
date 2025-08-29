@@ -19,7 +19,7 @@
 
 #include <tcl.h>
 #include <FileStream.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <Domain.h>
 #include <LoadPattern.h>
 #include <Parameter.h>

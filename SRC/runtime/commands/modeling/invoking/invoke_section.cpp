@@ -16,7 +16,7 @@
 #include <Vector.h>
 #include <VectorND.h>
 #include <DummyStream.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <Response.h>
 #include <FrameSection.h>
 #include <BasicModelBuilder.h>

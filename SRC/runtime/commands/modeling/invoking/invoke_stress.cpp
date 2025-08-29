@@ -14,7 +14,7 @@
 #include <Matrix.h>
 #include <NDMaterial.h>
 #include <BasicModelBuilder.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 
 typedef const char TCL_Char;
 

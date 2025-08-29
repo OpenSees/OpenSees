@@ -1,10 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
+//
 // standard library
 #include <array>
 #include <string>
@@ -43,22 +51,6 @@
 // #include <SymSparseLinSolver.h>
 #include <ArpackSOE.h>
 #include <ArpackSolver.h>
-#include <SymArpackSOE.h>
-#include <SymArpackSolver.h>
-#include <BandArpackSOE.h>
-#include <BandArpackSolver.h>
-//
-#ifdef _CUSP
-#  include <CuSPSolver.h>
-#endif
-
-#ifdef _CULAS4
-#include <CulaSparseSolverS4.h>
-#endif
-
-#ifdef _CULAS5
-#include <CulaSparseSolverS5.h>
-#endif
 
 #if 1 || defined(_PETSC)
 LinearSOE *TclCommand_newPetscSOE(int, TCL_Char**);
@@ -94,8 +86,7 @@ typedef LinearSOE*(G3_SysOfEqnSpecifier)(G3_Runtime*, int, G3_Char**);
 // Specifiers defined in solver.cpp
 G3_SysOfEqnSpecifier specify_SparseSPD;
 G3_SysOfEqnSpecifier specifySparseGen;
-TclDispatch<LinearSOE*> TclDispatch_newMumpsLinearSOE;
-// TclDispatch<LinearSOE*> TclDispatch_newUmfpackLinearSOE;
+LinearSOE* TclDispatch_newMumpsLinearSOE(ClientData, Tcl_Interp*, Tcl_Size, const char** const);
 LinearSOE* TclDispatch_newUmfpackLinearSOE(ClientData, Tcl_Interp*, Tcl_Size, const char** const);
 LinearSOE* TclDispatch_newItpackLinearSOE(ClientData, Tcl_Interp*, Tcl_Size, const char** const);
 

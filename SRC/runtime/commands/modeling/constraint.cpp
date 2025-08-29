@@ -350,7 +350,8 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
 
   // check number of arguments
   if (argc < 4) {
-    opserr << OpenSees::PromptValueError << "bad command - want: sp nodeId dofID value";
+    opserr << OpenSees::PromptValueError
+           << "bad command - want: sp nodeId dofID value";
     return TCL_ERROR;
   }
 
@@ -361,7 +362,7 @@ TclCommand_addSP(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
     opserr << OpenSees::PromptValueError << "invalid nodeId: " << argv[1] << " -  sp nodeId dofID value\n";
     return TCL_ERROR;
   }
-  if (Tcl_GetInt(interp, argv[2], &dofId) != TCL_OK) {
+  if (Tcl_GetInt(interp, argv[2], &dofId) != TCL_OK || dofId < 1) {
     opserr << OpenSees::PromptValueError << "invalid dofId: " << argv[2] << " -  sp ";
     opserr << nodeId << " dofID value\n";
     return TCL_ERROR;
