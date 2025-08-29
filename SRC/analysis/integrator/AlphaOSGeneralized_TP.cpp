@@ -63,7 +63,7 @@ void *    OPS_AlphaOSGeneralized_TP(void)
     else
         numData = 4;
     
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want AlphaOSGeneralized_TP $alpha <-updateElemDisp>\n";
         opserr << "          or AlphaOSGeneralized_TP $alphaI $alphaF $beta $gamma <-updateElemDisp>\n";
         return 0;

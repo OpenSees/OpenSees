@@ -78,7 +78,9 @@ void *OPS_PathSeries() {
         loc++;
 
         // check arg
-        if (strcmp(arg, "-dt") == 0 ||
+        if (arg == NULL)
+            continue;
+        else if (strcmp(arg, "-dt") == 0 ||
             strcmp(arg, "-dT") == 0) {
             if (OPS_GetNumRemainingInputArgs() < 1) {
                 opserr << "WARNING: dt is not specified\n";

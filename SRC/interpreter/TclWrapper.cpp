@@ -1667,6 +1667,43 @@ static int Tcl_ops_partition(ClientData clientData, Tcl_Interp *interp, int argc
     return TCL_OK;
 }
 
+static int Tcl_ops_loadPackage(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** argv)
+{
+    wrapper->resetCommandLine(argc, 1, argv);
+    
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "WARNING insufficient arguments\n";
+        opserr << "Want: loadPackage libName? <fncName?>\n";
+        return TCL_ERROR;
+    }
+    
+    int res = -1;
+    void* libHandle;
+    int (*funcPtr)(ClientData clientData, Tcl_Interp *interp, int argc,
+        TCL_Char **argv, Domain*);
+    
+    // get the library function
+    if (argc == 2) {
+        res = getLibraryFunction(argv[1], argv[1], &libHandle, (void**)&funcPtr);
+    }
+    else if (argc == 3) {
+        res = getLibraryFunction(argv[1], argv[2], &libHandle, (void**)&funcPtr);
+    }
+    
+    // get the Domain
+    Domain* theDomain = OPS_GetDomain();
+    
+    // finally load the package (i.e., load the function from the library)
+    if (res == 0) {
+        res = (*funcPtr)(clientData, interp, argc, argv, theDomain);
+    }
+    else {
+        opserr << "Error: Could not find function: " << argv[1] << endln;
+    }
+    
+    return res;
+}
+
 //////////////////////////////////////////////
 ////////////// Add Tcl commands //////////////
 //////////////////////////////////////////////
@@ -1863,4 +1900,5 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"stiffnessDegradation", &Tcl_ops_strengthDegradation);
     addCommand(interp,"unloadingRule", &Tcl_ops_unloadingRule);
     addCommand(interp,"partition", &Tcl_ops_partition);
+    addCommand(interp,"loadPackage", &Tcl_ops_loadPackage);
 }

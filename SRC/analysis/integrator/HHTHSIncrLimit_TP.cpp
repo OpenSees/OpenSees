@@ -63,7 +63,7 @@ void *    OPS_HHTHSIncrLimit_TP(void)
     else
         numData = 5;
     
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want HHTHSIncrLimit_TP $rhoInf $limit <-normType $T>\n";
         opserr << "          or HHTHSIncrLimit_TP $alphaI $alphaF $beta $gamma $limit <-normType $T>\n";
         return 0;
@@ -73,7 +73,7 @@ void *    OPS_HHTHSIncrLimit_TP(void)
         const char *argvLoc = OPS_GetString();
         if (strcmp(argvLoc, "-normType") == 0) {
             numData = 1;
-            if (OPS_GetInt(&numData, &normType) != 0) {
+            if (OPS_GetIntInput(&numData, &normType) != 0) {
                 opserr << "WARNING - invalid normType want HHTHSIncrLimit_TP $rhoInf $limit <-normType $T>\n";
                 opserr << "          or HHTHSIncrLimit_TP $alphaI $alphaF $beta $gamma $limit <-normType $T>\n";
             }

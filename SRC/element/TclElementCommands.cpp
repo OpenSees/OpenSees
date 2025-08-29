@@ -58,7 +58,7 @@ httpGET_File(char const *URL, char const *page, unsigned int port, const char *f
 // SOME STATIC POINTERS USED IN THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
-extern int OPS_ResetInput(ClientData clientData,
+extern "C" int OPS_ResetInput(ClientData clientData,
 			  Tcl_Interp *interp,
 			  int cArg,
 			  int mArg,
@@ -134,6 +134,8 @@ extern void *OPS_QuadBeamEmbedContact(void);
 extern void *OPS_TripleFrictionPendulum(void);
 extern void *OPS_TripleFrictionPendulumX(void);
 extern void *OPS_Truss2(void);
+
+#ifdef _HAVE_PML
 extern void *OPS_PML3D(void);
 extern void *OPS_PML2D(void);
 extern void *OPS_PML2D_3(void);
@@ -141,6 +143,8 @@ extern void *OPS_PML2D_5(void);
 extern void *OPS_PML2D_12(void);
 extern void *OPS_PML2DVISCOUS(void);
 extern void *OPS_PML3DVISCOUS(void);
+#endif
+
 extern void *OPS_CorotTruss2(void);
 extern void *OPS_ZeroLengthImpact3D(void);
 extern void *OPS_HDR(void);
@@ -171,6 +175,7 @@ extern void* OPS_Beam2dDamage(void);
 extern void* OPS_BeamColumn2DwLHNMYS_Damage(void);
 extern void* OPS_BeamColumn3DwLHNMYS(void);
 #endif
+
 extern void *OPS_ShellMITC4Thermal(void);//Added by L.Jiang [SIF]
 extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void* OPS_ShellNLDKGTThermal(void);// Giovanni Rinaldin
@@ -559,7 +564,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }
-  } else if ((strcmp(argv[1],"PML2D_3") == 0) || (strcmp(argv[1],"pml2d_3")) == 0) {
+  }
+#ifdef _HAVE_PML
+  else if ((strcmp(argv[1],"PML2D_3") == 0) || (strcmp(argv[1],"pml2d_3")) == 0) {
     Element *theEle = (Element *)OPS_PML2D_3();
     if (theEle != 0) 
       theElement = theEle;
@@ -596,20 +603,23 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     } 
-  } else if ((strcmp(argv[1],"PML") == 0) || (strcmp(argv[1],"pml")) == 0) {
-    Element *theEle = 0;
-    ID info;
-    if (OPS_GetNDM() == 2)
-      theEle = (Element *)OPS_PML2D();
-    if (OPS_GetNDM() == 3)
-      theEle = (Element *)OPS_PML3DVISCOUS();
-    if (theEle != 0) 
-      theElement = theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-  /* } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+  }
+  else if ((strcmp(argv[1], "PML") == 0) || (strcmp(argv[1], "pml")) == 0) {
+      Element* theEle = 0;
+      ID info;
+      if (OPS_GetNDM() == 2)
+          theEle = (Element*)OPS_PML2D();
+      if (OPS_GetNDM() == 3)
+          theEle = (Element*)OPS_PML3DVISCOUS();
+      if (theEle != 0)
+          theElement = theEle;
+      else {
+          opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+          return TCL_ERROR;
+      }
+  }
+#endif
+  /* else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
     Element *theEle = 0;
     if (OPS_GetNDM() == 2)
@@ -624,9 +634,8 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
   }*/
-    
 #if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)    
-  } else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
+  else if (strcmp(argv[1],"beamColumn2DwLHNMYS") == 0) {
     Element *theEle = 0;
     ID info;
     theEle = (Element *)OPS_BeamColumn2DwLHNMYS();
@@ -659,23 +668,23 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }    
   
-  } else if (strcmp(argv[1],"beamColumn3DwLHNMYS") == 0) {
-    Element *theEle = 0;
-    ID info;
-    theEle = (Element *)OPS_BeamColumn3DwLHNMYS();
-    if (theEle != 0) 
-      theElement = theEle;
-    else {
-      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
-      return TCL_ERROR;
-    }
-
+  }
+  else if (strcmp(argv[1], "beamColumn3DwLHNMYS") == 0) {
+      Element* theEle = 0;
+      ID info;
+      theEle = (Element*)OPS_BeamColumn3DwLHNMYS();
+      if (theEle != 0)
+          theElement = theEle;
+      else {
+          opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+          return TCL_ERROR;
+      }
+  }
 #endif
 
   // Beginning of WheelRail element TCL command
   //Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31
-    
-  } else if((strcmp(argv[1], "WheelRail") == 0)) {
+  else if((strcmp(argv[1], "WheelRail") == 0)) {
     // ------------------------------add------------------------------------------
     int eleArgStart = 1;
     int result = TclModelBuilder_addWheelRail(clientData, interp, argc, argv,

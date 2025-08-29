@@ -55,7 +55,7 @@ extern Domain theDomain;
 int
 specifyModelBuilder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-extern int
+extern "C" int
 OPS_ResetInput(ClientData clientData, 
 	       Tcl_Interp *interp,  
 	       int cArg, 

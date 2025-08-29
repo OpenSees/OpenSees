@@ -63,7 +63,7 @@ OPS_ShellMITC9(void)
   
   int iData[11];
   int numData = 11;
-  if (OPS_GetInt(&numData, iData) != 0) {
+  if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid integer tag: element ShellMITC9\n";
     return 0;
   }

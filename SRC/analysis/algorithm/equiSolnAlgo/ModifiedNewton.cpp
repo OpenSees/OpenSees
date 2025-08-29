@@ -216,10 +216,10 @@ ModifiedNewton::recvSelf(int cTag,
 {
   static Vector data(4);
   theChannel.recvVector(this->getDbTag(), cTag, data);
-  tangent = data(0);
+  tangent = (int)data(0);
   iFactor = data(1);
   cFactor = data(2);
-  factorOnce = data(3);
+  factorOnce = (int)data(3);
   return 0;
 }
 

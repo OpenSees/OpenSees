@@ -56,7 +56,7 @@ void *    OPS_HHTGeneralized(void)
     }
     
     double dData[4];
-    if (OPS_GetDouble(&argc, dData) != 0) {
+    if (OPS_GetDoubleInput(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want HHTGeneralized $rhoInf\n";
         opserr << "          or HHTGeneralized $alphaI $alphaF $beta $gamma\n";
         return 0;

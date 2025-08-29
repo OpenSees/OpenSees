@@ -64,7 +64,7 @@ void *    OPS_HHTGeneralizedExplicit(void)
     else
         numData = 4;
     
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want HHTGeneralizedExplicit $rhoB $alphaF <-updateElemDisp>\n";
         opserr << "          or HHTGeneralizedExplicit $alphaI $alphaF $beta $gamma <-updateElemDisp>\n";
         return 0;
