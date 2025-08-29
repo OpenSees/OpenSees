@@ -218,9 +218,6 @@ LinearSOE*
 specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
 {
   // SPARSE GENERAL SOE * SOLVER
-//if ((strcmp(argv[1], "SparseGeneral") == 0) ||
-//         (strcmp(argv[1], "SuperLU") == 0) ||
-//         (strcmp(argv[1], "SparseGEN") == 0))
     Tcl_Interp *interp = G3_getInterpreter(rt);
 
     SparseGenColLinSolver *theSolver = nullptr;
@@ -267,16 +264,6 @@ specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
       theSolver = new ThreadedSuperLU(np, permSpec, panelSize, relax, thresh);
     else
       return nullptr;
-// #endif
-// 
-// #ifdef _PARALLEL_PROCESSING
-//     if (theSolver != 0)
-//       delete theSolver;
-//     theSolver = 0;
-// 
-//     if (npRow != 0 && npCol != 0) {
-//       theSolver = new DistributedSuperLU(npRow, npCol);
-//     }
 #else
     char symmetric = 'N';
     double drop_tol = 0.0;
@@ -300,53 +287,3 @@ specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
 #endif
 }
 
-
-#if 0 // Some misc solvers
-
-else if (strcmp(argv[2],"Block") == 0) {
-  int blockSize = 4;
-  if (argc == 4) {
-    if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-      return TCL_ERROR;
-  }
-  theSolver = theSolver = new ProfileSPDLinDirectBlockSolver(1.0e-12,blockSize);
-}
-
-
-  int blockSize = 4;
-  int numThreads = 1;
-  if (argc == 5) {
-    if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-      return TCL_ERROR;
-    if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-      return TCL_ERROR;
-  }
-  theSolver = new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12); 
-
-  } else if (strcmp(argv[2],"Thread") == 0) { 
-    int blockSize = 4; 
-    int numThreads = 1; 
-    if (argc == 5) { 
-      if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK) 
-        return TCL_ERROR;
-      if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-        return TCL_ERROR;
-  }
-  theSolver = new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12);
-}
-
-else if (strcmp(argv[2],"Skypack") == 0) {
-  if (argc == 5) {
-    int mCols, mRows;
-    if (Tcl_GetInt(interp, argv[3], &mCols) != TCL_OK)
-      return TCL_ERROR;
-    if (Tcl_GetInt(interp, argv[4], &mRows) != TCL_OK)
-      return TCL_ERROR;
-    theSolver = new ProfileSPDLinDirectSkypackSolver(mCols, mRows);
-  } else
-    theSolver = new ProfileSPDLinDirectSkypackSolver();
-}
-else
-  theSolver = new ProfileSPDLinDirectSolver();
-
-#endif // misc solvers
