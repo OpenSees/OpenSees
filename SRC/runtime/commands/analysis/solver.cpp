@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: This file implements commands that configure the linear
 // solver.
 //
@@ -15,20 +16,14 @@
 #else
 #  include <strings.h>
 #endif
-// #define strcmp strcasecmp
 
 #include <tcl.h>
-#include <G3_Logging.h>
+#include <Logging.h>
+#include <Parsing.h>
 #include <runtimeAPI.h>
 // #include "analysis.h"
-#include <OPS_Globals.h>
 #include "solver.hpp"
 #include "BasicAnalysisBuilder.h"
-
-// analysis
-#include <StaticAnalysis.h>
-#include <DirectIntegrationAnalysis.h>
-#include <VariableTimeStepDirectIntegrationAnalysis.h>
 
 // system of eqn and solvers
 #include <SProfileSPDLinSolver.h>
@@ -73,42 +68,36 @@
 // extern DirectIntegrationAnalysis *theTransientAnalysis;
 // extern LinearSOE *theSOE;
 
-// LinearSOE*
-// G3Parse_newLinearSOE(G3_Runtime*, int, G3_Char **);
+
 LinearSOE*
-// G3Parse_newLinearSOE(G3_Runtime* rt, int argc, G3_Char ** const argv)
 G3Parse_newLinearSOE(ClientData, Tcl_Interp* interp, int, G3_Char **const);
 
 LinearSOE*
 TclDispatch_newPetscSOE(ClientData, Tcl_Interp *interp, int, G3_Char **const);
 
-#if 0 // TODO: implement AnalysisBuilder->getLinearSOE();
+
 int
 TclCommand_systemSize(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
   LinearSOE *theSOE = ((BasicAnalysisBuilder *)clientData)->getLinearSOE();
 
-  char buffer[20];
-
-  if (theSOE == 0) {
-    sprintf(buffer, "NO SYSTEM SET");
+  if (theSOE == nullptr) {
+    opserr << "No system has been set";
     return TCL_OK;
   }
 
-  sprintf(buffer, "%d", theSOE->getNumEqn());
-  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+  Tcl_SetObjResult(interp, Tcl_NewIntObj(theSOE->getNumEqn()));
 
   return TCL_OK;
 }
-#endif
 
 int
 specifySysOfEqnTable(ClientData clientData, Tcl_Interp *interp, int argc, G3_Char ** const argv)
 {
   // make sure at least one other argument to contain type of system
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT
+    opserr << OpenSees::PromptValueError
            << "need to specify a system type" << "\n";
     return TCL_ERROR;
   }
@@ -126,7 +115,8 @@ specifySysOfEqnTable(ClientData clientData, Tcl_Interp *interp, int argc, G3_Cha
 }
 
 LinearSOE*
-G3Parse_newLinearSOE(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char ** const argv)
+G3Parse_newLinearSOE(ClientData clientData, Tcl_Interp* interp, Tcl_Size argc,
+                     G3_Char ** const argv)
 {
   G3_Runtime* rt = G3_getRuntime(interp); 
 
@@ -140,7 +130,13 @@ G3Parse_newLinearSOE(ClientData clientData, Tcl_Interp* interp, int argc, G3_Cha
   if (ctor != soe_table.end()) {
     return ctor->second.ss(rt, argc, argv);
 
-  } else if (strcasecmp(argv[1], "Umfpack")==0) {
+  }
+#ifdef XARA_USE_MUMPS
+  else if (strcasecmp(argv[1], "mumps") == 0) {
+    return TclDispatch_newMumpsLinearSOE(clientData, interp, argc, argv);
+  }
+#endif
+  else if (strcasecmp(argv[1], "Umfpack")==0) {
     // TODO: if "umfpack" is in solver.hpp, this wont be reached
     return TclDispatch_newUmfpackLinearSOE(clientData, interp, argc, argv);
   } 
@@ -186,7 +182,7 @@ G3Parse_newLinearSOE(ClientData clientData, Tcl_Interp* interp, int argc, G3_Cha
 #endif
 
   else {
-    opserr << G3_ERROR_PROMPT << " system '" << argv[1] << "' is unknown or not installed\n";
+    opserr << OpenSees::PromptValueError << " system '" << argv[1] << "' is unknown or not installed\n";
     return nullptr;
   }
 

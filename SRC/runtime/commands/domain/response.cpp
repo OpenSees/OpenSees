@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 #include <tcl.h>
 #include <Matrix.h>
 #include <Domain.h>
@@ -21,26 +22,26 @@ basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - basicDeformation eleTag? \n";
+    opserr << OpenSees::PromptValueError << "want - basicDeformation eleTag? \n";
     return TCL_ERROR;
   }
 
   int tag;
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "basicDeformation eleTag? dofNum? - could not read "
+    opserr << OpenSees::PromptValueError << "basicDeformation eleTag? dofNum? - could not read "
               "eleTag? \n";
     return TCL_ERROR;
   }
   /*
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "basicDeformation eleTag? dofNum? - could not read dofNum?
+    opserr << OpenSees::PromptValueError << "basicDeformation eleTag? dofNum? - could not read dofNum?
   \n"; return TCL_ERROR;
   }
   */
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "basicDeformation element with tag " << tag
+    opserr << OpenSees::PromptValueError << "basicDeformation element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -82,26 +83,26 @@ basicForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** cons
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - basicForce eleTag? \n";
+    opserr << OpenSees::PromptValueError << "want - basicForce eleTag? \n";
     return TCL_ERROR;
   }
 
   int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "basicForce eleTag? dofNum? - could not read eleTag? \n";
+    opserr << OpenSees::PromptValueError << "basicForce eleTag? dofNum? - could not read eleTag? \n";
     return TCL_ERROR;
   }
   /*
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "basicDeformation eleTag? dofNum? - could not read dofNum \n";
+    opserr << OpenSees::PromptValueError << "basicDeformation eleTag? dofNum? - could not read dofNum \n";
     return TCL_ERROR;
   }
   */
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "basicDeformation element with tag " << tag
+    opserr << OpenSees::PromptValueError << "basicDeformation element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -144,26 +145,26 @@ basicStiffness(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - basicStiffness eleTag? \n";
+    opserr << OpenSees::PromptValueError << "want - basicStiffness eleTag? \n";
     return TCL_ERROR;
   }
 
   int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "basicStiffness eleTag? - could not read eleTag? \n";
+    opserr << OpenSees::PromptValueError << "basicStiffness eleTag? - could not read eleTag? \n";
     return TCL_ERROR;
   }
   /*
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "basicDeformation eleTag? dofNum? - could not read dofNum?\n";
+    opserr << OpenSees::PromptValueError << "basicDeformation eleTag? dofNum? - could not read dofNum?\n";
     return TCL_ERROR;
   }
   */
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "basicStiffness element with tag " << tag
+    opserr << OpenSees::PromptValueError << "basicStiffness element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -208,7 +209,7 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "want - sectionForce eleTag? <secNum?> dof? \n";
+    opserr << OpenSees::PromptValueError << "want - sectionForce eleTag? <secNum?> dof? \n";
     return TCL_ERROR;
   }
 
@@ -216,7 +217,7 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc,
   int secNum = 0;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionForce eleTag? secNum? dof? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionForce eleTag? secNum? dof? - could not read "
               "eleTag? \n";
     return TCL_ERROR;
   }
@@ -225,20 +226,20 @@ sectionForce(ClientData clientData, Tcl_Interp *interp, int argc,
   int currentArg = 2;
   if (argc > 3) {
     if (Tcl_GetInt(interp, argv[currentArg++], &secNum) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "sectionForce eleTag? secNum? dof? - could not read "
+      opserr << OpenSees::PromptValueError << "sectionForce eleTag? secNum? dof? - could not read "
                 "secNum? \n";
       return TCL_ERROR;
     }
   }
   if (Tcl_GetInt(interp, argv[currentArg++], &dof) != TCL_OK) {
     opserr
-        << G3_ERROR_PROMPT << "sectionForce eleTag? secNum? dof? - could not read dof? \n";
+        << OpenSees::PromptValueError << "sectionForce eleTag? secNum? dof? - could not read dof? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "sectionForce element with tag " << tag
+    opserr << OpenSees::PromptValueError << "sectionForce element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -283,30 +284,30 @@ sectionDeformation(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 4) {
-    opserr << G3_ERROR_PROMPT << "want - sectionDeformation eleTag? secNum? dof? \n";
+    opserr << OpenSees::PromptValueError << "want - sectionDeformation eleTag? secNum? dof? \n";
     return TCL_ERROR;
   }
 
   int tag, secNum, dof;
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionDeformation eleTag? secNum? dof? - could not "
+    opserr << OpenSees::PromptValueError << "sectionDeformation eleTag? secNum? dof? - could not "
               "read eleTag? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionDeformation eleTag? secNum? dof? - could not "
+    opserr << OpenSees::PromptValueError << "sectionDeformation eleTag? secNum? dof? - could not "
               "read secNum? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[3], &dof) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionDeformation eleTag? secNum? dof? - could not "
+    opserr << OpenSees::PromptValueError << "sectionDeformation eleTag? secNum? dof? - could not "
               "read dof? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "sectionDeformation element with tag " << tag
+    opserr << OpenSees::PromptValueError << "sectionDeformation element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -348,25 +349,25 @@ sectionLocation(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "want - sectionLocation eleTag? secNum? \n";
+    opserr << OpenSees::PromptValueError << "want - sectionLocation eleTag? secNum? \n";
     return TCL_ERROR;
   }
 
   int tag, secNum;
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionLocation eleTag? secNum? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionLocation eleTag? secNum? - could not read "
               "eleTag? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionLocation eleTag? secNum? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionLocation eleTag? secNum? - could not read "
               "secNum? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "sectionLocation element with tag " << tag
+    opserr << OpenSees::PromptValueError << "sectionLocation element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -404,7 +405,7 @@ sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "want - sectionWeight eleTag? secNum? \n";
+    opserr << OpenSees::PromptValueError << "want - sectionWeight eleTag? secNum? \n";
     return TCL_ERROR;
   }
 
@@ -412,18 +413,18 @@ sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc,
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr
-        << G3_ERROR_PROMPT << "sectionWeight eleTag? secNum? - could not read eleTag? \n";
+        << OpenSees::PromptValueError << "sectionWeight eleTag? secNum? - could not read eleTag? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
     opserr
-        << G3_ERROR_PROMPT << "sectionWeight eleTag? secNum? - could not read secNum? \n";
+        << OpenSees::PromptValueError << "sectionWeight eleTag? secNum? - could not read secNum? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "sectionWeight element with tag " << tag
+    opserr << OpenSees::PromptValueError << "sectionWeight element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -460,26 +461,26 @@ sectionStiffness(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "want - sectionStiffness eleTag? secNum? \n";
+    opserr << OpenSees::PromptValueError << "want - sectionStiffness eleTag? secNum? \n";
     return TCL_ERROR;
   }
 
   int tag, secNum;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionStiffness eleTag? secNum? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionStiffness eleTag? secNum? - could not read "
               "eleTag? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionStiffness eleTag? secNum? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionStiffness eleTag? secNum? - could not read "
               "secNum? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "sectionStiffness element with tag " << tag
+    opserr << OpenSees::PromptValueError << "sectionStiffness element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -529,26 +530,26 @@ sectionFlexibility(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "want - sectionFlexibility eleTag? secNum? \n";
+    opserr << OpenSees::PromptValueError << "want - sectionFlexibility eleTag? secNum? \n";
     return TCL_ERROR;
   }
 
   int tag, secNum;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionFlexibility eleTag? secNum? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionFlexibility eleTag? secNum? - could not read "
               "eleTag? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "sectionFlexibility eleTag? secNum? - could not read "
+    opserr << OpenSees::PromptValueError << "sectionFlexibility eleTag? secNum? - could not read "
               "secNum? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "sectionFlexibility element with tag " << tag
+    opserr << OpenSees::PromptValueError << "sectionFlexibility element with tag " << tag
            << " not found in domain \n";
     return TCL_ERROR;
   }
@@ -598,25 +599,25 @@ sectionTag(ClientData clientData, Tcl_Interp *interp, int argc,
     Domain *the_domain = (Domain*)clientData;
 
     if (argc < 3) {
-      opserr << G3_ERROR_PROMPT << "want - sectionTag eleTag? secNum? \n";
+      opserr << OpenSees::PromptValueError << "want - sectionTag eleTag? secNum? \n";
       return TCL_ERROR;
     }
 
     int tag, secNum;
     if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "sectionTag eleTag? secNum? - could not read "
+      opserr << OpenSees::PromptValueError << "sectionTag eleTag? secNum? - could not read "
                 "eleTag? \n";
       return TCL_ERROR;
     }
     if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "sectionTag eleTag? secNum? - could not read "
+      opserr << OpenSees::PromptValueError << "sectionTag eleTag? secNum? - could not read "
                 "secNum? \n";
       return TCL_ERROR;
     }
 
     Element *theElement = the_domain->getElement(tag);
     if (theElement == nullptr) {
-      opserr << G3_ERROR_PROMPT << "sectionFlexibility element with tag " << tag
+      opserr << OpenSees::PromptValueError << "sectionFlexibility element with tag " << tag
              << " not found in domain \n";
       return TCL_ERROR;
     }
@@ -667,19 +668,19 @@ sectionDisplacement(ClientData clientData, Tcl_Interp *interp, int argc,
     Domain *theDomain = (Domain*)clientData;
 
     if (argc < 3) {
-      opserr << G3_ERROR_PROMPT << "want - sectionLocation eleTag? secNum? \n";
+      opserr << OpenSees::PromptValueError << "want - sectionLocation eleTag? secNum? \n";
       return TCL_ERROR;
     }
 
     int tag, secNum;
     if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "sectionLocation eleTag? secNum? - could not read "
+      opserr << OpenSees::PromptValueError << "sectionLocation eleTag? secNum? - could not read "
                 "eleTag? \n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "sectionLocation eleTag? secNum? - could not read "
+      opserr << OpenSees::PromptValueError << "sectionLocation eleTag? secNum? - could not read "
                 "secNum? \n";
       return TCL_ERROR;
     }

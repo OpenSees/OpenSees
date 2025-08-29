@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // standard library
 #include <array>
 #include <string>
@@ -12,10 +13,7 @@
 #include <runtimeAPI.h>
 #include <Parsing.h>
 #include <packages.h>
-// analysis
-#include <StaticAnalysis.h>
-#include <DirectIntegrationAnalysis.h>
-#include <VariableTimeStepDirectIntegrationAnalysis.h>
+
 // system of eqn and solvers
 #include <BandSPDLinSOE.h>
 #include <BandSPDLinLapackSolver.h>
@@ -98,8 +96,8 @@ G3_SysOfEqnSpecifier specify_SparseSPD;
 G3_SysOfEqnSpecifier specifySparseGen;
 TclDispatch<LinearSOE*> TclDispatch_newMumpsLinearSOE;
 // TclDispatch<LinearSOE*> TclDispatch_newUmfpackLinearSOE;
-LinearSOE* TclDispatch_newUmfpackLinearSOE(ClientData, Tcl_Interp*, int, const char** const);
-LinearSOE* TclDispatch_newItpackLinearSOE(ClientData, Tcl_Interp*, int, const char** const);
+LinearSOE* TclDispatch_newUmfpackLinearSOE(ClientData, Tcl_Interp*, Tcl_Size, const char** const);
+LinearSOE* TclDispatch_newItpackLinearSOE(ClientData, Tcl_Interp*, Tcl_Size, const char** const);
 
 // Helpers to automatically create constructors for systems/solvers 
 // that do not take arguments when they are constructed.
@@ -115,9 +113,13 @@ struct soefps {fn ss, sp, mp;};
 std::unordered_map<std::string, struct soefps> soe_table = {
   {"bandspd", {
      G3_SOE(BandSPDLinLapackSolver,      BandSPDLinSOE),
+#if 1
+     SP_SOE(BandSPDLinLapackSolver,      BandSPDLinSOE),
+     MP_SOE(BandSPDLinLapackSolver,      BandSPDLinSOE)}},
+#else
      SP_SOE(BandSPDLinLapackSolver,      DistributedBandSPDLinSOE),
      MP_SOE(BandSPDLinLapackSolver,      DistributedBandSPDLinSOE)}},
-
+#endif
   {"bandgeneral", { // BandGen, BandGEN
      G3_SOE(BandGenLinLapackSolver,      BandGenLinSOE),
      SP_SOE(BandGenLinLapackSolver,      DistributedBandGenLinSOE),
@@ -126,13 +128,6 @@ std::unordered_map<std::string, struct soefps> soe_table = {
      G3_SOE(BandGenLinLapackSolver,      BandGenLinSOE),
      SP_SOE(BandGenLinLapackSolver,      DistributedBandGenLinSOE),
      MP_SOE(BandGenLinLapackSolver,      DistributedBandGenLinSOE)}},
-#if 0
-  // TODO: Umfpack
-  {"umfpack", {
-     G3_SOE(BandGenLinLapackSolver,      BandGenLinSOE),
-     SP_SOE(BandGenLinLapackSolver,      DistributedBandGenLinSOE),
-     MP_SOE(BandGenLinLapackSolver,      DistributedBandGenLinSOE)}},
-#endif
 
   {"sparsegen",     {specifySparseGen, nullptr, nullptr}},
   {"sparsegeneral", {specifySparseGen, nullptr, nullptr}},
@@ -162,13 +157,17 @@ std::unordered_map<std::string, struct soefps> soe_table = {
 
   {"profilespd", {
      G3_SOE(ProfileSPDLinDirectSolver,   ProfileSPDLinSOE),
+#ifndef PARALLEL_PROFILESPD
+     SP_SOE(ProfileSPDLinDirectSolver,   ProfileSPDLinSOE),
+     MP_SOE(ProfileSPDLinDirectSolver,   ProfileSPDLinSOE)}},
+#else
      SP_SOE(ProfileSPDLinDirectSolver,   DistributedProfileSPDLinSOE),
      MP_SOE(ProfileSPDLinDirectSolver,   DistributedProfileSPDLinSOE)}},
 
   {"parallelprofilespd", {
      nullptr, nullptr,
      MP_SOE(ProfileSPDLinDirectSolver,   DistributedProfileSPDLinSOE)}},
-
+#endif
   {"fullgeneral", {
      G3_SOE(FullGenLinLapackSolver,      FullGenLinSOE),
      SP_SOE(FullGenLinLapackSolver,      FullGenLinSOE),

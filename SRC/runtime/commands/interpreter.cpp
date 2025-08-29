@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: This file contains basic commands that enhance the
 // experience of the interpreter. This file should not reference
 // any analysis or modeling classes.
@@ -12,15 +13,13 @@
 #include <assert.h>
 #include <runtimeAPI.h>
 #include <G3_Runtime.h>
-#include <OPS_Globals.h>
+#include <Logging.h>
+#include <Parsing.h>
 #include <Timer.h>
+#include "interpreter.h"
 
 static Tcl_ObjCmdProc *Tcl_putsCommand = nullptr;
 static Timer *theTimer = nullptr;
-
-Tcl_CmdProc TclCommand_wipeModel;
-Tcl_CmdProc TclCommand_clearAnalysis;
-Tcl_CmdProc TclCommand_specifyModel;
 
 class ProgressBar;
 Tcl_ObjCmdProc TclObjCommand_progress;
@@ -30,19 +29,15 @@ extern ProgressBar* progress_bar_ptr;
 const char *getInterpPWD(Tcl_Interp *interp);
 
 int TclObjCommand_pragma([[maybe_unused]] ClientData clientData, 
-                     Tcl_Interp *interp, int objc, Tcl_Obj *const objv[]);
+                     Tcl_Interp *interp, Tcl_Size objc, Tcl_Obj *const objv[]);
 
-// formats.cpp
-Tcl_CmdProc convertBinaryToText;
-Tcl_CmdProc convertTextToBinary;
-Tcl_CmdProc stripOpenSeesXML;
 
 //
 // Consider reimplmenting to use Tcl built-ins; see
 // https://wiki.tcl-lang.org/page/timers
 //
 static int
-startTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+startTimer(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
   if (theTimer == nullptr)
     theTimer = new Timer();
@@ -52,7 +47,7 @@ startTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** cons
 }
 
 static int
-stopTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+stopTimer(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
   if (theTimer == nullptr)
     return TCL_OK;
@@ -63,7 +58,7 @@ stopTimer(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const
 }
 
 static int
-timer(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** const argv)
+timer(ClientData clientData, Tcl_Interp* interp, Tcl_Size argc, TCL_Char** const argv)
 {
   if ((argc == 1) || (strcmp(argv[1], "start")==0)) {
     stopTimer(clientData, interp, argc, argv);
@@ -79,7 +74,7 @@ timer(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** const argv
 // revised puts command to send to stderr
 //
 static int
-OpenSees_putsCommand(ClientData dummy, Tcl_Interp *interp, int objc,
+OpenSees_putsCommand(ClientData dummy, Tcl_Interp *interp, Tcl_Size objc,
                      Tcl_Obj *const objv[])
 {
   // Tcl_Channel chan;           // The channel to puts on.
@@ -153,7 +148,7 @@ OpenSees_putsCommand(ClientData dummy, Tcl_Interp *interp, int objc,
 
 
 static int
-OPS_SetObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
+OPS_SetObjCmd(ClientData clientData, Tcl_Interp *interp, Tcl_Size objc,
               Tcl_Obj *const objv[])
 {
 
@@ -184,11 +179,10 @@ OPS_SetObjCmd(ClientData clientData, Tcl_Interp *interp, int objc,
 
 
 static int
-logFile(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+logFile(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
-
   if (argc < 2) {
-    opserr << "WARNING logFile fileName? - no filename supplied\n";
+    opserr << "WARNING no filename supplied\n";
     return TCL_ERROR;
   }
   bool echo = true;
@@ -204,15 +198,21 @@ logFile(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const a
     cArg++;
   }
 
-  if (opserr.setFile(argv[1], mode, echo) < 0)
-    opserr << "WARNING logFile " << argv[1] << " failed to set the file\n";
+  if (opserr.setFile(argv[1], mode, echo) < 0) {
+    opserr << "WARNING logFile " << argv[1] << " failed to set the file"
+           << "\n";
+  }
+  std::string cmd = std::string{"namespace eval opensees::internal {set log_file \""}
+                  + std::string{argv[1]}
+                  + std::string{"\"}\n"};
 
+  Tcl_Eval(interp, cmd.c_str());
 
   return TCL_OK;
 }
 
 static int
-setPrecision(ClientData clientData, Tcl_Interp *interp, int argc,
+setPrecision(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
 
@@ -291,7 +291,7 @@ OPS_SourceCmd(ClientData dummy,      /* Not used. */
 }
 
 static int
-OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc,
+OpenSeesExit(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
   //  theDomain.clearAll();
@@ -325,7 +325,7 @@ OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 
 static int
-maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc,
+maxOpenFiles(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
   int maxOpenFiles;
@@ -352,7 +352,7 @@ maxOpenFiles(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 
 int
-OpenSeesAppInit(Tcl_Interp *interp)
+Init_OpenSees(Tcl_Interp *interp)
 {
 
   // redo puts command so we can capture puts into std:cerr
@@ -388,9 +388,6 @@ OpenSeesAppInit(Tcl_Interp *interp)
   Tcl_CreateCommand(interp, "timer",               timer,        nullptr, nullptr);
 
   // File utilities
-  Tcl_CreateCommand(interp, "stripXML",            stripOpenSeesXML,    nullptr, NULL);
-  Tcl_CreateCommand(interp, "convertBinaryToText", convertBinaryToText, nullptr, NULL);
-  Tcl_CreateCommand(interp, "convertTextToBinary", convertTextToBinary, nullptr, NULL);
   Tcl_CreateCommand(interp, "setMaxOpenFiles",     maxOpenFiles,        nullptr, nullptr);
 
   // Some entry points
@@ -399,13 +396,21 @@ OpenSeesAppInit(Tcl_Interp *interp)
   Tcl_CreateCommand(interp, "wipe",                TclCommand_wipeModel,      nullptr, nullptr);
   Tcl_CreateCommand(interp, "_clearAnalysis",      TclCommand_clearAnalysis,  nullptr, nullptr);
 
+  
+
   Tcl_CreateObjCommand(interp, "pset",             OPS_SetObjCmd, nullptr, nullptr);
   Tcl_CreateObjCommand(interp, "source",           OPS_SourceCmd, nullptr, nullptr);
   Tcl_CreateObjCommand(interp, "pragma",           TclObjCommand_pragma, nullptr, nullptr);
   Tcl_CreateObjCommand(interp, "progress",         TclObjCommand_progress, (ClientData)&progress_bar_ptr, nullptr);
 
-  // Tcl_CreateCommand(interp, "searchPeerNGA", &peerNGA, nullptr, nullptr);
-  // Tcl_CreateCommand(interp, "defaultUnits",        &defaultUnits, nullptr, NULL);
+  //
+  static int ncmd = sizeof(InterpreterCommands)/sizeof(char_cmd);
+
+  for (int i = 0; i < ncmd; i++)
+    Tcl_CreateCommand(interp, 
+        InterpreterCommands[i].name, 
+        InterpreterCommands[i].func, 
+        (ClientData) nullptr, nullptr);
 
   return TCL_OK;
 }

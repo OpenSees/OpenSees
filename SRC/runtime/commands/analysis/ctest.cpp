@@ -1,9 +1,11 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-// 
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
+//
 // Description: This file implements the selection of a convergence test.
 //
 #include <tcl.h>
@@ -14,7 +16,7 @@
 #include <assert.h>
 #include <string.h>
 
-// convergence tests
+// Convergence tests
 #include <CTestNormUnbalance.h>
 #include <CTestNormDispIncr.h>
 #include <CTestEnergyIncr.h>
@@ -27,7 +29,7 @@
 #include <NormDispOrUnbalance.h>
 
 
-ConvergenceTest*
+static ConvergenceTest*
 TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char ** const argv);
 
 
@@ -51,7 +53,7 @@ specifyCTest(ClientData clientData, Tcl_Interp *interp, int argc, G3_Char ** con
   return TCL_OK;
 }
 
-ConvergenceTest*
+static ConvergenceTest*
 TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char ** const argv)
 {
   // get the tolerence first
@@ -70,12 +72,13 @@ TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int ar
 
   // make sure at least one other argument to contain test type
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "need to specify a ConvergenceTest type \n";
+    opserr << OpenSees::PromptValueError << "need to specify a ConvergenceTest type \n";
     return nullptr;
   }
 
   if ((strcmp(argv[1], "NormDispAndUnbalance") == 0) ||
-      (strcmp(argv[1], "NormDispOrUnbalance") == 0)) {
+      (strcmp(argv[1], "NormDispOrUnbalance") == 0)) 
+    {
     if (argc == 5) {
       if (Tcl_GetDouble(interp, argv[2], &tol) != TCL_OK)
         return nullptr;
@@ -118,8 +121,8 @@ TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int ar
       if (Tcl_GetInt(interp, argv[7], &maxIncr) != TCL_OK)
         return nullptr;
     }
-
-  } else if (strcmp(argv[1], "FixedNumIter") == 0) {
+  } 
+  else if (strcmp(argv[1], "FixedNumIter") == 0) {
     // test FixedNumIter $iter <$pFlag> <$nType>
     if (argc == 3) {
       if (Tcl_GetInt(interp, argv[2], &numIter) != TCL_OK)
@@ -146,8 +149,8 @@ TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int ar
       if (Tcl_GetDouble(interp, argv[5], &maxTol) != TCL_OK)
         return nullptr;
     }
-
-  } else {
+  }
+  else {
     //
     // All others
     //
@@ -222,39 +225,43 @@ TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int ar
       break;
   }
 
-  ConvergenceTest *theNewTest = nullptr;
 
   if (numIter == 0) {
-    opserr << G3_ERROR_PROMPT << "no numIter specified in test command\n";
+    opserr << OpenSees::PromptValueError << "no numIter specified in test command\n";
     return nullptr;
   }
 
+
+  // ConvergenceTest *theNewTest = nullptr;
   if (strcmp(argv[1], "FixedNumIter") == 0)
-    theNewTest = new CTestFixedNumIter(numIter, flag, normType);
+    return new CTestFixedNumIter(numIter, flag, normType);
 
   else {
     if (tol == 0.0) {
-      opserr << G3_ERROR_PROMPT << "no tolerance specified in test command\n";
+      opserr << OpenSees::PromptValueError << "no tolerance specified in test command\n";
       return nullptr;
     }
 
-    if (strcmp(argv[1], "NormUnbalance") == 0)
+    if ((strcmp(argv[1], "Residual") == 0) || (strcmp(argv[1], "NormUnbalance") == 0))
       return  new CTestNormUnbalance(tol, numIter, flag, normType,
                                      maxIncr, maxTol);
 
-    else if (strcmp(argv[1], "NormDispIncr") == 0)
+    else if ((strcmp(argv[1], "Correction") == 0) || (strcmp(argv[1], "NormDispIncr") == 0))
       return new CTestNormDispIncr(tol, numIter, flag, normType, maxTol);
 
-    else if (strcmp(argv[1], "NormDispAndUnbalance") == 0)
-      return new NormDispAndUnbalance(tol, tol2, numIter, flag,
-                                            normType, maxIncr);
+    else if ((strcmp(argv[1], "EnergyIncr") == 0) || 
+             (strcmp(argv[1], "Energy") == 0))
+      return new CTestEnergyIncr(tol, numIter, flag, normType, maxTol);
+
+
+    else if ((strcmp(argv[1], "Residual&Correction") == 0) || 
+             (strcmp(argv[1], "Correction&Residual") == 0) || 
+             (strcmp(argv[1], "NormDispAndUnbalance") == 0))
+      return new NormDispAndUnbalance(tol, tol2, numIter, flag, normType, maxIncr);
 
     else if (strcmp(argv[1], "NormDispOrUnbalance") == 0)
       return new NormDispOrUnbalance(tol, tol2, numIter, flag,
                                            normType, maxIncr);
-
-    else if (strcmp(argv[1], "EnergyIncr") == 0)
-      theNewTest = new CTestEnergyIncr(tol, numIter, flag, normType, maxTol);
 
     else if (strcmp(argv[1], "RelativeNormUnbalance") == 0)
       return new CTestRelativeNormUnbalance(tol, numIter, flag, normType);
@@ -269,11 +276,12 @@ TclDispatch_newConvergenceTest(ClientData clientData, Tcl_Interp* interp, int ar
       return new CTestRelativeTotalNormDispIncr(tol, numIter, flag, normType);
 
     else {
-      opserr << G3_ERROR_PROMPT << "unknown ConvergenceTest type";
+      opserr << OpenSees::PromptValueError << "unknown ConvergenceTest type";
       return nullptr;
     }
   }
-  return theNewTest;
+
+  return nullptr;
 }
 
 int
@@ -297,7 +305,7 @@ getCTestNorms(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
   }
 
-  opserr << G3_ERROR_PROMPT << "testNorms - no convergence test has been constructed.\n";
+  opserr << OpenSees::PromptValueError << "no convergence test has been defined.\n";
   return TCL_ERROR;
 }
 
@@ -318,7 +326,7 @@ getCTestIter(ClientData clientData, Tcl_Interp *interp, int argc, G3_Char ** con
     return TCL_OK;
   }
 
-  opserr << G3_ERROR_PROMPT << "testIter - no convergence test.\n";
+  opserr << OpenSees::PromptValueError << "no convergence test was found.\n";
   return TCL_ERROR;
 }
 

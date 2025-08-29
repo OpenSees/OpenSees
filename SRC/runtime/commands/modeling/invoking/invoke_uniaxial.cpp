@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 //
 // Description: This file contains the implementaion of functions
 // used to directly invoke methods of a UniaxialMaterial from a
@@ -29,7 +30,7 @@ static Tcl_CmdProc TclCommand_getStressUniaxialMaterial;
 static Tcl_CmdProc TclCommand_getTangUniaxialMaterial;
 static Tcl_CmdProc TclCommand_integrateUniaxialMaterial;
 
-const struct {const char*name; const Tcl_CmdProc*func;} command_table[] = {
+const struct {const char*name; Tcl_CmdProc*func;} command_table[] = {
   {"strain",      TclCommand_setStrainUniaxialMaterial },
   {"commit",      TclCommand_commitState               },
   {"stress",      TclCommand_getStressUniaxialMaterial },
@@ -41,9 +42,7 @@ const struct {const char*name; const Tcl_CmdProc*func;} command_table[] = {
   // {"uniaxialTest",     TclCommand_setUniaxialMaterial}
 };
 
-//
-// THE FUNCTIONS INVOKED BY THE INTERPRETER
-//
+
 int
 TclCommand_useUniaxialMaterial(ClientData clientData,
                                           Tcl_Interp *interp, int argc,
@@ -53,7 +52,7 @@ TclCommand_useUniaxialMaterial(ClientData clientData,
   // Get the tag of the material to invoke
   int tag;
   if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "could not read tag";
+    opserr << OpenSees::PromptValueError << "could not read tag";
     return TCL_ERROR;
   }
 
@@ -62,15 +61,11 @@ TclCommand_useUniaxialMaterial(ClientData clientData,
   // is preserved between invocations.
   UniaxialMaterial *theMaterial =
     ((BasicModelBuilder*)clientData)->getTypedObject<UniaxialMaterial>(tag);
-  // UniaxialMaterial *theMaterial = 
-  // ((BasicModelBuilder*)clientData)->getTypedObject<UniaxialMaterial>(argv[2]);
+
 
   if (theMaterial == nullptr) {
-    opserr << G3_ERROR_PROMPT << "no material found with tag '" << tag << "'\n";
+    opserr << OpenSees::PromptValueError << "no material found with tag '" << tag << "'\n";
     return TCL_ERROR;
-
-  } else {
-    // theMaterial = theOrigMaterial->getCopy();
   }
 
 
@@ -113,15 +108,15 @@ TclCommand_setStrainUniaxialMaterial(ClientData clientData,
   UniaxialMaterial* theMaterial = (UniaxialMaterial*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT 
-           << "bad arguments - want: strainUniaxialTest strain? <temp?>\n";
+    opserr << OpenSees::PromptValueError 
+           << "missing " << 2 - argc << " arguments, want: strain strain? <temp?>\n";
     return TCL_ERROR;
   }
 
   // get the tag from command line
   double strain;
   if (Tcl_GetDouble(interp, argv[1], &strain) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "could not read strain: strainUniaxialTest strain? "
+    opserr << OpenSees::PromptValueError << "could not read strain: strainUniaxialTest strain? "
               "<temp?>\n";
     return TCL_ERROR;
   }
@@ -133,7 +128,7 @@ TclCommand_setStrainUniaxialMaterial(ClientData clientData,
     if (strcmp(argv[i], "-commit")==0){
       commit = true;
     } else if (Tcl_GetDouble(interp, argv[2], &temperature) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "could not read strain: strainUniaxialTest strain? "
+      opserr << OpenSees::PromptValueError << "could not read strain: strain strain? "
                 "<temp?>\n";
       return TCL_ERROR;
     }
@@ -295,12 +290,12 @@ TclCommand_integrateUniaxialMaterial(ClientData clientData,
   UniaxialMaterial* material = static_cast<UniaxialMaterial*>(clientData);
   
   if (Tcl_GetDouble(interp, argv[1], &dt) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "problem reading time step, got '" << argv[1] << "'\n";
+    opserr << OpenSees::PromptValueError << "problem reading time step, got '" << argv[1] << "'\n";
     return TCL_ERROR;
   }
 
   if (Tcl_SplitList(interp, argv[2], &n, &str_values) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "problem splitting path list " << argv[2] << "\n";
+    opserr << OpenSees::PromptValueError << "problem splitting path list " << argv[2] << "\n";
     return TCL_ERROR;
   }
 
@@ -308,42 +303,42 @@ TclCommand_integrateUniaxialMaterial(ClientData clientData,
   while (argi < argc) {
     if (strcmp(argv[argi], "-alphaf") == 0) {
       if (Tcl_GetDouble(interp, argv[1+argi], &conf.alpha_f) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
+        opserr << OpenSees::PromptValueError << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
         return TCL_ERROR;
       }
       argi += 2;
     }
     else if (strcmp(argv[argi], "-alpham") == 0) {
       if (Tcl_GetDouble(interp, argv[1+argi], &conf.alpha_m) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
+        opserr << OpenSees::PromptValueError << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
         return TCL_ERROR;
       }
       argi += 2;
     }
     else if (strcmp(argv[argi], "-beta") == 0) {
       if (Tcl_GetDouble(interp, argv[1+argi], &conf.beta) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
+        opserr << OpenSees::PromptValueError << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
         return TCL_ERROR;
       }
       argi += 2;
     }
     else if (strcmp(argv[argi], "-gamma") == 0) {
       if (Tcl_GetDouble(interp, argv[1+argi], &conf.gamma) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
+        opserr << OpenSees::PromptValueError << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
         return TCL_ERROR;
       }
       argi += 2;
     }
     else if (strcmp(argv[argi], "-mass") == 0) {
       if (Tcl_GetDouble(interp, argv[1+argi], &M) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
+        opserr << OpenSees::PromptValueError << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
         return TCL_ERROR;
       }
       argi += 2;
     }
     else if (strcmp(argv[argi], "-damp") == 0) {
       if (Tcl_GetDouble(interp, argv[1+argi], &C) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
+        opserr << OpenSees::PromptValueError << "problem reading " << argv[argi] << ", got '" << argv[argi+1] << "'\n";
         return TCL_ERROR;
       }
       argi += 2;

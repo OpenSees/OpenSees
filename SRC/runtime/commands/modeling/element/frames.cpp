@@ -144,6 +144,7 @@ CheckTransformation(Domain& domain, int iNode, int jNode, CrdTransf& transform)
 }
 
 
+
 template <int ndm, typename Transform, typename Section>
 static Element*
 CreateFrame(BasicModelBuilder& builder, 
@@ -249,11 +250,11 @@ CreateFrame(BasicModelBuilder& builder,
     // ndm == 3
     //
 
+    if (CheckTransformation(*builder.getDomain(), nodev[0], nodev[nodev.size()-1], *theTransf) != TCL_OK)
+      return nullptr;
     if (strstr(name, "Frame") != nullptr) {
       if (strstr(name, "Exact") == nullptr) {
 
-        if (CheckTransformation(*builder.getDomain(), nodev[0], nodev[nodev.size()-1], *theTransf) != TCL_OK)
-          return nullptr;
         std::array<int, 2> nodes {nodev[0], nodev[1]};
 
         FrameTransformBuilder* tb = builder.getTypedObject<FrameTransformBuilder>(transfTag);
@@ -327,6 +328,10 @@ CreateFrame(BasicModelBuilder& builder,
 
             static_loop<0, 3>([&](auto nwm) constexpr {
               if (nwm.value + 6 == ndf) {
+                // Create the transform
+#if 0 || defined(NEW_TRANSFORM)
+                FrameTransform<2,6+nwm.value> *tran = tb->template create<2,6+nwm.value>();
+#endif
                 if (!options.shear_flag) {
                   static_loop<2,30>([&](auto nip) constexpr {
                     if (nip.value == sections.size())
@@ -411,6 +416,18 @@ CreateFrame(BasicModelBuilder& builder,
   return theElement;
 }
 
+
+#if 0
+Element*
+CreateInelasticFrame(std::string, std::vector<int>& nodes,
+                                  std::vector<FrameSection>&, 
+                                  BeamIntegration&, 
+                              //  FrameQuadrature&,
+                                  FrameTransform&,
+                                  Options&);
+Element*
+CreatePrismaticFrame(std::string);
+#endif
 
 // 0       1    2 3  4
 // element beam 1 $i $j 0 1 2
@@ -867,9 +884,16 @@ TclBasicBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 
     // Version a)
     else {
-      // If we fail to parse an integer tag, treat it like an inline definition
+      // If we fail to parse an integer tag for the integration,
+      // then we assume that the integration is specified as a
+      // BeamIntegration command
       builder->findFreeTag<BeamIntegrationRule>(itg_tag);
       std::string integrCommand{argv[positions[1]]};
+      if (integrCommand.find(" ") == std::string::npos) {
+        for (int i =2; i< positions.size(); i++) {
+          integrCommand += " " + std::string(argv[positions[i]]);
+        }
+      }
       integrCommand.insert(integrCommand.find(" "), " "+std::to_string(itg_tag)+" ");
       integrCommand.insert(0, "beamIntegration ");
       if (Tcl_Eval(interp, integrCommand.c_str()) != TCL_OK) {

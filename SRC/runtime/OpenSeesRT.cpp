@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // This file contains functions that are required by Tcl to load the
 // OpenSeesRT library.
 //
@@ -12,7 +13,7 @@
 #endif
 //
 #include <runtimeAPI.h>
-#include "G3_Runtime.h"
+#include "runtime/G3_Runtime.h"
 #include <logging/G3_Logging.h>
 #include <handler/OPS_Stream.h>
 #include <StandardStream.h>
@@ -28,8 +29,9 @@
 #else
 #  include <unistd.h>               
 #endif
-//
-extern int OpenSeesAppInit(Tcl_Interp *interp);
+
+// interpreter/runtime.cpp
+extern int Init_OpenSees(Tcl_Interp *interp);
 extern void G3_InitTclSequentialAPI(Tcl_Interp* interp);
 extern int init_g3_tcl_utils(Tcl_Interp*);
 
@@ -53,7 +55,7 @@ version(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 //
 extern "C" int 
 #ifdef _WIN32
-__declspec(dllexport) // DLLEXPORT
+__declspec(dllexport)
 #endif
 Openseesrt_Init(Tcl_Interp *interp)
 {
@@ -68,7 +70,7 @@ Openseesrt_Init(Tcl_Interp *interp)
   Tcl_SetAssocData(interp, "G3_Runtime", NULL, (ClientData)rt);
 
   // Initialize OpenSees
-  OpenSeesAppInit(interp);
+  Init_OpenSees(interp);
   G3_InitTclSequentialAPI(interp); // Add sequential API
   init_g3_tcl_utils(interp);       // Add utility commands (linspace, range, etc.)
 

@@ -1,39 +1,46 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: This file contains the function invoked when the user invokes
 // the section command in the interpreter.
+//===----------------------------------------------------------------------===//
+//
+// Membrane      nxx nyy nxy
+// MembranePlate nxx nyy nxy mxx myy mxy vxz vyz
 //
 // Written: rms, mhs, cmp
 // Created: 07/99
 //
+#include <set>
 #include <assert.h>
-#include <tcl.h>
-#include <runtimeAPI.h>
-#include <G3_Logging.h>
-#include <elementAPI.h>
-#include <BasicModelBuilder.h>
-
 #include <string.h>
 #include <fstream>
 #include <iostream>
 
+#include <tcl.h>
+#include <Parsing.h>
+#include <Logging.h>
+#include <ArgumentTracker.h>
+#include <BasicModelBuilder.h>
+#include <Parameter.h>
+
 #include <packages.h>
+#include <runtimeAPI.h>
+
+using namespace OpenSees;
 
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
                                        Tcl_Interp *interp, int cArg, int mArg,
                                        TCL_Char ** const argv, Domain *domain);
 
+#include <PlaneStrainMaterial.h>
+#include <PlaneStressMaterial.h>
 #include <FrameSection.h>
 #include <ElasticMaterial.h>
-#include <ElasticSection2d.h>
-#include <ElasticSection3d.h>
-#include <ElasticShearSection2d.h>
-#include <ElasticShearSection3d.h>
-#include <ElasticWarpingShearSection2d.h>
 // #include <ElasticTubeSection3d.h>
 #include <ParallelSection.h>
 #include <FiberSection2d.h>
@@ -43,41 +50,26 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
 #include <FiberSection2dInt.h>
 #include <FiberSection3d.h>
 #include <FrameFiberSection3d.h>
+#include <FrameSolidSection3d.h>
 #include <FiberSectionAsym3d.h>
-//#include <FiberSectionGJ.h>
-
-
-#include <LayeredShellFiberSection.h> // Yuli Huang & Xinzheng Lu
-
-#include <ElasticPlateSection.h>
-#include <ElasticMembranePlateSection.h>
-#include <MembranePlateFiberSection.h>
 
 // SectionBuilder
 #include <QuadPatch.h>
 #include <CircPatch.h>
-#include <QuadCell.h>
 #include <StraightReinfLayer.h>
 #include <CircReinfLayer.h>
-#include <ReinfBar.h>
-#include <SectionBuilder/FiberSectionBuilder.h>
+#include <FiberSectionBuilder.h>
 
 //
 #include <Bidirectional.h>
 #include <Elliptical2.h>
 #include <Isolator2spring.h>
 
-//--- Adding Thermo-mechanical Sections:[BEGIN]   by UoE OpenSees Group ---//
 #include <FiberSection2dThermal.h>
 #include <FiberSection3dThermal.h> //Added by L.Jiang [SIF] 2017
-#include <MembranePlateFiberSectionThermal.h> //Added by Liming, [SIF] 2017
-#include <LayeredShellFiberSectionThermal.h>  //Added by Liming, [SIF] 2017
-//--- Adding Thermo-mechanical Sections: [END]   by UoE OpenSees Group ---//
 
 //#include <McftSection2dfiber.h>
 
-extern OPS_Routine OPS_ElasticSection;
-extern OPS_Routine OPS_ElasticWarpingShearSection2d;
 // extern OPS_Routine OPS_ElasticTubeSection3d;
 extern OPS_Routine OPS_UniaxialSection;
 extern OPS_Routine OPS_ParallelSection;
@@ -94,6 +86,10 @@ Tcl_CmdProc TclCommand_addFiberSection;
 Tcl_CmdProc TclCommand_addFiberIntSection;
 Tcl_CmdProc TclCommand_addUCFiberSection;
 Tcl_CmdProc TclCommand_addSectionAggregator;
+Tcl_CmdProc TclCommand_addPlaneSection;
+Tcl_CmdProc TclCommand_addElasticShellSection;
+Tcl_CmdProc TclCommand_addUniaxialSection;
+Tcl_CmdProc TclCommand_ShellSection;
 
 // extern OPS_Routine OPS_WFSection2d;
 // extern OPS_Routine OPS_RCCircularSection;
@@ -104,6 +100,116 @@ Tcl_CmdProc TclCommand_addSectionAggregator;
 
 SectionForceDeformation *
 TclBasicBuilderYS_SectionCommand(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv);
+
+
+#include <set>
+#include <ArgumentTracker.h>
+#include <UniaxialMaterial.h>
+int
+TclCommand_addTrussSection(ClientData clientData, Tcl_Interp *interp,
+                              int argc, TCL_Char ** const argv)
+{
+
+  enum class Positions {
+    Tag, MaterialTag, Area,
+    EndRequired, End
+  };
+  
+  ArgumentTracker<Positions> tracker;
+  std::set<int> positional;
+  int tag;
+  int matTag;
+  double area;
+
+  for (int i=2; i<argc; i++) {
+    if (strcmp(argv[i], "-material") == 0) {
+      if (++i >= argc) {
+        opserr << "Missing value for option " << argv[i-1] << "\n";
+        return TCL_ERROR;
+      }
+      if (Tcl_GetInt(interp, argv[i], &matTag) != TCL_OK) {
+        opserr << "Invalid value for option " << argv[i-1] << "\n";
+        return TCL_ERROR;
+      }
+      tracker.consume(Positions::MaterialTag);
+    }
+    else if (strcmp(argv[i], "-area") == 0) {
+      if (++i >= argc) {
+        opserr << "Missing value for option " << argv[i-1] << "\n";
+        return TCL_ERROR;
+      }
+      if (Tcl_GetDouble(interp, argv[i], &area) != TCL_OK) {
+        opserr << "Invalid value for option " << argv[i-1] << "\n";
+        return TCL_ERROR;
+      }
+      tracker.consume(Positions::Area);
+    }
+    else
+      positional.insert(i);
+  }
+
+  //
+  // Positional arguments
+  //
+  for (int i: positional) {
+    if (tracker.current() == Positions::EndRequired)
+      tracker.increment();
+
+    switch (tracker.current()) {
+      case Positions::Tag :
+        if (Tcl_GetInt(interp, argv[i], &tag) != TCL_OK) {
+          opserr << "Invalid tag " << argv[i] << "\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Positions::Tag);
+        break;
+
+      case Positions::MaterialTag:
+        if (Tcl_GetInt(interp, argv[i], &matTag) != TCL_OK) {
+          opserr << "Invalid value for material tag " << argv[i] << "\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Positions::MaterialTag);
+        break;
+
+      case Positions::Area:
+        if (Tcl_GetDouble(interp, argv[i], &area) != TCL_OK) {
+          opserr << "Invalid value for area " << argv[i] << "\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Positions::Area);
+        break;
+
+      case Positions::EndRequired:
+      case Positions::End:
+        break;
+    }
+  }
+
+  //
+  if (tracker.current() < Positions::EndRequired) {
+    opserr << "Missing required arguments: ";
+    if (tracker.contains(Positions::Tag))
+      opserr << "tag ";
+    if (tracker.contains(Positions::MaterialTag))
+      opserr << "material ";
+    if (tracker.contains(Positions::Area))
+      opserr << "area ";
+    opserr << "\n";
+    return TCL_ERROR;
+  }
+
+  BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
+
+  UniaxialMaterial *material = builder->getTypedObject<UniaxialMaterial>(matTag);
+  if (material == nullptr) {
+    return TCL_ERROR;
+  }
+  auto fiber_section = new FrameFiberSection3d(tag, 1, nullptr, true, 0.0, 0);
+  fiber_section->addFiber(*material, area, 0.0, 0.0);
+  return builder->addTaggedObject<FrameSection>(*fiber_section);
+}
+
 
 int
 TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
@@ -116,8 +222,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
 
   // Make sure there is a minimum number of arguments
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "insufficient number of section arguments\n";
-    opserr << "Want: section type? tag? <specific material args>" << endln;
+    opserr << OpenSees::PromptValueError << "insufficient number of arguments\n";
     return TCL_ERROR;
   }
 
@@ -130,9 +235,13 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
 
   if (strcmp(argv[1], "Fiber") == 0 || 
       strcmp(argv[1], "fiberSec") == 0 ||
+      strcmp(argv[1], "FiberSec") == 0 ||
       strcmp(argv[1], "FiberFrame") == 0 ||
       strcmp(argv[1], "FrameFiber") == 0 ||
+      strcmp(argv[1], "AxialFiber") == 0 ||
       strcmp(argv[1], "FiberSection") == 0 ||
+      //
+      strcmp(argv[1], "ShearFiber") == 0 ||
       // Shear
       strcmp(argv[1], "NDFiber") == 0 ||
       strcmp(argv[1], "NDFiberWarping") == 0 ||
@@ -145,66 +254,49 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
 
     return TclCommand_addFiberSection(clientData, interp, argc, argv);
 
+
+  else if (strcmp(argv[1], "Truss") == 0 ||
+           strcmp(argv[1], "TrussSection") == 0 ||
+           strcmp(argv[1], "TrussSection2d") == 0 ||
+           strcmp(argv[1], "TrussSection3d") == 0) {
+    return TclCommand_addTrussSection(clientData, interp, argc, argv);
+  }
+
+
+
   else if (strcmp(argv[1], "FiberInt") == 0) {
     // TODO
+    // return TclCommand_addFiberIntSection(clientData, interp, argc, argv);
     opserr << "FiberInt is currently broken\n";
     return TCL_ERROR;
-    // return TclCommand_addFiberIntSection(clientData, interp, argc, argv);
   }
+
+  else if ((strcmp(argv[1], "PlaneStrain") == 0) ||
+           (strcmp(argv[1], "PlaneStress") == 0))
+    return TclCommand_addPlaneSection(clientData, interp, argc, argv);
 
   else if (strcmp(argv[1], "UCFiber") == 0)
     return TclCommand_addUCFiberSection(clientData, interp, argc, argv);
+
+  else if ((strcmp(argv[1], "Elastic") == 0) ||
+    (strcmp(argv[1], "ElasticShear") == 0) ||
+    (strcmp(argv[1], "ElasticWarpingShear") == 0) ||
+    (strcmp(argv[1], "FrameElastic") == 0) ||
+    (strcmp(argv[1], "ElasticFrame") == 0)) {
+    return TclCommand_newElasticSection(clientData, interp, argc, argv);
+  }
+
+  else if (strcmp(argv[1], "Generic1D") == 0 ||
+        strcmp(argv[1], "Generic1d") == 0 ||
+        strcmp(argv[1], "Uniaxial") == 0) {
+    return TclCommand_addUniaxialSection(clientData, interp, argc, argv);
+  }
 
   else if (strcmp(argv[1], "Parallel") == 0) {
     SectionForceDeformation *theSection = 
                  (SectionForceDeformation*)OPS_ParallelSection(rt, argc, argv);
 
     if (theSection == nullptr || builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      if (theSection != nullptr)
-        delete theSection;
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-
-  else if ((strcmp(argv[1], "FrameElastic") == 0) ||
-           (strcmp(argv[1], "ElasticFrame") == 0)) {
-    return TclCommand_newElasticSection(clientData, interp, argc, argv);
-  }
-
-  else if (strcmp(argv[1], "Elastic") == 0) {
-    if (getenv("SEC"))
-      return TclCommand_newElasticSection(clientData, interp, argc, argv);
-
-    else {
-      FrameSection *theSection = (FrameSection *)OPS_ElasticSection(rt, argc, argv);
-      // Now add the section to the modelBuilder
-      if (theSection == nullptr || builder->addTaggedObject<FrameSection>(*theSection) < 0) {
-        if (theSection != nullptr)
-          delete theSection;
-        return TCL_ERROR;
-      } else
-        return TCL_OK;
-    }
-  }
-
-  else if (strcmp(argv[1], "ElasticWarpingShear") == 0) {
-    FrameSection *theSection = (FrameSection *)OPS_ElasticWarpingShearSection2d(rt, argc, argv);
-    // Now add the section to the modelBuilder
-    if (theSection == nullptr || builder->addTaggedObject<FrameSection>(*theSection) < 0) {
-      if (theSection != nullptr)
-        delete theSection;
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-
-  else if (strcmp(argv[1], "Generic1D") == 0 ||
-           strcmp(argv[1], "Generic1d") == 0 ||
-           strcmp(argv[1], "Uniaxial") == 0) {
-    FrameSection *theSection = (FrameSection *)OPS_UniaxialSection(rt, argc, argv);
-    // Now add the section to the modelBuilder
-    if (theSection == nullptr || builder->addTaggedObject<FrameSection>(*theSection) < 0) {
       if (theSection != nullptr)
         delete theSection;
       return TCL_ERROR;
@@ -244,6 +336,28 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
 #endif
   }
 
+  else if (strcmp(argv[1], "AddDeformation") == 0 ||
+           strcmp(argv[1], "Aggregator") == 0  ||
+           strcmp(argv[1], "Aggregate") == 0) 
+    return TclCommand_addSectionAggregator(clientData, interp, argc, argv);
+
+
+  //
+  // Shell
+  //
+  else if ((strcmp(argv[1], "ElasticMembranePlateSection") == 0) ||
+           (strcmp(argv[1], "ElasticShell") == 0) ||
+           (strcmp(argv[1], "ElasticPlateSection") == 0) ||
+           (strcmp(argv[1], "ElasticMembraneSection") == 0)) {
+    return TclCommand_addElasticShellSection(clientData, interp, argc, argv);
+  }
+
+  else if ((strcmp(argv[1], "LayeredShell") == 0) || 
+           (strcmp(argv[1], "LayeredShellThermal") == 0) ||
+           (strcmp(argv[1], "PlateFiber") == 0) || 
+           (strcmp(argv[1], "PlateFiberThermal") == 0)) {
+    return TclCommand_ShellSection(clientData, interp, argc, argv);
+  }
 
   //
   // Membrane
@@ -266,372 +380,12 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
           return TCL_ERROR;
   }
 
-  else if (strcmp(argv[1], "ElasticMembraneSection") == 0) {
-      void* theMat = OPS_ElasticMembraneSection();
-      if (theMat != 0)
-          theSection = (SectionForceDeformation*)theMat;
-      else
-          return TCL_ERROR;
-  }
-
-  else if (strcmp(argv[1], "AddDeformation") == 0 ||
-           strcmp(argv[1], "Aggregator") == 0  ||
-           strcmp(argv[1], "Aggregate") == 0) 
-    return TclCommand_addSectionAggregator(clientData, interp, argc, argv);
-
-
-  else if (strcmp(argv[1], "ElasticPlateSection") == 0) {
-
-    if (argc < 5) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n";
-      opserr << "Want: section ElasticPlateSection tag? E? nu? h? " << endln;
-      return TCL_ERROR;
-    }
-
-    int tag;
-    double E, nu, h;
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section ElasticPlateSection tag" << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid E" << endln;
-      opserr << "ElasticPlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[4], &nu) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid nu" << endln;
-      opserr << "ElasticPlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[5], &h) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-      opserr << "ElasticPlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    theSection = new ElasticPlateSection(tag, E, nu, h);
-    // Now add the material to the modelBuilder
-    if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection; // invoke the material objects destructor, otherwise mem leak
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-
-  else if (strcmp(argv[1], "ElasticMembranePlateSection") == 0) {
-    if (argc < 5) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n";
-      opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? "
-                "<rho?> <Ep_mod?>"
-             << endln;
-      return TCL_ERROR;
-    }
-
-    int tag;
-    double E, nu, h;
-    double rho = 0.0;
-    double Ep_mod = 1.0;
-
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section ElasticMembranePlateSection tag"
-             << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid E" << endln;
-      opserr << "ElasticMembranePlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[4], &nu) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid nu" << endln;
-      opserr << "ElasticMembranePlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[5], &h) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-      opserr << "ElasticMembranePlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (argc > 6 && Tcl_GetDouble(interp, argv[6], &rho) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid rho" << endln;
-      opserr << "ElasticMembranePlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (argc > 7 && Tcl_GetDouble(interp, argv[7], &Ep_mod) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid Ep_mod" << endln;
-      opserr << "ElasticMembranePlateSection section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    theSection = new ElasticMembranePlateSection(tag, E, nu, h, rho, Ep_mod);
-  }
-
-  else if (strcmp(argv[1], "PlateFiber") == 0) {
-    if (argc < 5) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n";
-      opserr << "Want: section PlateFiber tag? matTag? h? " << endln;
-      return TCL_ERROR;
-    }
-
-    double h;
-    int tag, matTag;
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section PlateFiber tag" << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag" << endln;
-      opserr << "PlateFiber section: " << matTag << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[4], &h) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-      opserr << "PlateFiber section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    NDMaterial *theMaterial = builder->getTypedObject<NDMaterial>(matTag);
-    if (theMaterial == nullptr) {
-      opserr << G3_ERROR_PROMPT << "nD material does not exist\n";
-      opserr << "nD material: " << matTag;
-      opserr << "\nPlateFiber section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    theSection = new MembranePlateFiberSection(tag, h, *theMaterial);
-    // Now add the material to the modelBuilder
-    if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection;
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-
-  // start Yuli Huang & Xinzheng Lu LayeredShellFiberSection
-  else if (strcmp(argv[1], "LayeredShell") == 0) {
-    if (argc < 6) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments" << endln;
-      opserr << "Want: section LayeredShell tag? nLayers? matTag1? h1? ... "
-                "matTagn? hn? "
-             << endln;
-      return TCL_ERROR;
-    }
-
-    int tag, nLayers, matTag;
-    double h, *thickness;
-    NDMaterial **theMats;
-
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section LayeredShell tag" << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetInt(interp, argv[3], &nLayers) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid nLayers" << endln;
-      opserr << "LayeredShell section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (nLayers < 3) {
-      opserr << "ERROR number of layers must be larger than 2" << endln;
-      opserr << "LayeredShell section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    theMats = new NDMaterial *[nLayers];
-    thickness = new double[nLayers];
-
-    if (argc < 3+2*nLayers) {
-      opserr << G3_ERROR_PROMPT << "Must provide " << 2*nLayers << " layers\n";
-      return TCL_ERROR;
-    }
-
-    for (int iLayer = 0; iLayer < nLayers; iLayer++) {
-
-      if (Tcl_GetInt(interp, argv[4 + 2 * iLayer], &matTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid matTag" << endln;
-        opserr << "LayeredShell section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      theMats[iLayer] = builder->getTypedObject<NDMaterial>(matTag);
-      if (theMats[iLayer] == 0) {
-        opserr << G3_ERROR_PROMPT << "nD material does not exist" << endln;
-        opserr << "nD material: " << matTag;
-        return TCL_ERROR;
-      }
-
-      if (Tcl_GetDouble(interp, argv[5 + 2 * iLayer], &h) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-        opserr << "LayeredShell section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      if (h < 0) {
-        opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-        opserr << "PlateFiber section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      thickness[iLayer] = h;
-    }
-
-    theSection = new LayeredShellFiberSection(tag, nLayers, thickness, theMats);
-    if (thickness != nullptr)
-      delete[] thickness;
-    if (theMats != 0)
-      delete[] theMats;
-
-    // Now add the material to the modelBuilder
-    if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection;
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-  // end Yuli Huang & Xinzheng Lu LayeredShellFiberSection
-
-  //-----Thermo-mechanical shell sections added by L.Jiang [SIF]
-  else if (strcmp(argv[1], "PlateFiberThermal") == 0) {
-    if (argc < 5) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n";
-      opserr << "Want: section PlateFiberThermal tag? matTag? h? " << endln;
-      return TCL_ERROR;
-    }
-
-    int tag, matTag;
-    double h;
-
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section PlateFiberThermal tag" << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag" << endln;
-      opserr << "PlateFiberThermal section: " << matTag << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetDouble(interp, argv[4], &h) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-      opserr << "PlateFiberThermal section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    NDMaterial *theMaterial = builder->getTypedObject<NDMaterial>(matTag);
-    if (theMaterial == nullptr) {
-      opserr << G3_ERROR_PROMPT << "nD material does not exist\n";
-      opserr << "nD material: " << matTag;
-      opserr << "\nPlateFiberThermal section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    theSection = new MembranePlateFiberSectionThermal(tag, h, *theMaterial);
-    // Now add the material to the modelBuilder
-    if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection; // invoke the material objects destructor, otherwise mem leak
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-
-  // LayeredShellFiberSectionThermal based on the
-  // LayeredShellFiberSectionThermal by Yuli Huang & Xinzheng Lu
-  else if (strcmp(argv[1], "LayeredShellThermal") == 0) {
-    if (argc < 6) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments" << endln;
-      opserr << "Want: section LayeredShellThermal tag? nLayers? matTag1? h1? "
-                "... matTagn? hn? "
-             << endln;
-      return TCL_ERROR;
-    }
-
-    int tag, nLayers, matTag;
-    double h, *thickness;
-    NDMaterial **theMats;
-
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section LayeredShellThermal tag" << endln;
-      return TCL_ERROR;
-    }
-
-    if (Tcl_GetInt(interp, argv[3], &nLayers) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid nLayers" << endln;
-      opserr << "LayeredShellThermal section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    if (nLayers < 3) {
-      opserr << "ERROR number of layers must be larger than 2" << endln;
-      opserr << "LayeredShellThermal section: " << tag << endln;
-      return TCL_ERROR;
-    }
-
-    theMats = new NDMaterial *[nLayers];
-    thickness = new double[nLayers];
-
-    for (int iLayer = 0; iLayer < nLayers; iLayer++) {
-      if (Tcl_GetInt(interp, argv[4 + 2 * iLayer], &matTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid matTag" << endln;
-        opserr << "LayeredShellThermal section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      theMats[iLayer] = builder->getTypedObject<NDMaterial>(matTag);
-      if (theMats[iLayer] == 0) {
-        opserr << G3_ERROR_PROMPT << "nD material does not exist" << endln;
-        ;
-        opserr << "nD material: " << matTag;
-        opserr << "LayeredShellThermal section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      if (Tcl_GetDouble(interp, argv[5 + 2 * iLayer], &h) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-        opserr << "LayeredShellThermal section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      if (h < 0) {
-        opserr << G3_ERROR_PROMPT << "invalid h" << endln;
-        opserr << "LayeredShellThermal section: " << tag << endln;
-        return TCL_ERROR;
-      }
-
-      thickness[iLayer] = h;
-    }
-
-    theSection =
-        new LayeredShellFiberSectionThermal(tag, nLayers, thickness, theMats);
-    if (thickness != 0)
-      delete[] thickness;
-    if (theMats != 0)
-      delete[] theMats;
-
-    // Now add the material to the modelBuilder
-    if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-      delete theSection; // invoke the material objects destructor, otherwise mem leak
-      return TCL_ERROR;
-    } else
-      return TCL_OK;
-  }
-  // end L.Jiang [SIF] added based on LayeredShellFiberSectionThermal section
+  //
+  //
   //
   else if (strcmp(argv[1], "Iso2spring") == 0) {
     if (argc < 10) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n";
+      opserr << OpenSees::PromptValueError << "insufficient arguments\n";
       opserr
           << "Want: section Iso2spring tag? tol? k1? Fy? k2? kv? hb? Pe? <Po?>"
           << endln;
@@ -643,53 +397,46 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
     double Po = 0.0;
 
     if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid Iso2spring tag" << endln;
+      opserr << OpenSees::PromptValueError << "invalid Iso2spring tag" << endln;
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[3], &tol) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid tol\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid tol\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[4], &k1) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid k1\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid k1\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[5], &Fy) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid Fy\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid Fy\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[6], &kb) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid k2\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid k2\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[7], &kvo) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid kv\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid kv\n";
       return TCL_ERROR;
     }
     if (Tcl_GetDouble(interp, argv[8], &hb) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid hb\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid hb\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[9], &Pe) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid Pe\n";
-      opserr << "section Iso2spring: " << tag << endln;
+      opserr << OpenSees::PromptValueError << "invalid Pe\n";
       return TCL_ERROR;
     }
     if (argc > 10) {
       if (Tcl_GetDouble(interp, argv[10], &Po) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Po\n";
+        opserr << OpenSees::PromptValueError << "invalid Po\n";
         opserr << "section Iso2spring: " << tag << endln;
         return TCL_ERROR;
       }
@@ -712,7 +459,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
   // Ensure we have created the Material, out of memory if got here and no
   // section
   if (theSection == nullptr) {
-    opserr << G3_ERROR_PROMPT << "could not create section " << argv[1] << endln;
+    opserr << OpenSees::PromptValueError << "could not create section " << argv[1] << endln;
     return TCL_ERROR;
   }
 
@@ -747,7 +494,7 @@ findSectionBuilder(BasicModelBuilder* builder, Tcl_Interp *interp, int argc, con
   for (int i = 0; i<argc; ++i) {
     if (strcmp(argv[i], "-section") == 0) {
       if (Tcl_GetInt(interp, argv[i+1], &tag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to parse section tag \"" << argv[i+1] << "\"\n";
+        opserr << OpenSees::PromptValueError << "failed to parse section tag \"" << argv[i+1] << "\"\n";
         return nullptr;
       } else {
         section_passed = true;
@@ -773,25 +520,34 @@ findSectionBuilder(BasicModelBuilder* builder, Tcl_Interp *interp, int argc, con
 // This function assumes torsion is not NULL when num==3
 static int
 initSectionCommands(ClientData clientData, Tcl_Interp *interp,
-                    int secTag, UniaxialMaterial *theTorsion, double Ys, double Zs, 
-                    double alpha, const FiberSectionConfig& options)
+                    int secTag, 
+                    UniaxialMaterial *theTorsion, 
+                    double Ys, double Zs, 
+                    double alpha, 
+                    const FiberSectionConfig& options)
 {
   assert(clientData != nullptr);
   BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
 
-  // dimension of the structure (1d, 2d, or 3d)
+  // Dimension of the structure
   int ndm = builder->getNDM();
 
   SectionBuilder  *sbuilder = nullptr;
   FrameSection    *section  = nullptr;
-  // create 2d section
+  // Create 2d section
   if (ndm == 2) {
     if (options.isND) {
-      if (options.isWarping) {
+      if (options.isNew) {
+        auto sec = new FrameSolidSection3d(secTag, 30);
+        sbuilder = new FiberSectionBuilder<2, NDMaterial, FrameSolidSection3d>(*builder, *sec);
+        section = sec;
+      }
+      else if (options.isWarping) {
         auto sec = new NDFiberSectionWarping2d(secTag, 30, alpha);
         sbuilder = new FiberSectionBuilder<2, NDMaterial, NDFiberSectionWarping2d>(*builder, *sec);
         section = sec;
-      } else {
+      }
+      else {
         auto sec = new NDFiberSection2d(secTag, options.computeCentroid);
         sbuilder = new FiberSectionBuilder<2, NDMaterial, NDFiberSection2d>(*builder, *sec);
         section = sec;
@@ -807,33 +563,55 @@ initSectionCommands(ClientData clientData, Tcl_Interp *interp,
         section = sec;
       }
     }
-  } else if (ndm == 3) {
-    // This function is not called when torsion is NULL and num==3
-    assert(theTorsion != nullptr);
+  }
+
+  else if (ndm == 3) {
 
     if (options.isND) {
-      auto sec = new NDFiberSection3d(secTag,
-                                      options.computeCentroid);
-      sbuilder = new FiberSectionBuilder<3, NDMaterial, NDFiberSection3d>(*builder, *sec);
-      section = sec;
-
+      if (options.isNew) {
+        auto sec = new FrameSolidSection3d(secTag, 30);
+        sbuilder = new FiberSectionBuilder<3, NDMaterial, FrameSolidSection3d>(*builder, *sec);
+        section = sec;
+      }
+      else {
+        auto sec = new NDFiberSection3d(secTag,
+                                        options.computeCentroid);
+        sbuilder = new FiberSectionBuilder<3, NDMaterial, NDFiberSection3d>(*builder, *sec);
+        section = sec;
+      }
     } else {
+
+
       if (options.isThermal) {
-        auto sec = new FiberSection3dThermal(secTag, /* TODO: torsion */
-                                            options.computeCentroid);
+        if (theTorsion == nullptr) {
+          opserr << OpenSees::PromptValueError 
+                 << "FiberThermal section requires torsion\n";
+          return TCL_ERROR;
+        }
+        auto sec = new FiberSection3dThermal(secTag, 30, *theTorsion,
+                                             options.computeCentroid);
         sbuilder = new FiberSectionBuilder<3, UniaxialMaterial, FiberSection3dThermal>(*builder, *sec);
         section = sec;
-      } else if (options.isAsym) {
+
+      }
+      else if (options.isAsym) {
         auto sec = new FiberSectionAsym3d(secTag, 30, theTorsion, Ys, Zs);
         sbuilder = new FiberSectionBuilder<3, UniaxialMaterial, FiberSectionAsym3d>(*builder, *sec);
         section = sec;
-      } else {
+
+      }
+      else {
         if (options.isNew) {
-          auto sec = new FrameFiberSection3d(secTag, 30, *theTorsion, options.computeCentroid, 
+          auto sec = new FrameFiberSection3d(secTag, 30,  theTorsion, options.computeCentroid, 
                                              options.density, options.use_density);
           sbuilder = new FiberSectionBuilder<3, UniaxialMaterial, FrameFiberSection3d>(*builder, *sec);
           section = sec;
         } else {
+          if (theTorsion == nullptr) {
+            opserr << OpenSees::PromptValueError 
+                  << "FiberThermal section requires torsion\n";
+            return TCL_ERROR;
+          }
           auto sec = new FiberSection3d(secTag, 30, *theTorsion, options.computeCentroid);
           sbuilder = new FiberSectionBuilder<3, UniaxialMaterial, FiberSection3d>(*builder, *sec);
           section = sec;
@@ -842,16 +620,24 @@ initSectionCommands(ClientData clientData, Tcl_Interp *interp,
     }
 
   } else {
-    opserr << G3_ERROR_PROMPT << "Model dimension (ndm = " << ndm
+    opserr << OpenSees::PromptValueError << "Model dimension (ndm = " << ndm
            << ") is incompatible with available frame elements\n";
     return TCL_ERROR;
   }
 
+
+  // In 2D truss elements still look for FrameSections
   if (builder->addTaggedObject<FrameSection>(*section) < 0) {
     return TCL_ERROR;
   }
+  // if (ndm == 2) {
+  //   if (builder->addTaggedObject<SectionForceDeformation>(*section->getCopy()) < 0) {
+  //     return TCL_ERROR;
+  //   }
+  // }
+
   if (builder->addTypedObject<SectionBuilder>(secTag, sbuilder) < 0) {
-    opserr << G3_ERROR_PROMPT << "cannot add section\n";
+    opserr << OpenSees::PromptValueError << "Faled to add section\n";
     return TCL_ERROR;
   }
 
@@ -887,15 +673,17 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
 
   int secTag;
   if (Tcl_GetInt(interp, argv[2], &secTag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: \nsection fiberSec secTag { "
-              "\n\tpatch <patch arguments> \n\tlayer <layer arguments> \n}\n";
+    opserr << OpenSees::PromptValueError 
+           << "failed to parse section tag \"" << argv[2] << "\""
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
   builder->setCurrentSectionBuilder(secTag);
 
   FiberSectionConfig options;
-  if (strcmp(argv[1], "NDFiber") == 0)
+  if (strcmp(argv[1], "NDFiber") == 0 ||
+      strcmp(argv[1], "ShearFiber") == 0)
     options.isND = true;
 
   if (strcmp(argv[1], "NDFiberWarping") == 0) {
@@ -903,7 +691,10 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
     options.isWarping = true;
   }
   else if (strcmp(argv[1], "FrameFiber") == 0 ||
-             strcmp(argv[1], "FiberFrame") == 0)
+           strcmp(argv[1], "FiberFrame") == 0 ||
+           strcmp(argv[1], "AxialFiber") == 0 ||
+           strcmp(argv[1], "ShearFiber") == 0 
+    )
     options.isNew = true;
 
   else if (strcmp(argv[1], "FiberThermal") == 0 ||
@@ -935,11 +726,11 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
 
     else if (strcmp(argv[iarg], "-mass") == 0 && iarg + 1 < argc) {
       if (argc < iarg + 2) {
-        opserr << G3_ERROR_PROMPT << "not enough -mass args need -mass mass?\n";
+        opserr << OpenSees::PromptValueError << "not enough -mass args need -mass mass?\n";
         return TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[iarg + 1], &options.density) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid density";
+        opserr << OpenSees::PromptValueError << "invalid density";
         return TCL_ERROR;
       }
       options.use_density = true;
@@ -949,7 +740,7 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
 
     else if (strcmp(argv[iarg], "-GJ") == 0 && iarg + 1 < argc) {
       if (Tcl_GetDouble(interp, argv[iarg + 1], &GJ) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid GJ";
+        opserr << OpenSees::PromptValueError << "invalid GJ";
         return TCL_ERROR;
       }
       deleteTorsion = true;
@@ -961,13 +752,13 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
     else if (strcmp(argv[iarg], "-torsion") == 0 && iarg + 1 < argc) {
       int torsionTag = 0;
       if (Tcl_GetInt(interp, argv[iarg + 1], &torsionTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid torsionTag";
+        opserr << OpenSees::PromptValueError << "invalid torsionTag";
         return TCL_ERROR;
       }
 
       torsion = builder->getTypedObject<UniaxialMaterial>(torsionTag);
       if (torsion == nullptr) {
-        opserr << G3_ERROR_PROMPT << "uniaxial material does not exist\n";
+        opserr << OpenSees::PromptValueError << "uniaxial material does not exist\n";
         opserr << "uniaxial material: " << torsionTag;
         opserr << "\nFiberSection3d: " << secTag << endln;
         return TCL_ERROR;
@@ -978,15 +769,15 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
 
     else if (strstr(argv[1], "Asym") != nullptr && !shearParsed) {
       if (iarg + 1 >= argc) {
-        opserr << G3_ERROR_PROMPT << "Asym sections require shear center before fiber block.\n";
+        opserr << OpenSees::PromptValueError << "Asym sections require shear center before fiber block.\n";
         return TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[iarg], &Ys) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Ys";
+        opserr << OpenSees::PromptValueError << "invalid Ys";
         return TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[iarg+1], &Zs) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Zs";
+        opserr << OpenSees::PromptValueError << "invalid Zs";
         return TCL_ERROR;
       }
       shearParsed = true;
@@ -995,21 +786,20 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
 
     else {
       // braces; skip and handle later
-//    iarg += 1;
       break;
     }
   }
 
-  if (torsion == nullptr && ndm == 3) {
-    opserr << G3_ERROR_PROMPT << "- no torsion specified for 3D fiber section, use -GJ or "
+  if (torsion == nullptr && ndm == 3 && !options.isNew) {
+    opserr << OpenSees::PromptValueError
+           << "missing required torsion for 3D fiber section, use -GJ or "
               "-torsion\n";
-    opserr << "\nFiberSection3d: " << secTag << endln;
     return TCL_ERROR;
   }
 
-  // initialize  the fiber section (for building)                 // TODO, alpha
+  // initialize  the fiber section (for building)            // TODO, pass alpha
   if (initSectionCommands(clientData, interp, secTag, torsion, Ys, Zs, 1.0, options) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "error constructing the section\n";
+    opserr << OpenSees::PromptValueError << "error constructing the section\n";
     return TCL_ERROR;
   }
 
@@ -1040,21 +830,21 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
 
   int secTag;
   if (Tcl_GetInt(interp, argv[2], &secTag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "bad command - want: \nsection fiberInt secTag -GJ <GJ> { "
+    opserr << OpenSees::PromptValueError << "bad command - want: \nsection fiberInt secTag -GJ <GJ> { "
               "\n\tpatch <patch arguments> \n\tlayer <layer arguments> \n}\n";
     return TCL_ERROR;
   }
 
   builder->setCurrentSectionBuilder(secTag);
 
-
-  int brace = 3; // Start of recursive parse
+  //
+  int brace = 3;
   double GJ = 1.0;
   bool deleteTorsion = false;
-  UniaxialMaterial *torsion = 0;
+  UniaxialMaterial *torsion = nullptr;
   if (strcmp(argv[3], "-GJ") == 0) {
     if (Tcl_GetDouble(interp, argv[4], &GJ) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid GJ";
+      opserr << OpenSees::PromptValueError << "invalid GJ\n";
       return TCL_ERROR;
     }
     torsion = new ElasticMaterial(0, GJ); // Is this gonna be a memory leak? MHS
@@ -1064,17 +854,13 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
   int torsionTag = 0;
   if (strcmp(argv[3], "-torsion") == 0) {
     if (Tcl_GetInt(interp, argv[4], &torsionTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid torsionTag";
+      opserr << OpenSees::PromptValueError << "invalid torsionTag\n";
       return TCL_ERROR;
     }
 
     torsion = builder->getTypedObject<UniaxialMaterial>(torsionTag);
-    if (torsion == 0) {
-      opserr << G3_ERROR_PROMPT << "uniaxial material does not exist\n";
-      opserr << "uniaxial material: " << torsionTag;
-      opserr << "\nFiberSection3d: " << secTag << endln;
+    if (torsion == 0)
       return TCL_ERROR;
-    }
 
     brace = 5;
   }
@@ -1085,32 +871,32 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
   if (strcmp(argv[3], "-NStrip") == 0) {
 
     if (Tcl_GetInt(interp, argv[4], &NStrip1) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid NStrip1";
+      opserr << OpenSees::PromptValueError << "invalid NStrip1\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[5], &t1) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid t1";
+      opserr << OpenSees::PromptValueError << "invalid t1";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[6], &NStrip2) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid NStrip2";
+      opserr << OpenSees::PromptValueError << "invalid NStrip2";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[7], &t2) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid t2";
+      opserr << OpenSees::PromptValueError << "invalid t2";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[8], &NStrip3) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid NStrip3";
+      opserr << OpenSees::PromptValueError << "invalid NStrip3";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[9], &t3) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid t3";
+      opserr << OpenSees::PromptValueError << "invalid t3";
       return TCL_ERROR;
     }
 
@@ -1120,7 +906,7 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
 #if 0
   // init  the fiber section (for building)                           // TODO, alpha
   if (initSectionCommands(clientData, interp, secTag, *torsion, Ys, Zs, 1.0) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "- error constructing the section\n";
+    opserr << OpenSees::PromptValueError << "- error constructing the section\n";
     return TCL_ERROR;
   }
 #endif
@@ -1128,12 +914,12 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
 
   // parse the information inside the braces (patches and reinforcing layers)
   if (Tcl_Eval(interp, argv[brace]) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "- error reading information in { } \n";
+    opserr << OpenSees::PromptValueError << "- error reading information in { } \n";
     return TCL_ERROR;
   }
 
-  if (NDM == 3 && torsion == 0) {
-    opserr << G3_ERROR_PROMPT << "- no torsion specified for 3D fiber section, use -GJ or "
+  if (NDM == 3 && torsion == nullptr) {
+    opserr << OpenSees::PromptValueError << "- no torsion specified for 3D fiber section, use -GJ or "
               "-torsion\n";
     opserr << "\nFiberSectionInt3d: " << secTag << endln;
     return TCL_ERROR;
@@ -1143,7 +929,7 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
   // build the fiber section (for analysis)
   if (buildSectionInt(clientData, interp, secTag, *torsion, NStrip1, t1,
                       NStrip2, t2, NStrip3, t3) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "- error constructing the section\n";
+    opserr << OpenSees::PromptValueError << "- error constructing the section\n";
     return TCL_ERROR;
   }
 #endif
@@ -1168,14 +954,14 @@ TclCommand_addPatch(ClientData clientData,
 
   SectionBuilder* fiberSectionRepr = findSectionBuilder(builder, interp, argc, argv);
   if (fiberSectionRepr == nullptr) {
-    opserr << G3_ERROR_PROMPT << "cannot retrieve section\n";
+    opserr << OpenSees::PromptValueError << "cannot retrieve section\n";
     return TCL_ERROR;
   }
 
 
   // make sure at least one other argument to contain patch type
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "need to specify a patch type \n";
+    opserr << OpenSees::PromptValueError << "need to specify a patch type \n";
     return TCL_ERROR;
   }
 
@@ -1183,10 +969,10 @@ TclCommand_addPatch(ClientData clientData,
   if (strcmp(argv[1], "quad") == 0 || strcmp(argv[1], "quadr") == 0) {
     int numSubdivIJ, numSubdivJK, matTag;
     double vertexCoordY, vertexCoordZ;
-    Matrix vertexCoords(4, 2);
+    MatrixND<4,2> vertexCoords{};
 
     if (argc < 13) {
-      opserr << G3_ERROR_PROMPT << "invalid number of parameters: patch quad matTag "
+      opserr << OpenSees::PromptValueError << "invalid number of parameters: patch quad matTag "
                 "numSubdivIJ numSubdivJK yVertI zVertI yVertJ zVertJ yVertK "
                 "zVertK yVertL zVertL\n";
       return TCL_ERROR;
@@ -1195,21 +981,21 @@ TclCommand_addPatch(ClientData clientData,
     int argi = 2;
 
     if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag: patch quad matTag numSubdivIJ "
+      opserr << OpenSees::PromptValueError << "invalid matTag: patch quad matTag numSubdivIJ "
                 "numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL "
                 "zVertL\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numSubdivIJ) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numSubdivIJ: patch quad matTag numSubdivIJ "
+      opserr << OpenSees::PromptValueError << "invalid numSubdivIJ: patch quad matTag numSubdivIJ "
                 "numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL "
                 "zVertL\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numSubdivJK) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numSubdivJK: patch quad matTag numSubdivIJ "
+      opserr << OpenSees::PromptValueError << "invalid numSubdivJK: patch quad matTag numSubdivIJ "
                 "numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL "
                 "zVertL\n";
       return TCL_ERROR;
@@ -1217,13 +1003,13 @@ TclCommand_addPatch(ClientData clientData,
 
     for (int j = 0; j < 4; j++) {
       if (Tcl_GetDouble(interp, argv[argi++], &vertexCoordY) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Coordinate y: ...yVertI zVertI yVertJ "
+        opserr << OpenSees::PromptValueError << "invalid Coordinate y: ...yVertI zVertI yVertJ "
                   "zVertJ yVertK zVertK yVertL zVertL\n";
         return TCL_ERROR;
       }
 
       if (Tcl_GetDouble(interp, argv[argi++], &vertexCoordZ) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Coordinate z: ...yVertI zVertI yVertJ "
+        opserr << OpenSees::PromptValueError << "invalid Coordinate z: ...yVertI zVertI yVertJ "
                   "zVertJ yVertK zVertK yVertL zVertL\n";
         return TCL_ERROR;
       }
@@ -1246,31 +1032,31 @@ TclCommand_addPatch(ClientData clientData,
 
     int numSubdivIJ, numSubdivJK, matTag;
     double vertexCoordY, vertexCoordZ;
-    Matrix vertexCoords(4, 2);
+    MatrixND<4,2> vertexCoords;
 
     if (argc < 9) {
-      opserr << G3_ERROR_PROMPT << "invalid number of parameters: patch quad matTag "
+      opserr << OpenSees::PromptValueError << "invalid number of parameters: patch quad matTag "
                 "numSubdivIJ numSubdivJK yVertI zVertI yVertK zVertK\n";
       return TCL_ERROR;
     }
 
     int argi = 2;
     if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag: patch quad matTag numSubdivIJ "
+      opserr << OpenSees::PromptValueError << "invalid matTag: patch quad matTag numSubdivIJ "
                 "numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL "
                 "zVertL\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numSubdivIJ) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numSubdivIJ: patch quad matTag numSubdivIJ "
+      opserr << OpenSees::PromptValueError << "invalid numSubdivIJ: patch quad matTag numSubdivIJ "
                 "numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL "
                 "zVertL\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numSubdivJK) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numSubdivJK: patch quad matTag numSubdivIJ "
+      opserr << OpenSees::PromptValueError << "invalid numSubdivJK: patch quad matTag numSubdivIJ "
                 "numSubdivJK yVertI zVertI yVertJ zVertJ yVertK zVertK yVertL "
                 "zVertL\n";
       return TCL_ERROR;
@@ -1278,13 +1064,13 @@ TclCommand_addPatch(ClientData clientData,
 
     for (int j = 0; j < 2; j++) {
       if (Tcl_GetDouble(interp, argv[argi++], &vertexCoordY) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Coordinate y: ...yVertI zVertI yVertJ "
+        opserr << OpenSees::PromptValueError << "invalid Coordinate y: ...yVertI zVertI yVertJ "
                   "zVertJ yVertK zVertK yVertL zVertL\n";
         return TCL_ERROR;
       }
 
       if (Tcl_GetDouble(interp, argv[argi++], &vertexCoordZ) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid Coordinate z: ...yVertI zVertI yVertJ "
+        opserr << OpenSees::PromptValueError << "invalid Coordinate z: ...yVertI zVertI yVertJ "
                   "zVertJ yVertK zVertK yVertL zVertL\n";
         return TCL_ERROR;
       }
@@ -1317,63 +1103,63 @@ TclCommand_addPatch(ClientData clientData,
 
     int argi = 2;
     if (argc < 11) {
-      opserr << G3_ERROR_PROMPT << "invalid number of parameters: patch circ matTag "
+      opserr << OpenSees::PromptValueError << "invalid number of parameters: patch circ matTag "
                 "numSubdivCirc numSubdivRad yCenter zCenter intRad extRad "
                 "startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid matTag: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numSubdivCirc) != TCL_OK) {
       opserr
-          << G3_ERROR_PROMPT << "invalid numSubdivCirc: patch circ matTag numSubdivCirc "
+          << OpenSees::PromptValueError << "invalid numSubdivCirc: patch circ matTag numSubdivCirc "
              "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numSubdivRad) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numSubdivRad: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid numSubdivRad: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &yCenter) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid yCenter: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid yCenter: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &zCenter) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid zCenter: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid zCenter: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &intRad) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid intRad: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid intRad: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &extRad) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid extRad: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid extRad: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &startAng) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid startAng: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid startAng: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &endAng) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid endAng: patch circ matTag numSubdivCirc "
+      opserr << OpenSees::PromptValueError << "invalid endAng: patch circ matTag numSubdivCirc "
                 "numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
       return TCL_ERROR;
     }
@@ -1393,73 +1179,222 @@ TclCommand_addPatch(ClientData clientData,
   }
 
   else {
-    opserr << G3_ERROR_PROMPT << "patch type is not available\n";
+    opserr << OpenSees::PromptValueError << "patch type is not available\n";
     return TCL_ERROR;
   }
 
   return TCL_OK;
 }
 
-// add fiber to fiber section
+// Add a fiber to a fiber section
 int
 TclCommand_addFiber(ClientData clientData, Tcl_Interp *interp, int argc,
                     TCL_Char ** const argv)
 {
+  enum class Position : int {
+    Y, Z, Area, Material, End
+  };
+  ArgumentTracker<Position> tracker;
+  std::set<int> positional;
+
   assert(clientData != nullptr);
   BasicModelBuilder* builder = static_cast<BasicModelBuilder*>(clientData);
 
-  if (argc < 5) {
-    opserr << G3_ERROR_PROMPT << "invalid num args: fiber yLoc zLoc area matTag\n";
-    return TCL_ERROR;
-  }
-
   SectionBuilder* fiberSectionRepr = findSectionBuilder(builder, interp, argc, argv);
   if (fiberSectionRepr == nullptr) {
-    opserr << G3_ERROR_PROMPT << "cannot retrieve a section builder\n";
+    opserr << OpenSees::PromptValueError << "cannot retrieve a section builder\n";
     return TCL_ERROR;
   }
 
-//int numFibers = fiberSectionRepr->getNumFibers();
-
-
-  double yLoc, zLoc, area;
-  if (Tcl_GetDouble(interp, argv[1], &yLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid yLoc: fiber yLoc zLoc area matTag\n";
-    return TCL_ERROR;
-  }
-  if (Tcl_GetDouble(interp, argv[2], &zLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid zLoc: fiber yLoc zLoc area matTag\n";
-    return TCL_ERROR;
-  }
-  if (Tcl_GetDouble(interp, argv[3], &area) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid area: fiber yLoc zLoc area matTag\n";
-    return TCL_ERROR;
-  }
+  double yLoc, zLoc=0, area;
   int matTag;
-  if (Tcl_GetInt(interp, argv[4], &matTag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid matTag: fiber yLoc zLoc area matTag\n";
+  bool warn_2d_z = false;
+  static constexpr int WarpModeCount = 3;
+  double warp[WarpModeCount][3]{};
+  int warp_arg = -1;
+  for (int i=1; i<argc; i++) {
+    if (strcmp(argv[i], "-section") == 0) {
+      ++i;
+    }
+    else if (strcmp(argv[i], "-warp") == 0) {
+      if (i + 1 >= argc) {
+        opserr << OpenSees::PromptValueError << "missing warp argument\n";
+        return TCL_ERROR;
+      }
+      warp_arg = i+1;
+      i++;
+    }
+    else if (strcmp(argv[i], "-warn-2d-z") == 0) {
+        warn_2d_z = true;
+        i++;
+    }
+    else if (strcmp(argv[i], "-material") == 0) {
+      if (argc == ++i || Tcl_GetInt(interp, argv[i], &matTag) != TCL_OK) {
+        opserr << OpenSees::PromptValueError << "invalid material tag\n";
+        return TCL_ERROR;
+      }
+      tracker.consume(Position::Material);
+    }
+    else if (strcmp(argv[i], "-area") == 0) {
+      if (argc == ++i || Tcl_GetDouble(interp, argv[i], &area) != TCL_OK) {
+        opserr << OpenSees::PromptValueError << "invalid area\n";
+        return TCL_ERROR;
+      }
+      tracker.consume(Position::Area);
+    }
+    else if (strcmp(argv[i], "-y") == 0) {
+      if (argc == ++i || Tcl_GetDouble(interp, argv[i], &yLoc) != TCL_OK) {
+        opserr << OpenSees::PromptValueError << "invalid y coordinate\n";
+        return TCL_ERROR;
+      }
+      tracker.consume(Position::Y);
+    }
+    else if (strcmp(argv[i], "-z") == 0) {
+      if (argc == ++i || Tcl_GetDouble(interp, argv[i], &zLoc) != TCL_OK) {
+        opserr << OpenSees::PromptValueError << "invalid z coordinate\n";
+        return TCL_ERROR;
+      }
+      tracker.consume(Position::Z);
+    }
+    else {
+      positional.insert(i);
+    }
+  }
+
+  for (int i: positional) {
+    switch (tracker.current()) {
+      case Position::Y:
+        if (Tcl_GetDouble(interp, argv[i], &yLoc) != TCL_OK) {
+          opserr << OpenSees::PromptValueError << "invalid y coordinate\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Position::Y);
+        break;
+      case Position::Z:
+        if (Tcl_GetDouble(interp, argv[i], &zLoc) != TCL_OK) {
+          opserr << OpenSees::PromptValueError << "invalid z coordinate\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Position::Z);
+        break;
+      case Position::Area:
+        if (Tcl_GetDouble(interp, argv[i], &area) != TCL_OK) {
+          opserr << OpenSees::PromptValueError << "invalid area\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Position::Area);
+        break;
+      case Position::Material:
+        if (Tcl_GetInt(interp, argv[i], &matTag) != TCL_OK) {
+          opserr << OpenSees::PromptValueError << "invalid material tag\n";
+          return TCL_ERROR;
+        }
+        tracker.consume(Position::Material);
+        break;
+      default:
+        opserr << OpenSees::PromptValueError << "unexpected argument at position " << i << "\n";
+        return TCL_ERROR;
+    }
+  }
+
+  if (builder->getNDM() == 2) {
+    if (warn_2d_z && zLoc != 0.0) {
+      opswrn << OpenSees::SignalWarning << "z coordinate ignored in 2D\n";
+    }
+  }
+  if (tracker.current() != Position::End) {
+    opserr << OpenSees::PromptValueError << "missing required arguments: ";
+    while (tracker.current() != Position::End) {
+      switch (tracker.current()) {
+        case Position::Y:
+          opserr << "y ";
+          break;
+        case Position::Z:
+          opserr << "z ";
+          break;
+        case Position::Area:
+          opserr << "area ";
+          break;
+        case Position::Material:
+          opserr << "material ";
+          break;
+        case Position::End:
+          break;
+      }
+      if (tracker.current() == Position::End)
+        break;
+      tracker.consume(tracker.current());
+    }
+    opserr << "\n";
     return TCL_ERROR;
   }
 
+  //
+  // process warping
+  //
+  int i_warp = 0;
+  int          split_1_argc;
+  const char **split_1_argv;
+  if (warp_arg >= 0 && Tcl_SplitList(interp, argv[warp_arg], &split_1_argc, &split_1_argv) == TCL_OK) {
+    int argi = 0;
+    for (; i_warp<WarpModeCount; i_warp++) {
+      if (argi >= split_1_argc)
+        break;
+
+      //
+      int          split_argc;
+      const char **split_argv;
+      if (Tcl_SplitList(interp, split_1_argv[argi], &split_argc, &split_argv) != TCL_OK) {
+        opserr << OpenSees::PromptValueError << "invalid warp\n";
+        return TCL_ERROR;
+      }
+
+      if (split_argc != 3) {
+        opserr << "WARNING warp parameter expected list of 3 floats\n";
+          Tcl_Free((char *) split_argv);
+          return TCL_ERROR;
+      }
+
+      for (int j = 0; j < 3; j++) {
+        if (Tcl_GetDouble(interp, split_argv[j], &warp[i_warp][j]) != TCL_OK) {
+          opserr << OpenSees::PromptValueError << "invalid warp\n";
+          Tcl_Free((char *) split_argv);
+          return TCL_ERROR;
+        }
+      }
+
+      // Free memory allocated by Tcl_SplitList.
+      Tcl_Free((char *) split_argv);
+      argi++;
+    }
+}
   //
   // Add fiber to section builder
   //
   int ndm = builder->getNDM();
-  int error = 0;
+  int id = 0;
   if (ndm == 2) {
     Vector pos(2);
     pos(0) = yLoc;
     pos(1) = zLoc;
-    error = fiberSectionRepr->addFiber(0, matTag, area, pos);
+    id = fiberSectionRepr->addFiber(0, matTag, area, pos);
   } else if (ndm == 3) {
     Vector pos(2);
     pos(0) = yLoc;
     pos(1) = zLoc;
-    error = fiberSectionRepr->addFiber(0, matTag, area, pos);
+    id = fiberSectionRepr->addFiber(0, matTag, area, pos);
+  }
+  // set warping
+  while (i_warp > 0) {
+    if (0 > fiberSectionRepr->setWarping(id, i_warp-1, warp[i_warp-1])) {
+      opserr << OpenSees::PromptValueError << "failed to set warping for fiber\n";
+      return TCL_ERROR;
+    }
+    i_warp--;
   }
 
-  if (error) {
-    opserr << G3_ERROR_PROMPT << "cannot add patch to section\n";
+  if (id < 0) {
+    opserr << OpenSees::PromptValueError << "Failed to add fiber to section\n";
     return TCL_ERROR;
   }
 
@@ -1477,13 +1412,13 @@ TclCommand_addHFiber(ClientData clientData, Tcl_Interp *interp, int argc,
 
   SectionBuilder* fiberSectionRepr = findSectionBuilder(builder, interp, argc, argv);
   if (fiberSectionRepr == nullptr) {
-    opserr << G3_ERROR_PROMPT << "cannot retrieve section\n";
+    opserr << OpenSees::PromptValueError << "cannot retrieve section\n";
     return TCL_ERROR;
   }
 
   // make sure at least one other argument to contain patch type
   if (argc < 5) {
-    opserr << G3_ERROR_PROMPT << "invalid num args: Hfiber yLoc zLoc area matTag\n";
+    opserr << OpenSees::PromptValueError << "invalid num args: Hfiber yLoc zLoc area matTag\n";
     return TCL_ERROR;
   }
 
@@ -1492,20 +1427,20 @@ TclCommand_addHFiber(ClientData clientData, Tcl_Interp *interp, int argc,
   double yHLoc, zHLoc, Harea;
 
   if (Tcl_GetDouble(interp, argv[1], &yHLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid yLoc: Hfiber yLoc zLoc area matTag\n";
+    opserr << OpenSees::PromptValueError << "invalid yLoc: Hfiber yLoc zLoc area matTag\n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[2], &zHLoc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid zLoc: Hfiber yLoc zLoc area matTag\n";
+    opserr << OpenSees::PromptValueError << "invalid zLoc: Hfiber yLoc zLoc area matTag\n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[3], &Harea) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid area: Hfiber yLoc zLoc area matTag\n";
+    opserr << OpenSees::PromptValueError << "invalid area: Hfiber yLoc zLoc area matTag\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetInt(interp, argv[4], &matHTag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid matTag: Hfiber yLoc zLoc area matTag\n";
+    opserr << OpenSees::PromptValueError << "invalid matTag: Hfiber yLoc zLoc area matTag\n";
     return TCL_ERROR;
   }
 
@@ -1533,13 +1468,13 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
 
   SectionBuilder* fiberSectionRepr = findSectionBuilder(builder, interp, argc, argv);
   if (fiberSectionRepr == nullptr) {
-    opserr << G3_ERROR_PROMPT << "cannot retrieve section\n";
+    opserr << OpenSees::PromptValueError << "cannot retrieve section\n";
     return TCL_ERROR;
   }
 
   // make sure at least one other argument to contain layer type
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "need to specify a layer type \n";
+    opserr << OpenSees::PromptValueError << "need to specify a layer type \n";
     return TCL_ERROR;
   }
 
@@ -1547,7 +1482,7 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
   if (strcmp(argv[1], "straight") == 0 ||
       strcmp(argv[1], "line")     == 0) {
     if (argc < 9) {
-      opserr << G3_ERROR_PROMPT << "invalid number of parameters: layer straight matTag "
+      opserr << OpenSees::PromptValueError << "invalid number of parameters: layer straight matTag "
                 "numReinfBars reinfBarArea yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
@@ -1559,43 +1494,43 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
     int argi = 2;
 
     if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag: layer straight matTag numReinfBars "
+      opserr << OpenSees::PromptValueError << "invalid matTag: layer straight matTag numReinfBars "
                 "reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numReinfBars) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numReinfBars: layer straight matTag "
+      opserr << OpenSees::PromptValueError << "invalid numReinfBars: layer straight matTag "
                 "numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &reinfBarArea) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid reinfBarArea: layer straight matTag "
+      opserr << OpenSees::PromptValueError << "invalid reinfBarArea: layer straight matTag "
                 "numReinfBars reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &yStartPt) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid yStartPt: layer straight matTag numReinfBars "
+      opserr << OpenSees::PromptValueError << "invalid yStartPt: layer straight matTag numReinfBars "
                 "reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &zStartPt) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid zStartPt: layer straight matTag numReinfBars "
+      opserr << OpenSees::PromptValueError << "invalid zStartPt: layer straight matTag numReinfBars "
                 "reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &yEndPt) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid yEndPt: layer straight matTag numReinfBars "
+      opserr << OpenSees::PromptValueError << "invalid yEndPt: layer straight matTag numReinfBars "
                 "reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &zEndPt) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid zEndPt: layer straight matTag numReinfBars "
+      opserr << OpenSees::PromptValueError << "invalid zEndPt: layer straight matTag numReinfBars "
                 "reinfBarArea  yStartPt zStartPt yEndPt zEndPt\n";
       return TCL_ERROR;
     }
@@ -1619,7 +1554,7 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
 
   } else if (strcmp(argv[1], "circ") == 0) {
     if (argc < 8) {
-      opserr << G3_ERROR_PROMPT << "invalid number of parameters: layer circ matTag "
+      opserr << OpenSees::PromptValueError << "invalid number of parameters: layer circ matTag "
                 "numReinfBars reinfBarArea yCenter zCenter arcRadius <startAng "
                 "endAng>\n";
       return TCL_ERROR;
@@ -1632,38 +1567,32 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
     int argi = 2;
 
     if (Tcl_GetInt(interp, argv[argi++], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid matTag: layer circ matTag numReinfBars "
-                "reinfBarArea yCenter zCenter radius startAng endAng\n";
+      opserr << OpenSees::PromptValueError << "invalid matTag\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetInt(interp, argv[argi++], &numReinfBars) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid numReinfBars: layer circ matTag numReinfBars "
-                "reinfBarArea yCenter zCenter radius startAng endAng\n";
+      opserr << OpenSees::PromptValueError << "invalid numReinfBars\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &reinfBarArea) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid reinfBarArea: layer circ matTag numReinfBars "
-                "reinfBarArea yCenter zCenter radius startAng endAng\n";
+      opserr << OpenSees::PromptValueError << "invalid reinfBarArea\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &yCenter) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid yCenter: layer circ matTag numReinfBars "
-                "reinfBarArea yCenter zCenter radius startAng endAng\n";
+      opserr << OpenSees::PromptValueError << "invalid yCenter\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &zCenter) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid zCenter: layer circ matTag numReinfBars "
-                "reinfBarArea yCenter zCenter radius startAng endAng\n";
+      opserr << OpenSees::PromptValueError << "invalid zCenter\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[argi++], &radius) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid radius: layer circ matTag numReinfBars "
-                "reinfBarArea yCenter zCenter radius startAng endAng\n";
+      opserr << OpenSees::PromptValueError << "invalid radius\n";
       return TCL_ERROR;
     }
 
@@ -1671,14 +1600,12 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
 
     if (argc > 9) {
       if (Tcl_GetDouble(interp, argv[argi++], &startAng) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid startAng: layer circ matTag numReinfBars "
-                  "reinfBarArea yCenter zCenter radius startAng endAng\n";
+        opserr << OpenSees::PromptValueError << "invalid startAng\n";
         return TCL_ERROR;
       }
 
       if (Tcl_GetDouble(interp, argv[argi++], &endAng) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid endAng: layer circ matTag numReinfBars "
-                  "reinfBarArea yCenter zCenter radius startAng endAng\n";
+        opserr << OpenSees::PromptValueError << "invalid endAng\n";
         return TCL_ERROR;
       }
 
@@ -1692,24 +1619,25 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
     center(0) = yCenter;
     center(1) = zCenter;
 
-    CircReinfLayer *reinfLayer = nullptr;
-    if (anglesSpecified)
+    int error = -1;
+    // construct and add to section
+    if (anglesSpecified) {
       // Construct arc
-      reinfLayer = new CircReinfLayer(matTag, numReinfBars, reinfBarArea,
-                                      center, radius, startAng, endAng);
-    else
+      CircReinfLayer reinfLayer(matTag, numReinfBars, reinfBarArea,
+                                center, radius, startAng, endAng);
+      error = fiberSectionRepr->addLayer(reinfLayer);
+    } else {
       // Construct circle
-      reinfLayer = new CircReinfLayer(matTag, numReinfBars, reinfBarArea,
-                                      center, radius);
+      CircReinfLayer reinfLayer(matTag, numReinfBars, reinfBarArea,
+                                center, radius);
+      error = fiberSectionRepr->addLayer(reinfLayer);
+    }
 
-    // add reinfLayer to section
-    int error = fiberSectionRepr->addLayer(*reinfLayer);
-    delete reinfLayer;
     if (error)
       return TCL_ERROR;
 
   } else {
-    opserr << G3_ERROR_PROMPT << "reinforcing layer type is not available\n";
+    opserr << OpenSees::PromptValueError << "reinforcing layer type is not available\n";
     return TCL_ERROR;
   }
 
@@ -1761,7 +1689,7 @@ TclCommand_addUCFiberSection(ClientData clientData, Tcl_Interp *interp,
   }
 
   //
-  // now parse the output file containing the fiber data,
+  // Now parse the output file containing the fiber data,
   // create fibers and add them to the section
   //
 
@@ -1832,7 +1760,7 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
   SectionRepres *sectionRepres = theTclBasicBuilder->getSectionRepres(secTag);
 
   if (sectionRepres == nullptr) {
-    opserr << G3_ERROR_PROMPT << "cannot retrieve section\n";
+    opserr << OpenSees::PromptValueError << "cannot retrieve section\n";
     return TCL_ERROR;
   }
 
@@ -1891,7 +1819,7 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
       for (int j = 0; j < numCells; j++) {
         fibersMaterial(k) = matTag;
         fibersArea(k) = cell[j]->getArea();
-        fiberPosition = cell[j]->getCentroidPosition();
+        fiberPosition = cell[j]->getPosition();
         fibersPosition(0, k) = fiberPosition(0);
         fibersPosition(1, k) = fiberPosition(1);
         k++;
@@ -1945,7 +1873,7 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
       for (int i = numSectionRepresFibers; i < numFibers; ++i) {
         material = builder->getUniaxialMaterial(fibersMaterial(k));
         if (material == nullptr) {
-          opserr << G3_ERROR_PROMPT << "invalid material ID for patch\n";
+          opserr << OpenSees::PromptValueError << "invalid material ID for patch\n";
           return TCL_ERROR;
         }
 
@@ -1967,12 +1895,12 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
         delete Hfiber[i];
 
       if (section == nullptr) {
-        opserr << G3_ERROR_PROMPT << "cannot construct section\n";
+        opserr << OpenSees::PromptValueError << "cannot construct section\n";
         return TCL_ERROR;
       }
 
       if (theTclBasicBuilder->addSection (*section) < 0) {
-        opserr << G3_ERROR_PROMPT << "- cannot add section\n";
+        opserr << OpenSees::PromptValueError << "- cannot add section\n";
         return TCL_ERROR;
       }
 
@@ -1983,7 +1911,7 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
       for (i = numSectionRepresFibers; i < numFibers; ++i) {
         material = builder->getUniaxialMaterial(fibersMaterial(k));
         if (material == nullptr) {
-          opserr << G3_ERROR_PROMPT << "invalid material ID for patch\n";
+          opserr << OpenSees::PromptValueError << "invalid material ID for patch\n";
           return TCL_ERROR;
         }
 
@@ -2007,17 +1935,17 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
         delete fiber[i];
 
       if (section == 0) {
-        opserr << G3_ERROR_PROMPT << "- cannot construct section\n";
+        opserr << OpenSees::PromptValueError << "- cannot construct section\n";
         return TCL_ERROR;
       }
 
       if (theTclBasicBuilder->addSection (*section) < 0) {
-        opserr << G3_ERROR_PROMPT << "- cannot add section\n";
+        opserr << OpenSees::PromptValueError << "- cannot add section\n";
         return TCL_ERROR;
       }
 
     } else {
-      opserr << G3_ERROR_PROMPT << "NDM = " << NDM
+      opserr << OpenSees::PromptValueError << "NDM = " << NDM
              << " is incompatible with available frame elements\n";
       return TCL_ERROR;
     }
@@ -2027,7 +1955,7 @@ buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theT
     //   delete [] Hfiber;
 
   } else {
-    opserr << G3_ERROR_PROMPT << "section invalid: can only build fiber sections\n";
+    opserr << OpenSees::PromptValueError << "section invalid: can only build fiber sections\n";
     return TCL_ERROR;
   }
 
@@ -2043,7 +1971,7 @@ G3Parse_newTubeSection(G3_Runtime* rt, int argc, G3_Char ** const argv)
   SectionForceDeformation *theSection = nullptr;
   if (strcmp(argv[1], "Tube") == 0) {
     if (argc < 8) {
-      opserr << G3_ERROR_PROMPT << "insufficient arguments\n";
+      opserr << OpenSees::PromptValueError << "insufficient arguments\n";
       opserr << "Want: section Tube tag? matTag? D? t? nfw? nfr?" << endln;
       return nullptr;
     }
@@ -2053,35 +1981,35 @@ G3Parse_newTubeSection(G3_Runtime* rt, int argc, G3_Char ** const argv)
     int nfw, nfr;
 
     if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section Tube tag" << endln;
+      opserr << OpenSees::PromptValueError << "invalid section Tube tag" << endln;
       return nullptr;
     }
 
     if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid section Tube matTag" << endln;
+      opserr << OpenSees::PromptValueError << "invalid section Tube matTag" << endln;
       return nullptr;
     }
 
     if (Tcl_GetDouble(interp, argv[4], &D) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid D" << endln;
+      opserr << OpenSees::PromptValueError << "invalid D" << endln;
       opserr << "Tube section: " << tag << endln;
       return nullptr;
     }
 
     if (Tcl_GetDouble(interp, argv[5], &t) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid t" << endln;
+      opserr << OpenSees::PromptValueError << "invalid t" << endln;
       opserr << "Tube section: " << tag << endln;
       return nullptr;
     }
 
     if (Tcl_GetInt(interp, argv[6], &nfw) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid nfw" << endln;
+      opserr << OpenSees::PromptValueError << "invalid nfw" << endln;
       opserr << "Tube section: " << tag << endln;
       return nullptr;
     }
 
     if (Tcl_GetInt(interp, argv[7], &nfr) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid nfr" << endln;
+      opserr << OpenSees::PromptValueError << "invalid nfr" << endln;
       opserr << "Tube  section: " << tag << endln;
       return nullptr;
     }
@@ -2095,7 +2023,7 @@ G3Parse_newTubeSection(G3_Runtime* rt, int argc, G3_Char ** const argv)
       double shape = 1.0;
       if (argc > 9) {
         if (Tcl_GetDouble(interp, argv[9], &shape) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT << "invalid shape" << endln;
+          opserr << OpenSees::PromptValueError << "invalid shape" << endln;
           opserr << "WFSection2d section: " << tag << endln;
           return nullptr;
         }

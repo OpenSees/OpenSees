@@ -4,7 +4,7 @@
 #include <runtime/runtime/G3_Runtime.h>
 #define G3_RUNTIME_H
 #endif
-
+#include <tcl.h>
 
 #define G3_Char TCL_Char
 

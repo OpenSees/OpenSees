@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-// 
+//                              https://xara.so
+//===----------------------------------------------------------------------===// 
 // Description: This command is used to update the parameters of
 // PressureDependMultiYield or PressureIndependMultiYield material. Currently,
 // two material parameters, reference low-strain shear modulus Gr and reference

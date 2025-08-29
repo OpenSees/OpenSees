@@ -1,7 +1,9 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation    
+//                                   xara
 //
+//===----------------------------------------------------------------------===//
+//                              https://xara.so
 //===----------------------------------------------------------------------===//
 //
 // Description: This file contains functions that are responsible
@@ -9,8 +11,9 @@
 //
 #include <tcl.h>
 #include <assert.h>
+#include <Parsing.h>
 #include <runtimeAPI.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <StandardStream.h>
 #include <FileStream.h>
 
@@ -19,10 +22,6 @@
 #include <AnalysisModel.h>
 
 #include "BasicAnalysisBuilder.h"
-
-#include <StaticAnalysis.h>
-#include <DirectIntegrationAnalysis.h>
-#include <VariableTimeStepDirectIntegrationAnalysis.h>
 
 #include <EigenSOE.h>
 #include <LinearSOE.h>
@@ -44,34 +43,36 @@
 #include <TransformationConstraintHandler.h>
 
 // numberers
-#include <PlainNumberer.h>
-#include <DOF_Numberer.h>
+#include <numberer/DOF_Numberer.h>
+#include <numberer/PlainNumberer.h>
 #include "analysis.h"
 
 
-// for response spectrum analysis
-extern void OPS_DomainModalProperties(G3_Runtime*);
-extern int OPS_ResponseSpectrumAnalysis(G3_Runtime*);
+// extern int OPS_ResponseSpectrumAnalysis(G3_Runtime*);
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
                                        Tcl_Interp *interp, int cArg, int mArg,
                                        TCL_Char ** const argv, Domain *domain);
 
 Tcl_CmdProc TclCommand_clearAnalysis;
 Tcl_CmdProc TclCommand_setNumberer;
+namespace OpenSees {
+Tcl_CmdProc responseSpectrumAnalysis;
+}
 
 
 //
 // Add commands to the interpreter that take the AnalysisBuilder as clientData.
 //
 int
-G3_AddTclAnalysisAPI(Tcl_Interp *interp, Domain* domain)
+G3_AddTclAnalysisAPI(Tcl_Interp *interp, BasicModelBuilder& context)
 {
-
-  BasicAnalysisBuilder *builder = new BasicAnalysisBuilder(domain);
+  BasicAnalysisBuilder *builder = new BasicAnalysisBuilder(context);
   Tcl_CreateCommand(interp, "wipeAnalysis", &wipeAnalysis, builder, nullptr);
   Tcl_CreateCommand(interp, "_clearAnalysis", &TclCommand_clearAnalysis, builder, nullptr);
 
   Tcl_CreateCommand(interp, "numberer",   TclCommand_setNumberer, builder, nullptr);
+
+  Tcl_CreateCommand(interp, "responseSpectrumAnalysis", &OpenSees::responseSpectrumAnalysis, nullptr, nullptr);
 
 
   static int ncmd = sizeof(tcl_analysis_cmds)/sizeof(char_cmd);
@@ -88,14 +89,15 @@ G3_AddTclAnalysisAPI(Tcl_Interp *interp, Domain* domain)
 // command invoked to build an Analysis object
 //
 static int
-specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
+specifyAnalysis(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
                 TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
   BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "need to specify an analysis type (Static, Transient)\n";
+    opserr << OpenSees::PromptValueError 
+           << "need to specify an analysis type (Static, Transient)\n";
     return TCL_ERROR;
   }
 
@@ -103,7 +105,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
   if (strcmp(argv[argi], "-linear") == 0) {
     if (argc < 3) {
-      opserr << G3_ERROR_PROMPT << "need to specify an analysis type (Static, Transient)\n";
+      opserr << OpenSees::PromptValueError << "need to specify an analysis type (Static, Transient)\n";
       return TCL_ERROR;
     }
     Tcl_Eval(interp, "algorithm Linear\n"
@@ -127,7 +129,7 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_ERROR;
 
   } else {
-    opserr << G3_ERROR_PROMPT << "Analysis type '" << argv[1]
+    opserr << OpenSees::PromptValueError << "Analysis type '" << argv[1]
       << "' does not exists (Static or Transient only). \n";
     return TCL_ERROR;
   }
@@ -140,35 +142,55 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 // on the Analysis object
 //
 static int
-analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc,
+analyzeModel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
   BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
 
-  VariableTimeStepDirectIntegrationAnalysis* theVariableTimeStepTransientAnalysis =
-      builder->getVariableTimeStepDirectIntegrationAnalysis();
-
   int result = 0;
+  int commit = BasicAnalysisBuilder::Increment
+             | BasicAnalysisBuilder::Iterate 
+             | BasicAnalysisBuilder::Commit;
+  
+  for (int i=2; i<argc; i++) {
+    if (strcmp(argv[i], "-operation") == 0) {
+      if (argc < i+2) {
+        opserr << OpenSees::PromptValueError << "operation key requires argument\n";
+        return TCL_ERROR;
+      }
+      i++;
+      if (strcmp(argv[i], "commit") == 0) {
+        commit = BasicAnalysisBuilder::Commit;
+      }
+      else if (strcmp(argv[i], "increment") == 0) {
+        commit = BasicAnalysisBuilder::Increment;
+      }
+      else if (strcmp(argv[i], "iteration") == 0) {
+        commit = BasicAnalysisBuilder::Iterate;
+      }
+    }
+  }
+
   switch (builder->CurrentAnalysisFlag) {
     case BasicAnalysisBuilder::STATIC_ANALYSIS: {
       int numIncr;
       if (argc < 2) {
-        opserr << G3_ERROR_PROMPT << "static analysis: analysis numIncr?\n";
+        opserr << OpenSees::PromptValueError << "static analysis: analysis numIncr?\n";
         return TCL_ERROR;
       }
 
       if (Tcl_GetInt(interp, argv[1], &numIncr) != TCL_OK)
         return TCL_ERROR;
 
-      result = builder->analyze(numIncr, 0.0);
+      result = builder->analyze(numIncr, 0.0, commit);
       break;
     }
     case BasicAnalysisBuilder::TRANSIENT_ANALYSIS: {
       double dT;
       int numIncr;
       if (argc < 3) {
-        opserr << G3_ERROR_PROMPT << "transient analysis: analysis numIncr? deltaT?\n";
+        opserr << OpenSees::PromptValueError << "transient analysis: analysis numIncr? deltaT?\n";
         return TCL_ERROR;
       }
       if (Tcl_GetInt(interp, argv[1], &numIncr) != TCL_OK)
@@ -186,36 +208,26 @@ analyzeModel(ClientData clientData, Tcl_Interp *interp, int argc,
         if (Tcl_GetInt(interp, argv[5], &Jd) != TCL_OK)
           return TCL_ERROR;
 
-        if (theVariableTimeStepTransientAnalysis != nullptr)
-          result = theVariableTimeStepTransientAnalysis->analyze(
-              numIncr, dT, dtMin, dtMax, Jd);
-        else {
-          opserr << G3_ERROR_PROMPT << "analyze - no variable time step transient analysis "
-                    "object constructed\n";
-          return TCL_ERROR;
-        }
+        result = builder->analyzeVariable(numIncr, dT, dtMin, dtMax, Jd);
 
       } else {
-  //    result = theTransientAnalysis->analyze(numIncr, dT);
-        result = builder->analyze(numIncr, dT);
+        result = builder->analyze(numIncr, dT, commit);
       }
       break;
     }
     default:
-      opserr << G3_ERROR_PROMPT << "No Analysis type has been specified \n";
+      opserr << OpenSees::PromptValueError << "No Analysis type has been specified \n";
       return TCL_ERROR;
   }
 
-  char buffer[10];
-  sprintf(buffer, "%d", result);
-  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+  Tcl_SetObjResult(interp, Tcl_NewIntObj(result));
 
   return TCL_OK;
 }
 
 
 static int
-initializeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
+initializeAnalysis(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
                    TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
@@ -228,11 +240,9 @@ initializeAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
 static int
-eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
+eigenAnalysis(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
               TCL_Char ** const argv)
 {
-  static  char *resDataPtr = 0;
-  static  int resDataSize = 0;
 
   BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
 
@@ -241,7 +251,7 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // make sure at least one other argument to contain type of system
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "eigen <type> numModes?\n";
+    opserr << OpenSees::PromptValueError << "eigen <type> numModes?\n";
     return TCL_ERROR;
   }
 
@@ -299,21 +309,9 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // check argv[loc] for number of modes
   if ((Tcl_GetInt(interp, argv[loc], &numEigen) != TCL_OK) || numEigen < 0) {
-    opserr << G3_ERROR_PROMPT << "eigen numModes?  - invalid numModes\n";
+    opserr << OpenSees::PromptValueError << "eigen numModes?  - invalid numModes\n";
     return TCL_ERROR;
   }
-
-  int requiredDataSize = 40 * numEigen;
-  if (requiredDataSize > resDataSize) {
-    if (resDataPtr != nullptr)
-      delete[] resDataPtr;
-
-    resDataPtr = new char[requiredDataSize];
-    resDataSize = requiredDataSize;
-  }
-
-  for (int i = 0; i < requiredDataSize; ++i)
-    resDataPtr[i] = '\n';
 
   //
   // create a transient analysis if no analysis exists
@@ -322,43 +320,25 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
   int result = builder->eigen(numEigen,generalizedAlgo,findSmallest);
 
+  Tcl_Obj* eig_values = Tcl_NewListObj(numEigen, nullptr);
+
   if (result == 0) {
     const Vector &eigenvalues = domain->getEigenvalues();
-    int cnt = 0;
     for (int i = 0; i < numEigen; ++i) {
-      cnt += sprintf(&resDataPtr[cnt], "%35.20f  ", eigenvalues[i]);
+      Tcl_ListObjAppendElement(interp, eig_values, Tcl_NewDoubleObj(eigenvalues[i]));
     }
-
-    Tcl_SetResult(interp, resDataPtr, TCL_STATIC);
   }
 
+  Tcl_SetObjResult(interp, eig_values);
   return TCL_OK;
 }
 
-static int
-modalProperties(ClientData clientData, Tcl_Interp *interp, int argc,
-                TCL_Char ** const argv)
-{
-  G3_Runtime *rt = G3_getRuntime(interp);
-  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, nullptr);
-  OPS_DomainModalProperties(rt);
-  return TCL_OK;
-}
 
-static int
-responseSpectrum(ClientData clientData, Tcl_Interp *interp, int argc,
-                 TCL_Char ** const argv)
-{
-  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, nullptr);
-  G3_Runtime *rt = G3_getRuntime(interp);
-  OPS_ResponseSpectrumAnalysis(rt);
-  return TCL_OK;
-}
 
 // TODO: Move this to commands/modeling/damping.cpp? ...but it uses and
 // AnalysisBuilder
 static int
-modalDamping(ClientData clientData, Tcl_Interp *interp, int argc,
+modalDamping(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
@@ -367,7 +347,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc,
 
   if (argc < 2) {
     opserr
-        << G3_ERROR_PROMPT << argv[0] << " ?factor - not enough arguments to command\n";
+        << OpenSees::PromptValueError << argv[0] << " ?factor - not enough arguments to command\n";
     return TCL_ERROR;
   }
 
@@ -398,7 +378,8 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc,
 
   if (numModes != 1 && numModes != numEigen) {
     // TODO: Just call eigen again?
-    opserr << G3_ERROR_PROMPT << "modalDampingQ - same number of damping factors as modes must be "
+    opserr << OpenSees::PromptValueError 
+           << "modalDampingQ - same number of damping factors as modes must be "
               "specified\n";
 //  opserr << "                    - same damping ratio will be applied to all\n";
     return TCL_ERROR;
@@ -412,7 +393,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc,
     // read in all factors one at a time
     for (int i = 0; i < numEigen; ++i) {
       if (Tcl_GetDouble(interp, argv[1 + i], &factor) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << argv[0] << " - could not read factor at position "
+        opserr << OpenSees::PromptValueError << argv[0] << " - could not read factor at position "
                << i << "\n";
         return TCL_ERROR;
       }
@@ -422,7 +403,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc,
   } else {
     //  read in one & set all factors to that value
     if (Tcl_GetDouble(interp, argv[1], &factor) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
                 "read betaK? \n";
       return TCL_ERROR;
@@ -441,7 +422,7 @@ modalDamping(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 
 static int
-resetModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+resetModel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
   BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
@@ -459,7 +440,7 @@ resetModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** cons
 
 
 int
-printIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
+printIntegrator(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
                 TCL_Char ** const argv, OPS_Stream &output)
 {
   assert(clientData != nullptr);
@@ -472,36 +453,35 @@ printIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   if (the_static_integrator == nullptr && theTransientIntegrator == nullptr)
     return TCL_OK;
 
-  Integrator *theIntegrator;
-  if (the_static_integrator != 0)
-    theIntegrator = the_static_integrator;
-  else
-    theIntegrator = theTransientIntegrator;
-
-  // if just 'print <filename> integrator'- no flag
-  if (argc == 0) {
-    theIntegrator->Print(output);
-    return TCL_OK;
-  }
-
   // if 'print <filename> Algorithm flag' get the flag
-  int flag;
-  if (Tcl_GetInt(interp, argv[eleArg], &flag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "print algorithm failed to get integer flag: \n";
-    opserr << argv[eleArg] << endln;
-    return TCL_ERROR;
+  int flag = 0;
+  if (argc > 2) {
+    if (Tcl_GetInt(interp, argv[eleArg], &flag) != TCL_OK) {
+      opserr << OpenSees::PromptValueError << "print algorithm failed to get integer flag: \n";
+      opserr << argv[eleArg] << endln;
+      return TCL_ERROR;
+    }
   }
-  theIntegrator->Print(output, flag);
+
+  if (the_static_integrator != 0)
+    the_static_integrator->Print(output, flag);
+  else
+    theTransientIntegrator->Print(output, flag);
   return TCL_OK;
 }
 
 static int
-printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+printA(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
+  // printA <filename> - m <double> -c <double> -k <double>
   assert(clientData != nullptr);
   BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
 
   int res = 0;
+
+  enum class Format {
+    None
+  } format = Format::None;
 
   FileStream outputFile;
   OPS_Stream *output = &opserr;
@@ -520,9 +500,9 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
 
 
   bool ret = false;
-  int currentArg = 1;
   double m = 0.0, c = 0.0, k = 0.0;
   bool do_mck = false;
+  int currentArg = 1;
   while (currentArg < argc) {
     if ((strcmp(argv[currentArg], "file") == 0) ||
         (strcmp(argv[currentArg], "-file") == 0)) {
@@ -533,19 +513,20 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
       }
 
       if (outputFile.setFile(argv[currentArg]) != 0) {
-        opserr << "printA <filename> .. - failed to open file: "
-               << argv[currentArg] << endln;
+        opserr << "failed to open file: "
+               << argv[currentArg] << "\n";
         return TCL_ERROR;
       }
       output = &outputFile;
-    } else if ((strcmp(argv[currentArg], "ret") == 0) ||
+    }
+    else if ((strcmp(argv[currentArg], "ret") == 0) ||
                (strcmp(argv[currentArg], "-ret") == 0)) {
       ret = true;
 
     } else if ((strcmp(argv[currentArg], "-m") == 0)) {
       currentArg++;
       if (Tcl_GetDouble(interp, argv[currentArg], &m) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to read float following flag -m\n";
+        opserr << OpenSees::PromptValueError << "failed to read float following flag -m\n";
         return TCL_ERROR;
       }
       do_mck = true;
@@ -553,7 +534,7 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
     } else if ((strcmp(argv[currentArg], "-c") == 0)) {
       currentArg++;
       if (Tcl_GetDouble(interp, argv[currentArg], &c) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to read float following flag -c\n";
+        opserr << OpenSees::PromptValueError << "failed to read float following flag -c\n";
         return TCL_ERROR;
       }
       do_mck = true;
@@ -561,7 +542,7 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
     } else if ((strcmp(argv[currentArg], "-k") == 0)) {
       currentArg++;
       if (Tcl_GetDouble(interp, argv[currentArg], &k) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to read float following flag -k\n";
+        opserr << OpenSees::PromptValueError << "failed to read float following flag -k\n";
         return TCL_ERROR;
       }
       do_mck = true;
@@ -593,7 +574,11 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
     builder->getTransientIntegrator()->formTangent(0);
     builder->getTransientIntegrator()->revertToLastStep();
   }
-  builder->getDomain()->revertToLastCommit();
+  else {
+    opserr << OpenSees::PromptValueError 
+           << "No integrator has been set, cannot form tangent\n";
+    return TCL_ERROR;
+  }
 
   const Matrix *A = theSOE.getA();
   if (A == nullptr) {
@@ -602,37 +587,40 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
     return TCL_ERROR;
   }
 
-  if (ret) {
-    int n = A->noRows();
-    int m = A->noCols();
-    if (n*m == 0) {
-      opserr << OpenSees::PromptValueError 
-             << "linear system is empty\n";
-      return TCL_ERROR;
+  if (format == Format::None) {
+    if (ret) {
+      int n = A->noRows();
+      int m = A->noCols();
+      if (n*m == 0) {
+        opserr << OpenSees::PromptValueError 
+               << "linear system is empty, got n=" << n << " m= " << m << "\n";
+        return TCL_ERROR;
+      }
+
+      // Create an empty list with space preallocated for
+      // n*m elements. This is not formally documented, but
+      // it is mentioned here 
+      //   https://wiki.tcl-lang.org/page/Tcl_NewListObj
+      //
+      // and evident from the source code here:
+      //   https://github.com/enthought/tcl/blob/master/generic/tclListObj.c
+      //
+      Tcl_Obj* list = Tcl_NewListObj(n*m, nullptr);
+
+
+      for (int i = 0; i < n; ++i) {
+        for (int j = 0; j < m; j++)
+          Tcl_ListObjAppendElement(interp, list, Tcl_NewDoubleObj((*A)(i, j)));
+      }
+      Tcl_SetObjResult(interp, list);
+
+    } else {
+      *output << *A;
+      outputFile.close();
     }
-
-    // Create an empty list with space preallocated for
-    // n*m elements. This is not formally documented, but
-    // it is mentioned here 
-    //   https://wiki.tcl-lang.org/page/Tcl_NewListObj
-    //
-    // and evident from the source code here:
-    //   https://github.com/enthought/tcl/blob/master/generic/tclListObj.c
-    //
-    Tcl_Obj* list = Tcl_NewListObj(n*m, nullptr);
-
-
-    for (int i = 0; i < n; ++i) {
-      for (int j = 0; j < m; j++)
-        Tcl_ListObjAppendElement(interp, list, Tcl_NewDoubleObj((*A)(i, j)));
-    }
-    Tcl_SetObjResult(interp, list);
-
-  } else {
-    *output << *A;
-    outputFile.close();
   }
 
+  builder->getDomain()->revertToLastCommit();
   // put the original SOE back.
   if (oldSOE != nullptr)
     builder->set(oldSOE, true);
@@ -644,7 +632,7 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
 }
 
 static int
-printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+printB(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
   BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
@@ -707,9 +695,9 @@ printB(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const ar
   return res;
 }
 
-// This is removed in model.cpp
+// This is removed from the Tcl_Interp in model.cpp
 extern int
-TclCommand_clearAnalysis(ClientData cd, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+TclCommand_clearAnalysis(ClientData cd, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
 
   if (cd != nullptr) {
@@ -729,7 +717,7 @@ TclCommand_clearAnalysis(ClientData cd, Tcl_Interp *interp, int argc, TCL_Char *
 }
 
 static int
-wipeAnalysis(ClientData cd, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+wipeAnalysis(ClientData cd, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** const argv)
 {
 
   if (cd != nullptr) {
@@ -744,7 +732,7 @@ wipeAnalysis(ClientData cd, Tcl_Interp *interp, int argc, TCL_Char ** const argv
 // command invoked to allow the ConstraintHandler object to be built
 //
 static int
-specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
+specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
                          TCL_Char ** const argv)
 {
   
@@ -752,7 +740,7 @@ specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // make sure at least one other argument to contain type name
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "need to specify a constraint type \n";
+    opserr << OpenSees::PromptValueError << "need to specify a constraint type \n";
     return TCL_ERROR;
   }
 
@@ -791,7 +779,7 @@ specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   else {
-    opserr << G3_ERROR_PROMPT << "ConstraintHandler type '" << argv[1]
+    opserr << OpenSees::PromptValueError << "ConstraintHandler type '" << argv[1]
       << "' does not exists \n\t(Plain, Penalty, Lagrange, Transformation) only\n";
     return TCL_ERROR;
   }

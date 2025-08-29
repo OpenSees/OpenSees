@@ -1,7 +1,38 @@
 
 const char *linalg[] = {R"END(
-# https://wiki.tcl-lang.org/page/range
+namespace eval OpenSees {
+namespace export verify
+
+proc verify {cmd {value ""} {reference ""} {tolerance 1e-12} {about ""}} {
+    if {$cmd == "error"} {
+        set check [expr abs(($value - $reference)/$reference)]
+        if {$check > $tolerance} {
+        puts  "   \033\[31mFAIL\033\[0m: | $value - $reference | = $check > $tolerance"
+        error "$about"
+        } else {
+          puts  "   \033\[32mPASS\033\[0m  "; # " $value   $reference $about"
+        }
+
+    } elseif {$cmd == "value"} {
+        if {abs($value - $reference) > $tolerance} {
+        set check [expr abs($value - $reference)]
+        puts  "   \033\[31mFAIL\033\[0m($about): | $value - $reference | = $check > $tolerance"
+        error "$about"
+        } else {
+        puts  "    \033\[32mPASS\033\[0m  "; # "$value   $reference $about"
+        }
+    } else {
+     # value or  "about"
+    puts "  $value"
+    }
+}
+
+}; # namespace OpenSees
+
+namespace import OpenSees::verify
+
 proc range args {
+  # https://wiki.tcl-lang.org/page/range
   foreach {start stop step} [switch -exact -- [llength $args] {
       1 {concat 0 $args 1}
       2 {concat   $args 1}
@@ -17,8 +48,9 @@ proc range args {
   return $range
 }
 
-# https://opensource.apple.com/source/tcl/tcl-118.50.1/tcl_ext/tklib/tklib/examples/plotchart/rosenbrock.tcl.auto.htm
 proc linspace {min  max num} {
+    # https://opensource.apple.com/source/tcl/tcl-118.50.1/tcl_ext/tklib/tklib/examples/plotchart/rosenbrock.tcl.auto.htm
+
     #set opts {
     #  {min.arg 0.0 "the minimum value in the range"}
     #  {max.arg 1.0 "the maximum value in the range"}

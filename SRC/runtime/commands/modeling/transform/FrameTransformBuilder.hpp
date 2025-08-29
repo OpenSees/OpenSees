@@ -38,7 +38,9 @@ public:
     : ndm(ndm), 
       TaggedObject(t), 
       vz{{0, 0, 0}}, offsets{}, offset_flags(0) {
+      // strncpy(name, n, 128);
       snprintf(name, sizeof(name), "%s", n);
+      // offset_flags |= LogIter;
     }
 
     virtual ~FrameTransformBuilder() {}
@@ -83,6 +85,13 @@ public:
           return new EuclidFrameTransf<nn, ndf, CrisfieldIsometry<nn,false>> (tag, vz, offset_array, offset_flags);
         else
           return new EuclidFrameTransf<nn, ndf, RankinIsometry<nn>> (tag, vz, offset_array, offset_flags);
+      }
+      else if (strcmp(name, "Corotational03") == 0)
+      {
+        if (getenv("Crisfield02"))
+          return new EuclidFrameTransf<nn, ndf, CrisfieldIsometry<nn,false>> (tag, vz, offset_array, offset_flags);
+        
+        return new EuclidFrameTransf<nn, ndf, CrisfieldIsometry<nn,true>> (tag, vz, offset_array, offset_flags);
       }
 
       return nullptr;

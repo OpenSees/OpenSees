@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 //
 #include <map>
 #include <vector>
@@ -11,7 +12,7 @@
 #include <elementAPI.h>
 #include <stdlib.h>
 #include <packages.h>
-#include <OPS_Globals.h>
+#include <Logging.h>
 #include <Domain.h>
 #include <Node.h>
 #include <runtimeAPI.h>
@@ -26,8 +27,6 @@
 #include <CrdTransf.h>
 #include <FrictionModel.h>
 
-#include <DirectIntegrationAnalysis.h>
-#include <StaticAnalysis.h>
 
 #include <TimeSeries.h>
 
@@ -75,24 +74,11 @@ OPS_ResetCurrentInputArg(int cArg)
 }
 
 
-// extern "C"
-#if 0
-int
-OPS_ResetInput(ClientData clientData, Tcl_Interp *interp, int cArg, int mArg,
-               TCL_Char ** const argv, void*, void*)
-{
-  currentArgv = argv;
-  currentArg = cArg;
-  maxArg = mArg;
-  return 0;
-}
-#endif
-
-
 extern "C" int
 OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp *interp, int cArg,
                         int mArg, TCL_Char ** const argv, Domain *domain)
 {
+  theInterp = interp;
   currentArgv = argv;
   currentArg = cArg;
   maxArg = mArg;
@@ -175,31 +161,31 @@ OPS_GetStringCopy(char **arrayData)
 extern "C"
 int OPS_GetDoubleListInput(int* size, Vector* data)
 {
-    TCL_Char** strings;
+  TCL_Char** strings;
 
-    if (Tcl_SplitList(theInterp, currentArgv[currentArg],
-        size, &strings) != TCL_OK) {
-        opserr << "ERROR problem splitting list " << currentArgv[currentArg] << " \n";
-        return -1;
-    }
+  if (Tcl_SplitList(theInterp, currentArgv[currentArg],
+      size, &strings) != TCL_OK) {
+      opserr << "ERROR problem splitting list " << currentArgv[currentArg] << " \n";
+      return -1;
+  }
 
-    data->resize(*size);
-    for (int i = 0; i < *size; i++) {
-        double value;
-        if (Tcl_GetDouble(theInterp, strings[i], &value) != TCL_OK) {
-            opserr << "ERROR problem reading data value " << strings[i] << " \n";
-            // free up the array of strings .. see tcl man pages as to why
-            Tcl_Free((char*)strings);
-            return -1;
-        }
-        (*data)(i) = value;
-    }
-    // free up the array of strings .. see tcl man pages as to why
-    Tcl_Free((char*)strings);
+  data->resize(*size);
+  for (int i = 0; i < *size; i++) {
+      double value;
+      if (Tcl_GetDouble(theInterp, strings[i], &value) != TCL_OK) {
+          opserr << "ERROR problem reading data value " << strings[i] << " \n";
+          // free up the array of strings .. see tcl man pages as to why
+          Tcl_Free((char*)strings);
+          return -1;
+      }
+      (*data)(i) = value;
+  }
+  // free up the array of strings .. see tcl man pages as to why
+  Tcl_Free((char*)strings);
 
-    currentArg++;
+  currentArg++;
 
-    return 0;
+  return 0;
 }
 
 extern "C"
@@ -309,7 +295,7 @@ G3_setModelBuilder(G3_Runtime *rt, BasicModelBuilder* builder)
 {
   theModelBuilder = builder;
   rt->m_builder = builder;
-  return 1;
+  return 0;
 }
 
 BasicModelBuilder *
@@ -376,7 +362,10 @@ G3_getSectionForceDeformation(G3_Runtime* rt, int tag)
 {
   BasicModelBuilder* builder = G3_getSafeBuilder(rt);
   assert(builder);
-  SectionForceDeformation* theSection = builder->getTypedObject<FrameSection>(tag);
+  SectionForceDeformation* theSection = nullptr;
+
+  if (builder->getNDM() == 3)
+    theSection = builder->getTypedObject<FrameSection>(tag);
 
   if (theSection != nullptr)
     return theSection;
@@ -393,7 +382,8 @@ G3_getUniaxialMaterialInstance(G3_Runtime *rt, int tag)
   return builder->getTypedObject<UniaxialMaterial>(tag);
 }
 
-int G3_addUniaxialMaterial(G3_Runtime *rt, UniaxialMaterial *mat) {
+int 
+G3_addUniaxialMaterial(G3_Runtime *rt, UniaxialMaterial *mat) {
   BasicModelBuilder* builder = G3_getSafeBuilder(rt);
   assert(builder != nullptr);
   assert(mat != nullptr);
@@ -444,106 +434,52 @@ OPS_GetFEDatastore() {return theDatabase;}
 const char *
 OPS_GetInterpPWD() {return getInterpPWD(theInterp);}
 
-#if 0
-EquiSolnAlgo **
-OPS_GetAlgorithm(void) {return &theAlgorithm;}
 
-EigenSOE **
-OPS_GetEigenSOE(void) {return &theEigenSOE;}
+namespace OpenSees {
+  namespace Parsing {
 
-LinearSOE **
-OPS_GetSOE(void) {return &theSOE;}
+    int
+    GetDoubleParam(Tcl_Interp *interp, Domain& domain, const char* arg, double* value, Parameter* &param)
+    {
+      if (Tcl_GetDouble(interp, arg, value) == TCL_OK)
+        return TCL_OK;
 
-StaticAnalysis **
-OPS_GetStaticAnalysis(void) {return &theStaticAnalysis;}
-#endif
+      // something like "parameter tag value"
+      int tag, argc;
+      const char **argv;
+      if (Tcl_SplitList(interp, arg, &argc, &argv) != TCL_OK)
+        return TCL_ERROR;
 
-#if 0 && !defined(OPS_USE_RUNTIME)
+      if (argc != 3) {
+        Tcl_Free((char*)argv);
+        return TCL_ERROR;
+      }
 
-modelState theModelState;
+      if (strcmp(argv[0], "Parameter") != 0) {
+        Tcl_Free((char*)argv);
+        return TCL_ERROR;
+      }
+      
+      if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
+        Tcl_Free((char*)argv);
+        return TCL_ERROR;
+      }
 
-UniaxialMaterial *
-OPS_GetUniaxialMaterial(int matTag)
-{
-  return OPS_getUniaxialMaterial(matTag);
-}
+      if (Tcl_GetDouble(interp, argv[2], value) != TCL_OK) {
+        Tcl_Free((char*)argv);
+        return TCL_ERROR;
+      }
 
-Domain *
-OPS_GetDomain(void) {return theDomain;}
+      Tcl_Free((char*)argv);
 
-AnalysisModel **
-OPS_GetAnalysisModel(void){return &theAnalysisModel;}
+      param = domain.getParameter(tag);
+      
+      if (param == nullptr) {
+        opserr << OpenSees::PromptValueError << "parameter with tag " << tag << " not found\n";
+        return TCL_ERROR;
+      }
 
-CrdTransf *
-OPS_GetCrdTransf(int crdTag) {return OPS_getCrdTransf(crdTag);}
-
-StaticIntegrator **
-OPS_GetStaticIntegrator(void) {return &theStaticIntegrator;}
-
-TransientIntegrator **
-OPS_GetTransientIntegrator(void) {return &theTransientIntegrator;}
-
-DirectIntegrationAnalysis **
-OPS_GetTransientAnalysis(void) {return &theTransientAnalysis;}
-
-ConvergenceTest **
-OPS_GetTest(void) {return &theTest;}
-
-ConstraintHandler **
-OPS_GetHandler(void) {return &theHandler;}
-
-DOF_Numberer **
-OPS_GetNumberer(void) {return &theGlobalNumberer;}
-
-extern "C" int
-OPS_InvokeMaterialDirectly2(matObject *theMat, modelState *model,
-                            double *strain, double *stress, double *tang,
-                            int *isw)
-{
-  int error = 0;
-  if (theMat != nullptr)
-    theMat->matFunctPtr(theMat, model, strain, tang, stress, isw, &error);
-  else
-    error = -1;
-
-  return error;
-}
-static void
-OPS_InvokeMaterialObject(struct matObject *theMat, modelState *theModel,
-                         double *strain, double *tang, double *stress, int *isw,
-                         int *result)
-{
-  int matType = (int)theMat->theParam[0];
-
-  if (matType == 1) {
-    //  UniaxialMaterial *theMaterial = theUniaxialMaterials[matCount];
-    UniaxialMaterial *theMaterial = (UniaxialMaterial *)theMat->matObjectPtr;
-    if (theMaterial == 0) {
-      *result = -1;
-      return;
-    }
-
-    if (*isw == ISW_COMMIT) {
-      *result = theMaterial->commitState();
-      return;
-    } else if (*isw == ISW_REVERT) {
-      *result = theMaterial->revertToLastCommit();
-      return;
-    } else if (*isw == ISW_REVERT_TO_START) {
-      *result = theMaterial->revertToStart();
-      return;
-    } else if (*isw == ISW_FORM_TANG_AND_RESID) {
-      double matStress = 0.0;
-      double matTangent = 0.0;
-      int res = theMaterial->setTrial(strain[0], matStress, matTangent);
-      stress[0] = matStress;
-      tang[0] = matTangent;
-      *result = res;
-      return;
+      return TCL_OK;
     }
   }
-
-  return;
 }
-
-#endif

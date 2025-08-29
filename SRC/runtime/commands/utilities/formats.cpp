@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: This file provides basic file format handling commands,
 // such as naive XML processing and binary conversion.
 //
@@ -11,7 +12,8 @@
 #include <string>
 #include <iomanip>
 #include <fstream>
-#include <OPS_Globals.h>
+#include <Logging.h>
+#include <Parsing.h>
 
 extern int binaryToText(const char *inputFile, const char *outputFile);
 extern int textToBinary(const char *inputFile, const char *outputFile);

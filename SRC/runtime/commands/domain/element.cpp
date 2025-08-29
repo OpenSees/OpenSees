@@ -1,23 +1,10 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
-** ****************************************************************** */
+//===----------------------------------------------------------------------===//
 //
+//                                   xara
+//
+//===----------------------------------------------------------------------===//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 //
 #include <assert.h>
 #include <tcl.h>
@@ -27,21 +14,28 @@
 #include <Vector.h>
 #include <G3_Logging.h>
 
+namespace OpenSees {
+namespace DomainCommands {
+
 int
-TclCommand_getEleTags(ClientData clientData, Tcl_Interp *interp, int argc,
+getEleTags(ClientData clientData, Tcl_Interp *interp, int argc,
             TCL_Char ** const argv)
 {
+  // NOTE: Maybe this can use a base class of ElementIter so we only need
+  //       to work in terms of tagged object
+
   assert(clientData != nullptr);
   Domain *the_domain = (Domain*)clientData;
 
   ElementIter &elemIter = the_domain->getElements();
 
+  Tcl_Obj* result = Tcl_NewListObj(the_domain->getNumElements(), nullptr);
+
   Element *elem;
-  char buffer[128];
-  while ((elem = elemIter()) != nullptr) {
-    sprintf(buffer, "%d ", elem->getTag());
-    Tcl_AppendResult(interp, buffer, NULL);
-  }
+  while ((elem = elemIter()) != nullptr)
+    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(elem->getTag()));
+
+  Tcl_SetObjResult(interp, result);
 
   return TCL_OK;
 }
@@ -58,9 +52,8 @@ getNumElements(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 
 
-
 int
-TclCommand_addElementRayleigh(ClientData clientData, Tcl_Interp *interp,
+addElementRayleigh(ClientData clientData, Tcl_Interp *interp,
                               int argc, TCL_Char ** const argv)
 {
 
@@ -133,7 +126,7 @@ setElementRayleighDampingFactors(ClientData clientData, Tcl_Interp *interp,
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 6) {
-    opserr << G3_ERROR_PROMPT << "setElementRayleighDampingFactors eleTag? alphaM? betaK? "
+    opserr << OpenSees::PromptValueError << "setElementRayleighDampingFactors eleTag? alphaM? betaK? "
               "betaK0? betaKc? - not enough arguments to command\n";
     return TCL_ERROR;
   }
@@ -142,28 +135,28 @@ setElementRayleighDampingFactors(ClientData clientData, Tcl_Interp *interp,
   double alphaM, betaK, betaK0, betaKc;
 
   if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
+    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
               "read eleTag? \n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetDouble(interp, argv[2], &alphaM) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
+    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
               "read alphaM? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[3], &betaK) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
+    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
               "read betaK? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[4], &betaK0) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
+    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
               "read betaK0? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[5], &betaKc) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
+    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
               "read betaKc? \n";
     return TCL_ERROR;
   }
@@ -181,7 +174,7 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const a
   Domain *domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - eleForce eleTag? <dof?>\n";
+    opserr << OpenSees::PromptValueError << "want - eleForce eleTag? <dof?>\n";
     return TCL_ERROR;
   }
 
@@ -189,13 +182,13 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const a
   int dof = -1;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "eleForce eleTag? dof? - could not read nodeTag? \n";
+    opserr << OpenSees::PromptValueError << "eleForce eleTag? dof? - could not read nodeTag? \n";
     return TCL_ERROR;
   }
 
   if (argc > 2) {
     if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "eleForce eleTag? dof? - could not read dof? \n";
+      opserr << OpenSees::PromptValueError << "eleForce eleTag? dof? - could not read dof? \n";
       return TCL_ERROR;
     }
   }
@@ -227,14 +220,17 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const a
       Tcl_SetObjResult(interp, Tcl_NewDoubleObj((*force)(dof)));
 
     } else {
-      char buffer[128];
-      for (int i = 0; i < size; ++i) {
-        sprintf(buffer, "%35.20f", (*force)(i));
-        Tcl_AppendResult(interp, buffer, NULL);
-      }
+      Tcl_Obj* result = Tcl_NewListObj(size, nullptr);
+      for (int i = 0; i < size; ++i)
+        Tcl_ListObjAppendElement(interp, result, Tcl_NewDoubleObj((*force)(i)));
+
+      Tcl_SetObjResult(interp, result);
     }
+
   } else {
-    opserr << G3_ERROR_PROMPT << "- failed to retrieve element force.\n";
+    opserr << OpenSees::PromptValueError 
+           << "- failed to retrieve element force."
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
   return TCL_OK;
@@ -247,7 +243,8 @@ localForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const
   Domain *theDomain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - localForce eleTag? <dof?>\n";
+    opserr << OpenSees::PromptValueError 
+           << "want - localForce eleTag? <dof?>\n";
     return TCL_ERROR;
   }
 
@@ -255,13 +252,15 @@ localForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const
   int dof = -1;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "localForce eleTag? dof? - could not read eleTag? \n";
+    opserr << OpenSees::PromptValueError 
+           << "localForce eleTag? dof? - could not read eleTag? \n";
     return TCL_ERROR;
   }
 
   if (argc > 2) {
     if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "localForce eleTag? dof? - could not read dof? \n";
+      opserr << OpenSees::PromptValueError 
+             << "localForce eleTag? dof? - could not read dof? \n";
       return TCL_ERROR;
     }
   }
@@ -306,7 +305,7 @@ eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain *theDomain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - eleForce eleTag? <dof?>\n";
+    opserr << OpenSees::PromptValueError << "want - eleForce eleTag? <dof?>\n";
     return TCL_ERROR;
   }
 
@@ -314,13 +313,13 @@ eleDynamicalForce(ClientData clientData, Tcl_Interp *interp, int argc,
   int dof = -1;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "eleForce eleTag? dof? - could not read nodeTag? \n";
+    opserr << OpenSees::PromptValueError << "eleForce eleTag? dof? - could not read nodeTag? \n";
     return TCL_ERROR;
   }
 
   if (argc > 2) {
     if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "eleForce eleTag? dof? - could not read dof? \n";
+      opserr << OpenSees::PromptValueError << "eleForce eleTag? dof? - could not read dof? \n";
       return TCL_ERROR;
     }
   }
@@ -359,14 +358,13 @@ eleResponse(ClientData clientData, Tcl_Interp *interp, int argc,
   Domain* the_domain = (Domain*)clientData; 
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - eleResponse eleTag? eleArgs...\n";
+    opserr << OpenSees::PromptValueError << "want - eleResponse tag? eleArgs...\n";
     return TCL_ERROR;
   }
 
   int tag;
-
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "eleResponse eleTag? args? - could not read eleTag? \n";
+    opserr << OpenSees::PromptValueError << "eleResponse tag? args? - could not read tag? \n";
     return TCL_ERROR;
   }
 
@@ -390,14 +388,14 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const 
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - eleNodes eleTag?\n";
+    opserr << OpenSees::PromptValueError << "want - eleNodes eleTag?\n";
     return TCL_ERROR;
   }
 
   int tag;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "eleNodes eleTag? \n";
+    opserr << OpenSees::PromptValueError << "eleNodes eleTag? \n";
     return TCL_ERROR;
   }
 
@@ -405,7 +403,7 @@ eleNodes(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const 
 
   Element *theElement = the_domain->getElement(tag);
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "eleNodes ele " << tag << " not found" << "\n";
+    opserr << OpenSees::PromptValueError << "eleNodes ele " << tag << " not found" << "\n";
     return TCL_ERROR;
   }
   int numTags = theElement->getNumExternalNodes();
@@ -425,20 +423,20 @@ eleType(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const a
   Domain *the_domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - eleType eleTag?\n";
+    opserr << OpenSees::PromptValueError << "want - eleType eleTag?\n";
     return TCL_ERROR;
   }
 
   int tag;
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "eleType eleTag? \n";
+    opserr << OpenSees::PromptValueError << "eleType eleTag? \n";
     return TCL_ERROR;
   }
 
   Element *theElement = the_domain->getElement(tag);
 
   if (theElement == nullptr) {
-    opserr << G3_ERROR_PROMPT << "eleType ele " << tag << " not found" << "\n";
+    opserr << OpenSees::PromptValueError << "eleType ele " << tag << " not found" << "\n";
     return TCL_ERROR;
   }
   const char *type = theElement->getClassType();
@@ -448,3 +446,48 @@ eleType(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const a
   return TCL_OK;
 }
 
+
+int
+getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc,
+                TCL_Char ** const argv)
+{
+  assert(clientData != nullptr);
+  Domain *the_domain = (Domain*)clientData;
+
+  if (argc == 1) {
+    Element *theEle;
+    ElementIter &eleIter = the_domain->getElements();
+
+    char buffer[20];
+
+    while ((theEle = eleIter()) != nullptr) {
+      sprintf(buffer, "%d ", theEle->getClassTag());
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
+
+  } else if (argc == 2) {
+    int eleTag;
+
+    if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
+      opserr << OpenSees::PromptValueError 
+             << "getParamValue -- could not read paramTag \n";
+      return TCL_ERROR;
+    }
+
+    Element *theEle = the_domain->getElement(eleTag);
+
+    char buffer[20];
+    sprintf(buffer, "%d ", theEle->getClassTag());
+    Tcl_AppendResult(interp, buffer, NULL);
+
+  } else {
+    opserr << OpenSees::PromptValueError 
+           << "want - getEleClassTags <eleTag?>\n" << endln;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+} // namespace DomainCommands
+} // namespace OpenSees

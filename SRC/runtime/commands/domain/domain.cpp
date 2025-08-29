@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: Domain manipulation commands which do not require
 // additional namespacing.
 //
@@ -36,6 +37,8 @@
 
 #define MAX_NDF 6
 
+namespace OpenSees {
+namespace DomainCommands {
 int
 domainChange(ClientData clientData, Tcl_Interp *interp, int argc,
              Tcl_Obj *const *objv)
@@ -184,18 +187,18 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if (strcmp(remove_type, "recorder") == 0) {
     if (argc < 3) {
-      opserr << G3_ERROR_PROMPT << "want - remove recorder recorderTag?\n";
+      opserr << OpenSees::PromptValueError << "want - remove recorder recorderTag?\n";
       return TCL_ERROR;
     }
     int tag;
     if (Tcl_GetIntFromObj(interp, objv[2], &tag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT 
+        opserr << OpenSees::PromptValueError 
                << "remove recorder tag? failed to read tag: " << Tcl_GetString(objv[2])
                << "\n";
       return TCL_ERROR;
     }
     if (the_domain->removeRecorder(tag) != 0) {
-      opserr << G3_ERROR_PROMPT << "No recorder found with tag " << tag << "\n";
+      opserr << OpenSees::PromptValueError << "No recorder found with tag " << tag << "\n";
       return TCL_ERROR;
     }
     return TCL_OK;
@@ -204,9 +207,46 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
   else if ((strcmp(remove_type, "SPconstraint") == 0) ||
            (strcmp(remove_type, "sp") == 0)) {
 
-    return TCL_ERROR;
-    //
+    if (argc < 3) {
+      opserr << "WARNING want - remove SPconstraint spTag? -or- remove SPconstraint nodeTag? dofTag? <patternTag?>\n";
+      return TCL_ERROR;
+    }    
+    if (argc == 3) {
+      if (Tcl_GetIntFromObj(interp, objv[2], &tag) != TCL_OK) {
+        opserr << "WARNING remove sp tag? failed to read tag: " << objv[2] << "\n";
+        return TCL_ERROR;
+      }      
 
+      SP_Constraint *theSPconstraint = the_domain->removeSP_Constraint(tag);
+      if (theSPconstraint != nullptr)
+        delete theSPconstraint;
+
+    } else {
+      int nodeTag, dofTag;
+      int patternTag = -1;
+      
+      if (Tcl_GetIntFromObj(interp, objv[2], &nodeTag) != TCL_OK) {
+        opserr << "WARNING remove sp tag? failed to read node tag: " << objv[2] << "\n";
+        return TCL_ERROR;
+      }      
+      if (Tcl_GetIntFromObj(interp, objv[3], &dofTag) != TCL_OK) {
+        opserr << "WARNING remove sp tag? failed to read dof tag: " << objv[3] << "\n";
+        return TCL_ERROR;
+      }      
+      
+      if (argc == 5) {
+        if (Tcl_GetIntFromObj(interp, objv[4], &patternTag) != TCL_OK) {
+          opserr << "WARNING remove sp tag? failed to read pattern tag: " << objv[4] << "\n";
+          return TCL_ERROR;
+        }
+      }
+      dofTag--;  // one for C++ indexing of dof
+      
+      the_domain->removeSP_Constraint(nodeTag, dofTag, patternTag);
+
+      return TCL_OK;
+    }
+    //
 
 //  const char** const args = new const char*[argc+1];
 //  args[0] = objv[1];
@@ -359,7 +399,7 @@ fixedDOFs(ClientData clientData, Tcl_Interp *interp, int argc, Tcl_Obj *const *o
 
   Node *node = theDomain->getNode(fNode);
   if (node == nullptr) {
-    opserr << G3_ERROR_PROMPT << " fixedDOFs fNode? - could not find node with tag " << fNode << "\n";
+    opserr << OpenSees::PromptValueError << " fixedDOFs fNode? - could not find node with tag " << fNode << "\n";
     return TCL_ERROR;
   }
 
@@ -504,18 +544,20 @@ int
 retainedDOFs(ClientData clientData, Tcl_Interp *interp, int argc,
              TCL_Char ** const argv)
 {
+  //
+  // retainedDOFs rNode? <cNode?> <cDOF?>
+  //
   assert(clientData != nullptr);
   Domain *domain = (Domain*)clientData;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "want - retainedDOFs rNode? <cNode?> <cDOF?>\n";
+    opserr << OpenSees::PromptValueError << "want - retainedDOFs rNode? <cNode?> <cDOF?>\n";
     return TCL_ERROR;
   }
 
   int rNode;
   if (Tcl_GetInt(interp, argv[1], &rNode) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "retainedDOFs rNode? <cNode?> <cDOF?> - could not read "
-              "rNode? \n";
+    opserr << OpenSees::PromptValueError << "could not read rNode? \n";
     return TCL_ERROR;
   }
 
@@ -523,8 +565,7 @@ retainedDOFs(ClientData clientData, Tcl_Interp *interp, int argc,
   bool allNodes = 1;
   if (argc > 2) {
     if (Tcl_GetInt(interp, argv[2], &cNode) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "retainedDOFs rNode? <cNode?> <cDOF?> - could not read "
-                "cNode? \n";
+      opserr << OpenSees::PromptValueError << "could not read cNode? \n";
       return TCL_ERROR;
     }
     allNodes = 0;
@@ -534,8 +575,8 @@ retainedDOFs(ClientData clientData, Tcl_Interp *interp, int argc,
   bool allDOFs = 1;
   if (argc > 3) {
     if (Tcl_GetInt(interp, argv[3], &cDOF) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "retainedDOFs rNode? <cNode?> <cDOF?> - could not read "
-                "cDOF? \n";
+      opserr << OpenSees::PromptValueError 
+             << "could not read cDOF? \n";
       return TCL_ERROR;
     }
     cDOF--;
@@ -595,4 +636,5 @@ updateElementDomain(ClientData clientData, Tcl_Interp *interp, int argc,
 
   return 0;
 }
-
+}
+}

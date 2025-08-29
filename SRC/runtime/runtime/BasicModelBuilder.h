@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: This file contains the class definition for
 // BasicModelBuilder. A BasicModelBuilder aims to be a threadsafe
 // alternative to the TclBasicBuilder class. This class adds the commands to
@@ -51,28 +52,23 @@ public:
   int  getCurrentSectionBuilder(int&);
   void setCurrentSectionBuilder(int);
 
-  LoadPattern *getCurrentLoadPattern();
   LoadPattern* getEnclosingPattern();
   int setEnclosingPattern(LoadPattern*);
 
   int incrNodalLoadTag();
   int decrNodalLoadTag();
   int getNodalLoadTag();
-  // newCount
-  // getCount
-
 
   //
   // Managing tagged objects
   //
   template<class T> int addTypedObject(int tag, T* obj) {
-    return addRegistryObject(typeid(T).name(), tag, obj);
+    return addRegistryObject(typeid(T).name(), nullptr, tag, obj);
   }
 
-  template<class T> int addTaggedObject(T& obj) {
+  template<class T, const char* specialize=nullptr> int addTaggedObject(T& obj) {
     int tag = obj.getTag();
-//  m_registry[typeid(T).name()][tag] = &obj;
-    return addRegistryObject(typeid(T).name(), tag, &obj);
+    return addRegistryObject(typeid(T).name(), specialize, tag, &obj);
   }
 
   constexpr static int SilentLookup = 1;
@@ -81,11 +77,13 @@ public:
     return printRegistry(typeid(T).name(), stream, flag);
   }
 
-  template<class T> T* getTypedObject(int tag, int flags=0) const {
-    return (T*)getRegistryObject(typeid(T).name(), tag, flags);
+  template<class T, const char* specialize=nullptr> T* 
+  getTypedObject(int tag, int flags=0) const {
+    return (T*)getRegistryObject(typeid(T).name(), specialize, tag, flags);
   }
 
-  template<class T> int removeObject(int tag, int flags=0) {
+  template<class T> int 
+  removeObject(int tag, int flags=0) {
     return removeRegistryObject(typeid(T).name(), tag, flags);
   }
 
@@ -100,15 +98,13 @@ public:
 
   int buildFE_Model();
 
-// 
+//
 private:
-  // find/remove/insert
-  // TODO: make private
-  int addRegistryObject(const char*, int tag, void* obj); 
-  void* getRegistryObject(const char*, int tag, int flags) const;
+  int   addRegistryObject(const char*, const char*, int tag, void* obj); 
+  void* getRegistryObject(const char*, const char*, int tag, int flags) const;
   int   removeRegistryObject(const char*, int tag, int flags);
   int   findFreeTag(const char*, int& tag) const;
-  int printRegistry(const char *, OPS_Stream& stream, int flag) const ;
+  int   printRegistry(const char *, OPS_Stream& stream, int flag) const ;
 
 
   int ndm; // space dimension of the mesh
@@ -117,17 +113,14 @@ private:
   Tcl_Interp *theInterp;
   Domain *theDomain     = nullptr;
 
-//int eleArgStart             = 0;
   int next_node_load          = 0;
-  int next_elem_load          = 0;
 
   // Options
   bool no_clobber = true;
 
-// previously extern variables
+  // previously extern variables
   LoadPattern *tclEnclosingPattern = nullptr;
-  LoadPattern* m_current_load_pattern = nullptr;
-  MultiSupportPattern *theTclMultiSupportPattern = nullptr;
+//MultiSupportPattern *theTclMultiSupportPattern = nullptr;
 
   bool  section_builder_is_set   = false;
   int   current_section_builder  = 0;

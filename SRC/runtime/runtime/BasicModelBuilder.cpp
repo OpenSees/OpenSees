@@ -1,13 +1,14 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 //
-// Description: This file contains the class definition for BasicModelBuilder.
-// A BasicModelBuilder adds the commands to create the model for the standard
-// models that can be generated using the elements released with the g3
-// framework.
+// A BasicModelBuilder stores intermediate "reference" objects like
+// materials and sections that are used
+// to construct other objects like elements.
 //
 // Written: cmp
 //
@@ -32,31 +33,29 @@
 
 #include <tcl.h> // For TCL_OK/ERROR
 
-//
-// CLASS CONSTRUCTOR & DESTRUCTOR
-//
+
 BasicModelBuilder::BasicModelBuilder(Domain &domain, Tcl_Interp *interp, 
                                      int NDM, int NDF)
-    : ndm(NDM), ndf(NDF), theInterp(interp),
-      section_builder_is_set(false),
-      theDomain(&domain),
-      tclEnclosingPattern(nullptr),
-      next_node_load(0),
-      next_elem_load(0)
-
+  : ndm(NDM), ndf(NDF), theInterp(interp),
+    section_builder_is_set(false),
+    theDomain(&domain),
+    tclEnclosingPattern(nullptr),
+    next_node_load(0)
+    // , next_elem_load(0)
 {
-  static int ncmd = sizeof(tcl_char_cmds)/sizeof(char_cmd);
+  using namespace OpenSees;
+
+  static int ncmd = sizeof(ModelBuilderCommands)/sizeof(decltype(ModelBuilderCommands[0])); // CommandTableEntry);
 
   Tcl_CreateCommand(interp, "wipe", TclCommand_wipeModel, (ClientData)this, nullptr);
 
   for (int i = 0; i < ncmd; i++)
     Tcl_CreateCommand(interp, 
-        tcl_char_cmds[i].name, 
-        tcl_char_cmds[i].func, 
+        ModelBuilderCommands[i].name, 
+        ModelBuilderCommands[i].func, 
         (ClientData) this, nullptr);
- 
+
   tclEnclosingPattern = nullptr;
-  // theTclMultiSupportPattern = 0;
 
   Tcl_SetAssocData(interp, "OPS::theTclBuilder", NULL, (ClientData)this);
   Tcl_SetAssocData(interp, "OPS::theBasicModelBuilder", NULL, (ClientData)this);
@@ -74,44 +73,66 @@ BasicModelBuilder::~BasicModelBuilder()
 
   // set the pointers to 0
   theDomain = nullptr;
-//theTclBuilder = nullptr;
   tclEnclosingPattern = nullptr;
 
-  static int ncmd = sizeof(tcl_char_cmds)/sizeof(char_cmd);
+  using namespace OpenSees;
+
+  static int ncmd = sizeof(ModelBuilderCommands)/sizeof(decltype(ModelBuilderCommands[0]));
   for (int i = 0; i < ncmd; i++)
-    Tcl_DeleteCommand(theInterp, tcl_char_cmds[i].name);
+    Tcl_DeleteCommand(theInterp, ModelBuilderCommands[i].name);
 }
 
 
 int
-BasicModelBuilder::buildFE_Model() {return 0;}
-
-int
-BasicModelBuilder::getNDM() const {return ndm;}
-
-int
-BasicModelBuilder::getNDF() const {return ndf;}
-
-LoadPattern*
-BasicModelBuilder::getCurrentLoadPattern() 
+BasicModelBuilder::buildFE_Model()
 {
-  return m_current_load_pattern;
+  return 0;
+}
+
+
+int
+BasicModelBuilder::getNDM() const
+{
+  return ndm;
+}
+
+int
+BasicModelBuilder::getNDF() const
+{
+  return ndf;
 }
 
 
 void
-BasicModelBuilder::letClobber(bool let_clobber) {
+BasicModelBuilder::letClobber(bool let_clobber)
+{
   no_clobber = !let_clobber;
 }
 
 bool
-BasicModelBuilder::canClobber() {
+BasicModelBuilder::canClobber()
+{
   return !no_clobber;
 }
 
-int BasicModelBuilder::incrNodalLoadTag(){return ++next_node_load;};
-int BasicModelBuilder::decrNodalLoadTag(){return --next_node_load;};
-int BasicModelBuilder::getNodalLoadTag() {return   next_node_load;};
+int
+BasicModelBuilder::incrNodalLoadTag()
+{
+  return ++next_node_load;
+}
+
+int
+BasicModelBuilder::decrNodalLoadTag()
+{
+  return --next_node_load;
+}
+
+int
+BasicModelBuilder::getNodalLoadTag() 
+{
+  return   next_node_load;
+}
+
 
 int
 BasicModelBuilder::addSP_Constraint(int axisDirn, double axisValue, const ID &fixityCodes, double tol)
@@ -177,10 +198,14 @@ BasicModelBuilder::printRegistry(const char *partition, OPS_Stream& stream, int 
 }
 
 void* 
-BasicModelBuilder::getRegistryObject(const char* partition, int tag, int flags) const
+BasicModelBuilder::getRegistryObject(const char* type, const char* specialize, int tag, int flags) const
 {
 
-  auto iter = m_registry.find(std::string{partition});
+  std::string partition = std::string{type};
+  if (specialize)
+    partition += std::string{specialize};
+
+  auto iter = m_registry.find(partition);
   if (iter == m_registry.end()) {
     if (flags == 0)
       opserr << "No objects of type \"" << partition
@@ -191,7 +216,7 @@ BasicModelBuilder::getRegistryObject(const char* partition, int tag, int flags) 
   auto iter_objs = iter->second.find(tag) ;
   if (iter_objs == iter->second.end()) {
     if (flags == 0)
-      opserr << "No object with tag \"" << tag << "\"in partition \"" 
+      opserr << "No object with tag \"" << tag << "\" in partition \"" 
              << partition << "\"\n";
     return nullptr;
   }
@@ -201,10 +226,13 @@ BasicModelBuilder::getRegistryObject(const char* partition, int tag, int flags) 
 }
 
 int
-BasicModelBuilder::addRegistryObject(const char* partition, int tag, void *obj)
+BasicModelBuilder::addRegistryObject(const char* type, const char* specialize, int tag, void *obj)
 {
-  // TODO: Change void* obj to TaggedObject*
-  m_registry[std::string{partition}][tag] = (TaggedObject*)obj;
+  std::string partition = std::string{type};
+  if (specialize)
+    partition += std::string{specialize};
+
+  m_registry[partition][tag] = (TaggedObject*)obj;
   return TCL_OK;
 }
 

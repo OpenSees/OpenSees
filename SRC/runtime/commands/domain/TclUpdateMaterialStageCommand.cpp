@@ -1,12 +1,17 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-// 
-// Description: This command is used to update a PressureDependMultiYield,
-// PressureDependMultiYield02, PressureIndependMultiYield, or FluidSolidPorous
-// material. To conduct a seismic analysis, two stages should be followed.
+//                              https://xara.so
+//===----------------------------------------------------------------------===// 
+// Description: This command is used to update the following materials:
+// - PressureDependMultiYield,
+// - PressureDependMultiYield02, 
+// - PressureIndependMultiYield, or 
+// - FluidSolidPorous
+//
+// To conduct a seismic analysis, two stages should be followed.
 // First, during the application of gravity load (and static loads if any), set
 // material stage to 0, and material behavior is linear elastic (with Gr and Br
 // as elastic moduli). A FluidSolidPorous material does not contribute to the
@@ -46,27 +51,28 @@ TclCommand_updateMaterialStage(ClientData clientData,
                                TCL_Char ** const argv)
 {
 
+  // UpdateMaterialStage material matTag? stage value?
+
   BasicModelBuilder* builder = (BasicModelBuilder*)clientData;
   Domain* domain = builder->getDomain();
 
   if (argc < 5) {
-    opserr << "WARNING insufficient number of UpdateMaterialStage arguments\n";
-    opserr << "Want: UpdateMaterialStage material matTag? stage value?"
-           << endln;
+    opserr << "WARNING insufficient number of UpdateMaterialStage arguments"
+           << "\n";
     return TCL_ERROR;
   }
 
   if (strcmp(argv[1], "-material") != 0) {
-    opserr << "WARNING UpdateMaterialStage: Only accept parameter '-material' "
-              "for now"
-           << endln;
+    opserr << "WARNING unknown argument " << argv[1]
+           << "\n";
     return TCL_ERROR;
   }
 
   int materialTag, value;
 
   if (Tcl_GetInt(interp, argv[2], &materialTag) != TCL_OK) {
-    opserr << "WARNING MYSstage: invalid material tag" << endln;
+    opserr << "WARNING MYSstage: invalid material tag" 
+           << endln;
     return TCL_ERROR;
   }
 
@@ -74,6 +80,7 @@ TclCommand_updateMaterialStage(ClientData clientData,
   parTag++;
 
   if (argc > 6) {
+    // updateMaterialStage -material matTag? ? ? -parameter $tag?
     if (strcmp(argv[5], "-parameter") == 0) {
       if (Tcl_GetInt(interp, argv[6], &parTag) != TCL_OK) {
         opserr << "WARNING UpdateMaterialStage: invalid parameter tag used"
@@ -83,8 +90,8 @@ TclCommand_updateMaterialStage(ClientData clientData,
     }
   }
 
-  MaterialStageParameter *theParameter =
-      new MaterialStageParameter(parTag, materialTag);
+
+  MaterialStageParameter *theParameter = new MaterialStageParameter(parTag, materialTag);
   if (domain->addParameter(theParameter) == false) {
     opserr << "WARNING could not add updateMaterialStage - "
               "MaterialStageParameter to domain"

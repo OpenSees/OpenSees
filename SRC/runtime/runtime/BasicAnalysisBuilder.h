@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-// 
+//                              https://xara.so
+//===----------------------------------------------------------------------===// 
 // BasicAnalysisBuilder is an aggregate class which manages the analysis 
 // objects:
 //
@@ -28,6 +29,7 @@
 #define BasicAnalysisBulider_h
 
 class Domain;
+class BasicModelBuilder;
 class G3_Table;
 class ConstraintHandler;
 class DOF_Numberer;
@@ -38,18 +40,23 @@ class EigenSOE;
 class StaticIntegrator;
 class TransientIntegrator;
 class ConvergenceTest;
-class VariableTimeStepDirectIntegrationAnalysis;
 
 class BasicAnalysisBuilder
 {
 public:
-    BasicAnalysisBuilder(Domain* domain);
+    BasicAnalysisBuilder(BasicModelBuilder&);
     ~BasicAnalysisBuilder();
 
     enum CurrentAnalysis {
       EMPTY_ANALYSIS,
       STATIC_ANALYSIS, 
       TRANSIENT_ANALYSIS
+    };
+
+    enum Perform : int {
+      Increment = 1<<0,
+      Iterate   = 1<<1,
+      Commit    = 1<<2
     };
 
     void set(ConstraintHandler* obj);
@@ -64,6 +71,8 @@ public:
     LinearSOE* getLinearSOE();
 
     Domain* getDomain();
+    const BasicModelBuilder& getContext() const { return context; }
+
     int initialize();
 
     int  newTransientAnalysis();
@@ -77,24 +86,28 @@ public:
 
     int formUnbalance();
 
-    VariableTimeStepDirectIntegrationAnalysis* getVariableTimeStepDirectIntegrationAnalysis() {
-      return theVariableTimeStepTransientAnalysis;
-    }
-
-    EquiSolnAlgo*        getAlgorithm();
+    const EquiSolnAlgo*  getAlgorithm() const;
     StaticIntegrator*    getStaticIntegrator();
     TransientIntegrator* getTransientIntegrator();
+
+    // for getCTestIter command
     ConvergenceTest*     getConvergenceTest();
 
     int domainChanged();
 
     // Performing analysis
-    int analyze(int num_steps, double size_steps=0.0);
-    int analyzeStatic(int num_steps);
+    int analyze(int num_steps, double size_steps, int flag=Increment|Iterate|Commit);
+    int analyzeStatic(int num_steps, int flag);
     
     int analyzeTransient(int numSteps, double dT);
+    int analyzeVariable(int numSteps, double dT, double dtMin, double dtMax, int Jd);
+private:
     int analyzeStep(double dT);
     int analyzeSubLevel(int level, double dT);
+
+public:
+    int analyzeGradient();
+    int setGradientType(int flag);
 
     void wipe();
 
@@ -105,6 +118,7 @@ private:
     void setLinks(CurrentAnalysis flag = EMPTY_ANALYSIS);
     void fillDefaults(enum CurrentAnalysis flag);
 
+    BasicModelBuilder&         context;
     Domain                    *theDomain;
     ConstraintHandler         *theHandler;
     DOF_Numberer              *theNumberer;
@@ -115,7 +129,6 @@ private:
     StaticIntegrator          *theStaticIntegrator;
     TransientIntegrator       *theTransientIntegrator;
     ConvergenceTest           *theTest;
-    VariableTimeStepDirectIntegrationAnalysis *theVariableTimeStepTransientAnalysis;
 
     int domainStamp;
     int numEigen = 0;

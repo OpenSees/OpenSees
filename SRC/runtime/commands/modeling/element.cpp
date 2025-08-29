@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation    
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, Claudio M. Perez
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -53,6 +62,10 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp *interp
 // THE PROTOTYPES OF THE FUNCTIONS INVOKED BY THE INTERPRETER
 //
 
+#if 0 // cmp - commented out to eliminate use of TclBasicBuilder
+extern int Tcl_addWrapperElement(eleObj *, ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv, Domain *, TclBuilder *);
+// Added by Quan Gu and Yongdou Liu, et al. on 2018/10/31 (Xiamen University)
+#endif
 static Tcl_CmdProc TclBasicBuilder_addWheelRail;
 
 
@@ -118,10 +131,10 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 
   OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, theTclDomain);
 
-  // check at least two arguments so don't segemnt fault on strcmp
   if (argc < 2) {
-    opserr << OpenSees::PromptValueError << "insufficient arguments, expected:\n";
-    opserr << "      element eleType <specific element args> .. \n";
+    opserr << OpenSees::PromptValueError 
+           << "Missing element type"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -152,9 +165,9 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
       theEle = OPS_PML2D(rt, argc, argv);
     else
       theEle = OPS_PML3D(rt, argc, argv);
-
+  }
 #if 0
-  } else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
+  else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
 
       Element *theEle = 0;
       if (ndm == 2)
@@ -167,11 +180,11 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
       else {
         return TCL_ERROR;
       }
-    }
+  }
 #endif
 
 #if defined(_HAVE_LHNMYS) || defined(OPSDEF_ELEMENT_LHNMYS)
-  } else if (strcmp(argv[1], "beamColumn2DwLHNMYS") == 0) {
+  else if (strcmp(argv[1], "beamColumn2DwLHNMYS") == 0) {
     theEle = OPS_BeamColumn2DwLHNMYS(rt, argc, argv);
 
   } else if (strcmp(argv[1], "beamColumn2dDamage") == 0) {
@@ -182,9 +195,10 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 
   } else if (strcmp(argv[1], "beamColumn3DwLHNMYS") == 0) {
     theEle = OPS_BeamColumn3DwLHNMYS(rt, argc, argv);
+  }
 #endif
 
-  } else if (strcmp(argv[1], "ElasticTimoshenkoBeam") == 0) {
+  else if (strcmp(argv[1], "ElasticTimoshenkoBeam") == 0) {
     if (ndm == 2)
       theEle = OPS_ElasticTimoshenkoBeam2d(rt, argc, argv);
     else
@@ -403,9 +417,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 
   else if ((strcmp(argv[1], "multipleNormalSpring") == 0) ||
            (strcmp(argv[1], "MNS") == 0)) {
-    int result = TclBasicBuilder_addMultipleNormalSpring(
-        clientData, interp, argc, argv, theTclDomain, theTclBuilder);
-    return result;
+    return TclBasicBuilder_addMultipleNormalSpring(clientData, interp, argc, argv, theTclDomain, theTclBuilder);
   }
 
   else if (strcmp(argv[1], "KikuchiBearing") == 0) {
@@ -413,15 +425,12 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
   }
 
   else if (strcmp(argv[1], "YamamotoBiaxialHDR") == 0) {
-    int result = TclBasicBuilder_addYamamotoBiaxialHDR(
-        clientData, interp, argc, argv, theTclDomain, theTclBuilder);
-    return result;
+    return TclBasicBuilder_addYamamotoBiaxialHDR(clientData, interp, argc, argv, theTclDomain, theTclBuilder);
   }
 
   // MSN
   else if (strcmp(argv[1], "gradientInelasticBeamColumn") == 0) {
-    int result = TclBasicBuilder_addGradientInelasticBeamColumn(clientData, interp, argc, argv);
-    return result;
+    return TclBasicBuilder_addGradientInelasticBeamColumn(clientData, interp, argc, argv);
   }
 
   else {
@@ -454,6 +463,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
       } else
         eleCommands = eleCommands->next;
     }
+
 #if 0
     //
     // maybe element in a routine, check existing ones or try loading new ones
@@ -488,7 +498,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
 
     strcpy(&tclFuncName[4], argv[1]);
 
-    opserr << "checking library: " << tclFuncName << endln;
+    opserr << "checking library: " << tclFuncName << OpenSees::SignalMessageEnd;
     int res =
         getLibraryFunction(argv[1], tclFuncName, &libHandle, (void **)&funcPtr);
 
@@ -524,7 +534,7 @@ TclCommand_addElement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_C
   }
 
   // If we get here, the element type is unknown
-  opserr << "ERROR -- element of type " << argv[1] << " not known" << endln;
+  opserr << "ERROR -- element of type " << argv[1] << " not known" << OpenSees::SignalMessageEnd;
   return TCL_ERROR;
 }
 
@@ -546,10 +556,10 @@ TclBasicBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp
   int ndf = builder->getNDF();
 
   if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << OpenSees::SignalMessageEnd;
     opserr << "WARNING multipleShearSpring command only works when ndm is 3 "
               "and ndf is 6"
-           << endln;
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -625,8 +635,8 @@ TclBasicBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp
         material = builder->getTypedObject<UniaxialMaterial>(matTag);
         if (material == 0) {
           opserr << "WARNING material model not found\n";
-          opserr << "uniaxialMaterial: " << matTag << endln;
-          opserr << "multipleShearSpring element: " << eleTag << endln;
+          opserr << "uniaxialMaterial: " << matTag << OpenSees::SignalMessageEnd;
+          opserr << "multipleShearSpring element: " << eleTag << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
 
@@ -646,8 +656,8 @@ TclBasicBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp
           theMaterials[j] = builder->getTypedObject<UniaxialMaterial>(matTag);
           if (theMaterials[j] == 0) {
             opserr << "WARNING material model not found\n";
-            opserr << "uniaxialMaterial: " << matTag << endln;
-            opserr << "multipleShearSpring element: " << eleTag << endln;
+            opserr << "uniaxialMaterial: " << matTag << OpenSees::SignalMessageEnd;
+            opserr << "multipleShearSpring element: " << eleTag << OpenSees::SignalMessageEnd;
             return TCL_ERROR;
           }
         }
@@ -754,7 +764,7 @@ TclBasicBuilder_addMultipleShearSpring(ClientData clientData, Tcl_Interp *interp
   // then add the multipleShearSpring to the domain
   if (theTclDomain->addElement(theElement) == false) {
     opserr << "WARNING could not add element to the domain\n";
-    opserr << "multipleShearSpring element: " << eleTag << endln;
+    opserr << "multipleShearSpring element: " << eleTag << OpenSees::SignalMessageEnd;
     delete theElement;
     return TCL_ERROR;
   }
@@ -769,12 +779,12 @@ errDetected(bool ifNoError, const char *msg)
 {
 
  if (ifNoError) {
-    opserr << "" << endln;
-    opserr << "========================================" << endln;
-    opserr << " element : input error detected" << endln;
-    opserr << "------------------------------" << endln;
+    opserr << "" << OpenSees::SignalMessageEnd;
+    opserr << "========================================" << OpenSees::SignalMessageEnd;
+    opserr << " element : input error detected" << OpenSees::SignalMessageEnd;
+    opserr << "------------------------------" << OpenSees::SignalMessageEnd;
   }
-  opserr << "  " << msg << endln;
+  opserr << "  " << msg << OpenSees::SignalMessageEnd;
   return false;
 };
 
@@ -793,10 +803,9 @@ TclBasicBuilder_addMultipleNormalSpring(ClientData clientData, Tcl_Interp *inter
   int ndf = builder->getNDF();
 
   if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
     opserr << "WARNING multipleNormalSpring command only works when ndm is 3 "
               "and ndf is 6"
-           << endln;
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -1035,7 +1044,7 @@ error:
     opserr << "Want: element multipleNormalSpring eleTag? iNode? jNode? "
               "\n    nDivide? -mat matTag? -shape shape? -size size? <-lambda "
               "\n    lambda?> <-orient <x1? x2? x3?> yp1? yp2? yp3?> <-mass m?>\n";
-    opserr << "" << endln;
+    opserr << "" << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -1046,7 +1055,7 @@ error:
   // then add the multipleNormalSpring to the domain
   if (theTclDomain->addElement(theElement) == false) {
     opserr << "WARNING could not add element to the domain\n";
-    opserr << "multipleNormalSpring element: " << eleTag << endln;
+    opserr << "multipleNormalSpring element: " << eleTag << OpenSees::SignalMessageEnd;
     delete theElement;
     return TCL_ERROR;
   }
@@ -1068,10 +1077,10 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
   int ndf = builder->getNDF();
 
   if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << OpenSees::SignalMessageEnd;
     opserr << "WARNING KikuchiBearing command only works when ndm is 3 and ndf "
               "is 6"
-           << endln;
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -1522,7 +1531,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
               "yp3?> <-mass m?>\n";
     opserr << "                             <-noPDInput> <-noTilt> "
               "<-adjustPDOutput ci? cj?> <-doBalance limFo? limFi? nIter?>\n";
-    opserr << "" << endln;
+    opserr << "" << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -1535,7 +1544,7 @@ TclBasicBuilder_addKikuchiBearing(ClientData clientData, Tcl_Interp *interp,
   // then add the KikuchiBearing to the domain
   if (builder->getDomain()->addElement(theElement) == false) {
     opserr << "WARNING could not add element to the domain\n";
-    opserr << "KikuchiBearing element: " << eleTag << endln;
+    opserr << "KikuchiBearing element: " << eleTag << OpenSees::SignalMessageEnd;
     delete theElement;
     return TCL_ERROR;
   }
@@ -1559,9 +1568,9 @@ TclBasicBuilder_addYamamotoBiaxialHDR(ClientData clientData, Tcl_Interp *interp,
   int ndf = builder->getNDF();
 
   if (ndm != 3 || ndf != 6) {
-    opserr << "ndm=" << ndm << ", ndf=" << ndf << endln;
+    opserr << "ndm=" << ndm << ", ndf=" << ndf << OpenSees::SignalMessageEnd;
     opserr << "WARNING YamamotoBiaxialHDR command only works when ndm is 3 and "
-              "ndf is 6" << endln;
+              "ndf is 6" << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
@@ -1618,25 +1627,25 @@ TclBasicBuilder_addYamamotoBiaxialHDR(ClientData clientData, Tcl_Interp *interp,
     if (strcmp(argv[5], "1") == 0) {
       Tp = 1; // Bridgestone X0.6R (EESD version)
     } else {
-      opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << endln;
+      opserr << "WARNING invalid YamamotoBiaxialHDR Tp" << OpenSees::SignalMessageEnd;
       ifNoError = false;
     }
 
     // DDo
     if (Tcl_GetDouble(interp, argv[6], &DDo) != TCL_OK || DDo <= 0.0) {
-      opserr << "WARNING invalid YamamotoBiaxialHDR DDo" << endln;
+      opserr << "WARNING invalid YamamotoBiaxialHDR DDo" << OpenSees::SignalMessageEnd;
       ifNoError = false;
     }
 
     // DDi
     if (Tcl_GetDouble(interp, argv[7], &DDi) != TCL_OK || DDi < 0.0) {
-      opserr << "WARNING invalid YamamotoBiaxialHDR DDi" << endln;
+      opserr << "WARNING invalid YamamotoBiaxialHDR DDi" << OpenSees::SignalMessageEnd;
       ifNoError = false;
     }
 
     // Hr
     if (Tcl_GetDouble(interp, argv[8], &Hr) != TCL_OK || Hr <= 0.0) {
-      opserr << "WARNING invalid YamamotoBiaxialHDR Hr" << endln;
+      opserr << "WARNING invalid YamamotoBiaxialHDR Hr" << OpenSees::SignalMessageEnd;
       ifNoError = false;
     }
 
@@ -1737,7 +1746,7 @@ TclBasicBuilder_addYamamotoBiaxialHDR(ClientData clientData, Tcl_Interp *interp,
   // then add the YamamotoBiaxialHDR to the domain
   if (theTclDomain->addElement(theElement) == false) {
     opserr << "WARNING could not add element to the domain\n";
-    opserr << "YamamotoBiaxialHDR element: " << eleTag << endln;
+    opserr << "YamamotoBiaxialHDR element: " << eleTag << OpenSees::SignalMessageEnd;
     delete theElement;
     return TCL_ERROR;
   }
@@ -1851,9 +1860,9 @@ TclBasicBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc
       return TCL_ERROR;
     }
     //----------------------------------
-    Vector *pNodeList = 0;
-    Vector *pDeltaYList = 0;
-    Vector *pDeltaYLocationList = 0;
+    Vector *pNodeList = nullptr;
+    Vector *pDeltaYList = nullptr;
+    Vector *pDeltaYLocationList = nullptr;
 
     if (strcmp(argv[12 + eleArgStart], "-NodeList") == 0) {
       int pathSize;
@@ -1934,14 +1943,14 @@ TclBasicBuilder_addWheelRail(ClientData clientData, Tcl_Interp *interp, int argc
   // -- End of a 2D wheel-rail element(By Quan Gu, Yongdou Liu, et al.) on 2018/10/29
 
   else if (ndm == 3) {
-    opserr << OpenSees::PromptValueError << "Unimplemented." << endln;
+    opserr << OpenSees::PromptValueError << "Unimplemented." << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
   // add the WheelRail element to the Domain
   if (builder->getDomain()->addElement(theElement) == false) {
     opserr << "WARNING could not add element to the domain\n";
-    opserr << "YamamotoBiaxialHDR element: " << pTag << endln;
+    opserr << "YamamotoBiaxialHDR element: " << pTag << OpenSees::SignalMessageEnd;
     delete theElement;
     return TCL_ERROR;
   }

@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // These commands expect a Domain* as their clientData.
 // 
 // Written: cmp
@@ -11,7 +12,7 @@
 #include <assert.h>
 #include <Domain.h>
 #include <tcl.h>
-#include <Parsing.h> // Tcl_Char
+#include <Parsing.h>
 #include <Logging.h>
 
 int
@@ -81,20 +82,9 @@ int
 TclCommand_getTime(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
-  Domain* domain = (Domain*)clientData;
+  Domain* domain = static_cast<Domain*>(clientData);
 
-  double time = domain->getCurrentTime();
-
-  // get the display format
-  char format[80];
-  if (argc == 1) {
-    sprintf(format, "%f", time);
-  } else if (argc == 2) {
-    sprintf(format, argv[1], time);
-  }
-
-  // now we copy the value to the tcl string that is returned
-  Tcl_SetResult(interp, format, TCL_VOLATILE);
+  Tcl_SetObjResult(interp, Tcl_NewDoubleObj(domain->getCurrentTime()));
   return TCL_OK;
 }
 

@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Description: This file contains the function invoked when the user invokes
 // the "pattern" command in the interpreter. 
 //
@@ -26,11 +27,10 @@
 #include <tcl.h>
 #include <assert.h>
 #include <BasicModelBuilder.h>
-#include <runtimeAPI.h>
 
 #include <runtimeAPI.h>
-#include <G3_Logging.h>
-
+#include <Logging.h>
+#include <Parsing.h>
 #include <Domain.h>
 #include <LoadPattern.h>
 
@@ -48,7 +48,7 @@
 #endif
 
 #ifdef _H5DRM
-#  include <H5DRM.h>
+#  include <H5DRMLoadPattern.h>
 #endif
 
 #include <NodalThermalAction.h>   //L.Jiang [SIF]
@@ -84,7 +84,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // make sure at least one other argument to contain integrator
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "invalid command - want: pattern type ";
+    opserr << OpenSees::PromptValueError << "invalid command - want: pattern type ";
     opserr << " <type args> {list of load and sp constraints commands}\n";
     opserr << "           valid types: Plain, UniformExcitation, MultiSupport\n";
     return TCL_ERROR;
@@ -96,13 +96,13 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
 
   int patternID;
   if (Tcl_GetInt(interp, argv[2], &patternID) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "invalid patternID: " << argv[2] << "\n";
+    opserr << OpenSees::PromptValueError << "invalid patternID: " << argv[2] << "\n";
     return TCL_ERROR;
   }
 
   if (strcmp(argv[1], "Plain") == 0) {
     if (argc < 4) {
-        opserr << G3_ERROR_PROMPT << "Invalid command for Plain pattern.\n";
+        opserr << OpenSees::PromptValueError << "Invalid command for Plain pattern.\n";
         return TCL_ERROR;
     }
 
@@ -114,7 +114,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
           (strcmp(argv[commandEndMarker], "-factor") == 0)) {
 
         if (Tcl_GetDouble(interp, argv[++commandEndMarker], &fact) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT
+          opserr << OpenSees::PromptValueError
                  << "invalid factor: " << argv[commandEndMarker] << "\n";
           return TCL_ERROR;
         }
@@ -133,7 +133,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
     theSeries = TclSeriesCommand(clientData, interp, series_arg);
 
     if (theSeries == nullptr) {
-      opserr << G3_ERROR_PROMPT << "problem creating TimeSeries for LoadPattern "
+      opserr << OpenSees::PromptValueError << "problem creating TimeSeries for LoadPattern "
              << patternID << endln;
 
       // clean up the memory and return an error
@@ -150,7 +150,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
     int dir;
 
     if (Tcl_GetInt(interp, argv[3], &dir) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "invalid patternID: pattern type " << argv[2]
+      opserr << OpenSees::PromptValueError << "invalid patternID: pattern type " << argv[2]
              << "<type args>\n";
       return TCL_ERROR;
     }
@@ -254,7 +254,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
     }
 
     if (dispSeries == nullptr && velSeries == nullptr && accelSeries == nullptr) {
-      opserr << G3_ERROR_PROMPT << "invalid series, expected:\n    pattern UniformExcitation";
+      opserr << OpenSees::PromptValueError << "invalid series, expected:\n    pattern UniformExcitation";
       opserr << "-disp {dispSeries} -vel {velSeries} -accel {accelSeries} ";
       opserr << "-int {Series Integrator}" << "\n";
       return TCL_ERROR;
@@ -339,7 +339,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
 
     // Read in the ground motion
     if (accelFileName == 0) {
-      opserr << G3_ERROR_PROMPT << "No ground motion data provided\n";
+      opserr << OpenSees::PromptValueError << "No ground motion data provided\n";
       opserr << "UniformExcitation tag: " << patternID << endln;
       return TCL_ERROR;
     }
@@ -738,7 +738,8 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // now add the load pattern to the modelBuilder
   if (domain->addLoadPattern(thePattern) == false) {
-    opserr << OpenSees::PromptValueError << "could not add load pattern to the domain "
+    opserr << OpenSees::PromptValueError 
+           << "could not add load pattern to the domain "
            << *thePattern;
     delete thePattern;
     return TCL_ERROR;
@@ -762,7 +763,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
     Tcl_Eval(interp, "rename nodalLoad load;");
     if (Tcl_Eval(interp, argv[commandEndMarker]) != TCL_OK) {
       // opserr << OpenSees::PromptValueError << "- error reading load pattern information in { }";
-      opserr << G3_ERROR_PROMPT << Tcl_GetStringResult(interp);
+      opserr << OpenSees::PromptValueError << Tcl_GetStringResult(interp);
 //    Tcl_Eval(interp, "puts $errorInfo; flush stdout;");
 //    Tcl_Exit(TCL_ERROR);
       return TCL_ERROR;
@@ -798,7 +799,6 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc, TCL
   int  loadPatternTag = 0;
 
   if (true) {
-    // make sure at least one other argument to contain type
     if (argc < (2 + ndf)) {
       opserr << OpenSees::PromptValueError << "bad command - want: load nodeId " << ndf << " forces\n";
       return TCL_ERROR;
@@ -808,7 +808,6 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc, TCL
     int nodeId;
     if (Tcl_GetInt(interp, argv[1], &nodeId) != TCL_OK) {
       opserr << OpenSees::PromptValueError << "invalid nodeId: " << argv[1];
-      opserr << " - load nodeId " << ndf << " forces\n";
       return TCL_ERROR;
     }
 
@@ -817,7 +816,8 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc, TCL
     for (int i = 0; i < ndf; ++i) {
       double theForce;
       if (Tcl_GetDouble(interp, argv[2 + i], &theForce) != TCL_OK) {
-        opserr << OpenSees::PromptValueError << "invalid force " << i + 1 << " in load " << nodeId;
+        opserr << OpenSees::PromptValueError 
+               << "invalid force " << i + 1 << " in load " << nodeId;
         opserr << ", got " << ndf << " forces\n";
         return TCL_ERROR;
       } else
@@ -837,8 +837,9 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc, TCL
         if (endMarker == argc ||
             Tcl_GetInt(interp, argv[endMarker], &loadPatternTag) != TCL_OK) {
 
-          opserr << OpenSees::PromptValueError << "invalid patternTag - load " << nodeId << " ";
-          opserr << ndf << " forces pattern patterntag\n";
+          opserr << OpenSees::PromptValueError 
+                 << "invalid patternTag " << argv[endMarker] 
+                 << "\n";
           return TCL_ERROR;
         }
       }
@@ -848,8 +849,8 @@ TclCommand_addNodalLoad(ClientData clientData, Tcl_Interp *interp, int argc, TCL
     // get the current pattern tag if no tag given in i/p
     if (explicitPatternPassed == false) {
       if (theTclLoadPattern == nullptr) {
-        opserr << OpenSees::PromptParseError << "no current load pattern - load " << nodeId;
-        opserr << " " << ndf << " forces\n";
+        opserr << OpenSees::PromptParseError 
+               << "no current load pattern\n";
         return TCL_ERROR;
       } else
         loadPatternTag = theTclLoadPattern->getTag();

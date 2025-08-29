@@ -13,7 +13,6 @@ int
 TclCommand_mesh(ClientData clientData, Tcl_Interp *interp, int argc,
                 TCL_Char ** const argv)
 {
-  // ensure the destructor has not been called -
   assert(clientData != nullptr);
 
   // make sure corect number of arguments on command line
@@ -48,7 +47,6 @@ int
 TclCommand_remesh(ClientData clientData, Tcl_Interp *interp, int argc,
                   TCL_Char ** const argv)
 {
-  // ensure the destructor has not been called -
   if (theTclBuilder == nullptr) {
     opserr << "WARNING builder has been destroyed" << endln;
     return TCL_ERROR;

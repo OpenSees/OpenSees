@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 //
 // Author: fmk, cmp
 //
@@ -37,15 +38,16 @@ createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
  
     // get a pointer to the retained and constrained nodes - make sure they exist
     Node *nodeR = theDomain.getNode(ret_tag);
+
     if (nodeR == nullptr) {
-      opserr << G3_ERROR_PROMPT 
-             << "retained Node" <<  ret_tag <<  " not in domain\n";
+      opserr << OpenSees::PromptValueError 
+             << "retained node " <<  ret_tag <<  " not in domain\n";
       return CONSTRAINT_ERROR;
     }
 
     Node *nodeC = theDomain.getNode(con_tag);
     if (nodeR == nullptr) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "constrained node " <<  con_tag <<  " not in domain\n";
       return CONSTRAINT_ERROR;
     }
@@ -56,7 +58,7 @@ createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
     int dimR = crdR.Size();
     int dimC = crdC.Size();
     if (dimR != dimC) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "mismatch in dimension between constrained node " 
              <<  con_tag <<  " and retained node " << ret_tag << "\n";
       return CONSTRAINT_ERROR;
@@ -65,7 +67,7 @@ createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
     // check the number of dof at each node is the same
     int numDOF = nodeR->getNumberDOF();
     if (numDOF != nodeC->getNumberDOF()){ 
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "mismatch in numDOF between constrained node " 
              <<  con_tag <<  " and retained node " << ret_tag << "\n";
       return CONSTRAINT_ERROR;
@@ -73,12 +75,12 @@ createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
 
     // check the number of dof at the nodes >= dimension of problem
     if(numDOF < dimR){    
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "numDOF at nodes " << ret_tag << " and " 
              <<  con_tag <<  " must be >= dimension of problem\n";
       return CONSTRAINT_ERROR;
     }
-    
+
     // create the ID to identify the constrained dof 
     ID id(numDOF);
 
@@ -118,7 +120,7 @@ createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
 	mat(2,3) =  deltaY;
 
       } else { // not valid
-	opserr << G3_ERROR_PROMPT 
+	opserr << OpenSees::PromptValueError 
                << " for nodes " << ret_tag << " and " << con_tag 
                << " nodes do not have valid numDOF for their dimension\n";
 	return CONSTRAINT_ERROR;
@@ -131,7 +133,7 @@ createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
     // add the constraint to the domain
     if (theDomain.addMP_Constraint(newC) == false) {
       delete newC;
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "nodes " << con_tag << " and " << ret_tag << ", could not add to domain\n";
       return CONSTRAINT_ERROR;
     }
@@ -150,13 +152,13 @@ createLinearRigidRod(Domain &theDomain, int ret_tag, int con_tag)
     // get a pointer to the retained node and constrained nodes - ensure these exist
     Node *nodeR = theDomain.getNode(ret_tag);
     if (nodeR == 0) {
-      opserr << G3_ERROR_PROMPT
+      opserr << OpenSees::PromptValueError
              << "retained node " <<  ret_tag <<  " not in domain\n";
       return CONSTRAINT_ERROR;
     }
     Node *nodeC = theDomain.getNode(con_tag);
     if (nodeR == 0) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "constrained node " <<  con_tag <<  " not in domain\n";
       return CONSTRAINT_ERROR;
     }
@@ -167,7 +169,7 @@ createLinearRigidRod(Domain &theDomain, int ret_tag, int con_tag)
     int dimR = crdR.Size();
     int dimC = crdC.Size();
     if (dimR != dimC) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "mismatch in dimension between constrained node " 
              <<  con_tag <<  " and retained node " << ret_tag << "\n";
       return CONSTRAINT_ERROR;
@@ -176,7 +178,7 @@ createLinearRigidRod(Domain &theDomain, int ret_tag, int con_tag)
     // check the number of dof at each node is the same 
     int numDOF = nodeR->getNumberDOF();
     if (numDOF != nodeC->getNumberDOF()){ 
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "mismatch in numDOF " << "between constrained node " 
              <<  con_tag <<  " and retained node " << ret_tag << "\n";
       return CONSTRAINT_ERROR;
@@ -184,7 +186,7 @@ createLinearRigidRod(Domain &theDomain, int ret_tag, int con_tag)
 
     // check the number of dof at the nodes >= dimension of problem
     if(numDOF < dimR){    
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "numDOF at nodes " << ret_tag << " and " << con_tag 
              << " must be >= dimension of problem\n";
       return CONSTRAINT_ERROR;
@@ -209,7 +211,7 @@ createLinearRigidRod(Domain &theDomain, int ret_tag, int con_tag)
     // add the constraint to the domain
     if (theDomain.addMP_Constraint(newC) == false) {
       delete newC;
-      opserr << G3_ERROR_PROMPT << "for nodes " << con_tag << " and " << ret_tag << " could not add to domain\n";
+      opserr << OpenSees::PromptValueError << "for nodes " << con_tag << " and " << ret_tag << " could not add to domain\n";
       return CONSTRAINT_ERROR;
     }
     return CONSTRAINT_OK;
@@ -225,14 +227,14 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
 {
     // check plane is valid, i.e. perpPlaneConstrained must be 0, 1 or 2
     if (perpPlaneConstrained < 0 || perpPlaneConstrained > 2) {
-      opserr << G3_ERROR_PROMPT << 
+      opserr << OpenSees::PromptValueError << 
 	"the dirn of perpendicular to constrained plane " << perpPlaneConstrained <<  " not valid\n";
       return CONSTRAINT_ERROR;
     }
 
     // check constrainedNodes ID does not contain the retained node
     if (nC.getLocation(ret_tag) >= 0) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "retained node " << ret_tag << " is in constrained node list\n";
       return CONSTRAINT_ERROR;
     }	
@@ -240,15 +242,15 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
     // get a pointer to the retained node and check node in 3d with 6 DOFs
     Node *nodeR = theDomain.getNode(ret_tag);
     if (nodeR == nullptr) {
-      opserr << G3_ERROR_PROMPT 
+      opserr << OpenSees::PromptValueError 
              << "retained Node " <<  ret_tag <<  " not in domain\n";
       return CONSTRAINT_ERROR;
     }
 
     const Vector &crdR = nodeR->getCrds();
     if ((nodeR->getNumberDOF() != 6) || (crdR.Size() != 3)){
-      opserr << G3_ERROR_PROMPT 
-             << "retained Node " << ret_tag << " not in 3d space with 6 DOFs\n";
+      opserr << OpenSees::PromptValueError 
+             << "retained node " << ret_tag << " not in 3d space with 6 DOFs\n";
       return CONSTRAINT_ERROR;
     }	
 
@@ -281,7 +283,7 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
       // ensure node exists
       if (nodeC == nullptr) {
         // TODO: Document change; this used to be accepted without error.
-        opserr << G3_ERROR_PROMPT 
+        opserr << OpenSees::PromptValueError 
                << "cannot constrain node " << ndC << " as no node in domain\n";
         return CONSTRAINT_ERROR;
       }
@@ -311,7 +313,7 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
             mat(1,2) = deltaX;
 
           } else {
-            opserr << G3_ERROR_PROMPT 
+            opserr << OpenSees::PromptValueError 
                    << "ignoring constrained node " << ndC << ", not in xy plane\n";
             return CONSTRAINT_ERROR;
           }
@@ -330,7 +332,7 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
             mat(1,2) = -deltaX;
 
           } else {
-            opserr << G3_ERROR_PROMPT 
+            opserr << OpenSees::PromptValueError 
                    << "ignoring constrained node " << ndC << ", not in xz plane\n";
             return CONSTRAINT_ERROR;
           }
@@ -349,7 +351,7 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
             mat(1,2) = deltaY;
 
           } else {
-            opserr << G3_ERROR_PROMPT 
+            opserr << OpenSees::PromptValueError 
                    << "ignoring constrained node " << ndC << ", not in xz plane\n";
             return CONSTRAINT_ERROR;
           }
@@ -360,19 +362,20 @@ createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC,
 
         // add the constraint to the domain
         if (theDomain.addMP_Constraint(newC) == false) {
-          opserr << G3_ERROR_PROMPT 
+          opserr << OpenSees::PromptValueError 
                  << "ignoring constrained node " << ndC << ", failed to add\n";
           delete newC;
           return CONSTRAINT_ERROR;
         }
+      }
 
-      } else  {
+      else  {
         opserr << G3_WARN_PROMPT 
                << "ignoring constrained node  " << ndC << ", not 3D node\n";
         return CONSTRAINT_OK;
-      }
-      
+      }      
     } // for each node in constrained nodes
+
     return CONSTRAINT_OK;
 }
 
@@ -384,18 +387,18 @@ TclCommand_RigidDiaphragm(ClientData clientData, Tcl_Interp *interp, int argc, T
   Domain *theTclDomain = ((BasicModelBuilder*)clientData)->getDomain();
 
   if (argc < 3) {
-      opserr << G3_ERROR_PROMPT << "rigidLink perpDirn? rNode? <cNodes?>\n";
+      opserr << OpenSees::PromptValueError << "rigidLink perpDirn? rNode? <cNodes?>\n";
       return TCL_ERROR;
   }
 
   int rNode, perpDirn;
   if (Tcl_GetInt(interp, argv[1], &perpDirn) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "rigidLink perpDirn rNode cNodes - could not read perpDirn? \n";
+      opserr << OpenSees::PromptValueError << "rigidLink perpDirn rNode cNodes - could not read perpDirn? \n";
       return TCL_ERROR;
   }
 
   if (Tcl_GetInt(interp, argv[2], &rNode) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "rigidLink perpDirn rNode cNodes - could not read rNode \n";
+      opserr << OpenSees::PromptValueError << "rigidLink perpDirn rNode cNodes - could not read rNode \n";
       return TCL_ERROR;
   }
 
@@ -405,7 +408,7 @@ TclCommand_RigidDiaphragm(ClientData clientData, Tcl_Interp *interp, int argc, T
   for (int i=0; i<numConstrainedNodes; ++i) {
       int cNode;
       if (Tcl_GetInt(interp, argv[3+i], &cNode) != TCL_OK) {
-          opserr << G3_ERROR_PROMPT << "rigidLink perpDirn rNode cNodes - could not read a cNode\n";
+          opserr << OpenSees::PromptValueError << "rigidLink perpDirn rNode cNodes - could not read a cNode\n";
           return TCL_ERROR;
       }
       constrainedNodes(i) = cNode;
@@ -424,31 +427,35 @@ TclCommand_RigidLink(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
   Domain *theTclDomain = ((BasicModelBuilder*)clientData)->getDomain();
 
   if (argc < 4) {
-      opserr << G3_ERROR_PROMPT << "rigidLink linkType? rNode? cNode?\n";
+      opserr << OpenSees::PromptValueError << "rigidLink linkType? rNode? cNode?\n";
       return TCL_ERROR;
   }
 
   int rNode, cNode;
   if (Tcl_GetInt(interp, argv[2], &rNode) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "rigidLink linkType? rNode? cNode? - could not read rNode \n"; 
+      opserr << OpenSees::PromptValueError 
+             << "invalid rNode"
+             << OpenSees::SignalMessageEnd; 
       return TCL_ERROR;
   }
+
   if (Tcl_GetInt(interp, argv[3], &cNode) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "rigidLink linkType? rNode? cNode? - could not read CNode \n"; 
+      opserr << OpenSees::PromptValueError 
+             << "invalid CNode"
+             << OpenSees::SignalMessageEnd;
       return TCL_ERROR;
   }
 
   // construct a rigid rod or beam depending on 1st arg
   if ((strcmp(argv[1],"-bar") == 0) || (strcmp(argv[1],"bar") == 0)) {
-    // RigidRod theLink(*theTclDomain, rNode, cNode);
-    createLinearRigidRod(*theTclDomain, rNode, cNode);
+    return createLinearRigidRod(*theTclDomain, rNode, cNode);
 
   } else if ((strcmp(argv[1],"-beam") == 0) || (strcmp(argv[1],"beam") == 0)) {
-    createLinearRigidBeam(*theTclDomain, rNode, cNode);
-    //RigidBeam theLink(*theTclDomain, rNode, cNode);
+    return createLinearRigidBeam(*theTclDomain, rNode, cNode);
 
   } else {
-      opserr << G3_ERROR_PROMPT << "rigidLink linkType? rNode? cNode? - unrecognised link type (-bar, -beam) \n"; 
+      opserr << OpenSees::PromptValueError 
+             << "unrecognised link type (-bar, -beam) \n"; 
       return TCL_ERROR;
   }
   return TCL_OK;
