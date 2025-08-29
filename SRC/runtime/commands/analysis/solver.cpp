@@ -5,7 +5,7 @@
 //
 //===----------------------------------------------------------------------===//
 //
-// Copyright (c) 2025, Claudio M. Perez
+// Copyright (c) 2025, OpenSees/Xara Developers
 // All rights reserved.  No warranty, explicit or implicit, is provided.
 //
 // This source code is licensed under the BSD 2-Clause License.
@@ -218,6 +218,9 @@ LinearSOE*
 specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
 {
   // SPARSE GENERAL SOE * SOLVER
+//if ((strcmp(argv[1], "SparseGeneral") == 0) ||
+//         (strcmp(argv[1], "SuperLU") == 0) ||
+//         (strcmp(argv[1], "SparseGEN") == 0))
     Tcl_Interp *interp = G3_getInterpreter(rt);
 
     SparseGenColLinSolver *theSolver = nullptr;
@@ -280,10 +283,7 @@ specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
     theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric);
 #endif
 
-#ifdef _PARALLEL_PROCESSING
-    return new DistributedSparseGenColLinSOE(*theSolver);
-#else
-    return new SparseGenColLinSOE(*theSolver);
-#endif
+  return new SparseGenColLinSOE(*theSolver);
 }
+
 
