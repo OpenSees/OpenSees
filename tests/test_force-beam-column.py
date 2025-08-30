@@ -1,4 +1,7 @@
-import openseespy.opensees as ops
+try:
+   import opensees as ops
+except ModuleNotFoundError:
+   import openseespy.opensees as ops
 from math import isclose
 
 L = 48
