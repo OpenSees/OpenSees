@@ -47,14 +47,9 @@
 #include <SparseGenColLinSOE.h>
 //
 #include <SparseGenRowLinSOE.h>
-// #include <SymSparseLinSOE.h>
-// #include <SymSparseLinSolver.h>
 #include <ArpackSOE.h>
 #include <ArpackSolver.h>
 
-#if defined(_PETSC)
-LinearSOE *TclCommand_newPetscSOE(int, TCL_Char**);
-#endif
 
 #if defined(_PARALLEL_PROCESSING)
 //  parallel soe & solvers

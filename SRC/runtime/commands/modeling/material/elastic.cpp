@@ -44,7 +44,6 @@
 #include <material/elastic/ElasticIsotropicPlateFiber.h>
 #include <material/elastic/ElasticIsotropicThreeDimensional.h>
 
-// #include <ElasticCrossAnisotropic.h>
 #include <PlaneStressMaterial.h>
 #include <BeamFiberMaterial.h>
 

@@ -58,7 +58,6 @@ OPS_Routine OPS_WilsonTheta;
 
 // integrators
 #include <LoadControl.h>
-// #include <StagedLoadControl.h>
 #include <ArcLength1.h>
 #include <DisplacementControl.h>
 

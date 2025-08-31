@@ -20,7 +20,6 @@
 #include <Logging.h>
 #include <Parsing.h>
 #include <BasicModelBuilder.h>
-// #include <elementAPI.h>
 
 #include <Domain.h>
 #include <LinearSeries.h>
@@ -31,19 +30,8 @@
 #include <RectangularSeries.h>
 #include <PulseSeries.h>
 #include <TriangleSeries.h>
-// #include <PeerMotion.h>
-// #include <PeerNGAMotion.h>
 
 
-
-// extern OPS_Routine OPS_ConstantSeries;
-// extern OPS_Routine OPS_LinearSeries;
-// extern OPS_Routine OPS_TrigSeries;
-// extern OPS_Routine OPS_PulseSeries;
-// extern OPS_Routine OPS_PeerMotion;
-// extern OPS_Routine OPS_PeerNGAMotion;
-// extern OPS_Routine OPS_TriangleSeries;
-// extern OPS_Routine OPS_RectangularSeries;
 
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp *interp,
                                        int cArg, int mArg, TCL_Char ** const argv,

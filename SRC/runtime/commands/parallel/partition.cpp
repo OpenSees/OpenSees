@@ -17,14 +17,9 @@
 #include <tcl.h>
 #include <vector>
 #include <OPS_Globals.h>
-// #include <mpi.h>
 #include <Channel.h>
 #include <MachineBroker.h>
 
-// #  include <DistributedDisplacementControl.h>
-// #  include <ShedHeaviest.h>
-// #  include <MPIDiagonalSOE.h>
-// #  include <MPIDiagonalSolver.h>
 #include <ShadowSubdomain.h>
 #include <Metis.h>
 #include <FEM_ObjectBroker.h>
@@ -37,16 +32,11 @@
 #include <StaticDomainDecompositionAnalysis.h>
 #include <TransientDomainDecompositionAnalysis.h>
 
-// #  define MPIPP_H
-// #  include <DistributedSuperLU.h>
-// #  include <DistributedProfileSPDLinSOE.h>
-
  struct PartitionRuntime {
    MachineBroker       *machine            = nullptr;
    FEM_ObjectBroker    *broker             = nullptr;
    DomainPartitioner   *DOMAIN_partitioner = nullptr;
    GraphPartitioner    *GRAPH_partitioner  = nullptr;
-// LoadBalancer        *balancer           = nullptr;
    Channel             **channels          = nullptr;  
    int  num_subdomains    = 0;
    bool partitioned       = false;

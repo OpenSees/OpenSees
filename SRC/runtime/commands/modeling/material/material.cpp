@@ -30,17 +30,10 @@
 #include <PressureDependMultiYield.h>
 #include <PressureDependMultiYield02.h>
 #include <FluidSolidPorousMaterial.h>
-// #include <isotropy.h>
-
-// #include <Template3Dep.h>
-// #include <NewTemplate3Dep.h>
-// #include <FiniteDeformationElastic3D.h>
-// #include <FiniteDeformationEP3D.h>
 
 
 Tcl_CmdProc TclCommand_newPlasticMaterial;
 Tcl_CmdProc TclCommand_newElasticMaterial;
-// Tcl_CmdProc TclCommand_newIsotropicMaterial;
 
 
 

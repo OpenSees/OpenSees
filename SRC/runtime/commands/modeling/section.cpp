@@ -48,7 +48,6 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
 #include <PlaneStressMaterial.h>
 #include <FrameSection.h>
 #include <ElasticMaterial.h>
-// #include <ElasticTubeSection3d.h>
 #include <ParallelSection.h>
 #include <FiberSection2d.h>
 #include <NDFiberSection2d.h>
