@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation    
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -139,7 +148,7 @@ TclCommand_newParallelMaterial(ClientData clientData, Tcl_Interp* interp, int ar
     if (argc < 4) {
         opserr << "WARNING insufficient arguments\n";
         opserr << "Want: uniaxialMaterial Parallel tag? tag1? tag2? ...";
-        opserr << " <-min min?> <-max max?>" << endln;
+        opserr << " <-min min?> <-max max?>" << "\n";
         return TCL_ERROR;
     }
 
@@ -148,7 +157,7 @@ TclCommand_newParallelMaterial(ClientData clientData, Tcl_Interp* interp, int ar
     BasicModelBuilder* builder = static_cast<BasicModelBuilder*>(clientData);
 
     if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr << "WARNING invalid uniaxialMaterial Parallel tag" << endln;
+        opserr << "WARNING invalid uniaxialMaterial Parallel tag" << "\n";
         return TCL_ERROR;
     }
 
@@ -156,7 +165,6 @@ TclCommand_newParallelMaterial(ClientData clientData, Tcl_Interp* interp, int ar
     
     if (numMaterials == 0) {
         opserr << "WARNING no component material(s) provided\n";
-        opserr << "uniaxialMaterial Parallel: " << tag << endln;
         return TCL_ERROR;
     }
 

@@ -165,7 +165,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp, int argc,
         currentArg++;
         velSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
-        if (velSeries == 0) {
+        if (velSeries == nullptr) {
           opserr << "WARNING invalid vel series: " << argv[currentArg];
           opserr << " pattern UniformExcitation -vel {series}\n";
           return TCL_ERROR;

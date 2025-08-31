@@ -43,23 +43,6 @@ extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
 
 
 
-#if 0
-extern void *OPS_PlateBearingConnectionThermal(G3_Runtime*);
-
-extern int TclCommand_ConfinedConcrete02(ClientData clientData, Tcl_Interp
-*interp, int argc, 					 TCL_Char ** const argv, TclBasicBuilder
-*theTclBuilder);
-
-extern UniaxialMaterial *Tcl_AddLimitStateMaterial(ClientData clientData,
-                                                   Tcl_Interp *interp, int argc,
-                                                   TCL_Char **arg);
-
-
-extern UniaxialMaterial *
-Tcl_addWrapperUniaxialMaterial(matObj *, ClientData clientData,
-                               Tcl_Interp *interp, int argc, TCL_Char ** const argv);
-#endif
-
 typedef struct uniaxialPackageCommand {
   char *funcName;
   void *(*funcPtr)();
@@ -174,24 +157,6 @@ TclCommand_addUniaxialMaterial(ClientData clientData, Tcl_Interp *interp,
   //   package yet to be loaded
   //
   if (theMaterial == nullptr) {
-#if 0
-    //
-    // maybe material in a routine
-    //
-    char *matType = new char[strlen(argv[1]) + 1];
-    strcpy(matType, argv[1]);
-    matObj *matObject = OPS_GetMaterialType(matType, strlen(matType));
-
-    delete[] matType;
-
-    if (matObject != 0) {
-
-      theMaterial = Tcl_addWrapperUniaxialMaterial(matObject, clientData, interp, argc, argv);
-
-      if (theMaterial == 0)
-        delete matObject;
-    }
-#endif
   }
 
   //
@@ -550,39 +515,3 @@ TclDispatch_newUniaxialPinching4(ClientData clientData, Tcl_Interp* interp, int 
   }
   return TCL_OK;
 }
-
-
-#if 0
-   else if (strcmp(argv[1], "Backbone") == 0) {
-      if (argc < 4) {
-        opserr << OpenSees::PromptValueError << "insufficient arguments\n";
-        opserr << "Want: uniaxialMaterial Backbone tag? bbTag?" << "\n";
-        return TCL_ERROR;
-      }
-
-      int tag, bbTag;
-
-      if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-        opserr << OpenSees::PromptValueError << "invalid tag\n";
-        opserr << "Backbone material: " << tag << "\n";
-        return TCL_ERROR;
-      }
-
-      if (Tcl_GetInt(interp, argv[3], &bbTag) != TCL_OK) {
-        opserr << OpenSees::PromptValueError << "invalid bTag\n";
-        opserr << "Backbone material: " << tag << "\n";
-        return TCL_ERROR;
-      }
-
-      HystereticBackbone *backbone = OPS_getHystereticBackbone(bbTag);
-
-      if (backbone == 0) {
-        opserr << OpenSees::PromptValueError << "backbone does not exist\n";
-        opserr << "backbone: " << bbTag;
-        opserr << "\nuniaxialMaterial Backbone: " << tag << "\n";
-        return TCL_ERROR;
-      }
-
-      theMaterial = new BackboneMaterial(tag, *backbone);
-    }
-#endif

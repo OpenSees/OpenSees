@@ -194,19 +194,6 @@ TclDispatch_newTimeSeries(ClientData clientData, Tcl_Interp *interp, int argc, T
          
    }
 
-#if 0
-   else if ((strcmp(argv[0], "Trig") == 0) ||
-             (strcmp(argv[0], "TrigSeries") == 0) ||
-             (strcmp(argv[0], "Sine") == 0) ||
-             (strcmp(argv[0], "SineSeries") == 0)) {
-
-    void *theResult = OPS_TrigSeries(rt, argc, argv);
-    if (theResult != nullptr)
-      theSeries = (TimeSeries *)theResult;
-
-  }
-#endif
-
   else if ((strcmp(argv[0], "Linear") == 0) ||
            (strcmp(argv[0], "LinearSeries") == 0)) {
 
@@ -404,32 +391,6 @@ TclDispatch_newTimeSeries(ClientData clientData, Tcl_Interp *interp, int argc, T
 
     theSeries = new RectangularSeries(tStart, tFinish, cFactor); 
   }
-
-#if 0
-  else if (strcmp(argv[0], "Rectangular") == 0) {
-
-    void *theResult = OPS_RectangularSeries(rt, argc, argv);
-    if (theResult != 0)
-      theSeries = (TimeSeries *)theResult;
-
-  }
-  else if ((strcmp(argv[0], "Pulse") == 0) ||
-           (strcmp(argv[0], "PulseSeries") == 0)) {
-
-    void *theResult = OPS_PulseSeries(rt, argc, argv);
-    if (theResult != 0)
-      theSeries = (TimeSeries *)theResult;
-
-  }
-  else if ((strcmp(argv[0], "Triangle") == 0) ||
-           (strcmp(argv[0], "TriangleSeries") == 0)) {
-
-    void *theResult = OPS_TriangleSeries(rt, argc, argv);
-    if (theResult != 0)
-      theSeries = (TimeSeries *)theResult;
-
-  }
-#endif
 
   else if ((strcmp(argv[0], "Series") == 0) || (strcmp(argv[0], "Path") == 0)) {
 
@@ -669,95 +630,6 @@ TclDispatch_newTimeSeries(ClientData clientData, Tcl_Interp *interp, int argc, T
 
   }
 
-#if 0
-  else if ((strcmp(argv[0], "PeerDatabase") == 0) ||
-           (strcmp(argv[0], "PeerMotion") == 0)) {
-
-    void *theResult = OPS_PeerMotion(rt, argc, argv);
-    if (theResult != 0)
-      theSeries = (TimeSeries *)theResult;
-
-    PeerMotion *thePeerMotion = (PeerMotion *)theSeries;
-
-    if (argc > 4 && theSeries != 0) {
-      int argCount = 4;
-
-      while (argCount + 1 < argc) {
-        if ((strcmp(argv[argCount], "-dT") == 0) ||
-            (strcmp(argv[argCount], "-dt") == 0) ||
-            (strcmp(argv[argCount], "-DT") == 0)) {
-          const char *variableName = argv[argCount + 1];
-          double dT = thePeerMotion->getDt();
-          char string[30];
-          sprintf(string, "set %s %.18e", variableName, dT);
-          if (Tcl_Eval(interp, string) != TCL_OK) {
-            opserr << G3_WARN_PROMPT << Tcl_GetStringResult(interp);
-            Tcl_Exit(TCL_ERROR);
-          }
-          argCount += 2;
-        } else if ((strcmp(argv[argCount], "-nPts") == 0) ||
-                   (strcmp(argv[argCount], "-NPTS") == 0)) {
-          const char *variableName = argv[argCount + 1];
-          int nPts = thePeerMotion->getNPts();
-          char string[30];
-          sprintf(string, "set %s %d", variableName, nPts);
-          if (Tcl_Eval(interp, string) != TCL_OK) {
-            opserr << G3_WARN_PROMPT << Tcl_GetStringResult(interp);
-            Tcl_Exit(TCL_ERROR);
-          }
-          argCount += 2;
-        } else
-          argCount++;
-      }
-    }
-  }
-#endif
-
-
-#if 0
-  else if ((strcmp(argv[0], "PeerNGADatabase") == 0) ||
-           (strcmp(argv[0], "PeerNGAMotion") == 0)) {
-
-    void *theResult = OPS_PeerNGAMotion(rt, argc, argv);
-    if (theResult != 0)
-      theSeries = (TimeSeries *)theResult;
-
-    PeerNGAMotion *thePeerMotion = (PeerNGAMotion *)(theSeries);
-
-    if (argc > 3 && theSeries != 0) {
-      int argCount = 3;
-
-      while (argCount + 1 < argc) {
-        if ((strcmp(argv[argCount], "-dT") == 0) ||
-            (strcmp(argv[argCount], "-dt") == 0) ||
-            (strcmp(argv[argCount], "-DT") == 0)) {
-          const char *variableName = argv[argCount + 1];
-          double dT = thePeerMotion->getDt();
-          char string[30];
-          sprintf(string, "set %s %.18e", variableName, dT);
-          if (Tcl_Eval(interp, string) != TCL_OK) {
-            opserr << G3_WARN_PROMPT << Tcl_GetStringResult(interp);
-            Tcl_Exit(TCL_ERROR);
-          }
-          argCount += 2;
-
-        } else if ((strcmp(argv[argCount], "-nPts") == 0) ||
-                   (strcmp(argv[argCount], "-NPTS") == 0)) {
-          const char *variableName = argv[argCount + 1];
-          int nPts = thePeerMotion->getNPts();
-          char string[30];
-          sprintf(string, "set %s %d", variableName, nPts);
-          if (Tcl_Eval(interp, string) != TCL_OK) {
-            opserr << G3_WARN_PROMPT << Tcl_GetStringResult(interp);
-            Tcl_Exit(TCL_ERROR);
-          }
-          argCount += 2;
-        } else
-          argCount++;
-      }
-    }
-  }
-#endif
   else {
     // type unknown
     opserr << "WARNING unknown Series type " << argv[0] << " - ";

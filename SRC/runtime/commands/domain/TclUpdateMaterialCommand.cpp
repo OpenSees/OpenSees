@@ -30,14 +30,14 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData, Tcl_Interp *interp,
   if (argc < 5) {
     opserr << "WARNING insufficient number of UpdateMaterialStage arguments\n";
     opserr << "Want: UpdateMaterialStage material matTag? stage value?"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
   if (strcmp(argv[1], "-material") != 0) {
     opserr << "WARNING UpdateMaterialStage: Only accept parameter '-material' "
               "for now"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -45,7 +45,7 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData, Tcl_Interp *interp,
   double valueD;
 
   if (Tcl_GetInt(interp, argv[2], &materialTag) != TCL_OK) {
-    opserr << "WARNING MYSstage: invalid material tag" << endln;
+    opserr << "WARNING MYSstage: invalid material tag" << "\n";
     return TCL_ERROR;
   }
 
@@ -55,7 +55,7 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData, Tcl_Interp *interp,
   if (argc > 5) {
     if (strcmp(argv[5], "-parameter") == 0) {
       if (Tcl_GetInt(interp, argv[6], &parTag) != TCL_OK) {
-        opserr << "WARNING UpdateMaterialStage: invalid parameter tag" << endln;
+        opserr << "WARNING UpdateMaterialStage: invalid parameter tag" << "\n";
         return TCL_ERROR;
       }
     }
@@ -66,7 +66,7 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData, Tcl_Interp *interp,
   if (theDomain->addParameter(theParameter) == false) {
     opserr << "WARNING could not add updateMaterialStage - "
               "MaterialStageParameter to domain"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -74,7 +74,7 @@ TclCommand_UpdateMaterialsCommand(ClientData clientData, Tcl_Interp *interp,
   if (Tcl_GetInt(interp, argv[4], &value) != TCL_OK) {
 
     if (Tcl_GetDouble(interp, argv[4], &valueD) != TCL_OK) {
-      opserr << "WARNING UpdateMaterialStage: could not read value" << endln;
+      opserr << "WARNING UpdateMaterialStage: could not read value" << "\n";
       return TCL_ERROR;
     } else {
 

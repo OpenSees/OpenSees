@@ -253,9 +253,6 @@ static std::unordered_map<std::string, OPS_Routine*> OldMaterialCommands = {
 #ifdef OPS_USE_ASDPlasticMaterials
   {"ASDPlasticMaterial",            OPS_AllASDPlasticMaterials},
 #endif
-#if 0
-  {"CDPPlaneStressThermal", OPS_PlasticDamageConcretePlaneStressThermal},
-#endif
 #ifdef _HAVE_Faria1998
   {"Faria1998", OPS_NewFaria1998Material},  
   {"Concrete", OPS_NewConcreteMaterial},

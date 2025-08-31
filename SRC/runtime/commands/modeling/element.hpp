@@ -268,9 +268,6 @@ element_dispatch = {
   {"componentElement2d",           OPS_ComponentElement2d},
   {"componentElement3d",           OPS_ComponentElement3d},
 
-#if 0
-  {"componentElementDamp2d", OPS_ComponentElementDamp2d},
-#endif
 
   {"ModElasticBeam2d",             OPS_ModElasticBeam2d},
   {"ModElasticBeam3d",             OPS_ModElasticBeam3d},

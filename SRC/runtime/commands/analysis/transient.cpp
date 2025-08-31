@@ -162,48 +162,48 @@ TclCommand_newNewmarkIntegrator(ClientData clientData, Tcl_Interp* interp,
 TransientIntegrator*
 G3Parse_newNewmark1Integrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
 {
-    double gamma;
-    double beta;
-    double alphaM, betaK, betaKi, betaKc;
-    if (argc != 4 && argc != 8) {
-      opserr << "WARNING integrator Newmark1 gamma beta <alphaM> "
-                "<betaKcurrent> <betaKi> <betaKlastCommitted>\n";
-      return nullptr;
-    }
-    if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
-      opserr << "WARNING integrator Newmark1 gamma beta - undefined gamma\n";
-      return nullptr;
-    }
-    if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
-      opserr << "WARNING integrator Newmark1 gamma beta - undefined beta\n";
-      return nullptr;
-    }
+  double gamma;
+  double beta;
+  double alphaM, betaK, betaKi, betaKc;
+  if (argc != 4 && argc != 8) {
+    opserr << "WARNING integrator Newmark1 gamma beta <alphaM> "
+              "<betaKcurrent> <betaKi> <betaKlastCommitted>\n";
+    return nullptr;
+  }
+  if (Tcl_GetDouble(interp, argv[2], &gamma) != TCL_OK) {
+    opserr << "WARNING integrator Newmark1 gamma beta - undefined gamma\n";
+    return nullptr;
+  }
+  if (Tcl_GetDouble(interp, argv[3], &beta) != TCL_OK) {
+    opserr << "WARNING integrator Newmark1 gamma beta - undefined beta\n";
+    return nullptr;
+  }
 
-    if (argc == 8 || argc == 7) {
-      if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
-        opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
-                  "betaKc - alphaM\n";
-        return nullptr;
-      }
-      if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
-        opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
-                  "betaKc - betaK\n";
-        return nullptr;
-      }
-      if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
-        opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
-                  "betaKc - betaKi\n";
-        return nullptr;
-      }
-      if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
-        opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
-                  "betaKc - betaKc\n";
-        return nullptr;
-      }
+  if (argc == 8 || argc == 7) {
+    if (Tcl_GetDouble(interp, argv[4], &alphaM) != TCL_OK) {
+      opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
+                "betaKc - alphaM\n";
+      return nullptr;
     }
-    if (argc == 4)
-      return new Newmark1(gamma, beta);
-    else
-      return new Newmark1(gamma, beta, alphaM, betaK, betaKi, betaKc);
+    if (Tcl_GetDouble(interp, argv[5], &betaK) != TCL_OK) {
+      opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
+                "betaKc - betaK\n";
+      return nullptr;
+    }
+    if (Tcl_GetDouble(interp, argv[6], &betaKi) != TCL_OK) {
+      opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
+                "betaKc - betaKi\n";
+      return nullptr;
+    }
+    if (Tcl_GetDouble(interp, argv[7], &betaKc) != TCL_OK) {
+      opserr << "WARNING integrator Newmark1 gamma beta alphaM betaK betaKi "
+                "betaKc - betaKc\n";
+      return nullptr;
+    }
+  }
+  if (argc == 4)
+    return new Newmark1(gamma, beta);
+  else
+    return new Newmark1(gamma, beta, alphaM, betaK, betaKi, betaKc);
 }
 

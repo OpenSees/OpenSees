@@ -290,12 +290,12 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** c
 
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
-    opserr << "WARNING nodeMass node " << tag << " not found" << endln;
+    opserr << "WARNING nodeMass node " << tag << " not found" << "\n";
     return TCL_ERROR;
   }
   int numDOF = theNode->getNumberDOF();
   if (dof < 1 || dof > numDOF) {
-    opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
+    opserr << "WARNING nodeMass dof " << dof << " not in range" << "\n";
     return TCL_ERROR;
   } else {
     const Matrix &mass = theNode->getMass();
@@ -387,7 +387,7 @@ setNodeVel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char **
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
     opserr << "WARNING setNodeVel -- node with tag " << tag << " not found"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -445,7 +445,7 @@ setNodeDisp(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
     opserr << "WARNING setNodeDisp -- node with tag " << tag << " not found"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -506,7 +506,7 @@ setNodeAccel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
     opserr << "WARNING setNodeAccel -- node with tag " << tag << " not found"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 

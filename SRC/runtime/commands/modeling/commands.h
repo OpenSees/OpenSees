@@ -181,25 +181,7 @@ constexpr ModelBuilderCommands[] =  {
   {"yieldSurface_BC",      TclCommand_addYieldSurface_BC},
   {"plasticMaterial",      TclCommand_addYS_PlasticMaterial},
 
-#if 0
-  {"limitCurve",           TclCommand_addLimitCurve},
-  {"stiffnessDegradation", TclCommand_addStiffnessDegradation},
-  {"unloadingRule",        TclCommand_addUnloadingRule},
-  {"strengthDegradation",  TclCommand_addStrengthDegradation},
-  {"loadPackage",          TclCommand_Package},
-#endif
-
-
-// command for elast2plast in Multi-yield plasticity, by ZHY
   {"updateMaterialStage", TclCommand_updateMaterialStage},
-#if 0
-  {"updateMaterials",     TclCommand_UpdateMaterials},
-#endif
-
-#if 0
-// command for updating properties of soil materials, by ZHY
-   {"updateParameter", TclCommand_UpdateParameter},
-#endif
 
 };
 } // namespace OpenSees

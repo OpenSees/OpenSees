@@ -145,22 +145,6 @@ partitionModel(PartitionRuntime& part, int eleTag)
   Subdomain *theSub = nullptr;
 
   void* the_static_analysis = nullptr;
-#if 0
-  // create the appropriate domain decomposition analysis
-  while ((theSub = theSubdomains()) != nullptr) {
-    if (the_static_analysis != nullptr) {
-      theSubAnalysis = new StaticDomainDecompositionAnalysis(
-          *theSub, *theHandler, *theNumberer, *the_analysis_model, *theAlgorithm,
-          *theSOE, *theStaticIntegrator, theTest, false);
-
-    } else {
-      theSubAnalysis = new TransientDomainDecompositionAnalysis(
-          *theSub, *theHandler, *theNumberer, *the_analysis_model, *theAlgorithm,
-          *theSOE, *theTransientIntegrator, theTest, false);
-    }
-    theSub->setDomainDecompAnalysis(*theSubAnalysis);
-  }
-#endif
 
   return result;
 }

@@ -78,32 +78,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
     }
     Element *theEle = the_domain->removeElement(tag);
     if (theEle != nullptr) {
-#if 0
-      // we also have to remove any elemental loads from the domain
-      LoadPatternIter &theLoadPatterns = the_domain->getLoadPatterns();
-      LoadPattern *thePattern;
 
-      // go through all load patterns
-      while ((thePattern = theLoadPatterns()) != 0) {
-        ElementalLoadIter theEleLoads = thePattern->getElementalLoads();
-        ElementalLoad *theLoad;
-
-        // go through all elemental loads in the pattern
-        while ((theLoad = theEleLoads()) != 0) {
-
-          // remove & destroy elemental from elemental load if there
-          // note - if last element in load, remove the load and delete it
-
-          /* *****************
-          int numLoadsLeft = theLoad->removeElement(tag);
-          if (numLoadsLeft == 0) {
-             thePattern->removeElementalLoad(theLoad->getTag());
-             delete theLoad;
-          }
-          *********************/
-        }
-      }
-#endif
       // finally invoke the destructor on the element
       delete theEle;
     }
@@ -126,25 +101,7 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
       delete thePattern;
     }
   }
-#if 0
-  else if ((strcmp(remove_type, "TimeSeries") == 0) ||
-           (strcmp(remove_type, "timeSeries") == 0)) {
-    if (argc < 3) {
-      opserr << "WARNING want - remove loadPattern patternTag?\n";
-      return TCL_ERROR;
-    }
-    if (Tcl_GetIntFromObj(interp, objv[2], &tag) != TCL_OK) {
-      opserr << "WARNING remove loadPattern tag? failed to read tag: "
-             << Tcl_GetString(objv[2]) << "\n";
-      return TCL_ERROR;
-    }
-    bool ok = OPS_removeTimeSeries(tag);
-    if (ok == true)
-      return TCL_OK;
-    else
-      return TCL_ERROR;
-  }
-#endif
+
   else if (strcmp(remove_type, "parameter") == 0) {
     if (argc < 3) {
       opserr << "WARNING want - remove parameter paramTag?\n";

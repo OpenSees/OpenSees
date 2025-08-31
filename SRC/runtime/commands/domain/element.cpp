@@ -117,55 +117,6 @@ addElementRayleigh(ClientData clientData, Tcl_Interp *interp,
   return TCL_OK;
 }
 
-#if 0
-int
-setElementRayleighDampingFactors(ClientData clientData, Tcl_Interp *interp,
-                                 int argc, TCL_Char ** const argv)
-{
-  assert(clientData != nullptr);
-  Domain *the_domain = (Domain*)clientData;
-
-  if (argc < 6) {
-    opserr << OpenSees::PromptValueError << "setElementRayleighDampingFactors eleTag? alphaM? betaK? "
-              "betaK0? betaKc? - not enough arguments to command\n";
-    return TCL_ERROR;
-  }
-
-  int eleTag;
-  double alphaM, betaK, betaK0, betaKc;
-
-  if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
-              "read eleTag? \n";
-    return TCL_ERROR;
-  }
-
-  if (Tcl_GetDouble(interp, argv[2], &alphaM) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
-              "read alphaM? \n";
-    return TCL_ERROR;
-  }
-  if (Tcl_GetDouble(interp, argv[3], &betaK) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
-              "read betaK? \n";
-    return TCL_ERROR;
-  }
-  if (Tcl_GetDouble(interp, argv[4], &betaK0) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
-              "read betaK0? \n";
-    return TCL_ERROR;
-  }
-  if (Tcl_GetDouble(interp, argv[5], &betaKc) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "rayleigh alphaM? betaK? betaK0? betaKc? - could not "
-              "read betaKc? \n";
-    return TCL_ERROR;
-  }
-
-  Element *theEle = the_domain->getElement(eleTag);
-  theEle->setRayleighDampingFactors(alphaM, betaK, betaK0, betaKc);
-  return TCL_OK;
-}
-#endif
 
 int
 eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const argv)
@@ -194,14 +145,6 @@ eleForce(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char** const a
   }
 
   dof--;
-
-#if 0
-  Element *theEle = the_domain->getElement(tag);
-  if (theEle == 0)
-    return TCL_ERROR;
-
-  const Vector &force = theEle->getResistingForce();
-#endif
 
   const char *myArgv[1];
   char myArgv0[8];
@@ -482,7 +425,7 @@ getEleClassTags(ClientData clientData, Tcl_Interp *interp, int argc,
 
   } else {
     opserr << OpenSees::PromptValueError 
-           << "want - getEleClassTags <eleTag?>\n" << endln;
+           << "want - getEleClassTags <eleTag?>\n" << "\n";
     return TCL_ERROR;
   }
 

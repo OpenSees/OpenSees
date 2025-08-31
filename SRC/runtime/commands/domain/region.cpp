@@ -55,7 +55,7 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
   }
 
   if (Tcl_GetInt(interp, argv[loc], &tag) != TCL_OK) {
-    opserr << "WARNING region tag? .. - invalid tag " << argv[loc] << endln;
+    opserr << "WARNING region tag? .. - invalid tag " << argv[loc] << "\n";
     return TCL_ERROR;
   }
 
@@ -92,8 +92,9 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
       if (loc < argc)
         loc--;
 
-    } else if (strcmp(argv[loc], "-eleRange") == 0 ||
-               strcmp(argv[loc], "-eleOnlyRange") == 0) {
+    }
+    else if (strcmp(argv[loc], "-eleRange") == 0 ||
+             strcmp(argv[loc], "-eleOnlyRange") == 0) {
 
       if (strcmp(argv[loc], "-eleOnlyRange") == 0)
         eleOnly = true;
@@ -112,12 +113,12 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
       int start, end;
       if (Tcl_GetInt(interp, argv[loc + 1], &start) != TCL_OK) {
         opserr << "WARNING region tag? -eleRange start? end? - invalid start "
-               << argv[loc + 1] << endln;
+               << argv[loc + 1] << "\n";
         return TCL_ERROR;
       }
       if (Tcl_GetInt(interp, argv[loc + 2], &end) != TCL_OK) {
         opserr << "WARNING region tag? -eleRange start? end? - invalid end "
-               << argv[loc + 2] << endln;
+               << argv[loc + 2] << "\n";
         return TCL_ERROR;
       }
       if (start > end) {
@@ -152,7 +153,7 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
 
       // read in list of nodes
 
-      if (theNodes == 0)
+      if (theNodes == nullptr)
         theNodes = new ID(0, 64);
       int nodTag;
       while (loc < argc && Tcl_GetInt(interp, argv[loc++], &nodTag) == TCL_OK) {
@@ -179,12 +180,12 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
       int start, end;
       if (Tcl_GetInt(interp, argv[loc + 1], &start) != TCL_OK) {
         opserr << "WARNING region tag? -eleRange start? end? - invalid start "
-               << argv[loc + 1] << endln;
+               << argv[loc + 1] << "\n";
         return TCL_ERROR;
       }
       if (Tcl_GetInt(interp, argv[loc + 2], &end) != TCL_OK) {
         opserr << "WARNING region tag? -eleRange start? end? - invalid end "
-               << argv[loc + 1] << endln;
+               << argv[loc + 1] << "\n";
         return TCL_ERROR;
       }
       if (start > end) {
@@ -213,22 +214,22 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
       // read in rayleigh damping factors
       if (Tcl_GetDouble(interp, argv[loc + 1], &alphaM) != TCL_OK) {
         opserr << "WARNING region tag? .. -rayleigh aM bK bK0 - invalid aM "
-               << argv[loc + 1] << endln;
+               << argv[loc + 1] << "\n";
         return TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[loc + 2], &betaK) != TCL_OK) {
         opserr << "WARNING region tag? .. -rayleigh aM bK bK0 - invalid bK "
-               << argv[loc + 2] << endln;
+               << argv[loc + 2] << "\n";
         return TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[loc + 3], &betaK0) != TCL_OK) {
         opserr << "WARNING region tag? .. -rayleigh aM bK bK0 - invalid bK0 "
-               << argv[loc + 3] << endln;
+               << argv[loc + 3] << "\n";
         return TCL_ERROR;
       }
       if (Tcl_GetDouble(interp, argv[loc + 4], &betaKc) != TCL_OK) {
         opserr << "WARNING region tag? .. -rayleigh aM bK bK0 - invalid bKc "
-               << argv[loc + 4] << endln;
+               << argv[loc + 4] << "\n";
         return TCL_ERROR;
       }
       loc += 5;
@@ -293,7 +294,7 @@ TclCommand_addMeshRegion(ClientData clientData, Tcl_Interp *interp, Tcl_Size arg
   MeshRegion *theRegion = new MeshRegion(tag);
 
   if (theDomain.addRegion(*theRegion) < 0) {
-    opserr << "WARNING could not add to domain - region " << tag << endln;
+    opserr << "WARNING could not add to domain - region " << tag << "\n";
     delete theRegion;
     return TCL_ERROR;
   }

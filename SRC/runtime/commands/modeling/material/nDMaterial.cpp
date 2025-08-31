@@ -54,10 +54,6 @@
 
 #include <MultiYieldSurfaceClay.h>
 
-#if 0
-extern NDMaterial *Tcl_addWrapperNDMaterial(matObj *, ClientData, Tcl_Interp *,
-                                            int, TCL_Char **);
-#endif
 
 #if defined(OPSDEF_Material_FEAP)
 NDMaterial *TclBasicBuilder_addFeapMaterial(ClientData clientData,
@@ -1212,33 +1208,12 @@ TclCommand_addNDMaterial(ClientData clientData, Tcl_Interp *interp,
   //   the proc may already have been loaded from a package or may exist in a
   //   package yet to be loaded
   //
-  if (theMaterial == nullptr) {
-#if 0
-    // maybe material in a routine
-    //
-
-    char *matType = new char[strlen(argv[1]) + 1];
-    strcpy(matType, argv[1]);
-    matObj *matObject = OPS_GetMaterialType(matType, strlen(matType));
-
-    delete[] matType;
-
-    if (matObject != 0) {
-
-      theMaterial = Tcl_addWrapperNDMaterial(matObject, clientData, interp,
-                                             argc, argv);
-
-      if (theMaterial == 0)
-        delete matObject;
-    }
-#endif
-  }
 
   //
   // maybe material class exists in a package yet to be loaded
   //
 
-  if (theMaterial == 0) {
+  if (theMaterial == nullptr) {
 
     void *libHandle;
     void *(*funcPtr)();

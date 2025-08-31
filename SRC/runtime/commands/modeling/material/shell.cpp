@@ -46,7 +46,7 @@ TclCommand_addElasticShellSection(ClientData clientData, Tcl_Interp* interp,
              << "insufficient arguments\n";
       opserr << "Want: section ElasticMembranePlateSection tag? E? nu? h? "
                 "<rho?> <Ep_mod?>"
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
 
@@ -58,37 +58,37 @@ TclCommand_addElasticShellSection(ClientData clientData, Tcl_Interp* interp,
     if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
       opserr << OpenSees::PromptValueError 
              << "invalid section ElasticMembranePlateSection tag"
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[3], &E) != TCL_OK) {
       opserr << OpenSees::PromptValueError 
-             << "invalid E" << endln;
+             << "invalid E" << "\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[4], &nu) != TCL_OK) {
       opserr << OpenSees::PromptValueError 
-             << "invalid nu" << endln;
+             << "invalid nu" << "\n";
       return TCL_ERROR;
     }
 
     if (Tcl_GetDouble(interp, argv[5], &h) != TCL_OK) {
       opserr << OpenSees::PromptValueError 
-             << "invalid h" << endln;
+             << "invalid h" << "\n";
       return TCL_ERROR;
     }
 
     if (argc > 6 && Tcl_GetDouble(interp, argv[6], &rho) != TCL_OK) {
       opserr << OpenSees::PromptValueError 
-             << "invalid rho" << endln;
+             << "invalid rho" << "\n";
       return TCL_ERROR;
     }
 
     if (argc > 7 && Tcl_GetDouble(interp, argv[7], &Ep_mod) != TCL_OK) {
       opserr << OpenSees::PromptValueError 
-             << "invalid Ep_mod" << endln;
+             << "invalid Ep_mod" << "\n";
       return TCL_ERROR;
     }
 
@@ -150,7 +150,7 @@ TclCommand_ShellSection(ClientData clientData, Tcl_Interp* interp,
       opserr << OpenSees::PromptValueError 
              << "insufficient arguments " << "\n";
       opserr << "Want: section LayeredShell tag? nLayers? mat1? h1? ... matn? hn? "
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
 
@@ -169,7 +169,7 @@ TclCommand_ShellSection(ClientData clientData, Tcl_Interp* interp,
     }
 
     if (nLayers < 3) {
-      opserr << "ERROR number of layers must be larger than 2" << endln;
+      opserr << "ERROR number of layers must be larger than 2" << "\n";
       return TCL_ERROR;
     }
 
@@ -184,7 +184,7 @@ TclCommand_ShellSection(ClientData clientData, Tcl_Interp* interp,
     for (int iLayer = 0; iLayer < nLayers; iLayer++) {
       int mat;
       if (Tcl_GetInt(interp, argv[4 + 2 * iLayer], &mat) != TCL_OK) {
-        opserr << OpenSees::PromptValueError << "invalid material tag" << endln;
+        opserr << OpenSees::PromptValueError << "invalid material tag" << "\n";
         status = TCL_ERROR;
         goto cleanup;
       }

@@ -327,13 +327,6 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
       opserr << "WFSection2d has been removed; use the from_aisc utility to "
              << "generate AISC sections from Python.\n";
       return TCL_ERROR;
-#if 0
-    void *theMat = OPS_WFSection2d(rt, argc, argv);
-    if (theMat != 0)
-      theSection = (SectionForceDeformation *)theMat;
-    else
-      return TCL_ERROR;
-#endif
   }
 
   else if (strcmp(argv[1], "AddDeformation") == 0 ||
@@ -388,7 +381,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
       opserr << OpenSees::PromptValueError << "insufficient arguments\n";
       opserr
           << "Want: section Iso2spring tag? tol? k1? Fy? k2? kv? hb? Pe? <Po?>"
-          << endln;
+          << "\n";
       return TCL_ERROR;
     }
 
@@ -397,7 +390,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
     double Po = 0.0;
 
     if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid Iso2spring tag" << endln;
+      opserr << OpenSees::PromptValueError << "invalid Iso2spring tag" << "\n";
       return TCL_ERROR;
     }
 
@@ -437,7 +430,7 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
     if (argc > 10) {
       if (Tcl_GetDouble(interp, argv[10], &Po) != TCL_OK) {
         opserr << OpenSees::PromptValueError << "invalid Po\n";
-        opserr << "section Iso2spring: " << tag << endln;
+        opserr << "section Iso2spring: " << tag << "\n";
         return TCL_ERROR;
       }
     }
@@ -459,13 +452,13 @@ TclCommand_addSection(ClientData clientData, Tcl_Interp *interp,
   // Ensure we have created the Material, out of memory if got here and no
   // section
   if (theSection == nullptr) {
-    opserr << OpenSees::PromptValueError << "could not create section " << argv[1] << endln;
+    opserr << OpenSees::PromptValueError << "could not create section " << argv[1] << "\n";
     return TCL_ERROR;
   }
 
   // Now add the material to the modelBuilder
   if (builder->addTaggedObject<SectionForceDeformation>(*theSection) < 0) {
-    opserr << *theSection << endln;
+    opserr << *theSection << "\n";
     delete theSection; // invoke the material objects destructor, otherwise mem leak
     return TCL_ERROR;
   } else
@@ -760,7 +753,7 @@ TclCommand_addFiberSection(ClientData clientData, Tcl_Interp *interp, int argc,
       if (torsion == nullptr) {
         opserr << OpenSees::PromptValueError << "uniaxial material does not exist\n";
         opserr << "uniaxial material: " << torsionTag;
-        opserr << "\nFiberSection3d: " << secTag << endln;
+        opserr << "\nFiberSection3d: " << secTag << "\n";
         return TCL_ERROR;
       }
 
@@ -903,14 +896,6 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
     brace = 10; // may be 5
   }
 
-#if 0
-  // init  the fiber section (for building)                           // TODO, alpha
-  if (initSectionCommands(clientData, interp, secTag, *torsion, Ys, Zs, 1.0) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "- error constructing the section\n";
-    return TCL_ERROR;
-  }
-#endif
-
 
   // parse the information inside the braces (patches and reinforcing layers)
   if (Tcl_Eval(interp, argv[brace]) != TCL_OK) {
@@ -921,18 +906,9 @@ TclCommand_addFiberIntSection(ClientData clientData, Tcl_Interp *interp,
   if (NDM == 3 && torsion == nullptr) {
     opserr << OpenSees::PromptValueError << "- no torsion specified for 3D fiber section, use -GJ or "
               "-torsion\n";
-    opserr << "\nFiberSectionInt3d: " << secTag << endln;
+    opserr << "\nFiberSectionInt3d: " << secTag << "\n";
     return TCL_ERROR;
   }
-
-#if 0 // TODO !!!
-  // build the fiber section (for analysis)
-  if (buildSectionInt(clientData, interp, secTag, *torsion, NStrip1, t1,
-                      NStrip2, t2, NStrip3, t3) != TCL_OK) {
-    opserr << OpenSees::PromptValueError << "- error constructing the section\n";
-    return TCL_ERROR;
-  }
-#endif
 
   if (deleteTorsion)
     delete torsion;
@@ -1725,7 +1701,7 @@ TclCommand_addUCFiberSection(ClientData clientData, Tcl_Interp *interp,
       UniaxialMaterial *theMaterial = G3_getUniaxialMaterialInstance(rt,matTag);
       if (theMaterial == 0) {
         opserr << "section UCFiber - no material exists with tag << " << matTag
-               << endln;
+               << "\n";
         return TCL_ERROR;
       }
 
@@ -1746,323 +1722,3 @@ TclCommand_addUCFiberSection(ClientData clientData, Tcl_Interp *interp,
 
   return TCL_OK;
 }
-
-#if 0
-#include <UniaxialFiber2d.h>
-#include <UniaxialFiber3d.h>
-int
-buildSectionInt(ClientData clientData, Tcl_Interp *interp, TclBasicBuilder *theTclBasicBuilder,
-                int secTag, UniaxialMaterial &theTorsion, int NStrip1,
-                double t1, int NStrip2, double t2, int NStrip3, double t3)
-{
-  assert(clientData != nullptr);
-  BasicModelBuilder* builder = static_cast<BasicModelBuilder*>(clientData);
-  SectionRepres *sectionRepres = theTclBasicBuilder->getSectionRepres(secTag);
-
-  if (sectionRepres == nullptr) {
-    opserr << OpenSees::PromptValueError << "cannot retrieve section\n";
-    return TCL_ERROR;
-  }
-
-  if (sectionRepres->getType() == SEC_TAG_FiberSection) {
-    // build the section
-
-    FiberSectionRepr *fiberSectionRepr = (FiberSectionRepr *)sectionRepres;
-
-    int i, j, k;
-    int numFibers;
-    int numHFibers;
-
-    int numPatches;
-    Patch **patch;
-
-    int numReinfLayers;
-    ReinfLayer **reinfLayer;
-
-    numPatches = fiberSectionRepr->getNumPatches();
-    patch = fiberSectionRepr->getPatches();
-    numReinfLayers = fiberSectionRepr->getNumReinfLayers();
-    reinfLayer = fiberSectionRepr->getReinfLayers();
-
-    int numSectionRepresFibers = fiberSectionRepr->getNumFibers();
-    Fiber **sectionRepresFibers = fiberSectionRepr->getFibers();
-
-    int numSectionRepresHFibers = fiberSectionRepr->getNumHFibers();
-    Fiber **sectionRepresHFibers = fiberSectionRepr->getHFibers();
-
-    numFibers = numSectionRepresFibers;
-    for (int i = 0; i < numPatches; ++i)
-      numFibers += patch[i]->getNumCells();
-
-    for (int i = 0; i < numReinfLayers; ++i)
-      numFibers += reinfLayer[i]->getNumReinfBars();
-
-    numHFibers = numSectionRepresHFibers;
-
-    static Vector fiberPosition(2);
-    int matTag;
-
-    ID fibersMaterial(numFibers - numSectionRepresFibers);
-    Matrix fibersPosition(2, numFibers - numSectionRepresFibers);
-    Vector fibersArea(numFibers - numSectionRepresFibers);
-
-    int numCells;
-    Cell **cell;
-
-    k = 0;
-    for (int i = 0; i < numPatches; ++i) {
-      numCells = patch[i]->getNumCells();
-      matTag = patch[i]->getMaterialID();
-
-      cell = patch[i]->getCells();
-
-      for (int j = 0; j < numCells; j++) {
-        fibersMaterial(k) = matTag;
-        fibersArea(k) = cell[j]->getArea();
-        fiberPosition = cell[j]->getPosition();
-        fibersPosition(0, k) = fiberPosition(0);
-        fibersPosition(1, k) = fiberPosition(1);
-        k++;
-      }
-
-      for (int j = 0; j < numCells; j++)
-        delete cell[j];
-
-      delete[] cell;
-    }
-
-    ReinfBar *reinfBar;
-    int numReinfBars;
-
-    for (int i = 0; i < numReinfLayers; ++i) {
-      numReinfBars = reinfLayer[i]->getNumReinfBars();
-      reinfBar = reinfLayer[i]->getReinfBars();
-      matTag = reinfLayer[i]->getMaterialID();
-
-      for (int j = 0; j < numReinfBars; j++) {
-        fibersMaterial(k) = matTag;
-        fibersArea(k) = reinfBar[j].getArea();
-        fiberPosition = reinfBar[j].getPosition();
-
-        fibersPosition(0, k) = fiberPosition(0);
-        fibersPosition(1, k) = fiberPosition(1);
-
-        k++;
-      }
-      delete[] reinfBar;
-    }
-
-    UniaxialMaterial *material = nullptr;
-
-    Fiber **fiber = new Fiber *[numFibers];
-
-    // copy the section repres fibers
-    for (i = 0; i < numSectionRepresFibers; ++i)
-      fiber[i] = sectionRepresFibers[i];
-
-    Fiber **Hfiber = new Fiber *[numHFibers];
-
-    // copy the section repres fibers
-    for (int i = 0; i < numSectionRepresHFibers; ++i)
-      Hfiber[i] = sectionRepresHFibers[i];
-
-    // creates 2d section
-    int NDM = builder->getNDM();
-    if (NDM == 2) {
-      k = 0;
-      for (int i = numSectionRepresFibers; i < numFibers; ++i) {
-        material = builder->getUniaxialMaterial(fibersMaterial(k));
-        if (material == nullptr) {
-          opserr << OpenSees::PromptValueError << "invalid material ID for patch\n";
-          return TCL_ERROR;
-        }
-
-        fiber[i] = new UniaxialFiber2d(k, *material, fibersArea(k),
-                                       fibersPosition(0, k));
-
-        k++;
-      }
-
-      SectionForceDeformation *section =
-          new FiberSection2dInt(secTag, numFibers, fiber, numHFibers, Hfiber,
-                                NStrip1, t1, NStrip2, t2, NStrip3, t3);
-
-      // Delete fibers
-      for (int i = 0; i < numFibers; ++i)
-        delete fiber[i];
-
-      for (int i = 0; i < numHFibers; ++i)
-        delete Hfiber[i];
-
-      if (section == nullptr) {
-        opserr << OpenSees::PromptValueError << "cannot construct section\n";
-        return TCL_ERROR;
-      }
-
-      if (theTclBasicBuilder->addSection (*section) < 0) {
-        opserr << OpenSees::PromptValueError << "- cannot add section\n";
-        return TCL_ERROR;
-      }
-
-    } else if (NDM == 3) {
-
-      static Vector fiberPosition(2);
-      k = 0;
-      for (i = numSectionRepresFibers; i < numFibers; ++i) {
-        material = builder->getUniaxialMaterial(fibersMaterial(k));
-        if (material == nullptr) {
-          opserr << OpenSees::PromptValueError << "invalid material ID for patch\n";
-          return TCL_ERROR;
-        }
-
-        fiberPosition(0) = fibersPosition(0, k);
-        fiberPosition(1) = fibersPosition(1, k);
-
-        fiber[i] =
-            new UniaxialFiber3d(k, *material, fibersArea(k), fiberPosition);
-        if (fibersArea(k) < 0)
-          opserr << "ERROR: " << fiberPosition(0) << " " << fiberPosition(1)
-                 << endln;
-        k++;
-      }
-
-      SectionForceDeformation *section = 0;
-      section = new FiberSection3d(secTag, numFibers, fiber, theTorsion,
-                                   options.computeCentroid);
-
-      // Delete fibers
-      for (i = 0; i < numFibers; ++i)
-        delete fiber[i];
-
-      if (section == 0) {
-        opserr << OpenSees::PromptValueError << "- cannot construct section\n";
-        return TCL_ERROR;
-      }
-
-      if (theTclBasicBuilder->addSection (*section) < 0) {
-        opserr << OpenSees::PromptValueError << "- cannot add section\n";
-        return TCL_ERROR;
-      }
-
-    } else {
-      opserr << OpenSees::PromptValueError << "NDM = " << NDM
-             << " is incompatible with available frame elements\n";
-      return TCL_ERROR;
-    }
-
-    // Delete fiber array
-    delete[] fiber;
-    //   delete [] Hfiber;
-
-  } else {
-    opserr << OpenSees::PromptValueError << "section invalid: can only build fiber sections\n";
-    return TCL_ERROR;
-  }
-
-  return TCL_OK;
-}
-#endif
-
-
-#if 0
-SectionForceDeformation*
-G3Parse_newTubeSection(G3_Runtime* rt, int argc, G3_Char ** const argv)
-{
-  SectionForceDeformation *theSection = nullptr;
-  if (strcmp(argv[1], "Tube") == 0) {
-    if (argc < 8) {
-      opserr << OpenSees::PromptValueError << "insufficient arguments\n";
-      opserr << "Want: section Tube tag? matTag? D? t? nfw? nfr?" << endln;
-      return nullptr;
-    }
-
-    int tag, matTag;
-    double D, t;
-    int nfw, nfr;
-
-    if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid section Tube tag" << endln;
-      return nullptr;
-    }
-
-    if (Tcl_GetInt(interp, argv[3], &matTag) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid section Tube matTag" << endln;
-      return nullptr;
-    }
-
-    if (Tcl_GetDouble(interp, argv[4], &D) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid D" << endln;
-      opserr << "Tube section: " << tag << endln;
-      return nullptr;
-    }
-
-    if (Tcl_GetDouble(interp, argv[5], &t) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid t" << endln;
-      opserr << "Tube section: " << tag << endln;
-      return nullptr;
-    }
-
-    if (Tcl_GetInt(interp, argv[6], &nfw) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid nfw" << endln;
-      opserr << "Tube section: " << tag << endln;
-      return nullptr;
-    }
-
-    if (Tcl_GetInt(interp, argv[7], &nfr) != TCL_OK) {
-      opserr << OpenSees::PromptValueError << "invalid nfr" << endln;
-      opserr << "Tube  section: " << tag << endln;
-      return nullptr;
-    }
-
-    TubeSectionIntegration tubesect(D, t, nfw, nfr);
-
-    int numFibers = tubesect.getNumFibers();
-
-    if (argc > 8) {
-
-      double shape = 1.0;
-      if (argc > 9) {
-        if (Tcl_GetDouble(interp, argv[9], &shape) != TCL_OK) {
-          opserr << OpenSees::PromptValueError << "invalid shape" << endln;
-          opserr << "WFSection2d section: " << tag << endln;
-          return nullptr;
-        }
-      }
-
-      NDMaterial *theSteel = builder->getTypedObject<NDMaterial>(matTag);
-      if (theSteel == 0)
-        return nullptr;
-
-
-      NDMaterial **theMats = new NDMaterial *[numFibers];
-
-      tubesect.arrangeFibers(theMats, theSteel);
-
-      // Parsing was successful, allocate the section
-      theSection = 0;
-      if (strcmp(argv[8], "-nd") == 0)
-        theSection =
-            new NDFiberSection3d(tag, numFibers, theMats, tubesect, shape);
-      if (strcmp(argv[8], "-ndWarping") == 0)
-        theSection = new NDFiberSectionWarping2d(tag, numFibers, theMats,
-                                                 tubesect, shape);
-
-      delete[] theMats;
-    } else {
-      UniaxialMaterial *theSteel = builder->getTypedObject<UniaxialMaterial>(matTag);
-      if (theSteel == 0)
-        return nullptr;
-
-      UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
-
-      tubesect.arrangeFibers(theMats, theSteel);
-
-      // Parsing was successful, allocate the section
-      theSection = new FiberSection2d(tag, numFibers, theMats, tubesect);
-
-      delete[] theMats;
-    }
-  }
-}
-#endif
-

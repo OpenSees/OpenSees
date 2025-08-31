@@ -29,6 +29,8 @@
 // $Revision: 1.16 $
 // $Date: 2007-10-16 00:15:07 $
 //
+#include <Parsing.h>
+#include <Logging.h>
 #include <ID.h>
 #include <BasicModelBuilder.h>
 #include <PressureIndependMultiYield.h>
@@ -72,7 +74,7 @@ TclCommand_updateMaterialStage(ClientData clientData,
 
   if (Tcl_GetInt(interp, argv[2], &materialTag) != TCL_OK) {
     opserr << "WARNING MYSstage: invalid material tag" 
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -84,7 +86,7 @@ TclCommand_updateMaterialStage(ClientData clientData,
     if (strcmp(argv[5], "-parameter") == 0) {
       if (Tcl_GetInt(interp, argv[6], &parTag) != TCL_OK) {
         opserr << "WARNING UpdateMaterialStage: invalid parameter tag used"
-               << endln;
+               << "\n";
         return TCL_ERROR;
       }
     }
@@ -95,19 +97,19 @@ TclCommand_updateMaterialStage(ClientData clientData,
   if (domain->addParameter(theParameter) == false) {
     opserr << "WARNING could not add updateMaterialStage - "
               "MaterialStageParameter to domain"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
   if (strcmp(argv[3], "-stage") != 0) {
     opserr
         << "WARNING UpdateMaterialStage: Only accept parameter '-stage' for now"
-        << endln;
+        << "\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetInt(interp, argv[4], &value) != TCL_OK) {
-    opserr << "WARNING UpdateMaterialStage: invalid parameter value" << endln;
+    opserr << "WARNING UpdateMaterialStage: invalid parameter value" << "\n";
     return TCL_ERROR;
   }
 
@@ -131,14 +133,14 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
   if (argc < 5) {
     opserr << "WARNING insufficient number of updateParameter arguments\n";
     opserr << "Want: updateParameter -material matNum? -param? newValue?"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
   if (strcmp(argv[1], "-material") != 0) {
     opserr
         << "WARNING UpdateParameter: Only accept parameter '-material' for now"
-        << endln;
+        << "\n";
     return TCL_ERROR;
   }
 
@@ -146,7 +148,7 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
   double value;
 
   if (Tcl_GetInt(interp, argv[2], &tag) != TCL_OK) {
-    opserr << "WARNING UpdateParameter: invalid material tag" << endln;
+    opserr << "WARNING UpdateParameter: invalid material tag" << "\n";
     return TCL_ERROR;
   }
 
@@ -156,17 +158,17 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
 
   if (a == 0) {
     // opserr << "WARNING UpdateParameter: couldn't get NDmaterial tagged: " <<
-    // tag << endln; return TCL_ERROR;
+    // tag << "\n"; return TCL_ERROR;
     UniaxialMaterial *a = builder->getTypedObject<UniaxialMaterial>(tag);
     if (a == 0) {
       opserr
           << "WARNING UpdateParameter: couldn't get Uniaxialmaterial tagged: "
-          << tag << endln;
+          << tag << "\n";
       return TCL_ERROR;
     }
     if (strcmp(argv[3], "-E") == 0) {
       if (Tcl_GetDouble(interp, argv[4], &value) != TCL_OK) {
-        opserr << "WARNING UpdateParameter: invalid parameter value" << endln;
+        opserr << "WARNING UpdateParameter: invalid parameter value" << "\n";
         return TCL_ERROR;
       }
       Information info;
@@ -174,7 +176,7 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
       a->updateParameter(0, info);
     } else if (strcmp(argv[3], "-fy") == 0) {
       if (Tcl_GetDouble(interp, argv[4], &value) != TCL_OK) {
-        opserr << "WARNING UpdateParameter: invalid parameter value" << endln;
+        opserr << "WARNING UpdateParameter: invalid parameter value" << "\n";
         return TCL_ERROR;
       }
       Information info;
@@ -183,7 +185,7 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
     } else {
       opserr << "WARNING UpdateParameter: Only accept parameter '-E' or '-fy' "
                 "for now"
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
     return TCL_OK;
@@ -196,12 +198,12 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
   else {
     opserr << "WARNING UpdateParameter: Only accept parameter '-refG' or "
               "'-refB' for now"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetDouble(interp, argv[4], &value) != TCL_OK) {
-    opserr << "WARNING UpdateParameter: invalid parameter value" << endln;
+    opserr << "WARNING UpdateParameter: invalid parameter value" << "\n";
     return TCL_ERROR;
   }
 
@@ -212,10 +214,10 @@ TclBasicBuilderUpdateParameterCommand(ClientData clientData, Tcl_Interp *interp,
     info.setDouble(value);
     a->updateParameter(id, info);
   } else {
-    opserr << "WARNING UpdateParameter: The tagged is not a " << endln;
+    opserr << "WARNING UpdateParameter: The tagged is not a " << "\n";
     opserr << "PressureDependMultiYield/PressureIndependMultiYield/"
               "FluidSolidPorous material. "
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 

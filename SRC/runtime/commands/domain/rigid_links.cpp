@@ -35,110 +35,110 @@ static int createLinearRigidDiaphragm(Domain &theDomain, int ret_tag, ID &nC, in
 static int
 createLinearRigidBeam(Domain &theDomain, int ret_tag, int con_tag)
 {
- 
-    // get a pointer to the retained and constrained nodes - make sure they exist
-    Node *nodeR = theDomain.getNode(ret_tag);
 
-    if (nodeR == nullptr) {
+  // get a pointer to the retained and constrained nodes - make sure they exist
+  Node *nodeR = theDomain.getNode(ret_tag);
+
+  if (nodeR == nullptr) {
+    opserr << OpenSees::PromptValueError 
+            << "retained node " <<  ret_tag <<  " not in domain\n";
+    return CONSTRAINT_ERROR;
+  }
+
+  Node *nodeC = theDomain.getNode(con_tag);
+  if (nodeR == nullptr) {
+    opserr << OpenSees::PromptValueError 
+            << "constrained node " <<  con_tag <<  " not in domain\n";
+    return CONSTRAINT_ERROR;
+  }
+
+  // get the coordinates of the two nodes - check dimensions are the same
+  const Vector &crdR = nodeR->getCrds();
+  const Vector &crdC = nodeC->getCrds();
+  int dimR = crdR.Size();
+  int dimC = crdC.Size();
+  if (dimR != dimC) {
+    opserr << OpenSees::PromptValueError 
+            << "mismatch in dimension between constrained node " 
+            <<  con_tag <<  " and retained node " << ret_tag << "\n";
+    return CONSTRAINT_ERROR;
+  }
+  
+  // check the number of dof at each node is the same
+  int numDOF = nodeR->getNumberDOF();
+  if (numDOF != nodeC->getNumberDOF()){ 
+    opserr << OpenSees::PromptValueError 
+            << "mismatch in numDOF between constrained node " 
+            <<  con_tag <<  " and retained node " << ret_tag << "\n";
+    return CONSTRAINT_ERROR;
+  }
+
+  // check the number of dof at the nodes >= dimension of problem
+  if(numDOF < dimR){    
+    opserr << OpenSees::PromptValueError 
+            << "numDOF at nodes " << ret_tag << " and " 
+            <<  con_tag <<  " must be >= dimension of problem\n";
+    return CONSTRAINT_ERROR;
+  }
+
+  // create the ID to identify the constrained dof 
+  ID id(numDOF);
+
+  // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag, Ccr = I
+  Matrix mat(numDOF,numDOF);
+  mat.Zero();
+
+  // set the values
+  for (int i=0; i<numDOF; ++i) {
+    mat(i,i) = 1.0;
+    id(i) = i;
+  }
+
+  // if there are rotational dof - we must modify Ccr DONE ASSUMING SMALL ROTATIONS
+  if (dimR != numDOF) {
+    if (dimR == 2 && numDOF == 3) {
+      double deltaX = crdC(0) - crdR(0);
+      double deltaY = crdC(1) - crdR(1);	    
+      mat(0,2) = -deltaY;
+      mat(1,2) = deltaX;
+
+          } else if (dimR == 3 && numDOF == 6) {
+      double deltaX = crdC(0) - crdR(0);
+      double deltaY = crdC(1) - crdR(1);	    
+      double deltaZ = crdC(2) - crdR(2);
+
+      // rotation about z/3 axis
+      mat(0,5) = -deltaY;
+      mat(1,5) =  deltaX;	
+
+      // rotation about y/2 axis
+      mat(0,4) =  deltaZ;
+      mat(2,4) = -deltaX;
+
+      // rotation about x/1 axis
+      mat(1,3) = -deltaZ;
+      mat(2,3) =  deltaY;
+
+    } else { // not valid
       opserr << OpenSees::PromptValueError 
-             << "retained node " <<  ret_tag <<  " not in domain\n";
+                  << " for nodes " << ret_tag << " and " << con_tag 
+                  << " nodes do not have valid numDOF for their dimension\n";
       return CONSTRAINT_ERROR;
     }
+  }	
+  
+  // create the MP_Constraint
+  MP_Constraint *newC = new MP_Constraint(ret_tag, con_tag, mat, id, id);
 
-    Node *nodeC = theDomain.getNode(con_tag);
-    if (nodeR == nullptr) {
-      opserr << OpenSees::PromptValueError 
-             << "constrained node " <<  con_tag <<  " not in domain\n";
-      return CONSTRAINT_ERROR;
-    }
+  // add the constraint to the domain
+  if (theDomain.addMP_Constraint(newC) == false) {
+    delete newC;
+    opserr << OpenSees::PromptValueError 
+            << "nodes " << con_tag << " and " << ret_tag << ", could not add to domain\n";
+    return CONSTRAINT_ERROR;
+  }
 
-    // get the coordinates of the two nodes - check dimensions are the same
-    const Vector &crdR = nodeR->getCrds();
-    const Vector &crdC = nodeC->getCrds();
-    int dimR = crdR.Size();
-    int dimC = crdC.Size();
-    if (dimR != dimC) {
-      opserr << OpenSees::PromptValueError 
-             << "mismatch in dimension between constrained node " 
-             <<  con_tag <<  " and retained node " << ret_tag << "\n";
-      return CONSTRAINT_ERROR;
-    }
-    
-    // check the number of dof at each node is the same
-    int numDOF = nodeR->getNumberDOF();
-    if (numDOF != nodeC->getNumberDOF()){ 
-      opserr << OpenSees::PromptValueError 
-             << "mismatch in numDOF between constrained node " 
-             <<  con_tag <<  " and retained node " << ret_tag << "\n";
-      return CONSTRAINT_ERROR;
-    }
-
-    // check the number of dof at the nodes >= dimension of problem
-    if(numDOF < dimR){    
-      opserr << OpenSees::PromptValueError 
-             << "numDOF at nodes " << ret_tag << " and " 
-             <<  con_tag <<  " must be >= dimension of problem\n";
-      return CONSTRAINT_ERROR;
-    }
-
-    // create the ID to identify the constrained dof 
-    ID id(numDOF);
-
-    // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag, Ccr = I
-    Matrix mat(numDOF,numDOF);
-    mat.Zero();
-
-    // set the values
-    for (int i=0; i<numDOF; ++i) {
-      mat(i,i) = 1.0;
-      id(i) = i;
-    }
-
-    // if there are rotational dof - we must modify Ccr DONE ASSUMING SMALL ROTATIONS
-    if (dimR != numDOF) {
-      if (dimR == 2 && numDOF == 3) {
-	double deltaX = crdC(0) - crdR(0);
-	double deltaY = crdC(1) - crdR(1);	    
-	mat(0,2) = -deltaY;
-	mat(1,2) = deltaX;
-
-      } else if (dimR == 3 && numDOF == 6) {
-	double deltaX = crdC(0) - crdR(0);
-	double deltaY = crdC(1) - crdR(1);	    
-	double deltaZ = crdC(2) - crdR(2);
-
-	// rotation about z/3 axis
-	mat(0,5) = -deltaY;
-	mat(1,5) =  deltaX;	
-
-	// rotation about y/2 axis
-	mat(0,4) =  deltaZ;
-	mat(2,4) = -deltaX;
-
-	// rotation about x/1 axis
-	mat(1,3) = -deltaZ;
-	mat(2,3) =  deltaY;
-
-      } else { // not valid
-	opserr << OpenSees::PromptValueError 
-               << " for nodes " << ret_tag << " and " << con_tag 
-               << " nodes do not have valid numDOF for their dimension\n";
-	return CONSTRAINT_ERROR;
-      }
-    }	
-    
-    // create the MP_Constraint
-    MP_Constraint *newC = new MP_Constraint(ret_tag, con_tag, mat, id, id);
-
-    // add the constraint to the domain
-    if (theDomain.addMP_Constraint(newC) == false) {
-      delete newC;
-      opserr << OpenSees::PromptValueError 
-             << "nodes " << con_tag << " and " << ret_tag << ", could not add to domain\n";
-      return CONSTRAINT_ERROR;
-    }
-
-    return CONSTRAINT_OK;
+  return CONSTRAINT_OK;
 }
 
 // File: ~/model/constraints/RigidRod.C
@@ -149,72 +149,72 @@ static int
 createLinearRigidRod(Domain &theDomain, int ret_tag, int con_tag)
 {
 
-    // get a pointer to the retained node and constrained nodes - ensure these exist
-    Node *nodeR = theDomain.getNode(ret_tag);
-    if (nodeR == 0) {
-      opserr << OpenSees::PromptValueError
-             << "retained node " <<  ret_tag <<  " not in domain\n";
-      return CONSTRAINT_ERROR;
-    }
-    Node *nodeC = theDomain.getNode(con_tag);
-    if (nodeR == 0) {
-      opserr << OpenSees::PromptValueError 
-             << "constrained node " <<  con_tag <<  " not in domain\n";
-      return CONSTRAINT_ERROR;
-    }
+  // get a pointer to the retained node and constrained nodes - ensure these exist
+  Node *nodeR = theDomain.getNode(ret_tag);
+  if (nodeR == nullptr) {
+    opserr << OpenSees::PromptValueError
+            << "retained node " <<  ret_tag <<  " not in domain\n";
+    return CONSTRAINT_ERROR;
+  }
+  Node *nodeC = theDomain.getNode(con_tag);
+  if (nodeR == nullptr) {
+    opserr << OpenSees::PromptValueError 
+            << "constrained node " <<  con_tag <<  " not in domain\n";
+    return CONSTRAINT_ERROR;
+  }
 
-    // get the coordinates of the two nodes - check dimensions are the same
-    const Vector &crdR = nodeR->getCrds();
-    const Vector &crdC = nodeC->getCrds();
-    int dimR = crdR.Size();
-    int dimC = crdC.Size();
-    if (dimR != dimC) {
-      opserr << OpenSees::PromptValueError 
-             << "mismatch in dimension between constrained node " 
-             <<  con_tag <<  " and retained node " << ret_tag << "\n";
-      return CONSTRAINT_ERROR;
-    }
-    
-    // check the number of dof at each node is the same 
-    int numDOF = nodeR->getNumberDOF();
-    if (numDOF != nodeC->getNumberDOF()){ 
-      opserr << OpenSees::PromptValueError 
-             << "mismatch in numDOF " << "between constrained node " 
-             <<  con_tag <<  " and retained node " << ret_tag << "\n";
-      return CONSTRAINT_ERROR;
-    }
+  // get the coordinates of the two nodes - check dimensions are the same
+  const Vector &crdR = nodeR->getCrds();
+  const Vector &crdC = nodeC->getCrds();
+  int dimR = crdR.Size();
+  int dimC = crdC.Size();
+  if (dimR != dimC) {
+    opserr << OpenSees::PromptValueError 
+            << "mismatch in dimension between constrained node " 
+            <<  con_tag <<  " and retained node " << ret_tag << "\n";
+    return CONSTRAINT_ERROR;
+  }
+  
+  // check the number of dof at each node is the same 
+  int numDOF = nodeR->getNumberDOF();
+  if (numDOF != nodeC->getNumberDOF()){ 
+    opserr << OpenSees::PromptValueError 
+            << "mismatch in numDOF " << "between constrained node " 
+            <<  con_tag <<  " and retained node " << ret_tag << "\n";
+    return CONSTRAINT_ERROR;
+  }
 
-    // check the number of dof at the nodes >= dimension of problem
-    if(numDOF < dimR){    
-      opserr << OpenSees::PromptValueError 
-             << "numDOF at nodes " << ret_tag << " and " << con_tag 
-             << " must be >= dimension of problem\n";
-      return CONSTRAINT_ERROR;
-    }
- 
-    // create the ID to identify the constrained dof 
-    ID id(dimR);
+  // check the number of dof at the nodes >= dimension of problem
+  if(numDOF < dimR){    
+    opserr << OpenSees::PromptValueError 
+            << "numDOF at nodes " << ret_tag << " and " << con_tag 
+            << " must be >= dimension of problem\n";
+    return CONSTRAINT_ERROR;
+  }
 
-    // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag
-    Matrix mat(dimR,dimR);
-    mat.Zero();
+  // create the ID to identify the constrained dof 
+  ID id(dimR);
 
-    // set the values
-    for (int i=0; i<dimR; ++i) {
-      mat(i,i) = 1.0;
-      id(i) = i;
-    }
+  // construct the transformation matrix Ccr, where  Uc = Ccr Ur & set the diag
+  Matrix mat(dimR,dimR);
+  mat.Zero();
 
-    // create the MP_Constraint
-    MP_Constraint *newC = new MP_Constraint(ret_tag, con_tag, mat, id, id);
+  // set the values
+  for (int i=0; i<dimR; ++i) {
+    mat(i,i) = 1.0;
+    id(i) = i;
+  }
 
-    // add the constraint to the domain
-    if (theDomain.addMP_Constraint(newC) == false) {
-      delete newC;
-      opserr << OpenSees::PromptValueError << "for nodes " << con_tag << " and " << ret_tag << " could not add to domain\n";
-      return CONSTRAINT_ERROR;
-    }
-    return CONSTRAINT_OK;
+  // create the MP_Constraint
+  MP_Constraint *newC = new MP_Constraint(ret_tag, con_tag, mat, id, id);
+
+  // add the constraint to the domain
+  if (theDomain.addMP_Constraint(newC) == false) {
+    delete newC;
+    opserr << OpenSees::PromptValueError << "for nodes " << con_tag << " and " << ret_tag << " could not add to domain\n";
+    return CONSTRAINT_ERROR;
+  }
+  return CONSTRAINT_OK;
 }
 
 

@@ -122,21 +122,6 @@ TclCommand_addNode(ClientData clientData, Tcl_Interp *interp, int argc,
     theNode = new HeapNode(nodeId, ndf, xLoc, yLoc);
     break;
   case 3:
-#if 0
-    if (getenv("NODE")) {
-      switch (ndf) {
-        case 3:
-          theNode = new NodeND<3, 3>(nodeId, xLoc, yLoc, zLoc);
-          break;
-        case 6:
-          theNode = new NodeND<3, 6>(nodeId, xLoc, yLoc, zLoc);
-          break;
-        default:
-          theNode = new HeapNode(nodeId, ndf, xLoc, yLoc, zLoc);
-          break;
-      }
-    } else
-#endif
       theNode = new HeapNode(nodeId, ndf, xLoc, yLoc, zLoc);
     break;
   }

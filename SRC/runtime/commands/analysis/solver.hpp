@@ -52,13 +52,8 @@
 #include <ArpackSOE.h>
 #include <ArpackSolver.h>
 
-#if 1 || defined(_PETSC)
+#if defined(_PETSC)
 LinearSOE *TclCommand_newPetscSOE(int, TCL_Char**);
-#endif
-
-#ifdef _CUDA
-#  include <BandGenLinSOE_Single.h>
-#  include <BandGenLinLapackSolver_Single.h>
 #endif
 
 #if defined(_PARALLEL_PROCESSING)

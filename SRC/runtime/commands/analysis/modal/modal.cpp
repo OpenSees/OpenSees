@@ -100,7 +100,7 @@ responseSpectrumAnalysis(ClientData clientData,
   }
 
   if (clientData == nullptr) {
-    opserr << "ResponseSpectrumAnalysis - eigen and modalProperties have not been called" << endln;
+    opserr << "ResponseSpectrumAnalysis - eigen and modalProperties have not been called" << "\n";
     return TCL_ERROR;
   }
 

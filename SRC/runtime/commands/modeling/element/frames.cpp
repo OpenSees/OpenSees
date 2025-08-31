@@ -329,9 +329,6 @@ CreateFrame(BasicModelBuilder& builder,
             static_loop<0, 3>([&](auto nwm) constexpr {
               if (nwm.value + 6 == ndf) {
                 // Create the transform
-#if 0 || defined(NEW_TRANSFORM)
-                FrameTransform<2,6+nwm.value> *tran = tb->template create<2,6+nwm.value>();
-#endif
                 if (!options.shear_flag) {
                   static_loop<2,30>([&](auto nip) constexpr {
                     if (nip.value == sections.size())
@@ -416,18 +413,6 @@ CreateFrame(BasicModelBuilder& builder,
   return theElement;
 }
 
-
-#if 0
-Element*
-CreateInelasticFrame(std::string, std::vector<int>& nodes,
-                                  std::vector<FrameSection>&, 
-                                  BeamIntegration&, 
-                              //  FrameQuadrature&,
-                                  FrameTransform&,
-                                  Options&);
-Element*
-CreatePrismaticFrame(std::string);
-#endif
 
 // 0       1    2 3  4
 // element beam 1 $i $j 0 1 2

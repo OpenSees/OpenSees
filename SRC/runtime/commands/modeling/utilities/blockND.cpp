@@ -167,21 +167,6 @@ TclCommand_doBlock2D(ClientData clientData,
         theNode = new Node(nodeID, ndf, nodeCoords(0), nodeCoords(1));
 
       } else if (ndm == 3) {
-#if 0
-        if (getenv("NODE")) {
-          switch (ndf) {
-            case 3:
-              theNode = new NodeND<3, 3>(nodeID, nodeCoords(0), nodeCoords(1), nodeCoords(2));
-              break;
-            case 6:
-              theNode = new NodeND<3, 6>(nodeID, nodeCoords(0), nodeCoords(1), nodeCoords(2));
-              break;
-            default:
-              theNode = new HeapNode(nodeID, ndf, nodeCoords(0), nodeCoords(1), nodeCoords(2));
-              break;
-          }
-        } else
-#endif
 //        theNode = new HeapNode(nodeID, ndf, nodeCoords(0), nodeCoords(1), nodeCoords(2));
           theNode = new Node(nodeID,ndf, nodeCoords(0), nodeCoords(1), nodeCoords(2));
       }
@@ -343,21 +328,6 @@ TclCommand_doBlock3D(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
         const Vector &nodeCoords = theBlock.getNodalCoords(ii,jj,kk);
         //
         Node* theNode = nullptr;
-#if 0
-        if (getenv("NODE")) {
-          switch (ndf) {
-            case 3:
-              theNode = new NodeND<3, 3>(nodeID, nodeCoords(0), nodeCoords(1), nodeCoords(2));
-              break;
-            case 6:
-              theNode = new NodeND<3, 6>(nodeID, nodeCoords(0), nodeCoords(1), nodeCoords(2));
-              break;
-            default:
-              theNode = new HeapNode(nodeID, ndf, nodeCoords(0), nodeCoords(1), nodeCoords(2));
-              break;
-          }
-        } else
-#endif
 //        theNode = new HeapNode(nodeID, ndf, nodeCoords(0), nodeCoords(1), nodeCoords(2));
           theNode = new Node(nodeID,ndf,nodeCoords(0),nodeCoords(1),nodeCoords(2));
 

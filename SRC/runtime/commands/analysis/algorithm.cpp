@@ -781,7 +781,7 @@ printAlgorithm(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   int flag;
   if (Tcl_GetInt(interp, argv[eleArg], &flag) != TCL_OK) {
     opserr << "WARNING print algorithm failed to get integer flag: \n";
-    opserr << argv[eleArg] << endln;
+    opserr << argv[eleArg] << "\n";
     return TCL_ERROR;
   }
   theAlgorithm->Print(output, flag);
@@ -843,7 +843,7 @@ TclCommand_algorithmRecorder(ClientData clientData, Tcl_Interp *interp, Tcl_Size
   if (theAlgo != nullptr) {
     if ((theAlgo->addRecorder(*theRecorder)) < 0) {
       opserr << "WARNING could not add to domain - recorder " << argv[1]
-             << endln;
+             << "\n";
       delete theRecorder;
       return TCL_ERROR;
     }

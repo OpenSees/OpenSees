@@ -166,67 +166,6 @@ TclCommand_specifyModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL
       G3_AddTclAnalysisAPI(interp, *theNewBuilder);
     }
   }
-
-#if 0
-  else if ((strcmp(argv[1], "test") == 0) ||
-           (strcmp(argv[1], "uniaxial") == 0) ||
-           (strcmp(argv[1], "TestUniaxial") == 0) ||
-           (strcmp(argv[1], "testUniaxial") == 0) ||
-           (strcmp(argv[1], "UniaxialMaterialTest") == 0)) {
-    int count = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &count) != TCL_OK) {
-        return TCL_ERROR;
-      }
-    }
-    theNewBuilder = new TclUniaxialMaterialTester(*theNewDomain, interp, count);
-    if (theNewBuilder == 0) {
-      opserr << OpenSees::PromptValueError << "ran out of memory in creating "
-                "TclUniaxialMaterialTester model\n";
-      return TCL_ERROR;
-    } else {
-      G3_setModelBuilder(rt, theNewBuilder);
-    }
-  }
-
-
-  else if ((strcmp(argv[1], "testPlaneStress") == 0) ||
-           (strcmp(argv[1], "StressPatch") == 0)     ||
-           (strcmp(argv[1], "PlaneStressMaterialTest") == 0)) {
-    int count = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &count) != TCL_OK) {
-        return TCL_ERROR;
-      }
-    }
-
-    theNewBuilder = new TclPlaneStressMaterialTester(theDomain, interp, count);
-    if (theNewBuilder == 0) {
-      opserr << OpenSees::PromptValueError << "ran out of memory in creating "
-                "TclUniaxialMaterialTester model\n";
-      return TCL_ERROR;
-    }
-  }
-
-  else if ((strcmp(argv[1], "sectionTest") == 0) ||
-           (strcmp(argv[1], "TestSection") == 0) ||
-           (strcmp(argv[1], "testSection") == 0) ||
-           (strcmp(argv[1], "SectionForceDeformationTest") == 0)) {
-    int count = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &count) != TCL_OK) {
-        return TCL_ERROR;
-      }
-    }
-    theNewBuilder = new TclSectionTestBuilder(theDomain, interp, count);
-    if (theNewBuilder == 0) {
-      opserr << OpenSees::PromptValueError << "ran out of memory in creating "
-                "TclUniaxialMAterialTester model\n";
-      return TCL_ERROR;
-    } 
-  }
-#endif
-
   else {
     opserr << OpenSees::PromptValueError 
            << "unknown model builder type '" << argv[1] << "' not supported"

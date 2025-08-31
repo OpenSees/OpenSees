@@ -123,31 +123,16 @@ G3Parse_newLinearSOE(ClientData clientData, Tcl_Interp* interp, Tcl_Size argc,
     return ctor->second.ss(rt, argc, argv);
   }
 
-#if 1 || defined(XARA_USE_MUMPS)
+#if defined(XARA_USE_MUMPS)
   else if (strcasecmp(argv[1], "mumps") == 0) {
     return TclDispatch_newMumpsLinearSOE(clientData, interp, argc, argv);
   }
 #endif
+
   else if (strcasecmp(argv[1], "Umfpack")==0) {
     // TODO: if "umfpack" is in solver.hpp, this wont be reached
     return TclDispatch_newUmfpackLinearSOE(clientData, interp, argc, argv);
   }
-
-#if 0
-  else if (strcmp(argv[2],"Thread") == 0) {  
-      int blockSize = 4;
-      int numThreads = 1;
-      if (argc == 5) {
-    if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-      return nullptr; //TCL_ERROR;
-    if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-      return nullptr; //TCL_ERROR;
-    }
-    return new ProfileSPDLinSOE(
-        *new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12)
-    );
-  } 
-#endif
 
 #if defined(OPS_PETSC)
   else if (strcmp(argv[1], "petsc")==0 ||
@@ -267,6 +252,16 @@ specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
       theSolver = new ThreadedSuperLU(np, permSpec, panelSize, relax, thresh);
     else
       return nullptr;
+// #endif
+// 
+// #ifdef _PARALLEL_PROCESSING
+//     if (theSolver != 0)
+//       delete theSolver;
+//     theSolver = 0;
+// 
+//     if (npRow != 0 && npCol != 0) {
+//       theSolver = new DistributedSuperLU(npRow, npCol);
+//     }
 #else
     char symmetric = 'N';
     double drop_tol = 0.0;
@@ -283,7 +278,10 @@ specifySparseGen(G3_Runtime* rt, int argc, G3_Char ** const argv)
     theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric);
 #endif
 
-  return new SparseGenColLinSOE(*theSolver);
+#ifdef _PARALLEL_PROCESSING
+    return new DistributedSparseGenColLinSOE(*theSolver);
+#else
+    return new SparseGenColLinSOE(*theSolver);
+#endif
 }
-
 

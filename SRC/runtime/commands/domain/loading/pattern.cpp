@@ -134,7 +134,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
 
     if (theSeries == nullptr) {
       opserr << OpenSees::PromptValueError << "problem creating TimeSeries for LoadPattern "
-             << patternID << endln;
+             << patternID << "\n";
 
       // clean up the memory and return an error
       if (thePattern != nullptr)
@@ -285,7 +285,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
         if (Tcl_GetDouble(interp, argv[i + 2], &dt) != TCL_OK) {
           opserr << OpenSees::PromptValueError << "problem reading ground motion "
                  << "time interval - pattern UniformExcitation: " << patternID
-                 << endln;
+                 << "\n";
           return TCL_ERROR;
         }
         numInputs -= 3;
@@ -321,7 +321,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
         break;
       default:
         opserr << OpenSees::PromptValueError << "cannot read direction for excitation \n";
-        opserr << "UniformExcitation " << patternID << " dir factor" << endln;
+        opserr << "UniformExcitation " << patternID << " dir factor" << "\n";
         return TCL_ERROR;
         break;
       }
@@ -340,7 +340,7 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
     // Read in the ground motion
     if (accelFileName == 0) {
       opserr << OpenSees::PromptValueError << "No ground motion data provided\n";
-      opserr << "UniformExcitation tag: " << patternID << endln;
+      opserr << "UniformExcitation tag: " << patternID << "\n";
       return TCL_ERROR;
     }
 
@@ -716,13 +716,13 @@ TclCommand_addPattern(ClientData clientData, Tcl_Interp *interp, int argc,
 
     opserr << "Creating H5DRM tag = " << tag
            << " filename = " << filename.c_str() << " factor = " << factor
-           << endln;
+           << "\n";
 
     thePattern = new H5DRM(tag, filename, factor);
 
     opserr << "Done! Creating H5DRM tag = " << tag
            << " filename = " << filename.c_str() << " factor = " << factor
-           << endln;
+           << "\n";
 
     domain->addLoadPattern(thePattern);
     return TCL_OK;

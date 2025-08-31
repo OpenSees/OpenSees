@@ -131,19 +131,6 @@ extern void *OPS_ConcretewBeta();
 
 extern Tcl_CmdProc Create_OOHystereticMaterial;
 
-
-
-#if 0
-const char** DeprecatedUniaxialMaterials {
-  {"Bilin02", "This material is superceded by \"IMKBilin\" and \"HystereticSM\""},
-  {"CFSSSWP", ""},
-  {"CFSWSWP", ""},
-  {"APDVFD",  ""},
-  {"APDMD",   ""},
-  {"APDFMD",  ""},
-};
-#endif
-
 typedef UniaxialMaterial*(G3_TclUniaxialPackage)(ClientData, Tcl_Interp *, int, TCL_Char ** const);
 G3_TclUniaxialPackage TclBasicBuilder_addFedeasMaterial;
 G3_TclUniaxialPackage TclBasicBuilder_addSnapMaterial;
@@ -152,9 +139,6 @@ std::unordered_map<std::string, G3_TclUniaxialPackage *> tcl_uniaxial_package_ta
   {"DRAIN",              TclBasicBuilder_addDrainMaterial },
   {"SNAP",               TclBasicBuilder_addSnapMaterial  },
   {"snap",               TclBasicBuilder_addSnapMaterial  },
-// #if defined(_STEEL2) || defined(OPSDEF_UNIAXIAL_FEDEAS)
-//{"FEDEAS",             TclBasicBuilder_addFedeasMaterial},
-// #endif
 };
 
 
@@ -297,11 +281,6 @@ std::unordered_map<std::string, Tcl_CmdProc*> uniaxial_dispatch {
 
     {"ConcreteZ01Material",    dispatch<OPS_ConcreteZ01Material>       },
     {"ConcreteZ01",            dispatch<OPS_ConcreteZ01Material>       },
-
-
-#if 0
-    { "ConcretewBeta",       dispatch<OPS_ConcretewBeta>    }
-#endif
 //
 // Viscous
 //

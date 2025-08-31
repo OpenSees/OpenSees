@@ -106,7 +106,7 @@ TclAddDatabase(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** 
     // check we instantiated a database .. if not ran out of memory
     if (theDatabase == nullptr) {
       opserr << "WARNING ran out of memory - database File " << argv[2]
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
 
@@ -182,7 +182,7 @@ save(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv
   // check argv[1] for commitTag
   int commitTag;
   if (Tcl_GetInt(interp, argv[1], &commitTag) != TCL_OK) {
-    opserr << "WARNING - save could not read commitTag " << argv[1] << endln;
+    opserr << "WARNING - save could not read commitTag " << argv[1] << "\n";
     return TCL_OK;
   }
 
@@ -212,7 +212,7 @@ restore(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const a
   // check argv[1] for commitTag
   int commitTag;
   if (Tcl_GetInt(interp, argv[1], &commitTag) != TCL_OK) {
-    opserr << "WARNING - restore could not read commitTag " << argv[1] << endln;
+    opserr << "WARNING - restore could not read commitTag " << argv[1] << "\n";
     return TCL_OK;
   }
 
