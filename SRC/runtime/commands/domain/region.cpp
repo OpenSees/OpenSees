@@ -1,10 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
+//
 // Description: This file contains the function that is invoked
 // by the interpreter when the command 'region' is invoked by the
 // user.
@@ -13,8 +21,6 @@
 //
 #include <Logging.h>
 #include <Parsing.h>
-// #include <stdio.h>
-// #include <stdlib.h>
 #include <string.h>
 #include <tcl.h>
 #include <Domain.h>

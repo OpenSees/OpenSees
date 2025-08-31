@@ -367,8 +367,8 @@ getEleLoadClassTags(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
         Tcl_AppendResult(interp, buffer, NULL);
       }
     }
-
-  } else if (argc == 2) {
+  }
+  else if (argc == 2) {
     int patternTag;
 
     if (Tcl_GetInt(interp, argv[1], &patternTag) != TCL_OK) {
@@ -418,8 +418,6 @@ getEleLoadTags(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
     LoadPattern *thePattern;
     LoadPatternIter &thePatterns = the_domain->getLoadPatterns();
 
-    // char buffer[20];
-
     Tcl_Obj *result = Tcl_NewListObj(0, nullptr);
 
     while ((thePattern = thePatterns()) != nullptr) {
@@ -428,8 +426,6 @@ getEleLoadTags(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
 
       while ((theLoad = theEleLoads()) != nullptr) {
         Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(theLoad->getElementTag()));
-        // sprintf(buffer, "%d ", theLoad->getElementTag());
-        // Tcl_AppendResult(interp, buffer, NULL);
       }
     }
 

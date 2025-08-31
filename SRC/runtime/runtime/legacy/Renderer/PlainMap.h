@@ -18,50 +18,45 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-#ifndef CircSectionCell_h 
-#define CircSectionCell_h 
+// $Revision: 1.2 $
+// $Date: 2001-07-26 00:56:05 $
+// $Source: /usr/local/cvs/OpenSees/SRC/renderer/PlainMap.h,v $
+                                                                        
+                                                                        
+// File: ~/graphics/PlainMap.h
+//
+// Written: fmk 
+// Created: 10/98
+// Revision: A
+//
+// Description: This file contains the class definition for PlainMap.
+// PlainMap is an abstract base class. An PlainMap object is used
+// to determine the r,g,b values given an input value.
+//
+// What: "@(#) PlainMap.h, revA"
 
-#include <Cell.h>
-#include <Vector.h>
+#ifndef PlainMap_h
+#define PlainMap_h
 
-class Matrix;
-class Vector;
+#include "ColorMap.h"
 
-
-class CircSectionCell: public Cell
+class PlainMap: public ColorMap
 {
   public:
+    PlainMap();
+    float getRed(float value);
+    float getGreen(float value);
+    float getBlue(float value);
+    int   getRGB(float value, float &red, float &green, float &blue);
+    int   startImage();
 
-    CircSectionCell();
-    CircSectionCell(double r2, double r1, double alpha, double theta, double centerX, double centerY);
-        
-    ~CircSectionCell();
-    
-    // edition functions
-
-    void setVertCoords (const Matrix &vertexCoords);
-
-    // reinforcing bar inquiring functions
-    
-    double getArea                     (void) const;
-    double getdValue                   (void) const;    
-    const  Matrix &getVertCoords       (void) const;
-    const  Vector &getCentroidPosition (void);
-
-    void Print(OPS_Stream &s, int flag =0) const;   
-    friend OPS_Stream &operator<<(OPS_Stream &s, const CircSectionCell &quadCell);    
-    
   protected:
     
   private:
-    double r1, r2; // r1 inner and r2 outer radii
-    double alpha;  // inner angle of section
-    double theta;  // angle of centerline about z axis
-
-    double A;
-    Vector Centroid;
-    double offsetX, offsetY;
-//    double area;
+    float max, min;
+    float maxLast, minLast;
+    float *data;
+    int sizeData;
 };
 
 

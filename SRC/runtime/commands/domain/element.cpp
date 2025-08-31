@@ -79,25 +79,25 @@ addElementRayleigh(ClientData clientData, Tcl_Interp *interp,
   double alphaM, betaK, betaKinit, betaKcomm;
 
   if (Tcl_GetDouble(interp, argv[2], &alphaM) != TCL_OK) {
-    opserr << "WARNING : setElementRayleighFactors invalid ";
+    opserr << "WARNING : invalid ";
     opserr << "alphaM: " << argv[2] << "\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetDouble(interp, argv[3], &betaK) != TCL_OK) {
-    opserr << "WARNING : setElementRayleighFactors invalid ";
+    opserr << "WARNING : invalid ";
     opserr << "betaK: " << argv[3] << "\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetDouble(interp, argv[4], &betaKinit) != TCL_OK) {
-    opserr << "WARNING : setElementRayleighFactors invalid ";
+    opserr << "WARNING : invalid ";
     opserr << "betaKinit: " << argv[4] << "\n";
     return TCL_ERROR;
   }
 
   if (Tcl_GetDouble(interp, argv[5], &betaKcomm) != TCL_OK) {
-    opserr << "WARNING : setElementRayleighFactors invalid ";
+    opserr << "WARNING : invalid ";
     opserr << "betaKcomm: " << argv[5] << "\n";
     return TCL_ERROR;
   }
@@ -105,11 +105,11 @@ addElementRayleigh(ClientData clientData, Tcl_Interp *interp,
   Element *elePtr = theTclDomain->getElement(eleTag);
 
   if (elePtr == nullptr)
-    opserr << "WARNING : setElementRayleighFactors invalid eleTag: " << eleTag
+    opserr << "WARNING : invalid eleTag: " << eleTag
            << " the element does not exist in the domain \n";
 
   if (elePtr->setRayleighDampingFactors(alphaM, betaK, betaKinit, betaKcomm) != 0) {
-    opserr << "ERROR : setElementRayleighFactors: FAILED to add damping "
+    opserr << "ERROR :: Failed to add damping "
               "factors for element "
            << eleTag << "\n";
   }

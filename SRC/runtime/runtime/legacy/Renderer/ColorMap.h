@@ -17,81 +17,42 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
+                                                                        
+// $Revision: 1.2 $
+// $Date: 2001-07-26 00:56:05 $
+// $Source: /usr/local/cvs/OpenSees/SRC/renderer/ColorMap.h,v $
+                                                                        
+                                                                        
+// File: ~/graphics/ColorMap.h
 //
-// File: ReinfBar.C
-// Written by Remo M. de Souza
-// December 1998
+// Written: fmk 
+// Created: 10/98
+// Revision: A
+//
+// Description: This file contains the class definition for ColorMap.
+// ColorMap is an abstract base class. An ColorMap object is used
+// to determine the r,g,b values given an input value.
+//
+// What: "@(#) ColorMap.h, revA"
 
-#include <math.h>
-#include <Matrix.h>
-#include <Vector.h>
-#include <OPS_Stream.h>
-#include <ReinfBar.h>
+#ifndef ColorMap_h
+#define ColorMap_h
 
-
-ReinfBar::ReinfBar (void):
-                   diameter(0.0), area(0.0), matID(0), posit(2)
+class ColorMap
 {
-
-}
-
-
-ReinfBar::ReinfBar(double barArea, int materialID, const Vector &position):
-                   diameter(0.0), area(barArea),
-                   matID(materialID), posit(position)
-{
-}
-
-ReinfBar::~ReinfBar()
-{
-
-}
-
-void ReinfBar::setDiameter (double barDiameter)
-{
-   double pi = acos(-1.0);
-   diameter = barDiameter;
-   area = pi * diameter*diameter/4.0;     
-}
-
-void ReinfBar::setArea (double barArea)
-{
-   area = barArea;
-}
-
-void ReinfBar::setMaterial (int materialID)
-{
-   matID = materialID;
-}
-
-void ReinfBar::setPosition (const Vector &position)
-{
-   posit = position;
-}
-
-double ReinfBar::getDiameter(void) const
-{
-   return diameter;
-}
-
-double ReinfBar::getArea (void) const
-{
-   return area;
-}
+  public:
+    ColorMap() {};
+    virtual ~ColorMap() {};
+    virtual float getRed(float value) =0;
+    virtual float getGreen(float value) =0;
+    virtual float getBlue(float value) =0;
+    virtual int   getRGB(float value, float &red, float &green, float &blue) =0;
+    virtual int   startImage() =0;
+  protected:
+    
+  private:
+};
 
 
-const Vector & ReinfBar::getPosition(void) const
-{
-   return posit;
-}
-
-
-void ReinfBar::Print(OPS_Stream &s, int flag) const
-{
-   s << "\nReinforcing Bar area: " << area;
-   s << "\nMaterial ID: " << matID;
-   s << "\nDiameter: " << diameter;
-   s << "\nArea: " << area;
-   s << "\nPosition: " << posit;
-}
+#endif
 
