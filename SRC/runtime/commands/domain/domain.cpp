@@ -265,45 +265,6 @@ removeObject(ClientData clientData, Tcl_Interp *interp, int argc,
     }
   }
 
-#ifdef _RELIABILITY
-  // AddingSensitivity:BEGIN ///////////////////////////////////////
-  else if (strcmp(Tcl_GetString(objv[1]), "randomVariable") == 0) {
-    int rvTag;
-    if (Tcl_GetIntFromObj(interp, objv[2], &rvTag) != TCL_OK) {
-      opserr << "WARNING invalid input: rvTag \n";
-      return TCL_ERROR;
-    }
-    ReliabilityDomain *theReliabilityDomain =
-        theReliabilityBuilder->getReliabilityDomain();
-    theReliabilityDomain->removeRandomVariable(rvTag);
-  } else if (strcmp(Tcl_GetString(objv[1]), "performanceFunction") == 0) {
-    int lsfTag;
-    if (Tcl_GetIntFromObj(interp, objv[2], &lsfTag) != TCL_OK) {
-      opserr << "WARNING invalid input: lsfTag \n";
-      return TCL_ERROR;
-    }
-    ReliabilityDomain *theReliabilityDomain =
-        theReliabilityBuilder->getReliabilityDomain();
-    theReliabilityDomain->removeLimitStateFunction(lsfTag);
-  } else if (strcmp(Tcl_GetString(objv[1]), "cutset") == 0) {
-    int cutTag;
-    if (Tcl_GetIntFromObj(interp, objv[2], &cutTag) != TCL_OK) {
-      opserr << "WARNING invalid input: cutTag \n";
-      return TCL_ERROR;
-    }
-    ReliabilityDomain *theReliabilityDomain =
-        theReliabilityBuilder->getReliabilityDomain();
-    theReliabilityDomain->removeCutset(cutTag);
-  } else if (strcmp(Tcl_GetString(objv[1]), "sensitivityAlgorithm") == 0) {
-    if (theSensitivityAlgorithm != 0) {
-      // the_static_analysis->setSensitivityAlgorithm(0);
-      theSensitivityAlgorithm = 0;
-      theSensitivityIntegrator = 0;
-    }
-  }
-// AddingSensitivity:END ///////////////////////////////////////
-#endif
-
   else
     opserr << "WARNING remove " 
            << Tcl_GetString(objv[1]) << " not supported" << "\n";

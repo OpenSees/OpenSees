@@ -339,13 +339,10 @@ TimeSeries *G3_getTimeSeries(G3_Runtime *rt, int tag)
   BasicModelBuilder *builder = G3_getSafeBuilder(rt);
   if (builder) {
      series = builder->getTypedObject<TimeSeries>(tag);
-     // TODO
-#if 1
      if (series)
        return series->getCopy();
      else
       return nullptr;
-#endif
   } else {
     return nullptr;
   }

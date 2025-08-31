@@ -245,7 +245,6 @@ int
 sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc,
                  TCL_Char ** const argv)
 {
-#if 1 // def _RELIABILITY
   assert(clientData != nullptr);
   Domain *theDomain = (Domain *)clientData;
 
@@ -333,7 +332,7 @@ sensSectionForce(ClientData clientData, Tcl_Interp *interp, int argc,
   theParam->activate(false);
 
   delete theResponse;
-#endif
+
   return TCL_OK;
 }
 

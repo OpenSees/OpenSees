@@ -823,36 +823,7 @@ int
 TclCommand_algorithmRecorder(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
                         TCL_Char ** const argv)
 {
-#if 1
   return TCL_ERROR;
-#else
-  Recorder *theRecorder = nullptr;
-  BasicAnalysisBuilder* builder = (BasicAnalysisBuilder*)clientData;
-  Domain* domain = builder->getDomain();
-  EquiSolnAlgo *theAlgo;
-  TclCreateRecorder(clientData, interp, argc, argv, *domain, &theRecorder);
-
-  if (theRecorder == nullptr) {
-    char buffer[] = "-1";
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-    return TCL_ERROR;
-  }
-
-  // add the recorder to the domain,
-  // NOTE: will not be called with theALgo == 0
-  if (theAlgo != nullptr) {
-    if ((theAlgo->addRecorder(*theRecorder)) < 0) {
-      opserr << "WARNING could not add to domain - recorder " << argv[1]
-             << "\n";
-      delete theRecorder;
-      return TCL_ERROR;
-    }
-  }
-
-  int recorderTag = theRecorder->getTag();
-  Tcl_SetObjResult(interp, Tcl_NewIntObj(recorderTag));
-  return TCL_OK;
-#endif
 }
 
 int
