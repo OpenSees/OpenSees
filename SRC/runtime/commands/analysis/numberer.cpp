@@ -1,10 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
-//===----------------------------------------------------------------------===// 
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
+//
 // Description: This file implements the selection of a Numberer object,
 // which is used to optimally number the degrees of freedom of a problem.
 //
