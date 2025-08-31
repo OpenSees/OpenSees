@@ -4,8 +4,6 @@
 #                Pacific Earthquake Engineering Research Center
 #
 #==============================================================================
-# _PARALLEL_INTERPRETERS
-# _PARALLEL_PROCESSING     # OpenSeesSP
 
 return()
 

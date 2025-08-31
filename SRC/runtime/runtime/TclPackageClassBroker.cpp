@@ -1,16 +1,23 @@
 //===----------------------------------------------------------------------===//
 //
 //                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-//                              https://xara.so
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
 //===----------------------------------------------------------------------===//
-// Purpose: This file contains the class definition for TclPackageClassBroker.
+//
+// Description: This file contains the class definition for TclPackageClassBroker.
 // TclPackageClassBroker is is an object broker class that is meant to become
 // a threadsafe replacement for the BrokerAllClasses class.
 // All methods are virtual to allow for subclasses; which can be
 // used by programmers when introducing new subclasses of the main objects.
-//===----------------------------------------------------------------------===//
 //
 #ifdef _PARALLEL_PROCESSING
 #  include <mpi.h>
