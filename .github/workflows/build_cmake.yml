@@ -163,7 +163,7 @@ jobs:
       - name: Run pytest in tests/ folder
         run: |
           python3 -m pip install pytest
-          cp lib/opensees.so tests/
+          cp build/lib/opensees.so tests/
           cd tests
           pytest -v
       - name: Upload Artifacts
