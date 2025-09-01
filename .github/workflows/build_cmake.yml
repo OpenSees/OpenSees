@@ -163,8 +163,8 @@ jobs:
       - name: Run pytest in tests/ folder
         run: |
           python3 -m pip install pytest
+          cp lib/opensees.so tests/
           cd tests
-          cp lib/opensees.so .
           pytest -v
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
