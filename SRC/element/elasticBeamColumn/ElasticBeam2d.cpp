@@ -827,7 +827,17 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
       // Nothing to do
     }
   }
+  else if (type == LOAD_TAG_BeamUniformMoment) {
+    double mz = data(2)*loadFactor;  // About z
 
+    // Reactions in basic system
+    p0[1] += mz;
+    p0[2] -= mz;
+
+    // Fixed end forces in basic system
+    //q0[1] -= 0.0;
+    //q0[2] += 0.0;
+  }
   else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
 	// These equations should works for partial trapezoidal load
     double waa = data(2)*loadFactor;  // Axial
