@@ -8,10 +8,12 @@
 target_sources(OPS_Section_Repres
     PRIVATE
         CircReinfLayer.cpp
+        RectReinfLayer.cpp	
         ReinfLayer.cpp
         StraightReinfLayer.cpp
     PUBLIC
         CircReinfLayer.h
+        RectReinfLayer.h    
         ReinfLayer.h
         StraightReinfLayer.h
 )
