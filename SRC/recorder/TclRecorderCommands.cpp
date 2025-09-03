@@ -93,7 +93,7 @@ extern void* OPS_NodeRecorderRMS();
  #include <BinaryFileStream.h>
  #include <DatabaseStream.h>
  #include <DummyStream.h>
- #include <TCP_Stream.h>
+ #include <SocketStream.h>
 
  #include <packages.h>
  #include <elementAPI.h>
@@ -114,7 +114,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 
  static ExternalRecorderCommand *theExternalRecorderCommands = NULL;
 
-enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BINARY_STREAM, DATA_STREAM_CSV, TCP_STREAM, DATA_STREAM_ADD};
+enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BINARY_STREAM, DATA_STREAM_CSV, SOCKET_STREAM, DATA_STREAM_ADD};
 
 
  #include <EquiSolnAlgo.h>
@@ -176,6 +176,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        int precision = 6;
        const char *inetAddr = 0;
        int inetPort;
+	   bool udp = false;
        bool closeOnWrite = false;
        int writeBufferSize = 0;
        bool doScientific = false;
@@ -418,9 +419,19 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   if (Tcl_GetInt(interp, argv[loc+2], &inetPort) != TCL_OK) {
 	     ;
 	   }
-	   eMode = TCP_STREAM;
+	   eMode = SOCKET_STREAM;
 	   loc += 3;
 	 }	    
+
+	 else if ((strcmp(argv[loc], "-UDP") == 0) || (strcmp(argv[loc], "-udp") == 0)) {
+	 inetAddr = argv[loc + 1];
+	 if (Tcl_GetInt(interp, argv[loc + 2], &inetPort) != TCL_OK) {
+		 ;
+	 }
+	 eMode = SOCKET_STREAM;
+	 udp = true;
+	 loc += 3;
+	 }
 
 	 else if ((strcmp(argv[loc],"-binary") == 0)) {
 	   // allow user to specify load pattern other than current
@@ -468,8 +479,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 theOutputStream = new DatabaseStream(theDatabase, tableName);
        } else if (eMode == BINARY_STREAM && fileName != 0) {
 	 theOutputStream = new BinaryFileStream(fileName);
-       } else if (eMode == TCP_STREAM && inetAddr != 0) {
-	 theOutputStream = new TCP_Stream(inetPort, inetAddr);
+       } else if (eMode == SOCKET_STREAM) {
+	 theOutputStream = new SocketStream(inetPort, inetAddr, udp);
        } else 
 	 theOutputStream = new StandardStream();
 
@@ -1122,6 +1133,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
        const char *inetAddr = 0;
        int inetPort;
+	   bool udp = false;
 
        bool closeOnWrite = false;
        int writeBufferSize = 0;
@@ -1201,9 +1213,19 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   if (Tcl_GetInt(interp, argv[pos+2], &inetPort) != TCL_OK) {
 	     return TCL_ERROR;
 	   }
-	   eMode = TCP_STREAM;
+	   eMode = SOCKET_STREAM;
 	   pos += 3;
 	 }	    
+
+	 else if ((strcmp(argv[pos], "-UDP") == 0) || (strcmp(argv[pos], "-udp") == 0)) {
+		 inetAddr = argv[pos + 1];
+		 if (Tcl_GetInt(interp, argv[pos + 2], &inetPort) != TCL_OK) {
+			 return TCL_ERROR;
+		 }
+		 eMode = SOCKET_STREAM;
+		 udp = true;
+		 pos += 3;
+	 }
 
 	 else if ((strcmp(argv[pos],"-nees") == 0) || (strcmp(argv[pos],"-xml") == 0)) {
 	   // allow user to specify load pattern other than current
@@ -1411,8 +1433,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	 theOutputStream = new DatabaseStream(theDatabase, tableName);
        } else if (eMode == BINARY_STREAM && fileName != 0) {
 	 theOutputStream = new BinaryFileStream(fileName);
-       } else if (eMode == TCP_STREAM && inetAddr != 0) {
-	 theOutputStream = new TCP_Stream(inetPort, inetAddr);
+       } else if (eMode == SOCKET_STREAM) {
+	 theOutputStream = new SocketStream(inetPort, inetAddr, udp);
        } else {
 	 theOutputStream = new StandardStream();
        }
@@ -2059,7 +2081,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	
 	void *libHandle;
 	void *(*funcPtr)();
-	int recorderNameLength = strlen(argv[1]);
+	int recorderNameLength = (int)strlen(argv[1]);
 	char *tclFuncName = new char[recorderNameLength+5];
 	strcpy(tclFuncName, "OPS_");
 	strcpy(&tclFuncName[4], argv[1]);    

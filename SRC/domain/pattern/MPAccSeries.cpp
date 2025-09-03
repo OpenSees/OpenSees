@@ -69,7 +69,7 @@ void *OPS_MPAccSeries(void)
     }
 
     numData = 3;
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING invalid double data in MPAcc Series with tag: " << tag << endln;
         return 0;
     }
@@ -81,19 +81,19 @@ void *OPS_MPAccSeries(void)
 
       if (strcmp(argvS,"-gammaMP") == 0) {
 	numData = 1;
-	if (OPS_GetDouble(&numData, &dData[3]) != 0) {
+	if (OPS_GetDoubleInput(&numData, &dData[3]) != 0) {
 	  opserr << "WARNING invalid gamma in MPAcc Series with tag?" << tag << endln;
                 return 0;
 	}
       } else if (strcmp(argvS,"-nuMP") == 0) {
 	numData = 1;
-            if (OPS_GetDouble(&numData, &dData[4]) != 0) {
+            if (OPS_GetDoubleInput(&numData, &dData[4]) != 0) {
                 opserr << "WARNING invalid nu in MPAcc Series with tag?" << tag << endln;
                 return 0;
             }
         } else if (strcmp(argvS,"-AFactor") == 0) {
             numData = 1;
-            if (OPS_GetDouble(&numData, &dData[5]) != 0) {
+            if (OPS_GetDoubleInput(&numData, &dData[5]) != 0) {
                 opserr << "WARNING invalid amplitude in MPAcc Series with tag?" << tag << endln;
                 return 0;
             }

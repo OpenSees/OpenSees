@@ -908,7 +908,7 @@ VTK_Recorder::sendSelf(int commitTag, Channel &theChannel)
   static ID idData(2+14+1);
   int fileNameLength = 0;
   if (name != 0)
-    fileNameLength = strlen(name);
+    fileNameLength = (int)strlen(name);
 
   idData(0) = fileNameLength;
   idData(1) = -sendSelfCount; // -sendSelfCount indicates a process other than P0

@@ -93,20 +93,20 @@ OPS_TrussElement()
   int ndm = OPS_GetNDM();
 
   int numData = 3;
-  if (OPS_GetInt(&numData, iData) != 0) {
+  if (OPS_GetIntInput(&numData, iData) != 0) {
     opserr << "WARNING invalid integer (tag, iNode, jNode) in element Truss " << endln;
     return 0;
   }
 
   numData = 1;
-  if (OPS_GetDouble(&numData, &A) != 0) {
+  if (OPS_GetDoubleInput(&numData, &A) != 0) {
     opserr << "WARNING: Invalid A: element Truss " << iData[0] << 
       " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;	
   }
 
   numData = 1;
-  if (OPS_GetInt(&numData, &matTag) != 0) {
+  if (OPS_GetIntInput(&numData, &matTag) != 0) {
     opserr << "WARNING: Invalid matTag: element Truss " << iData[0] << 
       " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
     return 0;
@@ -126,21 +126,21 @@ OPS_TrussElement()
   
     if (strcmp(argvS,"-rho") == 0) {
       numData = 1;
-      if (OPS_GetDouble(&numData, &rho) != 0) {
+      if (OPS_GetDoubleInput(&numData, &rho) != 0) {
 	opserr << "WARNING Invalid rho in element Truss " << iData[0] << 
 	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag> <-useInitialDisp $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-cMass") == 0) {
       numData = 1;
-      if (OPS_GetInt(&numData, &cMass) != 0) {
+      if (OPS_GetIntInput(&numData, &cMass) != 0) {
 	opserr << "WARNING: Invalid cMass in element Truss " << iData[0] << 
 	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag> <-useInitialDisp $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-doRayleigh") == 0) {
       numData = 1;
-      if (OPS_GetInt(&numData, &doRayleigh) != 0) {
+      if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
 	opserr << "WARNING: Invalid doRayleigh in element Truss " << iData[0] << 
 	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag> <-useInitialDisp $flag>\n";
 	return 0;
@@ -148,7 +148,7 @@ OPS_TrussElement()
     } else if (strcmp(argvS,"-useInitialDisp") == 0) {
       numData = 1;
       int useid = 1;
-      if (OPS_GetInt(&numData, &useid) != 0) {
+      if (OPS_GetIntInput(&numData, &useid) != 0) {
 	opserr << "WARNING: Invalid useInitialDisp in element Truss " << iData[0] << 
 	  " $iNode $jNode $A $matTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag> <-useInitialDisp $flag>\n";
 	return 0;

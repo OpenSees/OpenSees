@@ -58,7 +58,7 @@ void *  OPS_NewmarkHSIncrLimit(void)
     int normType = 2;
     int numData = 3;
     
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want NewmarkHSIncrLimit $gamma $beta $limit <-normType $T>\n";
         return 0;
     }
@@ -67,7 +67,7 @@ void *  OPS_NewmarkHSIncrLimit(void)
         const char *argvLoc = OPS_GetString();
         if (strcmp(argvLoc, "-normType") == 0) {
             numData = 1;
-            if (OPS_GetInt(&numData, &normType) != 0) {
+            if (OPS_GetIntInput(&numData, &normType) != 0) {
                 opserr << "WARNING - invalid normType want NewmarkHSIncrLimit $gamma $beta $limit <-normType $T>\n";
             }
         }

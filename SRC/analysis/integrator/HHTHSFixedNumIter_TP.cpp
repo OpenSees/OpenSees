@@ -65,7 +65,7 @@ void *    OPS_HHTHSFixedNumIter_TP(void)
     else
         numData = 4;
     
-    if (OPS_GetDouble(&numData, dData) != 0) {
+    if (OPS_GetDoubleInput(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want HHTHSFixedNumIter_TP $rhoInf <-polyOrder $O>\n";
         opserr << "          or HHTHSFixedNumIter_TP $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
         return 0;
@@ -75,7 +75,7 @@ void *    OPS_HHTHSFixedNumIter_TP(void)
         const char *argvLoc = OPS_GetString();
         if (strcmp(argvLoc, "-polyOrder") == 0) {
             numData = 1;
-            if (OPS_GetInt(&numData, &polyOrder) != 0) {
+            if (OPS_GetIntInput(&numData, &polyOrder) != 0) {
                 opserr << "WARNING - invalid polyOrder want HHTHSFixedNumIter_TP $rhoInf <-polyOrder $O>\n";
                 opserr << "          or HHTHSFixedNumIter_TP $alphaI $alphaF $beta $gamma <-polyOrder $O>\n";
             }
