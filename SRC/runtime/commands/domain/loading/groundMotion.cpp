@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -18,6 +27,7 @@
 #include <MultiSupportPattern.h>
 #include <InterpolatedGroundMotion.h>
 #include <TimeSeriesIntegrator.h>
+#include <BasicModelBuilder.h>
 
 extern TimeSeries *TclSeriesCommand(ClientData clientData, Tcl_Interp *interp,
                                     TCL_Char * const arg);
@@ -27,7 +37,7 @@ extern TimeSeriesIntegrator *TclDispatch_newSeriesIntegrator(ClientData clientDa
                                                         TCL_Char * const arg);
 
 static int
-TclCommand_newGroundMotion(G3_Runtime* rt,
+TclCommand_newGroundMotion(ClientData, Tcl_Interp*,
                        int argc,
                        TCL_Char ** const argv,
                        MultiSupportPattern *thePattern);
@@ -37,7 +47,6 @@ TclCommand_addGroundMotion(ClientData clientData, Tcl_Interp *interp,
                            int argc, TCL_Char ** const argv)
 
 {
-  G3_Runtime *rt = G3_getRuntime(interp);
   MultiSupportPattern* pattern = 
     (MultiSupportPattern *)Tcl_GetAssocData(interp,"theTclMultiSupportPattern", NULL);
 
@@ -45,33 +54,33 @@ TclCommand_addGroundMotion(ClientData clientData, Tcl_Interp *interp,
     opserr << "ERROR no multi-support pattern\n";
     return TCL_ERROR;
   }
-  return TclCommand_newGroundMotion(rt, argc, argv, pattern);
+  return TclCommand_newGroundMotion(clientData, interp, argc, argv, pattern);
 }
 
 
 static int
-TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
+TclCommand_newGroundMotion(ClientData clientData, Tcl_Interp* interp, int argc,
                        TCL_Char ** const argv, MultiSupportPattern *thePattern)
 {
 
-  int gMotionTag;
-  GroundMotion *theMotion = nullptr;
-  Tcl_Interp *interp = G3_getInterpreter(rt);
+  BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
 
   // make sure at least one other argument to contain integrator
   if (argc < 4) {
-    opserr << "WARNING invalid command - want: groundMotion tag type <args>\n";
+    opserr << OpenSees::PromptValueError << "invalid command - want: groundMotion tag type <args>\n";
     opserr << "           valid types: AccelRecord and Interpolated \n";
     return TCL_ERROR;
   }
 
+  int gMotionTag;
   if (Tcl_GetInt(interp, argv[1], &gMotionTag) != TCL_OK) {
-    opserr << "WARNING invalid tag: groundMotion tag  type <args>\n";
+    opserr << OpenSees::PromptValueError << "invalid tag: groundMotion tag  type <args>\n";
     return TCL_ERROR;
   }
 
   int startArg = 2;
 
+  GroundMotion *theMotion = nullptr;
   if ((strcmp(argv[startArg], "Series") == 0) ||
       (strcmp(argv[startArg], "Plain") == 0)) {
 
@@ -89,10 +98,10 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
           (strcmp(argv[currentArg], "-acceleration") == 0)) {
 
         currentArg++;
-        accelSeries = TclSeriesCommand((ClientData)0, interp, argv[currentArg]);
+        accelSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
-        if (accelSeries == 0) {
-          opserr << "WARNING invalid accel series: " << argv[currentArg];
+        if (accelSeries == nullptr) {
+          opserr << OpenSees::PromptValueError << "invalid accel series: " << argv[currentArg];
           opserr << " groundMotion tag Series -accel {series}\n";
           return TCL_ERROR;
         }
@@ -102,10 +111,10 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
                  (strcmp(argv[currentArg], "-velocity") == 0)) {
 
         currentArg++;
-        velSeries = TclSeriesCommand((ClientData)0, interp, argv[currentArg]);
+        velSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
-        if (velSeries == 0) {
-          opserr << "WARNING invalid vel series: " << argv[currentArg];
+        if (velSeries == nullptr) {
+          opserr << OpenSees::PromptValueError << "invalid vel series: " << argv[currentArg];
           opserr << " groundMotion tag Series -vel {series}\n";
           return TCL_ERROR;
         }
@@ -115,10 +124,10 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
                  (strcmp(argv[currentArg], "-displacement") == 0)) {
 
         currentArg++;
-        dispSeries = TclSeriesCommand((ClientData)0, interp, argv[currentArg]);
+        dispSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
-        if (dispSeries == 0) {
-          opserr << "WARNING invalid disp series: " << argv[currentArg];
+        if (dispSeries == nullptr) {
+          opserr << OpenSees::PromptValueError << "invalid disp series: " << argv[currentArg];
           opserr << " groundMotion tag Series -disp {series}\n";
           return TCL_ERROR;
         }
@@ -130,8 +139,8 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
         currentArg++;
         seriesIntegrator =
             TclDispatch_newSeriesIntegrator((ClientData)0, interp, argv[currentArg]);
-        if (seriesIntegrator == 0) {
-          opserr << "WARNING invalid series integrator: " << argv[currentArg];
+        if (seriesIntegrator == nullptr) {
+          opserr << OpenSees::PromptValueError << "invalid series integrator: " << argv[currentArg];
           opserr << " - groundMotion tag Series -int {Series Integrator}\n";
           return TCL_ERROR;
         }
@@ -144,7 +153,7 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
 
         currentArg++;
         if (Tcl_GetDouble(interp, argv[currentArg], &dtInt) != TCL_OK) {
-          opserr << "WARNING invalid dtInt: " << argv[currentArg];
+          opserr << OpenSees::PromptValueError << "invalid dtInt: " << argv[currentArg];
           opserr << " - groundMotion tag Series -dtInt dt\n";
           return TCL_ERROR;
         }
@@ -157,7 +166,7 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
 
         currentArg++;
         if (Tcl_GetDouble(interp, argv[currentArg], &fact) != TCL_OK) {
-          opserr << "WARNING invalid factor: " << argv[currentArg];
+          opserr << OpenSees::PromptValueError << "invalid factor: " << argv[currentArg];
           opserr << " - groundMotion tag Series -fact factor\n";
           return TCL_ERROR;
         }
@@ -168,14 +177,6 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
 
     theMotion = new GroundMotion(dispSeries, velSeries, accelSeries,
                                  seriesIntegrator, dtInt, fact);
-
-    if (theMotion == 0) {
-      opserr << "WARNING ran out of memory creating ground motion - pattern "
-                "UniformExcitation ";
-      opserr << gMotionTag << endln;
-
-      return TCL_ERROR;
-    }
   }
 
   else if (strcmp(argv[startArg], "Interpolated") == 0) {
@@ -201,7 +202,7 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
 
         GroundMotion *theMotion1 = thePattern->getMotion(motionID);
         if (theMotion1 == nullptr) {
-          opserr << "WARNING no groundMotion with tag " << motionID << " :";
+          opserr << OpenSees::PromptValueError << "no groundMotion with tag " << motionID << " :";
           opserr << " pattern MultiSupport gMotion1? gMotion? .. ";
           opserr << "-fact fact1? fact2? .. \n";
           return TCL_ERROR;
@@ -210,7 +211,7 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
           theMotions[i - 3] = theMotion1;
       }
     } else {
-      opserr << "WARNING no gMotionTags want :";
+      opserr << OpenSees::PromptValueError << "no gMotionTags want :";
       opserr << " pattern MultiSupport gMotion1? gMotion? .. ";
       opserr << "-fact fact1? fact2? .. \n";
       return TCL_ERROR;
@@ -228,7 +229,7 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
   }
 
   else {
-    opserr << "WARNING unknown pattern type " << argv[1];
+    opserr << OpenSees::PromptValueError << "unknown pattern type " << argv[1];
     opserr << " - want: pattern patternType " << gMotionTag;
     opserr << " \t valid types: Plain, UniformExcitation \n";
     return TCL_ERROR;
@@ -237,7 +238,7 @@ TclCommand_newGroundMotion(G3_Runtime* rt, int argc,
   // now add the load pattern to the modelBuilder
   if (theMotion != nullptr) {
     if (thePattern->addMotion(*theMotion, gMotionTag) < 0) {
-      opserr << "WARNING could not add ground motion with tag " << gMotionTag;
+      opserr << OpenSees::PromptValueError << "could not add ground motion with tag " << gMotionTag;
       opserr << " to pattern\n ";
       delete theMotion; // free the memory, pattern destroys the time series
       return TCL_ERROR;

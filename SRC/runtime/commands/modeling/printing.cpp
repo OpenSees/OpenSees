@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -17,7 +26,7 @@
 #endif
 #include <assert.h>
 #include <tcl.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <FileStream.h>
 #include <DummyStream.h>
 
@@ -31,6 +40,9 @@
 #include <SP_ConstraintIter.h>
 #include <MP_Constraint.h>
 #include <MP_ConstraintIter.h>
+
+#include <Parameter.h>
+#include <ParameterIter.h>
 
 #include <UniaxialMaterial.h>
 #include <NDMaterial.h>
@@ -47,7 +59,10 @@
 #include <Node.h>
 #include <NodeIter.h>
 
-#include <FrameTransform.h>
+#include <LoadPattern.h>
+#include <LoadPatternIter.h>
+
+#include <CrdTransf.h>
 
 int printElement(ClientData clientData, Tcl_Interp *interp, int argc,
                  TCL_Char ** const argv, OPS_Stream &output);
@@ -62,7 +77,8 @@ int printAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
                    TCL_Char ** const argv, OPS_Stream &output);
 
 
-int TclCommand_classType(ClientData clientData, Tcl_Interp *interp, int argc,
+int
+TclCommand_classType(ClientData clientData, Tcl_Interp *interp, int argc,
              TCL_Char** const argv)
 {
 
@@ -78,7 +94,7 @@ int TclCommand_classType(ClientData clientData, Tcl_Interp *interp, int argc,
   MovableObject* theObject = nullptr;
   int tag;
   if (Tcl_GetInt(interp, argv[2], &tag) < 0) {
-    opserr << G3_ERROR_PROMPT << "classType objectType tag? - unable to read tag" << "\n";
+    opserr << OpenSees::PromptValueError << "classType objectType tag? - unable to read tag" << "\n";
     return TCL_ERROR;
   }
 
@@ -92,7 +108,7 @@ int TclCommand_classType(ClientData clientData, Tcl_Interp *interp, int argc,
     theObject = builder->getTypedObject<Damping>(tag);
 #endif
   else {
-    opserr << G3_ERROR_PROMPT << "classType - " << type.c_str() << " not yet supported" << "\n";
+    opserr << OpenSees::PromptValueError << "classType - " << type.c_str() << " not yet supported" << "\n";
     return TCL_ERROR;
   }
 
@@ -100,6 +116,15 @@ int TclCommand_classType(ClientData clientData, Tcl_Interp *interp, int argc,
   
   Tcl_SetObjResult(interp, Tcl_NewStringObj(classType.c_str(), strlen(classType.c_str())));
 
+  return TCL_OK;
+}
+
+template <typename T>
+static int
+printRegistryObject(const BasicModelBuilder& builder, int tag, int flag, OPS_Stream *output)
+{
+  TaggedObject* object = builder.getTypedObject<T>(tag);
+  object->Print(*output, flag);
   return TCL_OK;
 }
 
@@ -118,7 +143,7 @@ printDomain(OPS_Stream &s, BasicModelBuilder* builder, int flag)
 
   Domain* theDomain = builder->getDomain();
 
-  const char* tab = "    ";
+  const char* tab = "  ";
   // TODO: maybe add a method called countRegistry<>
   // to BasicModelBuilder
 
@@ -139,46 +164,79 @@ printDomain(OPS_Stream &s, BasicModelBuilder* builder, int flag)
         builder->printRegistry<FrameSection>(s, flag);
       }
       s << "\n" << tab << tab << "]";
-      s << ",\n";
     }
     //
-    s << tab << tab << "\"nDMaterials\": [\n";        
-    builder->printRegistry<NDMaterial>(s, flag);
-    s << "\n" << tab << tab << "]";
     s << ",\n";
     //
-    s << tab << tab << "\"uniaxialMaterials\": [\n";        
-    builder->printRegistry<UniaxialMaterial>(s, flag);
-    s << "\n" << tab << tab << "]";
+    {
+      s << tab << tab << "\"nDMaterials\": [\n";        
+      builder->printRegistry<NDMaterial>(s, flag);
+      s << "\n" << tab << tab << "]";
+    }
+    //
+    s << ",\n";
+    //
+    {
+      s << tab << tab << "\"uniaxialMaterials\": [\n";        
+      builder->printRegistry<UniaxialMaterial>(s, flag);
+      s << "\n" << tab << tab << "]";
+    }
     s << ",\n";
     //
     s << tab << tab << "\"crdTransformations\": [\n";
     {
-      int n = builder->printRegistry<FrameTransform2d>(s, flag);
+      int n = builder->printRegistry<CrdTransf>(s, flag);
 
       DummyStream dummy;
-      if (builder->printRegistry<FrameTransform3d>(dummy, flag) > 0) {
+      if (builder->printRegistry<CrdTransf>(dummy, flag) > 0) {
         if (n > 0)
           s << ",\n";
-        builder->printRegistry<FrameTransform3d>(s, flag);
+        builder->printRegistry<CrdTransf>(s, flag);
       }
+      s << "\n" << tab << tab << "]";
     }
-    s << "\n" << tab << tab << "]";
-//  builder->printRegistry<CrdTransf>(s, flag);
+    //
+    s << ",\n";
+    //
+    {
+      s << tab << tab << "\"patterns\": [\n";
+      LoadPatternIter &patterns = theDomain->getLoadPatterns();
+      LoadPattern *p;
+      bool first_mp = true;
+      while ((p = patterns()) != nullptr) {
+        if (!first_mp)
+          s << ",\n";
 
-    // s << ",\n";
-    // //
-    // s << tab << tab << "\"constraints\": [\n";
-    // theDomain->Print(s, flag);
-    // s << "\n" << tab << tab << "]";
+        p->Print(s, flag);
+        first_mp = false;
+      }
+      s << "\n" << tab << tab << "]";
+    }
+    //
+    s << ",\n";
+    //
+    {
+      s << tab << tab << "\"parameters\": [\n";
+      ParameterIter &params = theDomain->getParameters();
+      Parameter *param;
+      bool first_mp = true;
+      while ((param = params()) != nullptr) {
+        if (!first_mp)
+          s << ",\n";
+
+        param->Print(s, flag);
+        first_mp = false;
+      }
+      s << "\n" << tab << tab << "]\n";
+    }
+    //
     s << "\n";
     //
+    //
     s << tab << "},\n";
-
     //
     //
     s << tab << "\"geometry\": {\n";
-
     int numPrinted = 0;
     int numToPrint = theDomain->getNumNodes();
     NodeIter &theNodess = theDomain->getNodes();
@@ -190,22 +248,53 @@ printDomain(OPS_Stream &s, BasicModelBuilder* builder, int flag)
       if (numPrinted < numToPrint)
         s << ",\n";
     }
-    s << "\n" << tab << tab << "],\n";
-
-
-    Element *theEle;
-    ElementIter &theElementss = theDomain->getElements();
-    numToPrint = theDomain->getNumElements();
-    numPrinted = 0;
-    s << tab << tab << "\"elements\": [\n";
-    while ((theEle = theElementss()) != nullptr) {
-      theEle->Print(s, flag);
-      numPrinted += 1;
-      if (numPrinted < numToPrint)
-        s << ",\n";
+    s << "\n" << tab << tab << "]";
+    //
+    s << ",\n";
+    //
+    {
+      s << tab << tab << "\"elements\": [\n";
+      Element *theEle;
+      ElementIter &theElementss = theDomain->getElements();
+      numToPrint = theDomain->getNumElements();
+      numPrinted = 0;
+      while ((theEle = theElementss()) != nullptr) {
+        theEle->Print(s, flag);
+        numPrinted += 1;
+        if (numPrinted < numToPrint)
+          s << ",\n";
+      }
+      s << "\n" << tab << tab << "]";
     }
-    s << "\n" << tab << tab << "]\n";
+    //
+    s << ",\n";
+    //
+    {
+      s << tab << tab << "\"constraints\": [\n";
+      MP_ConstraintIter &theMPs = theDomain->getMPs();
+      MP_Constraint *theMP;
+      bool first_mp = true;
+      while ((theMP = theMPs()) != nullptr) {
+        if (!first_mp)
+          s << ",\n";
+        theMP->Print(s, flag);
+        first_mp = false;
+      }
 
+      SP_ConstraintIter &theSPs = theDomain->getSPs();
+      SP_Constraint *theSP;
+      bool first_sp = true;
+      while ((theSP = theSPs()) != nullptr) {
+        if (!first_sp || !first_mp)
+          s << ",\n";
+        theSP->Print(s, flag);
+        first_sp = false;
+      }
+      s << "\n" << tab << tab << "]";
+    }
+
+    // END
+    s << "\n";
 
     s << tab << "}\n";
     s << "}\n";
@@ -213,32 +302,6 @@ printDomain(OPS_Stream &s, BasicModelBuilder* builder, int flag)
 
     return;
   }
-      
-#if 0 
-  s << "Current Domain Information\n";
-  s << "\tCurrent Time: " << theDomain->getCurrentTime();
-  // s << "\ntCommitted Time: " << committedTime << endln;    
-  s << "NODE DATA: NumNodes: " << theDomain->getNumNodes() << "\n";  
-  theNodes->Print(s, flag);
-  
-  s << "ELEMENT DATA: NumEle: " << theElements->getNumComponents() << "\n";
-  theElements->Print(s, flag);
-  
-  s << "\nSP_Constraints: numConstraints: " << theSPs->getNumComponents() << "\n";
-  theSPs->Print(s, flag);
-  
-  s << "\nPressure_Constraints: numConstraints: " << thePCs->getNumComponents() << "\n";
-  thePCs->Print(s, flag);
-  
-  s << "\nMP_Constraints: numConstraints: " << theMPs->getNumComponents() << "\n";
-  theMPs->Print(s, flag);
-  
-  s << "\nLOAD PATTERNS: numPatterns: " << theLoadPatterns->getNumComponents() << "\n\n";
-  theLoadPatterns->Print(s, flag);
-  
-  s << "\nPARAMETERS: numParameters: " << theParameters->getNumComponents() << "\n\n";
-  theParameters->Print(s, flag);
-#endif
 }
 
 int
@@ -292,6 +355,26 @@ TclCommand_print(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
       done = true;
     }
 
+    // if 'print material i j k ..' print out some nodes
+    else if ((strcmp(argv[currentArg], "-material") == 0)) {
+      currentArg++;
+      if (currentArg == argc) {
+        opserr << OpenSees::PromptValueError << "print -material <tag> .. - no tag specified\n";
+        return TCL_ERROR;
+      }
+      for (int i = currentArg; i < argc; i++) {
+        int tag;
+        if (Tcl_GetInt(interp, argv[i], &tag) != TCL_OK) {
+          opserr << OpenSees::PromptValueError << "print -material failed to get integer tag: " << argv[i]
+                 << "\n";
+          return TCL_ERROR;
+        }
+        res += printRegistryObject<NDMaterial>(*((BasicModelBuilder*)clientData), tag, OPS_PRINT_PRINTMODEL_JSON, output);
+      }
+      done = true;
+    }
+
+
     else if ((strcmp(argv[currentArg], "-registry") == 0)) {
       currentArg++;
       if (currentArg == argc)
@@ -320,7 +403,7 @@ TclCommand_print(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char *
         res = printAlgorithm(info.clientData, interp, argc - currentArg,
                              argv + currentArg, *output);
       } else {
-        opserr << G3_ERROR_PROMPT << "Cannot print algorithm\n";
+        opserr << OpenSees::PromptValueError << "Cannot print algorithm\n";
       }
       done = true;
     }
@@ -400,12 +483,12 @@ printElement(ClientData clientData, Tcl_Interp *interp, int argc,
   if ((strcmp(argv[0], "flag") == 0) ||
       (strcmp(argv[0], "-flag")) == 0) { // get the specified flag
     if (argc < 2) {
-      opserr << G3_ERROR_PROMPT << "print <filename> ele <flag int> no int specified \n";
+      opserr << OpenSees::PromptValueError << "print <filename> ele <flag int> no int specified \n";
       return TCL_ERROR;
     }
     if (Tcl_GetInt(interp, argv[1], &flag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "print ele failed to get integer flag: \n";
-      opserr << argv[eleArg] << endln;
+      opserr << OpenSees::PromptValueError << "print ele failed to get integer flag: \n";
+      opserr << argv[eleArg] << "\n";
       return TCL_ERROR;
     }
     eleArg += 2;
@@ -427,8 +510,8 @@ printElement(ClientData clientData, Tcl_Interp *interp, int argc,
     for (int i = 0; i < numEle; ++i) {
       int eleTag;
       if (Tcl_GetInt(interp, argv[i + eleArg], &eleTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "print -ele failed to get integer: " << argv[i]
-               << endln;
+        opserr << OpenSees::PromptValueError << "print -ele failed to get integer: " << argv[i]
+               << "\n";
         return TCL_ERROR;
       }
       (*theEle)(i) = eleTag;
@@ -470,12 +553,12 @@ printNode(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const
   if ((strcmp(argv[0], "flag") == 0) || (strcmp(argv[0], "-flag") == 0)) {
     // get the specified flag
     if (argc <= nodeArg) {
-      opserr << G3_ERROR_PROMPT << "print <filename> node <flag int> no int specified \n";
+      opserr << OpenSees::PromptValueError << "print <filename> node <flag int> no int specified \n";
       return TCL_ERROR;
     }
     if (Tcl_GetInt(interp, argv[1], &flag) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "print node failed to get integer flag: \n";
-      opserr << argv[nodeArg] << endln;
+      opserr << OpenSees::PromptValueError << "print node failed to get integer flag: \n";
+      opserr << argv[nodeArg] << "\n";
       return TCL_ERROR;
     }
     nodeArg += 2;
@@ -498,7 +581,7 @@ printNode(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const
     for (int i = 0; i < numNodes; ++i) {
       int nodeTag;
       if (Tcl_GetInt(interp, argv[nodeArg], &nodeTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "print node failed to get integer: " << argv[nodeArg]
+        opserr << OpenSees::PromptValueError << "print node failed to get integer: " << argv[nodeArg]
                << "\n";
         return TCL_ERROR;
       }
@@ -537,7 +620,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   bool hasLinear = false;
   bool hasTri3  = false;
   bool hasQuad4 = false;
-  bool hasQuad8 = false;
+//bool hasQuad8 = false;
   bool hasQuad9 = false;
   bool hasBrick = false;
   int startEle = 1;
@@ -548,7 +631,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   FileStream outputFile;
 
   if (argc < 2) {
-    opserr << G3_ERROR_PROMPT << "printGID fileName? - no filename supplied\n";
+    opserr << OpenSees::PromptValueError << "printGID fileName? - no filename supplied\n";
     return TCL_ERROR;
   }
   openMode mode = openMode::OVERWRITE;
@@ -561,12 +644,12 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
 
       eleRange = 1;
       if (Tcl_GetInt(interp, argv[i + 1], &startEle) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "print node failed to get integer: " << argv[i + 1]
+        opserr << OpenSees::PromptValueError << "print node failed to get integer: " << argv[i + 1]
                << "\n";
         return TCL_ERROR;
       }
       if (Tcl_GetInt(interp, argv[i + 2], &endEle) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "print node failed to get integer: " << argv[i + 2]
+        opserr << OpenSees::PromptValueError << "print node failed to get integer: " << argv[i + 2]
                << "\n";
         return TCL_ERROR;
       }
@@ -575,7 +658,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   if (outputFile.setFile(argv[1], mode) < 0) {
-    opserr << G3_ERROR_PROMPT << "printGID " << argv[1] << " failed to set the file\n";
+    opserr << OpenSees::PromptValueError << "printGID " << argv[1] << " failed to set the file\n";
     return TCL_ERROR;
   }
 
@@ -603,7 +686,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       if (strcmp(theElement->getClassType(), "Brick") == 0) {
         hasBrick = true;
       } else {
-        hasQuad8 = true;
+        ;// hasQuad8 = true;
       }
     }
   }
@@ -632,12 +715,12 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       for (int ii = l_tmp; ii < 3; ii++) {
         outputFile << 0.0 << "\t";
       }
-      outputFile << endln;
+      outputFile << "\n";
     }
-    outputFile << "End coordinates" << endln << endln;
+    outputFile << "End coordinates" << endln << "\n";
 
     // Print elements connectivity
-    outputFile << "Elements" << endln;
+    outputFile << "Elements" << "\n";
     ElementIter &theElements = the_domain->getElements();
     Element *theElement;
     while ((theElement = theElements()) != 0) {
@@ -658,11 +741,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
           for (int i = 0; i < nNode; ++i) {
             outputFile << tagNodes(i) << "\t";
           }
-          outputFile << endln;
+          outputFile << "\n";
         }
       }
     }
-    outputFile << "End elements" << endln;
+    outputFile << "End elements" << "\n";
   }
   //
   // **** Quadrilateral Elements - 4 Nodes
@@ -670,18 +753,18 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   if (hasQuad4 == 1) {
     // Print HEADER
     outputFile << "MESH \"4NMESH\" dimension 3 ElemType Quadrilateral Nnode 4"
-               << endln;
-    outputFile << "#color 0 255 0" << endln << endln;
+               << "\n";
+    outputFile << "#color 0 255 0" << endln << "\n";
 
     // Print node coordinates
-    outputFile << "Coordinates" << endln;
+    outputFile << "Coordinates" << "\n";
     NodeIter &theNodes = the_domain->getNodes();
     Node *theNode;
     while ((theNode = theNodes()) != 0) {
       int tag = theNode->getTag();
       const Vector &crds = theNode->getCrds();
       // outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" <<
-      // crds(2) << endln;
+      // crds(2) << "\n";
       int l_tmp = crds.Size();
       outputFile << tag << "\t\t";
       for (int ii = 0; ii < l_tmp; ii++) {
@@ -690,12 +773,12 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       for (int ii = l_tmp; ii < 3; ii++) {
         outputFile << 0.0 << "\t";
       }
-      outputFile << endln;
+      outputFile << "\n";
     }
-    outputFile << "End coordinates" << endln << endln;
+    outputFile << "End coordinates" << endln << "\n";
 
     // Print elements connectivity
-    outputFile << "Elements" << endln;
+    outputFile << "Elements" << "\n";
     ElementIter &theElements = the_domain->getElements();
     Element *theElement;
     while ((theElement = theElements()) != 0) {
@@ -717,11 +800,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
           for (int i = 0; i < nNode; ++i) {
             outputFile << tagNodes(i) << "\t";
           }
-          outputFile << endln;
+          outputFile << "\n";
         }
       }
     }
-    outputFile << "End elements" << endln;
+    outputFile << "End elements" << "\n";
   }
   //
   // **** Triangular Elements - 3 Nodes
@@ -729,18 +812,18 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   if (hasTri3 == 1) {
     // Print HEADER
     outputFile << "MESH \"3NMESH\" dimension 3 ElemType Triangle Nnode 3"
-               << endln;
-    outputFile << "#color 0 255 0" << endln << endln;
+               << "\n";
+    outputFile << "#color 0 255 0" << endln << "\n";
 
     // Print node coordinates
-    outputFile << "Coordinates" << endln;
+    outputFile << "Coordinates" << "\n";
     NodeIter &theNodes = the_domain->getNodes();
     Node *theNode;
     while ((theNode = theNodes()) != 0) {
       int tag = theNode->getTag();
       const Vector &crds = theNode->getCrds();
       // outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" <<
-      // crds(2) << endln;
+      // crds(2) << "\n";
       int l_tmp = crds.Size();
       outputFile << tag << "\t\t";
       for (int ii = 0; ii < l_tmp; ii++) {
@@ -749,12 +832,12 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       for (int ii = l_tmp; ii < 3; ii++) {
         outputFile << 0.0 << "\t";
       }
-      outputFile << endln;
+      outputFile << "\n";
     }
-    outputFile << "End coordinates" << endln << endln;
+    outputFile << "End coordinates" << endln << "\n";
 
     // Print elements connectivity
-    outputFile << "Elements" << endln;
+    outputFile << "Elements" << "\n";
     ElementIter &theElements = the_domain->getElements();
     Element *theElement;
     while ((theElement = theElements()) != 0) {
@@ -776,11 +859,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
           for (int i = 0; i < nNode; ++i) {
             outputFile << tagNodes(i) << "\t";
           }
-          outputFile << endln;
+          outputFile << "\n";
         }
       }
     }
-    outputFile << "End elements" << endln;
+    outputFile << "End elements" << "\n";
   }
   //
   // **** Quadrilateral Elements - 9 Nodes
@@ -788,11 +871,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   if (hasQuad9 == 1) {
     // Print HEADER
     outputFile << "MESH \"9NMESH\" dimension 3 ElemType Linear Nnode 9"
-               << endln;
-    outputFile << "#color 0 255 0" << endln << endln;
+               << "\n";
+    outputFile << "#color 0 255 0" << endln << "\n";
 
     // Print node coordinates
-    outputFile << "Coordinates" << endln;
+    outputFile << "Coordinates" << "\n";
     NodeIter &theNodes = the_domain->getNodes();
     Node *theNode;
     while ((theNode = theNodes()) != 0) {
@@ -807,12 +890,12 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       for (int ii = l_tmp; ii < 3; ii++) {
         outputFile << 0.0 << "\t";
       }
-      outputFile << endln;
+      outputFile << "\n";
     }
-    outputFile << "End coordinates" << endln << endln;
+    outputFile << "End coordinates" << endln << "\n";
 
     // Print elements connectivity
-    outputFile << "Elements" << endln;
+    outputFile << "Elements" << "\n";
     ElementIter &theElements = the_domain->getElements();
     Element *theElement;
     while ((theElement = theElements()) != 0) {
@@ -834,11 +917,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
           for (int i = 0; i < nNode; ++i) {
             outputFile << tagNodes(i) << "\t";
           }
-          outputFile << endln;
+          outputFile << "\n";
         }
       }
     }
-    outputFile << "End elements" << endln;
+    outputFile << "End elements" << "\n";
   }
   //
   // **** Hexahedra Elements - 8 Nodes
@@ -846,11 +929,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
   if (hasBrick == 1) {
     // Print HEADER
     outputFile << "MESH \"8NMESH\" dimension 3 ElemType Hexahedra Nnode 8"
-               << endln;
-    outputFile << "#color 255 0 0" << endln << endln;
+               << "\n";
+    outputFile << "#color 255 0 0" << endln << "\n";
 
     // Print node coordinates
-    outputFile << "Coordinates" << endln;
+    outputFile << "Coordinates" << "\n";
     NodeIter &theNodes = the_domain->getNodes();
 
     Node *theNode;
@@ -858,7 +941,7 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       int tag = theNode->getTag();
       const Vector &crds = theNode->getCrds();
       // outputFile << tag << "\t\t" << crds(0) << "\t" << crds(1) << "\t" <<
-      // crds(2) << endln;
+      // crds(2) << "\n";
       int l_tmp = crds.Size();
       outputFile << tag << "\t\t";
       for (int ii = 0; ii < l_tmp; ii++) {
@@ -867,12 +950,12 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
       for (int ii = l_tmp; ii < 3; ii++) {
         outputFile << 0.0 << "\t";
       }
-      outputFile << endln;
+      outputFile << "\n";
     }
-    outputFile << "End coordinates" << endln << endln;
+    outputFile << "End coordinates" << endln << "\n";
 
     // Print elements connectivity
-    outputFile << "Elements" << endln;
+    outputFile << "Elements" << "\n";
     ElementIter &theElements = the_domain->getElements();
     Element *theElement;
     while ((theElement = theElements()) != 0) {
@@ -894,11 +977,11 @@ printModelGID(ClientData clientData, Tcl_Interp *interp, int argc,
           for (int i = 0; i < nNode; ++i) {
             outputFile << tagNodes(i) << "\t";
           }
-          outputFile << endln;
+          outputFile << "\n";
         }
       }
     }
-    outputFile << "End elements" << endln;
+    outputFile << "End elements" << "\n";
   }
 
   outputFile.close();
