@@ -1629,6 +1629,17 @@ void H5DRMLoadPattern::node_matching_BruteForce(double d_tol, const ID & interna
     while ((node_ptr = node_iter()) != 0)
     {
         int tag = node_ptr->getTag();
+        
+        // Skip nodes with more than 6 DOF
+        int numDOF = node_ptr->getNumberDOF();
+        if (numDOF > 6) {
+            if (DEBUG_NODE_MATCHING)
+            {
+                fprintf(fptrdrm, "Node # %05d skipped - has %d DOF (>6)\n", tag, numDOF);
+            }
+            continue;
+        }
+        
         const Vector& node_xyz  =  node_ptr->getCrds();
         double dmin = std::numeric_limits<double>::infinity();
         int ii_station_min = 0;
