@@ -21,10 +21,11 @@ target_sources(OPS_INTERPRETER
     OpenSeesIGACommands.cpp
 )
 
-
-target_sources(OpenSeesPy
-   PRIVATE
-     PythonModule.cpp
-     PythonWrapper.cpp
-     PythonStream.cpp
-)
+if(Python_FOUND)
+	target_sources(OpenSeesPy
+	   PRIVATE
+		 PythonModule.cpp
+		 PythonWrapper.cpp
+		 PythonStream.cpp
+	)
+endif()
