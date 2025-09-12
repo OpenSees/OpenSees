@@ -53,6 +53,7 @@ void* OPS_ItpackLinSolver()
   int iter = 100;
   double omega = 1.0;
   bool symmetric = true;
+  double zeta = 5e-6;
   while (OPS_GetNumRemainingInputArgs() > 1) {
     const char *arg = OPS_GetString();
     if (strcmp(arg,"-iter") == 0) {
@@ -69,17 +70,21 @@ void* OPS_ItpackLinSolver()
 	return 0;
       symmetric = (symm != 0) ? true : false;
     }        
+    if (strcmp(arg,"-zeta") == 0) {
+      if (OPS_GetDoubleInput(&numData,&zeta) < 0)
+	return 0;
+    }
   }
   
-  ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega);
+  ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega, zeta);
   return new ItpackLinSOE(*theSolver, symmetric);  
 }
 
-ItpackLinSolver::ItpackLinSolver(int meth, int iter, double om)
+ItpackLinSolver::ItpackLinSolver(int meth, int iter, double om, double z)
   :LinearSOESolver(SOLVER_TAGS_Itpack),
    theSOE(0), IA(0), JA(0), n(0),
    iwksp(0), wksp(0), nwksp(0), maxIter(iter),
-   method(meth), omega(om)
+   method(meth), omega(om), zeta(z)
 {
 
 }    
@@ -88,7 +93,7 @@ ItpackLinSolver::ItpackLinSolver()
   :LinearSOESolver(SOLVER_TAGS_Itpack),
    theSOE(0), IA(0), JA(0), n(0),
    iwksp(0), wksp(0), nwksp(0), maxIter(0),
-   method(0), omega(0.0)
+   method(0), omega(0.0), zeta(0.0)
 {
 
 }    
@@ -328,12 +333,22 @@ ItpackLinSolver::solve(void)
   // Overwrite default max number of iterations
   iparm[0] = maxIter;
 
+  /* Set convergence tolerance for inexact Newton methods.
+   * ITPACK stopping criterion: ||Ax-b|| / ||x|| * C < rparm[0]
+   * For (1+p)-order convergence: rparm[0] < ||b||^(1+p)
+   * Reference: Dembo et al. (1982) Inexact Newton Methods. 
+   *            SIAM Journal on Numerical Analysis, 19(2), 400–408. 
+   *            https://doi.org/10.1137/0719025
+   */
+  double norm_b = theSOE->normRHS();
+  double norm_b_squared = norm_b * norm_b;
+  rparm[0] = (zeta < norm_b_squared) ? zeta : norm_b_squared;
+
   // Print flag
   iparm[1] = 0;
   
   // Sparse matrix storage scheme (0 = symmetric, 1 = nonsymmetric)
-  iparm[4] = 1;
-  iparm[4] = 0;  
+  iparm[4] = theSOE->symmetric ? 0 : 1;
 
   double *aPtr = theSOE->A;
   double *xPtr = theSOE->X;
