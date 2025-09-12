@@ -1,31 +1,18 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
 //
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
 //
-#if 0
-static const char*
-classic_banner = R"(
-
-         OpenSees -- Open System For Earthquake Engineering Simulation
-                 Pacific Earthquake Engineering Research Center
-                        Version 3.4.0 64-Bit
-
-      (c) Copyright 1999-2022 The Regents of the University of California
-                         All Rights Reserved
-  (Copyright and Disclaimer @ http://www.berkeley.edu/OpenSees/copyright.html)
-
-)";
-
-static const char*
-peer_banner = R"(
-    OpenSees -- Open System For Earthquake Engineering Simulation
-   ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-            Pacific Earthquake Engineering Research Center
-)";
-#endif
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
+//
 
 static const char*
 unicode_banner 

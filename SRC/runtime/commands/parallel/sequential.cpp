@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -69,52 +78,3 @@ opsRecvSequential(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char 
 
   return TCL_OK;
 }
-
-
-#if 0
-int
-opsSendSequential(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
-{
-  if (argc < 2)
-    return TCL_OK;
-
-  int otherPID = -1;
-  int myPID = theMachineBroker->getPID();
-  int np = theMachineBroker->getNP();
-  const char *dataToSend = argv[argc - 1];
-  int msgLength = strlen(dataToSend) + 1;
-
-  const char *gMsg = dataToSend;
-  //  strcpy(gMsg, dataToSend);
-
-  if (strcmp(argv[1], "-pid") == 0 && argc > 3) {
-
-    if (Tcl_GetInt(interp, argv[2], &otherPID) != TCL_OK) {
-      opserr << "send -pid pid? data? - pid: " << argv[2] << " invalid\n";
-      return TCL_ERROR;
-    }
-
-    if (otherPID > -1 && otherPID != myPID && otherPID < np) {
-
-      MPI_Send((void *)(&msgLength), 1, MPI_INT, otherPID, 0, MPI_COMM_WORLD);
-      MPI_Send((void *)gMsg, msgLength, MPI_CHAR, otherPID, 1, MPI_COMM_WORLD);
-
-    } else {
-      opserr << "send -pid pid? data? - pid: " << otherPID << " invalid\n";
-      return TCL_ERROR;
-    }
-
-  } else {
-    if (myPID == 0) {
-      MPI_Bcast((void *)(&msgLength), 1, MPI_INT, 0, MPI_COMM_WORLD);
-      MPI_Bcast((void *)gMsg, msgLength, MPI_CHAR, 0, MPI_COMM_WORLD);
-    } else {
-      opserr << "send data - only process 0 can do a broadcast - you may need "
-                "to kill the application";
-      return TCL_ERROR;
-    }
-  }
-  return TCL_OK;
-}
-
-#endif

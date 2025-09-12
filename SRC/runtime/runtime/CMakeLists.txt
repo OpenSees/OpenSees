@@ -17,7 +17,7 @@ target_sources(OPS_Runtime
       TclPackageClassBroker.h
 )
 
-add_subdirectory(SectionBuilder)
-add_subdirectory(Renderer)
+add_subdirectory(modeling/section)
+add_subdirectory(legacy/Renderer)
 
 
