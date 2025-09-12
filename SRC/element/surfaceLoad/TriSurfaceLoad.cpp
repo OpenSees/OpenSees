@@ -45,10 +45,10 @@
 
 double TriSurfaceLoad::oneOverRoot3 = 1.0/sqrt(3.0);
 double TriSurfaceLoad::GsPts[1][1];
-Matrix TriSurfaceLoad::tangentStiffness(SL_NUM_DOF, SL_NUM_DOF);
-Matrix TriSurfaceLoad::mass(SL_NUM_DOF, SL_NUM_DOF);
-Matrix TriSurfaceLoad::damp(SL_NUM_DOF, SL_NUM_DOF);
-Vector TriSurfaceLoad::internalForces(SL_NUM_DOF);
+Matrix TriSurfaceLoad::tangentStiffness9(9,9);
+Matrix TriSurfaceLoad::tangentStiffness18(18,18);
+Vector TriSurfaceLoad::internalForces9(9);
+Vector TriSurfaceLoad::internalForces18(18);
 
 #include <elementAPI.h>
 static int num_TriSurfaceLoad = 0;
@@ -109,13 +109,14 @@ OPS_TriSurfaceLoad(void)
 TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressure,  double rhoH_)
  :Element(tag,ELE_TAG_TriSurfaceLoad),     
    myExternalNodes(SL_NUM_NODE),
+  numDOF(0), theMatrix(0), theVector(0),
    g1(SL_NUM_NDF), 
    g2(SL_NUM_NDF),
    myNhat(SL_NUM_NDF), 
    myNI(SL_NUM_NODE),
-   dcrd1(SL_NUM_NDF),
-   dcrd2(SL_NUM_NDF),
-   dcrd3(SL_NUM_NDF)
+   dcrd1(3),
+   dcrd2(3),
+   dcrd3(3)
 {
     myExternalNodes(0) = Nd1;
     myExternalNodes(1) = Nd2;
@@ -127,18 +128,25 @@ TriSurfaceLoad::TriSurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, double pressu
   rhoH = rhoH_;
 
 	mLoadFactor = 1.0;
+
+	tangentStiffness9.Zero();
+	tangentStiffness18.Zero();
+
+	internalForces9.Zero();
+	internalForces18.Zero();
 }
 
 TriSurfaceLoad::TriSurfaceLoad()
   :Element(0,ELE_TAG_TriSurfaceLoad),     
    	myExternalNodes(SL_NUM_NODE),
+  numDOF(0), theMatrix(0), theVector(0),   
    	g1(SL_NUM_NDF), 
    	g2(SL_NUM_NDF),
    	myNhat(SL_NUM_NDF), 
    	myNI(SL_NUM_NODE),
-   	dcrd1(SL_NUM_NDF),
-   	dcrd2(SL_NUM_NDF),
-   	dcrd3(SL_NUM_NDF)
+   	dcrd1(3),
+   	dcrd2(3),
+   	dcrd3(3)
 {
   GsPts[0][0] = 1.0/3;
   my_pressure = 0;
@@ -172,7 +180,7 @@ TriSurfaceLoad::getNodePtrs(void)
 int
 TriSurfaceLoad::getNumDOF(void) 
 {
-    return SL_NUM_DOF;
+    return numDOF;
 }
 
 void
@@ -190,7 +198,23 @@ TriSurfaceLoad::setDomain(Domain *theDomain)
     dcrd1 = theNodes[0]->getCrds();
     dcrd2 = theNodes[1]->getCrds();
     dcrd3 = theNodes[2]->getCrds();
+    if (3 != dcrd1.Size() || 3 != dcrd2.Size() || 3 != dcrd3.Size()) {
+      opserr << "TriSurfaceLoad::setDomain() - nodes are not defined in three dimensions" << endln;
+      return;
+    }
+    
+    int ndf1 = theNodes[0]->getNumberDOF();
+    int ndf2 = theNodes[1]->getNumberDOF();
+    int ndf3 = theNodes[2]->getNumberDOF();    
+    if (ndf1 != ndf2 || ndf1 != ndf3) {
+      opserr << "TriSurfaceLoad::setDomain() - nodes have differing numbers of DOFs" << endln;
+      return;
+    }
 
+    numDOF = SL_NUM_NODE*ndf1;
+    theMatrix = (numDOF == 9) ? &tangentStiffness9 : &tangentStiffness18;
+    theVector = (numDOF == 9) ? &internalForces9 : &internalForces18;    
+      
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
 }
@@ -252,14 +276,17 @@ TriSurfaceLoad::UpdateBase(double Xi, double Eta)
 const Matrix &
 TriSurfaceLoad::getTangentStiff(void)
 {
-    tangentStiffness.Zero();
-    return tangentStiffness;
+  theMatrix->Zero(); // have to call bc of getMass
+
+  return *theMatrix;
 }
 
 const Matrix &
 TriSurfaceLoad::getInitialStiff(void)
 {
-    return getTangentStiff();
+  theMatrix->Zero(); // have to call bc of getMass
+  
+  return *theMatrix;
 }
     
 void 
@@ -295,22 +322,23 @@ TriSurfaceLoad::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector &
 TriSurfaceLoad::getResistingForce()
 {
-	internalForces.Zero();
+	theVector->Zero();
 
+	int nodeDOF = (numDOF == 9) ? 3 : 6;
 	// loop over Gauss points
 	for(int i = 0; i < 1; i++) {
 		this->UpdateBase(GsPts[i][0],GsPts[i][0]);
 
 		// loop over nodes
-		for(int j = 0; j < 3; j++) {
-			// loop over dof
+		for(int j = 0; j < SL_NUM_NODE; j++) {
+			// loop over displacement dof
 			for(int k = 0; k < 3; k++) {
-				internalForces[j*3+k] = internalForces[j*3+k] - mLoadFactor*my_pressure*myNhat(k)*myNI(j);
+			  (*theVector)[j*nodeDOF+k] -= mLoadFactor*my_pressure*myNhat(k)*myNI(j);
 			}
 		}
 	}
 
-	return internalForces;
+	return *theVector;
 }
 
 const Vector &
@@ -319,7 +347,7 @@ TriSurfaceLoad::getResistingForceIncInertia()
     static Vector accel(SL_NUM_DOF);
     accel.Zero();
     
-    internalForces = getResistingForce();
+    *theVector = getResistingForce();
 
     int pos = 0;
     for (int i = 0; i < SL_NUM_NODE; ++i)
@@ -327,11 +355,19 @@ TriSurfaceLoad::getResistingForceIncInertia()
       const Vector &a = theNodes[i]->getAccel();
       accel(pos++) = a(i);
     }
+
+    if (rhoH != 0.0) {
+      double Area = myNhat.Norm();      
+      double m = rhoH*Area/3;
+      int nodeDOF = (numDOF == 9) ? 3 : 6;
+      for (int i = 0; i < 3; i++) {
+	(*theVector)(i)           -= m*accel(i);
+	(*theVector)(i+nodeDOF)   -= m*accel(i+nodeDOF);
+	(*theVector)(i+2*nodeDOF) -= m*accel(i+2*nodeDOF);		
+      }
+    }
     
-    mass = getMass();
-    internalForces.addMatrixVector(1.0, mass, accel, -1.0);
-  	
-    return internalForces;
+    return *theVector;
 }
 
 int
@@ -454,17 +490,19 @@ TriSurfaceLoad::getResponse(int responseID, Information &eleInfo)
 // Compute a mass matrix using zangar's idea:
 const Matrix & TriSurfaceLoad::getMass(void)
 {
-    double Area = myNhat.Norm();
-
-    mass.Zero();
+    theMatrix->Zero();
     
-    if(rhoH > 0)
+    if(rhoH != 0)
     {
-      for (int i = 0; i < SL_NUM_DOF; ++i)
-      {
-        mass(i,i) = rhoH * Area /3;
-      }
+      double Area = myNhat.Norm();
+      double m = rhoH*Area/3;
+      int nodeDOF = (numDOF == 9) ? 3 : 6;
+      for (int i = 0; i < 3; i++) {
+	(*theMatrix)(i,i)                     = m;
+	(*theMatrix)(i+nodeDOF,i+nodeDOF)     = m;
+	(*theMatrix)(i+2*nodeDOF,i+2*nodeDOF) = m;
+      }      
     }
 
-    return mass;
+    return *theMatrix;
 }

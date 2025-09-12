@@ -47,9 +47,10 @@
 double SurfaceLoad :: oneOverRoot3 = 1.0/sqrt(3.0);
 double SurfaceLoad :: GsPts[4][2];
 
-Matrix SurfaceLoad::tangentStiffness(SL_NUM_DOF, SL_NUM_DOF);
-Vector SurfaceLoad::internalForces(SL_NUM_DOF);
-Vector SurfaceLoad::theVector(SL_NUM_DOF);
+Matrix SurfaceLoad::tangentStiffness12(12,12);
+Matrix SurfaceLoad::tangentStiffness24(24,24);
+Vector SurfaceLoad::internalForces12(12);
+Vector SurfaceLoad::internalForces24(24);
 
 #include <elementAPI.h>
 static int num_SurfaceLoad = 0;
@@ -100,14 +101,15 @@ OPS_SurfaceLoad(void)
 SurfaceLoad::SurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, int Nd4, double pressure)
  :Element(tag,ELE_TAG_SurfaceLoad),     
    myExternalNodes(SL_NUM_NODE),
+  numDOF(0), theMatrix(0), theVector(0),  
    g1(SL_NUM_NDF), 
    g2(SL_NUM_NDF),
    myNhat(SL_NUM_NDF), 
    myNI(SL_NUM_NODE),
-   dcrd1(SL_NUM_NDF),
-   dcrd2(SL_NUM_NDF),
-   dcrd3(SL_NUM_NDF),
-   dcrd4(SL_NUM_NDF)
+   dcrd1(3),
+   dcrd2(3),
+   dcrd3(3),
+   dcrd4(3)
 {
     myExternalNodes(0) = Nd1;
     myExternalNodes(1) = Nd2;
@@ -126,19 +128,26 @@ SurfaceLoad::SurfaceLoad(int tag, int Nd1, int Nd2, int Nd3, int Nd4, double pre
     my_pressure = pressure;
 
 	mLoadFactor = 1.0;
+
+	tangentStiffness12.Zero();
+	tangentStiffness24.Zero();
+
+	internalForces12.Zero();
+	internalForces24.Zero();	
 }
 
 SurfaceLoad::SurfaceLoad()
   :Element(0,ELE_TAG_SurfaceLoad),     
    	myExternalNodes(SL_NUM_NODE),
+   numDOF(0), theMatrix(0), theVector(0),   
    	g1(SL_NUM_NDF), 
    	g2(SL_NUM_NDF),
    	myNhat(SL_NUM_NDF), 
    	myNI(SL_NUM_NODE),
-   	dcrd1(SL_NUM_NDF),
-   	dcrd2(SL_NUM_NDF),
-   	dcrd3(SL_NUM_NDF),
-   	dcrd4(SL_NUM_NDF)
+   	dcrd1(3),
+   	dcrd2(3),
+   	dcrd3(3),
+   	dcrd4(3)
 {
 }
 
@@ -168,7 +177,7 @@ SurfaceLoad::getNodePtrs(void)
 int
 SurfaceLoad::getNumDOF(void) 
 {
-    return SL_NUM_DOF;
+    return numDOF;
 }
 
 void
@@ -188,7 +197,24 @@ SurfaceLoad::setDomain(Domain *theDomain)
     dcrd2 = theNodes[1]->getCrds();
     dcrd3 = theNodes[2]->getCrds();
     dcrd4 = theNodes[3]->getCrds();
+    if (3 != dcrd1.Size() || 3 != dcrd2.Size() || 3 != dcrd3.Size() || 3 != dcrd4.Size()) {
+      opserr << "SurfaceLoad::setDomain() - nodes are not defined in three dimensions" << endln;
+      return;
+    }
 
+    int ndf1 = theNodes[0]->getNumberDOF();
+    int ndf2 = theNodes[1]->getNumberDOF();
+    int ndf3 = theNodes[2]->getNumberDOF();
+    int ndf4 = theNodes[3]->getNumberDOF();        
+    if (ndf1 != ndf2 || ndf1 != ndf3 || ndf1 != ndf4) {
+      opserr << "SurfaceLoad::setDomain() - nodes have differing numbers of DOFs" << endln;
+      return;
+    }
+    
+    numDOF = SL_NUM_NODE*ndf1;
+    theMatrix = (numDOF == 12) ? &tangentStiffness12 : &tangentStiffness24;
+    theVector = (numDOF == 12) ? &internalForces12 : &internalForces24;    
+    
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
 }
@@ -254,14 +280,15 @@ SurfaceLoad::UpdateBase(double Xi, double Eta)
 const Matrix &
 SurfaceLoad::getTangentStiff(void)
 {
-    tangentStiffness.Zero();
-    return tangentStiffness;
+  //theMatrix->Zero();
+  return *theMatrix;
 }
 
 const Matrix &
 SurfaceLoad::getInitialStiff(void)
 {
-    return getTangentStiff();
+  //theMatrix->Zero();
+  return *theMatrix;  
 }
     
 void 
@@ -296,22 +323,23 @@ SurfaceLoad::addInertiaLoadToUnbalance(const Vector &accel)
 const Vector &
 SurfaceLoad::getResistingForce()
 {
-	internalForces.Zero();
+	theVector->Zero();
 
+	int nodeDOF = (numDOF == 12) ? 3 : 6;
 	// loop over Gauss points
 	for(int i = 0; i < 4; i++) {
 		this->UpdateBase(GsPts[i][0],GsPts[i][1]);
 
 		// loop over nodes
-		for(int j = 0; j < 4; j++) {
-			// loop over dof
+		for(int j = 0; j < SL_NUM_NODE; j++) {
+			// loop over displacement dof
 			for(int k = 0; k < 3; k++) {
-				internalForces[j*3+k] = internalForces[j*3+k] - mLoadFactor*my_pressure*myNhat(k)*myNI(j);
+			  (*theVector)[j*nodeDOF+k] -= mLoadFactor*my_pressure*myNhat(k)*myNI(j);
 			}
 		}
 	}
 
-	return internalForces;
+	return *theVector;
 }
 
 const Vector &
