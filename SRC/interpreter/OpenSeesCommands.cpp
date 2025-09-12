@@ -108,8 +108,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 #include <BackgroundMesh.h>
 
+#ifdef _ITPACK
 #include <ItpackLinSOE.h>
 #include <ItpackLinSolver.h>
+#endif
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -1475,8 +1477,10 @@ int OPS_System()
     } else if (strcmp(type,"Mumps") == 0) {
         theSOE = (LinearSOE*)OPS_MumpsSolver();
 #endif
+#ifdef _ITPACK
     } else if (strcmp(type,"Itpack") == 0) {
         theSOE = (LinearSOE*)OPS_ItpackLinSolver();
+#endif
     } else {
     	opserr<<"WARNING unknown system type "<<type<<"\n";
     	return -1;
