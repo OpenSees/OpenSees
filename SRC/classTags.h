@@ -259,6 +259,8 @@
 #define MAT_TAG_PipeMaterial 232
 #define MAT_TAG_TzSandCPT 233
 #define MAT_TAG_QbSandCPT 234
+#define MAT_TAG_ASDSteel1DMaterial 235
+#define MAT_TAG_CreepShrinkageACI209 236
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -608,7 +610,7 @@
 #define PATTERN_TAG_LoadPattern           1
 #define PATTERN_TAG_MultiSupportPattern	  3
 #define PATTERN_TAG_UniformExcitation     2
-#define PATTERN_TAG_FirePattern           3
+#define PATTERN_TAG_FirePattern           7
 #define PATTERN_TAG_PBowlLoading          4
 #define PATTERN_TAG_DRMLoadPattern        5
 #define PATTERN_TAG_H5DRM                 6
@@ -617,6 +619,7 @@
 #define LOAD_TAG_Beam2dPointLoad          4
 #define LOAD_TAG_Beam3dUniformLoad        5
 #define LOAD_TAG_Beam3dPointLoad          6
+#define LOAD_TAG_BeamUniformMoment        60
 #define LOAD_TAG_BrickSelfWeight          7
 #define LOAD_TAG_Beam2dTempLoad           8
 #define LOAD_TAG_SurfaceLoader            9 // C.McGann, U.W.
