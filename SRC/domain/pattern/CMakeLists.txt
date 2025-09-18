@@ -18,7 +18,6 @@ target_sources(OPS_Domain
         PulseSeries.cpp
         RectangularSeries.cpp
         SimpsonTimeSeriesIntegrator.cpp
-		SocketSeries.cpp
         TimeSeries.cpp
         TimeSeriesIntegrator.cpp
         TrapezoidalTimeSeriesIntegrator.cpp
@@ -39,7 +38,6 @@ target_sources(OPS_Domain
         PulseSeries.h
         RectangularSeries.h
         SimpsonTimeSeriesIntegrator.h
-		SocketSeries.h
         TimeSeries.h
         TimeSeriesIntegrator.h
         TrapezoidalTimeSeriesIntegrator.h
