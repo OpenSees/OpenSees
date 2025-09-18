@@ -91,7 +91,7 @@ OPS_PeerNGAMotion(void)
   const char *eqMotion = OPS_GetString();
 
   numData = 1;
-  if (OPS_GetDoubleInput(&numData, &factor) != 0) {
+  if (OPS_GetDouble(&numData, &factor) != 0) {
     opserr << "WARNING invalid shift in peerNGAMotion with tag?" << tag << endln;
     return 0;
   }

@@ -47,7 +47,7 @@
 #include <XmlFileStream.h>
 #include <BinaryFileStream.h>
 #include <DatabaseStream.h>
-#include <SocketStream.h>
+#include <TCP_Stream.h>
 
 #include <elementAPI.h>
 
@@ -74,7 +74,7 @@ OPS_NodeRecorder()
     const int DATABASE_STREAM = 3;
     const int BINARY_STREAM = 4;
     const int DATA_STREAM_CSV = 5;
-    const int SOCKET_STREAM = 6;
+    const int TCP_STREAM = 6;
     const int DATA_STREAM_ADD = 7;
     
     int eMode = STANDARD_STREAM;
@@ -90,7 +90,6 @@ OPS_NodeRecorder()
 
     const char *inetAddr = 0;
     int inetPort;
-    bool udp = false;
 
     int gradIndex = -1;
 
@@ -146,21 +145,7 @@ OPS_NodeRecorder()
                     return 0;
                 }
             }
-            eMode = SOCKET_STREAM;
-        }
-        else if (strcmp(option, "-udp") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                inetAddr = OPS_GetString();
-            }
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                int num = 1;
-                if (OPS_GetIntInput(&num, &inetPort) < 0) {
-                    opserr << "WARNING: failed to read inetPort\n";
-                    return 0;
-                }
-            }
-            eMode = SOCKET_STREAM;
-            udp = true;
+            eMode = TCP_STREAM;
         }
         else if (strcmp(option, "-xml") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -304,8 +289,8 @@ OPS_NodeRecorder()
     //    theOutputStream = new DatabaseStream(theDatabase, tableName);
     else if (eMode == BINARY_STREAM && filename != 0)
         theOutputStream = new BinaryFileStream(filename);
-    else if (eMode == SOCKET_STREAM)
-        theOutputStream = new SocketStream(inetPort, inetAddr, udp);
+    else if (eMode == TCP_STREAM && inetAddr != 0)
+        theOutputStream = new TCP_Stream(inetPort, inetAddr);
     else
         theOutputStream = new StandardStream();
 

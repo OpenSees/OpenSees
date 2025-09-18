@@ -55,7 +55,7 @@ void*  OPS_NewmarkExplicit(void)
     }
     
     double gamma;    
-    if (OPS_GetDoubleInput(&argc, &gamma) != 0) {
+    if (OPS_GetDouble(&argc, &gamma) != 0) {
         opserr << "WARNING - invalid args want NewmarkExplicit $gamma\n";
         return 0;
     }

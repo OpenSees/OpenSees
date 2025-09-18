@@ -109,7 +109,6 @@
     <ClCompile Include="..\..\..\SRC\handler\DummyStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\FileStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\OPS_Stream.cpp" />
-    <ClCompile Include="..\..\..\SRC\handler\SocketStream.cpp" />
     <ClCompile Include="..\..\..\Src\handler\StandardStream.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\TCP_Stream.cpp" />
     <ClCompile Include="..\..\..\SRC\handler\XmlFileStream.cpp" />
@@ -122,7 +121,6 @@
     <ClInclude Include="..\..\..\SRC\handler\DummyStream.h" />
     <ClInclude Include="..\..\..\Src\handler\FileStream.h" />
     <ClInclude Include="..\..\..\Src\handler\OPS_Stream.h" />
-    <ClInclude Include="..\..\..\SRC\handler\SocketStream.h" />
     <ClInclude Include="..\..\..\Src\handler\StandardStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\TCP_Stream.h" />
     <ClInclude Include="..\..\..\SRC\handler\XmlFileStream.h" />

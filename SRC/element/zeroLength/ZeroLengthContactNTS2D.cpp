@@ -65,7 +65,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   int eleTag, sNdNum, pNdNum;
   numData = 1;
 
-  if (OPS_GetIntInput(&numData, &eleTag) != 0) {
+  if (OPS_GetInt(&numData, &eleTag) != 0) {
     opserr << "ZeroLengthContactNTS2D::WARNING invalied eleTag \n";
     return 0;
   }
@@ -79,7 +79,7 @@ OPS_ZeroLengthContactNTS2D(void) {
 
   // get the number of secondary nodes
   numData = 1;
-  if (OPS_GetIntInput(&numData, &sNdNum) != 0) {
+  if (OPS_GetInt(&numData, &sNdNum) != 0) {
     opserr << "ZeroLengthContactNTS2D::WARNING invalied sNdNum \n";
     return 0;
   }
@@ -94,7 +94,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   }
   
   numData = 1;
-  if (OPS_GetIntInput(&numData, &pNdNum) != 0) {
+  if (OPS_GetInt(&numData, &pNdNum) != 0) {
     opserr << "ZeroLengthContactNTS2D::WARNING invalied sNdNum \n";
     return 0;
   }
@@ -122,7 +122,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   int *theNodeData = new int[numData];
   ID  Nodes(theNodeData, numData);
 
-  if (OPS_GetIntInput(&numData, theNodeData) != 0) {
+  if (OPS_GetInt(&numData, theNodeData) != 0) {
     opserr << "ZeroLengthContactNTS2D:: invalid Nodes number value for -Nodes ";
     opserr << eleTag << "- element ZeroLengthContactNTS2D eleTag? -sNdNum sNode? -pNdNum pNode? -Nodes Nodes? Kn? Kt? phi? \n" ;
     return 0;
@@ -131,7 +131,7 @@ OPS_ZeroLengthContactNTS2D(void) {
   // read the material properties
   numData = 3;
   double dData[3];
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+  if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "ZeroLengthContactNTS2D::WARNING invalid Kn,Kt or phi\n" ;
     return 0;
   }

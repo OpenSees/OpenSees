@@ -10,7 +10,6 @@ OBJS       = OPS_Stream.o \
 	DatabaseStream.o \
 	DummyStream.o \
 	TCP_Stream.o \
-	SocketStream.o \
 	ChannelStream.o 
 
 TEST_OBJS = $(OBJS) \

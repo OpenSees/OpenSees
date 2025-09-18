@@ -59,7 +59,7 @@ OPS_FSIFluidElement2D(void)
     // mandatory int parameters
     int iData[5];
     int numData = 5;
-    if (OPS_GetIntInput(&numData, iData) != 0) {
+    if (OPS_GetInt(&numData, iData) != 0) {
         opserr << "FSIFluidElement2D ERROR: Invalid integer mandatory values: element FSIFluidElement2D wants 5 integer parameters\n" << descr;
         return 0;
     }
@@ -67,7 +67,7 @@ OPS_FSIFluidElement2D(void)
     // mandatory double parameters
     double dData[1];
     numData = 1;
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    if (OPS_GetDouble(&numData, dData) != 0) {
         opserr << "FSIFluidElement2D ERROR: Invalid double mandatory values: element FSIFluidElement2D wants 1 double parameter\n" << descr;
         return 0;
     }

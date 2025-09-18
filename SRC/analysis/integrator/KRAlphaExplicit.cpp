@@ -48,7 +48,7 @@ void *    OPS_KRAlphaExplicit(void)
     bool updElemDisp = false;
     double rhoInf;
     int numData = 1;
-    if (OPS_GetDoubleInput(&numData, &rhoInf) != 0) {
+    if (OPS_GetDouble(&numData, &rhoInf) != 0) {
         opserr << "WARNING - invalid args want KRAlphaExplicit $rhoInf <-updateElemDisp>\n";
         return 0;
     }

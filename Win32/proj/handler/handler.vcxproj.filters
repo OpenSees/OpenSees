@@ -41,9 +41,6 @@
     <ClCompile Include="..\..\..\SRC\handler\DataFileStreamAdd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\handler\SocketStream.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\handler\BinaryFileStream.h">
@@ -74,9 +71,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\handler\DatabaseStream.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\handler\SocketStream.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

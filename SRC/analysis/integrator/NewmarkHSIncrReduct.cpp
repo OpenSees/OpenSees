@@ -55,7 +55,7 @@ void * OPS_NewmarkHSIncrReduct(void)
     }
     
     double dData[3];
-    if (OPS_GetDoubleInput(&argc, dData) != 0) {
+    if (OPS_GetDouble(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want NewmarkHSIncrReduct $gamma $beta $reduct\n";
         return 0;
     }

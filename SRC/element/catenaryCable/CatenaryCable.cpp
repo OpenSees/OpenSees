@@ -122,26 +122,26 @@ OPS_CatenaryCableElement()
   double dData[8];
   
   int numData = 3;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
+  if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING element CatenaryCable - invalid integer (tag, iNode, jNode) in element CatenaryCable " << endln;
     return 0;
   }
 
   numData = 8;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+  if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING:  element CatenaryCable - invalid double data. Check $weight $E $A $L0 $alpha $temperature_change $rho $errorTol $Nsubsteps $massType\n";
     return 0; 
   }
 
   numData = 1;
   int Nsubsteps = 0;
-  if (OPS_GetIntInput(&numData, &Nsubsteps) != 0) {
+  if (OPS_GetInt(&numData, &Nsubsteps) != 0) {
     opserr << "WARNING element CatenaryCable - invalid integer $Nsubsteps in element CatenaryCable " << endln;
     return 0;
   }
 
   int massType = 0;
-  if (OPS_GetIntInput(&numData, &massType) != 0) {
+  if (OPS_GetInt(&numData, &massType) != 0) {
     opserr << "WARNING element CatenaryCable - invalid integer $massType in element CatenaryCable " << endln;
     return 0;
   }

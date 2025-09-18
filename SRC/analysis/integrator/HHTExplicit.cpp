@@ -70,7 +70,7 @@ void *    OPS_HHTExplicit(void)
     // reset to read from beginning
     OPS_ResetCurrentInputArg(2);
     
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    if (OPS_GetDouble(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want HHTExplicit $alpha <-updateElemDisp>\n";
         opserr << "          or HHTExplicit $alpha $gamma <-updateElemDisp>\n";
         return 0;

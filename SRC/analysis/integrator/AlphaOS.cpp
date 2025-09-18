@@ -63,7 +63,7 @@ void *    OPS_AlphaOS(void)
     else
         numData = 3;
     
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    if (OPS_GetDouble(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want AlphaOS $alpha <-updateElemDisp>\n";
         opserr << "          or AlphaOS $alpha $beta $gamma <-updateElemDisp>\n";
         return 0;

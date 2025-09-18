@@ -170,7 +170,7 @@ OPS_ResponseSpectrumAnalysis(void)
 	// get time series
 	if (!use_lists) {
 		int tstag;
-		if (OPS_GetIntInput(&numData, &tstag) < 0) {
+		if (OPS_GetInt(&numData, &tstag) < 0) {
 			opserr << "ResponseSpectrumAnalysis Error: Failed to get timeSeries tag.\n";
 			return -1;
 		}
@@ -182,7 +182,7 @@ OPS_ResponseSpectrumAnalysis(void)
 	}
 
 	// get direction
-	if (OPS_GetIntInput(&numData, &dir) < 0) {
+	if (OPS_GetInt(&numData, &dir) < 0) {
 		opserr << "ResponseSpectrumAnalysis Error: Failed to get direction.\n";
 		return -1;
 	}
@@ -196,7 +196,7 @@ OPS_ResponseSpectrumAnalysis(void)
 		const char* value = OPS_GetString();
 		if (strcmp(value, "-scale") == 0) {
 			if (OPS_GetNumRemainingInputArgs() > 0) {
-				if (OPS_GetDoubleInput(&numData, &scale) < 0) {
+				if (OPS_GetDouble(&numData, &scale) < 0) {
 					opserr << "ResponseSpectrumAnalysis Error: Failed to get scale factor.\n";
 					return -1;
 				}
@@ -208,7 +208,7 @@ OPS_ResponseSpectrumAnalysis(void)
 		}
 		else if (strcmp(value, "-mode") == 0) {
 			if (OPS_GetNumRemainingInputArgs() > 0) {
-				if (OPS_GetIntInput(&numData, &mode_id) < 0) {
+				if (OPS_GetInt(&numData, &mode_id) < 0) {
 					opserr << "ResponseSpectrumAnalysis Error: Failed to get the mode_id.\n";
 					return -1;
 				}

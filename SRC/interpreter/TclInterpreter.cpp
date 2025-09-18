@@ -586,7 +586,13 @@ TclInterpreter::getString() {
     return res;
 }
 
-int 
+const char*
+TclInterpreter::getStringFromAll(char* buffer, int len)
+{
+    return this->getString(); // everything is a string in Tcl
+}
+
+int
 TclInterpreter::getStringCopy(char **stringPtr) {
   return -1;
 }
@@ -605,6 +611,12 @@ TclInterpreter::evalDoubleStringExpression(
 }
 
 void
+TclInterpreter::resetInput(int nArgs, int cArg, const char** argv)
+{
+    wrapper.resetCommandLine(nArgs, cArg, argv);
+}
+
+void
 TclInterpreter::resetInput(int cArg)
 {
     wrapper.resetCommandLine(cArg);
@@ -618,6 +630,30 @@ TclInterpreter::setInt(int* data, int numArgs, bool scalar)
 }
 
 int
+TclInterpreter::setInt(std::vector<std::vector<int>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setInt(std::map<const char*, int>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setInt(std::map<const char*, std::vector<int>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
 TclInterpreter::setDouble(double* data, int numArgs, bool scalar)
 {
     wrapper.setOutputs(interp, data, numArgs);
@@ -625,8 +661,64 @@ TclInterpreter::setDouble(double* data, int numArgs, bool scalar)
 }
 
 int
+TclInterpreter::setDouble(std::vector<std::vector<double>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setDouble(std::map<const char*, double>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setDouble(std::map<const char*, std::vector<double>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
 TclInterpreter::setString(const char* str)
 {
     wrapper.setOutputs(interp, str);
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::vector<const char*>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::vector<std::vector<const char*>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::map<const char*, const char*>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::map<const char*, std::vector<const char*>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
     return 0;
 }

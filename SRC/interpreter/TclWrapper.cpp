@@ -37,6 +37,7 @@ TclWrapper::TclWrapper()
 
 TclWrapper::~TclWrapper()
 {
+    // does nothing
 }
 
 void
@@ -88,6 +89,217 @@ void
 TclWrapper::setOutputs(Tcl_Interp* interp, const char* str)
 {
     Tcl_SetResult(interp, (char*)str, TCL_VOLATILE);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::vector<std::vector<int>>& data)
+{
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewIntObj(data[i][j]);
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(interp, lists);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::map<const char*, int>& data)
+{
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            interp, dict,
+            Tcl_NewStringObj(item.first, (int)strlen(item.first)),
+            Tcl_NewIntObj(item.second));
+    }
+
+    // set result
+    Tcl_SetObjResult(interp, dict);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::map<const char*, std::vector<int>>& data)
+{
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewIntObj(item.second[j]);
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            interp, dict,
+            Tcl_NewStringObj(item.first, (int)strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(interp, dict);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::vector<std::vector<double>>& data)
+{
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewDoubleObj(data[i][j]);
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(interp, lists);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::map<const char*, double>& data)
+{
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            interp, dict,
+            Tcl_NewStringObj(item.first, (int)strlen(item.first)),
+            Tcl_NewDoubleObj(item.second));
+    }
+
+    // set result
+    Tcl_SetObjResult(interp, dict);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::map<const char*, std::vector<double>>& data)
+{
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewDoubleObj(item.second[j]);
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            interp, dict,
+            Tcl_NewStringObj(item.first, (int)strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(interp, dict);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::vector<const char*>& data)
+{
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each string
+    for (int i = 0; i < (int)data.size(); ++i) {
+        tclData[i] = Tcl_NewStringObj(data[i], (int)strlen(data[i]));
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* list = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(interp, list);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::vector<std::vector<const char*>>& data)
+{
+    // a vector holds tcl objects of lists
+    std::vector<Tcl_Obj*> tclData(data.size());
+
+    // for each sublist
+    for (int i = 0; i < (int)data.size(); ++i) {
+        std::vector<Tcl_Obj*> sublist(data[i].size());
+        for (int j = 0; j < (int)data[i].size(); ++j) {
+            sublist[j] = Tcl_NewStringObj(data[i][j], (int)strlen(data[i][j]));
+        }
+        tclData[i] = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+    }
+
+    // Tcl object for list of list
+    Tcl_Obj* lists = Tcl_NewListObj((int)tclData.size(), &tclData[0]);
+
+    // set result
+    Tcl_SetObjResult(interp, lists);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::map<const char*, const char*>& data)
+{
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        Tcl_DictObjPut(
+            interp, dict,
+            Tcl_NewStringObj(item.first, (int)strlen(item.first)),
+            Tcl_NewStringObj(item.second, (int)strlen(item.second)));
+    }
+
+    // set result
+    Tcl_SetObjResult(interp, dict);
+}
+
+void
+TclWrapper::setOutputs(Tcl_Interp* interp, std::map<const char*, std::vector<const char*>>& data)
+{
+    // dict object
+    auto* dict = Tcl_NewDictObj();
+
+    // for each item
+    for (auto& item : data) {
+        // sublist
+        std::vector<Tcl_Obj*> sublist(item.second.size());
+        for (int j = 0; j < (int)item.second.size(); ++j) {
+            sublist[j] = Tcl_NewStringObj(item.second[j],
+                (int)strlen(item.second[j]));
+        }
+        auto* obj = Tcl_NewListObj((int)sublist.size(), &sublist[0]);
+
+        Tcl_DictObjPut(
+            interp, dict,
+            Tcl_NewStringObj(item.first, (int)strlen(item.first)), obj);
+    }
+
+    // set result
+    Tcl_SetObjResult(interp, dict);
 }
 
 ///////////////////////////////////////////

@@ -327,9 +327,6 @@
     <ClCompile Include="..\..\..\SRC\domain\IGA\NurbsDers.cpp">
       <Filter>IGA</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\domain\pattern\SocketSeries.cpp">
-      <Filter>timeSeries</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp">
       <Filter>timeSeries</Filter>
     </ClCompile>
@@ -616,9 +613,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\IGA\NurbsDers.h">
       <Filter>IGA</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\domain\pattern\SocketSeries.h">
-      <Filter>timeSeries</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\pattern\MPAccSeries.h">
       <Filter>timeSeries</Filter>

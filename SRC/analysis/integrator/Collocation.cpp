@@ -57,7 +57,7 @@ void *    OPS_Collocation(void)
     }
     
     double dData[3];
-    if (OPS_GetDoubleInput(&argc, dData) != 0) {
+    if (OPS_GetDouble(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want Collocation $theta\n";
         opserr << "          or Collocation $theta $beta $gamma\n";
         return 0;

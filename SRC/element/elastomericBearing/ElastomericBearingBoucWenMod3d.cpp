@@ -87,7 +87,7 @@ OPS_ElastomericBearingBoucWenMod3d(void)
   double dData[15];
   
   int numData = 3;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
+  if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING element ElastomericBeamringMod3d error reading integer data\n";
     return 0;
   }
@@ -96,7 +96,7 @@ OPS_ElastomericBearingBoucWenMod3d(void)
   jNode = iData[2];
   
   numData = 8;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+  if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading data\n";
     return 0;	
   }
@@ -110,14 +110,14 @@ OPS_ElastomericBearingBoucWenMod3d(void)
   tr = dData[7];
 
   numData = 1;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
+  if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading data\n";
     return 0;	
   }
   n = iData[0];
 
   numData = 6;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+  if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading data\n";
     return 0;	
   }
@@ -133,7 +133,7 @@ OPS_ElastomericBearingBoucWenMod3d(void)
     const char *option = OPS_GetString();
     if (strcmp(option,"-PMod") == 0)  {
       numData = 2;
-      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+      if (OPS_GetDouble(&numData, dData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -PMod data\n";
 	break;
       }
@@ -141,7 +141,7 @@ OPS_ElastomericBearingBoucWenMod3d(void)
       a2 = dData[1];
     } else if (strcmp(option,"-TMod") == 0)  {
       numData = 4;
-      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+      if (OPS_GetDouble(&numData, dData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -TMod data\n";
 	break;
       }
@@ -151,7 +151,7 @@ OPS_ElastomericBearingBoucWenMod3d(void)
       b1 = dData[3];
     } else if (strcmp(option,"-shearDist") == 0)  {
       numData = 1;
-      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+      if (OPS_GetDouble(&numData, dData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -shearDist data\n";
 	break;
       }
@@ -160,18 +160,18 @@ OPS_ElastomericBearingBoucWenMod3d(void)
       doRayleigh  = 1;
     } else if (strcmp(option,"-mass") == 0)  {
       numData = 1;
-      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+      if (OPS_GetDouble(&numData, dData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -mass data\n";
 	break;
       }
       mass = dData[0];
     } else if (strcmp(option,"-iter") == 0)  {
       numData = 1;
-      if (OPS_GetIntInput(&numData, iData) != 0) {
+      if (OPS_GetInt(&numData, iData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -iter data\n";
 	break;
       }
-      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+      if (OPS_GetDouble(&numData, dData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -iter data\n";
 	break;
       }
@@ -183,7 +183,7 @@ OPS_ElastomericBearingBoucWenMod3d(void)
       if (numData != 3 || numData != 6) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -orient data, need 3 or 6 values\n";
       }
-      if (OPS_GetDoubleInput(&numData, dData) != 0) {
+      if (OPS_GetDouble(&numData, dData) != 0) {
 	opserr << "WARNING element ElastomericBeamringMod3d tag: " << tag << " error reading -orient data\n";
 	break;
       }

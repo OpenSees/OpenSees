@@ -72,7 +72,7 @@ OPS_LinearSeries(void)
 		return 0;
 	  }
       numData = 1;
-      if (OPS_GetDoubleInput(&numData, &cFactor) != 0) {
+      if (OPS_GetDouble(&numData, &cFactor) != 0) {
 	opserr << "WARNING invalid factor in LinearSeries with tag: " << tag << endln;
 	return 0;
       }

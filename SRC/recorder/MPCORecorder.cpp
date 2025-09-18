@@ -3995,7 +3995,8 @@ namespace mpco {
 				else if (
 					// ./mvlem
 					elem_class_tag == ELE_TAG_MVLEM_3D ||
-					elem_class_tag == ELE_TAG_SFI_MVLEM_3D
+					elem_class_tag == ELE_TAG_SFI_MVLEM_3D ||
+					elem_class_tag == ELE_TAG_E_SFI_MVLEM_3D
 					) {
 					geom_type = ElementGeometryType::Quadrilateral_CohesiveBand_4N;
 					int_type = ElementIntegrationRuleType::CustomIntegrationRule;
@@ -4173,7 +4174,8 @@ namespace mpco {
 					bool done = false;
 					std::string request1 = "section";
 					if (elem->getClassTag() == ELE_TAG_MVLEM_3D || 
-						elem->getClassTag() == ELE_TAG_SFI_MVLEM_3D) {
+						elem->getClassTag() == ELE_TAG_SFI_MVLEM_3D ||
+						elem->getClassTag() == ELE_TAG_E_SFI_MVLEM_3D) {
 						request1 = "material";
 					}
 					std::string request3 = "dummy";
@@ -6718,7 +6720,7 @@ void* OPS_MPCORecorder()
 			curr_opt = utils::parsing::opt_region;
 			if (numdata > 0) {
 				int region_tag = 0;
-				if (OPS_GetIntInput(&one_item, &region_tag) != 0) {
+				if (OPS_GetInt(&one_item, &region_tag) != 0) {
 					opserr << "MPCORecorder error: option -R (region) requires an extra parameter (int) for the region tag. (cannot get int value)\n";
 					return 0;
 				}
@@ -6810,7 +6812,7 @@ void* OPS_MPCORecorder()
 				}
 				if (numdata > 0) {
 					int grad_index;
-					if (OPS_GetIntInput(&one_item, &grad_index) != 0) {
+					if (OPS_GetInt(&one_item, &grad_index) != 0) {
 						opserr << "MPCORecorder error: option -NS requires an extra parameter (int) for the sensitivity parameter index. (cannot get int value)\n";
 						return 0;
 					}
@@ -6835,7 +6837,7 @@ void* OPS_MPCORecorder()
 					output_freq.type = mpco::OutputFrequency::DeltaTime;
 					output_freq.nsteps = 1;
 					if (numdata > 0) {
-						if (OPS_GetDoubleInput(&one_item, &output_freq.dt) != 0) {
+						if (OPS_GetDouble(&one_item, &output_freq.dt) != 0) {
 							opserr << "MPCORecorder error: invalid double argument for the delta time\n";
 							return 0;
 						}
@@ -6851,7 +6853,7 @@ void* OPS_MPCORecorder()
 					output_freq.type = mpco::OutputFrequency::NumberOfSteps;
 					output_freq.dt = 0.0;
 					if (numdata > 0) {
-						if (OPS_GetIntInput(&one_item, &output_freq.nsteps) != 0) {
+						if (OPS_GetInt(&one_item, &output_freq.nsteps) != 0) {
 							opserr << "MPCORecorder error: invalid int argument for the number of steps\n";
 							return 0;
 						}

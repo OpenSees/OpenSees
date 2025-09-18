@@ -67,7 +67,7 @@ OPS_StagedNewmark(void)
   bool dispFlag = true;
   double dData[2];
   int numData = 2;
-  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+  if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING - invalid args want StagedNewmark $gamma $beta <-form $typeUnknown>\n";
     return 0;
   }

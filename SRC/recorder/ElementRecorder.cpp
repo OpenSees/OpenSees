@@ -50,7 +50,7 @@
 #include <XmlFileStream.h>
 #include <BinaryFileStream.h>
 #include <DatabaseStream.h>
-#include <SocketStream.h>
+#include <TCP_Stream.h>
 
 #include <elementAPI.h>
 
@@ -76,7 +76,7 @@ OPS_ElementRecorder()
     const int DATABASE_STREAM = 3;
     const int BINARY_STREAM = 4;
     const int DATA_STREAM_CSV = 5;
-    const int SOCKET_STREAM = 6;
+    const int TCP_STREAM = 6;
     const int DATA_STREAM_ADD = 7;
 
     int eMode = STANDARD_STREAM;
@@ -92,7 +92,6 @@ OPS_ElementRecorder()
 
     const char *inetAddr = 0;
     int inetPort;
-    bool udp = false;
 
     ID elements(0, 6);
     ID dofs(0, 6);
@@ -144,21 +143,7 @@ OPS_ElementRecorder()
                     return 0;
                 }
             }
-            eMode = SOCKET_STREAM;
-        }
-        else if (strcmp(option, "-udp") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                inetAddr = OPS_GetString();
-            }
-            if (OPS_GetNumRemainingInputArgs() > 0) {
-                int num = 1;
-                if (OPS_GetIntInput(&num, &inetPort) < 0) {
-                    opserr << "WARNING: failed to read inetPort\n";
-                    return 0;
-                }
-            }
-            eMode = SOCKET_STREAM;
-            udp = true;
+            eMode = TCP_STREAM;
         }
         else if (strcmp(option, "-xml") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -275,7 +260,7 @@ OPS_ElementRecorder()
             data = new const char *[nargrem];
             data[0] = option;
 	    //argv = new char*[nargrem];
-	    //char buffer[128];
+	    char buffer[128];
             for (int i = 1; i < nargrem; i++) {
 	      data[i] = new char[128];
 
@@ -299,8 +284,8 @@ OPS_ElementRecorder()
     //    theOutputStream = new DatabaseStream(theDatabase, tableName);
     else if (eMode == BINARY_STREAM && filename != 0)
         theOutputStream = new BinaryFileStream(filename);
-    else if (eMode == SOCKET_STREAM)
-        theOutputStream = new SocketStream(inetPort, inetAddr, udp);
+    else if (eMode == TCP_STREAM && inetAddr != 0)
+        theOutputStream = new TCP_Stream(inetPort, inetAddr);
     else
         theOutputStream = new StandardStream();
 
@@ -529,7 +514,7 @@ ElementRecorder::sendSelf(int commitTag, Channel &theChannel)
 
   int msgLength = 0;
   for (int i=0; i<numArgs; i++) 
-    msgLength += (int)strlen(responseArgs[i])+1;
+    msgLength += strlen(responseArgs[i])+1;
 
   idData(2) = msgLength;
 
@@ -747,7 +732,7 @@ ElementRecorder::recvSelf(int commitTag, Channel &theChannel,
   char *currentLoc = allResponseArgs;
   for (int j=0; j<numArgs; j++) {
 
-    int argLength = (int)strlen(currentLoc)+1;
+    int argLength = strlen(currentLoc)+1;
 
     responseArgs[j] = new char[argLength];
     if (responseArgs[j] == 0) {

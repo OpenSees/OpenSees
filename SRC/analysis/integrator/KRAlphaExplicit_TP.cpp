@@ -47,7 +47,7 @@ void *    OPS_KRAlphaExplicit_TP(void)
     }
     
     double rhoInf;
-    if (OPS_GetDoubleInput(&argc, &rhoInf) != 0) {
+    if (OPS_GetDouble(&argc, &rhoInf) != 0) {
         opserr << "WARNING - invalid args want KRAlphaExplicit_TP $rhoInf\n";
         return 0;
     }

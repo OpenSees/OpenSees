@@ -220,7 +220,7 @@ void * OPS_MixedBeamColumn2d() {
 
     } else if ( strcmp(sData,"-doRayleigh") == 0 ) {
         numData = 1;
-        if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
+        if (OPS_GetInt(&numData, &doRayleigh) != 0) {
           opserr << "WARNING: Invalid doRayleigh in element MixedBeamColumn2d " << eleTag;
           return 0;
         }

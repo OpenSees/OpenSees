@@ -56,7 +56,7 @@ void *    OPS_HHTExplicit_TP(void)
     }
     
     double dData[2];
-    if (OPS_GetDoubleInput(&argc, dData) != 0) {
+    if (OPS_GetDouble(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want HHTExplicit_TP $alpha\n";
         opserr << "          or HHTExplicit_TP $alpha $gamma\n";
         return 0;

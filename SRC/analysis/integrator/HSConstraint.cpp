@@ -399,7 +399,7 @@ HSConstraint::recvSelf(int cTag,
   //alpha2 = data(1);
   deltaLambdaStep = data(1);
   currentLambda = data(2);
-  signLastDeltaLambdaStep = (int)data(3);
+  signLastDeltaLambdaStep = data(3);
   return 0;
 }
 

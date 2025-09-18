@@ -55,7 +55,7 @@ void *    OPS_WilsonTheta(void)
     }
     
     double theta;    
-    if (OPS_GetDoubleInput(&argc, &theta) != 0) {
+    if (OPS_GetDouble(&argc, &theta) != 0) {
         opserr << "WARNING - invalid args want WilsonTheta $theta\n";
         return 0;
     }

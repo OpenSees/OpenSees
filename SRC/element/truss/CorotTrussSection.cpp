@@ -76,7 +76,7 @@ OPS_CorotTrussSectionElement()
   int ndm = OPS_GetNDM();
 
   int numData = 4;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
+  if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING invalid integer (tag, iNode, jNode, sectTag) in element CorotTrussSection " << endln;
     return 0;
   }
@@ -95,21 +95,21 @@ OPS_CorotTrussSectionElement()
 
     if (strcmp(argvS,"-rho") == 0) {
       numData = 1;
-      if (OPS_GetDoubleInput(&numData, &rho) != 0) {
+      if (OPS_GetDouble(&numData, &rho) != 0) {
 	opserr << "WARNING Invalid rho in element CorotTrussSection " << iData[0] << 
 	  " $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-cMass") == 0) {
       numData = 1;
-      if (OPS_GetIntInput(&numData, &cMass) != 0) {
+      if (OPS_GetInt(&numData, &cMass) != 0) {
 	opserr << "WARNING: Invalid cMass in element CorotTrussSection " << iData[0] << 
 	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-doRayleigh") == 0) {
       numData = 1;
-      if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
+      if (OPS_GetInt(&numData, &doRayleigh) != 0) {
 	opserr << "WARNING: Invalid doRayleigh in element CorotTrussSection " << iData[0] << 
 	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;

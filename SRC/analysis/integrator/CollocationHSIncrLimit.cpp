@@ -71,7 +71,7 @@ void *    OPS_CollocationHSIncrLimit(void)
     // reset to read from beginning
     OPS_ResetCurrentInputArg(2);
     
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    if (OPS_GetDouble(&numData, dData) != 0) {
         opserr << "WARNING - invalid args want CollocationHSIncrLimit $theta $limit <-normType $T>\n";
         opserr << "          or CollocationHSIncrLimit $theta $beta $gamma $limit <-normType $T>\n";
         return 0;
@@ -81,7 +81,7 @@ void *    OPS_CollocationHSIncrLimit(void)
         const char *argvLoc = OPS_GetString();
         if (strcmp(argvLoc, "-normType") == 0) {
             int numData2 = 1;
-            if (OPS_GetIntInput(&numData2, &normType) != 0) {
+            if (OPS_GetInt(&numData2, &normType) != 0) {
                 opserr << "WARNING - invalid normType want CollocationHSIncrLimit $theta $limit <-normType $T>\n";
                 opserr << "          or CollocationHSIncrLimit $theta $beta $gamma $limit <-normType $T>\n";
             }

@@ -64,7 +64,7 @@ OPS_PFEMIntegrator(void)
     double dData[2] = {-1.0, -1.0};
     int numData = 2;
     if (OPS_GetNumRemainingInputArgs() > 1) {
-        if (OPS_GetDoubleInput(&numData, dData) < 0) {
+        if (OPS_GetDouble(&numData, dData) < 0) {
             OPS_ResetCurrentInputArg(-2);
         }
     }
@@ -743,8 +743,8 @@ int PFEMIntegrator::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
 
     gamma  = data(0);
     beta   = data(1);
-    displ  = (int)data(2);
-    init   = (int)data(3);
+    displ  = data(2);
+    init   = data(3);
     return 0;
 }
 

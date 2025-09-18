@@ -159,7 +159,7 @@ OPS_ASDAbsorbingBoundary2D(void)
     // int parameters
     int iData[5];
     int numData = 5;
-    if (OPS_GetIntInput(&numData, iData) != 0) {
+    if (OPS_GetInt(&numData, iData) != 0) {
         opserr << "ASDAbsorbingBoundary2D ERROR: Invalid integer mandatory values: element ASDAbsorbingBoundary2D wants 5 integer parameters\n" << descr;
         return 0;
     }
@@ -167,7 +167,7 @@ OPS_ASDAbsorbingBoundary2D(void)
     // double parameters
     double dData[4];
     numData = 4;
-    if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    if (OPS_GetDouble(&numData, dData) != 0) {
         opserr << "ASDAbsorbingBoundary2D ERROR: Invalid double mandatory values: element ASDAbsorbingBoundary2D wants 4 double parameters\n" << descr;
         return 0;
     }
@@ -194,7 +194,7 @@ OPS_ASDAbsorbingBoundary2D(void)
         int tsTag = 0;
         // util: get x
         auto get_fx = [&numData, &tsTag, &fx, descr]() -> bool {
-            if (OPS_GetIntInput(&numData, &tsTag) != 0) {
+            if (OPS_GetInt(&numData, &tsTag) != 0) {
                 opserr << "ASDAbsorbingBoundary2D ERROR: Invalid integer for -fx optional time series.\n" << descr;
                 return false;
             }
@@ -207,7 +207,7 @@ OPS_ASDAbsorbingBoundary2D(void)
         };
         // util: get y
         auto get_fy = [&numData, &tsTag, &fy, descr]() -> bool {
-            if (OPS_GetIntInput(&numData, &tsTag) != 0) {
+            if (OPS_GetInt(&numData, &tsTag) != 0) {
                 opserr << "ASDAbsorbingBoundary2D ERROR: Invalid integer for -fy optional time series.\n" << descr;
                 return false;
             }

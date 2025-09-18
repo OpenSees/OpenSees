@@ -84,7 +84,7 @@ OPS_TrussSectionElement()
   int cMass = 0; // by default use lumped mass matrix
 
   int numData = 4;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
+  if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING invalid integer (tag, iNode, jNode, sectTag) in element TrussSection " << endln;
     return 0;
   }
@@ -103,21 +103,21 @@ OPS_TrussSectionElement()
   
     if (strcmp(argvS,"-rho") == 0) {
       numData = 1;
-      if (OPS_GetDoubleInput(&numData, &rho) != 0) {
+      if (OPS_GetDouble(&numData, &rho) != 0) {
 	opserr << "WARNING Invalid rho in element TrussSection " << iData[0] << 
 	  " $iNode $jNode $secTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-cMass") == 0) {
       numData = 1;
-      if (OPS_GetIntInput(&numData, &cMass) != 0) {
+      if (OPS_GetInt(&numData, &cMass) != 0) {
 	opserr << "WARNING: Invalid cMass in element TrussSection " << iData[0] << 
 	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;
       }
     } else if (strcmp(argvS,"-doRayleigh") == 0) {
       numData = 1;
-      if (OPS_GetIntInput(&numData, &doRayleigh) != 0) {
+      if (OPS_GetInt(&numData, &doRayleigh) != 0) {
 	opserr << "WARNING: Invalid doRayleigh in element TrussSection " << iData[0] << 
 	  " $iNode $jNode $sectTag <-rho $rho> <-cMass $flag> <-doRayleigh $flag>\n";
 	return 0;

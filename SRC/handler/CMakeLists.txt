@@ -16,7 +16,6 @@ target_sources(OPS_Handler
 		DummyStream.cpp
 		FileStream.cpp
         OPS_Stream.cpp
-		SocketStream.cpp
         StandardStream.cpp
         TCP_Stream.cpp
         XmlFileStream.cpp
@@ -29,7 +28,6 @@ target_sources(OPS_Handler
 		DummyStream.h
 		FileStream.h
         OPS_Stream.h
-		SocketStream.h
         StandardStream.h
         TCP_Stream.h
         XmlFileStream.h

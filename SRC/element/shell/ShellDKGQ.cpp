@@ -73,7 +73,7 @@ OPS_ShellDKGQ(void)
   
   int iData[6];
   int numData = 6;
-  if (OPS_GetIntInput(&numData, iData) != 0) {
+  if (OPS_GetInt(&numData, iData) != 0) {
     opserr << "WARNING invalid integer tag: element ShellDKGQ \n";
     return 0;
   }

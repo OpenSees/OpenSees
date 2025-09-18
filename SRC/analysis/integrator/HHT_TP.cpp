@@ -56,7 +56,7 @@ void *    OPS_HHT_TP(void)
     }
     
     double dData[3];
-    if (OPS_GetDoubleInput(&argc, dData) != 0) {
+    if (OPS_GetDouble(&argc, dData) != 0) {
         opserr << "WARNING - invalid args want HHT_TP $alpha <$gamma $beta>\n";
         return 0;
     }
