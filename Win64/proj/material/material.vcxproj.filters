@@ -2960,5 +2960,8 @@
     <ClInclude Include="..\..\..\SRC\material\section\PipeSection.h">
       <Filter>section</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

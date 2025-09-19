@@ -200,6 +200,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DowelType.cpp" />
@@ -686,6 +687,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CreepMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Dodd_Restrepo.h" />

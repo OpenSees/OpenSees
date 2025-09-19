@@ -117,6 +117,7 @@
     <ClCompile Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dThermalAction.cpp" />
+    <ClCompile Include="..\..\..\SRC\domain\load\BeamUniformMoment.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\NodalThermalAction.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\ShellThermalAction.cpp" />
     <ClCompile Include="..\..\..\SRC\domain\load\ThermalActionWrapper.cpp" />
@@ -216,6 +217,7 @@
     <ClInclude Include="..\..\..\SRC\domain\load\Beam2dPartialUniformLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dThermalAction.h" />
+    <ClInclude Include="..\..\..\SRC\domain\load\BeamUniformMoment.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\NodalThermalAction.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\ShellThermalAction.h" />
     <ClInclude Include="..\..\..\SRC\domain\load\ThermalActionWrapper.h" />

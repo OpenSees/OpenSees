@@ -800,6 +800,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CreepMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\CubicSpline.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DamperMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.h" />
