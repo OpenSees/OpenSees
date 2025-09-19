@@ -739,5 +739,8 @@
     <ClInclude Include="..\..\..\SRC\analysis\integrator\StagedNewmark.h">
       <Filter>integrator</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HarmonicSteadyState.h">
+      <Filter>integrator</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

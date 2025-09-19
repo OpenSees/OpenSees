@@ -30,9 +30,20 @@
 #ifndef PythonEvaluator_h
 #define PythonEvaluator_h
 
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
+
+#ifdef _DEBUG
+#undef _DEBUG
+#include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
+
 #include <Domain.h>
 #include <FunctionEvaluator.h>
-#include <Python.h>
 #include <ReliabilityDomain.h>
 #include <vector>
 #include <string>

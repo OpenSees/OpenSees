@@ -70,5 +70,8 @@
     <ClInclude Include="..\..\..\SRC\handler\DataFileStreamAdd.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\handler\DatabaseStream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

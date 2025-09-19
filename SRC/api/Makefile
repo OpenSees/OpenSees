@@ -2,7 +2,6 @@ include ../../Makefile.def
 
 OBJS       = packages.o \
 	elementAPI_TCL.o \
-	elementAPI_Dummy.o \
 
 # Compilation control
 

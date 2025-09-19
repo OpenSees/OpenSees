@@ -58,7 +58,7 @@ class GenericClient : public Element
 public:
     // constructors
     GenericClient(int tag, ID nodes, ID *dof,
-          int port, char *machineInetAddr = 0,
+          int port, const char *machineInetAddr = 0,
           int ssl = 0, int udp = 0, int dataSize = 256,
           int addRayleigh = 1);
     GenericClient();
