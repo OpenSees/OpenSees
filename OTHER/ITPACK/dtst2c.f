@@ -1,4 +1,4 @@
-      PROGRAM ITPTST (OUTPUT,TAPE6=OUTPUT)      
+      PROGRAM ITPTST 
 C       
 C     CHANGES TO BE MADE FOR USE ON DIFFERENT COMPUTERS:  
 C     1. REMOVE OR CHANGE PROGRAM LINE ABOVE OR OPEN LINE BELOW     
@@ -1608,7 +1608,7 @@ C       GENERATE RANDOM PERMUTATION
 C       
       DO 10 I = 1,N 
          P(I) = I 
-         IP(I) = IRAND(1,N,ISEED)     
+         IP(I) = IRANDBLH(1,N,ISEED)     
    10 CONTINUE    
 C       
       RETURN      
@@ -1657,8 +1657,8 @@ C
 C       STORE SYMMETRIC SYSTEM  OFF-DIAGONAL ELEMENTS     
 C       
       DO 90 K = 1,NZRED     
-   70    I = IRAND(1,NRED,ISEED)      
-         J = IRAND(NRED+1,N,ISEED)    
+   70    I = IRANDBLH(1,NRED,ISEED)      
+         J = IRANDBLH(NRED+1,N,ISEED)    
          PI = MIN0(P(I),P(J)) 
          PJ = MAX0(P(I),P(J)) 
          VAL = -DBLE(RANDOM(ISEED))   
@@ -1681,8 +1681,8 @@ C
 C       STORE NONSYMMETRIC SYSTEM  OFF-DIAGONAL ELEMENTS  
 C       
       DO 130 K = 1,NZRED    
-  120    I = IRAND(1,NRED,ISEED)      
-         J = IRAND(NRED+1,N,ISEED)    
+  120    I = IRANDBLH(1,NRED,ISEED)      
+         J = IRANDBLH(NRED+1,N,ISEED)    
          PI = P(I)
          PJ = P(J)
          VAL = -DBLE(RANDOM(ISEED))   
@@ -1693,8 +1693,8 @@ C
          ROW(PI) = ROW(PI)-VAL
   130 CONTINUE    
       DO 150 K = 1,NZBLK    
-  140    I = IRAND(NRED+1,N,ISEED)    
-         J = IRAND(1,NRED,ISEED)      
+  140    I = IRANDBLH(NRED+1,N,ISEED)    
+         J = IRANDBLH(1,NRED,ISEED)      
          PI = P(I)
          PJ = P(J)
          VAL = -DBLE(RANDOM(ISEED))   
@@ -1731,7 +1731,7 @@ C
       IF (IER.NE.0) STOP    
 C       
       DO 190 K = 1,N,5      
-         NBIG = IRAND(1,N,ISEED)      
+         NBIG = IRANDBLH(1,N,ISEED)      
          RHS(NBIG) = EVAL+RHS(NBIG)   
          PI = NBIG
          PJ = NBIG
@@ -2036,7 +2036,7 @@ C
 C       
       RETURN      
       END 
-      INTEGER FUNCTION IRAND (I,J,ISEED)
+      INTEGER FUNCTION IRANDBLH (I,J,ISEED)
 C       
 C*****************************************************************  
 C       
@@ -2049,7 +2049,7 @@ C
 C       
 C==================================================================== 
 C       
-      IRAND = IFIX(FLOAT(J-I+1)*RANDOM(ISEED))+I
+      IRANDBLH = IFIX(FLOAT(J-I+1)*RANDOM(ISEED))+I
 C       
       RETURN      
       END 

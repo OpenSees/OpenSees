@@ -160,6 +160,12 @@ jobs:
           export PYTHONPATH="./build/lib/"
           python3 -c "import sys; print(sys.path)"
           python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+      - name: Run pytest in tests/ folder
+        run: |
+          python3 -m pip install pytest
+          cp build/lib/opensees.so tests/
+          cd tests
+          pytest -v
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
