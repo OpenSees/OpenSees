@@ -124,6 +124,9 @@ class ForceBeamColumn3d: public Element
   
   Response *setResponse(const char **argv, int argc, OPS_Stream &s);
   int getResponse(int responseID, Information &eleInformation);
+
+  // calculate the characteristic length for this element
+  double getCharacteristicLength(void);
   
  // AddingSensitivity:BEGIN //////////////////////////////////////////
   int setParameter(const char **argv, int argc, Parameter &param);
@@ -201,6 +204,10 @@ class ForceBeamColumn3d: public Element
 
   Damping *theDamping;
   
+  // this variable holds the length of the i-th integration point
+  // undergoing the update (FB element localizes at the integration point level)
+  double current_section_lch = 0.0;
+
   static Matrix theMatrix;
   static Vector theVector;
   static double workArea[];

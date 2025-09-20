@@ -289,8 +289,8 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <ConjugateGradientSolver.h>
 
 #ifdef _ITPACK
-//#include <ItpackLinSOE.h>
-//#include <ItpackLinSolver.h>
+#include <ItpackLinSOE.h>
+#include <ItpackLinSolver.h>
 #endif
 
 #include <FullGenLinSOE.h>
@@ -3434,21 +3434,21 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
-  
-#ifdef _ITPACK
-//  else if (strcmp(argv[1],"Itpack") == 0) {
-//    
-//    // now must determine the type of solver to create from rest of args
-//    int method = 1;
-//    if (argc == 3) {
-//      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
-//	return TCL_ERROR;
-//    }
-//    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
-//    theSOE = new ItpackLinSOE(*theSolver);      
-//  }
-#endif	// _ITPACK
 
+#ifdef _ITPACK
+  else if (strcmp(argv[1],"Itpack") == 0) {
+    
+    // now must determine the type of solver to create from rest of args
+    int method = 1;
+    if (argc == 3) {
+      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
+	return TCL_ERROR;
+    }
+    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
+    theSOE = new ItpackLinSOE(*theSolver);      
+  }
+#endif
+  
   else if (strcmp(argv[1],"FullGeneral") == 0) {
     // now must determine the type of solver to create from rest of args
     FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
