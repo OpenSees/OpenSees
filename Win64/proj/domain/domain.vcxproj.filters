@@ -141,6 +141,9 @@
     <ClCompile Include="..\..\..\Src\domain\load\Beam2dUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\Src\domain\load\BeamUniformMoment.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPointLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
@@ -327,10 +330,10 @@
     <ClCompile Include="..\..\..\SRC\domain\IGA\NurbsDers.cpp">
       <Filter>IGA</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRM.cpp">
-      <Filter>pattern\drm</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\domain\pattern\RampSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp">
       <Filter>timeSeries</Filter>
     </ClCompile>
   </ItemGroup>
@@ -438,6 +441,9 @@
       <Filter>load\beam</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\Src\domain\load\Beam2dUniformLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Src\domain\load\BeamUniformMoment.h">
       <Filter>load\beam</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPointLoad.h">
@@ -610,9 +616,6 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\IGA\NurbsDers.h">
       <Filter>IGA</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRM.h">
-      <Filter>pattern\drm</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\pattern\RampSeries.h">
       <Filter>timeSeries</Filter>

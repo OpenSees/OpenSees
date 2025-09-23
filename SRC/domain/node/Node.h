@@ -46,6 +46,8 @@ class Vector;
 class Matrix;
 class Channel;
 class Renderer;
+namespace OpenSees {struct Versor;}
+using OpenSees::Versor;
 
 class DOF_Group;
 class NodalThermalAction; //L.Jiang [ SIF ]
@@ -86,6 +88,7 @@ class Node : public DomainComponent
     virtual const Vector &getTrialDisp(void);    
     virtual const Vector &getTrialVel(void);    
     virtual const Vector &getTrialAccel(void);    
+    virtual       Versor  getTrialRotation(void);
 
     // public methods for updating the trial response quantities
     virtual int setTrialDisp(double value, int dof);    
@@ -166,9 +169,11 @@ class Node : public DomainComponent
     virtual void setCrds(double Crd1, double Crd2, double Crd3);
     virtual void setCrds(const Vector &);
 
-  protected:
+    void setTemp(double t) { temperature = t; }
+    double getTemp() const { return temperature; }
 
-  private:
+   protected:
+   private:
     // priavte methods used to create the Vector objects 
     // for the committed and trial response quantities.
     int createDisp(void);
@@ -185,6 +190,7 @@ class Node : public DomainComponent
     Vector *commitDisp, *commitVel, *commitAccel; // committed quantities
     Vector *trialDisp, *trialVel, *trialAccel;     // trial quantities
     Vector *unbalLoad;                // unbalanced load
+    Versor *rotation;
     Vector *incrDisp;
     Vector *incrDeltaDisp;
     
@@ -216,6 +222,7 @@ class Node : public DomainComponent
 
     Vector *reaction;
     Vector *displayLocation;
+    double temperature; // Minjie
 };
 
 #endif

@@ -66,6 +66,7 @@ public:
     const Matrix &getMass(void);
 
     // methods for applying loads
+    void zeroLoad();
     int addInertiaLoadToUnbalance(const Vector &accel);
 
     // methods for obtaining resisting force (force includes elemental loads)
@@ -119,6 +120,7 @@ private:
     static Matrix C;
     Matrix M, D;
     Vector F, Fp;
+    Vector Q;
 
     void setJ();
     void setdJ();

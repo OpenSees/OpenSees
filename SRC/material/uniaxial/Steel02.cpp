@@ -600,7 +600,23 @@ Steel02::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(a4);
     return param.addObject(7, this);
   }
-
+  if (strcmp(argv[0],"R0") == 0) {
+    param.setValue(R0);
+    return param.addObject(8, this);
+  }
+  if (strcmp(argv[0],"cR1") == 0) {
+    param.setValue(cR1);
+    return param.addObject(9, this);
+  }
+  if (strcmp(argv[0],"cR2") == 0) {
+    param.setValue(cR2);
+    return param.addObject(10, this);
+  }
+  if (strcmp(argv[0],"sig0") == 0) {
+    param.setValue(sigini);
+    return param.addObject(11, this);
+  }
+	
   return -1;
 }
 
@@ -633,6 +649,18 @@ Steel02::updateParameter(int parameterID, Information &info)
   case 7:
     this->a4 = info.theDouble;
     break;
+  case 8:
+    this->R0 = info.theDouble;
+    break;
+  case 9:
+    this->cR1 = info.theDouble;
+    break;
+  case 10:
+    this->cR2 = info.theDouble;
+    break;
+  case 11:
+    this->sigini = info.theDouble;
+    break;	  
   default:
     return -1;
   }

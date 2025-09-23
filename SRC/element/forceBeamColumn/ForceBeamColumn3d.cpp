@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+                                                                         
 // $Revision: 1.33 $
 // $Date: 2010-09-13 21:26:10 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/forceBeamColumn/ForceBeamColumn3d.cpp,v $
@@ -94,6 +94,8 @@ Vector ForceBeamColumn3d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn3d()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     if (OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";
 	return 0;
@@ -150,6 +152,18 @@ void* OPS_ForceBeamColumn3d()
 		}
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -183,7 +197,7 @@ void* OPS_ForceBeamColumn3d()
     }
 
     Element *theEle =  new ForceBeamColumn3d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
@@ -194,6 +208,8 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
     double mass = 0.0, tol = 1e-12, subFac=10.0;
     int maxIter = 10, numSub = 4;
     int numData;
+    int dampingTag = 0;
+    Damping* theDamping = 0;
 
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
@@ -259,6 +275,18 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
                 if (OPS_GetNumRemainingInputArgs() > 0) {
                     if (OPS_GetDoubleInput(&numData, &mass) < 0) {
                         opserr << "WARNING invalid mass\n";
+                        return 0;
+                    }
+                }
+        }
+        //Tang.S
+        else if (strcmp(type, "-damp") == 0) {
+
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                    theDamping = OPS_getDamping(dampingTag);
+                    if (theDamping == 0) {
+                        opserr << "damping not found\n";
                         return 0;
                     }
                 }
@@ -345,7 +373,7 @@ void *OPS_ForceBeamColumn3d(const ID &info) {
 
     Element *theEle = new ForceBeamColumn3d(
         iData[0], iData[1], iData[2], secTags.Size(), sections, *bi,
-        *theTransf, mass, maxIter, tol, numSub, subFac);
+        *theTransf, mass, maxIter, tol, numSub, subFac,theDamping);
     delete[] sections;
     return theEle;
 }
@@ -759,20 +787,29 @@ ForceBeamColumn3d::computeReactions(double *p0)
       p0[4] -= V;
     }
     else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
-      double wa = data(2)*loadFactor;  // Axial
-      double wy = data(0)*loadFactor;  // Transverse
-      double wz = data(1)*loadFactor;  // Transverse
-      double a = data(3)*L;
-      double b = data(4)*L;
-
-      p0[0] -= wa*(b-a);
-      double Fy = wy*(b-a);
-      double c = a + 0.5*(b-a);
-      p0[1] -= Fy*(1-c/L);
-      p0[2] -= Fy*c/L;
-      double Fz = wz*(b-a);
-      p0[3] -= Fz*(1-c/L);
-      p0[4] -= Fz*c/L;      
+      double wy = data(0) * loadFactor;  // Transverse Y at start
+      double wz = data(1) * loadFactor;  // Transverse Z at start
+      double wa = data(2) * loadFactor;  // Axial at start
+      double a = data(3) * L;
+      double b = data(4) * L;
+      double wyb = data(5) * loadFactor;  // Transverse Y at end
+      double wzb = data(6) * loadFactor;  // Transverse Z at end
+      double wab = data(7) * loadFactor;  // Axial at end
+      p0[0] -= wa * (b - a) + 0.5 * (wab - wa) * (b - a);
+      double c = a + 0.5 * (b - a);
+      double Fy = wy * (b - a); // resultant transverse load Y (uniform part)
+      p0[1] -= Fy * (1 - c / L);
+      p0[2] -= Fy * c / L;
+      double Fz = wz * (b - a); // resultant transverse load Z (uniform part)
+      p0[3] -= Fz * (1 - c / L);
+      p0[4] -= Fz * c / L;
+      c = a + 2.0 / 3.0 * (b - a);
+      Fy = 0.5 * (wyb - wy) * (b - a); // resultant transverse load Y (triang. part)
+      p0[1] -= Fy * (1 - c / L);
+      p0[2] -= Fy * c / L;
+      Fz = 0.5 * (wzb - wz) * (b - a); // resultant transverse load Z (triang. part)
+      p0[3] -= Fz * (1 - c / L);
+      p0[4] -= Fz * c / L;
     }
     else if (type == LOAD_TAG_Beam3dPointLoad) {
       double Py = data(0)*loadFactor;
@@ -1035,6 +1072,9 @@ void
 	  double xL  = xi[i];
 	  double xL1 = xL-1.0;
 	  double wtL = wt[i]*L;
+
+      // store the length of the current integration point
+      current_section_lch = wtL;
 	  
 	  // calculate total section forces
 	  // Ss = b*Se + bp*currDistrLoad;
@@ -1264,6 +1304,10 @@ void
 		}
 	      }
 	    }
+
+        // reset it to the default (whole length) in case the getChatacteristiLength function
+        // is called in the wrong place
+        current_section_lch = L;
 
 	    if (!isTorsion) {
 	      f(5,5) = DefaultLoverGJ;
@@ -1537,23 +1581,31 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
       }
     }
     else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
-      double wa = data(2)*loadFactor;  // Axial
-      double wy = data(0)*loadFactor;  // Transverse
-      double wz = data(1)*loadFactor;  // Transverse
+      double wy = data(0) * loadFactor;  // Transverse Y at start
+      double wz = data(1) * loadFactor;  // Transverse Z at start
+      double wa = data(2) * loadFactor;  // Axial at start
       double a = data(3)*L;
       double b = data(4)*L;
-
-      double Fa = wa*(b-a); // resultant axial load
-      double Fy = wy*(b-a); // resultant transverse load
-      double Fz = wz*(b-a); // resultant transverse load
-      double c = a + 0.5*(b-a);
-      double VyI = Fy*(1-c/L);
-      double VyJ = Fy*c/L;
-      double VzI = Fz*(1-c/L);
-      double VzJ = Fz*c/L;      
-
+      double wyb = data(5) * loadFactor;  // Transverse Y at end
+      double wzb = data(6) * loadFactor;  // Transverse Z at end
+      double wab = data(7) * loadFactor;  // Axial at end
+      double Fa = wa * (b - a) + 0.5 * (wab - wa) * (b - a); // resultant axial load
+      double Fy = wy * (b - a); // resultant transverse load
+      double Fz = wz * (b - a); // resultant transverse load
+      double c = a + 0.5 * (b - a);
+      double VyI = Fy * (1 - c / L);
+      double VyJ = Fy * c / L;
+      double VzI = Fz * (1 - c / L);
+      double VzJ = Fz * c / L;
+      Fy = 0.5 * (wyb - wy) * (b - a); // resultant transverse load
+      Fz = 0.5 * (wzb - wz) * (b - a); // resultant transverse load
+      c = a + 2.0 / 3.0 * (b - a);
+      VyI += Fy * (1 - c / L);
+      VyJ += Fy * c / L;
+      VzI += Fz * (1 - c / L);
+      VzJ += Fz * c / L;
+     
       for (int ii = 0; ii < order; ii++) {
-	
 	if (x <= a) {
 	  switch(code(ii)) {
 	  case SECTION_RESPONSE_P:
@@ -1569,7 +1621,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) -= VyI;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= VzI;
+        sp(ii) += VzI;
 	    break;	    
 	  default:
 	    break;
@@ -1587,33 +1639,35 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += VyJ;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += VzJ;	    
+	    sp(ii) -= VzJ;	    
 	    break;
 	  default:
 	    break;
 	  }
 	}
 	else {
+      double wyy = wy + (wyb - wy) / (b - a) * (x - a);
+      double wzz = wz + (wzb - wz) / (b - a) * (x - a);
 	  switch(code(ii)) {
 	  case SECTION_RESPONSE_P:
-	    sp(ii) += Fa-wa*(x-a);
+	    sp(ii) += Fa - wa * (x - a) - 0.5 * (wab - wa) / (b - a) * (x - a) * (x - a);
 	    break;
 	  case SECTION_RESPONSE_MZ:
-	    sp(ii) += -VyI*x + 0.5*wy*x*x + wy*a*(0.5*a-x);
+        sp(ii) += -VyI * x + 0.5 * wy * (x - a) * (x - a) + 0.5 * (wyy - wy) * (x - a) * (x - a) / 3.0;
 	    break;
 	  case SECTION_RESPONSE_MY:
-	    sp(ii) += VzI*x - 0.5*wz*x*x - wz*a*(0.5*a-x);
+          sp(ii) += VzI * x - 0.5 * wz * (x - a) * (x - a) - 0.5 * (wzz - wz) * (x - a) * (x - a) / 3.0;
 	    break;	    
 	  case SECTION_RESPONSE_VY:
-	    sp(ii) += -VyI + wy*(x-a);
-	    break;
-	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += -VzI + wz*(x-a);	    
-	    break;
+        sp(ii) += -VyI + wy * (x - a) + 0.5 * (wyy - wy) * (x - a);
+        break;
+	  case SECTION_RESPONSE_VZ:	   
+        sp(ii) -= -VzI + wz * (x - a) - 0.5 * (wzz - wz) * (x - a);
+        break;
 	  default:
 	    break;
 	  }
-	}
+    }
       }
     }
     else if (type == LOAD_TAG_Beam3dPointLoad) {
@@ -1650,7 +1704,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += x*Vz1;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= Vz1;
+	    sp(ii) += Vz1;
 	    break;
 	  default:
 	    break;
@@ -1668,7 +1722,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += (L-x)*Vz2;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += Vz2;
+	    sp(ii) -= Vz2;
 	    break;
 	  default:
 	    break;
@@ -2281,7 +2335,7 @@ ForceBeamColumn3d::computeSectionForceSensitivity(Vector &dspdh, int isec,
        secDefSize   += size;
     }
 
-    Vector dData(1+1+NEBD+NEBD*NEBD+secDefSize+4);   
+    Vector dData(1+1+1+NEBD+NEBD*NEBD+secDefSize+4);   
 
     if (theChannel.recvVector(dbTag, commitTag, dData) < 0)  {
       opserr << "ForceBeamColumn3d::recvSelf() - failed to send Vector data\n";
@@ -3159,7 +3213,7 @@ ForceBeamColumn3d::getInitialDeformations(Vector &v0)
 	//by SAJalali
 	else if (strcmp(argv[0], "energy") == 0)
 	{
-		theResponse = new ElementResponse(this, 10, 0.0);
+		theResponse = new ElementResponse(this, 2000, 0.0);
 	}
 
     if (theResponse == 0) {
@@ -3610,7 +3664,7 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
     return -1;
   }
   //by SAJalali
-  else if (responseID == 10) {
+  else if (responseID == 2000) {
 	  double xi[maxNumSections];
 	  double L = crdTransf->getInitialLength();
 	  beamIntegr->getSectionWeights(numSections, L, xi);
@@ -3623,6 +3677,17 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 
   else
     return -1;
+}
+
+double ForceBeamColumn3d::getCharacteristicLength(void)
+{
+    // The default implementation of Element::getCharacteristicLength()
+    // returns the whole element length.
+    // However, FB element localizes only in a 1 integration point
+    // so we should return the i-th integration-point's length
+    if (current_section_lch > 0.0)
+        return current_section_lch;
+    return Element::getCharacteristicLength();
 }
 
 int 
@@ -3803,6 +3868,15 @@ ForceBeamColumn3d::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"rho") == 0) {
     param.setValue(rho);
     return param.addObject(1, this);
+  }
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
   }
 
   // section response -

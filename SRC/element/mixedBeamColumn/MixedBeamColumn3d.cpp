@@ -837,7 +837,9 @@ int MixedBeamColumn3d::revertToStart()
   kvcommit = kv;
 
   Matrix kvOpenSees = transformNaturalCoordsT*kv*transformNaturalCoords;
-  Ki = new Matrix(crdTransf->getInitialGlobalStiffMatrix(kvOpenSees));
+  if (Ki == 0)
+    Ki = new Matrix(NEGD,NEGD);
+  *Ki = crdTransf->getInitialGlobalStiffMatrix(kvOpenSees);
 
   // Vector V is zero at initial state
   V.Zero();

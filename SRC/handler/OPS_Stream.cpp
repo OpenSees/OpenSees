@@ -124,3 +124,10 @@ OPS_Stream::setAddCommon(int flag) {
 int OPS_Stream::flush() {
   return 0;
 }
+
+int OPS_Stream::close(openMode nextOpen) {
+  return 0;
+}
+int OPS_Stream::open(void) {
+  return 0;
+}

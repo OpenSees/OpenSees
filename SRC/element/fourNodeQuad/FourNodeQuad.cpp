@@ -47,6 +47,9 @@
 
 void* OPS_FourNodeQuad()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
+
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
 
@@ -106,8 +109,25 @@ void* OPS_FourNodeQuad()
 	}	
     }
 
-    return new FourNodeQuad(idata[0],idata[1],idata[2],idata[3],idata[4],
-			                *mat,type,thk,data[0],data[1],data[2],data[3]);
+    //option,written by Tang.S
+    int numData = 1;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        std::string theType = OPS_GetString();
+        if (theType == "-damp") {
+
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0) {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
+    }
+    //Add theDamping at the end,Tang.S
+    return new FourNodeQuad(idata[0], idata[1], idata[2], idata[3], idata[4],
+        *mat, type, thk, data[0], data[1], data[2], data[3], theDamping);
 }
 
 void *OPS_FourNodeQuad(const ID &info) {
@@ -115,6 +135,9 @@ void *OPS_FourNodeQuad(const ID &info) {
         opserr << "WARNING: info is empty -- FourNodeQuad\n";
         return 0;
     }
+
+    int dampingTag = 0;
+    Damping* theDamping = 0;
 
     int ndm = OPS_GetNDM();
     int ndf = OPS_GetNDF();
@@ -232,9 +255,26 @@ void *OPS_FourNodeQuad(const ID &info) {
             return 0;
         }
 
+        //option,written by Tang.S
+        int numData = 1;
+        while (OPS_GetNumRemainingInputArgs() > 0) {
+            std::string theType = OPS_GetString();
+            if (theType == "-damp") {
+
+                if (OPS_GetNumRemainingInputArgs() > 0) {
+                    if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                    theDamping = OPS_getDamping(dampingTag);
+                    if (theDamping == 0) {
+                        opserr << "damping not found\n";
+                        return 0;
+                    }
+                }
+            }
+        }
+        //Add theDamping at the end,Tang.S
         return new FourNodeQuad(eleTag, info(3), info(4), info(5),
                                 info(6), *mat, type, thk, pressure,
-                                rho, b1, b2);
+                                rho, b1, b2, theDamping);
     }
 
     return 0;
@@ -1519,17 +1559,31 @@ FourNodeQuad::getResponse(int responseID, Information &eleInfo)
 int
 FourNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
 {
+  int res = -1;
+
   if (argc < 1)
     return -1;
 
-  int res = -1;
-
   // quad pressure loading
-  if (strcmp(argv[0],"pressure") == 0) {
+  if (strcmp(argv[0], "pressure") == 0)
     return param.addObject(2, this);
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    for (int i=0; i<4; i++) {
+      int dmpRes =  theDamping[i]->setParameter(argv, argc, param);
+      if (dmpRes != -1)
+        res = dmpRes;
+    }
+    return res;
   }
-  // a material parameter
-  else if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
+
+ // specific material point
+ if (strstr(argv[0],"material") != 0) {
 
     if (argc < 3)
       return -1;
@@ -1541,19 +1595,12 @@ FourNodeQuad::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
   }
 
-  // otherwise it could be just a forall material parameter
-  else {
-
-    int matRes = res;
-    for (int i=0; i<4; i++) {
-
-      matRes =  theMaterial[i]->setParameter(argv, argc, param);
-
-      if (matRes != -1)
-	res = matRes;
-    }
+  // all material points
+  for (int i=0; i<4; i++) {
+    int matRes =  theMaterial[i]->setParameter(argv, argc, param);
+    if (matRes != -1)
+      res = matRes;
   }
-  
   return res;
 }
     

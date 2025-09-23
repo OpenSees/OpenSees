@@ -338,16 +338,59 @@ GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d(int tag, int nodeI,
 	}
 }
 
+void
+GradientInelasticBeamColumn2d::setSectionPointers(void)
+{
+  if (numSections < 1)
+    return;
+
+  // Initialize Matrices
+  B_q = new Matrix(3, numSections * secOrder);
+  
+  B_Q = new Matrix(numSections * secOrder, 3);
+  
+  H = new Matrix(numSections * secOrder, numSections * secOrder);
+  H_init = new Matrix(numSections * secOrder, numSections * secOrder);
+  H_inv = new Matrix(numSections * secOrder, numSections * secOrder);
+  hh = new Vector(numSections * secOrder);
+  
+  B_q_H_inv_init = new Matrix(3, numSections * secOrder);
+  
+  J = new Matrix(3 + numSections * secOrder, 3 + numSections * secOrder);
+  J_init = new Matrix(3 + numSections * secOrder, 3 + numSections * secOrder);
+  J_commit = new Matrix(3 + numSections * secOrder, 3 + numSections * secOrder);
+  
+  flex_ms_init = new Vector(numSections * secOrder);
+  trial_change = new Vector(numSections * secOrder + 3);
+  max_trial_change = new Vector(numSections * secOrder + 3);
+  
+  d_tot = new Vector(numSections * secOrder);
+  d_tot_commit = new Vector(numSections * secOrder);
+  d_nl_tot = new Vector(numSections * secOrder);
+  d_nl_tot_commit = new Vector(numSections * secOrder);
+  
+  F_ms = new Vector(numSections * secOrder);
+  F_ms_commit = new Vector(numSections * secOrder);  
+}
+
 // Constructor 2 (for parallel processing)
 GradientInelasticBeamColumn2d::GradientInelasticBeamColumn2d()
-	: Element(0, ELE_TAG_GradientInelasticBeamColumn2d), connectedExternalNodes(2),
-	numSections(0), sections(0),
-	beamIntegr(0), crdTransf(0), lc(0.0),
-	maxIters(0), minTol(0.0), maxTol(0.0), F_tol_q(0.0), F_tol_f_ms(0.0), correctionControl(0), cnstH(0),
-	L(0.0), secOrder(0), secLR1(0), secLR2(0),
-	initialFlag(0), Q(3), Q_commit(3),
-	d_sec(0), d_sec_commit(0)
-	// complete
+  : Element(0, ELE_TAG_GradientInelasticBeamColumn2d), connectedExternalNodes(2),
+    numSections(0), sections(0),
+    beamIntegr(0), crdTransf(0), lc(0.0),
+    maxIters(0), minTol(0.0), maxTol(0.0),
+    cnstH(0), secLR1(0.0), secLR2(0.0),
+    correctionControl(0), maxEpsInc(0.0), maxPhiInc(0.0),    
+    L(0.0), F_tol_q(0.0), F_tol_f_ms(0.0),
+    hh(0), H(0), H_init(0), H_inv(0),
+    B_q(0), B_Q(0), B_q_H_inv_init(0), K0(0),
+    J(0), J_init(0), J_commit(0),
+    k_init(3), flex_ms_init(0), trial_change(0), max_trial_change(0),
+    initialFlag(0), Q(3), Q_commit(3),
+    d_sec(0), d_sec_commit(0), d_tot(0), d_tot_commit(0), d_nl_tot(0), d_nl_tot_commit(0),
+    F_ms(0), F_ms_commit(0),
+    iterNo(0), strIterNo(0), totStrIterNo(0), commitNo(0), iters(3)
+    // complete
 {
 	// Set Node Pointers to 0
 	theNodes[0] = 0;
@@ -636,16 +679,17 @@ GradientInelasticBeamColumn2d::setDomain(Domain *theDomain)
 
 		F_ms->Zero();
 		F_ms_commit->Zero();
-
-		// Compute H_inv and B_q_H_inv
-		if (H_init->Invert(*H_inv) < 0) {
-			opserr << "WARNING! GradientInelasticBeamColumn2d::setDomain() - element: " << this->getTag() << " - could not invert H matrix\n";
-			exit(0);
-		}
-
-		*B_q_H_inv_init = (*B_q) * (*H_inv);
 	}
-
+	
+	// Compute H_inv and B_q_H_inv
+	if (H_init->Invert(*H_inv) < 0) {
+	  opserr << "WARNING! GradientInelasticBeamColumn2d::setDomain() - element: " << this->getTag() << " - could not invert H matrix\n";
+	  exit(0);
+	}
+	
+	*B_q_H_inv_init = (*B_q) * (*H_inv);
+	//}
+		
 	// Form Initial Jacobian Matrix
 	Matrix K_ms(numSections * secOrder, numSections * secOrder);
 	this->getSectionsInitialStiff(K_ms);
@@ -1195,6 +1239,7 @@ GradientInelasticBeamColumn2d::getSectionsTangentStiff(Matrix &tStiff)
 
 	for (int i = 0; i < numSections; i++) {
 		const Matrix &k_ms = sections[i]->getSectionTangent();
+		//opserr << k_ms << endln;
 		this->assembleMatrix(tStiff, k_ms, (i * secOrder), ((i + 1) * secOrder - 1), (i * secOrder), ((i + 1) * secOrder - 1), 1.0);
 	}
 }
@@ -1277,6 +1322,9 @@ GradientInelasticBeamColumn2d::getBasicStiff(void)
 
 	this->getSectionsTangentStiff(K_ms);
 
+	//opserr << K_ms << endln;
+	//opserr << *B_Q << endln;
+	
 	if (K_ms.Solve(*B_Q, K_ms_inv_BQ) < 0) {
 		opserr << "WARNING! GradientInelasticBeamColumn2d::getBasicStiff() - element: " << this->getTag() << " - could not invert K_ms\n";
 	}
@@ -1553,13 +1601,379 @@ GradientInelasticBeamColumn2d::displaySelf(Renderer& theViewer, int displayMode,
 int
 GradientInelasticBeamColumn2d::sendSelf(int commitTag, Channel &theChannel)
 {
-	opserr << "WARNING! GradientInelasticBeamColumn2d::sendSelf() - element: " << this->getTag() << " - incapable of parallel processing\n";
-	return -1;
+  int dbTag = this->getDbTag();
+
+  static ID idData(17);
+  idData(0) = this->getTag();
+  idData(1) = connectedExternalNodes(0);
+  idData(2) = connectedExternalNodes(1);  
+  idData(3) = numSections;
+  idData(4) = secOrder;
+  idData(5) = maxIters;
+  idData(6) = correctionControl;
+  idData(7) = cnstH;
+  idData(8) = crdTransf->getClassTag();
+  int crdTransfDbTag  = crdTransf->getDbTag();
+  if (crdTransfDbTag  == 0) {
+    crdTransfDbTag = theChannel.getDbTag();
+    if (crdTransfDbTag  != 0) 
+      crdTransf->setDbTag(crdTransfDbTag);
+  }
+  idData(9) = crdTransfDbTag;
+  idData(10) = beamIntegr->getClassTag();
+  int beamIntDbTag  = beamIntegr->getDbTag();
+  if (beamIntDbTag  == 0) {
+    beamIntDbTag = theChannel.getDbTag();
+    if (beamIntDbTag  != 0) 
+      beamIntegr->setDbTag(beamIntDbTag);
+  }
+  idData(11) = beamIntDbTag;
+  idData(12) = initialFlag;
+  idData(13) = iterNo;
+  idData(14) = strIterNo;
+  idData(15) = totStrIterNo;  
+  idData(16) = commitNo;
+  
+  if (theChannel.sendID(dbTag, commitTag, idData) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to send data ID" << endln;
+    return -1;
+  }
+  
+  static Vector data(10);
+  data(0) = secLR1;
+  data(1) = secLR2;
+  data(2) = lc;
+  data(3) = minTol;
+  data(4) = maxTol;
+  data(5) = F_tol_q; // Formed in setDomain
+  data(6) = F_tol_f_ms; // Formed in setDomain
+  data(7) = maxEpsInc;
+  data(8) = maxPhiInc;
+  data(9) = L;
+  
+  if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to send data Vector" << endln;
+    return -2;
+  }
+
+  // send the coordinate transformation
+  if (crdTransf->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to send crdTranf" << endln;
+    return -3;
+  }      
+
+  // send the beam integration
+  if (beamIntegr->sendSelf(commitTag, theChannel) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to send beamInt" << endln;
+    return -4;
+  }
+
+
+  //
+  // send an ID for the sections containing each sections dbTag and classTag
+  // if section ha no dbTag get one and assign it
+  //
+  ID idSections(2*numSections);
+  int loc = 0;
+  for (int i = 0; i<numSections; i++) {
+    int sectClassTag = sections[i]->getClassTag();
+    int sectDbTag = sections[i]->getDbTag();
+    if (sectDbTag == 0) {
+      sectDbTag = theChannel.getDbTag();
+      sections[i]->setDbTag(sectDbTag);
+    }
+
+    idSections(loc) = sectClassTag;
+    idSections(loc+1) = sectDbTag;
+    loc += 2;
+  }
+
+  if (theChannel.sendID(dbTag, commitTag, idSections) < 0)  {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to send ID data" << endln;
+    return -5;
+  }    
+
+  //
+  // send the sections
+  //
+  
+  for (int i = 0; i<numSections; i++) {
+    if (sections[i]->sendSelf(commitTag, theChannel) < 0) {
+      opserr << "GradientInelasticBeamColumn2d::sendSelf() - section " << 
+	i << " failed to send itself" << endln;
+      return -6;
+    }
+  }
+
+  /*
+  Matrix *B_q;	3 x (Np*order)	// Formed in setDomain
+  Matrix *B_Q;	(Np*order) x 3  // Formed in setDomain
+  Matrix *H_init;   (Np*order) x (Np*order) // Formed in setDomain
+  Matrix *H_inv;    (Np*order) x (Np*order) // Formed in setDomain
+  Matrix *B_q_H_inv_init; 3 x (Np*order) // Formed in setDomain	
+  Matrix *J_init;    (3+Np*order) x (3+Np*order) // Formed in setDomain
+  Vector k_init;     3 // Formed in setDomain
+  Vector *flex_ms_init;	Np*order // Formed in setDomain
+  Vector *trial_change; 3+Np*order // Formed in setDomain
+  Vector *max_trial_change; 3+Np*order // Formed in setDomain
+
+  Vector Q_commit;      3
+  Vector *d_tot_commit; Np*order
+  Vector *d_nl_tot_commit; Np*order
+  Vector *F_ms_commit;	Np*order
+  Vector *hh;    Np*order
+  Matrix *H;	(Np*order) x (Np*order)
+  Matrix *J_commit; (3+Np*order) x (3+Np*order)
+
+  Vector *d_sec_commit;  send the Np vectors
+  */
+
+  int totalSectionOrder = numSections*secOrder;
+  Vector elementData(4*totalSectionOrder +
+		     totalSectionOrder*totalSectionOrder +
+		     (3 + totalSectionOrder)*(3 + totalSectionOrder) +
+		     3);
+
+  for (int i = 0; i < totalSectionOrder; i++) {
+    elementData(i                      ) = (*d_tot_commit)(i);
+    elementData(i +   totalSectionOrder) = (*d_nl_tot_commit)(i);
+    elementData(i + 2*totalSectionOrder) = (*F_ms_commit)(i);
+    elementData(i + 3*totalSectionOrder) = (*hh)(i);            
+  }
+  loc = 4*totalSectionOrder;
+  for (int i = 0; i < totalSectionOrder; i++) {
+    for (int j = 0; j < totalSectionOrder; j++) {
+      elementData(loc++) = (*H)(i,j);
+    }
+  }
+  for (int i = 0; i < 3+totalSectionOrder; i++) {
+    for (int j = 0; j < 3+totalSectionOrder; j++) {
+      elementData(loc++) = (*J_commit)(i,j);
+    }
+  }  
+  elementData(loc++) = Q_commit(0);
+  elementData(loc++) = Q_commit(1);
+  elementData(loc++) = Q_commit(2);  
+
+  if (theChannel.sendVector(dbTag, commitTag, elementData) < 0) {
+    opserr << "GradientInelasaticBeamColumn2d::sendSelf() - failed to send elementData Vector" << endln;
+    return -7;
+  }
+  
+  return 0;
 }
 
 int
 GradientInelasticBeamColumn2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-	opserr << "WARNING! GradientInelasticBeamColumn2d::recvSelf() - element: " << this->getTag() << " - incapable of parallel processing\n";
-	return -1;
+  int dbTag = this->getDbTag();
+
+  static ID idData(17);
+  if (theChannel.recvID(dbTag, commitTag, idData) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::recvSelf() - failed to receive data ID" << endln;
+    return -1;
+  }
+
+  this->setTag(idData(0));
+  connectedExternalNodes(0) = idData(1);
+  connectedExternalNodes(1) = idData(2);  
+  int nSect = idData(3);
+  secOrder = idData(4);
+  maxIters = idData(5);
+  correctionControl = idData(6);
+  cnstH = idData(7);
+  int crdTransfClassTag = idData(8);
+  int crdTransfDbTag = idData(9);
+  int beamIntClassTag = idData(10);
+  int beamIntDbTag = idData(11);  
+  initialFlag = idData(12);
+  iterNo = idData(13);
+  strIterNo = idData(14);
+  totStrIterNo = idData(15);
+  commitNo = idData(16);
+  
+  static Vector data(10);
+  if (theChannel.recvVector(dbTag, commitTag, data) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::recvSelf() - failed to receive data Vector" << endln;
+    return -2;
+  }
+
+  secLR1 = data(0);
+  secLR2 = data(1);
+  lc = data(2);
+  minTol = data(3);
+  maxTol = data(4);
+  F_tol_q = data(5);
+  F_tol_f_ms = data(6);
+  maxEpsInc = data(7);
+  maxPhiInc = data(8);  
+  L = data(9);
+
+  // create a new crdTransf object if one needed
+  if (crdTransf == 0 || crdTransf->getClassTag() != crdTransfClassTag) {
+    if (crdTransf != 0)
+      delete crdTransf;
+    
+    crdTransf = theBroker.getNewCrdTransf(crdTransfClassTag);
+    
+    if (crdTransf == 0) {
+      opserr << "GradientInelasticBeamColumn2d::recvSelf() - failed to obtain a CrdTransf object with classTag " <<
+	crdTransfClassTag << endln;
+      exit(-1);
+    }
+  }
+  crdTransf->setDbTag(crdTransfDbTag);
+  
+  // invoke recvSelf on the crdTransf object
+  if (crdTransf->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to recv crdTranf" << endln;
+    return -3;
+  }      
+  
+  // create a new beamInt object if one needed
+  if (beamIntegr == 0 || beamIntegr->getClassTag() != beamIntClassTag) {
+    if (beamIntegr != 0)
+      delete beamIntegr;
+    
+    beamIntegr = theBroker.getNewBeamIntegration(beamIntClassTag);
+    
+    if (beamIntegr == 0) {
+      opserr << "GradientInelasticBeamColumn2d::recvSelf() - failed to obtain the beam integration object with classTag" <<
+	beamIntClassTag << endln;
+      exit(-1);
+    }
+  }
+  
+  beamIntegr->setDbTag(beamIntDbTag);
+  
+  // invoke recvSelf on the beamInt object
+  if (beamIntegr->recvSelf(commitTag, theChannel, theBroker) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::sendSelf() - failed to recv beam integration" << endln;
+    return -4;
+  }      
+
+
+  ID idSections(2*nSect);
+
+  if (theChannel.recvID(dbTag, commitTag, idSections) < 0)  {
+    opserr << "DispBeamColumn2d::recvSelf() - failed to recv ID data\n";
+    return -5;
+  }    
+
+  //
+  // now receive the sections
+  //
+  
+  if (numSections != nSect) {
+
+    //
+    // we do not have correct number of sections, must delete the old and create
+    // new ones before can recvSelf on the sections
+    //
+
+    // delete the old
+    if (numSections != 0) {
+      for (int i=0; i<numSections; i++)
+	delete sections[i];
+      delete [] sections;
+    }
+
+    // create a new array to hold pointers
+    sections = new SectionForceDeformation *[nSect];
+    if (sections == 0) {
+      opserr << "GradientInelasticBeamColumn2d::recvSelf() - out of memory creating sections array of size " <<
+	nSect << endln;
+      return -5;
+    }    
+
+    // create a section and recvSelf on it
+    numSections = nSect;
+    int loc = 0;
+    for (int i=0; i<numSections; i++) {
+      int sectClassTag = idSections(loc);
+      int sectDbTag = idSections(loc+1);
+      loc += 2;
+      sections[i] = theBroker.getNewSection(sectClassTag);
+      if (sections[i] == 0) {
+	opserr << "GradientInelasticBeamColumn2d::recvSelf() - Broker could not create Section of class type " <<
+	  sectClassTag << endln;
+	exit(-1);
+      }
+      sections[i]->setDbTag(sectDbTag);
+      if (sections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	opserr << "GradientInelasticBeamColumn2d::recvSelf() - section " << i << " failed to recv itself" << endln;
+	return -5;
+      }     
+    }
+
+  } else {
+
+    // 
+    // for each existing section, check it is of correct type
+    // (if not delete old & create a new one) then recvSelf on it
+    //
+    
+    int loc = 0;
+    for (int i=0; i<numSections; i++) {
+      int sectClassTag = idSections(loc);
+      int sectDbTag = idSections(loc+1);
+      loc += 2;
+
+      // check of correct type
+      if (sections[i]->getClassTag() !=  sectClassTag) {
+	// delete the old section[i] and create a new one
+	delete sections[i];
+	sections[i] = theBroker.getNewSection(sectClassTag);
+	if (sections[i] == 0) {
+	  opserr << "GradientInelasticBeamColumn2d::recvSelf() - Broker could not create Section of class type " <<
+	    sectClassTag << endln;
+	  exit(-1);
+	}
+      }
+
+      // recvSelf on it
+      sections[i]->setDbTag(sectDbTag);
+      if (sections[i]->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	opserr << "GradientInelasticBeamColumn2d::recvSelf() - section " << i << " failed to recv itself" << endln;
+	return -5;
+      }     
+    }
+  }
+
+  //opserr << "recvSelf " << numSections << endln;
+  this->setSectionPointers();
+  
+  int totalSectionOrder = numSections*secOrder;
+  Vector elementData(4*totalSectionOrder +
+		     totalSectionOrder*totalSectionOrder +
+		     (3 + totalSectionOrder)*(3 + totalSectionOrder) +
+		     3);
+
+  if (theChannel.recvVector(dbTag, commitTag, elementData) < 0) {
+    opserr << "GradientInelasticBeamColumn2d::recvSelf() - failed to receive elementData Vector" << endln;
+    return -6;
+  }
+
+  for (int i = 0; i < totalSectionOrder; i++) {
+    (*d_tot_commit)(i)    = elementData(i);
+    (*d_nl_tot_commit)(i) = elementData(i +   totalSectionOrder);
+    (*F_ms_commit)(i)     = elementData(i + 2*totalSectionOrder);
+    (*hh)(i)              = elementData(i + 3*totalSectionOrder);
+  }
+  int loc = 4*totalSectionOrder;
+  for (int i = 0; i < totalSectionOrder; i++) {
+    for (int j = 0; j < totalSectionOrder; j++) {
+      (*H)(i,j) = elementData(loc++);
+    }
+  }
+  for (int i = 0; i < 3+totalSectionOrder; i++) {
+    for (int j = 0; j < 3+totalSectionOrder; j++) {
+      (*J_commit)(i,j) = elementData(loc++);
+    }
+  }  
+  Q_commit(0) = elementData(loc++);
+  Q_commit(1) = elementData(loc++);
+  Q_commit(2) = elementData(loc++);
+  
+  return 0;
 }

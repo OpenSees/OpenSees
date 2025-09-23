@@ -37,6 +37,11 @@
 #include <Vector.h>
 #include <MaterialResponse.h>
 
+#include <elementAPI.h>
+#include <DummyStream.h>
+#include <Element.h>
+#include <Domain.h>
+
 #include <string.h>
 
 #include <TaggedObject.h>
@@ -93,6 +98,329 @@ void OPS_printSectionForceDeformation(OPS_Stream &s, int flag) {
     }
     s << "\n\t\t]";
   }
+}
+
+int OPS_sectionLocation()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - sectionLocation eleTag? <secNum?> \n";
+	return -1;
+    }
+
+    //opserr << "sectionLocation: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 1;
+    int tag;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING sectionLocation eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+    }
+
+    int secNum = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
+	opserr << "WARNING sectionLocation eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+      }
+    }
+    
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionLocation element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "integrationPoints";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Vector &theVec = *(info.theVector);
+    int Np = theVec.Size();
+
+    if (secNum > 0 && secNum <= Np) { // One IP
+      double value = theVec(secNum-1);
+      numdata = 1;
+      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }
+    } else { // All IPs in a list
+      std::vector<double> data(Np);
+      for (int i = 0; i < Np; i++)
+	data[i] = theVec(i);
+      numdata = Np;
+      if (OPS_SetDoubleOutput(&numdata, &data[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
+    }        
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sectionWeight()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - sectionWeight eleTag? <secNum?> \n";
+	return -1;
+    }
+
+    //opserr << "sectionWeight: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 1;
+    int tag;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING sectionWeight eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+    }
+
+    int secNum = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
+	opserr << "WARNING sectionWeight eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+      }
+    }
+    
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionWeight element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "integrationWeights";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Vector &theVec = *(info.theVector);
+    int Np = theVec.Size();
+
+    if (secNum > 0 && secNum <= Np) { // One IP
+      double value = theVec(secNum-1);
+      numdata = 1;
+      if (OPS_SetDoubleOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }
+    } else { // All IPs in a list
+      std::vector<double> data(Np);
+      for (int i = 0; i < Np; i++)
+	data[i] = theVec(i);
+      numdata = Np;
+      if (OPS_SetDoubleOutput(&numdata, &data[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
+    }    
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sectionTag()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+	opserr << "WARNING want - sectionTag eleTag? <secNum?> \n";
+	return -1;
+    }
+
+    //opserr << "sectionLocation: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 1;
+    int tag;
+    if (OPS_GetIntInput(&numdata, &tag) < 0) {
+	opserr << "WARNING sectionTag eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+    }
+
+    int secNum = 0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      if (OPS_GetIntInput(&numdata, &secNum) < 0) {
+	opserr << "WARNING sectionTag eleTag? <secNum?> - could not read int input? \n";
+	return -1;
+      }
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionTag - element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 1;
+    char a[80] = "sectionTags";
+    const char *argvv[1];
+    argvv[0] = a;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const ID &theID = *(info.theID);
+    int Np = theID.Size();
+
+    if (secNum > 0 && secNum <= Np) { // One IP
+      int value = theID(secNum-1);
+      numdata = 1;
+      if (OPS_SetIntOutput(&numdata, &value, true) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }
+    } else { // All IPs in a list
+      std::vector<int> data(Np);
+      for (int i = 0; i < Np; i++)
+	data[i] = theID(i);
+      numdata = Np;
+      if (OPS_SetIntOutput(&numdata, &data[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+      }      
+    }
+
+    delete theResponse;
+
+    return 0;
+}
+
+int OPS_sectionDisplacement()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	opserr << "WARNING want - sectionDisplacement eleTag? secNum? \n";
+	return -1;
+    }
+
+    //opserr << "sectionWeight: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ' ;
+    //opserr << endln;
+
+    int numdata = 2;
+    int data[2];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	opserr << "WARNING sectionDisplacement eleTag? secNum? <-local>- could not read int input? \n";
+	return -1;
+    }
+
+    int tag = data[0];
+    int secNum = data[1];
+    bool local = false;
+    
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      const char* localGlobal = OPS_GetString();
+      if (strstr(localGlobal,"local") != 0)
+	local = true;
+    }
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	opserr << "WARNING sectionDisplacement element with tag " << tag << " not found in domain \n";
+	return -1;
+    }
+
+    int argcc = 2;
+    char a[80] = "sectionDisplacements";
+    const char *argvv[2];
+    argvv[0] = a;
+    if (local)
+      argvv[1] = "local";
+    else
+      argvv[1] = "global";
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+
+    const Matrix &theMatrix = *(info.theMatrix);
+    if (secNum <= 0 || secNum > theMatrix.noRows()) {
+	opserr << "WARNING invalid secNum\n";
+	delete theResponse;
+	return -1;
+    }
+
+    double value[3];
+    value[0] = theMatrix(secNum-1,0);
+    value[1] = theMatrix(secNum-1,1);
+    value[2] = theMatrix(secNum-1,2);        
+
+    numdata = 3;
+    if (OPS_SetDoubleOutput(&numdata, &value[0], false) < 0) {
+	opserr << "WARNING failed to set output\n";
+	delete theResponse;
+	return -1;
+    }
+
+    delete theResponse;
+
+    return 0;
 }
 
 SectionForceDeformation::SectionForceDeformation(int tag, int classTag)
@@ -605,6 +933,7 @@ SectionForceDeformation::getTemperatureStress(const Vector &tData) //PK
 
 const Vector& SectionForceDeformation::getThermalElong(void)
 {
-  errRes.resize(this->getStressResultant().Size());
-  return errRes;
+    opserr << "SectionForceDeformation::getThermalElong() - should not be called\n";
+    errRes.resize(this->getStressResultant().Size());
+    return errRes;
 }

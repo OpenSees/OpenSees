@@ -216,7 +216,7 @@ private:
 	Vector   CStress;  // Committed stesses
 	Vector   CStrain;  // Committed strain
 
-	const double pi; 
+	static constexpr double pi = 3.1415926535; 
 
 	// For recorders ....................................
 	// Variables

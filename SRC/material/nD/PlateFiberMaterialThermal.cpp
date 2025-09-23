@@ -579,6 +579,11 @@ PlateFiberMaterialThermal::recvSelf(int commitTag, Channel &theChannel, FEM_Obje
   
   return res;
 }
+
+int PlateFiberMaterialThermal::setParameter(const char** argv, int argc, Parameter& param)
+{
+    return theMaterial->setParameter(argv, argc, param);
+}
  
 
 

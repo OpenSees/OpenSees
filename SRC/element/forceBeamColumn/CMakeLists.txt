@@ -10,6 +10,7 @@ target_sources(OPS_Element
         ForceBeamColumn2d.cpp
         ForceBeamColumn3d.cpp
         ForceBeamColumn2dThermal.cpp
+	ForceBeamColumn3dThermal.cpp
         ElasticForceBeamColumn2d.cpp
         ElasticForceBeamColumn3d.cpp
         ElasticForceBeamColumnWarping2d.cpp
@@ -43,6 +44,7 @@ target_sources(OPS_Element
         ForceBeamColumn2d.h
         ForceBeamColumn3d.h
         ForceBeamColumn2dThermal.h
+        ForceBeamColumn3dThermal.h
         ElasticForceBeamColumn2d.h
         ElasticForceBeamColumn3d.h
         ElasticForceBeamColumnWarping2d.h
@@ -79,5 +81,5 @@ target_sources(OPS_ElementFortran
 )
 
 #target_link_libraries(OPS_Element_forceBeamColumn PUBLIC OPS_Element_forceBeamColumn_f)
-target_include_directories(OPS_Element PUBLIC $(CMAKE_CURRENT_LIST_DIR))
+target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 

@@ -55,7 +55,7 @@ class ItpackLinSOE;
 class ItpackLinSolver : public LinearSOESolver
 {
  public:
-  ItpackLinSolver(int method, int maxIter = 100, double omega = 1.0);
+  ItpackLinSolver(int method, int maxIter = 100, double omega = 1.0, double zeta = 5e-6);
   ItpackLinSolver();
   virtual ~ItpackLinSolver();
   
@@ -96,6 +96,9 @@ class ItpackLinSolver : public LinearSOESolver
 
   // Parameter for SOR and SSOR fixed omega methods
   double omega;
+
+  // Parameter for convergence criteria
+  double zeta;
 };
 
 #endif

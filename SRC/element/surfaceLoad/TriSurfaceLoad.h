@@ -34,15 +34,6 @@
 #include <NDMaterial.h>
 #include <ID.h>
 
-// number of nodes per element
-#define SL_NUM_NODE 3
-// d.o.f. per node
-#define SL_NUM_NDF  3
-// degrees of freedom per element
-#define SL_NUM_DOF  9
-// displacement degrees of freedom per element
-#define SL_NUM_DDOF  3
-
 class Domain;
 class Node;
 class Channel;
@@ -97,15 +88,25 @@ class TriSurfaceLoad : public Element
     
   private:
 
+  enum {SL_NUM_NODE = 3}; // number of nodes per element
+  enum {SL_NUM_NDF = 3}; // d.o.f. per node
+  enum {SL_NUM_DOF = 9}; // degrees of freedom per element
+  enum {SL_NUM_DDOF = 9}; // displacement degrees of freedom per element
+  
     // method to update base vectors g1 & g2
     int UpdateBase(double Xi, double Eta);
 
     ID  myExternalNodes;      // contains the tags of the end nodes
-    static Matrix tangentStiffness;  // Tangent Stiffness matrix
-    static Matrix mass;  // mass matrix
-    static Matrix damp;  // damping matrix
-    Vector internalForces;    // vector of Internal Forces
+    static Matrix tangentStiffness9;  // Tangent Stiffness matrix for 3 x 3 dofs/node
+    static Matrix tangentStiffness18;  // Tangent Stiffness matrix for 3 x 6 dofs/node  
+    static Vector internalForces9;    // vector of Internal Forces for 3 x 3 dofs/node
+    static Vector internalForces18;    // vector of Internal Forces for 3 x 6 dofs/node  
+  
+    int numDOF; // number of element dofs (9 or 18)
 
+    Matrix *theMatrix;
+    Vector *theVector;
+  
     double my_pressure;       // pressure applied to surface of element
     double rhoH;              // A density per unit area to compute a mass matrix (lumped)
 
@@ -120,8 +121,6 @@ class TriSurfaceLoad : public Element
     Vector dcrd1;             // current coordinates of node 1
     Vector dcrd2;             // current coordinates of node 2
     Vector dcrd3;             // current coordinates of node 3
-
-    int MyTag;                // what is my name?
 
     static double oneOverRoot3;
     static double GsPts[1][1];

@@ -50,7 +50,7 @@ void* OPS_SuperLUSolver()
     int npRow = 1;
     int npCol = 1;
     int np = 1;
-    int permSpec = 0;
+    int permSpec = 1;
     int panelSize = 6;
     int relax = 6;
     char symmetric = 'N'; //'Y';
@@ -75,7 +75,9 @@ void* OPS_SuperLUSolver()
 	    if(OPS_GetIntInput(&numData,&npRow)<0) return 0;
 	  } else if(type=="npCol"||type=="-npCol") {
 	    if(OPS_GetIntInput(&numData,&npCol)<0) return 0;
-	  }
+	  } else if(type=="permSpec"||type=="-permSpec") {
+	    if(OPS_GetIntInput(&numData,&permSpec)<0) return 0;
+	  }	  
 	}
     }
 

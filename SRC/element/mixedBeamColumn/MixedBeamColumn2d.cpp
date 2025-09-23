@@ -1111,8 +1111,8 @@ const Vector & MixedBeamColumn2d::getResistingForceIncInertia() {
 
     theVector(0) += m*accel1(0);
     theVector(1) += m*accel1(1);
-    theVector(4) += m*accel2(0);
-    theVector(5) += m*accel2(1);
+    theVector(3) += m*accel2(0);
+    theVector(4) += m*accel2(1);
   }
 
   // Add the damping forces
@@ -1271,6 +1271,14 @@ Response* MixedBeamColumn2d::setResponse(const char **argv, int argc,
 
     theResponse =  new ElementResponse(this, 6, Vector(2*numSections));
 
+  } else if (strcmp(argv[0],"basicStiffness") == 0) {
+
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M1");
+    output.tag("ResponseType","M2");
+
+    theResponse =  new ElementResponse(this, 19, Matrix(3,3));
+    
   } else if (strcmp(argv[0],"integrationPoints") == 0) {
     theResponse =  new ElementResponse(this, 100, Vector(numSections));
 
@@ -1444,7 +1452,10 @@ int MixedBeamColumn2d::getResponse(int responseID, Information &eleInfo) {
 
     return eleInfo.setVector(tempVector);
 
-  } else if (responseID == 100) { // integration points
+  } else if (responseID == 19)
+    return eleInfo.setMatrix(kv);
+  
+  else if (responseID == 100) { // integration points
 
     double L = crdTransf->getInitialLength();
     double pts[MAX_NUM_SECTIONS];

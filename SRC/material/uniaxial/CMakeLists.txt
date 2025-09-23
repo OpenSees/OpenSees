@@ -29,6 +29,7 @@ target_sources(OPS_Material
       MaterialState.cpp
       OriginCentered.cpp
       ParallelMaterial.cpp
+      PipeMaterial.cpp
       ResilienceLow.cpp
       Steel2.cpp
       SteelMPF.cpp
@@ -58,6 +59,7 @@ target_sources(OPS_Material
       MaterialState.h
       OriginCentered.h
       ParallelMaterial.h
+      PipeMaterial.h
       ResilienceLow.h
       Steel2.h
       SteelMPF.h
@@ -70,6 +72,8 @@ target_sources(OPS_Material
 target_sources(OPS_Material
     PRIVATE
       ASD_SMA_3K.cpp
+      ASDConcrete1DMaterial.cpp
+      ASDSteel1DMaterial.cpp
       BackboneMaterial.cpp
       BarSlipMaterial.cpp
       BilinearOilDamper.cpp
@@ -98,6 +102,8 @@ target_sources(OPS_Material
       ConcreteZBH_smoothed.cpp 
       ConfinedConcrete01.cpp
       ContinuumUniaxial.cpp
+      CreepMaterial.cpp
+      CreepShrinkageACI209.cpp
       CubicSpline.cpp
       DamperMaterial.cpp
       DegradingPinchedBW.cpp
@@ -186,12 +192,17 @@ target_sources(OPS_Material
       pyUCLA.cpp
       SMAMaterial.cpp
       CoulombDamperMaterial.cpp
-      
+      APDFMD.cpp
+      APDMD.cpp
+      APDVFD.cpp
       TriMatrix.cpp
       DuctileFracture.cpp
+       
 
     PUBLIC
       ASD_SMA_3K.h
+      ASDConcrete1DMaterial.h
+      ASDSteel1DMaterial.h
       BackboneMaterial.h
       BarSlipMaterial.h
       BilinearOilDamper.h
@@ -220,6 +231,8 @@ target_sources(OPS_Material
       ConcreteZBH_smoothed.h
       ConfinedConcrete01.h
       ContinuumUniaxial.h
+      CreepMaterial.h
+      CreepShrinkageACI209.h
       CubicSpline.h
       DamperMaterial.h
       DegradingPinchedBW.h
@@ -306,6 +319,9 @@ target_sources(OPS_Material
       WrapperUniaxialMaterial.h
       pyUCLA.h
       CoulombDamperMaterial.h
+      APDFMD.h
+      APDMD.h
+      APDVFD.h
 
       TriMatrix.h  # move to SRC/matrix ?
       DuctileFracture.h
@@ -328,6 +344,14 @@ target_sources(OPS_Material
    Trilinwpd.h
 )
 
+target_sources(OPS_Material
+  PRIVATE
+    QbSandCPT.cpp
+    TzSandCPT.cpp
+  PUBLIC
+    QbSandCPT.h
+    TzSandCPT.h
+)
 
 add_library(OPS_Material_f)
 

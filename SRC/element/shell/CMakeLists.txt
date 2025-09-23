@@ -8,8 +8,8 @@
 target_sources(OPS_Element
     PRIVATE
         ASDShellQ4.cpp
+        ASDShellT3.cpp
         R3vectors.cpp
-        ShellANDeS.cpp
         ShellDKGQ.cpp
         ShellDKGT.cpp
         ShellMITC4.cpp
@@ -18,6 +18,7 @@ target_sources(OPS_Element
         ShellNLDKGQ.cpp
         ShellNLDKGQThermal.cpp
         ShellNLDKGT.cpp
+        ShellNLDKGTThermal.cpp
     PUBLIC
         ASDEICR.h
         ASDMath.h
@@ -25,8 +26,11 @@ target_sources(OPS_Element
         ASDShellQ4.h
         ASDShellQ4LocalCoordinateSystem.h
         ASDShellQ4Transformation.h
+        ASDShellT3CorotationalTransformation.h
+        ASDShellT3.h
+        ASDShellT3LocalCoordinateSystem.h
+        ASDShellT3Transformation.h
         R3vectors.h
-        ShellANDeS.h
         ShellDKGQ.h
         ShellDKGT.h
         ShellMITC4.h
@@ -35,6 +39,7 @@ target_sources(OPS_Element
         ShellNLDKGQ.h
         ShellNLDKGQThermal.h
         ShellNLDKGT.h
+        ShellNLDKGTThermal.h
 )
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
 
