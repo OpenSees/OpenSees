@@ -18,19 +18,8 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.2 $
-// $Date: 2009-05-20 17:31:36 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/eigenSOE/FullGenEigenSOE.cpp,v $
-
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
-// Created: 11/07
-// Revision: A
-//
-// Description: This file contains the implementation of the
-// FullGenEigenSOE class.
-
-#include <FullGenEigenSOE.h>
-#include <FullGenEigenSolver.h>
+#include <SymmGeneralizedEigenSOE.h>
+#include <SymmGeneralizedEigenSolver.h>
 #include <Matrix.h>
 #include <Graph.h>
 #include <Vertex.h>
@@ -42,9 +31,9 @@
 #include <iostream>
 using std::nothrow;
 
-FullGenEigenSOE::FullGenEigenSOE(FullGenEigenSolver &theSolver,  
+SymmGeneralizedEigenSOE::SymmGeneralizedEigenSOE(SymmGeneralizedEigenSolver &theSolver,  
     AnalysisModel &aModel)
-    : EigenSOE(theSolver, EigenSOE_TAGS_FullGenEigenSOE),
+    : EigenSOE(theSolver, EigenSOE_TAGS_SymmGeneralizedEigenSOE),
     size(0), A(0), Asize(0), M(0), Msize(0),
     factored(false), theModel(&aModel)
 {
@@ -52,7 +41,7 @@ FullGenEigenSOE::FullGenEigenSOE(FullGenEigenSolver &theSolver,
 }
 
 
-FullGenEigenSOE::~FullGenEigenSOE()
+SymmGeneralizedEigenSOE::~SymmGeneralizedEigenSOE()
 {
     if (A != 0)
         delete [] A;
@@ -61,13 +50,13 @@ FullGenEigenSOE::~FullGenEigenSOE()
 }
 
 
-int FullGenEigenSOE::getNumEqn(void) const
+int SymmGeneralizedEigenSOE::getNumEqn(void) const
 {
     return size;
 }
 
 
-int FullGenEigenSOE::setSize(Graph &theGraph)
+int SymmGeneralizedEigenSOE::setSize(Graph &theGraph)
 {
     int result = 0;
     size = theGraph.getNumVertex();
@@ -81,7 +70,7 @@ int FullGenEigenSOE::setSize(Graph &theGraph)
 
         A = new (nothrow) double[newSize];
         if (A == 0) {
-            opserr << "WARNING FullGenEigenSOE::setSize() - "
+            opserr << "WARNING SymmGeneralizedEigenSOE::setSize() - "
                 << "ran out of memory for A (size,size) ("
                 << size << ", " << size << ")\n";
             Asize = 0; size = 0;
@@ -102,7 +91,7 @@ int FullGenEigenSOE::setSize(Graph &theGraph)
 
         M = new (nothrow) double[newSize];
         if (M == 0) {
-            opserr << "WARNING FullGenEigenSOE::setSize() - "
+            opserr << "WARNING SymmGeneralizedEigenSOE::setSize() - "
                 << "ran out of memory for M (size,size) ("
                 << size << ", " << size << ")\n";
             Msize = 0; size = 0;
@@ -122,7 +111,7 @@ int FullGenEigenSOE::setSize(Graph &theGraph)
     EigenSolver *theSolver = this->getSolver();
     int solverOK = theSolver->setSize();
     if (solverOK < 0) {
-        opserr << "WARNING FullGenEigenSOE::setSize() - ";
+        opserr << "WARNING SymmGeneralizedEigenSOE::setSize() - ";
         opserr << "solver failed in setSize()\n";
         return solverOK;
     } 
@@ -131,7 +120,7 @@ int FullGenEigenSOE::setSize(Graph &theGraph)
 }
 
 
-int FullGenEigenSOE::addA(const Matrix &m, const ID &id, double fact)
+int SymmGeneralizedEigenSOE::addA(const Matrix &m, const ID &id, double fact)
 {
     // check for quick return 
     if (fact == 0.0)
@@ -140,7 +129,7 @@ int FullGenEigenSOE::addA(const Matrix &m, const ID &id, double fact)
     // check that m and id are of similar size
     int idSize = id.Size();    
     if (idSize != m.noRows() && idSize != m.noCols()) {
-        opserr << "FullGenEigenSOE::addA() - Matrix and ID not of similar sizes\n";
+        opserr << "SymmGeneralizedEigenSOE::addA() - Matrix and ID not of similar sizes\n";
         return -1;
     }
 
@@ -178,7 +167,7 @@ int FullGenEigenSOE::addA(const Matrix &m, const ID &id, double fact)
 }
 
 
-int FullGenEigenSOE::addM(const Matrix &m, const ID &id, double fact)
+int SymmGeneralizedEigenSOE::addM(const Matrix &m, const ID &id, double fact)
 {
     // check for quick return 
     if (fact == 0.0)
@@ -187,7 +176,7 @@ int FullGenEigenSOE::addM(const Matrix &m, const ID &id, double fact)
     // check that m and id are of similar size
     int idSize = id.Size();    
     if (idSize != m.noRows() && idSize != m.noCols()) {
-        opserr << "FullGenEigenSOE::addM() - Matrix and ID not of similar sizes\n";
+        opserr << "SymmGeneralizedEigenSOE::addM() - Matrix and ID not of similar sizes\n";
         return -1;
     }
 
@@ -225,7 +214,7 @@ int FullGenEigenSOE::addM(const Matrix &m, const ID &id, double fact)
 }
 
 
-void FullGenEigenSOE::zeroA(void)
+void SymmGeneralizedEigenSOE::zeroA(void)
 {
     double *Aptr = A;
     for (int i = 0; i < Asize; i++)
@@ -235,7 +224,7 @@ void FullGenEigenSOE::zeroA(void)
 }
 
 
-void FullGenEigenSOE::zeroM(void)
+void SymmGeneralizedEigenSOE::zeroM(void)
 {
     double *Mptr = M;
     for (int i = 0; i < Msize; i++)
@@ -245,13 +234,13 @@ void FullGenEigenSOE::zeroM(void)
 }
 
 
-int FullGenEigenSOE::sendSelf(int commitTag, Channel &theChannel)
+int SymmGeneralizedEigenSOE::sendSelf(int commitTag, Channel &theChannel)
 {
     return 0;
 }
 
 
-int FullGenEigenSOE::recvSelf(int commitTag, Channel &theChannel, 
+int SymmGeneralizedEigenSOE::recvSelf(int commitTag, Channel &theChannel, 
     FEM_ObjectBroker &theBroker)
 {
     return 0;

@@ -18,35 +18,22 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.1 $
-// $Date: 2007-11-29 19:31:08 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/eigenSOE/FullGenEigenSOE.h,v $
-
-
-#ifndef FullGenEigenSOE_h
-#define FullGenEigenSOE_h
-
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
-// Created: 11/07
-// Revision: A
-//
-// Description: This file contains the class definition for
-// FullGenEigenSOE, which stores full nonsymmetric matrices,
-// A and M, for generalized eigenvalue computations.
+#ifndef SymmGeneralizedEigenSOE_h
+#define SymmGeneralizedEigenSOE_h
 
 #include <EigenSOE.h>
 #include <Vector.h>
 
 class AnalysisModel;
-class FullGenEigenSolver;
+class SymmGeneralizedEigenSolver;
 
-class FullGenEigenSOE : public EigenSOE
+class SymmGeneralizedEigenSOE : public EigenSOE
 {
 public:
-    FullGenEigenSOE(FullGenEigenSolver &theSolver,
+    SymmGeneralizedEigenSOE(SymmGeneralizedEigenSolver &theSolver,
         AnalysisModel &theModel);
 
-    virtual ~FullGenEigenSOE();
+    virtual ~SymmGeneralizedEigenSOE();
 
     virtual int getNumEqn(void) const;
     virtual int setSize(Graph &theGraph);
@@ -61,7 +48,7 @@ public:
     int recvSelf(int commitTag, Channel &theChannel, 
         FEM_ObjectBroker &theBroker);
 
-    friend class FullGenEigenSolver;
+    friend class SymmGeneralizedEigenSolver;
 
 protected:
 
