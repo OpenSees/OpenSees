@@ -283,6 +283,7 @@ FiberSectionRepr::getReinfLayers (void) const
 
 void FiberSectionRepr::Print(OPS_Stream &s, int flag)
 {
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
 //   int i;
    
    s << "\nSection representation type: Fiber Section";
@@ -296,7 +297,32 @@ void FiberSectionRepr::Print(OPS_Stream &s, int flag)
    
 //   for (i=0; i<nReinfLayers; i++)
 //     s << "\nReinfLayer "<<i<<" :" << *reinfLayer[i];
-
+}
+if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	s<<",\"sectionRepr\": [\n";
+	for (int patchCtr=0;patchCtr<nPatches;patchCtr++) {
+		patch[patchCtr]->Print(s,flag);
+		if (patchCtr < nPatches-1 || nReinfLayers>0 || numFibers>0)
+			s << ",\n";
+		else
+			s << "\n";	
+    }
+    for (int layerCtr=0;layerCtr<nReinfLayers;layerCtr++) {
+		reinfLayer[layerCtr]->Print(s,flag);
+		if (layerCtr < nReinfLayers-1 || numFibers>0)
+			s << ",\n";
+		else
+			s << "\n";	
+    }
+    for (int fibCtr=0;fibCtr<numFibers;fibCtr++) {
+		theFibers[fibCtr]->Print(s,flag);
+		if (fibCtr < numFibers-1)
+			s << ",\n";
+		else
+			s << "\n";	
+    }
+	s<<"\t\t\t]";
+}
 }
    
     

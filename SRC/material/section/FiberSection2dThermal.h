@@ -120,8 +120,7 @@ class FiberSection2dThermal : public SectionForceDeformation
     Matrix *ks;        // section stiffness
     Vector DataMixed;
 
-    double   sTData[2];   //Data for section resisting force due to thermal load
-    Vector  *sT;  //  Pointer to sTData
+    Vector  sT;  //  Pointer to sTData
     double *Fiber_Tangent;
     double *Fiber_ElongP;
     Vector AverageThermalElong;

@@ -145,7 +145,7 @@ ConcreteS::getOrder( ) const
 const char*
 ConcreteS::getType( ) const 
 {
-  return "ConcreteS" ; 
+  return "PlaneStress" ; 
 }
 
 
@@ -346,11 +346,9 @@ ConcreteS::sendSelf(int commitTag, Channel &theChannel)
   data(cnt++) = Es;
   data(cnt++) = cStrain0;
 
-  int i;
-  for (i = 0; i < 3; i++) 
+  for (int i = 0; i < 3; i++) 
     data(cnt++) = strain0(i);
-
-  for (i = 0; i < 3; i++) 
+  for (int i = 0; i < 3; i++) 
     data(cnt++) = stress0(i);
 
    res = theChannel.sendVector(this->getDbTag(), commitTag, data);
@@ -383,11 +381,9 @@ ConcreteS::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBro
 
   setInitials();
 
-  int i;
-  for (i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++)
     strain0(i) = data(cnt++);
-
-  for (i = 0; i < 3; i++)
+  for (int i = 0; i < 3; i++)
     stress0(i) = data(cnt++);
 
   return res;

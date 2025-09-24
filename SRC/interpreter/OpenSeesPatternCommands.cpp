@@ -33,7 +33,7 @@ PROVIDED "AS IS". REGENTS HAS NO OBLIGATION TO PROVIDE MAINTENANCE, SUPPORT,
 UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 
 *************************************************************************** */
-
+  
 // Written: Minjie
 
 // Description: command to create pattern
@@ -41,16 +41,20 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <elementAPI.h>
 #include <Domain.h>
 #include <NodalLoad.h>
+#include <BeamUniformMoment.h>
 #include <Beam2dPartialUniformLoad.h>
 #include <Beam2dUniformLoad.h>
 #include <Beam3dUniformLoad.h>
+#include <Beam3dPartialUniformLoad.h>
 #include <Beam2dPointLoad.h>
 #include <Beam3dPointLoad.h>
 #include <BrickSelfWeight.h>
 #include <SurfaceLoader.h>
 #include <SelfWeight.h>
 #include <Beam2dThermalAction.h>
+#include <Beam3dThermalAction.h>
 #include <Beam2dTempLoad.h>
+#include <ShellThermalAction.h>
 #include <SP_Constraint.h>
 #include <LoadPattern.h>
 #include <MultiSupportPattern.h>
@@ -278,7 +282,6 @@ int OPS_ElementalLoad()
     const char* type = OPS_GetString();
     if (strcmp(type,"-beamUniform") == 0 ||
 	strcmp(type,"beamUniform") == 0) {
-
 	if (ndm == 2) {
 	    // wta, waa, aL, bL, wtb, wab
         double data[6] = {0.0, 0.0, 0.0, 1.0, 0.0, 0.0};
@@ -298,7 +301,7 @@ int OPS_ElementalLoad()
 		  data[5] = data[1];
 		}
 		if (data[2] > 0.0 || data[3] < 1.0 || numdata > 4)
-		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0], data[4], data[1], data[5], data[2], data[3], theEleTags(i));
+		    theLoad = new Beam2dPartialUniformLoad(eleLoadTag, data[0],data[4], data[1], data[5], data[2], data[3], theEleTags(i));
 		else
 		    theLoad = new Beam2dUniformLoad(eleLoadTag, data[0], data[1], theEleTags(i));
 
@@ -306,10 +309,8 @@ int OPS_ElementalLoad()
 		    opserr << "WARNING eleLoad - out of memory creating load of type " << type;
 		    return -1;
 		}
-
 		// get the current pattern tag if no tag given in i/p
 		int loadPatternTag = theActiveLoadPattern->getTag();
-
 		// add the load to the domain
 		if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
 		    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
@@ -319,34 +320,37 @@ int OPS_ElementalLoad()
 		}
 		eleLoadTag++;
 	    }
-
 	    return 0;
 	}
-
 	else if (ndm == 3) {
-	    // wy, wz, wx
-	    double data[3] = {0.0, 0.0, 0.0};
-	    int numdata = OPS_GetNumRemainingInputArgs();
-	    if (numdata < 2) {
-		opserr<<"WARNING eleLoad - beamUniform want Wy Wz <Wx>\n";
-		return -1;
-	    }
-	    if (numdata > 3) numdata = 3;
-	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
-		opserr<<"WARNING eleLoad - invalid value for beamUniform\n";
-		return -1;
-	    }
-	    for (int i=0; i<theEleTags.Size(); i++) {
-		theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
-
-		if (theLoad == 0) {
-		    opserr << "WARNING eleLoad - out of memory creating load of type " << type;
-		    return -1;
+		// wy, wz, wx, aL, bL, wyb, wzb, wxb,
+		double data[8] = { 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0 };
+		int numdata = OPS_GetNumRemainingInputArgs();
+		if (numdata < 2) {
+			opserr << "WARNING eleLoad - beamUniform want Wy Wz <Wx>\n";
+			return -1;
 		}
-
+		if (numdata > 8) numdata = 8;
+		if (OPS_GetDoubleInput(&numdata, data) < 0) {
+			opserr << "WARNING eleLoad - invalid value for beamUniform\n";
+			return -1;
+		}
+		for (int i = 0; i < theEleTags.Size(); i++) {
+			if (numdata == 4 || numdata == 5) {
+				data[5] = data[0];
+				data[6] = data[1];
+				data[7] = data[2];
+			}
+			if (numdata > 3)
+				theLoad = new Beam3dPartialUniformLoad(eleLoadTag, data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7], theEleTags(i));
+			else
+			    theLoad = new Beam3dUniformLoad(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
+			if (theLoad == 0) {
+				opserr << "WARNING eleLoad - out of memory creating load of type " << type;
+				return -1;
+			}
 		// get the current pattern tag if no tag given in i/p
 		int loadPatternTag = theActiveLoadPattern->getTag();
-
 		// add the load to the domain
 		if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
 		    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
@@ -356,15 +360,60 @@ int OPS_ElementalLoad()
 		}
 		eleLoadTag++;
 	    }
-
 	    return 0;
-
 	}
 	else {
 	    opserr << "WARNING eleLoad beamUniform currently only valid only for ndm=2 or 3\n";
 	    return -1;
 	}
 
+    } else if (strncmp(type,"-beamUniformMoment",80) == 0 || strncmp(type,"beamUniformMoment",80) == 0) {
+      double data[3] = {0.0,0.0,0.0};
+      int numdata = OPS_GetNumRemainingInputArgs();
+      if (ndm == 2) {
+	if (numdata < 1) {
+	  opserr << "WARNING eleLoad - beamUniformMoment want mz" << endln;
+	  return -1;
+	}
+	if (numdata > 1) numdata = 1;
+	if (OPS_GetDoubleInput(&numdata, &data[2]) < 0) {
+	  opserr<<"WARNING eleLoad - invalid value for beamUniformMoment\n";
+	  return -1;
+	}
+      }
+      if (ndm == 3) {
+	if (numdata < 3) {
+	  opserr << "WARNING eleLoad - beamUniformMoment want mx my mz" << endln;
+	  return -1;
+	}
+	if (numdata > 3) numdata = 3;
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	  opserr<<"WARNING eleLoad - invalid value for beamUniformMoment\n";
+	  return -1;
+	}	
+      }
+      for (int i=0; i<theEleTags.Size(); i++) {
+	theLoad = new BeamUniformMoment(eleLoadTag, data[0], data[1], data[2], theEleTags(i));
+
+	if (theLoad == 0) {
+	  opserr << "WARNING eleLoad - out of memory creating load of type " << type;
+	  return -1;
+	}
+	
+	// get the current pattern tag if no tag given in i/p
+	int loadPatternTag = theActiveLoadPattern->getTag();
+	
+	// add the load to the domain
+	if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+	  opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+	  opserr << theLoad;
+	  delete theLoad;
+	  return -1;
+	}
+	eleLoadTag++;
+      }
+      
+      return 0;
     } else if (strcmp(type,"-beamPoint") == 0 ||
 	       strcmp(type,"beamPoint") == 0 ) {
 
@@ -651,7 +700,8 @@ int OPS_ElementalLoad()
 
         //finish the temperature arguments
         else {
-            opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature arguments,/n looking for 0, 2, 5 or 9 arguments.\n";
+	  opserr << "WARNING eleLoad -beamThermalAction invalid number of temperature arguments,/n looking for 0, 2, 5 or 9 arguments" << endln;
+	    return -1;
         }
 
         for (int i = 0; i<theEleTags.Size(); i++) {
@@ -678,11 +728,164 @@ int OPS_ElementalLoad()
         }
 	} // for the if (ndm==2)
 	else {//if (ndm=3)
-	    opserr << "WARNING eleLoad -beamThermalAction type currently only valid only for ndm=2\n";
+	  double t1, locY1, t2, locY2, t3, locY3, t4, locY4, t5, locY5,
+	    t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3, t12, t13, locZ4, t14, t15, locZ5;
+	  bool useGrid = false;
+	  int numdata = OPS_GetNumRemainingInputArgs();
+	  double data[35];
+	  if (numdata == 25) {
+	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	      opserr << "WARNING eleLoad - invalid input\n";
+	      return -1;
+	    }
+	    t1 = data[0]; locY1 = data[1];
+	    t2 = data[2]; locY2 = data[3];
+	    t3 = data[4]; locY3 = data[5];
+	    t4 = data[6]; locY4 = data[7];
+	    t5 = data[8]; locY5 = data[9];
+	    
+	    t6  = data[10]; t7  = data[11]; locZ1 = data[12];
+	    t8  = data[13]; t9  = data[14]; locZ2 = data[15];
+	    t10 = data[16]; t11 = data[17]; locZ3 = data[18];
+	    t12 = data[19]; t13 = data[20]; locZ4 = data[21];
+	    t14 = data[22]; t15 = data[23]; locZ5 = data[24];
+	  }
+	  else if (numdata == 35) {
+		  if (OPS_GetDoubleInput(&numdata, data) < 0) {
+			  opserr << "WARNING eleLoad - invalid input\n";
+			  return -1;
+		  }
+		  useGrid = true;
+	  }
+	  else if (numdata == 4) {
+	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	      opserr << "WARNING eleLoad - invalid input\n";
+	      return -1;
+	    }
+
+	    t1 = data[0];
+	    locY1 = data[1];
+	    t5 = data[2];
+	    locY5 = data[3];
+
+	    locY2 = locY1 + (locY5 - locY1) / 4;
+	    locY3 = locY1 + (locY5 - locY1) / 2;
+	    locY4 = locY1 + 3 * (locY5 - locY1) / 4;
+	    t2 = t1 + (t5 - t1) / 4;
+	    t3 = t1 + (t5 - t1) / 2;
+	    t4 = t1 + 3 * (t5 - t1) / 4;
+	    locZ1 = locZ2 = locZ3 = locZ4 = locZ5 = 0;
+	    t6 = t7 = t8 = t9 = t10 = 0;
+	    t11 = t12 = t13 = t14 = t15 = 0;	    
+	  }
+	  else if (numdata == 8) {
+	    if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	      opserr << "WARNING eleLoad - invalid input\n";
+	      return -1;
+	    }
+
+	    t1 = data[0];
+	    locY1 = data[1];
+	    t5 = data[2];
+	    locY5 = data[3];
+	    t6 = data[4];
+	    locZ1 = data[5];
+	    t10 = data[6];
+	    locZ5 = data[7];
+
+	    locY2 = locY1 + (locY5 - locY1) / 4;
+	    locY3 = locY1 + (locY5 - locY1) / 2;
+	    locY4 = locY1 + 3 * (locY5 - locY1) / 4;
+	    t2 = t1 + (t5 - t1) / 4;
+	    t3 = t1 + (t5 - t1) / 2;
+	    t4 = t1 + 3 * (t5 - t1) / 4;
+	    
+	    locZ2 = locZ1 + (locZ5 - locZ1) / 4;
+	    locZ3 = locZ1 + (locZ5 - locZ1) / 2;
+	    locZ4 = locZ1 + 3 * (locZ5 - locZ1) / 4;
+	    t11 = t6; t15 = t10;
+	    t7 = t6 + (t10 - t6) / 4; t12 = t11 + (t15 - t11) / 4;
+	    t8 = t6 + (t10 - t6) / 2; t13 = t11 + (t15 - t11) / 2;
+	    t9 = t6 + 3*(t10 - t6) / 4; t14 = t11 + 3*(t15 - t11) / 4;	    
+	  }
+	  else {
+	    opserr << "WARNING eleLoad Beam3dThermalAction: invalid number of temperature arguments,/n looking for arguments for Temperatures and coordinates" << endln;
 	    return -1;
-	}
+	  }
+
+	  for (int i = 0; i<theEleTags.Size(); i++) {
+		  if (useGrid) {
+			theLoad = new Beam3dThermalAction(eleLoadTag, data, theEleTags(i));
+		  }else{		  
+			theLoad = new Beam3dThermalAction(eleLoadTag,
+							  t1, locY1, t2, locY2, t3, locY3, t4, locY4,
+							  t5, locY5, t6, t7, locZ1, t8, t9, locZ2, t10, t11, locZ3,
+							  t12, t13, locZ4, t14, t15, locZ5, theEleTags(i));
+		  }
+	    if (theLoad == 0) {
+	      opserr << "WARNING eleLoad - out of memory creating load of type " << type << endln;
+	      return -1;
+	    }
+	    
+	    // add the load to the domain
+            if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+	      opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+	      opserr << theLoad;
+	      delete theLoad;
+	      return -1;
+            }
+            eleLoadTag++;	    
+	  }
+	} // ndm==3
     }
     //--Adding identifier for Beam2dThermalAction:[END] by UoE OpenSees Group--//
+    else if (strncmp(type,"-shellThermal",80) == 0) {
+
+      // get the current pattern tag if no tag given in i/p
+      int loadPatternTag = theActiveLoadPattern->getTag();
+      
+      double t1, locY1, t2, locY2; //t3, locY3, t4, locY4, t5, locY5, t6, locY6, t7, locY7, t8, locY8, t9, locY9;
+      // 9 temperature points are given,i.e. 8 layers are defined; Also the 9 corresponding vertical coordinate is given.
+      // the temperature at each fiber is obtained by interpolating of temperatures at the nearby temperature points.
+      
+      int numdata = OPS_GetNumRemainingInputArgs();
+      double data[18];
+      if (numdata == 18) {
+	opserr << "eleLoad -shellThermal -- not yet implemented for 9 data points (see Tcl implementation)" << endln;
+	return -1;
+      }
+      if (numdata == 10) {
+	opserr << "eleLoad -shellThermal -- not yet implemented for 5 data points (see Tcl implementation)" << endln;
+	return -1;
+      }
+      if (numdata == 4) {
+	if (OPS_GetDoubleInput(&numdata, data) < 0) {
+	  opserr << "WARNING eleLoad - invalid input\n";
+	  return -1;
+	}
+	t1 = data[0]; locY1 = data[1];
+	t2 = data[2]; locY2 = data[3];
+
+	for (int i = 0; i < theEleTags.Size(); i++) {
+	  theLoad = new ShellThermalAction(eleLoadTag,
+					   t1, locY1, t2, locY2, theEleTags(i));
+
+	  if (theLoad == 0) {
+	    opserr << "WARNING eleLoad - out of memory creating load of type " << type << endln;
+	    return -1;
+	  }
+	  
+	  // add the load to the domain
+	  if (theDomain->addElementalLoad(theLoad, loadPatternTag) == false) {
+	    opserr << "WARNING eleLoad - could not add following load to domain:\n ";
+	    opserr << theLoad;
+	    delete theLoad;
+	    return -1;
+	  }
+	  eleLoadTag++;	  
+	}
+      }
+    }
 
 
     // Added by Scott R. Hamilton   - Stanford
@@ -850,12 +1053,19 @@ int OPS_SP()
 
     // get sp const
     bool isSpConst = false;
+    bool retZeroInitValue = true;
+    
     bool userPattern = false;
     int loadPatternTag = 0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
 	if(strcmp(type, "-const") == 0) {
 	    isSpConst = true;
+	    
+	} else if (strcmp(type,"-subtractInit") == 0) {
+	  // allow user to ignore init disp values at the node
+	  retZeroInitValue = true;
+
 	} else if(strcmp(type, "-pattern") == 0) {
 	    if (OPS_GetNumRemainingInputArgs() > 0) {
 		int numData = 1;
@@ -879,8 +1089,9 @@ int OPS_SP()
     }
 
     // create pattern
-    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst);
-    if(theSP == 0) return -1;
+    theSP = new SP_Constraint(tags[0], tags[1]-1, value, isSpConst, retZeroInitValue);
+    if(theSP == 0)
+      return -1;
 
     // add load to domain
     if(theDomain->addSP_Constraint(theSP,loadPatternTag) == false) {

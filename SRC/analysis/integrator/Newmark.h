@@ -48,7 +48,7 @@ class Newmark : public TransientIntegrator
 public:
     // constructors
     Newmark(int classTag=INTEGRATOR_TAGS_Newmark);
-    Newmark(double gamma, double beta, bool disp = true, bool aflag=false, int classTag=INTEGRATOR_TAGS_Newmark);
+    Newmark(double gamma, double beta, int disp = 1, bool aflag=false, int classTag=INTEGRATOR_TAGS_Newmark);
 
     // destructor
     ~Newmark();

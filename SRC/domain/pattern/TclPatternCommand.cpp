@@ -58,6 +58,7 @@
 #include <GroundMotion.h>
 #include <GroundMotionRecord.h>
 #include <TimeSeriesIntegrator.h>
+#include <MPAccSeries.h>   //Tang.S
 
 #include <FireLoadPattern.h>  //Added by UoE openSees Group
 
@@ -67,7 +68,7 @@
 #include <DRMLoadPatternWrapper.h>
 
 #ifdef _H5DRM
-#include <H5DRM.h>
+#include <H5DRMLoadPattern.h>
 #endif
 
 #include <string.h>
@@ -578,7 +579,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       
       
 
-      thePattern = new H5DRM(tag, filename, factor,crd_scale, distance_tolerance, do_coordinate_transformation, T00, T01, T02, T10, T11, T12, T20, T21, T22, x00, x01, x02);
+      thePattern = new H5DRMLoadPattern(tag, filename, factor,crd_scale, distance_tolerance, do_coordinate_transformation, T00, T01, T02, T10, T11, T12, T20, T21, T22, x00, x01, x02);
 
       // opserr << "Done! Creating H5DRM tag = " << tag << " filename = " << filename.c_str() << " factor = " << factor << endln;
 

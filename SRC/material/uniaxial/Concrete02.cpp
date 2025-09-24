@@ -173,6 +173,7 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
 
   ecmin = ecminP;
   dept = deptP;
+  TEnergy = CEnergy;
 
   // calculate current strain
 
@@ -262,6 +263,9 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
     }
   }
 
+  TEnergy += 0.5 * (sigP + sig) * (eps - epsP);
+  //opserr << "CE: " << CEnergy << " -> TE: " << TEnergy << " | s (" << sigP << ", " << sig << ", M: " << 0.5 * (sigP + sig) << "); dE: " << (eps - epsP) << "\n";
+
   return 0;
 }
 
@@ -294,6 +298,9 @@ Concrete02::commitState(void)
   eP = e;
   sigP = sig;
   epsP = eps;
+
+  CEnergy = TEnergy;
+
   return 0;
 }
 
@@ -306,6 +313,9 @@ Concrete02::revertToLastCommit(void)
   e = eP;
   sig = sigP;
   eps = epsP;
+
+  TEnergy = CEnergy;
+
   return 0;
 }
 
@@ -321,6 +331,8 @@ Concrete02::revertToStart(void)
   eps = 0.0;
   sig = 0.0;
   e = 2.0*fc/epsc0;
+
+  TEnergy = CEnergy = 0.0;
 
   return 0;
 }

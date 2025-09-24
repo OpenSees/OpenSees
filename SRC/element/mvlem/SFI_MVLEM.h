@@ -57,13 +57,16 @@ public:
 		double *Thickness,				// array of macro-fiber thickness
 		double *Width,					// array of macro-fiber widths
 		int mm,							// number of macro-fibers (RC panels)
-		double cc);						// center of rotation					
+		double cc,                      // center of rotation
+		int coupling);				// type of coupling between stresses in RC panels							
 
 	SFI_MVLEM();
 
 	// destructor
 	~SFI_MVLEM();
 
+  const char *getClassType(void) const {return "SFI_MVLEM2d";}
+  
 	// public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
@@ -107,7 +110,8 @@ private:
 	double getShearDef(void);
 	double getCurvature(void);
 	Vector getResistingForce_6DOF(void);
-
+  int setupMacroFibers();
+  
 	// private attributes - a copy for each object of the class
 
 	// input variables
@@ -118,8 +122,12 @@ private:
 	Node *theNd2;						// pointer to top node
 	NDMaterial **theMaterial;			// array of ND materials
 	Vector *theLoad;					// pointer to element load
-	const double c;						// center of rotation
-	const int m;						// no. of RC panels
+	double c;						// center of rotation
+	int m;						// no. of RC panels
+    const int Coupling;				// Coupling Type between shear strain and axial strains can be 0,1,or 2. 
+    // coupling = 0     :(default) no coupling between stresses and strains, same as the original SFI_MVLEM
+    // coupling = 1     : only coupling between axial stresses sigmax and sigmay in RC panels
+    // coupling = 2     : complete coupling between all stresses, including axial and shear ones
 
 	// calculated element parameters
 	ID externalNodes;					// contains the id's of end nodes

@@ -65,7 +65,7 @@ Matrix J2ThreeDimensional :: tangent_matrix(6,6) ;
 
 //null constructor
 J2ThreeDimensional ::  J2ThreeDimensional( ) : 
-J2Plasticity( ) 
+J2Plasticity(0, ND_TAG_J2ThreeDimensional, 0.0, 0.0) 
 { }
 
 

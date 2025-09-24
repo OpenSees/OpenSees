@@ -348,10 +348,16 @@ UniaxialFiber2d::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &
 
 void UniaxialFiber2d::Print(OPS_Stream &s, int flag)
 {
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
   s << "\nUniaxialFiber2d, tag: " << this->getTag() << endln;
   s << "\tArea: " << area << endln; 
   s << "\tMatrix as: " << 1.0 << " " << y << endln; 
   s << "\tMaterial, tag: " << theMaterial->getTag() << endln;
+  }
+if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	 s << "\t\t\t\t{\"type\": \"fiber\", \"material\": "<<theMaterial->getTag()<<", ";
+	 s << "\"area\": "<<area<<", \"coord\": [" << y << ", 0.0]}";
+}
 }
 
 Response*

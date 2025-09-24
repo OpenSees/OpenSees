@@ -581,7 +581,6 @@ const Matrix &
 ComponentElement2d::getTangentStiff(void)
 {
   // determine q = kv + q0
-  static Vector R(6);  
 
   q(0) += q0[0];
   q(1) += q0[1];
@@ -806,27 +805,43 @@ ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(16);
+  static Vector data(24);
   
   data(0) = A;
   data(1) = E; 
   data(2) = I; 
   data(3) = rho;
-  //  data(4) = cMass;
+  data(4) = cMass;
   data(5) = this->getTag();
   data(6) = connectedExternalNodes(0);
   data(7) = connectedExternalNodes(1);
+  
   data(8) = theCoordTransf->getClassTag();
-  
   int dbTag = theCoordTransf->getDbTag();
-  
   if (dbTag == 0) {
     dbTag = theChannel.getDbTag();
     if (dbTag != 0)
       theCoordTransf->setDbTag(dbTag);
   }
-  
   data(9) = dbTag;
+
+  data(16) = end1Hinge->getClassTag();
+  dbTag = end1Hinge->getDbTag();
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      end1Hinge->setDbTag(dbTag);
+  }
+  data(17) = dbTag;
+
+  data(18) = end2Hinge->getClassTag();
+  dbTag = end2Hinge->getDbTag();
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      end2Hinge->setDbTag(dbTag);
+  }
+  data(19) = dbTag;    
 
   // data(10) = alpha;
   //  data(11) = d;
@@ -835,6 +850,9 @@ ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
   data(13) = betaK;
   data(14) = betaK0;
   data(15) = betaKc;
+
+  for (int i = 0; i < 4; i++)
+    data(20+i) = uCommit(i);
   
   // Send the data vector
   res += theChannel.sendVector(this->getDbTag(), cTag, data);
@@ -849,6 +867,20 @@ ComponentElement2d::sendSelf(int cTag, Channel &theChannel)
     opserr << "ComponentElement2d::sendSelf -- could not send CoordTransf\n";
     return res;
   }
+
+  // Ask hinge 1 to send itself
+  res += end1Hinge->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement2d::sendSelf -- could not send hinge 1\n";
+    return res;
+  }
+
+  // Ask hinge 2 to send itself
+  res += end2Hinge->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement2d::sendSelf -- could not send hinge 2\n";
+    return res;
+  }    
   
   return res;
 }
@@ -858,7 +890,7 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
 {
     int res = 0;
 	
-    static Vector data(16);
+    static Vector data(24);
 
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -879,11 +911,14 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     betaKc = data(15);
 
     rho = data(3);
-    //    cMass = (int)data(4);
+    cMass = (int)data(4);
     this->setTag((int)data(5));
     connectedExternalNodes(0) = (int)data(6);
     connectedExternalNodes(1) = (int)data(7);
 
+    for (int i = 0; i < 4; i++)
+      uCommit(i) = data(20+i);
+    
     // Check if the CoordTransf is null; if so, get a new one
     int crdTag = (int)data(8);
     if (theCoordTransf == 0) {
@@ -912,6 +947,69 @@ ComponentElement2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
       opserr << "ComponentElement2d::recvSelf -- could not receive CoordTransf\n";
       return res;
     }
+
+
+
+    // Check if hinge 1 is null; if so, get a new one
+    int hinge1Tag = (int)data(16);
+    if (end1Hinge == 0) {
+      end1Hinge = theBroker.getNewUniaxialMaterial(hinge1Tag);
+      if (end1Hinge == 0) {
+	opserr << "ComponentElement2d::recvSelf -- could not get hinge 1 UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+    
+    // Check that hinge 1 is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (end1Hinge->getClassTag() != hinge1Tag) {
+      delete end1Hinge;
+      end1Hinge = theBroker.getNewUniaxialMaterial(hinge1Tag);
+      if (end1Hinge == 0) {
+	opserr << "ComponentElement2d::recvSelf -- could not get hinge 1 UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+	
+    // Now, receive hinge 1
+    end1Hinge->setDbTag((int)data(17));
+    res += end1Hinge->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ComponentElement2d::recvSelf -- could not receive hinge 1" << endln;
+      return res;
+    }
+
+
+    // Check if hinge 2 is null; if so, get a new one
+    int hinge2Tag = (int)data(18);
+    if (end2Hinge == 0) {
+      end2Hinge = theBroker.getNewUniaxialMaterial(hinge2Tag);
+      if (end2Hinge == 0) {
+	opserr << "ComponentElement2d::recvSelf -- could not get hinge 2 UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+    
+    // Check that hinge 2 is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (end2Hinge->getClassTag() != hinge2Tag) {
+      delete end2Hinge;
+      end2Hinge = theBroker.getNewUniaxialMaterial(hinge2Tag);
+      if (end2Hinge == 0) {
+	opserr << "ComponentElement2d::recvSelf -- could not get hinge 2 UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+	
+    // Now, receive hinge 2
+    end2Hinge->setDbTag((int)data(19));
+    res += end2Hinge->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ComponentElement2d::recvSelf -- could not receive hinge 2" << endln;
+      return res;
+    }
+
+    this->revertToLastCommit();
     
     return res;
 }
@@ -1102,7 +1200,25 @@ ComponentElement2d::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 4, Vector(3));
     
   
-  } else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
+  }
+  // basic deformation
+  else if (strcmp(argv[0],"basicDeformation") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M_1");
+    output.tag("ResponseType","M_2");
+    
+    theResponse = new ElementResponse(this, 8, Vector(3));
+  }
+  // basic stiffness
+  else if (strcmp(argv[0],"basicStiffness") == 0) {
+    output.tag("ResponseType","N");
+    output.tag("ResponseType","M_1");
+    output.tag("ResponseType","M_2");
+    
+    theResponse = new ElementResponse(this, 19, Matrix(3,3));
+  }  
+  
+  else if (strcmp(argv[0],"hingeDefoAndForce") == 0) {
 
     output.tag("ResponseType","end1_Defo");
     output.tag("ResponseType","end1_Force");
@@ -1136,7 +1252,8 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
   this->getResistingForce();
   static Vector vect4(4);
   static Vector vect2(2);
-
+  static Matrix kb(3,3);
+  
   switch (responseID) {
   case 1: // stiffness
     return eleInfo.setMatrix(this->getTangentStiff());
@@ -1175,7 +1292,7 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect4);
 
-  case 6: // basic forces
+  case 6: // hinge tangent
     if (end1Hinge != 0) {
       vect2(0) = end1Hinge->getTangent();
     }
@@ -1184,7 +1301,17 @@ ComponentElement2d::getResponse (int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(vect2);
 
-
+  case 8:
+    return eleInfo.setVector(theCoordTransf->getBasicTrialDisp());
+    
+  case 19:
+    kb.Zero();
+    kb(0,0) = EAoverL;
+    kb(1,1) = kTrial(0,0);
+    kb(2,2) = kTrial(1,1);
+    kb(1,2) = kTrial(0,1);
+    kb(2,1) = kTrial(1,0);
+    return eleInfo.setMatrix(kb);
 
   default:
     return -1;

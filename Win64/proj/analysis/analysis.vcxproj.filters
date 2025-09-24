@@ -320,6 +320,9 @@
     <ClCompile Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.cpp">
       <Filter>handler</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\AutoConstraintHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.cpp">
       <Filter>lineSearch</Filter>
     </ClCompile>
@@ -385,6 +388,9 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\integrator\HarmonicSteadyState.cpp">
       <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\analysis\SDFAnalysis.cpp">
+      <Filter>analysis</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -665,6 +671,9 @@
       <Filter>handler</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\AutoConstraintHandler.h">
       <Filter>handler</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.h">

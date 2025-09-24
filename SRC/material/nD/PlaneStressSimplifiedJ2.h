@@ -26,7 +26,7 @@ class PlaneStressSimplifiedJ2 : public NDMaterial
   PlaneStressSimplifiedJ2 (int tag, 
 			   int nd,
 			   NDMaterial &the3DMaterial);
-  
+  PlaneStressSimplifiedJ2();
   
   virtual ~PlaneStressSimplifiedJ2 ();
   

@@ -115,8 +115,9 @@ Hertzdamp::Hertzdamp(int tag, double kh, double xin, double gap0, double dispexp
  Kh(kh), xiNorm(xin), gap(gap0), n(dispexp)
 {
 	if (gap >= 0) {
-	  opserr << "Hertzdamp::Hertzdamp -- Initial gap size must be negative for compression-only material\n";
-	  exit(-1);
+	  opserr << "Hertzdamp::Hertzdamp -- Initial gap size should be negative for compression-only material\n";
+	  gap = -gap;
+	  opserr << "Setting gap to negative value, " << gap << endln;
 	}
 	this->revertToStart(); // initialize state variables
 	xi = 0.0; // initialize impact damping coefficient

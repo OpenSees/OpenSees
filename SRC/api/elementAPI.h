@@ -145,6 +145,8 @@ class ConvergenceTest;
 #define OPS_InvokeMaterialDirectly ops_invokematerialdirectly_
 #define OPS_GetInt ops_getintinput_
 #define OPS_GetDouble ops_getdoubleinput_
+#define OPS_GetDoubleListInput ops_getdoublelistinput_
+#define OPS_EvalDoubleStringExpression ops_evaldoublestringexpression_
 #define OPS_GetString ops_getstring
 #define OPS_GetStringFromAll ops_getstringfromall_
 #define OPS_SetString ops_setstring
@@ -195,6 +197,8 @@ extern "C" int         OPS_SetIntListsOutput(std::vector<std::vector<int>>& data
 extern "C" int         OPS_SetIntDictOutput(std::map<const char*, int>& data);
 extern "C" int         OPS_SetIntDictListOutput(std::map<const char*, std::vector<int>>& data);
 extern "C" int         OPS_GetDoubleInput(int* numData, double* data);
+extern "C" int         OPS_GetDoubleListInput(int* size, Vector * data);
+extern "C" int         OPS_EvalDoubleStringExpression(const char* theExpression, double& current_val);
 extern "C" int         OPS_SetDoubleOutput(int* numData, double* data, bool scalar);
 extern "C" int         OPS_SetDoubleListsOutput(std::vector<std::vector<double>>& data);
 extern "C" int         OPS_SetDoubleDictOutput(std::map<const char*, double>& data);

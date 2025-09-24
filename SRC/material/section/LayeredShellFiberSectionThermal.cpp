@@ -150,7 +150,7 @@ const double  LayeredShellFiberSectionThermal::root56 = 1 ; //shear correction
 //null constructor
 LayeredShellFiberSectionThermal::LayeredShellFiberSectionThermal( ) : 
 SectionForceDeformation( 0, SEC_TAG_LayeredShellFiberSectionThermal ), 
-strainResultant(8), nLayers(0),countnGauss(0),AverageThermalMomentP(0), AverageThermalForceP(0),sT(0), ThermalElongation(0)
+strainResultant(8), nLayers(0),countnGauss(0),AverageThermalMomentP(0), AverageThermalForceP(0),sT(2), ThermalElongation(0)
 {
 
 }
@@ -162,7 +162,7 @@ LayeredShellFiberSectionThermal::LayeredShellFiberSectionThermal(
                                    double *thickness, 
                                    NDMaterial **fibers ) :
 SectionForceDeformation( tag, SEC_TAG_LayeredShellFiberSectionThermal ),
-strainResultant(8), countnGauss(0), AverageThermalMomentP(0), AverageThermalForceP(0),sT(0), ThermalElongation(0)
+strainResultant(8), countnGauss(0), AverageThermalMomentP(0), AverageThermalForceP(0),sT(2), ThermalElongation(0)
 {
   this->nLayers = iLayers;
   sg = new double[iLayers];
@@ -189,26 +189,24 @@ strainResultant(8), countnGauss(0), AverageThermalMomentP(0), AverageThermalForc
     currLoc = currLoc + thickness[i];
 	ThermalElongation[i] =0.0;  //Added  by LMJ
   }
-
-  sT =new Vector(2);
-  sT->Zero();
-
 }
 
 //destructor
 LayeredShellFiberSectionThermal::~LayeredShellFiberSectionThermal( ) 
 { 
-  int i ;
   if (sg != 0) delete sg;
-if (wg != 0) delete wg;
+  if (wg != 0) delete wg;
   if (theFibers != 0)
   {
-    for ( i = 0; i < nLayers; i++ )
+    for (int i = 0; i < nLayers; i++ )
     {
       if (theFibers[i] != 0) delete theFibers[i] ;
     }
     delete [] theFibers;
   }
+
+  if (ThermalElongation != 0)
+    delete [] ThermalElongation;
 } 
 
 //make a clone of this material
@@ -228,6 +226,14 @@ SectionForceDeformation  *LayeredShellFiberSectionThermal::getCopy( )
 					  theFibers ) ; //make the copy
     delete [] thickness;
   }
+
+  clone->sT = sT;
+  clone->countnGauss = countnGauss;
+  clone->AverageThermalForceP = AverageThermalForceP;
+  clone->AverageThermalMomentP = AverageThermalMomentP;
+  for (int i = 0; i < nLayers; i++)
+    clone->ThermalElongation[i] = ThermalElongation[i];
+  
   return clone ;
 }
 
@@ -428,29 +434,11 @@ setTrialSectionDeformation( const Vector &strainResultant_from_element)
 
       strain(2) =  strainResultant(2)  - z*strainResultant(5) ;
 
-      strain(3) =  root56*strainResultant(6) ;
+      strain(4) =  root56*strainResultant(6) ;
 
-      strain(4) =  root56*strainResultant(7) ;
+      strain(3) =  root56*strainResultant(7) ;
     
-	#ifdef _SDEBUG
-	  if (strainResultant(8) ==111&&i==0){
-	  opserr<<"LayeredShellSection z : "<<z<< "strain  "<<strain<<endln;
-	  strain(5)=1110;
-	  }
-	  else 
-		strain(5)=1115;
-	#endif
-
-//#ifdef _DEBUG
-//opserr<<" Layer"<< i <<endln;
-//#endif
       success += theFibers[i]->setTrialStrain( strain ) ;
-	  #ifdef _SDEBUG
-	  if (strainResultant(8) ==111&&i==0){
-	  opserr<<"LayeredShellSection z : "<<z<<"stress  "<<theFibers[i]->getStress()<<endln;
-	  opserr<<" tangent "<<theFibers[i]->getTangent()<<endln;
-		  }
-	#endif
      
   } //end for i
 
@@ -500,12 +488,15 @@ LayeredShellFiberSectionThermal::getTemperatureStress(const Vector& dataMixed)
 	averageThermalMoment+= yi*thickness*elongation*tangent;
 	}
 
-      (*sT)(0) = averageThermalForce - AverageThermalForceP;
+      sT(0) = averageThermalForce - AverageThermalForceP;
 
-      (*sT)(1) = averageThermalMoment - AverageThermalMomentP;
+      sT(1) = averageThermalMoment - AverageThermalMomentP;
 	  AverageThermalForceP = averageThermalForce;
 	  AverageThermalMomentP = averageThermalMoment;
-      return *sT;
+
+	  delete [] ThermalTangent;
+	  
+      return sT;
 
 }
 
@@ -545,9 +536,9 @@ const Vector&  LayeredShellFiberSectionThermal::getStressResultant( )
       stressResultant(5)  +=  ( z*stress(2) ) * weight ;
 
       //shear
-      stressResultant(6)  += stress(3)*weight ;
+      stressResultant(6)  += stress(4)*weight ;
 
-      stressResultant(7)  += stress(4)*weight ;
+      stressResultant(7)  += stress(3)*weight ;
   
   } //end for i
 
@@ -640,8 +631,8 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
       tangent(0,3) +=  -z*dd(0,0) ;      
       tangent(0,4) +=  -z*dd(0,1) ;
       tangent(0,5) +=  -z*dd(0,2) ;
-      tangent(0,6) +=     dd(0,3) ;
-      tangent(0,7) +=     dd(0,4) ;
+      tangent(0,6) +=     dd(0,4) ;
+      tangent(0,7) +=     dd(0,3) ;
 
       //row 2
 //[      d21,           d22,           d23,        -z*d21,        -z*d22,        -z*d23,    d24,    d25]
@@ -651,8 +642,8 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
       tangent(1,3) +=  -z*dd(1,0) ;      
       tangent(1,4) +=  -z*dd(1,1) ;
       tangent(1,5) +=  -z*dd(1,2) ;
-      tangent(1,6) +=     dd(1,3) ;
-      tangent(1,7) +=     dd(1,4) ;
+      tangent(1,6) +=     dd(1,4) ;
+      tangent(1,7) +=     dd(1,3) ;
 
       //row 3
 //[      d31,           d32,           d33,        -z*d31,        -z*d32,        -z*d33,    d34,    d35]
@@ -662,8 +653,8 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
       tangent(2,3) +=  -z*dd(2,0) ;      
       tangent(2,4) +=  -z*dd(2,1) ;
       tangent(2,5) +=  -z*dd(2,2) ;
-      tangent(2,6) +=     dd(2,3) ;
-      tangent(2,7) +=     dd(2,4) ;
+      tangent(2,6) +=     dd(2,4) ;
+      tangent(2,7) +=     dd(2,3) ;
 
       //row 4
 //[     z*d11,         z*d12,         z*d13,      -z^2*d11,      -z^2*d12,      -z^2*d13,  z*d14,  z*d15]
@@ -673,8 +664,8 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
       tangent(3,3) +=  -z*z*dd(0,0) ;      
       tangent(3,4) +=  -z*z*dd(0,1) ;
       tangent(3,5) +=  -z*z*dd(0,2) ;
-      tangent(3,6) +=     z*dd(0,3) ;
-      tangent(3,7) +=     z*dd(0,4) ;
+      tangent(3,6) +=     z*dd(0,4) ;
+      tangent(3,7) +=     z*dd(0,3) ;
 
       //row 5
 //[     z*d21,         z*d22,         z*d23,      -z^2*d21,      -z^2*d22,      -z^2*d23,  z*d24,  z*d25]
@@ -684,8 +675,8 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
       tangent(4,3) +=  -z*z*dd(1,0) ;      
       tangent(4,4) +=  -z*z*dd(1,1) ;
       tangent(4,5) +=  -z*z*dd(1,2) ;
-      tangent(4,6) +=     z*dd(1,3) ;
-      tangent(4,7) +=     z*dd(1,4) ;
+      tangent(4,6) +=     z*dd(1,4) ;
+      tangent(4,7) +=     z*dd(1,3) ;
 
       //row 6
 //[     z*d31,         z*d32,         z*d33,      -z^2*d31,      -z^2*d32,      -z^2*d33,  z*d34,  z*d35]
@@ -695,30 +686,30 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
       tangent(5,3) +=  -z*z*dd(2,0) ;      
       tangent(5,4) +=  -z*z*dd(2,1) ;
       tangent(5,5) +=  -z*z*dd(2,2) ;
-      tangent(5,6) +=     z*dd(2,3) ;
-      tangent(5,7) +=     z*dd(2,4) ;
+      tangent(5,6) +=     z*dd(2,4) ;
+      tangent(5,7) +=     z*dd(2,3) ;
 
       //row 7
 //[  d41,    d42,    d43, -d41*z, -d42*z, -d43*z,  d44,  d45]
-      tangent(6,0) +=     dd(3,0) ;
-      tangent(6,1) +=     dd(3,1) ;
-      tangent(6,2) +=     dd(3,2) ;      
-      tangent(6,3) +=  -z*dd(3,0) ;      
-      tangent(6,4) +=  -z*dd(3,1) ;
-      tangent(6,5) +=  -z*dd(3,2) ;
-      tangent(6,6) +=     dd(3,3) ;
-      tangent(6,7) +=     dd(3,4) ;
+      tangent(6,0) +=     dd(4,0) ;
+      tangent(6,1) +=     dd(4,1) ;
+      tangent(6,2) +=     dd(4,2) ;      
+      tangent(6,3) +=  -z*dd(4,0) ;      
+      tangent(6,4) +=  -z*dd(4,1) ;
+      tangent(6,5) +=  -z*dd(4,2) ;
+      tangent(6,6) +=     dd(4,4) ;
+      tangent(6,7) +=     dd(4,3) ;
 
       //row 8 
 //[  d51,    d52,    d53, -d51*z, -d52*z, -d53*z,  d54,  d55]
-      tangent(7,0) +=     dd(4,0) ;
-      tangent(7,1) +=     dd(4,1) ;
-      tangent(7,2) +=     dd(4,2) ;      
-      tangent(7,3) +=  -z*dd(4,0) ;      
-      tangent(7,4) +=  -z*dd(4,1) ;
-      tangent(7,5) +=  -z*dd(4,2) ;
-      tangent(7,6) +=     dd(4,3) ;
-      tangent(7,7) +=     dd(4,4) ;
+      tangent(7,0) +=     dd(3,0) ;
+      tangent(7,1) +=     dd(3,1) ;
+      tangent(7,2) +=     dd(3,2) ;      
+      tangent(7,3) +=  -z*dd(3,0) ;      
+      tangent(7,4) +=  -z*dd(3,1) ;
+      tangent(7,5) +=  -z*dd(3,2) ;
+      tangent(7,6) +=     dd(3,4) ;
+      tangent(7,7) +=     dd(3,3) ;
 
   } //end for i
 
@@ -729,7 +720,7 @@ const Matrix&  LayeredShellFiberSectionThermal::getSectionTangent( )
 //print out data
 void  LayeredShellFiberSectionThermal::Print( OPS_Stream &s, int flag )
 {
-  s << "LayeredShellFiber Section tag: " << this->getTag() << endln ; 
+  s << "LayeredShellFiberThermal Section tag: " << this->getTag() << endln ; 
   s << "Total thickness h = " << h << endln ;
 
   for (int i = 0; i < nLayers; i++) {

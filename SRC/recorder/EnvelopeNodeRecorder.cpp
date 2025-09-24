@@ -296,8 +296,8 @@ OPS_EnvelopeNodeRecorder()
     if (domain == 0)
         return 0;
     EnvelopeNodeRecorder* recorder = new EnvelopeNodeRecorder(dofs, &nodes,
-        responseID, *domain, *theOutputStream,
-        dT, rTolDt, echoTimeFlag, theTimeSeries);
+							      responseID, *domain, *theOutputStream,
+							      dT, rTolDt, echoTimeFlag, theTimeSeries, closeOnWrite);
 
     return recorder;
 }
@@ -323,14 +323,15 @@ EnvelopeNodeRecorder::EnvelopeNodeRecorder(const ID &dofs,
 					   double dT,
 					   double rTolDt,
 					   bool echoTime,
-					   TimeSeries **theSeries)
+					   TimeSeries **theSeries,
+					   bool closeOnW)
 :Recorder(RECORDER_TAGS_EnvelopeNodeRecorder),
  theDofs(0), theNodalTags(0), theNodes(0),
  currentData(0), data(0), 
  theDomain(&theDom), theHandler(&theOutputHandler),
  deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
  first(true), initializationDone(false), numValidNodes(0), echoTimeFlag(echoTime), 
- addColumnInfo(0), theTimeSeries(theSeries), timeSeriesValues(0)
+ addColumnInfo(0), theTimeSeries(theSeries), timeSeriesValues(0), closeOnWrite(closeOnW)
 {
   // verify dof are valid 
   int numDOF = dofs.Size();
@@ -521,9 +522,11 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
 
   int numDOF = theDofs->Size();
 
+  bool writeIt = false;
+  
   // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
   // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
-    if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
+  if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
 
     if (deltaT != 0.0) 
       nextTimeStampToRecord = timeStamp + deltaT;
@@ -712,14 +715,12 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
   int sizeData = currentData->Size();
   if (echoTimeFlag == false) {
 
-    bool writeIt = false;
     if (first == true) {
       for (int i=0; i<sizeData; i++) {
 	(*data)(0,i) = (*currentData)(i);
 	(*data)(1,i) = (*currentData)(i);
 	(*data)(2,i) = fabs((*currentData)(i));
 	first = false;
-	writeIt = true;
       } 
     } else {
       for (int i=0; i<sizeData; i++) {
@@ -741,7 +742,6 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
     }
   } else {
     sizeData /= 2;
-    bool writeIt = false;
     if (first == true) {
       for (int i=0; i<sizeData; i++) {
 
@@ -780,6 +780,24 @@ EnvelopeNodeRecorder::record(int commitTag, double timeStamp)
     }
   }
 
+  if (closeOnWrite == true && writeIt == true) {
+    if (theHandler != 0 && data != 0) {
+
+      theHandler->open(); // open the handler to force it to write
+      theHandler->tag("Data"); // Data
+      
+      int numResponse = data->noCols();
+      
+      for (int i=0; i<3; i++) {
+	for (int j=0; j<numResponse; j++)
+	  (*currentData)(j) = (*data)(i,j);
+	theHandler->write(*currentData);
+      }
+
+      theHandler->endTag(); // Data
+    }
+  }
+  
   return 0;
 }
 
@@ -1169,7 +1187,7 @@ EnvelopeNodeRecorder::initialize(void)
 	theHandler->endTag();
       }
 
-      sprintf(outputData, "%s%d", dataType, j+1);
+      sprintf(outputData, "%s%d", dataType, (*theDofs)(j)+1);
       theHandler->tag("ResponseType",outputData);
     }
 

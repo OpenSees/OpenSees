@@ -297,7 +297,7 @@ ElasticMaterial::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(Eneg);
     return param.addObject(3, this);
   }
-  else if (strcmp(argv[0],"eta") == 0) {
+  if (strcmp(argv[0],"eta") == 0) {
     param.setValue(eta);
     return param.addObject(4, this);
   }

@@ -73,6 +73,8 @@ public :
 	Pinching4Material();
 	~Pinching4Material();
 
+        const char *getClassType(void) const {return "Pinching4Material";}
+
 	int setTrialStrain(double strain, double strainRate = 0.0);
 	double getStrain(void);
 	double getStress(void);
@@ -94,6 +96,8 @@ public :
 	int setParameter(const char** argv, int argc, Parameter& param);
 	int updateParameter(int parameterID, Information& info);
 
+	double getEnergy(void) { return Tenergy; }
+
 protected:
 
 private:
@@ -105,10 +109,7 @@ private:
 		Vector envlpPosStress; Vector envlpPosStrain; 
 		Vector envlpNegStress; Vector envlpNegStrain;
 
-		int tagMat;  // material tag
-
 	// Damage parameters
-
 	double gammaK1; double gammaK2; double gammaK3; double gammaK4; double gammaKLimit;
 	double gammaD1; double gammaD2; double gammaD3; double gammaD4; double gammaDLimit;
 	double gammaF1; double gammaF2; double gammaF3; double gammaF4; double gammaFLimit;
@@ -162,7 +163,7 @@ private:
 	double TgammaD;
 	double TgammaF;
 
-	// strength and stiffness parameters;
+	// strength and stiffness parameters
 	double kElasticPos;
 	double kElasticNeg;
 	double kElasticPosDamgd;
@@ -190,9 +191,6 @@ private:
 	double Envlp4Stress(Vector , Vector , double);
 	void updateDmg(double, double);
 
-#ifdef _G3DEBUG
-	FileStream* fg;
-#endif
 
 };
 #endif

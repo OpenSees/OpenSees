@@ -35,15 +35,6 @@
 #include <NDMaterial.h>
 #include <ID.h>
 
-// number of nodes per element
-#define SL_NUM_NODE 4
-// d.o.f. per node
-#define SL_NUM_NDF  3
-// degrees of freedom per element
-#define SL_NUM_DOF  12
-// displacement degrees of freedom per element
-#define SL_NUM_DDOF  12
-
 class Domain;
 class Node;
 class Channel;
@@ -97,14 +88,25 @@ class SurfaceLoad : public Element
     
   private:
 
+  enum {SL_NUM_NODE = 4}; // number of nodes per element
+  enum {SL_NUM_NDF = 3}; // d.o.f. per node
+  enum {SL_NUM_DOF = 12}; // degrees of freedom per element
+  enum {SL_NUM_DDOF = 12}; // displacement degrees of freedom per element
+  
     // method to update base vectors g1 & g2
     int UpdateBase(double Xi, double Eta);
 
     ID  myExternalNodes;      // contains the tags of the end nodes
-    Matrix tangentStiffness;  // Tangent Stiffness matrix
-    Vector internalForces;    // vector of Internal Forces
-    Vector theVector;         // vector to return the residual
+    static Matrix tangentStiffness12;  // Tangent Stiffness matrix for 4 x 3 dofs/node
+    static Vector internalForces12;    // vector of Internal Forces for 4 x 3 dofs/node
+    static Matrix tangentStiffness24;  // Tangent Stiffness matrix for 4 x 6 dofs/node
+    static Vector internalForces24;    // vector of Internal Forces for 4 x 6 dofs/node  
 
+    int numDOF; // number of element dofs (12 or 24)
+
+    Matrix *theMatrix;
+    Vector *theVector;
+  
     double my_pressure;       // pressure applied to surface of element
 
     Node *theNodes[SL_NUM_NODE];
@@ -119,8 +121,6 @@ class SurfaceLoad : public Element
     Vector dcrd2;             // current coordinates of node 2
     Vector dcrd3;             // current coordinates of node 3
     Vector dcrd4;             // current coordinates of node 4
-
-    int MyTag;                // what is my name?
 
     static double oneOverRoot3;
     static double GsPts[4][2];

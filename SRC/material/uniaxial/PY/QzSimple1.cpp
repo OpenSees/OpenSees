@@ -57,10 +57,6 @@
 #include <Channel.h>
 #include <elementAPI.h>
 
-// Controls on internal iterations between spring components
-const int QZmaxIterations = 20;
-const double QZtolerance = 1.0e-12;
-
 void* OPS_QzSimple1()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -137,6 +133,7 @@ void QzSimple1::getGap(double zlast, double dz, double dz_old)
 	// For stability in Closure spring, limit "dz" step size to avoid
 	// overshooting on the "closing" or "opening" of the gap.
 	//
+	const double QZtolerance = this->getTolerance();  
 	if(zlast > 0.0 && (zlast + dz) < -QZtolerance) dz = -QZtolerance - zlast;
 	if(zlast < 0.0 && (zlast + dz) >  QZtolerance) dz =  QZtolerance - zlast;
 	TGap_z = zlast + dz;
@@ -191,7 +188,8 @@ void QzSimple1::getSuction(double zlast, double dz)
 	TSuction_z = zlast + dz;
 	double Qmax=suction*Qult;
 	double dzTotal=TSuction_z - CSuction_z;
-
+	const double QZtolerance = this->getTolerance();
+	
 	// Treat as elastic if dzTotal is below QZtolerance
 	//
 	if(fabs(dzTotal*TSuction_tang/Qult) < 3.0*QZtolerance) 
@@ -258,6 +256,7 @@ void QzSimple1::getSuction(double zlast, double dz)
 /////////////////////////////////////////////////////////////////////
 void QzSimple1::getNearField(double zlast, double dz, double dz_old)
 {
+	const double QZtolerance = this->getTolerance();  
 	// Limit "dz" step size if it is oscillating in sign and not shrinking
 	//
 	if(dz*dz_old < 0.0 && fabs(dz/dz_old) > 0.5) dz = -dz_old/2.0;
@@ -374,7 +373,6 @@ void QzSimple1::getNearField(double zlast, double dz, double dz_old)
 int 
 QzSimple1::setTrialStrain (double newz, double zRate)
 {
-
 	// Set trial values for displacement and load in the material
 	// based on the last Tangent modulus.
 	//
@@ -388,13 +386,31 @@ QzSimple1::setTrialStrain (double newz, double zRate)
 	//
 	int numSteps = 1;
 	double stepSize = 1.0;
-	if(fabs(dQ/Qult) > 0.5) numSteps = 1 + int(fabs(dQ/(0.5*Qult)));
-	if(fabs(dz/z50)  > 1.0 ) numSteps = 1 + int(fabs(dz/(1.0*z50)));
-	stepSize = 1.0/float(numSteps);
+	double temp = fabs(dQ/Qult);
+	if(temp > 0.5) {
+		if (temp > 50) {
+			numSteps = 100;
+		} else {
+			numSteps = 1 + int(temp * 2.0);
+		}
+	}
+
+	temp = fabs(dz/z50);
+	if(temp > 1.0) {
+		if (temp > 100) {
+			numSteps = 100;
+		} else {
+			numSteps = 1 + int(temp);
+		}
+	}
+
 	if(numSteps > 100) numSteps = 100;
+	stepSize = 1.0/double(numSteps);
 
 	dz = stepSize * dz;
-
+	const int QZmaxIterations = 20;
+	const double QZtolerance = this->getTolerance();
+	
 	// Main loop over the required number of substeps
 	//
 	for(int istep=1; istep <= numSteps; istep++)
@@ -465,6 +481,8 @@ QzSimple1::setTrialStrain (double newz, double zRate)
 double 
 QzSimple1::getStress(void)
 {
+  	const double QZtolerance = this->getTolerance();
+
 	// Dashpot force is only due to velocity in the far field.
 	// If converged, proportion by Tangents.
 	// If not converged, proportion by ratio of displacements in components.
@@ -619,6 +637,7 @@ QzSimple1::revertToLastCommit(void)
 int 
 QzSimple1::revertToStart(void)
 {
+  	const double QZtolerance = this->getTolerance();
 
 	// Reset gap "suction" if zero (or negative) or exceeds max value of 0.1
 	//

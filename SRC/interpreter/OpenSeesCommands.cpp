@@ -49,6 +49,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SectionRepres.h>
 #include <TimeSeries.h>
 #include <CrdTransf.h>
+#include <Damping.h>
 #include <BeamIntegration.h>
 #include <NodalLoad.h>
 #include <AnalysisModel.h>
@@ -107,6 +108,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #endif
 #include <BackgroundMesh.h>
 
+#ifdef _ITPACK
+#include <ItpackLinSOE.h>
+#include <ItpackLinSolver.h>
+#endif
+
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
 
@@ -143,7 +149,8 @@ bool setMPIDSOEFlag = false;
 static OpenSeesCommands* cmds = 0;
 
 OpenSeesCommands::OpenSeesCommands(DL_Interpreter* interp)
-    :interpreter(interp), theDomain(0), ndf(0), ndm(0),
+    :interpreter(interp), theDomain(0), 
+     ndf(0), ndm(0),
      theSOE(0), theEigenSOE(0), theNumberer(0), theHandler(0),
      theStaticIntegrator(0), theTransientIntegrator(0),
      theAlgorithm(0), theStaticAnalysis(0), theTransientAnalysis(0),
@@ -859,6 +866,26 @@ OpenSeesCommands::setTransientAnalysis(bool suppress)
 	theSOE = new ProfileSPDLinSOE(*theSolver);
     }
 
+    // Get the number of sub-levels and sub-steps
+    OPS_ResetCurrentInputArg(2);
+    int numSubLevels = 0;
+    int numSubSteps = 10;
+    int numData = 1;
+    while (OPS_GetNumRemainingInputArgs() >= 2) {
+        const char* opt = OPS_GetString();
+        if (strcmp(opt, "-numSubLevels") == 0 || strcmp(opt, "numSubLevels") == 0) {
+            if (OPS_GetIntInput(&numData, &numSubLevels) < 0) {
+                opserr << "WARNING analysis Transient - failed to read -numSubLevels <numSubLevels>\n";
+                return;
+            }
+        } else if (strcmp(opt, "-numSubSteps") == 0 || strcmp(opt, "numSubSteps") == 0) {
+            if (OPS_GetIntInput(&numData, &numSubSteps) < 0) {
+                opserr << "WARNING analysis Transient - failed to read -numSubSteps <numSubSteps>\n";
+                return;
+            }
+        }
+    }
+
     theTransientAnalysis = new DirectIntegrationAnalysis(*theDomain,
 							 *theHandler,
 							 *theNumberer,
@@ -866,7 +893,7 @@ OpenSeesCommands::setTransientAnalysis(bool suppress)
 							 *theAlgorithm,
 							 *theSOE,
 							 *theTransientIntegrator,
-							 theTest);
+							 theTest, numSubLevels, numSubSteps);
     if (theEigenSOE != 0) {
 	theTransientAnalysis->setEigenSOE(*theEigenSOE);
     }
@@ -952,6 +979,9 @@ OpenSeesCommands::wipe()
 
     // wipe GeomTransf
     OPS_clearAllCrdTransf();
+
+    // wipe damping
+    OPS_clearAllDamping();
 
     // wipe BeamIntegration
     OPS_clearAllBeamIntegrationRule();
@@ -1041,6 +1071,19 @@ int OPS_GetDoubleInput(int *numData, double *data)
     DL_Interpreter* interp = cmds->getInterpreter();
     if (numData == 0 || data == 0) return -1;
     return interp->getDouble(data, *numData);
+}
+
+int OPS_GetDoubleListInput(int* size, Vector* data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->getDoubleList(size, data);
+}
+
+int OPS_EvalDoubleStringExpression(const char* theExpression, double& current_val) {
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->evalDoubleStringExpression(theExpression, current_val);
 }
 
 int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
@@ -1434,6 +1477,10 @@ int OPS_System()
     } else if (strcmp(type,"Mumps") == 0) {
         theSOE = (LinearSOE*)OPS_MumpsSolver();
 #endif
+#ifdef _ITPACK
+    } else if (strcmp(type,"Itpack") == 0) {
+        theSOE = (LinearSOE*)OPS_ItpackLinSolver();
+#endif
     } else {
     	opserr<<"WARNING unknown system type "<<type<<"\n";
     	return -1;
@@ -1517,6 +1564,9 @@ int OPS_ConstraintHandler()
 
     } else if (strcmp(type,"Transformation") == 0) {
     	theHandler = (ConstraintHandler*)OPS_TransformationConstraintHandler();
+
+    } else if (strcmp(type,"Auto") == 0) {
+    	theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
 
     } else {
     	opserr<<"WARNING unknown ConstraintHandler type "<<type<<"\n";
