@@ -160,24 +160,24 @@ void* OPS_TubeSection()
       opserr << "\nTube section: " << tag << endln;
       return 0;
     }
-    
-    if (torsion == 0) {
-      opserr << "WARNING torsion not speified for FiberSection\n";
+
+    if (ndm == 3 && torsion == 0) {
+      opserr << "WARNING torsion not specified for FiberSection\n";
       opserr << "\nTube section: " << tag << endln;
       return 0;
     }
     
     UniaxialMaterial **theMats = new UniaxialMaterial *[numFibers];
     tubesect.arrangeFibers(theMats, theSteel);
-    
+
     if (ndm == 2)
       theSection = new FiberSection2d(tag, numFibers, theMats, tubesect);
     if (ndm == 3)
       theSection = new FiberSection3d(tag, numFibers, theMats, tubesect, *torsion);
-    
+
     if (deleteTorsion)
       delete torsion;
-    
+
     delete [] theMats;
   }  
   
@@ -260,7 +260,8 @@ TubeSectionIntegration::getFiberLocations(int nFibers, double *yi, double *zi)
     double angle = theta;
     for (int j = 0; j < Nfwedge; j++) {
       yi[loc] = xbar*cos(angle);
-      zi[loc] = xbar*sin(angle);
+      if (zi != 0)
+	zi[loc] = xbar*sin(angle);
       angle += twoTheta;
       loc++;
     }
@@ -352,9 +353,11 @@ void
 TubeSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzidh)
 {
   // Setting them both to zero for now
-  for (int i = 0; i < nFibers; i++) {
+  for (int i = 0; i < nFibers; i++) 
     dyidh[i] = 0.0;
-    dzidh[i] = 0.0;
+  if (dzidh != 0) {
+    for (int i = 0; i < nFibers; i++)
+      dzidh[i] = 0.0;
   }
   if (parameterID != 1 && parameterID != 2)
     return;
@@ -396,7 +399,8 @@ TubeSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dz
       //yi[loc] = xbar*cos(angle);
       //zi[loc] = xbar*sin(angle);
       dyidh[loc] = dxbardh*cos(angle);
-      dzidh[loc] = dxbardh*sin(angle);      
+      if (dzidh != 0)
+	dzidh[loc] = dxbardh*sin(angle);      
       angle += twoTheta;
       loc++;
     }

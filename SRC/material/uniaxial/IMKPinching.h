@@ -20,9 +20,9 @@
 
 //Modified Ibarra-Medina-Krawinkler with Peak-Oriented Hysteretic Response
 
-//**********************************************************************                                                                     
+//**********************************************************************
 // Code Developed by: Ahmed Elkady and Hammad ElJisr
-// Last Updated: October 2022
+// Last Updated: September 2023
 //**********************************************************************
 
 #ifndef IMKPinching_h
@@ -57,7 +57,7 @@ public:
 protected:
 
 private:
-// 25 Fixed input material parameters 	
+// 25 Fixed input material parameters
     double  Ke;
     double  posUp_0;
     double  posUpc_0;
@@ -93,7 +93,7 @@ private:
     double  engRefC;
     double  engRefA;
     double  engRefK;
-// History Variables 
+// History Variables
 // 12 Positive U and F
     double  posUy,          cPosUy;
     double  posFy,          cPosFy;
@@ -124,11 +124,10 @@ private:
     double  Fpinch,         cFpinch;
     double  Upinch,         cUpinch;
 // 3 State Variables
-    double  U,              cU;
     double  Ui,             cUi;
     double  Fi,             cFi;
 // 3 Stiffness
-    double  Kreload,       cKreload, KgetTangent;
+    double  Kreload,        cKreload, KgetTangent;
     double  Kunload,        cKunload;
 // 2 Energy
     double  engAcml,        cEngAcml;

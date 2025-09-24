@@ -90,6 +90,8 @@ Vector ForceBeamColumn2d::SsrSubdivide[maxNumSections];
 
 void* OPS_ForceBeamColumn2d()
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
     if(OPS_GetNumRemainingInputArgs() < 5) {
 	opserr<<"insufficient arguments:eleTag,iNode,jNode,transfTag,integrationTag\n";
 	return 0;
@@ -146,6 +148,18 @@ void* OPS_ForceBeamColumn2d()
 		}
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -180,7 +194,7 @@ void* OPS_ForceBeamColumn2d()
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
@@ -192,6 +206,8 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     int numData;
     double mass = 0.0, tol=1e-12, subFac=10.0;
     int maxIter = 10, numSub = 4;
+    int dampingTag = 0;
+    Damping* theDamping = 0;
 
     // regular element, not in a mesh, get tags
     if (info.Size() == 0) {
@@ -263,6 +279,18 @@ void* OPS_ForceBeamColumn2d(const ID &info)
 		    }
 		}
 	    }
+        //Tang.S
+        else if (strcmp(type, "-damp") == 0) {
+
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+                theDamping = OPS_getDamping(dampingTag);
+                if (theDamping == 0) {
+                    opserr << "damping not found\n";
+                    return 0;
+                }
+            }
+        }
 	}
     }
 
@@ -340,13 +368,16 @@ void* OPS_ForceBeamColumn2d(const ID &info)
     }
 
     Element *theEle =  new ForceBeamColumn2d(iData[0],iData[1],iData[2],secTags.Size(),sections,
-					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+					     *bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
     delete [] sections;
     return theEle;
 }
 
 int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 {
+    int dampingTag = 0;
+    Damping* theDamping = 0;
+
     if(OPS_GetNumRemainingInputArgs() < 2) {
 	opserr<<"insufficient arguments:transfTag,integrationTag\n";
 	return -1;
@@ -379,6 +410,18 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 		if(OPS_GetDoubleInput(&numData,&mass) < 0) return -1;
 	    }
 	}
+    //Tang.S
+    else if (strcmp(type, "-damp") == 0) {
+
+        if (OPS_GetNumRemainingInputArgs() > 0) {
+            if (OPS_GetIntInput(&numData, &dampingTag) < 0) return 0;
+            theDamping = OPS_getDamping(dampingTag);
+            if (theDamping == 0) {
+                opserr << "damping not found\n";
+                return 0;
+            }
+        }
+    }
     }
 
     // check transf
@@ -422,7 +465,7 @@ int OPS_ForceBeamColumn2d(Domain& theDomain, const ID& elenodes, ID& eletags)
     eletags.resize(elenodes.Size()/2);
     for (int i=0; i<elenodes.Size()/2; i++) {
 	theEle = new ForceBeamColumn2d(--currTag,elenodes(2*i),elenodes(2*i+1),secTags.Size(),
-				       sections,*bi,*theTransf,mass,maxIter,tol,numSub,subFac);
+				       sections,*bi,*theTransf,mass,maxIter,tol,numSub,subFac,theDamping);
 	if (theEle == 0) {
 	    opserr<<"WARNING: run out of memory for creating element\n";
 	    return -1;
@@ -1041,6 +1084,12 @@ ForceBeamColumn2d::computeReactions(double *p0)
       p0[1] -= V;
       p0[2] -= V;
     }
+    if (type == LOAD_TAG_BeamUniformMoment) {
+      double mz = data(2)*loadFactor;  // About z
+      
+      p0[1] += mz;
+      p0[2] -= mz;
+    }    
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double waa = data(2)*loadFactor;  // Axial
       double wab = data(3)*loadFactor;  // Axial
@@ -1304,6 +1353,9 @@ ForceBeamColumn2d::update()
 	    double xL1 = xL-1.0;
 	    double wtL = wt[i]*L;
 
+        // store the length of the current integration point
+        current_section_lch = wtL;
+
 	    // calculate total section forces
 	    // Ss = b*Se + bp*currDistrLoad;
 	    // Ss.addMatrixVector(0.0, b[i], Se, 1.0);
@@ -1467,6 +1519,10 @@ ForceBeamColumn2d::update()
 	    }
 	  }
 	  
+      // reset it to the default (whole length) in case the getChatacteristiLength function
+      // is called in the wrong place
+      current_section_lch = L;
+
 	  // calculate element stiffness matrix
 	  // invert3by3Matrix(f, kv);	  
 	  if (f.Solve(I, kvTrial) < 0)
@@ -1691,6 +1747,24 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
 	  break;
 	}
       }
+    }
+    else if (type == LOAD_TAG_BeamUniformMoment) {
+      double mz = data(2)*loadFactor;  // About z
+
+      for (int ii = 0; ii < order; ii++) {
+	
+	switch(code(ii)) {
+	case SECTION_RESPONSE_P:
+	  break;
+	case SECTION_RESPONSE_MZ:
+	  break;
+	case SECTION_RESPONSE_VY:
+	  sp(ii) += mz;
+	  break;
+	default:
+	  break;
+	}
+      }      
     }
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double waa = data(2)*loadFactor;  // Axial
@@ -3372,6 +3446,17 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return -1;
 }
 
+double ForceBeamColumn2d::getCharacteristicLength(void)
+{
+    // The default implementation of Element::getCharacteristicLength()
+    // returns the whole element length.
+    // However, FB element localizes only in a 1 integration point
+    // so we should return the i-th integration-point's length
+    if (current_section_lch > 0.0)
+        return current_section_lch;
+    return Element::getCharacteristicLength();
+}
+
 int 
 ForceBeamColumn2d::getResponseSensitivity(int responseID, int gradNumber,
 					  Information &eleInfo)
@@ -3534,6 +3619,15 @@ ForceBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"rho") == 0) {
     param.setValue(rho);
     return param.addObject(1, this);
+  }
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
   }
   
   // section response -

@@ -18,48 +18,34 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.3 $
-// $Date: 2009-05-11 21:01:10 $
-// $Source: /usr/local/cvs/OpenSees/SRC/system_of_eqn/eigenSOE/FullGenEigenSolver.h,v $
-
-
-#ifndef FullGenEigenSolver_h
-#define FullGenEigenSolver_h
-
-// Written: Andreas Schellenberg (andreas.schellenberg@gmx.net)
-// Created: 11/07
-// Revision: A
-//
-// Description: This file contains the class definition for 
-// FullGenEigenSolver. It computes the generalized eigenvalues
-// and eigenvectors of a pair of real nonsymmetric matrices using
-// the LAPACK subroutine DGGEV.
+#ifndef SymmGenEigenSolver_h
+#define SymmGenEigenSolver_h
 
 #include <EigenSolver.h>
-#include <FullGenEigenSOE.h>
+#include <SymmGeneralizedEigenSOE.h>
 
-class FullGenEigenSolver : public EigenSolver
+class SymmGeneralizedEigenSolver : public EigenSolver
 {
 public:
-    FullGenEigenSolver();    
-    virtual ~FullGenEigenSolver();
+    SymmGeneralizedEigenSolver();    
+    virtual ~SymmGeneralizedEigenSolver();
 
     virtual int solve(int numEigen, bool generalized, bool findSmallest = true);    
     virtual int setSize(void);
-    virtual int setEigenSOE(FullGenEigenSOE &theSOE);
+    virtual int setEigenSOE(SymmGeneralizedEigenSOE &theSOE);
 
     virtual const Vector &getEigenvector(int mode);
     virtual double getEigenvalue(int mode);
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
-        FEM_ObjectBroker &theBroker);
+		 FEM_ObjectBroker &theBroker);
 
 protected:
 
 private:
     void sort(int length, double *x, int *id);
-    FullGenEigenSOE *theSOE;
+    SymmGeneralizedEigenSOE *theSOE;
     int numEigen;
 
     double *eigenvalue;

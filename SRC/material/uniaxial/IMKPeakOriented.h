@@ -20,9 +20,9 @@
 
 //Modified Ibarra-Medina-Krawinkler with Peak-Oriented Hysteretic Response
 
-//**********************************************************************                                                                     
+//**********************************************************************
 // Code Developed by: Ahmed Elkady and Hammad ElJisr
-// Last Updated: October 2022
+// Last Updated: September 2023
 //**********************************************************************
 
 #ifndef IMKPeakOriented_h
@@ -91,7 +91,7 @@ private:
     double  engRefC;
     double  engRefA;
     double  engRefK;
-// History Variables 
+// History Variables
 // 12 Positive U and F
     double  posUy,          cPosUy;
     double  posFy,          cPosFy;
@@ -118,8 +118,7 @@ private:
     double  negFres,        cNegFres;
     double  negKp,          cNegKp;
     double  negKpc,         cNegKpc;
-// 3 State Variables 
-    double  U,              cU;
+// 3 State Variables
     double  Ui,             cUi;
     double  Fi,             cFi;
 // 3 Stiffness
@@ -127,7 +126,7 @@ private:
     double  Kunload,        cKunload;
 // 2 Energy
     double  engAcml,        cEngAcml;
-    double  engDspt,        cEngDspt;    
+    double  engDspt,        cEngDspt;
 // 2 Flag
     bool    Failure_Flag,   cFailure_Flag;
     int     Branch,         cBranch;

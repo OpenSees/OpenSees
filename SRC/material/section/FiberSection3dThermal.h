@@ -30,7 +30,7 @@
 // 3d beam section discretized by fibers. The section stiffness and
 // stress resultants are obtained by summing fiber contributions.
 // Modified for SIF modelling by Jian Jiang,Liming Jiang [http://openseesforfire.github.io]
-
+// Corrected by Giovanni Rinaldin, 2024
 
 #ifndef FiberSection3dThermal_h
 #define FiberSection3dThermal_h
@@ -42,13 +42,15 @@
 class UniaxialMaterial;
 class Fiber;
 class Response;
+class SectionIntegration;
 
 class FiberSection3dThermal : public SectionForceDeformation
 {
   public:
     FiberSection3dThermal();
-    FiberSection3dThermal(int tag, int numFibers, Fiber **fibers, bool compCentroid=true);
-    FiberSection3dThermal(int tag, int numFibers, bool compCentroid=true);
+    FiberSection3dThermal(int tag, int numFibers, Fiber **fibers, 
+    				UniaxialMaterial &torsion, bool compCentroid=true);
+    FiberSection3dThermal(int tag, int numFibers, UniaxialMaterial &torsion, bool compCentroid=true);
     ~FiberSection3dThermal();
 
     const char *getClassType(void) const {return "FiberSection3dThermal";};
@@ -65,17 +67,17 @@ class FiberSection3dThermal : public SectionForceDeformation
     int   commitState(void);
     int   revertToLastCommit(void);
     int   revertToStart(void);
-
+ 
     SectionForceDeformation *getCopy(void);
     const ID &getType (void);
     int getOrder (void) const;
-
+    
     int sendSelf(int cTag, Channel &theChannel);
     int recvSelf(int cTag, Channel &theChannel,
 		 FEM_ObjectBroker &theBroker);
     void Print(OPS_Stream &s, int flag = 0);
-
-    Response *setResponse(const char **argv, int argc,
+	    
+    Response *setResponse(const char **argv, int argc, 
 			  OPS_Stream &s);
     int getResponse(int responseID, Information &info);
 
@@ -92,21 +94,23 @@ class FiberSection3dThermal : public SectionForceDeformation
     // AddingSensitivity:END ///////////////////////////////////////////
 
 	double determineFiberTemperature(const Vector& , double , double);
-
+    const Vector& getThermalElong(void);
   protected:
 
   private:
     int numFibers, sizeFibers;                   // number of fibers in the section
     UniaxialMaterial **theMaterials; // array of pointers to materials
-    double   *matData;               // data for the materials [yloc and area]
-    double   kData[9];               // data for ks matrix
-    double   sData[3];               // data for s vector
+    double   *matData;               // data for the materials [yloc, zloc, area]
+    double   kData[16];               // data for ks matrix
+    double   sData[4];               // data for s vector
 
     double QzBar, QyBar, ABar;
     double yBar;       // Section centroid
     double zBar;
     bool computeCentroid;
     
+    SectionIntegration *sectionIntegr;
+
     static ID code;
 
     Vector e;          // trial section deformations
@@ -114,12 +118,13 @@ class FiberSection3dThermal : public SectionForceDeformation
     Vector *s;         // section resisting forces  (axial force, bending moment)
     Matrix *ks;        // section stiffness
 
-    double   sTData[3];               //JZ data for s vector
-    Vector *sT;  // JZ  section resisting forces, caused by the temperature
+    UniaxialMaterial *theTorsion;
+    Vector sT;  // JZ  section resisting forces, caused by the temperature
+    Vector AverageThermalElong;
     //double  *TemperatureTangent; // JZ  the E of E*A*alpha*DeltaT
     double *Fiber_T;  //An array storing the TempT of the fibers.
     double *Fiber_TMax; //An array storing the TempTMax of the fibers.
-    
+
     // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;
     Matrix *SHVs;

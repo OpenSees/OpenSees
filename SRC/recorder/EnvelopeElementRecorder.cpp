@@ -1,5 +1,5 @@
 /* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**    OpenSeesite - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
 **                                                                    **
 **                                                                    **
@@ -289,7 +289,7 @@ OPS_EnvelopeElementRecorder()
     if (domain == 0)
         return 0;
     EnvelopeElementRecorder* recorder = new EnvelopeElementRecorder(&elements,
-        data, nargrem, *domain, *theOutputStream, dT, rTolDt, echoTimeFlag, &dofs);
+								    data, nargrem, *domain, *theOutputStream, dT, rTolDt, echoTimeFlag, &dofs, closeOnWrite);
 
     return recorder;
 }
@@ -307,19 +307,20 @@ EnvelopeElementRecorder::EnvelopeElementRecorder()
 
 
 EnvelopeElementRecorder::EnvelopeElementRecorder(const ID *ele, 
-							 const char **argv, 
-							 int argc,
-							 Domain &theDom, 
-							 OPS_Stream &theOutputHandler,
-							 double dT,
-							 double rTolDt,
-							 bool echoTime,
-							 const ID *indexValues)
+						 const char **argv, 
+						 int argc,
+						 Domain &theDom, 
+						 OPS_Stream &theOutputHandler,
+						 double dT,
+						 double rTolDt,
+						 bool echoTime,
+						 const ID *indexValues,
+						 bool closeOnW)
  :Recorder(RECORDER_TAGS_EnvelopeElementRecorder),
   numEle(0), eleID(0), numDOF(0), dof(0), theResponses(0), theDomain(&theDom),
   theHandler(&theOutputHandler), deltaT(dT), relDeltaTTol(rTolDt), nextTimeStampToRecord(0.0),
   data(0), currentData(0), first(true),
-  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(echoTime), addColumnInfo(0)
+  initializationDone(false), responseArgs(0), numArgs(0), echoTimeFlag(echoTime), addColumnInfo(0), closeOnWrite(closeOnW)
 {
 
   if (ele != 0) {
@@ -428,6 +429,9 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
   }
 
   int result = 0;
+  bool writeIt = false;
+
+    
   // where relDeltaTTol is the maximum reliable ratio between analysis time step and deltaT
   // and provides tolerance for floating point precision (see floating-point-tolerance-for-recorder-time-step.md)
     if (deltaT == 0.0 || timeStamp - nextTimeStampToRecord >= -deltaT * relDeltaTTol) {
@@ -467,9 +471,9 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
     }
 
     int sizeData = currentData->Size();
+    
     if (echoTimeFlag == false) {
 
-      bool writeIt = false;
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
 	  (*data)(0,i) = (*currentData)(i);
@@ -498,7 +502,6 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
       }
     } else {
       sizeData /= 2;
-      bool writeIt = false;
       if (first == true) {
 	for (int i=0; i<sizeData; i++) {
 	  
@@ -536,8 +539,27 @@ EnvelopeElementRecorder::record(int commitTag, double timeStamp)
 	}
       }
     }
-  }    
-  // successful completion - return 0
+    }
+
+    // deal with close on write flag
+    if (closeOnWrite == true && writeIt == true) {
+      if (theHandler != 0 && currentData != 0) {
+
+	theHandler->open(); // need to explicittly open
+	theHandler->tag("Data"); // Data
+	
+	for (int i=0; i<3; i++) {
+	  int numResponse = currentData->Size();
+	  for (int j=0; j<numResponse; j++)
+	    (*currentData)(j) = (*data)(i,j);
+	  theHandler->write(*currentData);
+	}
+	
+	theHandler->endTag(); // Data
+      }
+    }
+    
+  // successful completion - return 0    
   return result;
 }
 

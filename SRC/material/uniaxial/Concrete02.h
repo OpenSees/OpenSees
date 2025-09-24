@@ -75,6 +75,8 @@ class Concrete02 : public UniaxialMaterial
 
     int getVariable(const char *variable, Information &);
     
+    double getEnergy() { return TEnergy; }
+
  protected:
     
  private:
@@ -103,6 +105,9 @@ class Concrete02 : public UniaxialMaterial
     double sig;   
     double e;     
     double eps;   
+
+    double TEnergy = 0.0;
+    double CEnergy = 0.0;
 };
 
 
