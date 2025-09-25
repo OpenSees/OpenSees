@@ -140,7 +140,8 @@ int SymmGeneralizedEigenSOE::addA(const Matrix &m, const ID &id, double fact)
                 double *startColiPtr = A + col*size;
                 for (int j=0; j<idSize; j++) {
                     int row = id(j);
-                    if (row <size && row >= 0) {
+                    if (row <size && row >= 0 &&
+			row <= col) { // Only add upper
                         double *APtr = startColiPtr + row;
                         *APtr += m(j,i);
                     }
@@ -154,7 +155,8 @@ int SymmGeneralizedEigenSOE::addA(const Matrix &m, const ID &id, double fact)
                 double *startColiPtr = A + col*size;
                 for (int j=0; j<idSize; j++) {
                     int row = id(j);
-                    if (row <size && row >= 0) {
+                    if (row <size && row >= 0 &&
+			row <= col) { // Only add upper
                         double *APtr = startColiPtr + row;
                         *APtr += m(j,i)*fact;
                     }
@@ -187,7 +189,8 @@ int SymmGeneralizedEigenSOE::addM(const Matrix &m, const ID &id, double fact)
                 double *startColiPtr = M + col*size;
                 for (int j=0; j<idSize; j++) {
                     int row = id(j);
-                    if (row <size && row >= 0) {
+                    if (row <size && row >= 0 &&
+			row <= col) { // Only add upper
                         double *MPtr = startColiPtr + row;
                         *MPtr += m(j,i);
                     }
@@ -201,7 +204,8 @@ int SymmGeneralizedEigenSOE::addM(const Matrix &m, const ID &id, double fact)
                 double *startColiPtr = M + col*size;
                 for (int j=0; j<idSize; j++) {
                     int row = id(j);
-                    if (row <size && row >= 0) {
+                    if (row <size && row >= 0 &&
+			row <= col) { // Only add upper
                         double *MPtr = startColiPtr + row;
                         *MPtr += m(j,i)*fact;
                     }
