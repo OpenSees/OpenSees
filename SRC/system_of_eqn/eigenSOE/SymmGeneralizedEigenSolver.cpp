@@ -94,7 +94,7 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
 
     // get the number of equations
     int n = theSOE->size;
-
+    
     // set the number of eigenvalues
     numEigen = nEigen;
     if (numEigen > n)
@@ -118,7 +118,19 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     
     // stiffness matrix data
     double *Kptr = theSOE->A;
-
+    /*
+    double *Kptr = new double[n*n];
+    for (int i = 0; i < n*n; i++) Kptr[i] = 0.0;
+    Kptr[0] = 1220;
+    //Kptr[1] = -610;
+    Kptr[4] = -610;
+    Kptr[5] = 610;
+    Kptr[10] = 1220;
+    //Kptr[11] = -610;
+    Kptr[14] = -610;
+    Kptr[15] = 610;
+    */
+      
     double *kCopy = new double[n*n];
     for (int i = 0; i < n*n; i++)
       kCopy[i] = Kptr[i];
@@ -128,7 +140,15 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
 
     // mass matrix data
     double *Mptr = theSOE->M;
-
+    /*
+    double *Mptr = new double[n*n];
+    for (int i = 0; i < n*n; i++) Mptr[i] = 0.0;    
+    Mptr[0] = 1;
+    Mptr[5] = 1;
+    Mptr[10] = 1;
+    Mptr[15] = 1;
+    */
+    
     double *mCopy = new double[n*n];
     for (int i=0; i<n*n; i++)
       mCopy[i] = Mptr[i];
@@ -151,17 +171,14 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
         delete [] sortingID;
     sortingID = new int [n];
 
-    // dummy left eigenvectors
-    double vl[1];
-    double vu[1];
-
-    // leading dimension of dummy left eigenvectors
-    int ldvl = 1;
+    // Not used
+    double vl = 0.0;
+    double vu = 0.0;
 
     // allocate memory for right eigenvectors
     if (eigenvector != 0)
         delete [] eigenvector;
-    eigenvector = new double [nEigen*n];
+    eigenvector = new double [numEigen*n];
 
     // number of eigenvalues found
     int m = 0;
@@ -171,10 +188,10 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     double *w = eigenvalue;
     double *z = eigenvector;
     
-    double abstol = 0.0;
+    double abstol = -1.0;
     
     // dimension of the workspace array
-    int lwork = n*8;
+    int lwork = n*(8+64);
     int liwork = n*5;
 
     // allocate memory for workspace array
@@ -201,29 +218,43 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     // ifail=out (0 if success, if info>0 ifail has indices of eigenvectors that failed to converge)
     // info=out (0 if success, <0 arg error, >0 failed to converge)
     DSYGVX(&itype, jobz, range, uplo, &n, Kptr, &ldK, Mptr, &ldM, 
-	   vl, vu, &il, &iu, &abstol,
+	   &vl, &vu, &il, &iu, &abstol,
 	   &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
 #else
     dsygvx_(&itype, jobz, range, uplo, &n, Kptr, &ldK, Mptr, &ldM, 
-	    vl, vu, &il, &iu, &abstol, &m, w, z, &ldz,
-	    work, &lwork, iwork, ifail, &info);
+	    &vl, &vu, &il, &iu, &abstol,
+	    &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
 #endif
-
+    
     if (info < 0) {
         opserr << "SymmGeneralizedEigenSolver::solve() - invalid argument number "
-            << -info << " passed to LAPACK dggev routine\n";
+            << -info << " passed to LAPACK dsygvx routine\n";
         return info;
     }
 
     if (info > 0) {
-        opserr << "SymmGeneralizedEigenSolver::solve() - the LAPACK dggev routine "
+        opserr << "SymmGeneralizedEigenSolver::solve() - the LAPACK dsygvx routine "
             << "returned error code " << info << endln;
         return -info;
     }
 
+    /*
+    opserr << "m = " << m << endln;
+    for (int i = 0; i < m; i++)
+      opserr << w[i] << ' ';
+    opserr << endln;
+
+    for (int j = 0; j < numEigen; j++) {
+      for (int i = 0; i < n; i++)
+	opserr << z[j*n + i] << ' ';
+      opserr << endln;
+    }
+    */
+    
     theSOE->factored = true;
 
     for (int i=0; i<n; i++) {
+      /*
         double mag = sqrt(alphaR[i]*alphaR[i]+alphaI[i]*alphaI[i]);
         if (mag*DBL_EPSILON < fabs(beta[i])) {
             if (alphaI[i] == 0.0) {
@@ -239,6 +270,7 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
         else {
 	    eigenvalue[i] = DBL_MAX;
 	}
+      */
         sortingID[i] = i;
     }
 
@@ -249,7 +281,7 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     Kptr = kCopy;
     Mptr = mCopy;    
     double *tmpV = new double[n];
-
+    /*
     // mass normailze all vectors .. NOTE instead of numEigen!
     for (int k=0; k<n; k++) {
 
@@ -279,13 +311,13 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
 	  eigenvector[k*n+i] = eigenvector[k*n+i]*factor;
       }
     }
-
+    */
     delete [] kCopy;
     delete [] mCopy;
     delete [] tmpV;
     
     // sort eigenvalues based on size
-    this->sort(n, eigenvalue, sortingID);
+    this->sort(numEigen, eigenvalue, sortingID);
 
     for (int i=0; i<numEigen; i++) {
         if (eigenvalue[i] == DBL_MAX) {
