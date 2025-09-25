@@ -79,6 +79,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SymBandEigenSOE.h>
 #include <FullGenEigenSolver.h>
 #include <FullGenEigenSOE.h>
+#include <SymmGeneralizedEigenSolver.h>
+#include <SymmGeneralizedEigenSOE.h>
 #include <ArpackSOE.h>
 #include <LoadControl.h>
 #include <CTestPFEM.h>
@@ -321,6 +323,11 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	    FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
 	    theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
 
+	} else if (typeSolver == EigenSOE_TAGS_SymmGeneralizedEigenSOE) {
+
+	    SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
+	    theEigenSOE = new SymmGeneralizedEigenSOE(*theEigenSolver, *theAnalysisModel);
+	    
 	} else {
 
 	    theEigenSOE = new ArpackSOE(shift);
@@ -2107,6 +2114,12 @@ int OPS_eigenAnalysis()
 		 (strcmp(type,"symmBandLapackEigen") == 0) ||
 		 (strcmp(type,"-symmBandLapackEigen") == 0))
 	    typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
+
+	else if ((strcmp(type,"symmGenLapack") == 0) ||
+		 (strcmp(type,"-symmGenLapack") == 0) ||
+		 (strcmp(type,"symmGenLapackEigen") == 0) ||
+		 (strcmp(type,"-symmGenLapackEigen") == 0))
+	    typeSolver = EigenSOE_TAGS_SymmGeneralizedEigenSOE;	
 
     else if ((strcmp(type, "fullGenLapack") == 0) ||
                 (strcmp(type, "-fullGenLapack") == 0) ||
