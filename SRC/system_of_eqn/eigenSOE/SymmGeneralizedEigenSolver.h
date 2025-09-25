@@ -27,7 +27,7 @@
 class SymmGeneralizedEigenSolver : public EigenSolver
 {
 public:
-    SymmGeneralizedEigenSolver();    
+    SymmGeneralizedEigenSolver(double msmall = 1e-10);    
     virtual ~SymmGeneralizedEigenSolver();
 
     virtual int solve(int numEigen, bool generalized, bool findSmallest = true);    
@@ -52,6 +52,8 @@ private:
     double *eigenvector;
     int *sortingID;
     Vector *eigenV;
+
+  double msmall; // m_ii = k_ii*msmall if m_ii == 0.0
 };
 
 #endif

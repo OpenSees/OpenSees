@@ -51,10 +51,10 @@ extern "C" int dsygvx_(int *ITPYE, char *JOBZ, char *RANGE, char *UPLO,
 #endif
 
 
-SymmGeneralizedEigenSolver::SymmGeneralizedEigenSolver()
+SymmGeneralizedEigenSolver::SymmGeneralizedEigenSolver(double m)
     : EigenSolver(EigenSOLVER_TAGS_SymmGeneralizedEigenSolver),
     theSOE(0), numEigen(0), eigenvalue(0),
-    eigenvector(0), sortingID(0), eigenV(0)
+      eigenvector(0), sortingID(0), eigenV(0), msmall(m)
 {
 
 }
@@ -118,18 +118,6 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     
     // stiffness matrix data
     double *Kptr = theSOE->A;
-    /*
-    double *Kptr = new double[n*n];
-    for (int i = 0; i < n*n; i++) Kptr[i] = 0.0;
-    Kptr[0] = 1220;
-    //Kptr[1] = -610;
-    Kptr[4] = -610;
-    Kptr[5] = 610;
-    Kptr[10] = 1220;
-    //Kptr[11] = -610;
-    Kptr[14] = -610;
-    Kptr[15] = 610;
-    */
       
     double *kCopy = new double[n*n];
     for (int i = 0; i < n*n; i++)
@@ -140,14 +128,14 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
 
     // mass matrix data
     double *Mptr = theSOE->M;
-    /*
-    double *Mptr = new double[n*n];
-    for (int i = 0; i < n*n; i++) Mptr[i] = 0.0;    
-    Mptr[0] = 1;
-    Mptr[5] = 1;
-    Mptr[10] = 1;
-    Mptr[15] = 1;
-    */
+
+    // Check for zero mass on diagonal, add some small mass
+    int index = 0;
+    for (int i = 0; i < n; i++) {
+      if (Mptr[index] == 0.0)
+	Mptr[index] = Kptr[index]*msmall;
+      index += n+1;
+    }
     
     double *mCopy = new double[n*n];
     for (int i=0; i<n*n; i++)
@@ -238,19 +226,6 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
         return -info;
     }
 
-    /*
-    opserr << "m = " << m << endln;
-    for (int i = 0; i < m; i++)
-      opserr << w[i] << ' ';
-    opserr << endln;
-
-    for (int j = 0; j < numEigen; j++) {
-      for (int i = 0; i < n; i++)
-	opserr << z[j*n + i] << ' ';
-      opserr << endln;
-    }
-    */
-    
     theSOE->factored = true;
 
     for (int i=0; i<n; i++) {
