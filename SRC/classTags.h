@@ -51,12 +51,14 @@
 #define EigenSOE_TAGS_FullGenEigenSOE   4
 #define EigenSOE_TAGS_ArpackSOE 	5
 #define EigenSOE_TAGS_GeneralArpackSOE 	6
+#define EigenSOE_TAGS_SymmGeneralizedEigenSOE 	7
 #define EigenSOLVER_TAGS_BandArpackSolver 	1
 #define EigenSOLVER_TAGS_SymArpackSolver 	2
 #define EigenSOLVER_TAGS_SymBandEigenSolver     3
 #define EigenSOLVER_TAGS_FullGenEigenSolver  4
 #define EigenSOLVER_TAGS_ArpackSolver  5
 #define EigenSOLVER_TAGS_GeneralArpackSolver  6
+#define EigenSOLVER_TAGS_SymmGeneralizedEigenSolver  7
 
 #define EigenALGORITHM_TAGS_Frequency 1
 #define EigenALGORITHM_TAGS_Standard  2

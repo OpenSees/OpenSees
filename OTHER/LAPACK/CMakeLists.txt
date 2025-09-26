@@ -143,6 +143,26 @@ target_sources(LAPACK PUBLIC
   dlatrs.f
   dla_rpvgrw.f
   dla_gerpvgrw.f
+
+  dsygvx.f
+  dsygst.f
+  dsygs2.f
+  dsyevx.f
+  dormtr.f
+  dorgtr.f
+  dorgql.f 
+  dorg2l.f
+  dormql.f
+  dorm2l.f
+  dlansy.f
+  dlarf1l.f
+  iladlr.f
+  iladlc.f
+  disnan.f
+  dlaisnan.f
+  dsytrd.f
+  dlatrd.f
+  dsytd2.f
 )  
 
 add_library(LAPACK_C)
