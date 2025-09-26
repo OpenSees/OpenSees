@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Author: cmp
 //
 #include <pybind11/pybind11.h>
@@ -29,9 +30,6 @@ namespace py = pybind11;
 // 
 // ANALYSIS
 //
-#include <TransientAnalysis.h>
-#include <DirectIntegrationAnalysis.h>
-#include <StaticAnalysis.h>
 
 #include <LoadPattern.h>
 #include <EarthquakePattern.h>
@@ -43,16 +41,6 @@ namespace py = pybind11;
 #include <GroundMotion.h>
 
 #define ARRAY_FLAGS py::array::c_style|py::array::forcecast
-
-
-#if 0
-std::unique_ptr<G3_Runtime, py::nodelete> 
-getRuntime(py::object interpaddr) {
-      void *interp_addr;
-      interp_addr = (void*)PyLong_AsVoidPtr(interpaddr.ptr());
-      return std::unique_ptr<G3_Runtime, py::nodelete>(G3_getRuntime((Tcl_Interp*)interp_addr));
-} // , py::return_value_policy::reference
-#endif
 
 
 std::unique_ptr<BasicModelBuilder, py::nodelete> 
@@ -505,21 +493,6 @@ init_obj_module(py::module &m)
   ;
   
   py::class_<G3_Runtime>(m, "_Runtime")
-  ;
-
-  py::class_<StaticAnalysis>(m, "_StaticAnalysis")
-    .def (py::init([](G3_Runtime *runtime, G3_Config  conf) {
-      return *((StaticAnalysis*)runtime->newStaticAnalysis(conf));
-    }))
-    .def ("analyze", &StaticAnalysis::analyze)
-  ;
-
-  py::class_<DirectIntegrationAnalysis//, TransientAnalysis
-                                      >(m, "_DirectIntegrationAnalysis")
-    .def (py::init([](G3_Runtime *runtime, G3_Config  conf) {
-      return *((DirectIntegrationAnalysis*)runtime->newTransientAnalysis(conf));
-   }))
-    .def ("analyze", &DirectIntegrationAnalysis::analyze)
   ;
 
   //

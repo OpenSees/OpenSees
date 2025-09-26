@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation    
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -41,6 +50,10 @@ extern Tcl_CmdProc  TclCommand_addReinfLayer;
 // extern Tcl_CmdProc  TclCommand_addRemoFiber;
 extern Tcl_CmdProc  TclCommand_addFiber;
 extern Tcl_CmdProc  TclCommand_addHFiber;
+//
+extern Tcl_CmdProc  TclCommand_addYS_PlasticMaterial;
+extern Tcl_CmdProc  TclCommand_addYS_EvolutionModel;
+extern Tcl_CmdProc  TclCommand_addYieldSurface_BC;
 
 // Constraints
 extern Tcl_CmdProc TclCommand_addMP;
@@ -66,6 +79,7 @@ extern Tcl_CmdProc  TclCommand_updateMaterialStage;
 
 // UpdatedLagrange
 Tcl_CmdProc TclCommand_addCyclicModel;
+Tcl_CmdProc TclCommand_addDamageModel;
 
 Tcl_CmdProc TclCommand_addParameter;
 Tcl_CmdProc TclCommand_mesh;
@@ -85,10 +99,14 @@ Tcl_CmdProc TclCommand_invoke;
 Tcl_CmdProc TclCommand_print;
 Tcl_CmdProc TclCommand_classType;
 
-struct char_cmd {
+Tcl_CmdProc TclCommand_addMaterial;
+
+namespace OpenSees {
+struct CommandTableEntry {
   const char* name;
   Tcl_CmdProc*  func;
-}  const tcl_char_cmds[] =  {
+}
+constexpr ModelBuilderCommands[] =  {
   {"build",                buildModel},
 
   {"getNDM",               TclCommand_getNDM},
@@ -106,12 +124,13 @@ struct char_cmd {
   {"fixY",                 TclCommand_addHomogeneousBC_Y},
   {"fixZ",                 TclCommand_addHomogeneousBC_Z},
 
-// //
+// 
   {"with",                 TclCommand_invoke},
   {"invoke",               TclCommand_invoke},
 // Materials & sections
   {"uniaxialMaterial",     TclCommand_addUniaxialMaterial},
   {"nDMaterial",           TclCommand_addNDMaterial},
+  {"material",             TclCommand_addMaterial},
   {"beamIntegration",      TclCommand_addBeamIntegration},
 
   {"section",              TclCommand_addSection},
@@ -156,33 +175,16 @@ struct char_cmd {
   {          "backbone",   TclCommand_addHystereticBackbone},
 
   {"frictionModel",        TclCommand_addFrictionModel},
-
   {"cyclicModel",          TclCommand_addCyclicModel},
-#if 0
-  {"yieldSurface_BC",      TclCommand_addYieldSurface_BC},
-  {"ysEvolutionModel",     TclCommand_addYS_EvolutionModel},
-  {"plasticMaterial",      TclCommand_addYS_PlasticMaterial},
-  {"limitCurve",           TclCommand_addLimitCurve},
   {"damageModel",          TclCommand_addDamageModel},
-  {"stiffnessDegradation", TclCommand_addStiffnessDegradation},
-  {"unloadingRule",        TclCommand_addUnloadingRule},
-  {"strengthDegradation",  TclCommand_addStrengthDegradation},
-  {"loadPackage",          TclCommand_Package},
-#endif
+  {"ysEvolutionModel",     TclCommand_addYS_EvolutionModel},
+  {"yieldSurface_BC",      TclCommand_addYieldSurface_BC},
+  {"plasticMaterial",      TclCommand_addYS_PlasticMaterial},
 
-
-// command for elast2plast in Multi-yield plasticity, by ZHY
   {"updateMaterialStage", TclCommand_updateMaterialStage},
-#if 0
-  {"updateMaterials",     TclCommand_UpdateMaterials},
-#endif
-
-#if 0
-// command for updating properties of soil materials, by ZHY
-   {"updateParameter", TclCommand_UpdateParameter},
-#endif
 
 };
+} // namespace OpenSees
 
 Tcl_CmdProc TclCommand_Package;
 

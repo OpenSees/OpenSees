@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -12,7 +21,6 @@
 // method. All methods are virtual to allow for subclasses; which can be
 // used by programmers when introducing new subclasses of the main objects.
 //
-// What: "@(#) TclPackageClassBroker.h, revA"
 
 #ifndef TclPackageClassBroker_h
 #define TclPackageClassBroker_h

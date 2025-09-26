@@ -1,10 +1,19 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
 //
-// Purpose: This file contains the class definition for TclPackageClassBroker.
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
+//
+// Description: This file contains the class definition for TclPackageClassBroker.
 // TclPackageClassBroker is is an object broker class that is meant to become
 // a threadsafe replacement for the BrokerAllClasses class.
 // All methods are virtual to allow for subclasses; which can be
@@ -21,10 +30,9 @@
 #include <Hash.h>
 using namespace OpenSees::Hash;
 using namespace OpenSees::Hash::literals;
+
 #define DISPATCH(symbol) case  hasher<std::string>()(#symbol): return new symbol();
-//
-// case hasher<std::string>()(Truss::class_name):  return new Truss();
-//
+
 #include "packages.h"
 #include <TclPackageClassBroker.h>
 
@@ -81,8 +89,8 @@ using namespace OpenSees::Hash::literals;
 #include "ModIMKPeakOriented.h"
 #include "snap/Clough.h"
 #include "limitState/LimitStateMaterial.h"
-#include "InitStressMaterial.h"
-#include "InitStrainMaterial.h"
+#include "wrapper/InitStressMaterial.h"
+#include "wrapper/InitStrainMaterial.h"
 #include "Bond_SP01.h"
 #include "SimpleFractureMaterial.h"
 #include "ConfinedConcrete01.h"
@@ -115,14 +123,12 @@ using namespace OpenSees::Hash::literals;
 #include "drain/DrainClough1Material.h"
 #include "drain/DrainClough2Material.h"
 #include "drain/DrainPinch1Material.h"
-#include "HyperbolicGapMaterial.h"
+#include "abutment/HyperbolicGapMaterial.h"
 #include "ImpactMaterial.h"
 
 // Sections
 #include "ElasticSection2d.h"
 #include "ElasticSection3d.h"
-#include "ElasticShearSection2d.h"
-#include "ElasticShearSection3d.h"
 #include "GenericSection1d.h"
 //#include "GenericSectionNd.h"
 #include "SectionAggregator.h"
@@ -130,7 +136,6 @@ using namespace OpenSees::Hash::literals;
 #include "FiberSection2d.h"
 #include "FiberSection3d.h"
 #include "FiberSectionAsym3d.h" //Xinlong Du
-#include "ElasticPlateSection.h"
 #include "ElasticMembranePlateSection.h"
 #include "MembranePlateFiberSection.h"
 #include "Bidirectional.h"
@@ -249,15 +254,15 @@ using namespace OpenSees::Hash::literals;
 
 #include "Shell/ShellMITC4.h"
 #include "Shell/ShellMITC9.h"
-#include "Shell/ShellDKGQ.h"   // Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-#include "Shell/ShellNLDKGQ.h" // Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
-#include "Shell/ASDShellQ4.h"  // Massimo Petracca
+#include "Shell/ShellDKGQ.h"
+#include "Shell/ShellNLDKGQ.h"
+#include "Shell/ASDShellQ4.h"
 #include "Brick/Brick.h"
 #include "Brick/BbarBrick.h"
 #include "Brick/BrickUP.h"
 #include "Brick/BBarBrickUP.h"
 #include "Brick/Twenty_Eight_Node_BrickUP.h"
-#include "Joint/Joint2D.h" // Arash
+#include "Joint/Joint2D.h"
 #include "Link/TwoNodeLink.h"
 #include "Link/LinearElasticSpring.h"
 #include "Link/Inerter.h"
@@ -287,10 +292,10 @@ using namespace OpenSees::Hash::literals;
 #include "Bearing/friction/frictionModel/VelNormalFrcDep.h"
 
 
-#include "mvlem/MVLEM.h"        // Kristijan Kolozvari
-#include "mvlem/SFI_MVLEM.h"    // Kristijan Kolozvari
-#include "mvlem/MVLEM_3D.h"     // Kristijan Kolozvari
-#include "mvlem/SFI_MVLEM_3D.h" // Kristijan Kolozvari
+#include "mvlem/MVLEM.h"       
+#include "mvlem/SFI_MVLEM.h"   
+#include "mvlem/MVLEM_3D.h"    
+#include "mvlem/SFI_MVLEM_3D.h"
 
 #include "Boundary/RockingBC.h"
 
@@ -324,7 +329,7 @@ using namespace OpenSees::Hash::literals;
 #include "quadrature/Frame/MidDistanceBeamIntegration.h"
 #include "quadrature/Frame/CompositeSimpsonBeamIntegration.h"
 
-// node header files
+// Node header files
 #include "Node.h"
 #ifdef HEAP_NODE
 #include "HeapNode.h"
@@ -347,11 +352,6 @@ using namespace OpenSees::Hash::literals;
 //#include "MPCORecorder.h"
 #include "VTK_Recorder.h"
 #include "GmshRecorder.h"
-
-#ifdef _H5DRM
-#include "VTKHDF_Recorder.h"
-#endif
-
 
 // mp_constraint header files
 #include "MP_Constraint.h"
@@ -394,25 +394,15 @@ using namespace OpenSees::Hash::literals;
 #include "LagrangeConstraintHandler.h"
 #include "TransformationConstraintHandler.h"
 
-// dof numberer header files
-#include "DOF_Numberer.h"
-#include "PlainNumberer.h"
 
-// analysis model header files
-#include "AnalysisModel.h"
-
-// equi soln algo header files
+// equi soln algo
 #include "EquiSolnAlgo.h"
 #include "Linear.h"
 #include "NewtonRaphson.h"
 #include "Broyden.h"
 #include "NewtonLineSearch.h"
-#include "KrylovNewton.h"
-#include "AcceleratedNewton.h"
 #include "ModifiedNewton.h"
 
-#include "accelerator/KrylovAccelerator.h"
-#include "accelerator/RaphsonAccelerator.h"
 
 #include "BisectionLineSearch.h"
 #include "InitialInterpolatedLineSearch.h"
@@ -429,13 +419,8 @@ using namespace OpenSees::Hash::literals;
 #include "DistributedDisplacementControl.h"
 #endif
 #include "LoadControl.h"
-// #include "StagedLoadControl.h"
 
 #include "TransientIntegrator.h"
-#include "AlphaOS.h"
-#include "AlphaOS_TP.h"
-#include "AlphaOSGeneralized.h"
-#include "AlphaOSGeneralized_TP.h"
 #include "CentralDifference.h"
 #include "CentralDifferenceAlternative.h"
 #include "CentralDifferenceNoDamping.h"
@@ -460,7 +445,6 @@ using namespace OpenSees::Hash::literals;
 #include "KRAlphaExplicit.h"
 #include "KRAlphaExplicit_TP.h"
 #include "Newmark.h"
-// #include "StagedNewmark.h"
 #include "NewmarkExplicit.h"
 #include "NewmarkHSFixedNumIter.h"
 #include "NewmarkHSIncrLimit.h"
@@ -541,6 +525,7 @@ using namespace OpenSees::Hash::literals;
 #  include "DistributedDiagonalSOE.h"
 #endif
 
+using namespace OpenSees;
 
 typedef struct uniaxialPackage {
   int classTag;
@@ -569,7 +554,7 @@ TclPackageClassBroker::getNewActor(int classTag, Channel *theChannel)
   default:
     opserr << "TclPackageClassBroker::getNewActor - ";
     opserr << " - no ActorType type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -587,7 +572,7 @@ TclPackageClassBroker::getPtrNewPartitionedModelBuilder(Subdomain &theSubdomain,
   default:
     opserr << "TclPackageClassBroker::getPtrNewPartitionedModelBuilder - ";
     opserr << " - no PartitionedModelBuilder type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -605,7 +590,7 @@ TclPackageClassBroker::getPtrNewGraphNumberer(int classTag)
   default:
     opserr << "TclPackageClassBroker::getPtrNewGraphNumberer - ";
     opserr << " - no GraphNumberer type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -621,19 +606,11 @@ TclPackageClassBroker::getNewElement(int classTag)
 {
   switch ((std::size_t)classTag) {
 
-    DISPATCH(Truss);
     DISPATCH(Truss2);
     DISPATCH(TrussSection);
-    DISPATCH(CorotTruss);
     DISPATCH(CorotTrussSection);
     DISPATCH(InertiaTruss);
 
-    // case ELE_TAG_ZeroLengthND:
-    // return new ZeroLengthND();
-
-    DISPATCH(FourNodeQuadUP);
-    DISPATCH(FourNodeQuad);
-    DISPATCH(Tri31);
     DISPATCH(ElasticBeam2d);
     DISPATCH(ModElasticBeam2d);
     DISPATCH(ModElasticBeam3d);
@@ -648,6 +625,9 @@ TclPackageClassBroker::getNewElement(int classTag)
     DISPATCH(MixedBeamColumnAsym3d);
 
 // Quads
+    DISPATCH(FourNodeQuadUP);
+    DISPATCH(FourNodeQuad);
+    DISPATCH(Tri31);
     DISPATCH(EnhancedQuad);
     DISPATCH(NineNodeMixedQuad);
     DISPATCH(NineNodeQuad);
@@ -666,7 +646,6 @@ TclPackageClassBroker::getNewElement(int classTag)
     DISPATCH(SSPbrickUP);
 #endif
     DISPATCH(PML2D);
-
     DISPATCH(PML3D);
 
 // Bricks
@@ -681,7 +660,7 @@ TclPackageClassBroker::getNewElement(int classTag)
     DISPATCH(ShellMITC9);
     DISPATCH(ShellDKGQ);
     DISPATCH(ShellNLDKGQ);
-    DISPATCH(ASDShellQ4); // Massimo Petracca
+    DISPATCH(ASDShellQ4);
 
 #if defined(OPSDEF_Elements_UW)
     DISPATCH(BeamContact2D);
@@ -703,15 +682,15 @@ TclPackageClassBroker::getNewElement(int classTag)
 
 
 
-    DISPATCH(Joint2D); // Arash
+    DISPATCH(Joint2D);
     DISPATCH(TwoNodeLink);
     DISPATCH(LinearElasticSpring);
     DISPATCH(Inerter);
 
-    DISPATCH(MVLEM); // Kristijan Kolozvari
-    DISPATCH(SFI_MVLEM); // Kristijan Kolozvari
-    DISPATCH(MVLEM_3D); // Kristijan Kolozvari
-    DISPATCH(SFI_MVLEM_3D); // Kristijan Kolozvari
+    DISPATCH(MVLEM);
+    DISPATCH(SFI_MVLEM);
+    DISPATCH(MVLEM_3D);
+    DISPATCH(SFI_MVLEM_3D);
 
 
     DISPATCH(ElastomericBearingBoucWen2d);
@@ -731,7 +710,6 @@ TclPackageClassBroker::getNewElement(int classTag)
     DISPATCH(SingleFPSimple3d);
     DISPATCH(TripleFrictionPendulum);
 
-
     DISPATCH(RockingBC);
     DISPATCH(ASDEmbeddedNodeElement);
     DISPATCH(ASDAbsorbingBoundary2D);
@@ -740,7 +718,7 @@ TclPackageClassBroker::getNewElement(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewElement - ";
     opserr << " - no Element type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -759,7 +737,7 @@ TclPackageClassBroker::getNewNode(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewNode - ";
     opserr << " - no Node type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -771,13 +749,13 @@ TclPackageClassBroker::getNewMP(int classTag)
   case CNSTRNT_TAG_MP_Constraint:
     return new MP_Constraint(classTag);
 
-  case CNSTRNT_TAG_MP_Joint2D: // Arash
-    return new MP_Joint2D();   // Arash
+  case CNSTRNT_TAG_MP_Joint2D:
+    return new MP_Joint2D();
 
   default:
     opserr << "TclPackageClassBroker::getNewMP - ";
     opserr << " - no MP_Constraint type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -798,7 +776,7 @@ TclPackageClassBroker::getNewSP(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewSP - ";
     opserr << " - no SP_Constraint type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -813,7 +791,7 @@ TclPackageClassBroker::getNewPC(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewPC - ";
     opserr << " - no Pressure_Constraint type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -848,7 +826,7 @@ TclPackageClassBroker::getNewElementalLoad(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewNodalLoad - ";
     opserr << " - no NodalLoad type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 
@@ -874,7 +852,7 @@ TclPackageClassBroker::getNewCrdTransf(int classTag)
   default:
     opserr << "TclPackageClassBroker::getCrdTransf - ";
     opserr << " - no CrdTransf type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -937,7 +915,7 @@ TclPackageClassBroker::getNewBeamIntegration(int classTag)
   default:
     opserr << "TclPackageClassBroker::getBeamIntegration - ";
     opserr << " - no BeamIntegration type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -971,6 +949,7 @@ TclPackageClassBroker::getNewUniaxialMaterial(int classTag)
   case MAT_TAG_ASD_SMA_3K:
     return new ASD_SMA_3K();
 
+// Concrete
   case MAT_TAG_Concrete01:
     return new Concrete01();
 
@@ -988,7 +967,7 @@ TclPackageClassBroker::getNewUniaxialMaterial(int classTag)
 
   case MAT_TAG_ConcretewBeta:
     return new ConcretewBeta();
-
+// Steel
   case MAT_TAG_Steel01:
     return new Steel01();
 
@@ -1010,6 +989,7 @@ TclPackageClassBroker::getNewUniaxialMaterial(int classTag)
   case MAT_TAG_Hardening:
     return new HardeningMaterial();
 
+// Other
   case MAT_TAG_PySimple1:
     return new PySimple1();
 
@@ -1159,7 +1139,7 @@ TclPackageClassBroker::getNewUniaxialMaterial(int classTag)
 
     opserr << "TclPackageClassBroker::getNewUniaxialMaterial - ";
     opserr << " - no UniaxialMaterial type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1174,14 +1154,8 @@ TclPackageClassBroker::getNewSection(int classTag)
   case SEC_TAG_Elastic3d:
     return new ElasticSection3d();
 
-  case SEC_TAG_ElasticShear2d:
-    return new ElasticShearSection2d();
-
-  case SEC_TAG_ElasticShear3d:
-    return new ElasticShearSection3d();
-
-  case SEC_TAG_Generic1d:
-    return new GenericSection1d();
+  // case SEC_TAG_Generic1d:
+  //   return new GenericSection1d();
 
     // case SEC_TAG_GenericNd:
     // return new GenericSectionNd();
@@ -1201,9 +1175,6 @@ TclPackageClassBroker::getNewSection(int classTag)
   case SEC_TAG_FiberSectionAsym3d:
     return new FiberSectionAsym3d(); // Xinlong Du
 
-  case SEC_TAG_ElasticPlateSection:
-    return new ElasticPlateSection();
-
   case SEC_TAG_ElasticMembranePlateSection:
     return new ElasticMembranePlateSection();
 
@@ -1221,7 +1192,7 @@ TclPackageClassBroker::getNewSection(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewSection - ";
     opserr << " - no section type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1373,7 +1344,7 @@ TclPackageClassBroker::getNewNDMaterial(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewNDMaterial - ";
     opserr << " - no NDMaterial type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1385,7 +1356,7 @@ TclPackageClassBroker::getNewFiber(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewFiber - ";
     opserr << " - no Fiber type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1412,7 +1383,7 @@ TclPackageClassBroker::getNewFrictionModel(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewFrictionModel - ";
     opserr << " - no FrictionModel type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1448,7 +1419,7 @@ TclPackageClassBroker::getNewConvergenceTest(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewConvergenceTest - ";
     opserr << " - no ConvergenceTest type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1478,7 +1449,7 @@ TclPackageClassBroker::getNewLoadPattern(int classTag)
   default:
     opserr << "TclPackageClassBroker::getPtrLoadPattern - ";
     opserr << " - no Load type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1497,7 +1468,7 @@ TclPackageClassBroker::getNewGroundMotion(int classTag)
   default:
     opserr << "TclPackageClassBroker::getPtrGroundMotion - ";
     opserr << " - no Load type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1530,7 +1501,7 @@ TclPackageClassBroker::getNewTimeSeries(int classTag)
   default:
     opserr << "TclPackageClassBroker::getPtrTimeSeries - ";
     opserr << " - no Load type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1545,7 +1516,7 @@ TclPackageClassBroker::getNewTimeSeriesIntegrator(int classTag)
   default:
     opserr << "TclPackageClassBroker::getPtrTimeSeriesIntegrator - ";
     opserr << " - no Load type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1560,7 +1531,7 @@ TclPackageClassBroker::getPtrNewMatrix(int classTag, int noRows, int noCols)
   default:
     opserr << "TclPackageClassBroker::getPtrNewMatrix - ";
     opserr << " - no NodalLoad type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1575,7 +1546,7 @@ TclPackageClassBroker::getPtrNewVector(int classTag, int size)
   default:
     opserr << "TclPackageClassBroker::getPtrNewVector - ";
     opserr << " - no Vector type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1590,7 +1561,7 @@ TclPackageClassBroker::getPtrNewID(int classTag, int size)
   default:
     opserr << "TclPackageClassBroker::getPtrNewID - ";
     opserr << " - no ID type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1632,7 +1603,7 @@ TclPackageClassBroker::getPtrNewStream(int classTag)
   default:
     opserr << "TclPackageClassBroker::getPtrNewStream - ";
     opserr << " - no DataOutputHandler type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1665,20 +1636,13 @@ TclPackageClassBroker::getPtrNewRecorder(int classTag)
   case RECORDER_TAGS_GmshRecorder:
     return new GmshRecorder();
 
-#ifdef _H5DRM
-  case RECORDER_TAGS_VTKHDF_Recorder():
-    return new VTKHDF_Recorder();
-#endif
-
-  
-
     //        case RECORDER_TAGS_MPCORecorder:
     //          return new MPCORecorder();
 
   default:
     opserr << "TclPackageClassBroker::getNewRecordr - ";
     opserr << " - no Recorder type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1708,7 +1672,7 @@ TclPackageClassBroker::getNewConstraintHandler(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewConstraintHandler - ";
     opserr << " - no ConstraintHandler type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1716,39 +1680,13 @@ TclPackageClassBroker::getNewConstraintHandler(int classTag)
 DOF_Numberer *
 TclPackageClassBroker::getNewNumberer(int classTag)
 {
-  switch (classTag) {
-  case NUMBERER_TAG_DOF_Numberer:
-    return new DOF_Numberer();
-
-  case NUMBERER_TAG_PlainNumberer:
-    return new PlainNumberer();
-
-#ifdef _PARALLEL_PROCESSING
-  case NUMBERER_TAG_ParallelNumberer:
-    return new ParallelNumberer();
-#endif
-
-  default:
-    opserr << "TclPackageClassBroker::getNewConstraintHandler - ";
-    opserr << " - no ConstraintHandler type exists for class tag ";
-    opserr << classTag << endln;
-    return 0;
-  }
+  return nullptr;
 }
 
 AnalysisModel *
 TclPackageClassBroker::getNewAnalysisModel(int classTag)
 {
-  switch (classTag) {
-  case AnaMODEL_TAGS_AnalysisModel:
-    return new AnalysisModel();
-
-  default:
-    opserr << "TclPackageClassBroker::getNewAnalysisModel - ";
-    opserr << " - no AnalysisModel type exists for class tag ";
-    opserr << classTag << endln;
-    return 0;
-  }
+  return nullptr;
 }
 
 EquiSolnAlgo *
@@ -1764,12 +1702,6 @@ TclPackageClassBroker::getNewEquiSolnAlgo(int classTag)
   case EquiALGORITHM_TAGS_NewtonLineSearch:
     return new NewtonLineSearch();
 
-  case EquiALGORITHM_TAGS_KrylovNewton:
-    return new KrylovNewton();
-
-  case EquiALGORITHM_TAGS_AcceleratedNewton:
-    return new AcceleratedNewton();
-
   case EquiALGORITHM_TAGS_ModifiedNewton:
     return new ModifiedNewton(CURRENT_TANGENT);
 
@@ -1779,7 +1711,7 @@ TclPackageClassBroker::getNewEquiSolnAlgo(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewEquiSolnAlgo - ";
     opserr << " - no EquiSolnAlgo type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1788,16 +1720,10 @@ Accelerator *
 TclPackageClassBroker::getAccelerator(int classTag)
 {
   switch (classTag) {
-
-  case ACCELERATOR_TAGS_Krylov:
-    return new KrylovAccelerator;
-  case ACCELERATOR_TAGS_Raphson:
-    return new RaphsonAccelerator;
-
   default:
     opserr << "TclPackageClassBroker::getAccelerator - ";
     opserr << " - no EquiSolnAlgo type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1821,7 +1747,7 @@ TclPackageClassBroker::getLineSearch(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewEquiSolnAlgo - ";
     opserr << " - no EquiSolnAlgo type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1836,7 +1762,7 @@ TclPackageClassBroker::getNewDomainDecompAlgo(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewDomainDecompAlgo - ";
     opserr << " - no DomainDecompAlgo type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1847,10 +1773,6 @@ TclPackageClassBroker::getNewStaticIntegrator(int classTag)
   switch (classTag) {
   case INTEGRATOR_TAGS_LoadControl:
     return new LoadControl(1.0, 1, 1.0, .10); // must recvSelf
-#if 0
-  case INTEGRATOR_TAGS_StagedLoadControl:
-    return new StagedLoadControl(1.0, 1, 1.0, .10); // must recvSelf
-#endif
 #ifdef _PARALLEL_PROCESSING
   case INTEGRATOR_TAGS_DistributedDisplacementControl:
     return new DistributedDisplacementControl(); // must recvSelf
@@ -1862,7 +1784,7 @@ TclPackageClassBroker::getNewStaticIntegrator(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewStaticIntegrator - ";
     opserr << " - no StaticIntegrator type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -1871,17 +1793,14 @@ TransientIntegrator *
 TclPackageClassBroker::getNewTransientIntegrator(int classTag)
 {
   switch (classTag) {
-  case INTEGRATOR_TAGS_AlphaOS:
-    return new AlphaOS();
-
-  case INTEGRATOR_TAGS_AlphaOS_TP:
-    return new AlphaOS_TP();
-
-  case INTEGRATOR_TAGS_AlphaOSGeneralized:
-    return new AlphaOSGeneralized();
-
-  case INTEGRATOR_TAGS_AlphaOSGeneralized_TP:
-    return new AlphaOSGeneralized_TP();
+  // case INTEGRATOR_TAGS_AlphaOS:
+  //   return new AlphaOS();
+  // case INTEGRATOR_TAGS_AlphaOS_TP:
+  //   return new AlphaOS_TP();
+  // case INTEGRATOR_TAGS_AlphaOSGeneralized:
+  //   return new AlphaOSGeneralized();
+  // case INTEGRATOR_TAGS_AlphaOSGeneralized_TP:
+  //   return new AlphaOSGeneralized_TP();
 
   case INTEGRATOR_TAGS_CentralDifference:
     return new CentralDifference(); // must recvSelf
@@ -1954,10 +1873,7 @@ TclPackageClassBroker::getNewTransientIntegrator(int classTag)
 
   case INTEGRATOR_TAGS_Newmark:
     return new Newmark();
-#if 0
-  case INTEGRATOR_TAGS_StagedNewmark:
-    return new StagedNewmark();
-#endif
+
   case INTEGRATOR_TAGS_NewmarkExplicit:
     return new NewmarkExplicit();
 
@@ -1969,10 +1885,7 @@ TclPackageClassBroker::getNewTransientIntegrator(int classTag)
 
   case INTEGRATOR_TAGS_NewmarkHSIncrReduct:
     return new NewmarkHSIncrReduct();
-#if 0
-  case INTEGRATOR_TAGS_PFEMIntegrator:
-    return new PFEMIntegrator();
-#endif
+
   case INTEGRATOR_TAGS_TRBDF2:
     return new TRBDF2();
 
@@ -1985,7 +1898,7 @@ TclPackageClassBroker::getNewTransientIntegrator(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewTransientIntegrator - ";
     opserr << " - no TransientIntegrator type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -2011,7 +1924,7 @@ TclPackageClassBroker::getNewIncrementalIntegrator(int classTag)
   default:
     opserr << "TclPackageClassBroker::getNewIncrementalIntegrator - ";
     opserr << " - no IncrementalIntegrator type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
@@ -2071,7 +1984,7 @@ TclPackageClassBroker::getNewLinearSOE(int classTagSOE)
   default:
     opserr << "TclPackageClassBroker::getNewLinearSOE - ";
     opserr << " - no LinearSOE type exists for class tag ";
-    opserr << classTagSOE << endln;
+    opserr << classTagSOE << "\n";
     return 0;
   }
 }
@@ -2083,20 +1996,16 @@ TclPackageClassBroker::getNewEigenSOE(int classTagSOE)
 
   switch (classTagSOE) {
 
-  case EigenSOE_TAGS_ArpackSOE:
-    theSOE = new ArpackSOE();
-    return theSOE;
-
   default:
     opserr << "TclPackageClassBroker::getNewEigenSOE - ";
     opserr << " - no EigenSOE type exists for class tag ";
-    opserr << classTagSOE << endln;
+    opserr << classTagSOE << "\n";
     return 0;
   }
 }
 
 DomainSolver *
-TclPackageClassBroker::getNewDomainSolver(void)
+TclPackageClassBroker::getNewDomainSolver()
 {
   return lastDomainSolver;
 }
@@ -2118,21 +2027,21 @@ TclPackageClassBroker::getPtrNewDDLinearSOE(int classTagSOE,
     } else {
       opserr << "TclPackageClassBroker::getNewLinearSOE - ";
       opserr << " - no ProfileSPD Domain Solver type exists for class tag ";
-      opserr << classTagDDSolver << endln;
+      opserr << classTagDDSolver << "\n";
       return 0;
     }
 
   default:
     opserr << "TclPackageClassBroker::getNewLinearSOE - ";
     opserr << " - no LinearSOE type exists for class tag ";
-    opserr << classTagSOE << endln;
+    opserr << classTagSOE << "\n";
     return 0;
   }
 }
 
 DomainDecompositionAnalysis *
 TclPackageClassBroker::getNewDomainDecompAnalysis(int classTag,
-                                                  Subdomain &theSubdomain)
+                                                  [[maybe_unused]] Subdomain &theSubdomain)
 {
   switch (classTag) {
 //case DomDecompANALYSIS_TAGS_DomainDecompositionAnalysis:
@@ -2149,7 +2058,7 @@ TclPackageClassBroker::getNewDomainDecompAnalysis(int classTag,
   default:
     opserr << "TclPackageClassBroker::getNewDomainDecompAnalysis ";
     opserr << " - no DomainDecompAnalysis type exists for class tag ";
-    opserr << classTag << endln;
+    opserr << classTag << "\n";
     return 0;
   }
 }
