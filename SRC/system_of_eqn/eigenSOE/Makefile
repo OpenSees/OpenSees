@@ -7,7 +7,9 @@ OBJS       = EigenSOE.o \
 	SymBandEigenSOE.o \
 	SymBandEigenSolver.o \
 	FullGenEigenSOE.o \
-	FullGenEigenSolver.o
+	FullGenEigenSolver.o \
+	SymmGeneralizedEigenSOE.o \
+	SymmGeneralizedEigenSolver.o 
 
 all:    $(OBJS)
 
