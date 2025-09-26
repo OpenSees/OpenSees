@@ -143,7 +143,7 @@ FileStream::open(void)
   }
 
   if (sendSelfCount != 0) {
-    int fileNameLength = strlen(fileName);
+    int fileNameLength = (int)strlen(fileName);
     sprintf(&fileName[fileNameLength],".%d",1);
   }
 
@@ -524,7 +524,7 @@ FileStream::sendSelf(int commitTag, Channel &theChannel)
   static ID idData(2);
   int fileNameLength = 0;
   if (fileName != 0)
-    fileNameLength = strlen(fileName);
+    fileNameLength = (int)strlen(fileName);
 
   idData(0) = fileNameLength;
 

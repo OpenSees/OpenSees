@@ -18,7 +18,6 @@ all:         $(OBJS)
 	@$(CD) $(FE)/element/feap; $(MAKE);
 	@$(CD) $(FE)/element/nonlinearBeamColumn; $(MAKE);
 	@$(CD) $(FE)/element/fourNodeQuad; $(MAKE);
-	@$(CD) $(FE)/element/beamWithHinges; $(MAKE);
 	@$(CD) $(FE)/element/UP-ucsd; $(MAKE);
 	@$(CD) $(FE)/element/shell; $(MAKE);
 	@$(CD) $(FE)/element/brick; $(MAKE);
@@ -72,7 +71,6 @@ spotless: clean
 	@$(CD) $(FE)/element/feap; $(MAKE) wipe;
 	@$(CD) $(FE)/element/nonlinearBeamColumn; $(MAKE) wipe;
 	@$(CD) $(FE)/element/fourNodeQuad; $(MAKE) wipe;
-	@$(CD) $(FE)/element/beamWithHinges; $(MAKE) wipe;
 	@$(CD) $(FE)/element/UP-ucsd; $(MAKE) wipe;
 	@$(CD) $(FE)/element/shell; $(MAKE) wipe;
 	@$(CD) $(FE)/element/brick; $(MAKE) wipe;
