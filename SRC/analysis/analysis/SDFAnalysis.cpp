@@ -31,7 +31,7 @@ int OPS_sdfResponse()
   
   int numOptionalArgs = 0;
   int numArgs = OPS_GetNumRemainingInputArgs();
-  double t_end = -1.0;
+  double t_end = 0.0; bool t_end_specified = false;
   while (OPS_GetNumRemainingInputArgs() > 0) {
     std::string type = OPS_GetString();
     if (type == "-tend") {
@@ -43,6 +43,7 @@ int OPS_sdfResponse()
 	  return 0;
 	}
 	numOptionalArgs++;
+	t_end_specified = true;
       }      
     }
     if (type == "-uresid" || type == "-uresidual") {
@@ -183,7 +184,7 @@ int OPS_sdfResponse()
     int i = 0;
     double ft, u=0, du, v, a, fs, zs, ftrial, kT, kTeff, dg, phat, R, R0, accel;
     double time = accelSeries->getStartTime();
-    double Tend = std::max(t_end,accelSeries->getDuration());
+    double Tend = t_end_specified ? t_end : accelSeries->getDuration();
     while (time < Tend) {
 
       ft = accelSeries->getFactor(time);
