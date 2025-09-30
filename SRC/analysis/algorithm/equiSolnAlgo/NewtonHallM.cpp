@@ -220,7 +220,7 @@ NewtonHallM::recvSelf(int cTag,
   static Vector data(4);
   theChannel.recvVector(this->getDbTag(), cTag, data);
   iFactor = data(0);
-  method = data(1);
+  method = (int)data(1);
   alpha = data(2);
   c = data(3);
   return 0;

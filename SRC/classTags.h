@@ -90,21 +90,22 @@
 
 #define SECT_TAG_Section         1
 
-#define TSERIES_TAG_LinearSeries         1
-#define TSERIES_TAG_RectangularSeries          2
-#define TSERIES_TAG_PathTimeSeries       3
-#define TSERIES_TAG_PathSeries       4
-#define TSERIES_TAG_ConstantSeries       5
-#define TSERIES_TAG_TrigSeries       6
-#define TSERIES_TAG_DiscretizedRandomProcessSeries 7
-#define TSERIES_TAG_SimulatedRandomProcessSeries 8
-#define TSERIES_TAG_PulseSeries       9
-#define TSERIES_TAG_TriangleSeries       10
-#define TSERIES_TAG_PeerMotion       11
-#define TSERIES_TAG_PeerNGAMotion       12
-#define TSERIES_TAG_PathTimeSeriesThermal  13  //L.Jiang [ SIF ]
-#define TSERIES_TAG_RampSeries  14  //CDM
-#define TSERIES_TAG_MPAccSeries       15 //Tang.S[SEU]
+#define TSERIES_TAG_LinearSeries                     1
+#define TSERIES_TAG_RectangularSeries                2
+#define TSERIES_TAG_PathTimeSeries                   3
+#define TSERIES_TAG_PathSeries                       4
+#define TSERIES_TAG_ConstantSeries                   5
+#define TSERIES_TAG_TrigSeries                       6
+#define TSERIES_TAG_DiscretizedRandomProcessSeries   7
+#define TSERIES_TAG_SimulatedRandomProcessSeries     8
+#define TSERIES_TAG_PulseSeries                      9
+#define TSERIES_TAG_TriangleSeries                  10
+#define TSERIES_TAG_PeerMotion                      11
+#define TSERIES_TAG_PeerNGAMotion                   12
+#define TSERIES_TAG_PathTimeSeriesThermal           13  //L.Jiang [ SIF ]
+#define TSERIES_TAG_SocketSeries                    14
+#define TSERIES_TAG_RampSeries                      15  //CDM
+#define TSERIES_TAG_MPAccSeries                     16 //Tang.S[SEU]
 
 #define PARAMETER_TAG_Parameter			   1
 #define PARAMETER_TAG_MaterialStageParameter       2
@@ -1198,18 +1199,18 @@
 #define RECORDER_TAGS_ElementRecorderRMS               24
 #define RECORDER_TAGS_VTKHDF_Recorder               25
 
-#define OPS_STREAM_TAGS_FileStream		1
-#define OPS_STREAM_TAGS_StandardStream		2
-#define OPS_STREAM_TAGS_XmlFileStream		3
-#define OPS_STREAM_TAGS_DataFileStream		4
-#define OPS_STREAM_TAGS_DatabaseStream		5
-#define OPS_STREAM_TAGS_DummyStream		6
-#define OPS_STREAM_TAGS_BinaryFileStream        7
-#define OPS_STREAM_TAGS_TCP_Stream              8
-#define OPS_STREAM_TAGS_ChannelStream           9
-#define OPS_STREAM_TAGS_DataTurbineStream      10
-#define OPS_STREAM_TAGS_DataFileStreamAdd      11
-
+#define OPS_STREAM_TAGS_FileStream           1
+#define OPS_STREAM_TAGS_StandardStream       2
+#define OPS_STREAM_TAGS_XmlFileStream        3
+#define OPS_STREAM_TAGS_DataFileStream       4
+#define OPS_STREAM_TAGS_DatabaseStream       5
+#define OPS_STREAM_TAGS_DummyStream          6
+#define OPS_STREAM_TAGS_BinaryFileStream     7
+#define OPS_STREAM_TAGS_TCP_Stream           8
+#define OPS_STREAM_TAGS_ChannelStream        9
+#define OPS_STREAM_TAGS_DataTurbineStream   10
+#define OPS_STREAM_TAGS_DataFileStreamAdd   11
+#define OPS_STREAM_TAGS_SocketStream        12
 
 #define DomDecompALGORITHM_TAGS_DomainDecompAlgo 1
 

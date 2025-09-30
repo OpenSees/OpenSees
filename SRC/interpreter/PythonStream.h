@@ -24,8 +24,19 @@
 #ifndef _PythonStream
 #define _PythonStream
 
-#include <StandardStream.h>
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
+
+#ifdef _DEBUG
+#undef _DEBUG
 #include <Python.h>
+#define _DEBUG
+#else
+#include <Python.h>
+#endif
+
+#include <StandardStream.h>
 #include <sstream>
 
 class PythonStream : public StandardStream {

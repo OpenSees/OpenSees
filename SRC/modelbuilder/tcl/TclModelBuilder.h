@@ -41,16 +41,16 @@
 
 #include <ModelBuilder.h>
 
+class TaggedObjectStorage;
 class SectionForceDeformation;
 class SectionRepres;
-class NDMaterial;
-class TaggedObjectStorage;
+//class NDMaterial;
 class YieldSurface_BC;
 class YS_Evolution;
 class PlasticHardeningMaterial;
-class CyclicModel;	 //!!
-class DamageModel;
-class FrictionModel;
+class CyclicModel;
+//class DamageModel;
+//class FrictionModel;
 
 #include <tcl.h>
 
@@ -66,14 +66,13 @@ class TclModelBuilder : public ModelBuilder
 
     // methods needed for the truss and fiber-beam elements for
     // adding/getting uniaxial material objects
-    // REMOVED    int addUniaxialMaterial(UniaxialMaterial &theMaterial);
-    //            UniaxialMaterial *getUniaxialMaterial(int tag);
+    // int addUniaxialMaterial(UniaxialMaterial &theMaterial);
+    // UniaxialMaterial *getUniaxialMaterial(int tag);
 
     // methods needed for the continuum elements and generic section
     // models to add/get ND material models
-
-    //    int addNDMaterial(NDMaterial &theMaterial);
-    //    NDMaterial *getNDMaterial(int tag);
+    // int addNDMaterial(NDMaterial &theMaterial);
+    // NDMaterial *getNDMaterial(int tag);
     
     // methods needed for the nonlinear beam column elements to
     // add/get section objects
@@ -89,10 +88,12 @@ class TclModelBuilder : public ModelBuilder
     YS_Evolution *getYS_EvolutionModel(int tag);
     int addPlasticMaterial(PlasticHardeningMaterial &theMaterial);
     PlasticHardeningMaterial *getPlasticMaterial(int tag);
-    int addCyclicModel(CyclicModel &theModel); //!!
-    CyclicModel *getCyclicModel(int tag); //!!
-    //int addDamageModel(DamageModel &theModel); //!!
-    //DamageModel *getDamageModel(int tag); //!!
+    int addCyclicModel(CyclicModel &theModel);
+    CyclicModel *getCyclicModel(int tag);
+    
+    // methods needed for the damage models
+    //int addDamageModel(DamageModel &theModel);
+    //DamageModel *getDamageModel(int tag);
 
     // methods needed for the friction models
     // int addFrictionModel(FrictionModel &theFrnMdl);
@@ -102,17 +103,17 @@ class TclModelBuilder : public ModelBuilder
     int ndm;	// space dimension of the mesh
     int ndf;	// number of degrees of freedom per node
 
-    //    TaggedObjectStorage *theUniaxialMaterials;
-    TaggedObjectStorage *theNDMaterials;
-    TaggedObjectStorage *theSections;   
+    // TaggedObjectStorage *theUniaxialMaterials;
+    // TaggedObjectStorage *theNDMaterials;
+    // TaggedObjectStorage *theSections;
     TaggedObjectStorage *theSectionRepresents;
     TaggedObjectStorage *theYieldSurface_BCs;
     TaggedObjectStorage *thePlasticMaterials;
     TaggedObjectStorage *theYS_EvolutionModels;
-    TaggedObjectStorage *theCycModels; //!!
-    //    TaggedObjectStorage *theDamageModels; //!!
-    //    TaggedObjectStorage *theFrictionModels;
-    TaggedObjectStorage *theLimitCurves;	//MRL
+    TaggedObjectStorage *theCycModels;
+    // TaggedObjectStorage *theDamageModels;
+    // TaggedObjectStorage *theFrictionModels;
+    // TaggedObjectStorage *theLimitCurves;
 
  protected:
     Tcl_Interp *theInterp;
