@@ -69,6 +69,7 @@ class GroundMotion : public MovableObject
     
     void setIntegrator(TimeSeriesIntegrator *integrator);
     TimeSeries *integrate(TimeSeries *theSeries, double delta = 0.01); 
+    TimeSeries *differentiate(TimeSeries *theSeries, double delta = 0.01); 
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 
