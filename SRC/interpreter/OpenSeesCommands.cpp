@@ -79,6 +79,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <SymBandEigenSOE.h>
 #include <FullGenEigenSolver.h>
 #include <FullGenEigenSOE.h>
+#include <SymmGeneralizedEigenSolver.h>
+#include <SymmGeneralizedEigenSOE.h>
 #include <ArpackSOE.h>
 #include <LoadControl.h>
 #include <CTestPFEM.h>
@@ -107,6 +109,11 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <MumpsSOE.h>
 #endif
 #include <BackgroundMesh.h>
+
+#ifdef _ITPACK
+#include <ItpackLinSOE.h>
+#include <ItpackLinSolver.h>
+#endif
 
 #ifdef _PARALLEL_INTERPRETERS
 bool setMPIDSOEFlag = false;
@@ -316,6 +323,11 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	    FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
 	    theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
 
+	} else if (typeSolver == EigenSOE_TAGS_SymmGeneralizedEigenSOE) {
+
+	    SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
+	    theEigenSOE = new SymmGeneralizedEigenSOE(*theEigenSolver, *theAnalysisModel);
+	    
 	} else {
 
 	    theEigenSOE = new ArpackSOE(shift);
@@ -1472,6 +1484,10 @@ int OPS_System()
     } else if (strcmp(type,"Mumps") == 0) {
         theSOE = (LinearSOE*)OPS_MumpsSolver();
 #endif
+#ifdef _ITPACK
+    } else if (strcmp(type,"Itpack") == 0) {
+        theSOE = (LinearSOE*)OPS_ItpackLinSolver();
+#endif
     } else {
     	opserr<<"WARNING unknown system type "<<type<<"\n";
     	return -1;
@@ -2098,6 +2114,12 @@ int OPS_eigenAnalysis()
 		 (strcmp(type,"symmBandLapackEigen") == 0) ||
 		 (strcmp(type,"-symmBandLapackEigen") == 0))
 	    typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
+
+	else if ((strcmp(type,"symmGenLapack") == 0) ||
+		 (strcmp(type,"-symmGenLapack") == 0) ||
+		 (strcmp(type,"symmGenLapackEigen") == 0) ||
+		 (strcmp(type,"-symmGenLapackEigen") == 0))
+	    typeSolver = EigenSOE_TAGS_SymmGeneralizedEigenSOE;	
 
     else if ((strcmp(type, "fullGenLapack") == 0) ||
                 (strcmp(type, "-fullGenLapack") == 0) ||

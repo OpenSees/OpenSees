@@ -1,17 +1,26 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
-// 
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
+//
 // Description: This file implements the selection of a Numberer object,
 // which is used to optimally number the degrees of freedom of a problem.
 //
 #include <tcl.h>
 #include <assert.h>
 #include <BasicAnalysisBuilder.h>
-#include <PlainNumberer.h>
-#include <DOF_Numberer.h>
+#include <numberer/DOF_Numberer.h>
+#include <numberer/PlainNumberer.h>
 #include <RCM.h>
 #include <AMDNumberer.h>
 

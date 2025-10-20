@@ -20,7 +20,10 @@ DOBJ  = dgeqr2.o dlabad.o dlacon.o dlacpy.o dladiv.o dlae2.o dlaev2.o\
 	chla_transtype.o dla_gercond.o dla_wwaddw.o ilaprec.o ilatrans.o dgecon.o \
 	dla_geamv.o dlacn2.o dla_lin_berr.o drscl.o dlatrs.o dla_rpvgrw.o dla_gerpvgrw.o \
 	BLAS_dgemv2_x.o BLAS_dgemv2_x-f2c.o \
-	BLAS_dgemv_x.o BLAS_dgemv_x-f2c.o BLAS_error.o BLAS_error.o
+	BLAS_dgemv_x.o BLAS_dgemv_x-f2c.o BLAS_error.o BLAS_error.o \
+	dsygvx.o dsygst.o dsygs2.o dsyevx.o dormtr.o dorgtr.o dorgql.o \
+	dorg2l.o dormql.o dorm2l.o dlansy.o dlarf1l.o iladlr.o iladlc.o \
+	disnan.o dlaisnan.o dsytrd.o dlatrd.o dsytd2.o
 
 
 

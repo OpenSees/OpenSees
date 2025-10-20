@@ -63,8 +63,10 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
     bool readingBeamEleTag    = false;
     bool readingSolidEleTag   = false;
     bool readingConBeamEleTag = false;
+    bool startTagSet          = false;
 
     int  lagrangeTag   = 8; // 0 = local penalty, 1 = local Augmented Lagrangian, 2 = global Lagrange, 3 = global embedded lagrange, 4 = global penalty
+    int  interfaceStartTag = 0;
 
     const char *         crdsFN;
     const char *         connectivityFN;
@@ -380,6 +382,18 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
             baseNodeTag = strtol(argv[curArgPos], NULL, 10);
             numArgsRemaining--; curArgPos++;
         }
+        else if ((strcmp(argv[curArgPos], "-startTag") == 0) && (numArgsRemaining >= 2))
+        {
+            // This sets the starting tag for interface elements
+            readingSolidEleTag = false;
+            readingConBeamEleTag = false;
+            readingBeamEleTag = false;
+            startTagSet = true;
+
+            numArgsRemaining--; curArgPos++;
+            interfaceStartTag = strtol(argv[curArgPos], NULL, 10);
+            numArgsRemaining--; curArgPos++;
+        }
         else {
             if (readingSolidEleTag)
             {
@@ -437,7 +451,13 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
         if (theElement->getTag() > maxTag)
             maxTag = theElement->getTag();
     }
-    int startTag = maxTag + 1;
+    
+    // Use the provided startTag if set, otherwise use maxTag + 1
+    int startTag;
+    if (startTagSet)
+        startTag = interfaceStartTag;
+    else
+        startTag = maxTag + 1;
 
     FileStream crdsFile, quadNodes, quadElems;
     if (writeCoords)
@@ -451,6 +471,9 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
     // Define variables needed
     int contactElemCount = 0, contactPointCount = 0;
     double area;
+    
+    // Initialize maxTag to startTag for interface element creation
+    maxTag = startTag;
 
     // Loop over beam elements
     for (int beamCount = 0; beamCount < beamEleTags.size(); beamCount++)
@@ -700,8 +723,10 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
         // 0 = local penalty, 1 = local Augmented Lagrangian, 2 = global Lagrange, 3 = global embedded lagrange
         if (lagrangeTag > 1)
         {
-            if (lagrangeTag == 2)
+            if (lagrangeTag == 2) {
                 theElement = new EmbeddedBeamInterfaceL(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, writeConnectivity, connectivityFN);
+                opserr << "Creating EmbeddedBeamInterfaceL" << endln;
+            }    
             else if (lagrangeTag == 3)
 	    {
             //    if (beamConnected)
@@ -709,8 +734,10 @@ TclCommand_GenerateInterfacePoints(ClientData clientData, Tcl_Interp *interp, in
             //    else
             //        theElement = new EmbeddedBeamInterfaceAL2(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, writeConnectivity, connectivityFN);
             }
-            else if (lagrangeTag == 4)
+            else if (lagrangeTag == 4) {
                 theElement = new EmbeddedBeamInterfaceP(maxTag, beamEleTagsInContact, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, contactPt_area, contactPt_length, penaltyParam, writeConnectivity, connectivityFN);
+                opserr << "Creating EmbeddedBeamInterfaceP " << endln;
+            }
             else if (lagrangeTag == 5)
             {
                 // theElement = new EmbeddedBeamInterfaceAL2(maxTag, beamTag, solidEleTagsInContact, transfTag, contactPt_rho, contactPt_theta, contactPt_xi, contactPt_eta, contactPt_zeta, radius, area);
@@ -832,7 +859,9 @@ TclCommand_GenerateToeInterfacePoints(ClientData clientData, Tcl_Interp *interp,
     bool solidEleSetDefined = false;
     bool debugFlag     = false;
     bool writeCoords   = false;
+    bool startTagSet   = false;
     int  lagrangeTag   = 3; // 0 = local penalty, 1 = local Augmented Lagrangian, 2 = global Lagrange, 3 = global embedded lagrange
+    int  interfaceStartTag = 0;
 
     const char * crdsFN;
     std::vector <int> solidEleTags;
@@ -991,6 +1020,16 @@ TclCommand_GenerateToeInterfacePoints(ClientData clientData, Tcl_Interp *interp,
             lagrangeTag = 4;
             numArgsRemaining--; curArgPos++;
         }
+        else if ((strcmp(argv[curArgPos], "-startTag") == 0) && (numArgsRemaining >= 2))
+        {
+            // This sets the starting tag for interface elements
+            readingSolidEleTag = false;
+            startTagSet = true;
+
+            numArgsRemaining--; curArgPos++;
+            interfaceStartTag = strtol(argv[curArgPos], NULL, 10);
+            numArgsRemaining--; curArgPos++;
+        }
         else
         {
             if (readingSolidEleTag)
@@ -1042,7 +1081,16 @@ TclCommand_GenerateToeInterfacePoints(ClientData clientData, Tcl_Interp *interp,
         if (theElement->getTag() > maxTag)
             maxTag = theElement->getTag();
     }
-    int startTag = maxTag + 1;
+    
+    // Use the provided startTag if set, otherwise use maxTag + 1
+    int startTag;
+    if (startTagSet)
+        startTag = interfaceStartTag;
+    else
+        startTag = maxTag + 1;
+    
+    // Initialize maxTag to startTag for interface element creation
+    maxTag = startTag;
 
 
 

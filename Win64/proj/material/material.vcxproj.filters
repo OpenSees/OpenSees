@@ -1529,6 +1529,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\OrthotropicRotatingAngleConcreteT2DMaterial01\OrthotropicRotatingAngleConcreteT2DMaterial01.cpp">
       <Filter>nD\OrthotropicRotatingAngleConcreteT2DMaterial01</Filter>
     </ClCompile>
