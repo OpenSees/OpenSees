@@ -724,6 +724,7 @@ endif()
 add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
     ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
+	${OPS_SRC_DIR}/api/packages.cpp
 )
 
 set_target_properties(OpenSeesPy PROPERTIES PREFIX "")

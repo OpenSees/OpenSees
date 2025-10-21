@@ -151,7 +151,7 @@ TclModelBuilder_addFeapMaterial(ClientData clientData, Tcl_Interp *interp,
 				TclModelBuilder *theTclBuilder);
 #endif // _OPS_Material_FEAP
 
-extern int OPS_ResetInput(ClientData clientData, 
+extern "C" int OPS_ResetInput(ClientData clientData,
 			  Tcl_Interp *interp,  
 			  int cArg, 
 			  int mArg, 

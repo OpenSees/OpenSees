@@ -541,6 +541,38 @@ TclInterpreter::getDouble(double *data, int numArgs) {
     return 0;
 }
 
+int
+TclInterpreter::getDoubleList(int* size, Vector* data)
+{
+    TCL_Char** strings;
+
+    if (Tcl_SplitList(interp, wrapper.getCurrentArgv()[wrapper.getCurrentArg()],
+        size, &strings) != TCL_OK) {
+        opserr << "TclInterpreter::getDoubleList error: problem splitting list "
+            << wrapper.getCurrentArgv()[wrapper.getCurrentArg()] << " \n";
+        return -1;
+    }
+
+    data->resize(*size);
+    for (int i = 0; i < *size; i++) {
+        double value;
+        if (Tcl_GetDouble(interp, strings[i], &value) != TCL_OK) {
+            opserr << "TclInterpreter::getDoubleList error: problem reading data value "
+                << strings[i] << " \n";
+            // free up the array of strings .. see tcl man pages as to why
+            Tcl_Free((char*)strings);
+            return -1;
+        }
+        (*data)(i) = value;
+    }
+    // free up the array of strings .. see tcl man pages as to why
+    Tcl_Free((char*)strings);
+
+    wrapper.incrCurrentArg();
+
+    return 0;
+}
+
 const char*
 TclInterpreter::getString() {
 
@@ -554,9 +586,34 @@ TclInterpreter::getString() {
     return res;
 }
 
-int 
+const char*
+TclInterpreter::getStringFromAll(char* buffer, int len)
+{
+    return this->getString(); // everything is a string in Tcl
+}
+
+int
 TclInterpreter::getStringCopy(char **stringPtr) {
   return -1;
+}
+
+int
+TclInterpreter::evalDoubleStringExpression(
+    const char* theExpression, double& current_val) {
+
+    if (Tcl_ExprDouble(interp, theExpression, &current_val) != TCL_OK) {
+        opserr << "TclInterpreter::evalDoubleStringExpression -- expression \"" << theExpression;
+        opserr << "\" caused error:" << endln << Tcl_GetStringResult(interp) << endln;
+        return -1;
+    }
+
+    return 0;
+}
+
+void
+TclInterpreter::resetInput(int nArgs, int cArg, const char** argv)
+{
+    wrapper.resetCommandLine(nArgs, cArg, argv);
 }
 
 void
@@ -573,6 +630,30 @@ TclInterpreter::setInt(int* data, int numArgs, bool scalar)
 }
 
 int
+TclInterpreter::setInt(std::vector<std::vector<int>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setInt(std::map<const char*, int>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setInt(std::map<const char*, std::vector<int>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
 TclInterpreter::setDouble(double* data, int numArgs, bool scalar)
 {
     wrapper.setOutputs(interp, data, numArgs);
@@ -580,8 +661,64 @@ TclInterpreter::setDouble(double* data, int numArgs, bool scalar)
 }
 
 int
+TclInterpreter::setDouble(std::vector<std::vector<double>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setDouble(std::map<const char*, double>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setDouble(std::map<const char*, std::vector<double>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
 TclInterpreter::setString(const char* str)
 {
     wrapper.setOutputs(interp, str);
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::vector<const char*>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::vector<std::vector<const char*>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::map<const char*, const char*>& data)
+{
+    wrapper.setOutputs(interp, data);
+
+    return 0;
+}
+
+int
+TclInterpreter::setString(std::map<const char*, std::vector<const char*>>& data)
+{
+    wrapper.setOutputs(interp, data);
+
     return 0;
 }

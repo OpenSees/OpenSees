@@ -132,8 +132,20 @@
     <Filter Include="PML">
       <UniqueIdentifier>{b9971b16-c2ff-443f-ab28-9022482c25ed}</UniqueIdentifier>
     </Filter>
+    <Filter Include="damping">
+      <UniqueIdentifier>{a79ef7c3-e35d-476d-9d87-d32d1434b693}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="IGA">
+      <UniqueIdentifier>{b3532701-b62d-4658-bee0-a13466c5fbc0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="masonry">
+      <UniqueIdentifier>{57b80119-31bb-43aa-b900-d195341d89db}</UniqueIdentifier>
+    </Filter>
     <Filter Include="mefi">
-      <UniqueIdentifier>{793b16ee-7c65-4ec9-b131-696c18f42f54}</UniqueIdentifier>
+      <UniqueIdentifier>{cf4d1e34-1cd5-4338-9cc3-6a7271261f51}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="pipe">
+      <UniqueIdentifier>{b000d79e-0e45-41cf-8e9b-9b20cbc63eaf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -665,9 +677,6 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ASDShellQ4.cpp">
       <Filter>shell</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp">
-      <Filter>shell</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\HUelements\DBESI0.C">
       <Filter>HUelements</Filter>
     </ClCompile>
@@ -762,9 +771,6 @@
       <Filter>shell</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.cpp">
-      <Filter>shell</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\shell\ShellANDeS.cpp">
       <Filter>shell</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.cpp">
@@ -872,15 +878,6 @@
     <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.cpp">
       <Filter>absorbentBoundaries</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidElement2D.cpp">
-      <Filter>absorbentBoundaries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIInterfaceElement2D.cpp">
-      <Filter>absorbentBoundaries</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidBoundaryElement2D.cpp">
-      <Filter>absorbentBoundaries</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.cpp">
       <Filter>UWelements</Filter>
     </ClCompile>
@@ -959,12 +956,6 @@
     <ClCompile Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.cpp">
       <Filter>crdTransf</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PML\PML2D.cpp">
-      <Filter>PML</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\PML\PML3D.cpp">
-      <Filter>PML</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\PML\PML2D_3.cpp">
       <Filter>PML</Filter>  
     </ClCompile>
@@ -983,14 +974,104 @@
     <ClCompile Include="..\..\..\SRC\element\mvlem\E_SFI.cpp">
       <Filter>mvlem</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp">
-      <Filter>joint</Filter>
+    <ClCompile Include="..\..\..\SRC\damping\Damping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\SecStifDamping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\TclDampingCommand.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\UniformDamping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\URDDamping.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\damping\URDDampingbeta.cpp">
+      <Filter>damping</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\BeamGT.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan3D.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp">
+      <Filter>masonry</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\componentElement\ComponentElement3d.cpp">
+      <Filter>componentElement</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulumX.cpp">
+      <Filter>frictionBearing</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\truss\InertiaTruss.cpp">
+      <Filter>truss</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn3d.cpp">
+      <Filter>dispBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp">
+      <Filter>mixedBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.cpp">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedCurvatureBeamIntegration.cpp">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.cpp">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp">
       <Filter>mefi</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ASDShellT3.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidBoundaryElement2D.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidElement2D.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\absorbentBoundaries\FSIInterfaceElement2D.cpp">
+      <Filter>absorbentBoundaries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.cpp">
+      <Filter>joint</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.cpp">
       <Filter>elasticBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.cpp">
+      <Filter>shell</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\pipe\CurvedPipe.cpp">
+      <Filter>pipe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\pipe\Pipe.cpp">
+      <Filter>pipe</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3dThermal.cpp">
+      <Filter>forceBeamColumn</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.cpp">
+      <Filter>twoNodeLink</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1459,9 +1540,6 @@
     <ClInclude Include="..\..\..\SRC\element\shell\ASDShellQ4.h">
       <Filter>shell</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h">
-      <Filter>shell</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\HUelements\KikuchiBearing.h">
       <Filter>HUelements</Filter>
     </ClInclude>
@@ -1556,9 +1634,6 @@
       <Filter>shell</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGQThermal.h">
-      <Filter>shell</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\shell\ShellANDeS.h">
       <Filter>shell</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\AxEqDispBeamColumn2d.h">
@@ -1663,15 +1738,6 @@
     <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\ASDAbsorbingBoundary3D.h">
       <Filter>absorbentBoundaries</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidElement2D.h">
-      <Filter>absorbentBoundaries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIInterfaceElement2D.h">
-      <Filter>absorbentBoundaries</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidBoundaryElement2D.h">
-      <Filter>absorbentBoundaries</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\UWelements\EmbeddedBeamInterfaceL.h">
       <Filter>UWelements</Filter>
     </ClInclude>
@@ -1747,12 +1813,6 @@
     <ClInclude Include="..\..\..\SRC\coordTransformation\CorotCrdTransfWarping3d.h">
       <Filter>crdTransf</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PML\PML2D.h">
-      <Filter>PML</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\PML\PML3D.h">
-      <Filter>PML</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\PML\PML2D_3.h">
       <Filter>PML</Filter>
     </ClInclude>
@@ -1771,14 +1831,101 @@
     <ClInclude Include="..\..\..\SRC\element\mvlem\E_SFI.h">
       <Filter>mvlem</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h">
-      <Filter>joint</Filter>
+    <ClInclude Include="..\..\..\SRC\damping\Damping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\SecStifDamping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\UniformDamping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\URDDamping.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\damping\URDDampingbeta.h">
+      <Filter>damping</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\IGA\IGAKLShell_BendingStrip.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\masonry\BeamGT.h">
+      <Filter>masonry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan3D.h">
+      <Filter>masonry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan12.h">
+      <Filter>masonry</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\componentElement\ComponentElement3d.h">
+      <Filter>componentElement</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\frictionBearing\TripleFrictionPendulumX.h">
+      <Filter>frictionBearing</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\truss\InertiaTruss.h">
+      <Filter>truss</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnAsym3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\DispBeamColumnNL3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\dispBeamColumn\TimoshenkoBeamColumn3d.h">
+      <Filter>dispBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h">
+      <Filter>mixedBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ChebyshevBeamIntegration.h">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedCurvatureBeamIntegration.h">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ConcentratedPlasticityBeamIntegration.h">
+      <Filter>forceBeamColumn\beamIntegration</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h">
       <Filter>mefi</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ASDShellT3.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidBoundaryElement2D.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIFluidElement2D.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\absorbentBoundaries\FSIInterfaceElement2D.h">
+      <Filter>absorbentBoundaries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\joint\Inno3DPnPJoint.h">
+      <Filter>joint</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\element\elasticBeamColumn\ModElasticBeam3d.h">
       <Filter>elasticBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.h">
+      <Filter>shell</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\pipe\CurvedPipe.h">
+      <Filter>pipe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\pipe\Pipe.h">
+      <Filter>pipe</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3dThermal.h">
+      <Filter>forceBeamColumn</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\element\twoNodeLink\TwoNodeLinkSection.h">
+      <Filter>twoNodeLink</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

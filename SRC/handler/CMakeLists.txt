@@ -8,29 +8,29 @@
 
 target_sources(OPS_Handler
     PRIVATE
-    OPS_Stream.cpp
+	    BinaryFileStream.cpp
+		ChannelStream.cpp
+		DatabaseStream.cpp
+		DataFileStream.cpp
+		DataFileStreamAdd.cpp
+		DummyStream.cpp
+		FileStream.cpp
+        OPS_Stream.cpp
         StandardStream.cpp
-        FileStream.cpp
-        XmlFileStream.cpp
-        DataFileStream.cpp
-        DataFileStreamAdd.cpp
-        BinaryFileStream.cpp
-        DatabaseStream.cpp
-        DummyStream.cpp
         TCP_Stream.cpp
-        ChannelStream.cpp
+        XmlFileStream.cpp
     PUBLIC
-    OPS_Stream.h
+	    BinaryFileStream.h
+		ChannelStream.h
+		DatabaseStream.h
+		DataFileStream.h
+		DataFileStreamAdd.h
+		DummyStream.h
+		FileStream.h
+        OPS_Stream.h
         StandardStream.h
-        FileStream.h
-        XmlFileStream.h
-        DataFileStream.h
-        DataFileStreamAdd.h
-        BinaryFileStream.h
-        DatabaseStream.h
-        DummyStream.h
         TCP_Stream.h
-        ChannelStream.h
+        XmlFileStream.h
 )
 
 target_include_directories(OPS_Handler PUBLIC ${CMAKE_CURRENT_LIST_DIR})

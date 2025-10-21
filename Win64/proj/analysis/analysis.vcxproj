@@ -38,12 +38,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -328,6 +328,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\integrator\EQPath.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\ExplicitDifference.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\GimmeMCK.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\integrator\HarmonicSteadyState.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTExplicit_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralizedExplicit_TP.h" />
     <ClInclude Include="..\..\..\SRC\analysis\integrator\HHTGeneralized_TP.h" />

@@ -41,6 +41,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifndef PythonWrapper_h
 #define PythonWrapper_h
 
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
+
 #ifdef _DEBUG
 #undef _DEBUG
 #include <Python.h>

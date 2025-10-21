@@ -7,23 +7,26 @@
 add_library(OPS_Api OBJECT)
 
 target_sources(OPS_InterpTcl
-  PRIVATE
-    elementAPI_TCL.cpp
-    packages.cpp
+    PRIVATE
+        elementAPI_TCL.cpp
+        packages.cpp
+)
+
+target_sources(OpenSeesPy
+    PRIVATE
+        packages.cpp
 )
 
 target_sources(OPS_Api
     PUBLIC
-        #elementAPI_Dummy.cpp
-        #win32Functions.cpp
-    PUBLIC
         elementAPI.h
-	#packages.h
+        packages.h
 )
 
 
 if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-target_sources(OPS_Api PUBLIC
+target_sources(OPS_Api
+    PUBLIC
         win32Functions.cpp
 )
 

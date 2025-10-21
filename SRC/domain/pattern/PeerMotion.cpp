@@ -76,10 +76,6 @@ OPS_PeerMotion(void)
   double factor = 0.0; 
   int numData = 0;
 
-  char *eqMotion = 0;
-  char *station = 0;
-  char *type = 0;
-
   // get tag if provided
   if (numRemainingArgs == 5 || numRemainingArgs == 7 || numRemainingArgs == 9) {
     numData = 1;
@@ -87,26 +83,32 @@ OPS_PeerMotion(void)
       opserr << "WARNING invalid series tag in Constant tag?" << endln;
       return 0;
     }
-    numRemainingArgs -= 1;
+    numRemainingArgs--;
   }
   
-  if ((OPS_GetStringCopy(&eqMotion) != 0) || eqMotion == 0) {
+  // earthquake name
+  const char* eqMotion = OPS_GetString();
+  if (eqMotion == 0) {
     opserr << "WARNING invalid eqMotion for PeerMotion with tag: " << tag << endln;
     return 0;
-  }    
-
-    if ((OPS_GetStringCopy(&station) != 0) || station == 0) {
+  }
+  
+  // station
+  const char* station = OPS_GetString();
+  if (station == 0) {
     opserr << "WARNING invalid station for PeerMotion with tag: " << tag << endln;
     return 0;
-  }    
-
-    if ((OPS_GetStringCopy(&type) != 0) || type == 0) {
-    opserr << "WARNING invalid type  for PeerMotion with tag: " << tag << endln;
+  }
+  
+  // type
+  const char* type = OPS_GetString();
+  if (type == 0) {
+    opserr << "WARNING invalid type for PeerMotion with tag: " << tag << endln;
     return 0;
-  }    
+  }
 
-
-  if (OPS_GetDouble(&numData, &factor) != 0) {
+  // factor
+  if (OPS_GetDoubleInput(&numData, &factor) != 0) {
     opserr << "WARNING invalid factor in PeerMotion Series with tag?" << tag << endln;
     return 0;
   }
@@ -128,8 +130,9 @@ OPS_PeerMotion(void)
 
 PeerMotion::PeerMotion()	
   :TimeSeries(TSERIES_TAG_PeerMotion),
-   thePath(0), dT(0.0), 
-   cFactor(0.0), dbTag1(0), dbTag2(0), lastSendCommitTag(-1)
+   thePath(0), dT(0.0), currentTimeLoc(0),
+   cFactor(0.0), dbTag1(0), dbTag2(0), lastSendCommitTag(-1),
+   otherDbTag(0), lastChannel(0)
 {
   // does nothing
 }
@@ -141,8 +144,9 @@ PeerMotion::PeerMotion(int tag,
 		       const char *type,
 		       double theFactor)
   :TimeSeries(tag, TSERIES_TAG_PeerMotion),
-   thePath(0), dT(0.0), 
-   cFactor(theFactor), dbTag1(0), dbTag2(0), lastSendCommitTag(-1), lastChannel(0)
+   thePath(0), dT(0.0), currentTimeLoc(0),
+   cFactor(theFactor), dbTag1(0), dbTag2(0), lastSendCommitTag(-1),
+   otherDbTag(0), lastChannel(0)
 {
   char peerPage[124];
   char *nextData, *eqData;
@@ -262,7 +266,7 @@ PeerMotion::getFactor(double pseudoTime)
 
   // determine indexes into the data array whose boundary holds the time
   double incr = pseudoTime/dT; 
-  int incr1 = floor(incr);
+  int incr1 = (int)floor(incr);
   int incr2 = incr1+1;
 
   if (incr2 >= thePath->Size())
@@ -387,9 +391,9 @@ PeerMotion::recvSelf(int commitTag, Channel &theChannel,
 
   cFactor = data(0);
   dT = data(1);
-  int size = data(2);
-  otherDbTag = data(3);
-  lastSendCommitTag = data(4);
+  int size = (int)data(2);
+  otherDbTag = (int)data(3);
+  lastSendCommitTag = (int)data(4);
   
   // get the path vector, only receive it once as it can't change
   if (thePath == 0 && size > 0) {

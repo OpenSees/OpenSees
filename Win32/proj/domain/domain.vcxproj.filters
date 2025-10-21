@@ -40,6 +40,9 @@
     <Filter Include="load\shell">
       <UniqueIdentifier>{a1365196-1623-4101-a666-2506cbc409a8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="IGA">
+      <UniqueIdentifier>{68af402c-904b-41b4-b3d6-f79edc1588aa}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\domain\node\NodalLoad.cpp">
@@ -312,6 +315,30 @@
     <ClCompile Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.cpp">
       <Filter>load\beam</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\gaussQuadrature.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\IGAFollowerLoad.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\IGASurfacePatch.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\IGA\NurbsDers.cpp">
+      <Filter>IGA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\RampSeries.cpp">
+      <Filter>timeSeries</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\pattern\drm\H5DRMLoadPattern.cpp">
+      <Filter>pattern\drm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\load\BeamUniformMoment.cpp">
+      <Filter>load\beam</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">
@@ -576,6 +603,30 @@
       <Filter>timeSeries</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\domain\load\Beam3dPartialUniformLoad.h">
+      <Filter>load\beam</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\gaussQuadrature.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\IGAFollowerLoad.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\IGASurfacePatch.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\IGA\NurbsDers.h">
+      <Filter>IGA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\MPAccSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\RampSeries.h">
+      <Filter>timeSeries</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\pattern\drm\H5DRMLoadPattern.h">
+      <Filter>pattern\drm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\domain\load\BeamUniformMoment.h">
       <Filter>load\beam</Filter>
     </ClInclude>
   </ItemGroup>

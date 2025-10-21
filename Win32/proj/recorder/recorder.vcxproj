@@ -20,7 +20,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -124,6 +124,7 @@
     <ClCompile Include="..\..\..\SRC\recorder\PVDRecorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\Recorder.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\RemoveRecorder.cpp" />
+    <ClCompile Include="..\..\..\SRC\recorder\response\CrdTransfResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\TclRecorderCommands.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\CompositeResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\ElementResponse.cpp" />
@@ -131,7 +132,6 @@
     <ClCompile Include="..\..\..\SRC\recorder\response\MaterialResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\Response.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\VTK_Recorder.cpp" />
-    <ClCompile Include="..\..\..\SRC\recorder\VTKHDF_Recorder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h" />
@@ -157,12 +157,12 @@
     <ClInclude Include="..\..\..\SRC\recorder\PatternRecorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\Recorder.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\CompositeResponse.h" />
+    <ClInclude Include="..\..\..\SRC\recorder\response\CrdTransfResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\ElementResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\FiberResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\MaterialResponse.h" />
     <ClInclude Include="..\..\..\SRC\recorder\response\Response.h" />
     <ClInclude Include="..\..\..\SRC\recorder\VTK_Recorder.h" />
-    <ClInclude Include="..\..\..\SRC\recorder\VTKHDF_Recorder.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

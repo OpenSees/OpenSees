@@ -56,28 +56,36 @@ TCP_Socket::TCP_Socket()
 {
     // initialize sockets
     startup_sockets();
-
+    
     // set up my_Addr 
     bzero((char *) &my_Addr, sizeof(my_Addr));    
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(0);
-
 #ifdef _WIN32
     my_Addr.addr_in.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 #else
     my_Addr.addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
-
+    
     // open a socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         opserr << "TCP_Socket::TCP_Socket() - could not open socket\n";
+        cleanup_sockets();
+        exit(-1);
     }
-
+    
     // bind local address to it
     if (bind(sockfd, &my_Addr.addr, sizeof(my_Addr.addr)) < 0) {
         opserr << "TCP_Socket::TCP_Socket() - could not bind local address\n";
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        cleanup_sockets();
+        exit(-2);
     }
-
+    
     // get my_address info
     addrLength = sizeof(my_Addr.addr);
     myPort = ntohs(my_Addr.addr_in.sin_port);
@@ -93,31 +101,39 @@ TCP_Socket::TCP_Socket(unsigned int port, bool checkendianness, int nodelay)
 {
     // initialize sockets
     startup_sockets();
-
+    
     // set up my_Addr.addr_in with address given by port and internet address of
     // machine on which the process that uses this routine is running.
-
+    
     // set up my_Addr 
     bzero((char *) &my_Addr, sizeof(my_Addr));
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(port);
-
 #ifdef _WIN32
     my_Addr.addr_in.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 #else
     my_Addr.addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
-
+    
     // open a socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         opserr << "TCP_Socket::TCP_Socket() - could not open socket\n";
+        cleanup_sockets();
+        exit(-1);
     }
-
+    
     // bind local address to it
     if (bind(sockfd, &my_Addr.addr, sizeof(my_Addr.addr)) < 0) {
         opserr << "TCP_Socket::TCP_Socket() - could not bind local address\n";
-    }    
-
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        cleanup_sockets();
+        exit(-2);
+    }
+    
     // get my_address info
     addrLength = sizeof(my_Addr.addr);
     myPort = ntohs(my_Addr.addr_in.sin_port);
@@ -136,42 +152,48 @@ TCP_Socket::TCP_Socket(unsigned int other_Port,
 {
     // initialize sockets
     startup_sockets();
-
+    
     // set up remote address
     bzero((char *) &other_Addr, sizeof(other_Addr));
     other_Addr.addr_in.sin_family = AF_INET;
     other_Addr.addr_in.sin_port = htons(other_Port);
-
 #ifdef _WIN32
     other_Addr.addr_in.sin_addr.S_un.S_addr = inet_addr(other_InetAddr);
 #else
     // int inet_aton (__const char *__cp, struct in_addr *__inp
     //other_Addr.addr_in.sin_addr.s_addr = inet_aton(other_InetAddr);
-
     other_Addr.addr_in.sin_addr.s_addr = inet_addr(other_InetAddr);
 #endif
-
+    
     // set up my_Addr.addr_in 
     bzero((char *) &my_Addr, sizeof(my_Addr));    
     my_Addr.addr_in.sin_family = AF_INET;
     my_Addr.addr_in.sin_port = htons(0);
-
 #ifdef _WIN32
     my_Addr.addr_in.sin_addr.S_un.S_addr = htonl(INADDR_ANY);
 #else
     my_Addr.addr_in.sin_addr.s_addr = htonl(INADDR_ANY);
 #endif
-
+    
     // open a socket
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
         opserr << "TCP_Socket::TCP_Socket() - could not open socket\n";
+        cleanup_sockets();
+        exit(-1);
     }
-
+    
     // bind local address to it
     if (bind(sockfd, &my_Addr.addr, sizeof(my_Addr.addr)) < 0) {
         opserr << "TCP_Socket::TCP_Socket() - could not bind local address\n";
+#ifdef _WIN32
+        closesocket(sockfd);
+#else
+        close(sockfd);
+#endif
+        cleanup_sockets();
+        exit(-2);
     }
-
+    
     addrLength = sizeof(my_Addr.addr);
     getsockname(sockfd, &my_Addr.addr, &addrLength);
     myPort = ntohs(my_Addr.addr_in.sin_port);    
@@ -199,8 +221,14 @@ TCP_Socket::setUpConnection()
     if (connectType == 1) {
         
         // now try to connect to socket with remote address.
-        if (connect(sockfd, &other_Addr.addr, sizeof(other_Addr.addr))< 0) {
+        if (connect(sockfd, &other_Addr.addr, sizeof(other_Addr.addr)) < 0) {
             opserr << "TCP_Socket::setUpConnection() - could not connect\n";
+#ifdef _WIN32
+            closesocket(sockfd);
+#else
+            close(sockfd);
+#endif
+            cleanup_sockets();
             return -1;
         }
         
@@ -218,19 +246,18 @@ TCP_Socket::setUpConnection()
         if (checkEndianness) {
             int i = 1;
             int j;
-
+            
             int *data = &i;
             char *gMsg = (char *)data;
             send(sockfd, gMsg, sizeof(int), 0);
-
+            
             data = &j;
             gMsg = (char *)data;
             recv(sockfd, gMsg, sizeof(int), 0);
-
+            
             if (i != j) {
                 int k = 0x41424344;
                 char *c = (char *)&k;
-
                 if (*c == 0x41) {
                     endiannessProblem = true;
                 }
@@ -238,16 +265,31 @@ TCP_Socket::setUpConnection()
         }
 
     } else {
-
+        
         // wait for other process to contact me & set up connection
         socket_type newsockfd;
-        listen(sockfd, 1);    
+        if (listen(sockfd, 1) < 0) {
+            opserr << "TCP_Socket::setUpConnection() - listen function failed\n";
+#ifdef _WIN32
+            closesocket(sockfd);
+#else
+            close(sockfd);
+#endif
+            cleanup_sockets();
+            return -1;
+        }
         newsockfd = accept(sockfd, &other_Addr.addr, &addrLength);
         if (newsockfd < 0) {
             opserr << "TCP_Socket::setUpConnection() - could not accept connection\n";
-            return -1;
+#ifdef _WIN32
+            closesocket(sockfd);
+#else
+            close(sockfd);
+#endif
+            cleanup_sockets();
+            return -2;
         }
-
+        
         // close old socket & reset sockfd
         // we can close as we are not going to wait for others to connect
 #ifdef _WIN32
@@ -271,15 +313,15 @@ TCP_Socket::setUpConnection()
         if (checkEndianness) {
             int i;
             int j = 1;
-
+            
             int *data = &i;
             char *gMsg = (char *)data;
             recv(sockfd, gMsg, sizeof(int), 0);
-
+            
             data = &j;
             gMsg = (char *)data;
             send(sockfd, gMsg, sizeof(int), 0);
-
+            
             if (i != j) {
                 int k = 0x41424344;
                 char *c = (char *)&k;

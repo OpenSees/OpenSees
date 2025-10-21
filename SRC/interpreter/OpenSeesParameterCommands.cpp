@@ -319,10 +319,10 @@ int OPS_Parameter() {
   Parameter *newParameter;
   if (element != 0) {
     newParameter = new ElementParameter(paramTag, element->getTag(),
-                                        &argv[0], argv.size());
+                                        &argv[0], (int)argv.size());
   } else if (theObject != 0) {
     newParameter =
-        new Parameter(paramTag, theObject, &argv[0], argv.size());
+        new Parameter(paramTag, theObject, &argv[0], (int)argv.size());
   } else {
     newParameter = new Parameter(paramTag, 0, 0, 0);
   }

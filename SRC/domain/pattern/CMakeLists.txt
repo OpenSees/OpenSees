@@ -11,6 +11,7 @@ target_sources(OPS_Domain
         LinearSeries.cpp
         LoadPattern.cpp
         LoadPatternIter.cpp
+		MPAccSeries.cpp
         MultiSupportPattern.cpp
         PathSeries.cpp
         PathTimeSeries.cpp
@@ -23,7 +24,6 @@ target_sources(OPS_Domain
         TriangleSeries.cpp
         TrigSeries.cpp
         RampSeries.cpp
-	MPAccSeries.cpp
         UniformExcitation.cpp
     PUBLIC
         ConstantSeries.h
@@ -31,6 +31,7 @@ target_sources(OPS_Domain
         LinearSeries.h
         LoadPattern.h
         LoadPatternIter.h
+		MPAccSeries.h
         MultiSupportPattern.h
         PathSeries.h
         PathTimeSeries.h
@@ -43,7 +44,6 @@ target_sources(OPS_Domain
         TriangleSeries.h
         TrigSeries.h
         RampSeries.h
-	MPAccSeries.h
         UniformExcitation.h
 )
 

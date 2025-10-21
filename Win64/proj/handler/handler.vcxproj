@@ -28,12 +28,12 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
@@ -200,6 +200,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\handler\BinaryFileStream.h" />
+    <ClInclude Include="..\..\..\SRC\handler\DatabaseStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\DataFileStream.h" />
     <ClInclude Include="..\..\..\SRC\handler\DataFileStreamAdd.h" />
     <ClInclude Include="..\..\..\SRC\handler\DummyStream.h" />

@@ -44,6 +44,10 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #ifndef PythonModule_h
 #define PythonModule_h
 
+#ifdef _WIN32
+#include <corecrt.h>
+#endif
+
 #ifdef _DEBUG
 #undef _DEBUG
 #include <Python.h>
@@ -76,8 +80,9 @@ class PythonModule: public DL_Interpreter
     virtual int getDoubleList(int* size, Vector* data);
     virtual const char* getString();
     virtual const char* getStringFromAll(char* buffer, int len);
-    virtual int getStringCopy(char **stringPtr);
+    //virtual int getStringCopy(char **stringPtr);
     virtual int evalDoubleStringExpression(const char* theExpression, double& current_val);
+    virtual void resetInput(int nArgs, int cArg, const char** argv);
     virtual void resetInput(int cArg);
 
     // methods for interpreters to output results
