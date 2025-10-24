@@ -1,12 +1,22 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
 //
 #include <tcl.h>
 #include <Parsing.h>
+#include <ArgumentTracker.h>
 #include <Logging.h>
 #include <BasicModelBuilder.h>
 #include <Domain.h>
@@ -14,6 +24,7 @@
 #include <cstddef>
 
 #include <ElementalLoad.h>
+#include <FrameLoad.h>
 #include <Beam2dPointLoad.h>
 #include <Beam2dUniformLoad.h>
 #include <Beam2dPartialUniformLoad.h>
@@ -31,21 +42,265 @@
 #include <SelfWeight.h>
 #include <LoadPattern.h>
 
-
 int
-TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
-                            TCL_Char **const argv)
+TclCommand_addFrameLoad(ClientData clientData, Tcl_Interp *interp, int argc,
+                        TCL_Char **const argv)
 {
   BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
   Domain *domain       = builder->getDomain();
-  static int eleLoadTag      = 0; // TODO: this is ugly
 
-  // ensure the destructor has not been called
+  std::vector<int>   tags;
+  std::vector<Vector3D> n(1);
+  std::vector<Vector3D> m(1);
+  std::vector<Vector3D> r(1);
+  int shape, basis=FrameLoad::Reference;
+  enum class Position : int {
+    Force, End
+  };
+  ArgumentTracker<Position> tracker;
 
-  if (builder == 0 || clientData == 0) {
-    opserr << "WARNING current builder has been destroyed - eleLoad\n";
+
+  LoadPattern *pattern = builder->getEnclosingPattern();
+
+  // eleLoad FrameForce $shape -n $n -offset $r -pattern $pattern -basis $basis -ele $ele
+
+  if (argc < 3) {
+    opserr << "WARNING eleLoad FrameLoad $shape -force $n -couple $m -offset r -pattern pattern -basis $basis\n";
     return TCL_ERROR;
   }
+
+  if (strcmp(argv[2], "Dirac") == 0)
+    shape = FrameLoad::Dirac;
+  else if (strcmp(argv[2], "Heaviside") == 0)
+    shape = FrameLoad::Heaviside;
+  else if (strcmp(argv[2], "Lagrange") == 0) {
+    shape = FrameLoad::Lagrange;
+    opserr << "Lagrange shape not yet implemented\n";
+    return TCL_ERROR;
+  }
+  else {
+    opserr << "WARNING unknown shape for FrameLoad " << argv[2] << "\n";
+    return TCL_ERROR;
+  }
+
+  // Keywords
+  for (int i=0; i<argc; i++) {
+    if (strcmp(argv[i], "-pattern") == 0) {
+      if (i == argc-1) {
+        opserr << "WARNING -pattern paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      int ptag;
+      if (Tcl_GetInt(interp, argv[i+1], &ptag) != TCL_OK) {
+        opserr << "WARNING pattern parameter expected integer\n";
+        return TCL_ERROR;
+      }
+      pattern = builder->getDomain()->getLoadPattern(ptag);
+      if (pattern == nullptr) {
+        opserr << "WARNING pattern " << argv[i+1] << " not found\n";
+        return TCL_ERROR;
+      }
+      i++;
+    }
+    else if (strcmp(argv[i], "-basis") == 0) {
+      if (i == argc-1) {
+        opserr << "WARNING -basis paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      if (strcmp(argv[i+1], "global") == 0)
+        basis = FrameLoad::Embedding;
+      else if ((strcmp(argv[i+1], "reference") == 0) || 
+               (strcmp(argv[i+1], "local") == 0))
+        basis = FrameLoad::Reference;
+      else if (strcmp(argv[i+1], "director") == 0)
+        basis = FrameLoad::Director;
+      else {
+        opserr << "WARNING unknown basis for FrameLoad " << argv[i+1] << "\n";
+        return TCL_ERROR;
+      }
+      i++;
+    }
+    else if (strcmp(argv[i], "-force") == 0) {
+      if (i == argc-1) {
+        opserr << "WARNING -force paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      int list_argc;
+      TCL_Char **list_argv;
+      if (Tcl_SplitList(interp, argv[i+1], &list_argc, &list_argv) != TCL_OK) {
+        opserr << "WARNING force parameter expected list of floats\n";
+        return TCL_ERROR;
+      }
+      if (list_argc != 3) {
+        opserr << "WARNING force parameter expected list of 3 floats\n";
+        Tcl_Free((char *) list_argv);
+        return TCL_ERROR;
+      }
+      Vector3D force;
+      for (int j = 0; j < 3; j++) {
+        if (Tcl_GetDouble(interp, list_argv[j], &force[j]) != TCL_OK) {
+          opserr << "WARNING force parameter expected list of 3 floats\n";
+          Tcl_Free((char *) list_argv);
+          return TCL_ERROR;
+        }
+      }
+      // n.push_back(force);
+      n[0] = force;
+      Tcl_Free((char *) list_argv);
+
+      tracker.consume(Position::Force);
+    }
+    else if (strcmp(argv[i], "-couple") == 0) {
+      if (i == argc-1) {
+        opserr << "WARNING -couple paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      int list_argc;
+      TCL_Char **list_argv;
+      if (Tcl_SplitList(interp, argv[i+1], &list_argc, &list_argv) != TCL_OK) {
+        opserr << "WARNING couple parameter expected list of floats\n";
+        return TCL_ERROR;
+      }
+      if (list_argc != 3) {
+        opserr << "WARNING couple parameter expected list of 3 floats\n";
+        Tcl_Free((char *) list_argv);
+        return TCL_ERROR;
+      }
+      Vector3D couple;
+      for (int j = 0; j < 3; j++) {
+        if (Tcl_GetDouble(interp, list_argv[j], &couple[j]) != TCL_OK) {
+          opserr << "WARNING couple parameter expected list of 3 floats\n";
+          Tcl_Free((char *) list_argv);
+          return TCL_ERROR;
+        }
+      }
+      // m.push_back(couple);
+      m[0] = couple;
+      Tcl_Free((char *) list_argv);
+
+      tracker.consume(Position::Force);
+    }
+    else if (strcmp(argv[i], "-offset") == 0) {
+      if (i == argc-1) {
+        opserr << "WARNING -offset paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      int list_argc;
+      TCL_Char **list_argv;
+      if (Tcl_SplitList(interp, argv[i+1], &list_argc, &list_argv) != TCL_OK) {
+        opserr << "WARNING offset parameter expected list of floats\n";
+        return TCL_ERROR;
+      }
+      if (list_argc != 3) {
+        opserr << "WARNING offset parameter expected list of 3 floats\n";
+        Tcl_Free((char *) list_argv);
+        return TCL_ERROR;
+      }
+      Vector3D offset;
+      for (int j = 0; j < 3; j++) {
+        if (Tcl_GetDouble(interp, list_argv[j], &offset[j]) != TCL_OK) {
+          opserr << "WARNING offset parameter expected list of 3 floats\n";
+          Tcl_Free((char *) list_argv);
+          return TCL_ERROR;
+        }
+      }
+      // r.push_back(offset);
+      r[0] = offset;
+      Tcl_Free((char *) list_argv);
+    }
+    else if (strcmp(argv[i], "-elements") == 0) {
+      if (i == argc-1) {
+        opserr << "WARNING -elements paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      int list_argc;
+      TCL_Char **list_argv;
+      if (Tcl_SplitList(interp, argv[i+1], &list_argc, &list_argv) != TCL_OK) {
+        opserr << "WARNING elements parameter expected list of integers\n";
+        return TCL_ERROR;
+      }
+      for (int j = 0; j < list_argc; j++) {
+        int tag;
+        if (Tcl_GetInt(interp, list_argv[j], &tag) != TCL_OK) {
+          opserr << "WARNING elements parameter expected list of integers\n";
+          Tcl_Free((char *) list_argv);
+          return TCL_ERROR;
+        }
+        tags.push_back(tag);
+      }
+      Tcl_Free((char *) list_argv);
+    }
+  }
+
+  // Make sure we got everything we need.
+  if (tracker.current() != Position::End) {
+    opserr << OpenSees::PromptParseError
+           << "missing required arguments: ";
+    while (tracker.current() != Position::End) {
+      switch (tracker.current()) {
+        case Position::Force :
+          opserr << "force ";
+          break;
+        case Position::End:
+          break;
+      }
+      if (tracker.current() == Position::End)
+        break;
+      tracker.consume(tracker.current());
+    }
+    opserr << "\n";
+    return TCL_ERROR;
+  }
+
+  if (pattern == nullptr) {
+    opserr << "WARNING no current load pattern\n";
+    return TCL_ERROR;
+  }
+
+  FrameLoad *load = new FrameLoad(basis, shape, n, m, r, *pattern);
+
+  for (int i : tags) {
+    Element *elem = domain->getElement(i);
+    if (elem == nullptr) {
+      opserr << "WARNING eleLoad - no element with tag " << i << "\n";
+      delete load;
+      return TCL_ERROR;
+    }
+    if (load->addElement(*elem) != 0) {
+      opserr << "WARNING eleLoad - could not add load to element\n";
+      delete load;
+      return TCL_ERROR;
+    }
+  }
+
+  if (domain->addElementalLoad(load, pattern->getTag()) == false) {
+    opserr
+        << "WARNING eleLoad - could not add load to domain\n ";
+    delete load;
+    return TCL_ERROR;
+  }
+
+  return TCL_OK;
+}
+
+
+int
+TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc_main,
+                            TCL_Char **const argv_main)
+{
+  if (argc_main < 2) {
+    opserr << "WARNING eleLoad - expecting eleLoad type\n";
+    return TCL_ERROR;
+  }
+
+  if (strcmp(argv_main[1], "Frame") == 0) {
+    return TclCommand_addFrameLoad(clientData, interp, argc_main, argv_main);
+  }
+
+
+  BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
+  Domain *domain       = builder->getDomain();
+  static int eleLoadTag      = 0; // TODO: this is ugly
 
 
   int ndm = builder->getNDM();
@@ -54,69 +309,84 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
   std::vector<int> element_tags;
   int loadPatternTag = 0;
 
-  // First create an ID containing the ele tags of all elements
+  // Arguments argv_main will be copied into argv. 
+  // We initialize with two placeholders for "-type" and $typeName.
+  // Everything else will be appended.
+  std::vector<const char *> argv{nullptr, nullptr};
+
+  int typeIndex = -1;
+  // Create an ID containing the ele tags of all elements
   // for which the load applies.
   int count    = 1;
-  int doneEle  = 0;
-  int typeIndex = -1;
-  while (doneEle == 0 && count < argc) {
+  while (count < argc_main) {
 
     // Element tags
-    if (strcmp(argv[count], "-ele") == 0) {
+    if (strcmp(argv_main[count], "-ele") == 0) {
       count++;
       int eleStart = count;
       int eleEnd   = 0;
       int eleID;
-      while (count < argc && eleEnd == 0) {
-        if (Tcl_GetInt(interp, argv[count], &eleID) != TCL_OK)
+      while (count < argc_main && eleEnd == 0) {
+        if (Tcl_GetInt(interp, argv_main[count], &eleID) != TCL_OK)
           eleEnd = count;
         else
           count++;
       }
       if (eleStart != eleEnd) {
         for (int i = eleStart; i < eleEnd; ++i) {
-          Tcl_GetInt(interp, argv[i], &eleID);
+          Tcl_GetInt(interp, argv_main[i], &eleID);
           element_tags.push_back(eleID);
         }
       }
     }
-    else if (strcmp(argv[count], "-range") == 0) {
+
+    else if (strcmp(argv_main[count], "-range") == 0) {
       count++;
       int eleStart, eleEnd;
-      if (Tcl_GetInt(interp, argv[count], &eleStart) != TCL_OK) {
-        opserr << "WARNING eleLoad -range invalid eleStart " << argv[count]
+      if (Tcl_GetInt(interp, argv_main[count], &eleStart) != TCL_OK) {
+        opserr << "WARNING eleLoad -range invalid eleStart " << argv_main[count]
                << "\n";
         return TCL_ERROR;
       }
       count++;
-      if (Tcl_GetInt(interp, argv[count], &eleEnd) != TCL_OK) {
-        opserr << "WARNING eleLoad -range invalid eleEnd " << argv[count] << "\n";
+      if (Tcl_GetInt(interp, argv_main[count], &eleEnd) != TCL_OK) {
+        opserr << "WARNING eleLoad -range invalid eleEnd " << argv_main[count] << "\n";
         return TCL_ERROR;
       }
       count++;
       for (int i = eleStart; i <= eleEnd; ++i)
         element_tags.push_back(i);
+    }
 
-    } 
-
-    else if (strcmp(argv[count], "-pattern") == 0) {
-      count++;
-      explicitPatternPassed = true;
-      if (Tcl_GetInt(interp, argv[count], &loadPatternTag) != TCL_OK) {
-        opserr << "WARNING eleLoad -range invalid eleStart " << argv[count]
-               << "\n";
+    else if (strcmp(argv_main[count], "-pattern") == 0) {
+      if (count == argc_main - 1) {
+        opserr << "WARNING eleLoad -pattern paramter missing required argument\n";
         return TCL_ERROR;
       }
+      int ptag;
+      if (Tcl_GetInt(interp, argv_main[++count], &ptag) != TCL_OK) {
+        opserr << "WARNING eleLoad -pattern parameter expected integer\n";
+        return TCL_ERROR;
+      }
+      explicitPatternPassed = true;
+      loadPatternTag = ptag;
       count++;
+    }
 
-    } 
-    else if (strcmp(argv[count], "-type") == 0) {
-      typeIndex = count;
-      doneEle = 1;
+    else if (strcmp(argv_main[count], "-type") == 0) {
+      argv[0] = argv_main[count++];
+      argv[1] = argv_main[count++];
+      if (count >= argc_main) {
+        opserr << "WARNING eleLoad -type paramter missing required argument\n";
+        return TCL_ERROR;
+      }
+      typeIndex = 0;
 
-    } else
-      doneEle = 1;
+    } else {
+      argv.push_back(argv_main[count++]);
+    }
   }
+  const int argc = static_cast<int>(argv.size());
 
   // If  -pattern  wasnt given explicitly, see if there is one
   // activated in the builder
@@ -132,20 +402,20 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
 
-  //
-  // Create the load
-  //
-  if ((typeIndex == -1) && (strcmp(argv[count], "-type") != 0)) {
-    opserr << "WARNING eleLoad - expecting -type option but got " << argv[count]
+  if (typeIndex == -1) {
+    opserr << "WARNING missing required -type option"
            << "\n";
     return TCL_ERROR;
   }
 
+  //
+  // Create the load
+  //
   count = typeIndex+1;
-//count++;
 
-  if (strcmp(argv[count], "-beamUniform") == 0 ||
-      strcmp(argv[count], "beamUniform") == 0) {
+  if ((strcmp(argv[count], "-beamUniform") == 0) ||
+      (strcmp(argv[count], "BeamUniform") == 0) ||
+      (strcmp(argv[count], "beamUniform") == 0)) {
     //
     // see https://portwooddigital.com/2021/05/05/trapezoidal-beam-loads
     //
@@ -623,24 +893,24 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
       else if (argc - count == 4) {
         if (Tcl_GetDouble(interp, argv[count], &t1) != TCL_OK) {
           opserr << "WARNING eleLoad - invalid T1 " << argv[count]
-                 << " for -shellThermal\n";
+                 << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
 
         if (Tcl_GetDouble(interp, argv[count + 1], &locY1) != TCL_OK) {
           opserr << "WARNING eleLoad - invalid LocY1 " << argv[count + 1]
-                 << " for -shellThermal\n";
+                 << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
         if (Tcl_GetDouble(interp, argv[count + 2], &t2) != TCL_OK) {
           opserr << "WARNING eleLoad - invalid T2 " << argv[count]
-                 << " for -shellThermal\n";
+                 << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
 
         if (Tcl_GetDouble(interp, argv[count + 3], &locY2) != TCL_OK) {
           opserr << "WARNING eleLoad - invalid LocY2 " << argv[count + 1]
-                 << " for -shellThermal\n";
+                 << OpenSees::SignalMessageEnd;
           return TCL_ERROR;
         }
 
@@ -650,11 +920,8 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
                                            element_tags[i]);
 
           // add the load to the domain
-          if (domain->addElementalLoad(theLoad, loadPatternTag) ==
-              false) {
-            opserr << "WARNING eleLoad - could not add following load to "
-                      "domain:\n ";
-            opserr << theLoad;
+          if (domain->addElementalLoad(theLoad, loadPatternTag) ==  false) {
+            opserr << "WARNING eleLoad - could not add load to domain\n ";
             delete theLoad;
             return TCL_ERROR;
           }
@@ -723,7 +990,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
         int NodalTtag;
 
         if (Tcl_GetInt(interp, argv[count + i], &NodalTtag) != TCL_OK) {
-          opserr << "WARNING invalid nodeId: " << argv[1];
+          opserr << "WARNING invalid nodeId " << argv[1];
           return TCL_ERROR;
         }
 
@@ -790,9 +1057,8 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
     } //end of for loop
     return 0;
   }
-  //------------------------end  of using ThermalActionWrapper--------------------------
-  //-----------------Adding tcl command for beam thermal action(2D&3D), 2013..[Begin]---------------
 
+  //-----------------Adding tcl command for beam thermal action(2D&3D), 2013..[Begin]---------------
   else if (strcmp(argv[count], "-beamThermal") == 0) {
     count++;
     //For two dimensional model
@@ -889,7 +1155,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
             eleLoadTag++;
           } //end of for loop
           return 0;
-        } //end of <if(strcmp(argv[count+1],"-node") = 0)>
+        } // end of <if(strcmp(argv[count+1],"-node") = 0)>
         //--------------------------end for beam2DThermalAction with time series ----------------------------------------
       } else {
         //(1) 9 temperature points, i.e. 8 layers
@@ -1424,6 +1690,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
           eleLoadTag++;
         }
       }
+
       // One twmp change give, uniform temp change in element
       else if (argc - count == 1) {
         if (Tcl_GetDouble(interp, argv[count], &temp1) != TCL_OK) {

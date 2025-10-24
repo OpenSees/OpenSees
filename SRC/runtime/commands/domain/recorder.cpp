@@ -1,6 +1,15 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
@@ -23,8 +32,9 @@
 #endif
 #define strcmp strcasecmp
 
+
 #include <tcl.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 #include <Domain.h>
 #include <NodeIter.h>
 #include <NodeData.h>
@@ -67,7 +77,6 @@ extern FEM_ObjectBroker theBroker;
 OPS_Routine OPS_PVDRecorder;
 OPS_Routine OPS_GmshRecorder;
 OPS_Routine OPS_MPCORecorder;
-OPS_Routine OPS_VTKHDF_Recorder;
 OPS_Routine OPS_VTK_Recorder;
 OPS_Routine OPS_ElementRecorderRMS;
 
@@ -179,29 +188,29 @@ getNodeDataFlag(const char *dataToStore, Domain& theDomain, int* dataIndex)
   NodeData dataFlag = NodeData::DisplTrial; // 10;
 
   if (dataToStore == nullptr)
-    dataFlag = NodeData::DisplTrial; // 0;
+    dataFlag = NodeData::DisplTrial;      // 0;
   else if ((strcmp(dataToStore, "disp") == 0)) {
-    dataFlag = NodeData::DisplTrial; // 0
+    dataFlag = NodeData::DisplTrial;      // 0
   } else if ((strcmp(dataToStore, "vel") == 0)) {
-    dataFlag = NodeData::VelocTrial; // 1
+    dataFlag = NodeData::VelocTrial;      // 1
   } else if ((strcmp(dataToStore, "accel") == 0)) {
-    dataFlag = NodeData::AccelTrial; // 2
+    dataFlag = NodeData::AccelTrial;      // 2
   } else if ((strcmp(dataToStore, "incrDisp") == 0)) {
-    dataFlag = NodeData::IncrDisp;  // 3;
+    dataFlag = NodeData::IncrDisp;        // 3;
   } else if ((strcmp(dataToStore, "incrDeltaDisp") == 0)) {
-    dataFlag = NodeData::IncrDeltaDisp; // 4;
+    dataFlag = NodeData::IncrDeltaDisp;   // 4;
   } else if ((strcmp(dataToStore, "unbalance") == 0)) {
-    dataFlag = NodeData::UnbalancedLoad; // 5
+    dataFlag = NodeData::UnbalancedLoad;  // 5
   } else if ((strcmp(dataToStore, "unbalanceInclInertia") == 0) ||
-	     (strcmp(dataToStore, "unbalanceIncInertia") == 0) ||
-	     (strcmp(dataToStore, "unbalanceIncludingInertia") == 0))  {
+	           (strcmp(dataToStore, "unbalanceIncInertia") == 0) ||
+	           (strcmp(dataToStore, "unbalanceIncludingInertia") == 0))  {
     dataFlag = NodeData::UnbalanceInclInertia; // 6
   } else if ((strcmp(dataToStore, "reaction") == 0)) {
-    dataFlag = NodeData::Reaction;   // 7
+    dataFlag = NodeData::Reaction;             // 7
   } else if (((strcmp(dataToStore, "reactionIncInertia") == 0))
 	     || ((strcmp(dataToStore, "reactionInclInertia") == 0))
 	     || ((strcmp(dataToStore, "reactionIncludingInertia") == 0))) {
-    dataFlag = NodeData::ReactionInclInertia; // 8;
+    dataFlag = NodeData::ReactionInclInertia;  // 8;
   } else if (((strcmp(dataToStore, "rayleighForces") == 0))
 	     || ((strcmp(dataToStore, "rayleighDampingForces") == 0))) {
     dataFlag = NodeData::ReactionInclRayleigh; // 9;
@@ -222,8 +231,9 @@ getNodeDataFlag(const char *dataToStore, Domain& theDomain, int* dataIndex)
       dataFlag = NodeData::EigenVector; // 10 + mode;
     else
       dataFlag = NodeData::Empty; // 10;
+  }
 
-  } else if ((strncmp(dataToStore, "sensitivity",11) == 0)) {
+  else if ((strncmp(dataToStore, "sensitivity",11) == 0)) {
     int paramTag = atoi(&(dataToStore[11]));
     Parameter *theParameter = theDomain.getParameter(paramTag);
     int grad = -1;
@@ -234,8 +244,9 @@ getNodeDataFlag(const char *dataToStore, Domain& theDomain, int* dataIndex)
       dataFlag = NodeData::DisplSensitivity; // 1000 + grad;
     else
       dataFlag = NodeData::Empty; // 10;
+  }
 
-  } else if ((strncmp(dataToStore, "velSensitivity",14) == 0)) {
+  else if ((strncmp(dataToStore, "velSensitivity",14) == 0)) {
     int paramTag = atoi(&(dataToStore[14]));
     Parameter *theParameter = theDomain.getParameter(paramTag);
     int grad = -1;
@@ -247,8 +258,9 @@ getNodeDataFlag(const char *dataToStore, Domain& theDomain, int* dataIndex)
       dataFlag = NodeData::VelocSensitivity; // 2000 + grad;
     else
       dataFlag = NodeData::Empty; // 10;
+  }
 
-  } else if ((strncmp(dataToStore, "accSensitivity",14) == 0)) {
+  else if ((strncmp(dataToStore, "accSensitivity",14) == 0)) {
     int paramTag = atoi(&(dataToStore[14]));
     Parameter *theParameter = theDomain.getParameter(paramTag);
     int grad = -1;
@@ -351,7 +363,7 @@ parseOutputOption(OutputOptions *options, Tcl_Interp* interp, int argc, TCL_Char
           options->filename = argv[loc + 1];
           options->eMode = eMode;
         } else {
-          opserr << G3_ERROR_PROMPT
+          opserr << OpenSees::PromptValueError
                  << "expected file name after flag '" << argv[loc] << "\n";
           return -1;
         }
@@ -366,7 +378,9 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
                   TCL_Char ** const argv, Domain &theDomain, Recorder **theRecorder)
 {
   assert(clientData != nullptr);
-  Domain* domain = (Domain*)clientData;
+  Domain* domain = static_cast<Domain*>(clientData);
+  // BasicModelBuilder *builder = static_cast<BasicModelBuilder*>(clientData);
+  // Domain* domain = builder->getDomain();
   G3_Runtime *rt = G3_getRuntime(interp);
   (*theRecorder) = nullptr;
 
@@ -389,6 +403,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       (strcmp(argv[1], "NormEnvelopeElement") == 0)) {
 
     OutputOptions options;
+    std::vector<int> unused;
 
     int numEle = 0;
     int endEleIDs = 2;
@@ -396,13 +411,11 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
     double rTolDt = 1e-5;
     bool echoTime = false;
     int loc = endEleIDs;
-    int flags   = 0;
-    int eleData = 0;
     ID *eleIDs  = 0;
 
     ID *specificIndices = nullptr;
 
-    while (flags == 0 && loc < argc) {
+    while (loc < argc) {
       int consumed;
       if ((consumed = parseOutputOption(&options, interp, argc-loc, &argv[loc])) != 0) {
         if (consumed > 0)
@@ -413,6 +426,10 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
 
       else if (strcmp(argv[loc], "-rTolDt") == 0) {
         loc++;
+        if (loc == argc) {
+          opserr << OpenSees::PromptValueError << "flag -rTolDt is missing required argument\n";
+          return TCL_ERROR;
+        }
         if (Tcl_GetDouble(interp, argv[loc], &rTolDt) != TCL_OK)
           return TCL_ERROR;
         loc++;
@@ -431,7 +448,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
           return TCL_ERROR;
         }
 
-        // read in a list of ele until end of command or other flag
+        // read in a list of integer tags until end of command or other flag
         loc++;
         int eleTag;
         eleIDs = new ID(0, 32);
@@ -442,19 +459,13 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         }
         Tcl_ResetResult(interp);
 
-        if (loc == argc) {
-          opserr << "ERROR: No response type specified for element recorder. "
-                 << endln;
-          delete eleIDs;
-          return TCL_ERROR;
-        }
-
-        if (strcmp(argv[loc], "all") == 0) {
+        if (loc < argc && (strcmp(argv[loc], "all") == 0)) {
           eleIDs = nullptr;
           loc++;
         }
+      } 
 
-      } else if ((strcmp(argv[loc], "-eleRange") == 0) ||
+      else if ((strcmp(argv[loc], "-eleRange") == 0) ||
                  (strcmp(argv[loc], "-range") == 0)) {
 
         // ensure no segmentation fault if user messes up
@@ -469,14 +480,14 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         if (Tcl_GetInt(interp, argv[loc + 1], &start) != TCL_OK) {
           opserr << "WARNING recorder Element -eleRange start? end? - invalid "
                     "start "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
 
         if (Tcl_GetInt(interp, argv[loc + 2], &end) != TCL_OK) {
           opserr
               << "WARNING recorder Element -eleRange start? end? - invalid end "
-              << argv[loc + 2] << endln;
+              << argv[loc + 2] << "\n";
           return TCL_ERROR;
         }
 
@@ -503,13 +514,13 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         int tag;
         if (Tcl_GetInt(interp, argv[loc + 1], &tag) != TCL_OK) {
           opserr << "WARNING recorder Element -region tag? - invalid tag "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         MeshRegion *theRegion = domain->getRegion(tag);
         if (theRegion == nullptr) {
           opserr << "WARNING recorder Element -region " << tag
-                 << " - region does not exist" << endln;
+                 << " - region does not exist" << "\n";
           return TCL_ERROR; // was TCL_OK
         }
         const ID &eleRegion = theRegion->getElements();
@@ -542,61 +553,69 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
           loc++;
         }
         Tcl_ResetResult(interp);
+      }
 
-      } else if ((strcmp(argv[loc], "-time") == 0) ||
+      else if ((strcmp(argv[loc], "-time") == 0) ||
                  (strcmp(argv[loc], "-load") == 0)) {
         echoTime = true;
         loc++;
       }
 
-      else if (strcmp(argv[loc], "-dT") == 0) {
+      else if (strcasecmp(argv[loc], "-dT") == 0) {
         // allow user to specify time step size for recording
         loc++;
+        if (loc == argc) {
+          opserr << OpenSees::PromptValueError << "flag -dT is missing required argument\n";
+          return TCL_ERROR;
+        }
         if (Tcl_GetDouble(interp, argv[loc], &dT) != TCL_OK)
           return TCL_ERROR;
         loc++;
       }
 
       else {
-        // TODO: handle the same as Node recorder; see Example1.1.py
-        // first unknown string then is assumed to start
-        // element response request starts
-        eleData = loc;
-        flags = 1;
+        unused.push_back(loc);
+        loc++;
       }
     }
 
-    if (eleData >= argc) {
+    if (unused.size() == 0) {
       opserr << "ERROR: No response type specified for element recorder. "
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
 
-    const char **data = new const char *[argc - eleData];
-    for (int i = eleData, j = 0; i < argc; i++, j++)
-      data[j] = argv[i];
+    // Forward any unused arguments to the element
+    const char **data = new const char *[unused.size()];
+    for (unsigned i=0; i< unused.size(); i++)
+      data[i] = argv[unused[i]];
 
     // construct the DataHandler
     theOutputStream = createOutputStream(options);
 
     if (strcmp(argv[1], "Element") == 0)
-      (*theRecorder) = new ElementRecorder(eleIDs, data, argc - eleData, echoTime, *domain,
+      (*theRecorder) = new ElementRecorder(eleIDs, data, unused.size(), echoTime, *domain,
                                            *theOutputStream, dT, rTolDt, specificIndices);
 
     else if (strcmp(argv[1], "EnvelopeElement") == 0)
-      (*theRecorder) = new EnvelopeElementRecorder(eleIDs, data, argc - eleData,
+      (*theRecorder) = new EnvelopeElementRecorder(eleIDs, data, unused.size(),
                                                    *domain, *theOutputStream, dT, rTolDt,
                                                    echoTime, specificIndices);
 
     else if (strcmp(argv[1], "NormElement") == 0)
-      (*theRecorder) = new NormElementRecorder(eleIDs, data, argc - eleData, 
+      (*theRecorder) = new NormElementRecorder(eleIDs, data, unused.size(), 
                                                echoTime, *domain, *theOutputStream, 
                                                dT, rTolDt, specificIndices);
 
     else
-      (*theRecorder) = new NormEnvelopeElementRecorder(eleIDs, data, argc - eleData,
+      (*theRecorder) = new NormEnvelopeElementRecorder(eleIDs, data, unused.size(),
                                                        *domain, *theOutputStream, dT, 1e-6,
                                                        echoTime, specificIndices);
+
+    if (*theRecorder != nullptr) {
+      opsdbg << G3_DEBUG_PROMPT << "Created recorder \n";
+      (*theRecorder)->Print(opsdbg, 0);
+    }
 
     if (eleIDs != nullptr)
       delete eleIDs;
@@ -610,7 +629,9 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
            (strcmp(argv[1], "elementDamage") == 0)) {
     //////////  By Arash Altoontash /////////////////
     TCL_Char *filename  = nullptr;
-
+#if 1 
+      
+#else
     if (argc < 7) {
       opserr << "WARNING recorder ElementDamage eleID? <-time> "
              << "<-file filename?> <-section secID1? secID2? ...> <-dof "
@@ -702,7 +723,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
     }
 
     DamageModel *dmgPTR;
-    dmgPTR = OPS_getDamageModel(dmgID);
+    dmgPTR = builder->getTypedObject<DamageModel>(dmgID);
 
     if (dmgPTR == NULL) {
       opserr << "WARNING recorder ElementDamage: specified damage model not "
@@ -716,7 +737,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
     // now construct the recorder
     (*theRecorder) = new DamageRecorder(eleID, secIDs, dofID, dmgPTR, *domain,
                                         echoTime, dT, 1e-6, *theOutput);
-
+#endif
   }
 
   else if (/* (strcmp(argv[1], "Remove") == 0) || */
@@ -731,7 +752,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
                 "secID1? secID2? ...> -crit crit1? value1?"
              << " <-crit crit2? value2?> <-time> <-file filename?> <-mass "
                 "mass1? mass2? ...> <-g gAcc gDir? gPat?>?"
-             << endln;
+             << "\n";
       return TCL_ERROR;
     }
 
@@ -782,19 +803,18 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
 
         if (Tcl_GetInt(interp, argv[loc + 1], &nodeTag) != TCL_OK) {
           opserr << "WARNING recorder Collapse -node - invalid node tag "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
 
         Node *theNode = domain->getNode(nodeTag);
         if (theNode == nullptr) {
           opserr << "WARNING recorder Collapse -node - invalid node "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         loc += 2;
       }
-      // new
 
       else if (strcmp(argv[loc], "-file_infill") == 0) {
         filenameinf = argv[loc + 1];
@@ -804,17 +824,17 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       else if (strcmp(argv[loc], "-checknodes") == 0) {
         if (Tcl_GetInt(interp, argv[loc + 1], &nTagbotn) != TCL_OK) {
           opserr << "WARNING recorder Collapse -node - invalid node tag "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         if (Tcl_GetInt(interp, argv[loc + 2], &nTagmidn) != TCL_OK) {
           opserr << "WARNING recorder Collapse -node - invalid node tag "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         if (Tcl_GetInt(interp, argv[loc + 3], &nTagtopn) != TCL_OK) {
           opserr << "WARNING recorder Collapse -node - invalid node tag "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         loc += 4;
@@ -824,13 +844,11 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         if (Tcl_GetInt(interp, argv[loc + 1], &globgrav) != TCL_OK) {
           opserr << "WARNING recorder Collapse -global_gravaxis - invalid "
                     "global axis for gravity "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         loc += 2;
       }
-
-      //    end of new
 
       else if ((strcmp(argv[loc], "-slave") == 0) ||
                (strcmp(argv[loc], "-secondary") == 0)) {
@@ -850,7 +868,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         }
 
         //
-        // read in a list of ele until end of command or other flag
+        // read in a list of integer tags until end of command or other flag
         //
         loc++;
         int eleTag;
@@ -865,10 +883,10 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
 
         Tcl_ResetResult(interp);
 
-        if (strcmp(argv[loc], "all") == 0) {
+        if (loc < argc && (strcmp(argv[loc], "all") == 0)) {
           ElementIter &theEleIter = domain->getElements();
           Element *theEle;
-          while ((theEle = theEleIter()) != 0)
+          while ((theEle = theEleIter()) != nullptr)
             eleIDs[numEle++] = theEle->getTag();
           loc++;
         }
@@ -891,13 +909,13 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         if (Tcl_GetInt(interp, argv[loc + 1], &start) != TCL_OK) {
           opserr << "WARNING recorder Element -eleRange start? end? - invalid "
                     "start "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         if (Tcl_GetInt(interp, argv[loc + 2], &end) != TCL_OK) {
           opserr
               << "WARNING recorder Element -eleRange start? end? - invalid end "
-              << argv[loc + 2] << endln;
+              << argv[loc + 2] << "\n";
           return TCL_ERROR;
         }
         if (start > end) {
@@ -926,13 +944,13 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         int tag;
         if (Tcl_GetInt(interp, argv[loc + 1], &tag) != TCL_OK) {
           opserr << "WARNING recorder Element -region tag? - invalid tag "
-                 << argv[loc + 1] << endln;
+                 << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         MeshRegion *theRegion = domain->getRegion(tag);
         if (theRegion == 0) {
           opserr << "WARNING recorder Element -region " << tag
-                 << " - region does not exist" << endln;
+                 << " - region does not exist" << "\n";
           return TCL_OK;
         }
         const ID &eleRegion = theRegion->getElements();
@@ -956,6 +974,10 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       else if (strcmp(argv[loc], "-dT") == 0) {
         // allow user to specify time step size for recording
         loc++;
+        if (loc == argc) {
+          opserr << OpenSees::PromptValueError << "flag -dT is missing required argument\n";
+          return TCL_ERROR;
+        }
         if (Tcl_GetDouble(interp, argv[loc], &dT) != TCL_OK)
           return TCL_ERROR;
         loc++;
@@ -995,21 +1017,21 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
         if (Tcl_GetDouble(interp, argv[loc], &gAcc) != TCL_OK) {
           opserr << "WARNING recorder Remove -g gValue? gDir? gPat?... invalid "
                     "gValue ";
-          opserr << argv[loc] << endln;
+          opserr << argv[loc] << "\n";
           return TCL_ERROR;
         }
 
         if (Tcl_GetInt(interp, argv[loc + 1], &gDir) != TCL_OK) {
           opserr << "WARNING recorder Remove -g gValue? gDir? gPat?... invalid "
                     "gDir ";
-          opserr << argv[loc + 1] << endln;
+          opserr << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
 
         if (Tcl_GetInt(interp, argv[loc + 2], &gPat) != TCL_OK) {
           opserr << "WARNING recorder Remove -g gValue? gDir? gPat?... invalid "
                     "gPat ";
-          opserr << argv[loc + 1] << endln;
+          opserr << argv[loc + 1] << "\n";
           return TCL_ERROR;
         }
         loc += 3;
@@ -1071,14 +1093,14 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
           critTag = 7;
         else {
           opserr << "Error: RemoveRecorder - Removal Criteria " << argv[loc + 1]
-                 << " not recognized" << endln;
+                 << " not recognized" << "\n";
           return TCL_ERROR;
         }
         if (critTag != 7) {
           if (Tcl_GetDouble(interp, argv[loc + 2], &critValue) != TCL_OK) {
             opserr << "WARNING recorder Remove -crit critTag? critValue?... "
                       "invalid critValue ";
-            opserr << argv[loc + 1] << endln;
+            opserr << argv[loc + 1] << "\n";
             return TCL_ERROR;
           }
         }
@@ -1184,12 +1206,15 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       else if (strcmp(argv[pos], "-time") == 0) {
         echoTimeFlag = true;
         pos += 1;
-
       }
 
       else if (strcmp(argv[pos], "-dT") == 0) {
         // allow user to specify time step size for recording
         pos++;
+        if (pos == argc) {
+          opserr << OpenSees::PromptValueError << "flag -dT is missing required argument\n";
+          return TCL_ERROR;
+        }
         if (Tcl_GetDouble(interp, argv[pos], &dT) != TCL_OK)
           return TCL_ERROR;
         pos++;
@@ -1249,7 +1274,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
     if (iNodes.Size() != jNodes.Size()) {
       opserr << "WARNING recorder Drift - the number of iNodes and jNodes must "
                 "be the same "
-             << iNodes << " " << jNodes << endln;
+             << iNodes << " " << jNodes << "\n";
       return TCL_ERROR;
     }
 
@@ -1293,112 +1318,6 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
     (*theRecorder) = (Recorder *)OPS_GmshRecorder(rt, argc, argv);
   }
 
-  // else if (strcmp(argv[1],"gmshparallel") == 0 ||
-  // strcmp(argv[1],"GMSHPARALLEL") == 0) {
-  //  OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-  //  (*theRecorder) = (Recorder*) OPS_GmshRecorderParallel();
-  //  }
-
-#if 0
-  else if (strcmp(argv[1], "mpco") == 0) {
-      OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-    (*theRecorder) = (Recorder*)OPS_MPCORecorder(rt, argc, argv);
-    if (theRecorder == 0) {
-      return TCL_ERROR;
-    }
-  }
-  
-  else if (strcmp(argv[1], "vtkhdf") == 0 || strcmp(argv[1], "VTKHDF") == 0) {
-    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
-    (*theRecorder) = (Recorder *)OPS_VTKHDF_Recorder(rt, argc, argv);
-    if (theRecorder == 0) {
-      return TCL_ERROR;
-    }
-  }
-#endif
-
-#if 0
-  else if (strcmp(argv[1],"GSA") == 0) {
-      if (argc < 3) {
-        opserr << argc;
-        opserr << "WARNING recorder GSA -file filename? -dT deltaT? - not enough arguments\n"; 
-        return TCL_ERROR;
-      }
-      TCL_Char *filename = 0;
-      TCL_Char *title1 =0;
-      TCL_Char *title2 =0;
-      TCL_Char *title3 =0;
-      TCL_Char *jobno  =0;
-      TCL_Char *initials =0;
-      TCL_Char *spec     =0;
-      TCL_Char *currency =0;
-      TCL_Char *length =0;
-      TCL_Char *force  =0;
-      TCL_Char *temp   =0;
-      double dT = 0.0;
-      int loc = 2;
-
-      while (loc < argc) {
-        if ((strcmp(argv[loc],"-file") == 0) ||
-            (strcmp(argv[loc],"-file") == 0)) {
-          filename = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-title1") == 0) ||
-            (strcmp(argv[loc],"-Title1e") == 0)) {
-          title1 = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-title2") == 0) ||
-            (strcmp(argv[loc],"-Title2e") == 0)) {
-          title2 = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-title3") == 0) ||
-            (strcmp(argv[loc],"-Title3e") == 0)) {
-          title3 = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-jobno") == 0) ||
-            (strcmp(argv[loc],"-JobNo") == 0)) {
-          jobno = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-initials") == 0) ||
-            (strcmp(argv[loc],"-Initials") == 0)) {
-          initials = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-spec") == 0) ||
-            (strcmp(argv[loc],"-Spec") == 0)) {
-          spec = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-currency") == 0) ||
-            (strcmp(argv[loc],"-Currency") == 0)) {
-          currency = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-length") == 0) ||
-            (strcmp(argv[loc],"-Length") == 0)) {
-          length = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-force") == 0) ||
-            (strcmp(argv[loc],"-Force") == 0)) {
-          force = argv[loc+1];
-          loc += 2;
-        } else if ((strcmp(argv[loc],"-temp") == 0) ||
-            (strcmp(argv[loc],"-Temp") == 0)) {
-          temp = argv[loc+1];
-          loc += 2;
-        }
-        else if (strcmp(argv[loc],"-dT") == 0) {
-          if (Tcl_GetDouble(interp, argv[loc+1], &dT) != TCL_OK)
-            return TCL_ERROR;
-          loc += 2;
-        }
-        else
-          loc++;
-      }
-
-      GSA_Recorder *theR = new GSA_Recorder(theDomain, filename, title1, title2,
-              title3, jobno, initials, spec, currency, length, force, temp, dT);
-      (*theRecorder) = theR;
-  }
-#endif
-
   else {
 
     // try existing loaded packages
@@ -1422,7 +1341,7 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   if (*theRecorder == nullptr) {
-    opserr << G3_ERROR_PROMPT << "No recorder exists "
+    opserr << OpenSees::PromptValueError << "No recorder exists "
            << "with type '" << argv[1] << "'\n";
 
     return TCL_ERROR;
@@ -1439,6 +1358,11 @@ TclAddRecorder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** 
 
   Recorder *theRecorder = nullptr;
 
+  if (argc > 1 && strcasecmp(argv[1], "flush") == 0) {
+    domain->flushRecorders();
+    return TCL_OK;
+  }
+
   if (TclCreateRecorder(clientData, interp, argc, argv, *domain, &theRecorder) != TCL_OK)
     return TCL_ERROR;
 
@@ -1448,7 +1372,7 @@ TclAddRecorder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** 
   }
 
   else if ((domain->addRecorder(*theRecorder)) < 0) {
-    opserr << G3_ERROR_PROMPT << "Failed to add recorder to domain" << endln;
+    opserr << OpenSees::PromptValueError << "Failed to add recorder to domain" << "\n";
     delete theRecorder;
     Tcl_SetObjResult(interp, Tcl_NewIntObj(-1));
     return TCL_ERROR;
@@ -1561,7 +1485,7 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   OutputOptions options;
 
   if (argc < 7) {
-    opserr << G3_ERROR_PROMPT << "recorder Node ";
+    opserr << OpenSees::PromptValueError << "recorder Node ";
     opserr << "-node <list nodes> -dof <doflist> -file <filename> -dT <dT> "
               "<reponse>";
     return TCL_ERROR;
@@ -1587,12 +1511,20 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
     else if (strcmp(argv[pos], "-dT") == 0) {
       // allow user to specify time step size for recording
       pos++;
+      if (pos == argc) {
+        opserr << OpenSees::PromptValueError << "flag -dT is missing required argument\n";
+        return TCL_ERROR;
+      }
       if (Tcl_GetDouble(interp, argv[pos], &dT) != TCL_OK)
         return TCL_ERROR;
       pos++;
     }
     else if (strcmp(argv[pos], "-rTolDt") == 0) {
       pos++;
+      if (pos == argc) {
+        opserr << OpenSees::PromptValueError << "flag -rTolDt is missing required argument\n";
+        return TCL_ERROR;
+      }
       if (Tcl_GetDouble(interp, argv[pos], &rTolDt) != TCL_OK)
         return TCL_ERROR;
       pos++;
@@ -1647,7 +1579,7 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
           } else if (domain->getNode(node) == nullptr) {
             delete theNodes;
             theNodes = nullptr;
-            opserr << G3_ERROR_PROMPT << "cannot find node with tag " << node << "\n";
+            opserr << OpenSees::PromptValueError << "cannot find node with tag " << node << "\n";
             return TCL_ERROR;
 
           } else {
@@ -1662,7 +1594,7 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
              (strcmp(argv[pos], "-range")==0)) {
       // ensure no segmentation fault if user messes up
       if (argc < pos + 3) {
-        opserr << G3_ERROR_PROMPT << "recorder " << argv[1] 
+        opserr << OpenSees::PromptValueError << "recorder " << argv[1] 
                << " .. -range start? end?  .. - missing start/end tags\n";
         return TCL_ERROR;
       }
@@ -1670,16 +1602,16 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       // read in start and end tags of two elements & add set [start,end]
       int start, end;
       if (Tcl_GetInt(interp, argv[pos + 1], &start) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "recorder " << argv[1] 
+        opserr << OpenSees::PromptValueError << "recorder " << argv[1] 
                << " -range start? end? - invalid start "
-               << argv[pos + 1] << endln;
+               << argv[pos + 1] << "\n";
         return TCL_ERROR;
       }
 
       if (Tcl_GetInt(interp, argv[pos + 2], &end) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "recorder " << argv[1] 
+        opserr << OpenSees::PromptValueError << "recorder " << argv[1] 
                << " -range start? end? - invalid end "
-               << argv[pos + 2] << endln;
+               << argv[pos + 2] << "\n";
         return TCL_ERROR;
       }
 
@@ -1706,13 +1638,13 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       int tag;
       if (Tcl_GetInt(interp, argv[pos + 1], &tag) != TCL_OK) {
         opserr << "WARNING recorder Node -region tag? - invalid tag "
-               << argv[pos + 1] << endln;
+               << argv[pos + 1] << "\n";
         return TCL_ERROR;
       }
       MeshRegion *theRegion = domain->getRegion(tag);
       if (theRegion == nullptr) {
         opserr << "WARNING recorder Node -region " << tag
-               << " - region does not exist" << endln;
+               << " - region does not exist" << "\n";
         return TCL_OK;
       }
 
@@ -1736,12 +1668,12 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
           pos++;
         }
     }
-    // AddingSensitivity:BEGIN //////////////////////////////////////
+
     else if (strcmp(argv[pos], "-sensitivity") == 0) {
       pos++;
       int paramTag;
       if (Tcl_GetInt(interp, argv[pos], &paramTag) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "invalid parameter tag to node recorder." << endln;
+        opserr << OpenSees::PromptValueError << "invalid parameter tag to node recorder." << "\n";
         return TCL_ERROR;
       }
       pos++;
@@ -1749,19 +1681,21 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
       // Now get gradIndex from parameter tag
       Parameter *theParameter = domain->getParameter(paramTag);
       if (theParameter == nullptr) {
-        opserr << G3_ERROR_PROMPT << "parameter " << paramTag << " not found"
-               << endln;
+        opserr << OpenSees::PromptValueError << "parameter " << paramTag << " not found"
+               << "\n";
         return TCL_ERROR;
       }
       gradIndex = theParameter->getGradIndex();
     }
-    // AddingSensitivity:END ////////////////////////////////////////
+
     else if (responseID == nullptr && pos < argc) {
       responseID = argv[pos];
       pos++;
     }
+
     else if (pos < argc) {
-      opserr << "WARNING Unknown argument " << argv[pos] << "\n";
+      opserr << "WARNING Unknown argument " << argv[pos] << " at index " << pos << "\n";
+      return TCL_ERROR;
     }
   } // while (pos < argc)
 
@@ -1773,7 +1707,7 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   theOutputStream = createOutputStream(options);
 
   if (theTimeSeries != nullptr && theTimeSeriesID.Size() < theDofs.Size()) {
-    opserr << G3_ERROR_PROMPT << "recorder Node/EnvelopNode # TimeSeries must equal # "
+    opserr << OpenSees::PromptValueError << "recorder Node/EnvelopNode # TimeSeries must equal # "
               "dof - IGNORING TimeSeries OPTION\n";
     for (int i = 0; i < theTimeSeriesID.Size(); ++i) {
       if (theTimeSeries[i] != nullptr)
@@ -1785,7 +1719,7 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
   if ((dataFlag = getNodeDataFlag(responseID, *domain, &dataIndex)) == NodeData::Unknown) {
-    opserr << G3_ERROR_PROMPT << "invalid response ID '" << responseID << "'\n";
+    opserr << OpenSees::PromptValueError << "invalid response ID '" << responseID << "'\n";
     return TCL_ERROR;
   }
 

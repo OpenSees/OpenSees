@@ -150,6 +150,7 @@ void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
 void* OPS_ASDConcrete1DMaterial();
+void* OPS_ASDSteel1DMaterial();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BoucWenOriginal();
@@ -263,6 +264,7 @@ void* OPS_TDConcreteNL(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
 void* OPS_CreepMaterial(void);
+void* OPS_CreepShrinkageACI209(void);
 
 void* OPS_CoulombDamperMaterial();
 void* OPS_GMG_CyclicReinforcedConcrete();
@@ -463,6 +465,8 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("ASDConcrete1D", &OPS_ASDConcrete1DMaterial));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ASDSteel1D", &OPS_ASDSteel1DMaterial));
+  uniaxialMaterialsMap.insert(
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
@@ -622,6 +626,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("TDConcreteMC10NL", &OPS_TDConcreteMC10NL));
   uniaxialMaterialsMap.insert(
       std::make_pair("Creep", &OPS_CreepMaterial));  
+  uniaxialMaterialsMap.insert(
+      std::make_pair("CreepShrinkageACI209", &OPS_CreepShrinkageACI209));
   uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(

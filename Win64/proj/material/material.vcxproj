@@ -294,6 +294,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Cast.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDSteel1DMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02.cpp" />
@@ -315,6 +316,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CubicSpline.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DegradingPinchedBW.cpp" />
@@ -761,6 +763,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Cast.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASD_SMA_3K.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDSteel1DMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02.h" />
