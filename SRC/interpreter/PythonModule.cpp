@@ -440,6 +440,11 @@ int PythonModule::setString(std::map<const char*, std::vector<const char*>>& dat
     return 0;
 }
 
+int PythonModule::setGenericDict(GenericDict& data) {
+    wrapper.setGenericDictOutput(data);
+    return 0;
+}
+
 int
 PythonModule::runCommand(const char *cmd) {
     return PyRun_SimpleString(cmd);

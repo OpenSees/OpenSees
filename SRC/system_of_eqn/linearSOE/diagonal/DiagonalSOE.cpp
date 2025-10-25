@@ -414,6 +414,53 @@ DiagonalSOE::saveSparseA(OPS_Stream &output, int baseIndex)
   return 0;
 }
 
+int
+DiagonalSOE::getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex)
+{
+  if (A == nullptr) {
+    opserr << "FATAL DiagonalSOE::getSparseA - A == nullptr";
+    return -1;
+  }
+
+  // Diagonal matrix has size non-zero elements (only on diagonal)
+  rowIndices.resize(size);
+  colIndices.resize(size);
+  values.resize(size);
+  
+  // Fill vectors with diagonal elements
+  for (int i = 0; i < size; i++) {
+      int index = i + baseIndex;
+      rowIndices(i) = index;
+      colIndices(i) = index;
+      values(i) = A[i];
+  }
+  
+  return 0;
+}
+
+int
+DiagonalSOE::getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex)
+{
+  if (A == nullptr) {
+    opserr << "FATAL DiagonalSOE::getSparseA - A == nullptr";
+    return -1;
+  }
+
+  // Diagonal matrix has size non-zero elements (only on diagonal)
+  rowIndices.resize(size);
+  colIndices.resize(size);
+  values.resize(size);
+  
+  // Fill vectors with diagonal elements
+  for (int i = 0; i < size; i++) {
+      int index = i + baseIndex;
+      rowIndices[i] = index;
+      colIndices[i] = index;
+      values[i] = A[i];
+  }
+  
+  return 0;
+}
 
 int
 DiagonalSOE::setDiagonalSolver(DiagonalSolver &newSolver)

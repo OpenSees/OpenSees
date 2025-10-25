@@ -18,6 +18,7 @@ target_sources(OPS_Api
         #win32Functions.cpp
     PUBLIC
         elementAPI.h
+        GenericDict.h
 	#packages.h
 )
 

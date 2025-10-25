@@ -66,6 +66,8 @@ class SparseGenRowLinSOE : public LinearSOE
     int setSparseGenRowSolver(SparseGenRowLinSolver &newSolver);    
 
     int saveSparseA(OPS_Stream& output, int baseIndex = 0);
+    int getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex = 0);
+    int getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex = 0);
     
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);    

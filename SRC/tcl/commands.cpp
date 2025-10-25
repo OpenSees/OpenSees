@@ -2412,8 +2412,27 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           }
           return res == 0 ? res : TCL_ERROR;
         } else {
-          opserr << "WARNING: printA -sparse is not supported with -ret. Ignoring -sparse flag" << endln;
-          fileSparse = false;
+          // Support sparse matrix with -ret flag using GenericDict
+          std::vector<int> rowIndices, colIndices;
+          std::vector<double> values;
+          int result = theSOE->getSparseA(rowIndices, colIndices, values, baseIndex);
+          if (result != 0) {
+            opserr << "WARNING: printA -sparse -ret failed to get sparse matrix data" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+            return TCL_ERROR;
+          }
+          
+          // Build generic dictionary and return
+          GenericDict dict;
+          dict["rowIndices"] = rowIndices;
+          dict["colIndices"] = colIndices;
+          dict["values"] = values;
+          
+          if (OPS_SetGenericDict(dict) < 0) {
+            opserr << "WARNING: printA -sparse -ret failed to set output" << endln;
+            return TCL_ERROR;
+          }
+          return TCL_OK;
         }
     }
     const Matrix *A = theSOE->getA();

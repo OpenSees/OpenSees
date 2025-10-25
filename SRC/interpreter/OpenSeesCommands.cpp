@@ -1180,6 +1180,13 @@ int OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data)
     return interp->setString(data);
 }
 
+int OPS_SetGenericDict(GenericDict& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setGenericDict(data);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
@@ -2292,8 +2299,27 @@ int OPS_printA()
                 }
                 return result;
             } else {
-                opserr << "WARNING: printA -sparse is not supported with -ret. Ignoring -sparse flag" << endln;
-                fileSparse = false;
+                // Support sparse matrix with -ret flag using GenericDict
+                std::vector<int> rowIndices, colIndices;
+                std::vector<double> values;
+                int result = theSOE->getSparseA(rowIndices, colIndices, values, baseIndex);
+                if (result != 0) {
+                    opserr << "WARNING: printA -sparse -ret failed to get sparse matrix data" << endln;
+                    opserr << "The selected system type may not support sparse matrix output" << endln;
+                    return -1;
+                }
+                
+                // Build generic dictionary and return
+                GenericDict dict;
+                dict["rowIndices"] = rowIndices;
+                dict["colIndices"] = colIndices;
+                dict["values"] = values;
+                
+                if (OPS_SetGenericDict(dict) < 0) {
+                    opserr << "WARNING: printA -sparse -ret failed to set output" << endln;
+                    return -1;
+                }
+                return 0;
             }
         }
 

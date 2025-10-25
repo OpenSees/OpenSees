@@ -71,6 +71,8 @@ class SparseGenColLinSOE : public LinearSOE
     virtual int setSparseGenColSolver(SparseGenColLinSolver &newSolver);    
 
     virtual int saveSparseA(OPS_Stream& output, int baseIndex = 0);
+    virtual int getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex = 0);
+    virtual int getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex = 0);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
     virtual int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);    

@@ -356,6 +356,66 @@ UmfpackGenLinSOE::saveSparseA(OPS_Stream& output, int baseIndex)
 }
 
 int
+UmfpackGenLinSOE::getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex)
+{
+    int size = X.Size();
+    if (size == 0) {
+        opserr << "WARNING: UmfpackGenLinSOE::getSparseA() - size is 0\n";
+        return -1;
+    }
+    
+    int nnz = Ax.size();
+    rowIndices.resize(nnz);
+    colIndices.resize(nnz);
+    values.resize(nnz);
+    
+    // Fill vectors with non-zero elements
+    int idx = 0;
+    for (int col = 0; col < size; col++) {
+        for (int k = Ap[col]; k < Ap[col+1]; k++) {
+            int row = Ai[k];
+            double value = Ax[k];
+            rowIndices(idx) = row + baseIndex;
+            colIndices(idx) = col + baseIndex;
+            values(idx) = value;
+            idx++;
+        }
+    }
+    
+    return 0;
+}
+
+int
+UmfpackGenLinSOE::getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex)
+{
+    int size = X.Size();
+    if (size == 0) {
+        opserr << "WARNING: UmfpackGenLinSOE::getSparseA() - size is 0\n";
+        return -1;
+    }
+    
+    int nnz = Ax.size();
+    rowIndices.resize(nnz);
+    colIndices.resize(nnz);
+    values.resize(nnz);
+    
+    // Fill vectors with non-zero elements
+    int idx = 0;
+    for (int col = 0; col < size; col++) {
+        for (int k = Ap[col]; k < Ap[col+1]; k++) {
+            int row = Ai[k];
+            double value = Ax[k];
+            rowIndices[idx] = row + baseIndex;
+            colIndices[idx] = col + baseIndex;
+            values[idx] = value;
+            idx++;
+        }
+    }
+    
+    return 0;
+}
+
+int
 UmfpackGenLinSOE::setUmfpackGenLinSolver(UmfpackGenLinSolver &newSolver)
 {
     newSolver.setLinearSOE(*this);
