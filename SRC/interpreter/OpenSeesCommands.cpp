@@ -2297,6 +2297,12 @@ int OPS_printA()
                     opserr << "The selected system type may not support sparse matrix output" << endln;
                     return -1;
                 }
+                // Return 0 to indicate success
+                int numdata = 1;
+                if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+                    opserr << "WARNING: printA - failed to set output\n";
+                    return -1;
+                }
                 return result;
             } else {
                 // Support sparse matrix with -ret flag using GenericDict
@@ -2356,6 +2362,16 @@ int OPS_printA()
 
     // close the output file
     outputFile.close();
+    
+    // Return 0 to indicate success when not using -ret flag
+    if (!ret) {
+        int result = 0;
+        int numdata = 1;
+        if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+            opserr << "WARNING: printA - failed to set output\n";
+            return -1;
+        }
+    }
 
     return 0;
 }

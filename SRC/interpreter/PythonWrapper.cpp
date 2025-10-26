@@ -268,18 +268,6 @@ void PythonWrapper::setGenericDictOutput(GenericDict& data) {
                 for (size_t i = 0; i < arg.size(); i++) {
                     PyList_SET_ITEM(pyValue, i, Py_BuildValue("s", arg[i].c_str()));
                 }
-                
-            } else if constexpr (std::is_same_v<T, Vector>) {
-                pyValue = PyList_New(arg.Size());
-                for (int i = 0; i < arg.Size(); i++) {
-                    PyList_SET_ITEM(pyValue, i, Py_BuildValue("d", arg(i)));
-                }
-                
-            } else if constexpr (std::is_same_v<T, ID>) {
-                pyValue = PyList_New(arg.Size());
-                for (int i = 0; i < arg.Size(); i++) {
-                    PyList_SET_ITEM(pyValue, i, Py_BuildValue("i", arg(i)));
-                }
             }
         }, value);
         

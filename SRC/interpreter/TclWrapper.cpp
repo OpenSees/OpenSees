@@ -132,20 +132,6 @@ TclWrapper::setGenericDictOutput(Tcl_Interp* interp, GenericDict& data)
                     list[i] = Tcl_NewStringObj(arg[i].c_str(), -1);
                 }
                 tclValue = Tcl_NewListObj((int)list.size(), &list[0]);
-                
-            } else if constexpr (std::is_same_v<T, Vector>) {
-                std::vector<Tcl_Obj*> list(arg.Size());
-                for (int i = 0; i < arg.Size(); i++) {
-                    list[i] = Tcl_NewDoubleObj(arg(i));
-                }
-                tclValue = Tcl_NewListObj((int)list.size(), &list[0]);
-                
-            } else if constexpr (std::is_same_v<T, ID>) {
-                std::vector<Tcl_Obj*> list(arg.Size());
-                for (int i = 0; i < arg.Size(); i++) {
-                    list[i] = Tcl_NewIntObj(arg(i));
-                }
-                tclValue = Tcl_NewListObj((int)list.size(), &list[0]);
             }
         }, value);
         

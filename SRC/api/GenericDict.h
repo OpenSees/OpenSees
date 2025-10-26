@@ -41,16 +41,13 @@ class Vector;
 class ID;
 
 // Type-safe variant for dictionary values
-// Supports both OpenSees types (Vector, ID) and STL types
 using DictValue = std::variant<
     int,
     double,
     std::vector<int>,
     std::vector<double>,
     std::string,
-    std::vector<std::string>,
-    Vector, // similar to std::vector<double>
-    ID // similar to std::vector<int>
+    std::vector<std::string>
 >;
 
 // Generic dictionary type for interpreter output

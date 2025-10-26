@@ -2409,8 +2409,13 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           if (res != 0) {
             opserr << "WARNING: printA -sparse failed to save sparse matrix" << endln;
             opserr << "The selected system type may not support sparse matrix output" << endln;
+            return TCL_ERROR;
           }
-          return res == 0 ? res : TCL_ERROR;
+          // Return 0 to indicate success
+          char buffer[10];
+          sprintf(buffer, "%d", res);
+          Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+          return TCL_OK;
         } else {
           // Support sparse matrix with -ret flag using GenericDict
           std::vector<int> rowIndices, colIndices;
@@ -2456,6 +2461,13 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
             outputFile.close();
         }
     }
+  }
+  
+  // Return 0 to indicate success when not using -ret flag
+  if (!ret) {
+      char buffer[10];
+      sprintf(buffer, "%d", res);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
   }
   
   return res;
