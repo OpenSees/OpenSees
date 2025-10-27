@@ -521,11 +521,12 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
+// J2CyclicBoundingSurface material - P. Arduino
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
-
+// LinearElasticGGmax material - P. Arduino
+#define ND_TAG_LinearElasticGGmax             14026
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
 #define ND_TAG_MultiaxialCyclicPlasticity3D           10032
