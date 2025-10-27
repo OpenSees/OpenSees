@@ -134,6 +134,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\LinearElasticGGmax.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\BiaxialHysteretic.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.cpp" />
     <ClCompile Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.cpp" />
@@ -564,6 +565,8 @@
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\J2CyclicBoundingSurface.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Sand.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\LinearElasticGGmax.h" />
+    <ClInclude Include="..\..\..\SRC\material\section\fiber\Fiber.h" />
     <ClInclude Include="..\..\..\SRC\material\section\BiaxialHysteretic.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticBDShearSection2d.h" />
     <ClInclude Include="..\..\..\SRC\material\section\ElasticWarpingShearSection2d.h" />
