@@ -29,6 +29,8 @@
 #ifndef _eleAPI
 #define _eleAPI
 
+#include "GenericDict.h"
+
 #define ISW_INIT 0
 #define ISW_COMMIT 1
 #define ISW_REVERT 2
@@ -210,6 +212,7 @@ extern "C" int         OPS_SetStringList(std::vector<const char*>& data);
 extern "C" int         OPS_SetStringLists(std::vector<std::vector<const char*>>& data);
 extern "C" int         OPS_SetStringDict(std::map<const char*, const char*>& data);
 extern "C" int         OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data);
+extern "C" int         OPS_SetGenericDict(GenericDict& data);
 extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy
 extern "C" matObj*     OPS_GetMaterial(int* matTag, int* matType);
 extern "C" eleObj*     OPS_GetElement(int* eleTag);
