@@ -1499,6 +1499,11 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   // the domain deletes the record objects, 
   // just have to delete the private array
+  
+  // restore original "load" command.
+  Tcl_Eval(interp, "interp alias {} load {} oldload");
+  Tcl_ResetResult(interp);
+
   return TCL_OK;  
 }
 
