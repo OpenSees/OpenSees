@@ -325,9 +325,13 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 
 	} else if (typeSolver == EigenSOE_TAGS_SymmGeneralizedEigenSOE) {
 
-	    SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
+#ifdef _WIN32
+	    opserr << "SymmGeneralizedEigenSolver not currently compiled for Windows" << endln;
+#else
+		SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
 	    theEigenSOE = new SymmGeneralizedEigenSOE(*theEigenSolver, *theAnalysisModel);
-	    
+#endif
+		
 	} else {
 
 	    theEigenSOE = new ArpackSOE(shift);
