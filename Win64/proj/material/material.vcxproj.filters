@@ -1352,6 +1352,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.cpp">
       <Filter>nD\UWmaterials</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\nD\UWmaterials\LinearElasticGGmax.cpp">
+      <Filter>nD\UWmaterials</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\nD\UVCmultiaxial.cpp">
       <Filter>nD</Filter>
     </ClCompile>
@@ -2733,6 +2736,9 @@
       <Filter>nD\UWmaterials</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\PM4Silt.h">
+      <Filter>nD\UWmaterials</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\nD\UWmaterials\LinearElasticGGmax.h">
       <Filter>nD\UWmaterials</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\UVCmultiaxial.h">
