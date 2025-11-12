@@ -57,6 +57,10 @@ public:
 
     void Print(OPS_Stream &s, int flag = 0) override;
 
+    // --- Parameter control (minimal OpenSees-style hooks) ---
+    int setParameter(const char **argv, int argc, Parameter &param) override;
+    int updateParameter(int paramID, Information &info) override;
+
 private:
     // Material properties
     double G0;       // initial shear modulus
@@ -66,6 +70,10 @@ private:
     double rho0;     // density (not used in constitutive law here)
     double mu_c;     // cached shear modulus for current trial state
     double lambda_c; // cached first Lamé parameter for current trial state
+
+    // running maximum of equivalent shear strain
+    double gammaMaxTrial{0.0};
+    double gammaMaxCommit{0.0};
 
     // G/Gmax curve definition
     int    curveType;               // 0=user, 1=Hardin-Drnevich, 2=Vucetic-Dobry, 3=Darendeli
@@ -80,9 +88,25 @@ private:
     static Matrix D;     // tangent (resized by ctor)
     int nDim;           // 2 or 3
 
+    // --- G update policy ---
+    int  updateStride{1};          // recompute G every N trial steps (default=1 -> current behavior)
+    int  stepCounter{0};           // counts setTrialStrain calls
+    int  trialCounter{0};  // counts setTrialStrain calls    
+    bool updateOnDemand{false};    // if true, only update when explicitly requested
+    bool pendingOneShotUpdate{false}; // armed by "requestUpdate"
+    bool debugUpdate{false};      // <-- debug switch (off by default)
+
+    // Keep last used gg (not strictly necessary, but handy for introspection/consistency)
+    double lastGG{1.0}; 
+
+    // --- Optional: stride by *committed time steps* instead of trial calls ---
+    bool   strideByStep{false};   // default false -> legacy behavior
+    int    commitCounter{0};      // increments once per commitState()
+    int    lastUpdateCommit{-1};  // the commit index when we last updated
+
     // Helpers
     double computeGGmax(double gamma);
-    double computeShearStrain(const Vector& strain) const; // octahedral-equivalent
+    double computeShearStrain(const Vector& strain); // octahedral-equivalent
     void   computeTangent(double gg_ratio);
 
     // Curve models
