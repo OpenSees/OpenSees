@@ -20,9 +20,9 @@
 
 // $Revision: 1.6 $
 // $Date: 2010-09-13 21:31:07 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/integration/RCWallSectionIntegration.cpp,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/section/integration/MVLEMSectionIntegration.cpp,v $
 
-#include <RCWallSectionIntegration.h>
+#include <MVLEMSectionIntegration.h>
 #include <Matrix.h>
 #include <Vector.h>
 #include <Channel.h>
@@ -34,12 +34,11 @@
 #include <FiberSection2d.h>
 #include <UniaxialMaterial.h>
 
-void* OPS_RCWall2d()
+void* OPS_MVLEMSection2d()
 {
   if (OPS_GetNumRemainingInputArgs() < 4) {
     opserr << "WARNING insufficient arguments\n";
-    // '-thick',*bList,'-width',*hList,'-rho',*rhoList,'-matConcrete',*conc,'-matSteel',*steel,
-    opserr << "Want: section RCWall2d tag? N? *concTag? *steelTag? *h *b *rho" << endln;
+    opserr << "Want: section MVLEM tag? N? '-thick' *bList '-width' *hList '-rho' *rhoList '-matConcrete' *conc '-matSteel' *steel" << endln;
     return 0;
   }
   
@@ -47,7 +46,7 @@ void* OPS_RCWall2d()
   int numdata = 2;
   int idata[2];
   if (OPS_GetIntInput(&numdata, idata) < 0) {
-    opserr << "WARNING invalid section RCWall2d int inputs" << endln;
+    opserr << "WARNING invalid section MVLEM int inputs" << endln;
     return 0;
   }
   
@@ -66,35 +65,35 @@ void* OPS_RCWall2d()
     if (strncmp(str,"-matConcrete",80) == 0) {
       numdata = Nlayers;
       if (OPS_GetIntInput(&numdata, concTags) != 0) {
-	opserr << "RCWallSection error reading concrete tags" << endln;
+	opserr << "MVLEMSection error reading concrete tags" << endln;
 	error = -1;
       }
     }
     if (strncmp(str,"-matSteel",80) == 0) {
       numdata = Nlayers;
       if (OPS_GetIntInput(&numdata, steelTags) != 0) {
-	opserr << "RCWallSection error reading steel tags" << endln;
+	opserr << "MVLEMSection error reading steel tags" << endln;
 	error = -1;
       }
     }
     if (strncmp(str,"-thick",80) == 0) {
       numdata = Nlayers;
       if (OPS_GetDoubleInput(&numdata, thick) != 0) {
-	opserr << "RCWallSection error reading thicknesses" << endln;
+	opserr << "MVLEMSection error reading thicknesses" << endln;
 	error = -1;
       }
     }
     if (strncmp(str,"-width",80) == 0) {
       numdata = Nlayers;
       if (OPS_GetDoubleInput(&numdata, width) != 0) {
-	opserr << "RCWallSection error reading widths" << endln;
+	opserr << "MVLEMSection error reading widths" << endln;
 	error = -1;
       }
     }
     if (strncmp(str,"-rho",80) == 0) {
       numdata = Nlayers;
       if (OPS_GetDoubleInput(&numdata, rho) != 0) {
-	opserr << "RCWallSection error reading rho values" << endln;
+	opserr << "MVLEMSection error reading rho values" << endln;
 	error = -1;
       }
     }        
@@ -137,7 +136,7 @@ void* OPS_RCWall2d()
     }
   }
   
-  RCWallSectionIntegration rcsect(Nlayers, width, thick, rho);
+  MVLEMSectionIntegration rcsect(Nlayers, width, thick, rho);
   
   // Parsing was successful, allocate the section
   SectionForceDeformation* theSection = new FiberSection2d(tag, 2*Nlayers, theMats, rcsect);
@@ -146,7 +145,7 @@ void* OPS_RCWall2d()
   return theSection;
 }
 
-RCWallSectionIntegration::RCWallSectionIntegration(int N,
+MVLEMSectionIntegration::MVLEMSectionIntegration(int N,
 				     double *H,
 				     double *B,
 				     double *R):
@@ -166,14 +165,14 @@ RCWallSectionIntegration::RCWallSectionIntegration(int N,
   }
 }
 
-RCWallSectionIntegration::RCWallSectionIntegration():
+MVLEMSectionIntegration::MVLEMSectionIntegration():
   SectionIntegration(SECTION_INTEGRATION_TAG_RC),
   Nlayers(0), h(0), b(0), rho(0), parameterID(0)
 {
   
 }
 
-RCWallSectionIntegration::~RCWallSectionIntegration()
+MVLEMSectionIntegration::~MVLEMSectionIntegration()
 {
   if (h != 0)
     delete [] h;
@@ -184,7 +183,7 @@ RCWallSectionIntegration::~RCWallSectionIntegration()
 }
 
 int
-RCWallSectionIntegration::getNumFibers(FiberType type)
+MVLEMSectionIntegration::getNumFibers(FiberType type)
 {
   if (type == steel)
     return Nlayers;
@@ -197,21 +196,21 @@ RCWallSectionIntegration::getNumFibers(FiberType type)
 }
 
 int
-RCWallSectionIntegration::arrangeFibers(UniaxialMaterial **theMaterials,
-				    UniaxialMaterial *theConcrete,
-				    UniaxialMaterial *theSteel)
+MVLEMSectionIntegration::arrangeFibers(UniaxialMaterial **theMaterials,
+				       UniaxialMaterial **theConcrete,
+				       UniaxialMaterial **theSteel)
 {
   int i;
   for (i = 0; i < Nlayers; i++)
-    theMaterials[i] = theConcrete;
+    theMaterials[i] = theConcrete[i];
   for ( ; i < 2*Nlayers; i++)
-    theMaterials[i] = theSteel;
+    theMaterials[i] = theSteel[i];
 
   return 0;
 }
 
 void
-RCWallSectionIntegration::getFiberLocations(int nFibers, double *yi, double *zi)
+MVLEMSectionIntegration::getFiberLocations(int nFibers, double *yi, double *zi)
 {
   double Lwall = 0.0;
   for (int i = 0; i < Nlayers; i++)
@@ -235,7 +234,7 @@ RCWallSectionIntegration::getFiberLocations(int nFibers, double *yi, double *zi)
 }
 
 void
-RCWallSectionIntegration::getFiberWeights(int nFibers, double *wt)
+MVLEMSectionIntegration::getFiberWeights(int nFibers, double *wt)
 {
   for (int i = 0; i < Nlayers; i++) {
     double As = rho[i]*b[i]*h[i];
@@ -247,13 +246,13 @@ RCWallSectionIntegration::getFiberWeights(int nFibers, double *wt)
 }
 
 SectionIntegration*
-RCWallSectionIntegration::getCopy(void)
+MVLEMSectionIntegration::getCopy(void)
 {
-  return new RCWallSectionIntegration(Nlayers, h, b, rho);
+  return new MVLEMSectionIntegration(Nlayers, h, b, rho);
 }
 
 int
-RCWallSectionIntegration::setParameter(const char **argv, int argc,
+MVLEMSectionIntegration::setParameter(const char **argv, int argc,
 				Parameter &param)
 {
   if (argc < 1)
@@ -263,14 +262,14 @@ RCWallSectionIntegration::setParameter(const char **argv, int argc,
 }
 
 int
-RCWallSectionIntegration::updateParameter(int parameterID,
+MVLEMSectionIntegration::updateParameter(int parameterID,
 				   Information &info)
 {
   return -1;
 }
 
 int
-RCWallSectionIntegration::activateParameter(int paramID)
+MVLEMSectionIntegration::activateParameter(int paramID)
 {
   parameterID = paramID;
 
@@ -278,19 +277,19 @@ RCWallSectionIntegration::activateParameter(int paramID)
 }
 
 void
-RCWallSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzidh)
+MVLEMSectionIntegration::getLocationsDeriv(int nFibers, double *dyidh, double *dzidh)
 {
   return;
 }
 
 void
-RCWallSectionIntegration::getWeightsDeriv(int nFibers, double *dwtsdh)
+MVLEMSectionIntegration::getWeightsDeriv(int nFibers, double *dwtsdh)
 {
   return;
 }
 
 void
-RCWallSectionIntegration::Print(OPS_Stream &s, int flag)
+MVLEMSectionIntegration::Print(OPS_Stream &s, int flag)
 {
   s << "RC Wall" << endln;
   s << " Nlayers = " << Nlayers << endln;
@@ -302,7 +301,7 @@ RCWallSectionIntegration::Print(OPS_Stream &s, int flag)
 }
 
 int
-RCWallSectionIntegration::sendSelf(int cTag, Channel &theChannel)
+MVLEMSectionIntegration::sendSelf(int cTag, Channel &theChannel)
 {
   static Vector data(9);
 
@@ -321,7 +320,7 @@ RCWallSectionIntegration::sendSelf(int cTag, Channel &theChannel)
   int dbTag = this->getDbTag();
 
   if (theChannel.sendVector(dbTag, cTag, data) < 0) {
-    opserr << "RCWallSectionIntegration::sendSelf() - failed to send Vector data\n";
+    opserr << "MVLEMSectionIntegration::sendSelf() - failed to send Vector data\n";
     return -1;
   }    
 
@@ -329,7 +328,7 @@ RCWallSectionIntegration::sendSelf(int cTag, Channel &theChannel)
 }
 
 int
-RCWallSectionIntegration::recvSelf(int cTag, Channel &theChannel,
+MVLEMSectionIntegration::recvSelf(int cTag, Channel &theChannel,
 			       FEM_ObjectBroker &theBroker)
 {
   static Vector data(9);
@@ -337,7 +336,7 @@ RCWallSectionIntegration::recvSelf(int cTag, Channel &theChannel,
   int dbTag = this->getDbTag();
 
   if (theChannel.recvVector(dbTag, cTag, data) < 0)  {
-    opserr << "RCWallSectionIntegration::recvSelf() - failed to receive Vector data\n";
+    opserr << "MVLEMSectionIntegration::recvSelf() - failed to receive Vector data\n";
     return -1;
   }
 

@@ -20,28 +20,28 @@
 
 // $Revision: 1.5 $
 // $Date: 2010-09-13 21:31:07 $
-// $Source: /usr/local/cvs/OpenSees/SRC/material/section/integration/RCWallSectionIntegration.h,v $
+// $Source: /usr/local/cvs/OpenSees/SRC/material/section/integration/MVLEMSectionIntegration.h,v $
 
-#ifndef RCWallSectionIntegration_h
-#define RCWallSectionIntegration_h
+#ifndef MVLEMSectionIntegration_h
+#define MVLEMSectionIntegration_h
 
 #include <SectionIntegration.h>
 
 class UniaxialMaterial;
 
-class RCWallSectionIntegration : public SectionIntegration
+class MVLEMSectionIntegration : public SectionIntegration
 {
  public:
-  RCWallSectionIntegration(int Nlayers, double *h, double *b, double *rho);
-  RCWallSectionIntegration();
-  ~RCWallSectionIntegration();
+  MVLEMSectionIntegration(int Nlayers, double *h, double *b, double *rho);
+  MVLEMSectionIntegration();
+  ~MVLEMSectionIntegration();
 
   int getNumFibers(FiberType type = all);
 
   void getFiberLocations(int nFibers, double *yi, double *zi = 0);
   void getFiberWeights(int nFibers, double *wt);
 
-  const char* getClassType(void) const {return "RCWallSectionIntegration";}
+  const char* getClassType(void) const {return "MVLEMSectionIntegration";}
   SectionIntegration *getCopy(void);
 
   int sendSelf(int cTag, Channel &theChannel);
@@ -57,8 +57,8 @@ class RCWallSectionIntegration : public SectionIntegration
   void Print(OPS_Stream &s, int flag = 0);
 
   int arrangeFibers(UniaxialMaterial **theMaterials,
-		    UniaxialMaterial *theConcrete,
-		    UniaxialMaterial *theSteel);
+		    UniaxialMaterial **theConcrete,
+		    UniaxialMaterial **theSteel);
 
  private:
   int Nlayers;
