@@ -11,19 +11,17 @@ on:
 
 jobs:
   build-win:
-    name: Build Windows10
+    name: Build Windows VS2022
     runs-on: windows-2022
     steps:
       - name: 2.1. Obtaining OpenSees Source Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      # - name: CMake is already installed
-      # - name: Git is already installed
       - name: Microsoft Visual Studio
         uses: ilammy/msvc-dev-cmd@v1
         with:
-          vsversion: 2019
+          vsversion: 2022
       - name: Intel oneAPI Basic & HPC Toolkits
         shell: pwsh
         env:
