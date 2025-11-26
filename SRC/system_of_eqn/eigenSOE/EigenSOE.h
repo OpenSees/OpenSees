@@ -53,10 +53,10 @@ class EigenSOE : public MovableObject
      virtual void zeroA(void) = 0;
      virtual void zeroM(void) = 0;
 
-    // methods to get the eigenvectors and eigenvalues
-    virtual const Vector &getEigenvector(int mode);
-    virtual double getEigenvalue(int mode);
-    
+     // methods to get the eigenvectors and eigenvalues
+     virtual const Vector &getEigenvector(int mode);
+     virtual double getEigenvalue(int mode);          
+     
   protected:
      virtual int setSolver(EigenSolver &newSolver);
      EigenSolver *getSolver(void);
