@@ -341,24 +341,15 @@ def main():
         ("CuPyCG", setup_cupy_cg, "RCM"),
     ]
 
-    # Known problematic solver/mesh factor combinations that cause segmentation faults or are too large
-    # Format: (solver_name, mesh_factor)
-    SKIP_COMBINATIONS = {
-        ("UmfPack", 14.0),
-        ("UmfPack", 16.0),
-        ("UmfPack", 18.0),
-        ("UmfPack", 20.0),
-        ("UmfPack", 22.0),
-        ("UmfPack", 24.0),
-        ("UmfPack", 26.0),
-        ("BandSPD", 20.0),
-        ("BandSPD", 22.0),
-        ("BandSPD", 24.0),
-        ("BandSPD", 26.0),
+    # Known problematic solver/mesh factor thresholds that cause segmentation faults or are too large
+    # Format: solver_name -> mesh_factor limit (skip if mesh_factor >= limit)
+    SKIP_LIMITS = {
+        "UmfPack": 14.0,
+        "BandSPD": 20.0,
     }
 
     # Mesh refinement factors
-    mesh_factors = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0]
+    mesh_factors = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0]
 
     print("\n=== Python Sparse Solver Benchmark ===")
     print(f"Comparing: {[s[0] for s in solvers]}")
@@ -374,8 +365,9 @@ def main():
             mesh_info_printed = False
 
             for solver_name, solver_setup, numberer in solvers:
-                # Skip known problematic combinations
-                if (solver_name, mesh_factor) in SKIP_COMBINATIONS:
+                # Skip if mesh_factor exceeds the limit for this solver
+                limit = SKIP_LIMITS.get(solver_name, float('inf'))
+                if mesh_factor >= limit:
                     # Write skipped row
                     writer.writerow((
                         solver_name,

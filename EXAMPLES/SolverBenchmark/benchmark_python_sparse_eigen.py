@@ -377,27 +377,14 @@ def main():
         ("SciPyEigsh", run_scipy_eigsh),
     ]
 
-    # Known problematic solver/mesh factor combinations that cause segmentation faults or are too large
-    # Format: (solver_name, mesh_factor)
-    SKIP_COMBINATIONS = {
-        ("fullGenLapack", 4.0),
-        ("fullGenLapack", 6.0),
-        ("fullGenLapack", 8.0),
-        ("fullGenLapack", 10.0),
-        ("fullGenLapack", 12.0),
-        ("fullGenLapack", 14.0),
-        ("fullGenLapack", 16.0),
-        ("fullGenLapack", 18.0),
-        ("fullGenLapack", 20.0),
-        ("fullGenLapack", 22.0),
-        ("fullGenLapack", 24.0),
-        ("fullGenLapack", 26.0),
-        ("fullGenLapack", 28.0),
-        ("fullGenLapack", 30.0),
+    # Known problematic solver/mesh factor thresholds that cause segmentation faults or are too large
+    # Format: solver_name -> mesh_factor limit (skip if mesh_factor >= limit)
+    SKIP_LIMITS = {
+        "fullGenLapack": 4.0,
     }
 
     # Mesh refinement factors
-    mesh_factors = [2.0, 4.0, 6.0, 8.0, 10.0, 12.0, 14.0, 16.0, 18.0, 20.0, 22.0, 24.0, 26.0, 28.0, 30.0]
+    mesh_factors = [1.0, 2.0, 3.0, 4.0]
 
     print("\n=== Python Sparse Eigen Solver Benchmark ===")
     print(f"Comparing: {[s[0] for s in solvers]}")
@@ -413,8 +400,9 @@ def main():
             mesh_info_printed = False
 
             for solver_name, solver_run in solvers:
-                # Skip known problematic combinations
-                if (solver_name, mesh_factor) in SKIP_COMBINATIONS:
+                # Skip if mesh_factor exceeds the limit for this solver
+                limit = SKIP_LIMITS.get(solver_name, float('inf'))
+                if mesh_factor >= limit:
                     # Write skipped row
                     writer.writerow((
                         solver_name,
