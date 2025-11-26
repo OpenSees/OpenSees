@@ -1184,6 +1184,13 @@ int OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data)
     return interp->setString(data);
 }
 
+int OPS_SetGenericDict(GenericDict& data)
+{
+    if (cmds == 0) return 0;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->setGenericDict(data);
+}
+
 Domain* OPS_GetDomain(void)
 {
     if (cmds == 0) return 0;
@@ -2213,20 +2220,45 @@ int OPS_printA()
     OPS_Stream *output = &opserr;
 
     bool ret = false;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if ((strcmp(flag,"file") == 0) || (strcmp(flag,"-file") == 0)) {
-
-	    const char* filename = OPS_GetString();
-	    if (outputFile.setFile(filename) != 0) {
-		opserr << "printA <filename> .. - failed to open file: " << filename << endln;
-		return -1;
-	    }
-	    output = &outputFile;
-	} else if((strcmp(flag,"ret") == 0) || (strcmp(flag,"-ret") == 0)) {
-	    ret = true;
-	}
+    bool fileSparse = false;
+    int baseIndex = 0;
+    int precision = 6;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* flag = OPS_GetString();
+        if ((strcmp(flag,"file") == 0) || (strcmp(flag,"-file") == 0)) {
+            const char* filename = OPS_GetString();
+            if (strcmp(filename, "Invalid String Input!") == 0) {
+                opserr << "WARNING: printA - filename is not a valid string\n";
+                return -1;
+            }
+            if (outputFile.setFile(filename) != 0) {
+                opserr << "printA <filename> .. - failed to open file: " << filename << endln;
+                return -1;
+            }
+            output = &outputFile;
+        } else if((strcmp(flag,"ret") == 0) || (strcmp(flag,"-ret") == 0)) {
+            ret = true;
+        } else if ((strcmp(flag,"sparse") == 0) || (strcmp(flag,"-sparse") == 0)) {
+            fileSparse = true;
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int numdata = 1;
+                if (OPS_GetIntInput(&numdata, &baseIndex) < 0) {
+                    opserr << "WARNING: printA - failed to read -sparse <baseIndex>\n";
+                    return -1;
+                }
+            }
+        } else if ((strcmp(flag,"precision") == 0) || (strcmp(flag,"-precision") == 0)) {
+            if (OPS_GetNumRemainingInputArgs() > 0) {
+                int numdata = 1;
+                if ((OPS_GetIntInput(&numdata, &precision) < 0) || (precision < 0) || (precision > 16)) {
+                    opserr << "WARNING: printA - failed to read precision\n";
+                    return -1;
+                }
+            }
+        } else {
+            opserr << "WARNING: printA - unknown flag: " << flag << endln;
+            return -1;
+        }
     }
 
     LinearSOE* theSOE = cmds->getSOE();
@@ -2234,41 +2266,95 @@ int OPS_printA()
     TransientIntegrator* theTransientIntegrator = cmds->getTransientIntegrator();
 
     if (theSOE != 0) {
-	if (theStaticIntegrator != 0) {
-	    theStaticIntegrator->formTangent();
-	} else if (theTransientIntegrator != 0) {
-	    theTransientIntegrator->formTangent(0);
-	}
-
-    PFEMLinSOE* pfemsoe = dynamic_cast<PFEMLinSOE*>(theSOE);
-    if (pfemsoe != 0) {
-        pfemsoe->saveK(*output);
-        outputFile.close();
-        return 0;
-    }
-
-	Matrix *A = const_cast<Matrix*>(theSOE->getA());
-	if (A != 0) {
-	    if (ret) {
-		int size = A->noRows() * A->noCols();
-		if (size >0) {
-		    double& ptr = (*A)(0,0);
-		    if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
-			opserr << "WARNING: printA - failed to set output\n";
-			return -1;
-		    }
-		}
-	    } else {
-		*output << *A;
-	    }
-	} else {
-        int size = 0;
-        double *ptr = 0;
-        if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
-            opserr << "WARNING: printA - failed to set output\n";
-            return -1;
+        output->setPrecision(precision);
+        if (theStaticIntegrator != 0) {
+            theStaticIntegrator->formTangent();
+        } else if (theTransientIntegrator != 0) {
+            theTransientIntegrator->formTangent(0);
         }
-	}
+
+        PFEMLinSOE* pfemsoe = dynamic_cast<PFEMLinSOE*>(theSOE);
+        if (pfemsoe != 0) {
+            pfemsoe->saveK(*output);
+            outputFile.close();
+            return 0;
+        }
+
+        if (fileSparse) {
+            if (!ret) {
+                // Write Matrix Market header
+                const char* mm_comment = (output == &opserr) ? "%%" : "%";
+
+                if (baseIndex == 1) {
+                    *output << mm_comment << mm_comment << "MatrixMarket matrix coordinate real general\n";
+                } else {
+                    *output << mm_comment << mm_comment << "Sparse matrix in COO format\n";
+                }
+                *output << mm_comment << " First non-commented line contains the number of rows, columns, and non-zero elements\n";
+                *output << mm_comment << " The remaining lines contain the indices and values of the non-zero elements\n";
+                *output << mm_comment << " Indices are " << baseIndex << "-based\n";
+                *output << mm_comment << " (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
+                int result = theSOE->saveSparseA(*output, baseIndex);
+                outputFile.close();
+                if (result != 0) {
+                    opserr << "WARNING: printA -sparse failed to save sparse matrix" << endln;
+                    opserr << "The selected system type may not support sparse matrix output" << endln;
+                    return -1;
+                }
+                // Return 0 to indicate success
+                int numdata = 1;
+                if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+                    opserr << "WARNING: printA - failed to set output\n";
+                    return -1;
+                }
+                return result;
+            } else {
+                // Support sparse matrix with -ret flag using GenericDict
+                std::vector<int> rowIndices, colIndices;
+                std::vector<double> values;
+                int result = theSOE->getSparseA(rowIndices, colIndices, values, baseIndex);
+                if (result != 0) {
+                    opserr << "WARNING: printA -sparse -ret failed to get sparse matrix data" << endln;
+                    opserr << "The selected system type may not support sparse matrix output" << endln;
+                    return -1;
+                }
+                
+                // Build generic dictionary and return
+                GenericDict dict;
+                dict["rowIndices"] = rowIndices;
+                dict["colIndices"] = colIndices;
+                dict["values"] = values;
+                
+                if (OPS_SetGenericDict(dict) < 0) {
+                    opserr << "WARNING: printA -sparse -ret failed to set output" << endln;
+                    return -1;
+                }
+                return 0;
+            }
+        }
+
+        Matrix *A = const_cast<Matrix*>(theSOE->getA());
+        if (A != 0) {
+            if (ret) {
+                int size = A->noRows() * A->noCols();
+                if (size >0) {
+                    double& ptr = (*A)(0,0);
+                    if (OPS_SetDoubleOutput(&size, &ptr, false) < 0) {
+                        opserr << "WARNING: printA - failed to set output\n";
+                        return -1;
+                    }
+                }
+            } else {
+                *output << *A;
+            }
+        } else {
+            int size = 0;
+            double *ptr = 0;
+            if (OPS_SetDoubleOutput(&size, ptr, false) < 0) {
+                opserr << "WARNING: printA - failed to set output\n";
+                return -1;
+            }
+        }
     } else {
         int size = 0;
         double *ptr = 0;
@@ -2280,6 +2366,16 @@ int OPS_printA()
 
     // close the output file
     outputFile.close();
+    
+    // Return 0 to indicate success when not using -ret flag
+    if (!ret) {
+        int result = 0;
+        int numdata = 1;
+        if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+            opserr << "WARNING: printA - failed to set output\n";
+            return -1;
+        }
+    }
 
     return 0;
 }
