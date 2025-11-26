@@ -1,6 +1,8 @@
 #ifndef SparsePythonEigenCommon_h
 #define SparsePythonEigenCommon_h
 
+#include <Python.h>
+
 /**
  * Storage scheme class: acts like an enum with string conversion.
  */
@@ -79,6 +81,40 @@ public:
 
     // String conversion for Python
     const char* to_str() const;
+};
+
+/**
+ * RAII helper that manages reference counting for transient PyObject* instances.
+ * Acquires the GIL before calling Py_XDECREF to ensure thread safety.
+ */
+struct PyObjectHolder {
+    PyObjectHolder() = default;
+    explicit PyObjectHolder(PyObject *obj) : ptr(obj) {}
+    ~PyObjectHolder() {
+        // Acquire GIL before calling Py_XDECREF to ensure thread safety
+        // Note: We don't set ptr to nullptr here because the object is being destroyed
+        if (ptr != nullptr && Py_IsInitialized()) {
+            PyGILState_STATE gilState = PyGILState_Ensure();
+            Py_XDECREF(ptr);
+            PyGILState_Release(gilState);
+        }
+    }
+    PyObject *get() const { return ptr; }
+    PyObject *release() {
+        PyObject *tmp = ptr;
+        ptr = nullptr;
+        return tmp;
+    }
+    void reset(PyObject *obj = nullptr) {
+        if (ptr == obj) {
+            return;
+        }
+        // reset() should only be called while GIL is held
+        Py_XDECREF(ptr);
+        ptr = obj;
+    }
+  private:
+    PyObject *ptr{nullptr};
 };
 
 #endif /* SparsePythonEigenCommon_h */

@@ -1,8 +1,6 @@
 #ifndef SparsePythonEigenFactory_h
 #define SparsePythonEigenFactory_h
 
-#include "SparsePythonEigenCommon.h"
-
 /**
  * Parse the `eigen PythonSparse` command and construct the corresponding EigenSOE.
  *

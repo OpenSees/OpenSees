@@ -1,40 +1,13 @@
 #include "SparsePythonCOOLinSolver.h"
-#include "SparsePythonCommon.h"
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <OPS_Globals.h>
 #include <elementAPI.h>
-
 #include <Python.h>
+#include "SparsePythonCommon.h"
 
 #include <cstring>
-
-namespace {
-
-struct PyObjectHolder {
-    PyObjectHolder() = default;
-    explicit PyObjectHolder(PyObject *obj) : ptr(obj) {}
-    ~PyObjectHolder() { Py_XDECREF(ptr); }
-    PyObject *get() const { return ptr; }
-    PyObject *release() {
-        PyObject *tmp = ptr;
-        ptr = nullptr;
-        return tmp;
-    }
-    void reset(PyObject *obj = nullptr) {
-        if (ptr == obj) {
-            return;
-        }
-        Py_XDECREF(ptr);
-        ptr = obj;
-    }
-
-  private:
-    PyObject *ptr{nullptr};
-};
-
-} // namespace
 
 SparsePythonCOOLinSolver::SparsePythonCOOLinSolver()
     : LinearSOESolver(SOLVER_TAGS_SparsePythonCOOLinSolver),
@@ -55,17 +28,15 @@ SparsePythonCOOLinSolver::SparsePythonCOOLinSolver(PyObject *callable, const cha
 
 SparsePythonCOOLinSolver::~SparsePythonCOOLinSolver()
 {
-    if (solverObject != nullptr) {
-        if (Py_IsInitialized()) {
-            // Acquire GIL before decrementing reference count
-            // This is critical: Py_XDECREF must be called with GIL held
-            PyGILState_STATE gil_state = PyGILState_Ensure();
-            Py_XDECREF(solverObject);
-            PyGILState_Release(gil_state);
-        }
-        // If Python is not initialized, we cannot safely call Py_XDECREF
-        // The object will be cleaned up when Python interpreter shuts down
-        solverObject = nullptr;
+    // NOTE: This is generally unsafe to call Python C-API from destructors,
+    // as destructors may run after Py_Finalize(). This will be addressed later.
+    // For now, we assume the user will call ops.wipe() at the end of their script
+    // to ensure resources are released before exiting Python, making it safe to
+    // decrement refcounts in destructors.
+    if (solverObject != nullptr && Py_IsInitialized()) {
+        PyGILState_STATE gilState = PyGILState_Ensure();
+        Py_XDECREF(solverObject);
+        PyGILState_Release(gilState);
     }
 }
 
@@ -83,17 +54,24 @@ SparsePythonCOOLinSolver::setPythonCallable(PyObject *callable, const char *meth
         methodName = method;
     }
 
+    // Acquire GIL before any Python API calls
+    PyGILState_STATE gilState = PyGILState_Ensure();
+
     if (callable == nullptr) {
         Py_XDECREF(solverObject);
         solverObject = nullptr;
+        PyGILState_Release(gilState);
         return 0;
     }
 
     Py_XINCREF(callable);
     Py_XDECREF(solverObject);
     solverObject = callable;
+
+    PyGILState_Release(gilState);
     return 0;
 }
+
 
 int
 SparsePythonCOOLinSolver::solve(void)
@@ -143,6 +121,7 @@ SparsePythonCOOLinSolver::callPythonSolver()
 
     PyGILState_STATE gilState = PyGILState_Ensure();
 
+    // Lookup the bound solve method; bail if missing or not callable.
     PyObjectHolder method(PyObject_GetAttrString(solverObject, methodName.c_str()));
     if (method.get() == nullptr || !PyCallable_Check(method.get())) {
         opserr << "SparsePythonCOOLinSolver::callPythonSolver - attribute '"
@@ -151,6 +130,7 @@ SparsePythonCOOLinSolver::callPythonSolver()
         return -4;
     }
 
+    // Build memoryviews for COO storage and vectors
     const Py_ssize_t nnz = static_cast<Py_ssize_t>(rowIdx.size());
     const Py_ssize_t rowBytes = nnz * sizeof(int);
     const Py_ssize_t colBytes = nnz * sizeof(int);
@@ -190,7 +170,7 @@ SparsePythonCOOLinSolver::callPythonSolver()
         return -5;
     }
 
-    // Scalar metadata handed to the Python solver (as all-caps strings).
+    // Scalar metadata handed to the Python solver
     PyObjectHolder matrixStatus(
         PyUnicode_FromString(theSOE->getMatrixStatus().to_str()));
     PyObjectHolder storageScheme(
@@ -241,9 +221,12 @@ SparsePythonCOOLinSolver::callPythonSolver()
     }
     PyObjectHolder argsHolder(args);
 
+    // PyObject_Call must be made with GIL held. CuPy/NumPy will release the GIL
+    // internally during their native GPU/CPU computations, so we don't need to
+    // do anything special here.
     PyObjectHolder result(PyObject_Call(method.get(), argsHolder.get(), kwargs.get()));
     if (result.get() == nullptr) {
-        opserr << "SparsePythonCOOLinSolver::callPythonSolver - Python callable raised an exception" << endln;
+        opserr << "SparsePythonCOOLinSolver::callPythonSolver - Python call failed\n";
         PyErr_Print();
         PyGILState_Release(gilState);
         return -9;

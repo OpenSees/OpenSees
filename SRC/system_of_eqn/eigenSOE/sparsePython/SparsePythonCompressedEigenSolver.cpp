@@ -1,7 +1,6 @@
 #include "SparsePythonCompressedEigenSolver.h"
 
 #include "SparsePythonCompressedEigenSOE.h"
-#include "SparsePythonEigenCommon.h"
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -10,32 +9,7 @@
 #include <cstring>
 #include <elementAPI.h>
 #include <Python.h>
-
-namespace {
-
-// RAII helper that manages reference counting for transient PyObject* instances.
-struct PyObjectHolder {
-    PyObjectHolder() = default;
-    explicit PyObjectHolder(PyObject *obj) : ptr(obj) {}
-    ~PyObjectHolder() { Py_XDECREF(ptr); }
-    PyObject *get() const { return ptr; }
-    PyObject *release() {
-        PyObject *tmp = ptr;
-        ptr = nullptr;
-        return tmp;
-    }
-    void reset(PyObject *obj = nullptr) {
-        if (ptr == obj) {
-            return;
-        }
-        Py_XDECREF(ptr);
-        ptr = obj;
-    }
-  private:
-    PyObject *ptr{nullptr};
-};
-
-} // namespace
+#include "SparsePythonEigenCommon.h"
 
 SparsePythonCompressedEigenSolver::SparsePythonCompressedEigenSolver()
     : EigenSolver(EigenSOLVER_TAGS_SparsePythonCompressedEigenSolver),
@@ -59,17 +33,15 @@ SparsePythonCompressedEigenSolver::SparsePythonCompressedEigenSolver(PyObject *c
 
 SparsePythonCompressedEigenSolver::~SparsePythonCompressedEigenSolver()
 {
-    if (solverObject != nullptr) {
-        if (Py_IsInitialized()) {
-            // Acquire GIL before decrementing reference count
-            // This is critical: Py_XDECREF must be called with GIL held
-            PyGILState_STATE gil_state = PyGILState_Ensure();
-            Py_XDECREF(solverObject);
-            PyGILState_Release(gil_state);
-        }
-        // If Python is not initialized, we cannot safely call Py_XDECREF
-        // The object will be cleaned up when Python interpreter shuts down
-        solverObject = nullptr;
+    // NOTE: This is generally unsafe to call Python C-API from destructors,
+    // as destructors may run after Py_Finalize(). This will be addressed later.
+    // For now, we assume the user will call ops.wipe() at the end of their script
+    // to ensure resources are released before exiting Python, making it safe to
+    // decrement refcounts in destructors.
+    if (solverObject != nullptr && Py_IsInitialized()) {
+        PyGILState_STATE gilState = PyGILState_Ensure();
+        Py_XDECREF(solverObject);
+        PyGILState_Release(gilState);
     }
 }
 
@@ -87,17 +59,24 @@ SparsePythonCompressedEigenSolver::setPythonCallable(PyObject *callable, const c
         methodName = method;
     }
 
+    // Acquire GIL before any Python API calls
+    PyGILState_STATE gilState = PyGILState_Ensure();
+
     if (callable == nullptr) {
         Py_XDECREF(solverObject);
         solverObject = nullptr;
+        PyGILState_Release(gilState);
         return 0;
     }
 
     Py_XINCREF(callable);
     Py_XDECREF(solverObject);
     solverObject = callable;
+
+    PyGILState_Release(gilState);
     return 0;
 }
+
 
 int
 SparsePythonCompressedEigenSolver::solve(int numModes, bool generalized, bool findSmallest)
@@ -315,6 +294,9 @@ SparsePythonCompressedEigenSolver::callPythonSolver(int numModes, bool generaliz
     }
     PyObjectHolder argsHolder(args);
 
+    // PyObject_Call must be made with GIL held. CuPy/NumPy will release the GIL
+    // internally during their native GPU/CPU computations, so we don't need to
+    // do anything special here.
     PyObjectHolder result(PyObject_Call(method.get(), args, kwargs.get()));
 
     if (result.get() == nullptr) {
@@ -331,6 +313,7 @@ SparsePythonCompressedEigenSolver::callPythonSolver(int numModes, bool generaliz
             status = static_cast<int>(PyLong_AsLong(result.get()));
             if (status < 0) {
                 PyGILState_Release(gilState);
+                numComputedModes = 0;
                 return status;
             }
         } else {
@@ -349,31 +332,7 @@ SparsePythonCompressedEigenSolver::callPythonSolver(int numModes, bool generaliz
         eigenvectorWrappers.emplace_back(Vector(modeData, numEqn));
     }
 
-    // Release GIL before returning - all Python API calls are complete
-    // PyObjectHolder destructors will be called when function returns, but
-    // they need the GIL, so we manually clean them up now while we have the GIL
-    result.reset(nullptr);  // This will Py_XDECREF while GIL is held
-    argsHolder.reset(nullptr);
-    method.reset(nullptr);
-    // Note: Other PyObjectHolder objects (pyPtr, pyInd, pyKValues, pyMValues, etc.)
-    // are incorporated into kwargs, and kwargs itself will be cleaned up below.
-    // We need to clean up all PyObjectHolder objects before releasing GIL.
-    matrixStatus.reset(nullptr);
-    storageScheme.reset(nullptr);
-    numEqnObj.reset(nullptr);
-    nnz.reset(nullptr);
-    pyNumModes.reset(nullptr);
-    pyGeneralized.reset(nullptr);
-    pyFindSmallest.reset(nullptr);
-    pyPtr.reset(nullptr);
-    pyInd.reset(nullptr);
-    pyKValues.reset(nullptr);
-    pyMValues.reset(nullptr);
-    pyEigenvaluesBuffer.reset(nullptr);
-    pyEigenvectorsBuffer.reset(nullptr);
-    kwargs.reset(nullptr);
     PyGILState_Release(gilState);
-
     numComputedModes = numModes;
     return status;
 }

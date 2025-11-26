@@ -1,7 +1,6 @@
 #include "SparsePythonCOOEigenSolver.h"
 
 #include "SparsePythonCOOEigenSOE.h"
-#include "SparsePythonEigenCommon.h"
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -9,32 +8,7 @@
 #include <Vector.h>
 #include <elementAPI.h>
 #include <Python.h>
-
-namespace {
-
-struct PyObjectHolder {
-    PyObjectHolder() = default;
-    explicit PyObjectHolder(PyObject *obj) : ptr(obj) {}
-    ~PyObjectHolder() { Py_XDECREF(ptr); }
-    PyObject *get() const { return ptr; }
-    PyObject *release() {
-        PyObject *tmp = ptr;
-        ptr = nullptr;
-        return tmp;
-    }
-    void reset(PyObject *obj = nullptr) {
-        if (ptr == obj) {
-            return;
-        }
-        Py_XDECREF(ptr);
-        ptr = obj;
-    }
-
-  private:
-    PyObject *ptr{nullptr};
-};
-
-} // namespace
+#include "SparsePythonEigenCommon.h"
 
 SparsePythonCOOEigenSolver::SparsePythonCOOEigenSolver()
     : EigenSolver(EigenSOLVER_TAGS_SparsePythonCOOEigenSolver),
@@ -57,17 +31,15 @@ SparsePythonCOOEigenSolver::SparsePythonCOOEigenSolver(PyObject *callable, const
 
 SparsePythonCOOEigenSolver::~SparsePythonCOOEigenSolver()
 {
-    if (solverObject != nullptr) {
-        if (Py_IsInitialized()) {
-            // Acquire GIL before decrementing reference count
-            // This is critical: Py_XDECREF must be called with GIL held
-            PyGILState_STATE gil_state = PyGILState_Ensure();
-            Py_XDECREF(solverObject);
-            PyGILState_Release(gil_state);
-        }
-        // If Python is not initialized, we cannot safely call Py_XDECREF
-        // The object will be cleaned up when Python interpreter shuts down
-        solverObject = nullptr;
+    // NOTE: This is generally unsafe to call Python C-API from destructors,
+    // as destructors may run after Py_Finalize(). This will be addressed later.
+    // For now, we assume the user will call ops.wipe() at the end of their script
+    // to ensure resources are released before exiting Python, making it safe to
+    // decrement refcounts in destructors.
+    if (solverObject != nullptr && Py_IsInitialized()) {
+        PyGILState_STATE gilState = PyGILState_Ensure();
+        Py_XDECREF(solverObject);
+        PyGILState_Release(gilState);
     }
 }
 
@@ -85,17 +57,24 @@ SparsePythonCOOEigenSolver::setPythonCallable(PyObject *callable, const char *me
         methodName = method;
     }
 
+    // Acquire GIL before any Python API calls
+    PyGILState_STATE gilState = PyGILState_Ensure();
+
     if (callable == nullptr) {
         Py_XDECREF(solverObject);
         solverObject = nullptr;
+        PyGILState_Release(gilState);
         return 0;
     }
 
     Py_XINCREF(callable);
     Py_XDECREF(solverObject);
     solverObject = callable;
+
+    PyGILState_Release(gilState);
     return 0;
 }
+
 
 int
 SparsePythonCOOEigenSolver::solve(int numModes, bool generalized, bool findSmallest)
@@ -175,6 +154,7 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
 
     PyGILState_STATE gilState = PyGILState_Ensure();
 
+    // Lookup the bound solve method; bail if missing or not callable.
     PyObjectHolder method(PyObject_GetAttrString(solverObject, methodName.c_str()));
     if (method.get() == nullptr || !PyCallable_Check(method.get())) {
         opserr << "SparsePythonCOOEigenSolver::callPythonSolver - attribute '"
@@ -270,28 +250,34 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
     }
     PyObjectHolder argsHolder(args);
 
-    PyObjectHolder result(PyObject_Call(method.get(), args, kwargs.get()));
-    PyGILState_Release(gilState);
-
+    // PyObject_Call must be made with GIL held. CuPy/NumPy will release the GIL
+    // internally during their native GPU/CPU computations, so we don't need to
+    // do anything special here.
+    PyObjectHolder result(PyObject_Call(method.get(), argsHolder.get(), kwargs.get()));
     if (result.get() == nullptr) {
         opserr << "SparsePythonCOOEigenSolver::callPythonSolver - Python call failed\n";
         PyErr_Print();
+        PyGILState_Release(gilState);
         return -9;
     }
 
     if (!PyTuple_Check(result.get()) || PyTuple_Size(result.get()) != 2) {
         opserr << "SparsePythonCOOEigenSolver::callPythonSolver - result must be tuple (eigenvalues, eigenvectors)\n";
+        PyGILState_Release(gilState);
         return -10;
     }
 
+    // Extract eigenvalues/eigenvectors tuple components
     PyObject *pyEigenvalues = PyTuple_GetItem(result.get(), 0);
     PyObject *pyEigenvectors = PyTuple_GetItem(result.get(), 1);
 
     if (pyEigenvalues == nullptr || pyEigenvectors == nullptr) {
         opserr << "SparsePythonCOOEigenSolver::callPythonSolver - failed to extract result components\n";
+        PyGILState_Release(gilState);
         return -11;
     }
 
+    int status = 0;
     Py_ssize_t numEigen = 0;
     if (PyList_Check(pyEigenvalues)) {
         numEigen = PyList_Size(pyEigenvalues);
@@ -300,12 +286,14 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
             PyObject *item = PyList_GetItem(pyEigenvalues, i);
             if (item == nullptr || !PyFloat_Check(item)) {
                 opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvalue at index " << i << "\n";
+                PyGILState_Release(gilState);
                 return -12;
             }
             eigenvalues[static_cast<std::size_t>(i)] = PyFloat_AsDouble(item);
         }
     } else {
         opserr << "SparsePythonCOOEigenSolver::callPythonSolver - eigenvalues must be a list\n";
+        PyGILState_Release(gilState);
         return -13;
     }
 
@@ -314,6 +302,7 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
         if (numVecs != numEigen) {
             opserr << "SparsePythonCOOEigenSolver::callPythonSolver - number of eigenvectors ("
                    << numVecs << ") != number of eigenvalues (" << numEigen << ")\n";
+            PyGILState_Release(gilState);
             return -14;
         }
         eigenvectors.clear();
@@ -323,12 +312,14 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
             PyObject *vec = PyList_GetItem(pyEigenvectors, i);
             if (vec == nullptr || !PyList_Check(vec)) {
                 opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvector at index " << i << "\n";
+                PyGILState_Release(gilState);
                 return -15;
             }
             Py_ssize_t vecSize = PyList_Size(vec);
             if (vecSize != size) {
                 opserr << "SparsePythonCOOEigenSolver::callPythonSolver - eigenvector " << i
                        << " size (" << vecSize << ") != system size (" << size << ")\n";
+                PyGILState_Release(gilState);
                 return -16;
             }
             Vector eigenvec(size);
@@ -337,6 +328,7 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
                 if (item == nullptr || !PyFloat_Check(item)) {
                     opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvector element at ("
                            << i << ", " << j << ")\n";
+                    PyGILState_Release(gilState);
                     return -17;
                 }
                 eigenvec(static_cast<int>(j)) = PyFloat_AsDouble(item);
@@ -345,11 +337,11 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
         }
     } else {
         opserr << "SparsePythonCOOEigenSolver::callPythonSolver - eigenvectors must be a list of lists\n";
+        PyGILState_Release(gilState);
         return -18;
     }
 
     numComputedModes = static_cast<int>(numEigen);
-    return 0;
+    PyGILState_Release(gilState);
+    return status;
 }
-
-

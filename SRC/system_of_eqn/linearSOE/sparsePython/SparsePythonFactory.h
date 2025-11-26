@@ -1,8 +1,6 @@
 #ifndef SparsePythonFactory_h
 #define SparsePythonFactory_h
 
-#include "SparsePythonCommon.h"
-
 /**
  * Parse the `system PythonSparse` command and construct the corresponding SOE.
  *

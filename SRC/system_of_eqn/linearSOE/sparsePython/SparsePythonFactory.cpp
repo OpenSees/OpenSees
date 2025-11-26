@@ -132,16 +132,22 @@ ParseWritableFlags(const char *token, SparsePythonWritableFlags &flags)
 PyObject *
 EnsureCallable(PyObject *solverObject, const char *solveMethod)
 {
+    // Ensure GIL is held for Python API calls
+    PyGILState_STATE gilState = PyGILState_Ensure();
+
     if (!PyObject_HasAttrString(solverObject, solveMethod)) {
         opserr << "WARNING: system PythonSparse - solver object missing method '" << solveMethod << "'" << endln;
+        PyGILState_Release(gilState);
         return nullptr;
     }
     PyObject *callable = PyObject_GetAttrString(solverObject, solveMethod);
     if (callable == nullptr || !PyCallable_Check(callable)) {
         opserr << "WARNING: system PythonSparse - attribute '" << solveMethod << "' not callable" << endln;
         Py_XDECREF(callable);
+        PyGILState_Release(gilState);
         return nullptr;
     }
+    PyGILState_Release(gilState);
     return callable; // new reference; caller responsible for DECREF
 }
 
@@ -158,7 +164,11 @@ CreateCompressedSOE(PyObject *solverObject, SparsePythonStorageScheme scheme,
     if (callable == nullptr) {
         return nullptr;
     }
+
+    // Acquire GIL before Py_DECREF
+    PyGILState_STATE gilState = PyGILState_Ensure();
     Py_DECREF(callable);
+    PyGILState_Release(gilState);
 
     auto *solver = new SparsePythonCompressedLinSolver();
     solver->setPythonCallable(solverObject, "solve");
@@ -175,7 +185,11 @@ CreateCOOSOE(PyObject *solverObject, const SparsePythonWritableFlags &writableFl
     if (callable == nullptr) {
         return nullptr;
     }
+
+    // Acquire GIL before Py_DECREF
+    PyGILState_STATE gilState = PyGILState_Ensure();
     Py_DECREF(callable);
+    PyGILState_Release(gilState);
 
     auto *solver = new SparsePythonCOOLinSolver();
     solver->setPythonCallable(solverObject, "solve");
@@ -206,11 +220,15 @@ OPS_SparsePythonSolver()
         Py_Initialize();
     }
 
+    // Ensure GIL is held for all Python API calls
+    PyGILState_STATE gilState = PyGILState_Ensure();
+
     // Get the dictionary argument
     void *dictPtr = OPS_GetVoidPtr();
     if (dictPtr == nullptr) {
         opserr << "WARNING: system " << type << " - requires a dictionary argument" << endln;
         opserr << "Expected syntax: " << expectedSyntax << endln;
+        PyGILState_Release(gilState);
         return nullptr;
     }
 
@@ -218,6 +236,7 @@ OPS_SparsePythonSolver()
     if (!PyDict_Check(dict)) {
         opserr << "WARNING: system " << type << " - second argument must be a dictionary" << endln;
         opserr << "Expected syntax: " << expectedSyntax << endln;
+        PyGILState_Release(gilState);
         return nullptr;
     }
 
@@ -226,6 +245,7 @@ OPS_SparsePythonSolver()
     if (solverObj == nullptr) {
         opserr << "WARNING: system " << type << " - dictionary must contain 'solver' key" << endln;
         opserr << "Expected syntax: " << expectedSyntax << endln;
+        PyGILState_Release(gilState);
         return nullptr;
     }
 
@@ -235,12 +255,14 @@ OPS_SparsePythonSolver()
     if (schemeObj != nullptr) {
         if (!PyUnicode_Check(schemeObj)) {
             opserr << "WARNING: system " << type << " - 'scheme' must be a string" << endln;
+            PyGILState_Release(gilState);
             return nullptr;
         }
         const char *schemeStr = PyUnicode_AsUTF8(schemeObj);
         if (schemeStr == nullptr || !ParseSchemeToken(schemeStr, scheme)) {
             opserr << "WARNING: system " << type << " - unknown storage scheme '"
                    << (schemeStr != nullptr ? schemeStr : "null") << "' (expected CSR, CSC, or COO)" << endln;
+            PyGILState_Release(gilState);
             return nullptr;
         }
     }
@@ -260,12 +282,14 @@ OPS_SparsePythonSolver()
                 opserr << "WARNING: system " << type << " - invalid writable flags '"
                        << (writableStr != nullptr ? writableStr : "null") << "'" << endln;
                 opserr << "Expected: 'values', 'rhs', 'values,rhs', 'all', or 'none'" << endln;
+                PyGILState_Release(gilState);
                 return nullptr;
             }
         } else if (PyList_Check(writableObj) || PyTuple_Check(writableObj)) {
             // List/tuple format: ['values', 'rhs']
             PyObject *seq = PySequence_Fast(writableObj, "writable must be a sequence");
             if (seq == nullptr) {
+                PyGILState_Release(gilState);
                 return nullptr;
             }
             
@@ -280,12 +304,14 @@ OPS_SparsePythonSolver()
                 if (!PyUnicode_Check(item)) {
                     opserr << "WARNING: system " << type << " - 'writable' list items must be strings" << endln;
                     Py_DECREF(seq);
+                    PyGILState_Release(gilState);
                     return nullptr;
                 }
                 
                 const char *itemStr = PyUnicode_AsUTF8(item);
                 if (itemStr == nullptr) {
                     Py_DECREF(seq);
+                    PyGILState_Release(gilState);
                     return nullptr;
                 }
                 
@@ -294,6 +320,7 @@ OPS_SparsePythonSolver()
                            << itemStr << "' in list" << endln;
                     opserr << "Expected: 'values', 'rhs', 'all', or 'none'" << endln;
                     Py_DECREF(seq);
+                    PyGILState_Release(gilState);
                     return nullptr;
                 }
                 
@@ -308,15 +335,15 @@ OPS_SparsePythonSolver()
             Py_DECREF(seq);
             if (!valid) {
                 opserr << "WARNING: system " << type << " - 'writable' list must contain at least one valid flag" << endln;
+                PyGILState_Release(gilState);
                 return nullptr;
             }
         } else {
             opserr << "WARNING: system " << type << " - 'writable' must be a string or a list/tuple" << endln;
+            PyGILState_Release(gilState);
             return nullptr;
         }
     }
-
-    PyGILState_STATE gilState = PyGILState_Ensure();
 
     void *result = nullptr;
     if (scheme == SparsePythonStorageScheme::COO) {
