@@ -74,7 +74,7 @@ public:
     void newStaticAnalysis();
     void newTransientAnalysis();
     void newPFEMAnalysis(double,double,double);
-    void newEigenAnalysis(int typeSolver, double shift);
+    void newEigenAnalysis(int typeSolver, double shift, EigenSOE *providedEigenSOE = nullptr);
 
     StaticAnalysis* getStaticAnalysis() {return theStaticAnalysis;}
     DirectIntegrationAnalysis* getTransientAnalysis() {return theTransientAnalysis;}

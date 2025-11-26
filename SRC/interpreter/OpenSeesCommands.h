@@ -157,7 +157,8 @@ public:
     void wipeAnalysis();
     void wipe();
     int eigen(int typeSolver, double shift,
-	      bool generalizedAlgo, bool findSmallest);
+	      bool generalizedAlgo, bool findSmallest,
+              EigenSOE *providedEigenSOE = nullptr);
 
 private:
 
