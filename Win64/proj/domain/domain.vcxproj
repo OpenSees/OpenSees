@@ -92,6 +92,7 @@
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <CallingConvention>Cdecl</CallingConvention>
       <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\release\domain.lib</OutputFile>
