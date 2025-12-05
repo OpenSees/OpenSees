@@ -20,7 +20,7 @@
 Vector LinearElasticGGmax::sigma(6);
 Matrix LinearElasticGGmax::D(6,6);
 
-/* ----------------------- OPS Factory Function ---------------------- */
+/* OPS Factory Function */
 void* OPS_LinearElasticGGmaxMaterial()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
@@ -84,7 +84,21 @@ void* OPS_LinearElasticGGmaxMaterial()
 
         // Construct using your "user curve" constructor (already declared in the header)
         return new LinearElasticGGmax(tag, G, K_or_nu, rho, strains, gg);
-    }   
+    } else {
+        // Predefined curve types: read up to three optional parameters (p1, p2, p3)
+        // Remaining args may be 0..3 doubles
+        int rem = OPS_GetNumRemainingInputArgs();
+        double params[3] = {0.0, 0.0, 0.0};
+        int toRead = std::min(rem, 3);
+        if (toRead > 0) {
+            if (OPS_GetDoubleInput(&toRead, params) < 0) {
+                opserr << "LinearElasticGGmax: unable to read curve parameters (p1 p2 p3)" << endln;
+                return nullptr;
+            }
+        }
+        return new LinearElasticGGmax(tag, G, K_or_nu, rho, curveType, params[0], params[1], params[2]);
+    }
+    return nullptr;
 }
 
 /* --------------------------- Constructors -------------------------- */
@@ -108,7 +122,6 @@ LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, 
     // G update policy defaults (preserve legacy behavior)
     updateStride = 1;
     stepCounter = 0;
-    trialCounter = 0;    
     updateOnDemand = false;
     pendingOneShotUpdate = false;
     lastGG = 1.0;
@@ -116,7 +129,7 @@ LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, 
     commitCounter = 0;
     lastUpdateCommit = -1;
 
-    opserr << "LinearElasticGGmax constructed (tag=" << tag << ")" << endln;    
+    // silent construction
 }
 
 LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, double r,
@@ -139,7 +152,6 @@ LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, 
     gammaMaxCommit = 0.0;
     updateStride = 1;
     stepCounter = 0;
-    trialCounter = 0;    
     updateOnDemand = false;
     pendingOneShotUpdate = false;
     lastGG = 1.0;
@@ -162,7 +174,6 @@ LinearElasticGGmax::LinearElasticGGmax()
     gammaMaxCommit = 0.0;
     updateStride = 1;
     stepCounter = 0;
-    trialCounter = 0;
     updateOnDemand = false;
     pendingOneShotUpdate = false;
     lastGG = 1.0;
@@ -188,19 +199,16 @@ int LinearElasticGGmax::setTrialStrain(const Vector &strn)
     const double gamma_used = computeShearStrain(epsilon);
     const double gg = computeGGmax(gamma_used);
 
-    ++trialCounter;
-
-    // --- Decide whether to update tangent (and thus mu_c) ---
+    // Decide whether to update tangent (and thus mu_c)
     bool doUpdate = false;
     if (updateOnDemand) {
         if (pendingOneShotUpdate) {
             doUpdate = true;
             pendingOneShotUpdate = false;
-            // keep step-based guard coherent if enabled
             lastUpdateCommit = commitCounter;
         }
     } else if (strideByStep) {
-        // At most one update per *converged time step*, every N steps
+        // At most one update per converged time step, every N steps
         const bool atNewStep = (commitCounter != lastUpdateCommit);
         if (atNewStep) {
             if (updateStride <= 1 || (commitCounter > 0 && (commitCounter % updateStride) == 0)) {
@@ -209,32 +217,34 @@ int LinearElasticGGmax::setTrialStrain(const Vector &strn)
             }
         }
     } else {
-        // Legacy behavior: count raw setTrialStrain calls
+        // Count raw setTrialStrain calls
         ++stepCounter;
-        if (updateStride <= 1 || (stepCounter % updateStride) == 0) {
+        int effectiveCounter = (stepCounter > 0) ? (stepCounter - 1) : 0;
+        if (updateStride <= 1 || (effectiveCounter % updateStride) == 0) {
             doUpdate = true;
         }
     }
 
-    // Choose the most useful “step” number to display:
-    // - If strideByStep == true  → show current TIME STEP index (commitCounter+1)
-    // - Otherwise (legacy/trial-based) → show TRIAL call count
-    const int   displayStep = strideByStep ? (commitCounter + 1) : trialCounter;
+    // Display step index for debug (time step or trial count)
+    const int   displayStep = strideByStep ? (commitCounter + 1)
+                                           : ((stepCounter > 0) ? (stepCounter - 1) : 0);
     const char* label       = strideByStep ? "timeStep " : "trial ";
+    const int   stepIndexEst = commitCounter + 1;
 
     if (doUpdate) {
         if (debugUpdate) {
             opserr << "LinearElasticGGmax(tag=" << this->getTag()
                    << "): UPDATE at " << label << displayStep
-                   << " (gg=" << gg << ", gamma_used=" << gamma_used << ")" << endln;
+                   << " (gg=" << gg << ", gamma_used=" << gamma_used << ")"
+                   << " [step=" << stepIndexEst << "]" << endln;
         }
-        // single place where we actually refresh the tangent
         computeTangent(gg);
         lastGG = gg;
     } else if (debugUpdate) {
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
            << "): SKIP   at " << label << displayStep
-           << " (using lastGG=" << lastGG << ")" << endln;
+           << " (using lastGG=" << lastGG << ")"
+           << " [step=" << stepIndexEst << "]" << endln;
     }
 
     // FAST path: sigma = 2*mu*eps + lambda*tr(eps)*I in Voigt form
@@ -289,7 +299,7 @@ int LinearElasticGGmax::commitState(void)
 {
     Cepsilon = epsilon;
     gammaMaxCommit = gammaMaxTrial;
-    // Count *converged time steps* (one bump per successful commit)
+    // Count converged time steps
     ++commitCounter;    
     return 0;
 }
@@ -303,7 +313,6 @@ int LinearElasticGGmax::revertToLastCommit(void)
     // Recompute tangent and stress consistent with restored strain
     const double gamma_used = computeShearStrain(epsilon);
     const double gg = computeGGmax(gamma_used);
-    // On revert, force consistency (refresh tangent immediately)
     computeTangent(gg);
     lastGG = gg;
 
@@ -462,7 +471,7 @@ double LinearElasticGGmax::computeShearStrain(const Vector& strain)
 {
     double gamma = 0.0;
 
-    // octahedral-equivalent engineering shear gamma_oct = 2*sqrt(2/3 * e_dev:e_dev)
+    // Octahedral-equivalent engineering shear gamma_oct = 2*sqrt(2/3 * e_dev:e_dev)
     if (nDim == 3) {
         double exx = strain(0), eyy = strain(1), ezz = strain(2);
         double gxy = strain(3), gyz = strain(4), gxz = strain(5); // engineering shear
@@ -486,6 +495,8 @@ double LinearElasticGGmax::computeShearStrain(const Vector& strain)
     }
 
     gamma = std::fabs(gamma);
+    // Apply equivalent-linear scaling factor
+    gamma *= gammaScale;
 
     // --- keep a running maximum over the analysis history (trial state) ---
     if (gamma > gammaMaxTrial) {
@@ -554,7 +565,6 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         if (argc >= 3) {
             int matTag = atoi(argv[1]);
             if (matTag == this->getTag()) {
-                // Recurse starting at the *real* parameter name
                 return this->setParameter(&argv[2], argc - 2, param);
             } else {
                 return -1; // not our tag
@@ -564,11 +574,7 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         }
     }
 
-    // (optional) trace to confirm we reached the actual name
-    opserr << "LinearElasticGGmax(tag=" << this->getTag()
-           << ")::setParameter name='" << argv[0] << "'" << endln;
-
-    // --- Your existing names ---
+    // Supported names
     if (strcmp(argv[0], "updateStride") == 0) {
         return param.addObject(1, this);
     } else if (strcmp(argv[0], "updateOnDemand") == 0) {
@@ -579,6 +585,8 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         return param.addObject(4, this);
     } else if (strcmp(argv[0], "strideByStep") == 0 || strcmp(argv[0], "updateStrideByStep") == 0) {
         return param.addObject(5, this);
+    } else if (strcmp(argv[0], "gammaScale") == 0 || strcmp(argv[0], "equivLinearFactor") == 0) {
+        return param.addObject(6, this);
     }
     return -1;
 }
@@ -587,7 +595,7 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
 {
     switch (paramID) {
     case 1: {
-        // cast to int safely; treat <1 as 1
+     // cast to int safely; treat <1 as 1
         int n = static_cast<int>(std::lround(info.theDouble));
         updateStride = (n < 1) ? 1 : n;
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
@@ -602,7 +610,7 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
         return 0;
     }
     case 3: {
-        // arm a one-shot update on next trial step
+     // arm a one-shot update on next trial step
         pendingOneShotUpdate = true;
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
                << "): requestUpdate armed" << endln;        
@@ -621,6 +629,13 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
                << "): strideByStep=" << strideByStep << endln;
         return 0;    
+    }
+    case 6: {
+        gammaScale = info.theDouble;
+        if (gammaScale <= 0.0) gammaScale = 1.0; // guard
+        opserr << "LinearElasticGGmax(tag=" << this->getTag()
+               << "): gammaScale=" << gammaScale << endln;
+        return 0;
     }
         default:
         return -1;

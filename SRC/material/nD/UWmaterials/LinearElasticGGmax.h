@@ -17,8 +17,6 @@
 class LinearElasticGGmax : public NDMaterial
 {
 public:
-    // Factory hook (no friend declaration needed)
-
     // Predefined curves: curveType in {1=Hardin-Drnevich, 2=Vucetic-Dobry, 3=Darendeli}
     LinearElasticGGmax(int tag, double G_in, double K_or_nu, double rho,
                        int curveType, double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
@@ -57,7 +55,7 @@ public:
 
     void Print(OPS_Stream &s, int flag = 0) override;
 
-    // --- Parameter control (minimal OpenSees-style hooks) ---
+    // Parameter control
     int setParameter(const char **argv, int argc, Parameter &param) override;
     int updateParameter(int paramID, Information &info) override;
 
@@ -71,9 +69,11 @@ private:
     double mu_c;     // cached shear modulus for current trial state
     double lambda_c; // cached first Lamé parameter for current trial state
 
-    // running maximum of equivalent shear strain
+    // Running maximum of equivalent shear strain
     double gammaMaxTrial{0.0};
     double gammaMaxCommit{0.0};
+    // Scale factor for equivalent-linear adjustments to gamma (e.g., 0.85)
+    double gammaScale{1.0};
 
     // G/Gmax curve definition
     int    curveType;               // 0=user, 1=Hardin-Drnevich, 2=Vucetic-Dobry, 3=Darendeli
@@ -91,12 +91,11 @@ private:
     // --- G update policy ---
     int  updateStride{1};          // recompute G every N trial steps (default=1 -> current behavior)
     int  stepCounter{0};           // counts setTrialStrain calls
-    int  trialCounter{0};  // counts setTrialStrain calls    
-    bool updateOnDemand{false};    // if true, only update when explicitly requested
+    bool updateOnDemand{false};    // only update when explicitly requested
     bool pendingOneShotUpdate{false}; // armed by "requestUpdate"
     bool debugUpdate{false};      // <-- debug switch (off by default)
 
-    // Keep last used gg (not strictly necessary, but handy for introspection/consistency)
+    // Last used gg
     double lastGG{1.0}; 
 
     // --- Optional: stride by *committed time steps* instead of trial calls ---
