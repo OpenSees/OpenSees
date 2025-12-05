@@ -217,7 +217,6 @@
     <ClCompile Include="..\..\..\SRC\recorder\response\MaterialResponse.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\response\Response.cpp" />
     <ClCompile Include="..\..\..\SRC\recorder\VTK_Recorder.cpp" />
-    <ClCompile Include="..\..\..\SRC\recorder\VTKHDF_Recorder.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\recorder\DamageRecorder.h" />
