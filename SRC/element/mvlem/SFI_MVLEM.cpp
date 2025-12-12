@@ -68,6 +68,7 @@ void *OPS_SFI_MVLEM(void)
 
   int iData[4];
   double dData[1];
+  int coupling = 0;
   
   int numData = 4;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -134,10 +135,25 @@ void *OPS_SFI_MVLEM(void)
     numArgs = OPS_GetNumRemainingInputArgs();
     
   }
+if (numArgs > 0) {
+	  str = OPS_GetString();
+	  numData = 1;
+	if (strcmp(str, "-Coupling") == 0) {
+	  if (OPS_GetIntInput(&numData, &coupling) != 0) {
+		  opserr << "WARNING invalid coupling data for element SFI_MVLEM" << endln;
+		  return 0;
+	  }
+	  if (coupling < 0 || coupling>2) {
+		  opserr << "WARNING invalid int data for element SFI_MVLEM coupling (it should be 0,1,or 2)" << endln;
+		  return 0;
+	  }
+
+	}
+  }
 
   theElement = new SFI_MVLEM(iData[0], iData[1], iData[2], 
 			     theMaterials, 
-			     theThickness, theWidth, iData[3], dData[0]);
+			     theThickness, theWidth , iData[3], dData[0], coupling);
 			 
   
   // Cleanup dynamic memory
@@ -161,14 +177,15 @@ SFI_MVLEM::SFI_MVLEM(int tag,
 		     double *thickness,
 		     double *width,
 		     int mm,
-		     double cc)
+		     double cc,
+			   int coupling)
   :Element(tag,ELE_TAG_SFI_MVLEM),  
    theNd1(0),
    theNd2(0),
    theNodesX(0),
    theNodesALL(0),
    theMaterial(0), theLoad(0),
-   m(mm),c(cc),
+   m(mm),c(cc),Coupling(coupling),
    externalNodes(2+m),
    SFI_MVLEMStrainX(0),SFI_MVLEMStrainY(0),SFI_MVLEMStrainXY(0),SFI_MVLEMStrain(0),
    x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), kh(0), Fx(0), Fy(0), Fxy(0), Dens(0), Dx(0), Dy(0), Dxy(0), 
@@ -396,7 +413,7 @@ SFI_MVLEM::SFI_MVLEM()
    x(0), b(0), AcX(0), AcY(0), kx(0), ky(0), kh(0), Fx(0), Fy(0), Fxy(0), Dens(0), Dx(0), Dy(0), Dxy(0), 
    SFI_MVLEMK(6+m,6+m), SFI_MVLEMR(6+m), SFI_MVLEMD(6+m,6+m), SFI_MVLEMM(6+m,6+m),
    P_6DOF(6),
-   m(0),c(0)
+   m(0),c(0), Coupling(0)
 {
   if (externalNodes.Size() != 2+m)
     opserr << "FATAL SFI_MVLEM::SFI_MVLEM() - out of memory, could not create an ID of size 2\n";
@@ -1161,6 +1178,7 @@ int SFI_MVLEM::getResponse(int responseID, Information &eleInfo)
 const Matrix & SFI_MVLEM::getInitialStiff(void)
 {
   double Kh=0.0;
+SFI_MVLEMK.Zero();
   
   for (int i=0; i < m; i++)
     {
@@ -1174,8 +1192,136 @@ const Matrix & SFI_MVLEM::getInitialStiff(void)
       kx[i]  = D00 * h*t[i] / b[i];
       ky[i]  = D11 * b[i]*t[i] / h;
       Kh  += D22 * b[i]*t[i] / h;
+  
+    // defining the coupling terms of stress strain relationship
+	  double kxy = D01 * t[i];              //Zakariya Waezi
+	  double ktaux = D02 * t[i];             //Zakariya Waezi         
+	  double ktauy = D12 * b[i] * t[i] / h;  //Zakariya Waezi
+
+	  double exy = kxy * x[i];                 //Zakariya Waezi
+	  double etauy = ktauy * x[i];          //Zakariya Waezi     
+	  double etaux = ktaux * x[i]; //Zakariya Waezi
+
+  //Considering the coupling between axial stresses sigmax and sigma y is taken care of here: Zakariya Waezi
+  // if the material is linear elastic, Coupling 1 is enough
+	  if (Coupling == 1 || Coupling==2) { //Zakariya Waezi
+		  SFI_MVLEMK(1, 6 + i) = -kxy;
+		  SFI_MVLEMK(6 + i, 1) = SFI_MVLEMK(1, 6 + i);
+
+		  SFI_MVLEMK(2, 6 + i) = -exy;
+		  SFI_MVLEMK(6 + i, 2) = SFI_MVLEMK(2, 6 + i);
+
+		  SFI_MVLEMK(4, 6 + i) = kxy;
+		  SFI_MVLEMK(6 + i, 4) = SFI_MVLEMK(4, 6 + i);
+
+		  SFI_MVLEMK(5, 6 + i) = exy;
+		  SFI_MVLEMK(6 + i, 5) = SFI_MVLEMK(5, 6 + i);
+	  }
+
+    //Considering the coupling between shear stress and axial stresses in addition to axial stresses coupling
+    // is taken care of here: 
+    // if the material is nonlinear, for complete  consideration of coupling, Coupling variable should be  2
+    // Zakariya Waezi
+	  if (Coupling == 2) {
+		  //SFI_MVLEMK(0, 0) += 0;
+
+		  SFI_MVLEMK(0, 1) += ktauy;
+
+		  SFI_MVLEMK(0, 2) += etauy;
+
+		  //SFI_MVLEMK(0, 3) += 0;
+
+		  SFI_MVLEMK(0, 4) += -ktauy;
+
+		  SFI_MVLEMK(0, 5) += -etauy;
+
+		  SFI_MVLEMK(0, 6 + i) += -ktaux;
+
+		  SFI_MVLEMK(1, 0) += ktauy;
+
+		  //SFI_MVLEMK(1, 1) += 0;
+
+		  SFI_MVLEMK(1, 2) += -c * h * ktauy;
+
+		  SFI_MVLEMK(1, 3) += -ktauy;
+
+		  //SFI_MVLEMK(1, 4) += 0;
+
+		  SFI_MVLEMK(1, 5) += (-1 + c) * h * ktauy;
+
+		  //SFI_MVLEMK(1, 6+i) += 0;
+
+		  SFI_MVLEMK(2, 0) += etauy;
+
+		  SFI_MVLEMK(2, 1) += -c * h * ktauy;
+
+		  SFI_MVLEMK(2, 2) += -2 * c * etauy * h;
+
+		  SFI_MVLEMK(2, 3) += -etauy;
+
+		  SFI_MVLEMK(2, 4) += c * h * ktauy;
+
+		  SFI_MVLEMK(2, 5) += (-1 + 2 * c) * etauy * h;
+
+		  SFI_MVLEMK(2, 6 + i) += c * h * ktaux;
+
+		  //SFI_MVLEMK(3, 0) += 0;
+
+		  SFI_MVLEMK(3, 1) += -ktauy;
+
+		  SFI_MVLEMK(3, 2) += -etauy;
+
+		  //SFI_MVLEMK(3, 3) += 0;
+
+		  SFI_MVLEMK(3, 4) += ktauy;
+
+		  SFI_MVLEMK(3, 5) += etauy;
+
+		  SFI_MVLEMK(3, 6 + i) += ktaux;
+
+		  SFI_MVLEMK(4, 0) += -ktauy;
+
+		  //SFI_MVLEMK(4, 1) += 0;
+
+		  SFI_MVLEMK(4, 2) += c * h * ktauy;
+
+		  SFI_MVLEMK(4, 3) += ktauy;
+
+		  //SFI_MVLEMK(4, 4) += 0;
+
+		  SFI_MVLEMK(4, 5) += -(-1 + c) * h * ktauy;
+
+		  //SFI_MVLEMK(4, 6+i) += 0;
+
+		  SFI_MVLEMK(5, 0) += -etauy;
+
+		  SFI_MVLEMK(5, 1) += (-1 + c) * h * ktauy;
+
+		  SFI_MVLEMK(5, 2) += (-1 + 2 * c) * etauy * h;
+
+		  SFI_MVLEMK(5, 3) += etauy;
+
+		  SFI_MVLEMK(5, 4) += (1 - c) * h * ktauy;
+
+		  SFI_MVLEMK(5, 5) += 2 * (1 - c) * etauy * h;
+
+		  SFI_MVLEMK(5, 6 + i) += (1 - c) * h * ktaux;
+
+		  SFI_MVLEMK(6 + i, 0) += -ktaux;
+
+		  //SFI_MVLEMK(6+i, 1) += 0;
+
+		  SFI_MVLEMK(6 + i, 2) += c * h * ktaux;
+
+		  SFI_MVLEMK(6 + i, 3) += ktaux;
+
+		  //SFI_MVLEMK(6+i, 4) += 0;
+
+		  SFI_MVLEMK(6 + i, 5) += (1 - c) * h * ktaux;
+	  }
       
     }
+    // end of coupling terms effect ZW
   
   // Build the initial stiffness matrix
   double Kv=0.0; double Km=0.0; double e=0.0; double ex=0.0;
@@ -1186,50 +1332,50 @@ const Matrix & SFI_MVLEM::getInitialStiff(void)
       Km+=ky[i]*x[i]*x[i];
       e+=ky[i]*x[i];
       
-      SFI_MVLEMK(6+i,6+i) = kx[i]; // Diagonal terms accounting for horizontal stiffness
+      SFI_MVLEMK(6+i,6+i) += kx[i]; // Diagonal terms accounting for horizontal stiffness
     }                  
   
-  SFI_MVLEMK(0,0) = Kh;
-  SFI_MVLEMK(0,1) = 0.0;
-  SFI_MVLEMK(0,2) = -Kh*c*h;
-  SFI_MVLEMK(0,3) = -Kh;
-  SFI_MVLEMK(0,4) = 0.0;
-  SFI_MVLEMK(0,5) = -Kh*(1-c)*h;
+  SFI_MVLEMK(0,0) += Kh;
+  //SFI_MVLEMK(0,1) += 0.0;
+  SFI_MVLEMK(0,2) += -Kh*c*h;
+  SFI_MVLEMK(0,3) += -Kh;
+  //SFI_MVLEMK(0,4) += 0.0;
+  SFI_MVLEMK(0,5) += -Kh*(1-c)*h;
   
   SFI_MVLEMK(1,0) = SFI_MVLEMK(0,1);
-  SFI_MVLEMK(1,1) = Kv;
-  SFI_MVLEMK(1,2) = e;
-  SFI_MVLEMK(1,3) = 0.0;
-  SFI_MVLEMK(1,4) = -Kv;
-  SFI_MVLEMK(1,5) = -e;
+  SFI_MVLEMK(1,1) += Kv;
+  SFI_MVLEMK(1,2) += e;
+  //SFI_MVLEMK(1,3) += 0.0;
+  SFI_MVLEMK(1,4) += -Kv;
+  SFI_MVLEMK(1,5) += -e;
   
   SFI_MVLEMK(2,0) = SFI_MVLEMK(0,2);
   SFI_MVLEMK(2,1) = SFI_MVLEMK(1,2);
-  SFI_MVLEMK(2,2) = h*h*c*c*Kh+Km;
-  SFI_MVLEMK(2,3) = h*c*Kh;
-  SFI_MVLEMK(2,4) = -e;
-  SFI_MVLEMK(2,5) = (1-c)*c*h*h*Kh-Km;
+  SFI_MVLEMK(2,2) += h*h*c*c*Kh+Km;
+  SFI_MVLEMK(2,3) += h*c*Kh;
+  SFI_MVLEMK(2,4) += -e;
+  SFI_MVLEMK(2,5) += (1-c)*c*h*h*Kh-Km;
   
   SFI_MVLEMK(3,0) = SFI_MVLEMK(0,3);
   SFI_MVLEMK(3,1) = SFI_MVLEMK(1,3);
   SFI_MVLEMK(3,2) = SFI_MVLEMK(2,3);
-  SFI_MVLEMK(3,3) = Kh;
-  SFI_MVLEMK(3,4) = 0.0;
-  SFI_MVLEMK(3,5) = Kh*(1-c)*h;
+  SFI_MVLEMK(3,3) += Kh;
+  //SFI_MVLEMK(3,4) += 0.0;
+  SFI_MVLEMK(3,5) += Kh*(1-c)*h;
   
   SFI_MVLEMK(4,0) = SFI_MVLEMK(0,4);
   SFI_MVLEMK(4,1) = SFI_MVLEMK(1,4);
   SFI_MVLEMK(4,2) = SFI_MVLEMK(2,4);
   SFI_MVLEMK(4,3) = SFI_MVLEMK(3,4);
-  SFI_MVLEMK(4,4) = Kv;
-  SFI_MVLEMK(4,5) = e;
+  SFI_MVLEMK(4,4) += Kv;
+  SFI_MVLEMK(4,5) += e;
   
   SFI_MVLEMK(5,0) = SFI_MVLEMK(0,5);
   SFI_MVLEMK(5,1) = SFI_MVLEMK(1,5);
   SFI_MVLEMK(5,2) = SFI_MVLEMK(2,5);
   SFI_MVLEMK(5,3) = SFI_MVLEMK(3,5);
   SFI_MVLEMK(5,4) = SFI_MVLEMK(4,5);
-  SFI_MVLEMK(5,5) = (1-c)*(1-c)*h*h*Kh+Km;
+  SFI_MVLEMK(5,5) += (1-c)*(1-c)*h*h*Kh+Km;
   
   for(int i=0; i<6+m; ++i)
     {
@@ -1263,62 +1409,190 @@ const Matrix & SFI_MVLEM::getTangentStiff(void)
 		ky[i]  = D11 * b[i]*t[i] / h;
 		Kh  += D22 * b[i]*t[i] / h;
 
-	}
+	// defining the coupling terms of stress-strain relationship
+	  double kxy = D01 * t[i];              //Zakariya Waezi
+	  double ktaux = D02 * t[i];             //Zakariya Waezi         
+	  double ktauy = D12 * b[i] * t[i] / h;  //Zakariya Waezi
 
-	// Build the tangent stiffness matrix
-	double Kv=0.0; double Km=0.0; double e=0.0; double ex=0.0;
+	  double exy = kxy * x[i];                 //Zakariya Waezi
+	  double etauy = ktauy * x[i];          //Zakariya Waezi     
+	  double etaux = ktaux * x[i]; //Zakariya Waezi
 
-	for(int i=0; i<m; ++i)
-	{
-		Kv+=ky[i];   
-		Km+=ky[i]*x[i]*x[i];
-		e+=ky[i]*x[i];
+  //Considering the coupling between axial stresses sigmax and sigma y is taken care of here: Zakariya Waezi
+  // if the material is linear elastic, Coupling 1 is enough
+	  if (Coupling == 1 || Coupling == 2) { //Zakariya Waezi
+		  SFI_MVLEMK(1, 6 + i) = -kxy;
+		  SFI_MVLEMK(6 + i, 1) = SFI_MVLEMK(1, 6 + i);
 
-		SFI_MVLEMK(6+i,6+i) = kx[i]; // Diagonal terms accounting for horizontal stiffness
-	}                  
+		  SFI_MVLEMK(2, 6 + i) = -exy;
+		  SFI_MVLEMK(6 + i, 2) = SFI_MVLEMK(2, 6 + i);
 
-	SFI_MVLEMK(0,0) = Kh;
-	SFI_MVLEMK(0,1) = 0.0;
-	SFI_MVLEMK(0,2) = -Kh*c*h;
-	SFI_MVLEMK(0,3) = -Kh;
-	SFI_MVLEMK(0,4) = 0.0;
-	SFI_MVLEMK(0,5) = -Kh*(1-c)*h;
+		  SFI_MVLEMK(4, 6 + i) = kxy;
+		  SFI_MVLEMK(6 + i, 4) = SFI_MVLEMK(4, 6 + i);
 
-	SFI_MVLEMK(1,0) = SFI_MVLEMK(0,1);
-	SFI_MVLEMK(1,1) = Kv;
-	SFI_MVLEMK(1,2) = e;
-	SFI_MVLEMK(1,3) = 0.0;
-	SFI_MVLEMK(1,4) = -Kv;
-	SFI_MVLEMK(1,5) = -e;
+		  SFI_MVLEMK(5, 6 + i) = exy;
+		  SFI_MVLEMK(6 + i, 5) = SFI_MVLEMK(5, 6 + i);
+	  }
 
-	SFI_MVLEMK(2,0) = SFI_MVLEMK(0,2);
-	SFI_MVLEMK(2,1) = SFI_MVLEMK(1,2);
-	SFI_MVLEMK(2,2) = h*h*c*c*Kh+Km;
-	SFI_MVLEMK(2,3) = h*c*Kh;
-	SFI_MVLEMK(2,4) = -e;
-	SFI_MVLEMK(2,5) = (1-c)*c*h*h*Kh-Km;
+    //Considering the coupling between shear stress and axial stresses in addition to axial stresses coupling
+    // is taken care here: 
+    // if the material is nonlinear, for complete  consideration of coupling Coupling variable should be  2
+    // Zakariya Waezi
+	  if (Coupling == 2) {
+		  //SFI_MVLEMK(0, 0) += 0;
 
-	SFI_MVLEMK(3,0) = SFI_MVLEMK(0,3);
-	SFI_MVLEMK(3,1) = SFI_MVLEMK(1,3);
-	SFI_MVLEMK(3,2) = SFI_MVLEMK(2,3);
-	SFI_MVLEMK(3,3) = Kh;
-	SFI_MVLEMK(3,4) = 0.0;
-	SFI_MVLEMK(3,5) = Kh*(1-c)*h;
+		  SFI_MVLEMK(0, 1) += ktauy;
 
-	SFI_MVLEMK(4,0) = SFI_MVLEMK(0,4);
-	SFI_MVLEMK(4,1) = SFI_MVLEMK(1,4);
-	SFI_MVLEMK(4,2) = SFI_MVLEMK(2,4);
-	SFI_MVLEMK(4,3) = SFI_MVLEMK(3,4);
-	SFI_MVLEMK(4,4) = Kv;
-	SFI_MVLEMK(4,5) = e;
+		  SFI_MVLEMK(0, 2) += etauy;
 
-	SFI_MVLEMK(5,0) = SFI_MVLEMK(0,5);
-	SFI_MVLEMK(5,1) = SFI_MVLEMK(1,5);
-	SFI_MVLEMK(5,2) = SFI_MVLEMK(2,5);
-	SFI_MVLEMK(5,3) = SFI_MVLEMK(3,5);
-	SFI_MVLEMK(5,4) = SFI_MVLEMK(4,5);
-	SFI_MVLEMK(5,5) = (1-c)*(1-c)*h*h*Kh+Km;
+		  //SFI_MVLEMK(0, 3) += 0;
 
+		  SFI_MVLEMK(0, 4) += -ktauy;
+
+		  SFI_MVLEMK(0, 5) += -etauy;
+
+		  SFI_MVLEMK(0, 6 + i) += -ktaux;
+
+		  SFI_MVLEMK(1, 0) += ktauy;
+
+		  //SFI_MVLEMK(1, 1) += 0;
+
+		  SFI_MVLEMK(1, 2) += -c * h * ktauy;
+
+		  SFI_MVLEMK(1, 3) += -ktauy;
+
+		  //SFI_MVLEMK(1, 4) += 0;
+
+		  SFI_MVLEMK(1, 5) += (-1 + c) * h * ktauy;
+
+		  //SFI_MVLEMK(1, 6+i) += 0;
+
+		  SFI_MVLEMK(2, 0) += etauy;
+
+		  SFI_MVLEMK(2, 1) += -c * h * ktauy;
+
+		  SFI_MVLEMK(2, 2) += -2 * c * etauy * h;
+
+		  SFI_MVLEMK(2, 3) += -etauy;
+
+		  SFI_MVLEMK(2, 4) += c * h * ktauy;
+
+		  SFI_MVLEMK(2, 5) += (-1 + 2 * c) * etauy * h;
+
+		  SFI_MVLEMK(2, 6 + i) += c * h * ktaux;
+
+		  //SFI_MVLEMK(3, 0) += 0;
+
+		  SFI_MVLEMK(3, 1) += -ktauy;
+
+		  SFI_MVLEMK(3, 2) += -etauy;
+
+		  //SFI_MVLEMK(3, 3) += 0;
+
+		  SFI_MVLEMK(3, 4) += ktauy;
+
+		  SFI_MVLEMK(3, 5) += etauy;
+
+		  SFI_MVLEMK(3, 6 + i) += ktaux;
+
+		  SFI_MVLEMK(4, 0) += -ktauy;
+
+		  //SFI_MVLEMK(4, 1) += 0;
+
+		  SFI_MVLEMK(4, 2) += c * h * ktauy;
+
+		  SFI_MVLEMK(4, 3) += ktauy;
+
+		  //SFI_MVLEMK(4, 4) += 0;
+
+		  SFI_MVLEMK(4, 5) += (1 - c) * h * ktauy;
+
+		  //SFI_MVLEMK(4, 6+i) += 0;
+
+		  SFI_MVLEMK(5, 0) += -etauy;
+
+		  SFI_MVLEMK(5, 1) += (-1 + c) * h * ktauy;
+
+		  SFI_MVLEMK(5, 2) += (-1 + 2 * c) * etauy * h;
+
+		  SFI_MVLEMK(5, 3) += etauy;
+
+		  SFI_MVLEMK(5, 4) += (1 - c) * h * ktauy;
+
+		  SFI_MVLEMK(5, 5) += 2 * (1 - c) * etauy * h;
+
+		  SFI_MVLEMK(5, 6 + i) += (1 - c) * h * ktaux;
+
+		  SFI_MVLEMK(6 + i, 0) += -ktaux;
+
+		  //SFI_MVLEMK(6+i, 1) += 0;
+
+		  SFI_MVLEMK(6 + i, 2) += c * h * ktaux;
+
+		  SFI_MVLEMK(6 + i, 3) += ktaux;
+
+		  //SFI_MVLEMK(6+i, 4) += 0;
+
+		  SFI_MVLEMK(6 + i, 5) += (1 - c) * h * ktaux;
+	  }
+      
+    }
+    // end of coupling terms effect ZW
+  
+  // Build the tangent stiffness matrix
+  double Kv=0.0; double Km=0.0; double e=0.0; double ex=0.0;
+  
+  for(int i=0; i<m; ++i)
+    {
+      Kv+=ky[i];   
+      Km+=ky[i]*x[i]*x[i];
+      e+=ky[i]*x[i];
+      
+      SFI_MVLEMK(6+i,6+i) += kx[i]; // Diagonal terms accounting for horizontal stiffness
+    }                  
+  
+  SFI_MVLEMK(0, 0) += Kh;
+  //SFI_MVLEMK(0, 1) += 0.0;
+  SFI_MVLEMK(0, 2) += -Kh * c * h;
+  SFI_MVLEMK(0, 3) += -Kh;
+  //SFI_MVLEMK(0, 4) += 0.0;
+  SFI_MVLEMK(0, 5) += -Kh * (1 - c) * h;
+  
+  SFI_MVLEMK(1, 0) = SFI_MVLEMK(0, 1);
+  SFI_MVLEMK(1, 1) += Kv;
+  SFI_MVLEMK(1, 2) += e;
+  //SFI_MVLEMK(1, 3) += 0.0;
+  SFI_MVLEMK(1, 4) += -Kv;
+  SFI_MVLEMK(1, 5) += -e;
+  
+  SFI_MVLEMK(2, 0) = SFI_MVLEMK(0, 2);
+  SFI_MVLEMK(2, 1) = SFI_MVLEMK(1, 2);
+  SFI_MVLEMK(2, 2) += h * h * c * c * Kh + Km;
+  SFI_MVLEMK(2, 3) += h * c * Kh;
+  SFI_MVLEMK(2, 4) += -e;
+  SFI_MVLEMK(2, 5) += (1 - c) * c * h * h * Kh - Km;
+  
+  SFI_MVLEMK(3, 0) = SFI_MVLEMK(0, 3);
+  SFI_MVLEMK(3, 1) = SFI_MVLEMK(1, 3);
+  SFI_MVLEMK(3, 2) = SFI_MVLEMK(2, 3);
+  SFI_MVLEMK(3, 3) += Kh;
+  //SFI_MVLEMK(3, 4) += 0.0;
+  SFI_MVLEMK(3, 5) += Kh * (1 - c) * h;
+  
+  SFI_MVLEMK(4, 0) = SFI_MVLEMK(0, 4);
+  SFI_MVLEMK(4, 1) = SFI_MVLEMK(1, 4);
+  SFI_MVLEMK(4, 2) = SFI_MVLEMK(2, 4);
+  SFI_MVLEMK(4, 3) = SFI_MVLEMK(3, 4);
+  SFI_MVLEMK(4, 4) += Kv;
+  SFI_MVLEMK(4, 5) += e;
+  
+  SFI_MVLEMK(5, 0) = SFI_MVLEMK(0, 5);
+  SFI_MVLEMK(5, 1) = SFI_MVLEMK(1, 5);
+  SFI_MVLEMK(5, 2) = SFI_MVLEMK(2, 5);
+  SFI_MVLEMK(5, 3) = SFI_MVLEMK(3, 5);
+  SFI_MVLEMK(5, 4) = SFI_MVLEMK(4, 5);
+  SFI_MVLEMK(5, 5) += (1 - c) * (1 - c) * h * h * Kh + Km;
+  
 	for(int i=0; i<6+m; ++i)
 	{
 		if (SFI_MVLEMK(i,i) == 0.0)

@@ -24,7 +24,8 @@
 //
 #include <BasicModelBuilder.h>
 
-#include <runtimeAPI.h>
+#include <Logging.h>
+#include <Parsing.h>
 #include <Domain.h>
 #include <LoadPattern.h>
 #include <LinearSeries.h>
@@ -46,6 +47,7 @@
 #include <string.h>
 
 #include <SimulationInformation.h>
+
 extern SimulationInformation simulationInfo;
 extern const char *getInterpPWD(Tcl_Interp *interp); // interpreter.cpp
 
@@ -67,7 +69,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // make sure at least one other argument to contain integrator
   if (argc < 4) {
-    opserr << G3_ERROR_PROMPT << "invalid command - want: pattern type ";
+    opserr << OpenSees::PromptValueError << "invalid command - want: pattern type ";
     opserr << " <type args> {list of load and sp constraints commands}\n";
     opserr
         << "           valid types: Plain, UniformExcitation, MultiSupport\n";
@@ -163,7 +165,7 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp, int argc,
         currentArg++;
         velSeries = TclSeriesCommand(clientData, interp, argv[currentArg]);
 
-        if (velSeries == 0) {
+        if (velSeries == nullptr) {
           opserr << "WARNING invalid vel series: " << argv[currentArg];
           opserr << " pattern UniformExcitation -vel {series}\n";
           return TCL_ERROR;

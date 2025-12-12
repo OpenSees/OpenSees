@@ -297,6 +297,7 @@
 #include "J2CyclicBoundingSurface.h"
 #include "J2CyclicBoundingSurface3D.h"
 #include "J2CyclicBoundingSurfacePlaneStrain.h"
+#include "UWmaterials/LinearElasticGGmax.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
@@ -2374,6 +2375,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   
   case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
 	  return new J2CyclicBoundingSurfacePlaneStrain();
+
+  case ND_TAG_LinearElasticGGmax:
+	  return new LinearElasticGGmax();    
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 

@@ -51,12 +51,14 @@
 #define EigenSOE_TAGS_FullGenEigenSOE   4
 #define EigenSOE_TAGS_ArpackSOE 	5
 #define EigenSOE_TAGS_GeneralArpackSOE 	6
+#define EigenSOE_TAGS_SymmGeneralizedEigenSOE 	7
 #define EigenSOLVER_TAGS_BandArpackSolver 	1
 #define EigenSOLVER_TAGS_SymArpackSolver 	2
 #define EigenSOLVER_TAGS_SymBandEigenSolver     3
 #define EigenSOLVER_TAGS_FullGenEigenSolver  4
 #define EigenSOLVER_TAGS_ArpackSolver  5
 #define EigenSOLVER_TAGS_GeneralArpackSolver  6
+#define EigenSOLVER_TAGS_SymmGeneralizedEigenSolver  7
 
 #define EigenALGORITHM_TAGS_Frequency 1
 #define EigenALGORITHM_TAGS_Standard  2
@@ -259,6 +261,7 @@
 #define MAT_TAG_TzSandCPT 233
 #define MAT_TAG_QbSandCPT 234
 #define MAT_TAG_ASDSteel1DMaterial 235
+#define MAT_TAG_CreepShrinkageACI209 236
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
@@ -518,11 +521,12 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
+// J2CyclicBoundingSurface material - P. Arduino
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
-
+// LinearElasticGGmax material - P. Arduino
+#define ND_TAG_LinearElasticGGmax             14026
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
 #define ND_TAG_MultiaxialCyclicPlasticity3D           10032

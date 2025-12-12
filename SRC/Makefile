@@ -888,6 +888,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/TDConcreteMC10.o \
 	$(FE)/material/uniaxial/TDConcreteMC10NL.o \
 	$(FE)/material/uniaxial/CreepMaterial.o \
+	$(FE)/material/uniaxial/CreepShrinkageACI209.o \
 	$(FE)/material/uniaxial/DegradingPinchedBW.o \
 	$(FE)/material/uniaxial/HystereticPoly.o \
 	$(FE)/material/uniaxial/HystereticSmooth.o \
@@ -1007,6 +1008,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/UWmaterials/J2CyclicBoundingSurfacePlaneStrain.o \
 	$(FE)/material/nD/UWmaterials/PM4Sand.o \
 	$(FE)/material/nD/UWmaterials/PM4Silt.o \
+	$(FE)/material/nD/UWmaterials/LinearElasticGGmax.o \
 	$(FE)/material/nD/UANDESmaterials/SAniSandMS.o \
 	$(FE)/material/nD/UANDESmaterials/SAniSandMS3D.o \
 	$(FE)/material/nD/UANDESmaterials/SAniSandMSPlaneStrain.o \
@@ -1157,6 +1159,8 @@ SECTION_LIBS = $(FE)/material/section/SectionForceDeformation.o \
 	$(FE)/material/section/integration/RCSectionIntegration.o \
 	$(FE)/material/section/integration/RCCircularSectionIntegration.o \
 	$(FE)/material/section/integration/RCTunnelSectionIntegration.o \
+	$(FE)/material/section/integration/MVLEMSectionIntegration.o \
+	$(FE)/material/section/integration/SFIMVLEMSectionIntegration.o \
 	$(FE)/material/section/integration/WideFlangeSectionIntegration.o \
 	$(FE)/material/section/integration/RCTBeamSectionIntegration.o \
 	$(FE)/material/section/integration/TubeSectionIntegration.o \
@@ -1268,7 +1272,9 @@ SequentialSysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSolver.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSOE.o \
-	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSolver.o
+	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSolver.o \
+	$(FE)/system_of_eqn/eigenSOE/SymmGeneralizedEigenSOE.o \
+	$(FE)/system_of_eqn/eigenSOE/SymmGeneralizedEigenSolver.o
 
 ifeq ($(PROGRAMMING_MODE), PARALLEL_INTERPRETERS)
 SysOfEqn_LIBS = $(SequentialSysOfEqn_LIBS) \

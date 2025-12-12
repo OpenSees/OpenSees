@@ -1,15 +1,24 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
 //
-// Description: This file implements selection of an integrator object.
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
 //
-#include <G3_Logging.h>
-#include "integrator.h"
-#include <assert.h>
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
+//
+// Description: This file implements selection of an integrator.
+//
 #include <tcl.h>
+#include <Parsing.h>
+#include <Logging.h>
+#include <assert.h>
 #include <runtimeAPI.h>
 #include <Domain.h>
 #include <Node.h>
@@ -22,6 +31,71 @@
 
 #include <Newmark.h>
 #include <BackwardEuler.h>
+
+//
+// Helpers
+//
+
+// Type 1
+template <typename Type, OPS_Routine fn>
+static int
+dispatch(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char** const argv)
+{
+  BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData);
+  Type* theIntegrator = (Type*)fn( G3_getRuntime(interp), argc, argv );
+
+  if (theIntegrator == nullptr)
+    return TCL_ERROR;
+
+
+  opsdbg << G3_DEBUG_PROMPT << "Set integrator to \n";
+  theIntegrator->Print(opsdbg);
+  builder->set(*theIntegrator);
+  return TCL_OK;
+}
+
+// Type 2
+template <typename Type, Type*(*fn)(ClientData, Tcl_Interp*, int, TCL_Char** const)>
+static int
+dispatch(ClientData clientData, Tcl_Interp* interp, int argc, TCL_Char** const argv)
+{
+  assert(clientData != nullptr);
+
+
+  Type* theIntegrator = fn( clientData, interp, argc, argv );
+
+  if (theIntegrator == nullptr)
+    return TCL_ERROR;
+
+  BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData);
+
+  opsdbg << G3_DEBUG_PROMPT << "Set integrator to \n";
+  theIntegrator->Print(opsdbg);
+  builder->set(*theIntegrator);
+  return TCL_OK;
+}
+
+// Type 3
+template <int (*fn)(ClientData clientData, Tcl_Interp* interp, int, G3_Char** const)> 
+static int
+dispatch(ClientData clientData, Tcl_Interp* interp, int argc, G3_Char** const argv)
+{
+  assert(clientData != nullptr);
+  return fn( clientData, interp, argc, argv );
+}
+
+#define DISPATCH(Type, Class)                                         \
+  (Tcl_CmdProc*)[](ClientData clientData, Tcl_Interp*, int, G3_Char**const)->int{ \
+    BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData); \
+    Type* theIntegrator = new Class();                                \
+    opsdbg << G3_DEBUG_PROMPT << "Set integrator to \n";              \
+    theIntegrator->Print(opsdbg);                                     \
+    builder->set(*theIntegrator);                                     \
+    return TCL_OK;                                                    \
+  }
+
+#include "integrator.h"
+
 
 extern "C" int OPS_ResetInputNoBuilder(ClientData clientData,
                                        Tcl_Interp *interp, int cArg, int mArg,
@@ -60,7 +134,7 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char 
 int
 TclCommand_newStaticIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
 {
-  BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
+  BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData);
 
   auto tcl_cmd = StaticIntegratorLibrary.find(std::string(argv[1]));
   if (tcl_cmd != StaticIntegratorLibrary.end())
@@ -100,7 +174,7 @@ TclCommand_newStaticIntegrator(ClientData clientData, Tcl_Interp *interp, int ar
 int
 TclCommand_newTransientIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
 {
-  BasicAnalysisBuilder *builder = (BasicAnalysisBuilder*)clientData;
+  BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData);
 
   auto tcl_cmd = TransientIntegratorLibrary.find(std::string(argv[1]));
   if (tcl_cmd != TransientIntegratorLibrary.end())
@@ -136,7 +210,7 @@ TclCommand_newTransientIntegrator(ClientData clientData, Tcl_Interp *interp, int
 }
 
 #include <HSConstraint.h>
-StaticIntegrator*
+int
 G3Parse_newHSIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, const char *argv[])
 {
   double arcLength, psi_u, psi_f, u_ref;
@@ -144,57 +218,78 @@ G3Parse_newHSIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, con
   if (argc < 3) {
     opserr << "WARNING integrator HSConstraint <arcLength> <psi_u> <psi_f> "
               "<u_ref> \n";
-    return nullptr;
+    return TCL_ERROR;;
   }
-  if (argc >= 3 && Tcl_GetDouble(interp, argv[2], &arcLength) != TCL_OK)
-    return nullptr;
-  if (argc >= 4 && Tcl_GetDouble(interp, argv[3], &psi_u) != TCL_OK)
-    return nullptr;
-  if (argc >= 5 && Tcl_GetDouble(interp, argv[4], &psi_f) != TCL_OK)
-    return nullptr;
-  if (argc == 6 && Tcl_GetDouble(interp, argv[5], &u_ref) != TCL_OK)
-    return nullptr;
 
+  if (argc >= 3 && Tcl_GetDouble(interp, argv[2], &arcLength) != TCL_OK)
+    return TCL_ERROR;;
+  if (argc >= 4 && Tcl_GetDouble(interp, argv[3], &psi_u) != TCL_OK)
+    return TCL_ERROR;;
+  if (argc >= 5 && Tcl_GetDouble(interp, argv[4], &psi_f) != TCL_OK)
+    return TCL_ERROR;;
+  if (argc == 6 && Tcl_GetDouble(interp, argv[5], &u_ref) != TCL_OK)
+    return TCL_ERROR;;
+
+  // Create the integrator
+  StaticIntegrator* theStaticIntegrator = nullptr;
   switch (argc) {
   case 3:
-    return new HSConstraint(arcLength);
+    theStaticIntegrator = new HSConstraint(arcLength);
+    break;
   case 4:
-    return new HSConstraint(arcLength, psi_u);
+    theStaticIntegrator = new HSConstraint(arcLength, psi_u);
+    break;
   case 5:
-    return new HSConstraint(arcLength, psi_u, psi_f);
+    theStaticIntegrator = new HSConstraint(arcLength, psi_u, psi_f);
+    break;
   case 6:
-    return new HSConstraint(arcLength, psi_u, psi_f, u_ref);
-  default:
-    return nullptr;
+    theStaticIntegrator = new HSConstraint(arcLength, psi_u, psi_f, u_ref);
+    break;
   }
+
+  if (theStaticIntegrator == nullptr)
+    return TCL_ERROR;
+
+
+  BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData);
+
+  builder->set(*theStaticIntegrator);
+  return TCL_OK;
 }
 
-StaticIntegrator*
+int
 G3Parse_newLoadControl(ClientData clientData, Tcl_Interp *interp, int argc, const char *argv[])
 {
-    double dLambda;
-    double minIncr, maxIncr;
-    int numIter;
-    if (argc < 3) {
-      opserr << "WARNING incorrect # args - integrator LoadControl dlam <Jd "
-                "dlamMin dlamMax>\n";
-      return nullptr;
-    }
-    if (Tcl_GetDouble(interp, argv[2], &dLambda) != TCL_OK)
-      return nullptr;
-    if (argc > 5) {
-      if (Tcl_GetInt(interp, argv[3], &numIter) != TCL_OK)
-        return nullptr;
-      if (Tcl_GetDouble(interp, argv[4], &minIncr) != TCL_OK)
-        return nullptr;
-      if (Tcl_GetDouble(interp, argv[5], &maxIncr) != TCL_OK)
-        return nullptr;
-    } else {
-      minIncr = dLambda;
-      maxIncr = dLambda;
-      numIter = 1;
-    }
-    return new LoadControl(dLambda, numIter, minIncr, maxIncr);
+  double dLambda;
+  double minIncr, maxIncr;
+  int numIter;
+  if (argc < 3) {
+    opserr << "WARNING incorrect # args - integrator LoadControl dlam <Jd "
+              "dlamMin dlamMax>\n";
+    return TCL_ERROR;;
+  }
+  if (Tcl_GetDouble(interp, argv[2], &dLambda) != TCL_OK)
+    return TCL_ERROR;;
+  if (argc > 5) {
+    if (Tcl_GetInt(interp, argv[3], &numIter) != TCL_OK)
+      return TCL_ERROR;;
+    if (Tcl_GetDouble(interp, argv[4], &minIncr) != TCL_OK)
+      return TCL_ERROR;;
+    if (Tcl_GetDouble(interp, argv[5], &maxIncr) != TCL_OK)
+      return TCL_ERROR;;
+  } else {
+    minIncr = dLambda;
+    maxIncr = dLambda;
+    numIter = 1;
+  }
+
+  StaticIntegrator *theStaticIntegrator =
+    new LoadControl(dLambda, numIter, minIncr, maxIncr);
+
+  BasicAnalysisBuilder *builder = static_cast<BasicAnalysisBuilder*>(clientData);
+
+  builder->set(*theStaticIntegrator);
+  return TCL_OK;
 }
 
 #include <EQPath.h>
@@ -213,8 +308,6 @@ G3Parse_newEQPathIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
     if (Tcl_GetDouble(interp, argv[2], &arcLength) != TCL_OK) {
       opserr << "WARNING integrator EQPath $arc_length $type \n";
-      opserr << " https://doi.org/10.12989/sem.2013.48.6.849         \n";
-      opserr << " https://doi.org/10.12989/sem.2013.48.6.879         \n";
       return nullptr;
     }
 
@@ -232,7 +325,8 @@ G3Parse_newEQPathIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
 #include <ArcLength.h>
 StaticIntegrator *
-G3Parse_newArcLengthIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
+G3Parse_newArcLengthIntegrator(ClientData clientData, Tcl_Interp *interp, 
+                               Tcl_Size argc, TCL_Char ** const argv)
 {
   double arcLength;
   double alpha   = 1.0;
@@ -246,7 +340,7 @@ G3Parse_newArcLengthIntegrator(ClientData clientData, Tcl_Interp *interp, int ar
   
   // Begin parse
   if (argc < 3) {
-    opserr << G3_ERROR_PROMPT << "integrator ArcLength arcLength alpha \n";
+    opserr << OpenSees::PromptValueError << "integrator ArcLength arcLength alpha \n";
     return nullptr;
   }
 
@@ -259,13 +353,13 @@ G3Parse_newArcLengthIntegrator(ClientData clientData, Tcl_Interp *interp, int ar
     }
     else if ((strcmp(argv[i], "-exp") == 0)) {
       if (++i >= argc || Tcl_GetDouble(interp, argv[i], &expon) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to read expon\n";
+        opserr << OpenSees::PromptValueError << "failed to read expon\n";
         return nullptr;
       }
     }
     else if ((strcmp(argv[i], "-j") == 0)) {
       if (++i >= argc || Tcl_GetDouble(interp, argv[i], &numIter) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to read iter\n";
+        opserr << OpenSees::PromptValueError << "failed to read iter\n";
         return nullptr;
       }
     }
@@ -273,9 +367,11 @@ G3Parse_newArcLengthIntegrator(ClientData clientData, Tcl_Interp *interp, int ar
       if (++i < argc && strcmp(argv[i], "point")==0) {
         reference = ReferencePattern::Point;
       }
-    } else if (!got_alpha) {
+    }
+    else if (!got_alpha) {
       if (Tcl_GetDouble(interp, argv[i], &alpha) != TCL_OK) {
-        opserr << G3_ERROR_PROMPT << "failed to read alpha, got " << argv[i] << "\n";
+        opserr << OpenSees::PromptValueError 
+               << "failed to read alpha, got " << argv[i] << "\n";
         return nullptr;
       }
       got_alpha = true;
@@ -299,7 +395,7 @@ G3Parse_newMinUnbalDispNormIntegrator(ClientData clientData, Tcl_Interp* interp,
 
     double lambda11;
     if (Tcl_GetDouble(interp, argv[2], &lambda11) != TCL_OK) {
-      opserr << G3_ERROR_PROMPT << "expected float for lambda11 but got " << argv[2] << "\n";
+      opserr << OpenSees::PromptValueError << "expected float for lambda11 but got " << argv[2] << "\n";
       return nullptr;
     }
 
@@ -332,10 +428,12 @@ G3Parse_newMinUnbalDispNormIntegrator(ClientData clientData, Tcl_Interp* interp,
       } else if ((recvd&MinLamb) == 0) {
         if (Tcl_GetDouble(interp, argv[i], &minlambda) != TCL_OK)
           return nullptr;
+        recvd |= MinLamb;
 
       } else if ((recvd&MaxLamb) == 0) {
         if (Tcl_GetDouble(interp, argv[i], &maxlambda) != TCL_OK)
           return nullptr;
+        recvd |= MaxLamb;
       }
     }
 
@@ -417,35 +515,6 @@ G3Parse_newDisplacementControlIntegrator(ClientData clientData, Tcl_Interp *inte
 #endif
 }
 
-#if 0
-StaticIntegrator*
-G3Parse_newStagedLoadControlIntegrator(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char ** const argv)
-{
-    double dLambda;
-    double minIncr, maxIncr;
-    int numIter;
-    if (argc < 3) {
-      opserr << "WARNING incorrect # args - integrator StagedLoadControl dlam "
-                "<Jd dlamMin dlamMax>\n";
-      return nullptr;
-    }
-    if (Tcl_GetDouble(interp, argv[2], &dLambda) != TCL_OK)
-      return nullptr;
-    if (argc > 5) {
-      if (Tcl_GetInt(interp, argv[3], &numIter) != TCL_OK)
-        return nullptr;
-      if (Tcl_GetDouble(interp, argv[4], &minIncr) != TCL_OK)
-        return nullptr;
-      if (Tcl_GetDouble(interp, argv[5], &maxIncr) != TCL_OK)
-        return nullptr;
-    } else {
-      minIncr = dLambda;
-      maxIncr = dLambda;
-      numIter = 1;
-    }
-    return  new StagedLoadControl(dLambda, numIter, minIncr, maxIncr);
-}
-#endif
 
 
 #ifdef _PARALLEL_INTERPRETERS

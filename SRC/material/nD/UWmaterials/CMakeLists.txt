@@ -26,6 +26,7 @@ target_sources(OPS_Material
       ManzariDafaliasRO.cpp
       PM4Sand.cpp
       PM4Silt.cpp
+      LinearElasticGGmax.cpp
     PUBLIC
       BoundingCamClay.h
       BoundingCamClay3D.h
@@ -47,6 +48,7 @@ target_sources(OPS_Material
       ManzariDafaliasRO.h
       PM4Sand.h
       PM4Silt.h
+      LinearElasticGGmax.h
 )
 
 target_include_directories(OPS_Material PUBLIC ${CMAKE_CURRENT_LIST_DIR})

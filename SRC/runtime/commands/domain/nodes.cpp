@@ -1,23 +1,18 @@
-/* ****************************************************************** **
-**    OpenSees - Open System for Earthquake Engineering Simulation    **
-**          Pacific Earthquake Engineering Research Center            **
-**                                                                    **
-**                                                                    **
-** (C) Copyright 1999, The Regents of the University of California    **
-** All Rights Reserved.                                               **
-**                                                                    **
-** Commercial use of this program without express permission of the   **
-** University of California, Berkeley, is strictly prohibited.  See   **
-** file 'COPYRIGHT'  in main directory for information on usage and   **
-** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
-**                                                                    **
-** Developed by:                                                      **
-**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
-**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
-**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
-**                                                                    **
-** ****************************************************************** */
+//===----------------------------------------------------------------------===//
 //
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
+// 
 // Description: This file implements commands for interacting with nodes
 // in the domain.
 //
@@ -50,8 +45,8 @@ static int   resDataSize = 0;
 
 
 int
-getNodeTags(ClientData clientData, 
-            Tcl_Interp *interp,
+getNodeTags(ClientData clientData,
+            Tcl_Interp *interp, 
             Tcl_Size argc,
             TCL_Char ** const argv)
 {
@@ -60,12 +55,13 @@ getNodeTags(ClientData clientData,
 
   NodeIter &nodeIter = the_domain->getNodes();
 
+  Tcl_Obj* result = Tcl_NewListObj(the_domain->getNumNodes(), nullptr);
+
   Node *node;
-  char buffer[20];
-  while ((node = nodeIter()) != nullptr) {
-    sprintf(buffer, "%d ", node->getTag());
-    Tcl_AppendResult(interp, buffer, NULL);
-  }
+  while ((node = nodeIter()) != nullptr)
+    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(node->getTag()));
+
+  Tcl_SetObjResult(interp, result);
 
   return TCL_OK;
 }
@@ -138,8 +134,9 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   double value;
 
   if (Tcl_GetInt(interp, argv[2], &dim) != TCL_OK) {
-    opserr
-        << "WARNING setNodeCoord nodeTag? dim? value? - could not read dim? \n";
+    opserr << OpenSees::PromptValueError
+           << "could not read dim"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
   if (Tcl_GetDouble(interp, argv[3], &value) != TCL_OK) {
@@ -151,12 +148,15 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   Node *theNode = domain->getNode(tag);
 
   if (theNode == nullptr) {
-    // TODO: add error message
+    opserr << OpenSees::PromptValueError 
+           << "Unable to find node with tag '" << tag << "'"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
   //
   // TODO: Check dimensions
+  //
 
   Vector coords(theNode->getCrds());
   coords(dim - 1) = value;
@@ -165,7 +165,6 @@ setNodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
 
   return TCL_OK;
 }
-
 
 
 template <NodeData Response>
@@ -291,12 +290,12 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** c
 
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
-    opserr << "WARNING nodeMass node " << tag << " not found" << endln;
+    opserr << "WARNING nodeMass node " << tag << " not found" << "\n";
     return TCL_ERROR;
   }
   int numDOF = theNode->getNumberDOF();
   if (dof < 1 || dof > numDOF) {
-    opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
+    opserr << "WARNING nodeMass dof " << dof << " not in range" << "\n";
     return TCL_ERROR;
   } else {
     const Matrix &mass = theNode->getMass();
@@ -388,7 +387,7 @@ setNodeVel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char **
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
     opserr << "WARNING setNodeVel -- node with tag " << tag << " not found"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -446,7 +445,7 @@ setNodeDisp(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
     opserr << "WARNING setNodeDisp -- node with tag " << tag << " not found"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -507,7 +506,7 @@ setNodeAccel(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   Node *theNode = the_domain->getNode(tag);
   if (theNode == nullptr) {
     opserr << "WARNING setNodeAccel -- node with tag " << tag << " not found"
-           << endln;
+           << "\n";
     return TCL_ERROR;
   }
 
@@ -592,11 +591,11 @@ nodeResponse(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
   int tag, dof, responseID;
 
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeResponse nodeTag? dof? - could not read nodeTag? \n";
+    opserr << "WARNING could not read nodeTag? \n";
     return TCL_ERROR;
   }
   if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-    opserr << "WARNING nodeResponse nodeTag? dof? - could not read dof? \n";
+    opserr << "WARNING could not read dof? \n";
     return TCL_ERROR;
   }
 
@@ -609,6 +608,8 @@ nodeResponse(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
       responseID = (int)NodeData::Accel;
     else if (strcmp(argv[3], "resiudal") == 0)
       responseID = (int)NodeData::UnbalancedLoad;
+    else if (strcmp(argv[3], "reactionForce") == 0)
+      responseID = (int)NodeData::Reaction;
     else {
       opserr << "WARNING unknown response " << argv[3] << "\n";
       return TCL_ERROR;
@@ -773,7 +774,9 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** 
              strcmp(argv[2], "3") == 0)
       dim = 2;
     else {
-      opserr << OpenSees::PromptValueError << "" << "nodeCoord nodeTag? dim? - could not read dim? \n";
+      opserr << OpenSees::PromptValueError 
+             << "could not read dim"
+             << OpenSees::SignalMessageEnd;
       return TCL_ERROR;
     }
   }
@@ -781,7 +784,9 @@ nodeCoord(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc, TCL_Char ** 
   Node *theNode = the_domain->getNode(tag);
 
   if (theNode == nullptr) {
-    opserr << OpenSees::PromptValueError << "Unable to retrieve node with tag '" << tag << "'\n";
+    opserr << OpenSees::PromptValueError 
+           << "Unable to find node with tag '" << tag << "'"
+           << OpenSees::SignalMessageEnd;
     return TCL_ERROR;
   }
 
