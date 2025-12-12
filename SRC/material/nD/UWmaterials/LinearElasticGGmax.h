@@ -19,11 +19,13 @@ class LinearElasticGGmax : public NDMaterial
 public:
     // Predefined curves: curveType in {1=Hardin-Drnevich, 2=Vucetic-Dobry, 3=Darendeli}
     LinearElasticGGmax(int tag, double G_in, double K_or_nu, double rho,
-                       int curveType, double p1 = 0.0, double p2 = 0.0, double p3 = 0.0);
+                       int curveType, double p1 = 0.0, double p2 = 0.0, double p3 = 0.0,
+                       double chi_in = 0.0);
 
     // User curve (curveType==0)
     LinearElasticGGmax(int tag, double G_in, double K_or_nu, double rho,
-                       const std::vector<double>& strains, const std::vector<double>& ggmax);
+                       const std::vector<double>& strains, const std::vector<double>& ggmax,
+                       double chi_in = 0.0);
 
     LinearElasticGGmax();
     ~LinearElasticGGmax();
@@ -40,6 +42,8 @@ public:
     const Vector &getStress(void) override;
     const Matrix &getTangent(void) override;
     const Matrix &getInitialTangent(void) override;
+    // Damping tangent (viscous dashpot contribution)
+    const Matrix &getDampTangent(void);
 
     int commitState(void) override;
     int revertToLastCommit(void) override;
@@ -55,6 +59,9 @@ public:
 
     void Print(OPS_Stream &s, int flag = 0) override;
 
+    // NDMaterial::getRho() defaults to 0.0; override to return material density
+    double getRho(void) {return rho0;}
+
     // Parameter control
     int setParameter(const char **argv, int argc, Parameter &param) override;
     int updateParameter(int paramID, Information &info) override;
@@ -66,6 +73,7 @@ private:
     double nu;       // Poisson's ratio (valid if hasK==false)
     bool   hasK;     // true if user gave K; false if user gave nu
     double rho0;     // density (not used in constitutive law here)
+    double chi;      // viscous damping coefficient (dashpot scaling)
     double mu_c;     // cached shear modulus for current trial state
     double lambda_c; // cached first Lamé parameter for current trial state
 
@@ -84,8 +92,12 @@ private:
     // State
     Vector epsilon;    // trial strain (6 for 3D Voigt, 3 for 2D)
     Vector Cepsilon;   // committed strain
-    static Vector sigma; // trial stress (resized by ctor)
-    static Matrix D;     // tangent (resized by ctor)
+    Vector sigma;      // trial stress (resized by ctor)
+    Vector sigma_vis;  // viscous stress contribution
+    Matrix D;          // current elastic tangent
+    Matrix D0;         // initial elastic tangent (gg=1)
+    Matrix Ddamp;      // damping tangent (chi * D)
+    Matrix Cep;        // consistent tangent including viscous term
     int nDim;           // 2 or 3
 
     // --- G update policy ---
@@ -107,6 +119,8 @@ private:
     double computeGGmax(double gamma);
     double computeShearStrain(const Vector& strain); // octahedral-equivalent
     void   computeTangent(double gg_ratio);
+    void   computeInitialElasticTangent();
+    void   computeDampingTangent();
 
     // Curve models
     double hardinDrnevich(double gamma) const;
