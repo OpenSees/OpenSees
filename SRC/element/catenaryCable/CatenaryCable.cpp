@@ -1,3 +1,4 @@
+
 /* ****************************************************************** **
 **    OpenSees - Open System for Earthquake Engineering Simulation    **
 **          Pacific Earthquake Engineering Research Center            **
@@ -63,6 +64,7 @@
 #include <ElementResponse.h>
 
 #include <ElementalLoad.h>
+#include <CatenaryCableSag.h>
 
 #ifdef _USEQUADMATH
 //#include <quadmath.h>
@@ -91,9 +93,8 @@ Vector CatenaryCable::Forces(6);
 static int num_CatenaryCableElement = 0;
 
 OPS_Export void *
-OPS_CatenaryCableElement()
+OPS_CatenaryCableElement1()
 {
-
   if (num_CatenaryCableElement == 0) {
     num_CatenaryCableElement++;
     opserr<<"CatenaryCableElement element - Written: P. Ibanez and J. A. Abell (UANDES). www.joseabell.com.\n";
@@ -146,7 +147,7 @@ OPS_CatenaryCableElement()
     return 0;
   }
 
-
+  exit(0);
   // now create the CatenaryCable
   theElement = new CatenaryCable(iData[0], iData[1], iData[2], 
               dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], Nsubsteps, massType);
@@ -160,6 +161,112 @@ OPS_CatenaryCableElement()
   
 
   return theElement;
+}
+
+OPS_Export void*
+OPS_CatenaryCableElement()
+{
+
+    if (num_CatenaryCableElement == 0) {
+        num_CatenaryCableElement++;
+        opserr << "CatenaryCableElement Element - Written: P. Ibanez and J. A. Abell (UANDES). www.joseabell.com.\n";
+    }
+
+    Element* theElement = 0;
+
+    int numRemainingArgs = OPS_GetNumRemainingInputArgs();
+
+    // ========== 修改1：清晰的参数个数检查 ==========
+    if (numRemainingArgs < 13) {
+        opserr << "ERROR: Too few arguments for CatenaryCable element\n";
+        opserr << "Got " << numRemainingArgs << " arguments, need 13 (or 14 with Maxsag option)\n";
+        opserr << "Usage: element CatenaryCable $tag $iNode $jNode $weight $E $A $L0 "
+            << "$alpha $temperature_change $rho $errorTol $Nsubsteps $massType [Maxsag]\n";
+        return 0;
+    }
+
+    if (numRemainingArgs > 14) {
+        opserr << "ERROR: Too many arguments for CatenaryCable element\n";
+        opserr << "Got " << numRemainingArgs << " arguments, maximum is 14 (with Maxsag option)\n";
+        opserr << "Usage: element CatenaryCable $tag $iNode $jNode $weight $E $A $L0 "
+            << "$alpha $temperature_change $rho $errorTol $Nsubsteps $massType [Maxsag]\n";
+        return 0;
+    }
+ 
+    int iData[3];
+    double dData[8];
+
+    int numData = 3;
+    if (OPS_GetInt(&numData, iData) != 0) {
+        opserr << "WARNING element CatenaryCable - invalid integer (tag, iNode, jNode) in element CatenaryCable " << endln;
+        return 0;
+    }
+
+    numData = 8;
+    if (OPS_GetDouble(&numData, dData) != 0) {
+        opserr << "WARNING: element CatenaryCable - invalid double data. Check $weight $E $A $L0 $alpha $temperature_change $rho $errorTol\n";
+        return 0;
+    }
+
+    numData = 1;
+    int Nsubsteps = 0;
+    if (OPS_GetInt(&numData, &Nsubsteps) != 0) {
+        opserr << "WARNING element CatenaryCable - invalid integer $Nsubsteps in element CatenaryCable " << endln;
+        return 0;
+    }
+
+    int massType = 0;
+    if (OPS_GetInt(&numData, &massType) != 0) {
+        opserr << "WARNING element CatenaryCable - invalid integer $massType in element CatenaryCable " << endln;
+        return 0;
+    }
+    int useMaxsag = 0;
+    if (numRemainingArgs == 14) {
+        const char* extraArg = OPS_GetString();
+        if (strcmp(extraArg, "-maxsag") == 0) {
+            useMaxsag = 1;
+            opserr << "Info: Maxsag option detected for element " << iData[0]
+                << " (feature under development)\n";
+        }
+        else {
+            opserr << "WARNING: 14th argument must be 'Maxsag', got '" << extraArg << "'\n";
+            return 0;
+        }
+    }
+
+    if (useMaxsag) {
+        Domain* theDomain = OPS_GetDomain();  
+        int result = processCatenaryWithMaxsag(
+            theDomain,          // Domain* 
+            iData[0],           // int eleTag
+            iData[1],           // int nodeI  
+            iData[2],           // int nodeJ
+            dData[0],           // double weight
+            dData[1],           // double E
+            dData[2],           // double A
+            &dData[3],          // double* pL0
+            dData[4],           // double alpha
+            dData[5],           // double tempChange
+            dData[6],           // double rho
+            dData[7]            // double errorTol
+        );
+		if (result != 0) {
+			opserr << "CatenaryCable " << dData[3] << ": ";
+			opserr << "Failed to compute cable parameters from sag (error code: " << result << ").\n";
+			return nullptr;
+		}
+    }
+
+    theElement = new CatenaryCable(iData[0], iData[1], iData[2],
+        dData[0], dData[1], dData[2], dData[3], dData[4],
+        dData[5], dData[6], dData[7], Nsubsteps, massType);
+
+    if (theElement == 0) {
+        opserr << "WARNING: out of memory: element CatenaryCable " << iData[0] <<
+            " $iNode $jNode ...\n";
+    }
+
+    return theElement;
 }
 
 CatenaryCable::CatenaryCable(int tag, int node1, int node2, double weight_, double E_, double A_, double L0_, double alpha_, double temperature_change_, double rho_, double error_tol_, int Nsubsteps_, int massType_)

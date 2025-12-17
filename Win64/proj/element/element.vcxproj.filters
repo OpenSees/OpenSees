@@ -318,6 +318,9 @@
     <ClCompile Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.cpp" />
     <ClCompile Include="..\..\..\SRC\element\pipe\CurvedPipe.cpp" />
     <ClCompile Include="..\..\..\SRC\element\pipe\Pipe.cpp" />
+    <ClCompile Include="..\..\..\SRC\minpack\catenary_solver.c" />
+    <ClCompile Include="..\..\..\SRC\minpack\CatenaryCableSag.cpp" />
+    <ClCompile Include="..\..\..\SRC\minpack\minpack.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\OTHER\tetgen1.4.3\tetgen.h" />
@@ -596,5 +599,8 @@
     <ClInclude Include="..\..\..\SRC\element\NewElement.h" />
     <ClInclude Include="..\..\..\SRC\element\forceBeamColumn\ForceBeamColumn3dThermal.h" />
     <ClInclude Include="..\..\..\SRC\element\shell\ShellNLDKGTThermal.h" />
+    <ClInclude Include="..\..\..\SRC\minpack\catenary_solver.h" />
+    <ClInclude Include="..\..\..\SRC\minpack\CatenaryCableSag.h" />
+    <ClInclude Include="..\..\..\SRC\minpack\minpack.h" />
   </ItemGroup>
 </Project>
