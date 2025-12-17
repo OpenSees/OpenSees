@@ -883,6 +883,12 @@
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCSectionIntegration.cpp">
       <Filter>section\integration</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\integration\MVLEMSectionIntegration.cpp">
+      <Filter>section\integration</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\section\integration\SFIMVLEMSectionIntegration.cpp">
+      <Filter>section\integration</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\section\integration\RCTBeamSectionIntegration.cpp">
       <Filter>section\integration</Filter>
     </ClCompile>
@@ -2857,3 +2863,4 @@
     </ClInclude>
   </ItemGroup>
 </Project>
+

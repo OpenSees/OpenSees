@@ -652,7 +652,8 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
       
       int nf =6;
       char** files = new char*[nf];
-      files[5] = "./NONE";
+      files[5] = new char[7];
+      strcpy(files[5],"./NONE");
       int* f_d = new int[15];
       int num_steps=1;
       int steps_cached=10;
