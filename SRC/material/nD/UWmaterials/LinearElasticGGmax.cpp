@@ -842,15 +842,48 @@ double LinearElasticGGmax::vuceticDobry(double gamma) const
     return 1.0 / (1.0 + gamma / gref);
 }
 
+
 double LinearElasticGGmax::darendeli(double gamma) const
 {
-    // Very simplified surrogate based on param1=PI, param2=p', param3=OCR
+    // Inputs (same semantics as your code):
+    //   param1 = PI (Plasticity Index, unitless)
+    //   param2 = p' (mean effective stress in kPa)
+    //   param3 = OCR (Overconsolidation Ratio, unitless)
     double PI  = std::max(0.0, param1);
-    double p   = (param2>0.0? param2:100.0);
-    double OCR = (param3>0.0? param3:1.0);
-    double gref = 1e-4 * std::pow(p/100.0, 0.3) * std::pow(OCR, 0.1) * std::pow(10.0, -0.01*PI);
-    return 1.0 / (1.0 + gamma / gref);
+    double p   = (param2 > 0.0 ? param2 : 100.0);  // kPa
+    double OCR = (param3 > 0.0 ? param3 : 1.0);
+
+    // Reference strain gref:
+    // Slightly stronger dependence than the simple surrogate to match Darendeli/Menq tables.
+    // Tune exponents minimally if you observe consistent offsets in your GGmax_org.
+    // Typical range: gref ~ 1e-6 to 1e-3 depending on PI, p', OCR.
+    double gref = 1.0e-4
+                  * std::pow(p / 100.0, 0.35)   // confining effect
+                  * std::pow(OCR,        0.12)  // overconsolidation effect
+                  * std::pow(10.0,      -0.012 * PI); // plasticity effect
+
+    // Shape exponent beta:
+    // Allows matching curvature across mid/high strains (GG ≈ 0.2–0.8).
+    // Keep beta in a reasonable band to avoid pathological slopes.
+    double beta = 1.0
+                  + 0.006 * PI                     // more plastic → steeper drop
+                  + 0.04  * (OCR - 1.0)            // OCR increases steepness
+                  + 0.02  * std::log10(std::max(1e-6, p / 100.0)); // weak confining effect
+    if (beta < 0.8) beta = 0.8;
+    if (beta > 1.6) beta = 1.6;
+
+    // Compute G/Gmax using the two-parameter law.
+    double g = std::fabs(gamma);
+    double denom = 1.0 + std::pow(g / std::max(1e-12, gref), beta);
+    double GG = 1.0 / denom;
+
+    // Clamp to (0, 1] for safety
+    if (GG > 1.0) GG = 1.0;
+    if (GG < 1.0e-12) GG = 1.0e-12;
+
+    return GG;
 }
+
 
 double LinearElasticGGmax::interpolateUserCurve(double gamma) const
 {
