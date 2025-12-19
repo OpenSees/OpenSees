@@ -68,7 +68,8 @@ class BrickUP : public Element {
 			int node8,
 			NDMaterial &theMaterial,double bulk, double rhof,
 			double perm1, double perm2, double perm3,
-		   double b1 = 0.0, double b2 = 0.0, double b3 = 0.0) ;
+			double b1 = 0.0, double b2 = 0.0, double b3 = 0.0,
+			int massType = 0);
 
     //destructor
     virtual ~BrickUP( ) ;
@@ -172,6 +173,8 @@ class BrickUP : public Element {
     double rho;			// Fluid mass per unit volume
     double kc;   // combined bulk modulus
     double perm[3];  // permeability
+    
+    int massType;
 
     //inertia terms
     void formInertiaTerms( int tangFlag ) ;
