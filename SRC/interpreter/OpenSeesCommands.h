@@ -311,6 +311,7 @@ int OPS_sectionStiffness();
 int OPS_sectionFlexibility();
 int OPS_sectionLocation();
 int OPS_sectionWeight();
+int OPS_sectionResponseType();
 int OPS_sectionTag();
 int OPS_sectionDisplacement();
 int OPS_cbdiDisplacement();
