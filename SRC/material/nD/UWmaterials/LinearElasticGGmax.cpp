@@ -487,6 +487,7 @@ NDMaterial* LinearElasticGGmax::getCopy(void)
     theCopy->pendingOneShotUpdate = false;
     theCopy->lastGG = lastGG;   
     theCopy->debugUpdate = debugUpdate;    
+    theCopy->dampUsesInitial = dampUsesInitial;
 
     // ensure damping tangent is consistent on the copy
     theCopy->computeInitialElasticTangent();
@@ -514,7 +515,7 @@ int LinearElasticGGmax::getOrder(void) const
 
 int LinearElasticGGmax::sendSelf(int commitTag, Channel &theChannel)
 {
-    static Vector data(14);
+    Vector data(15);
     data(0) = this->getTag();
     data(1) = G0;
     data(2) = hasK ? K0 : nu;
@@ -529,6 +530,7 @@ int LinearElasticGGmax::sendSelf(int commitTag, Channel &theChannel)
     data(11)= gammaMaxCommit;
     data(12)= chi; // persist damping coefficient
     data(13)= gammaScale; // optional: persist eq-linear scale
+    data(14)= dampUsesInitial ? 1.0 : 0.0; // persist damping mode
 
     int res = theChannel.sendVector(this->getDbTag(), commitTag, data);    
     if (res < 0) return res;
@@ -544,7 +546,7 @@ int LinearElasticGGmax::sendSelf(int commitTag, Channel &theChannel)
 
 int LinearElasticGGmax::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    static Vector data(14);
+    Vector data(15);
     int res = theChannel.recvVector(this->getDbTag(), commitTag, data);
     if (res < 0) return res;
 
@@ -560,6 +562,7 @@ int LinearElasticGGmax::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectB
     gammaMaxCommit = data(11);
     chi = data(12);
     gammaScale = data(13);
+    dampUsesInitial = (data(14) > 0.5);
     gammaMaxTrial  = gammaMaxCommit;
 
     if (hasK) { K0 = second; nu = 0.0; }
@@ -682,17 +685,30 @@ void LinearElasticGGmax::computeTangent(double gg)
 
 void LinearElasticGGmax::computeDampingTangent()
 {
-    // Damping proportional to CURRENT elastic tangent (D): Ddamp = chi * D
-    // Ensure D is up-to-date before calling this (computeTangent should be called prior)
+    // Damping tangent: either proportional to CURRENT elastic tangent (D)
+    // or to the INITIAL elastic tangent (D0) depending on dampUsesInitial flag.
     Ddamp.Zero();
-    if (nDim == 3) {
-        for (int i=0;i<6;++i)
-            for (int j=0;j<6;++j)
-                Ddamp(i,j) = chi * D(i,j);
+    if (dampUsesInitial) {
+        if (nDim == 3) {
+            for (int i=0;i<6;++i)
+                for (int j=0;j<6;++j)
+                    Ddamp(i,j) = chi * D0(i,j);
+        } else {
+            for (int i=0;i<3;++i)
+                for (int j=0;j<3;++j)
+                    Ddamp(i,j) = chi * D0(i,j);
+        }
     } else {
-        for (int i=0;i<3;++i)
-            for (int j=0;j<3;++j)
-                Ddamp(i,j) = chi * D(i,j);
+        // proportional to current tangent (default)
+        if (nDim == 3) {
+            for (int i=0;i<6;++i)
+                for (int j=0;j<6;++j)
+                    Ddamp(i,j) = chi * D(i,j);
+        } else {
+            for (int i=0;i<3;++i)
+                for (int j=0;j<3;++j)
+                    Ddamp(i,j) = chi * D(i,j);
+        }
     }
 }
 
@@ -763,6 +779,8 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         return param.addObject(6, this);
     } else if (strcmp(argv[0], "chi") == 0 || strcmp(argv[0], "dampingCoeff") == 0) {
         return param.addObject(7, this);
+    } else if (strcmp(argv[0], "dampUseInitial") == 0 || strcmp(argv[0], "dampingUseInitial") == 0) {
+        return param.addObject(8, this);
     }
     return -1;
 }
@@ -818,6 +836,13 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
         chi = info.theDouble;
         computeDampingTangent();
         opserr << "LinearElasticGGmax(tag=" << this->getTag() << "): chi=" << chi << endln;
+        return 0;
+    }
+    case 8: {
+        int flag = static_cast<int>(std::lround(info.theDouble));
+        dampUsesInitial = (flag != 0);
+        computeDampingTangent();
+        opserr << "LinearElasticGGmax(tag=" << this->getTag() << "): dampUseInitial=" << dampUsesInitial << endln;
         return 0;
     }
     default:

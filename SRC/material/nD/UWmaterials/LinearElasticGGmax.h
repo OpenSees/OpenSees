@@ -114,6 +114,10 @@ private:
     bool   strideByStep{false};   // default false -> legacy behavior
     int    commitCounter{0};      // increments once per commitState()
     int    lastUpdateCommit{-1};  // the commit index when we last updated
+    
+    // Optional: use initial elastic tangent for damping instead of current tangent
+    // Default: true -> use initial tangent (Ddamp = chi * D0)
+    bool   dampUsesInitial{true};
 
     // Helpers
     double computeGGmax(double gamma);
