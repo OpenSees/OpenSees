@@ -530,6 +530,9 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   Tcl_CreateCommand(interp, "load", TclCommand_addNodalLoad,
 		    (ClientData)NULL, NULL);
 
+  Tcl_CreateCommand(interp, "nodeLoad", TclCommand_addNodalLoad,
+			(ClientData)NULL, NULL); // alias added to prevent confusion with Tcl load command
+
   Tcl_CreateCommand(interp, "eleLoad", TclCommand_addElementalLoad,
 		    (ClientData)NULL, NULL);
 
