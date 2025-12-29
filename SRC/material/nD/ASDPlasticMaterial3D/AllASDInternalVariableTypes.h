@@ -33,9 +33,14 @@ struct BackStressName { static constexpr const char* name = "BackStress";};
 template <class HardeningType>
 using BackStress = InternalVariableType<VoigtVector, HardeningType, BackStressName>;
 
-struct VonMisesRadiusName { static constexpr const char* name = "VonMisesRadius";};
+struct YieldStressName { static constexpr const char* name = "YieldStress";};
 template <class HardeningType>
-using VonMisesRadius = InternalVariableType<VoigtScalar, HardeningType, VonMisesRadiusName>;
+using YieldStress = InternalVariableType<VoigtScalar, HardeningType, YieldStressName>;
+
+
+struct DP_cohesionName { static constexpr const char* name = "DP_cohesion";};
+template <class HardeningType>
+using DP_cohesion = InternalVariableType<VoigtScalar, HardeningType, DP_cohesionName>;
 
 struct ScalarInternalVariableName { static constexpr const char* name = "ScalarInternalVariable";};
 template <class HardeningType>

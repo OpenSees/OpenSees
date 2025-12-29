@@ -37,6 +37,14 @@ struct InternalVariableType {
         return *this;
     }
 
+    void updateTrialValueFromOther(const InternalVariableType& other)
+    {
+        if (this != &other) { // Check for self-assignment
+            trial_value = other.trial_value;
+        }
+        return;
+    }
+
     using parameters_t = typename HardeningType::parameters_t;
 
 
