@@ -56,7 +56,7 @@ class BbarBrickWithSensitivity : public Element {
 			int node7,
 			int node8,
 			NDMaterial &theMaterial,
-			double b1 = 0.0, double b2 = 0.0, double b3 = 0.0 ) ;
+			double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, int massType = 0 ) ;
 
     //destructor
     virtual ~BbarBrickWithSensitivity( ) ;
@@ -172,13 +172,13 @@ class BbarBrickWithSensitivity : public Element {
 
     Vector *load;
     Matrix *Ki;
+    
+    int massType;
 
 // AddingSensitivity:BEGIN ///////////////////////////
 	int parameterID;
 // AddingSensitivity:END /////////////////////////////
-} ;
-
-
+};
 
 
 

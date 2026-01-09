@@ -989,6 +989,14 @@ static int Tcl_ops_sectionWeight(ClientData clientData, Tcl_Interp *interp, int 
     return TCL_OK;
 }
 
+static int Tcl_ops_sectionResponseType(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_sectionResponseType() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
 static int Tcl_ops_basicDeformation(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
     wrapper->resetCommandLine(argc, 1, argv);
 

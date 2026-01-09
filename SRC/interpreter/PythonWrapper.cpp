@@ -1804,6 +1804,18 @@ static PyObject *Py_ops_sectionWeight(PyObject *self, PyObject *args)
     return wrapper->getResults();
 }
 
+static PyObject *Py_ops_sectionResponseType(PyObject *self, PyObject *args)
+{
+    wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
+
+    if (OPS_sectionResponseType() < 0) {
+	opserr<<(void*)0;
+	return NULL;
+    }
+
+    return wrapper->getResults();
+}
+
 static PyObject *Py_ops_sectionTag(PyObject *self, PyObject *args)
 {
     wrapper->resetCommandLine(PyTuple_Size(args), 1, args);
@@ -3130,6 +3142,7 @@ PythonWrapper::addOpenSeesCommands()
     addCommand("sectionLocation", &Py_ops_sectionLocation);
     addCommand("sectionWeight", &Py_ops_sectionWeight);
     addCommand("sectionTag", &Py_ops_sectionTag);
+    addCommand("sectionResponseType", &Py_ops_sectionResponseType);
     addCommand("sectionDisplacement", &Py_ops_sectionDisplacement);
     addCommand("cbdiDisplacement", &Py_ops_cbdiDisplacement);        
     addCommand("basicDeformation", &Py_ops_basicDeformation);
