@@ -99,23 +99,27 @@ void* OPS_BBarBrickUP()
 	return 0;
     }
 
+    // Check for -lumped flag
+    int massType = 0;
+    
     // b1, b2, b3
     double opt[3] = {0,0,0};
-    num = OPS_GetNumRemainingInputArgs();
-    if (num > 3) {
-	num = 3;
-    }
-    if (num > 0) {
-	if (OPS_GetDoubleInput(&num,opt) < 0) {
-	    opserr<<"WARNING: invalid double input\n";
-	    return 0;
-	}
+    int bCount = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* flag = OPS_GetString();
+        if (strcmp(flag, "-lumped") == 0) {
+            massType = 1;
+        } else {
+             if (bCount < 3) {
+                 opt[bCount++] = atof(flag);
+             }
+        }
     }
 
     return new BBarBrickUP(tags[0],tags[1],tags[2],tags[3],tags[4],
-			   tags[5],tags[6],tags[7],tags[8],
-			   *mat,data[0],data[1],data[2],data[3],data[4],
-			   opt[0],opt[1],opt[2]);
+		       tags[5],tags[6],tags[7],tags[8],
+		       *mat,data[0],data[1],data[2],data[3],data[4],
+		       opt[0],opt[1],opt[2], massType);
 }
 
 //static data
@@ -170,9 +174,9 @@ BBarBrickUP::BBarBrickUP(int tag,
 			 int node8,
 			 NDMaterial &theMaterial, double bulk, double rhof,
 			 double p1, double p2, double p3,
-			 double b1, double b2, double b3) :
+			 double b1, double b2, double b3, int massType) :
 Element( tag, ELE_TAG_BBarBrickUP ),
-connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), kc(bulk), rho(rhof)
+connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), kc(bulk), rho(rhof), massType(massType)
 {
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -867,20 +871,32 @@ void   BBarBrickUP::formInertiaTerms( int tangFlag )
 	  //multiply by density
 	  temp *= rhot ;
 
-	  //node-node mass
-      kk = 0 ;
-      for ( k = 0; k < numberNodes; k++ ) {
+      if (massType == 1) {
+         // Lumped mass
+         // Solid mass
+         for ( p = 0; p < ndf; p++ )
+             mass( jj+p, jj+p ) += temp ;
 
-	    massJK = temp * Shape[3][k][i] ;
+         // Compressibility
+         // Row sum lumping: sum_k (N_j * N_k) = N_j * sum_k (N_k) = N_j * 1 = N_j
+         mass( jj+3, jj+3 ) += -dvol[i]*Shape[3][j][i]/kc;
+      } else {
+         // Consistent mass
+	     //node-node mass
+         kk = 0 ;
+         for ( k = 0; k < numberNodes; k++ ) {
 
-        for ( p = 0; p < ndf; p++ )
-	      mass( jj+p, kk+p ) += massJK ;
+	       massJK = temp * Shape[3][k][i] ;
 
-          // Compute compressibility terms
-          mass( jj+3, kk+3 ) += -dvol[i]*Shape[3][j][i]*Shape[3][k][i]/kc;
+           for ( p = 0; p < ndf; p++ )
+	         mass( jj+p, kk+p ) += massJK ;
 
-          kk += ndff ;
-      } // end for k loop
+           // Compute compressibility terms
+           mass( jj+3, kk+3 ) += -dvol[i]*Shape[3][j][i]*Shape[3][k][i]/kc;
+
+           kk += ndff ;
+         } // end for k loop
+      }
 
       jj += ndff ;
     } // end for j loop
