@@ -17,15 +17,14 @@
 #include <algorithm>
 #include <cstring>   // for strcmp
 
-Vector LinearElasticGGmax::sigma(6);
-Matrix LinearElasticGGmax::D(6,6);
+// Instance members are initialized in constructors; remove static shared state.
 
-/* ----------------------- OPS Factory Function ---------------------- */
+/* OPS Factory Function */
 void* OPS_LinearElasticGGmaxMaterial()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
     if (numdata < 5) {
-        opserr << "nDMaterial LinearElasticGGmax tag G K|nu rho curveType <params|userCurve>\n";
+        opserr << "nDMaterial LinearElasticGGmax tag G K|nu rho curveType [chi] <params|userCurve>\n";
         return 0;
     }
 
@@ -49,19 +48,41 @@ void* OPS_LinearElasticGGmaxMaterial()
         opserr << "LinearElasticGGmax: invalid curveType\n";
         return 0;
     }
+    // chi is optional; if present, read it, else default to 0.0
+    double chi = 0.0;
+    int remAfterCurveType = OPS_GetNumRemainingInputArgs();
+    if (remAfterCurveType > 0) {
+        // Peek next arg by trying to read one double; if it fails and curveType==0, we assume user provided pairs next
+        // We can't truly peek; instead, we will branch based on curveType cases below.
+    }
 
     if (curveType == 0) {
-        // Expect interleaved (gamma, G/Gmax) pairs to the end of the line.
+        // Optional chi before pairs: detect whether first remaining token is chi or part of pairs
         int rem = OPS_GetNumRemainingInputArgs();
+        if (rem < 4) {
+            opserr << "LinearElasticGGmax: curveType=0 expects interleaved (gamma, G/Gmax) pairs (>= 2 pairs)" << endln;
+            return nullptr;
+        }
+
+        // Heuristic: if rem is odd, treat first as chi then pairs; if even, no chi and all are pairs
+        bool hasChiInline = (rem % 2) == 1;
+        if (hasChiInline) {
+            int nread = 1;
+            if (OPS_GetDoubleInput(&nread, &chi) < 0) {
+                opserr << "LinearElasticGGmax: invalid chi for user curve" << endln;
+                return nullptr;
+            }
+            rem = OPS_GetNumRemainingInputArgs();
+        }
+
         if (rem < 4 || (rem % 2) != 0) {
-            opserr << "LinearElasticGGmax: curveType=0 expects interleaved "
-                    "(gamma, G/Gmax) pairs (>= 2 pairs)\n";
+            opserr << "LinearElasticGGmax: curveType=0 expects interleaved (gamma, G/Gmax) pairs (>= 2 pairs)" << endln;
             return nullptr;
         }
 
         Vector flat(rem);
         if (OPS_GetDoubleInput(&rem, &flat(0)) < 0) {
-            opserr << "LinearElasticGGmax: unable to read (gamma, G/Gmax) pairs\n";
+            opserr << "LinearElasticGGmax: unable to read (gamma, G/Gmax) pairs" << endln;
             return nullptr;
         }
 
@@ -81,34 +102,58 @@ void* OPS_LinearElasticGGmaxMaterial()
             if (gg[i] <= 0.0) gg[i] = 1e-6;
             if (gg[i] > 1.0)  gg[i] = 1.0;
         }
+        return new LinearElasticGGmax(tag, G, K_or_nu, rho, strains, gg, chi);
+    } else {
+        // Predefined curve types: read optional chi then up to three optional parameters (p1, p2, p3)
+        int rem = OPS_GetNumRemainingInputArgs();
+        // If there are 1..4 remaining args, first may be chi, followed by up to 3 params
+        double params[3] = {0.0, 0.0, 0.0};
+        if (rem > 0) {
+            // Try reading chi first
+            int nread = 1;
+            double chiCandidate = 0.0;
+            if (OPS_GetDoubleInput(&nread, &chiCandidate) == 0) {
+                chi = chiCandidate;
+                rem = OPS_GetNumRemainingInputArgs();
+            }
+        }
+        int toRead = std::min(rem, 3);
+        if (toRead > 0) {
+            if (OPS_GetDoubleInput(&toRead, params) < 0) {
+                opserr << "LinearElasticGGmax: unable to read curve parameters (p1 p2 p3)" << endln;
+                return nullptr;
+            }
+        }
+        return new LinearElasticGGmax(tag, G, K_or_nu, rho, curveType, params[0], params[1], params[2], chi);
+    }
 
-        // Construct using your "user curve" constructor (already declared in the header)
-        return new LinearElasticGGmax(tag, G, K_or_nu, rho, strains, gg);
-    }   
+    return nullptr;
 }
 
 /* --------------------------- Constructors -------------------------- */
 LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, double r,
-                                       int cType, double p1, double p2, double p3)
+                                                                             int cType, double p1, double p2, double p3,
+                                                                             double chi_in)
 : NDMaterial(tag, ND_TAG_LinearElasticGGmax),
-  G0(G_in), K0(0.0), nu(0.0), hasK(false), rho0(r),
-  mu_c(0.0), lambda_c(0.0),
-  curveType(cType), param1(p1), param2(p2), param3(p3),
-  epsilon(6), Cepsilon(6), nDim(3)
+    G0(G_in), K0(0.0), nu(0.0), hasK(false), rho0(r), chi(chi_in),
+        mu_c(0.0), lambda_c(0.0),
+    curveType(cType), param1(p1), param2(p2), param3(p3),
+    epsilon(6), Cepsilon(6), nDim(3)
 {
     // detect whether second is nu or K
     if (K_or_nu_in > -0.999 && K_or_nu_in < 0.5) { nu = K_or_nu_in; hasK = false; }
     else { K0 = K_or_nu_in; hasK = true; }
 
     epsilon.Zero(); Cepsilon.Zero();
-    sigma.Zero(); D.Zero();
+    sigma.resize(6); sigma_vis.resize(6); D.resize(6,6); D0.resize(6,6); Ddamp.resize(6,6); Cep.resize(6,6);
+    sigma.Zero(); sigma_vis.Zero(); D.Zero(); D0.Zero(); Ddamp.Zero();
+    Cep.Zero();
 
     gammaMaxTrial  = 0.0;
     gammaMaxCommit = 0.0;
     // G update policy defaults (preserve legacy behavior)
     updateStride = 1;
     stepCounter = 0;
-    trialCounter = 0;    
     updateOnDemand = false;
     pendingOneShotUpdate = false;
     lastGG = 1.0;
@@ -116,62 +161,76 @@ LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, 
     commitCounter = 0;
     lastUpdateCommit = -1;
 
-    opserr << "LinearElasticGGmax constructed (tag=" << tag << ")" << endln;    
+    // Initialize initial and damping tangents so Ddamp is available immediately
+    computeInitialElasticTangent();
+    computeDampingTangent();
 }
 
 LinearElasticGGmax::LinearElasticGGmax(int tag, double G_in, double K_or_nu_in, double r,
-                                       const std::vector<double>& strains,
-                                       const std::vector<double>& ggmax)
+                                                                             const std::vector<double>& strains,
+                                                                             const std::vector<double>& ggmax,
+                                                                             double chi_in)
 : NDMaterial(tag, ND_TAG_LinearElasticGGmax),
-  G0(G_in), K0(0.0), nu(0.0), hasK(false), rho0(r),
-  mu_c(0.0), lambda_c(0.0),
-  curveType(0), param1(0.0), param2(0.0), param3(0.0),
-  userStrains(strains), userGGmax(ggmax),
-  epsilon(6), Cepsilon(6), nDim(3)
+    G0(G_in), K0(0.0), nu(0.0), hasK(false), rho0(r), chi(chi_in),
+        mu_c(0.0), lambda_c(0.0),
+    curveType(0), param1(0.0), param2(0.0), param3(0.0),
+    userStrains(strains), userGGmax(ggmax),
+    epsilon(6), Cepsilon(6), nDim(3)
 {
     if (K_or_nu_in > -0.999 && K_or_nu_in < 0.5) { nu = K_or_nu_in; hasK = false; }
     else { K0 = K_or_nu_in; hasK = true; }
 
     epsilon.Zero(); Cepsilon.Zero();
-    sigma.Zero(); D.Zero();
+    sigma.resize(6); sigma_vis.resize(6); D.resize(6,6); D0.resize(6,6); Ddamp.resize(6,6); Cep.resize(6,6);
+    sigma.Zero(); sigma_vis.Zero(); D.Zero(); D0.Zero(); Ddamp.Zero();
+    Cep.Zero();
 
     gammaMaxTrial  = 0.0;
     gammaMaxCommit = 0.0;
     updateStride = 1;
     stepCounter = 0;
-    trialCounter = 0;    
+    updateOnDemand = false;
+    pendingOneShotUpdate = false;
+    lastGG = 1.0;
+    strideByStep = false;
+    commitCounter = 0;
+    lastUpdateCommit = -1;   
+
+    // Initialize initial and damping tangents so Ddamp is available immediately
+    computeInitialElasticTangent();
+    computeDampingTangent();
+}
+
+LinearElasticGGmax::LinearElasticGGmax()
+: NDMaterial(0, ND_TAG_LinearElasticGGmax),
+    G0(0.0), K0(0.0), nu(0.0), hasK(true), rho0(0.0), chi(0.0),
+    mu_c(0.0), lambda_c(0.0),
+  curveType(1), param1(0.0), param2(0.0), param3(0.0),
+  epsilon(6), Cepsilon(6), nDim(3)
+{
+    epsilon.Zero(); Cepsilon.Zero();
+    sigma.resize(6); sigma_vis.resize(6); D.resize(6,6); D0.resize(6,6); Ddamp.resize(6,6); Cep.resize(6,6);
+    sigma.Zero(); sigma_vis.Zero(); D.Zero(); D0.Zero(); Ddamp.Zero();
+    Cep.Zero();
+
+    gammaMaxTrial = 0.0;
+    gammaMaxCommit = 0.0;
+    updateStride = 1;
+    stepCounter = 0;
     updateOnDemand = false;
     pendingOneShotUpdate = false;
     lastGG = 1.0;
     strideByStep = false;
     commitCounter = 0;
     lastUpdateCommit = -1;    
-}
 
-LinearElasticGGmax::LinearElasticGGmax()
-: NDMaterial(0, ND_TAG_LinearElasticGGmax),
-  G0(0.0), K0(0.0), nu(0.0), hasK(true), rho0(0.0),
-  mu_c(0.0), lambda_c(0.0),
-  curveType(1), param1(0.0), param2(0.0), param3(0.0),
-  epsilon(6), Cepsilon(6), nDim(3)
-{
-    epsilon.Zero(); Cepsilon.Zero();
-    sigma.Zero(); D.Zero();
-
-    gammaMaxTrial = 0.0;
-    gammaMaxCommit = 0.0;
-    updateStride = 1;
-    stepCounter = 0;
-    trialCounter = 0;
-    updateOnDemand = false;
-    pendingOneShotUpdate = false;
-    lastGG = 1.0;
-    strideByStep = false;
-    commitCounter = 0;
-    lastUpdateCommit = -1;     
+    // Initialize initial and damping tangents so Ddamp is available immediately
+    computeInitialElasticTangent();
+    computeDampingTangent();
 }
 
 LinearElasticGGmax::~LinearElasticGGmax() {}
+// double LinearElasticGGmax::getRho(void) { return rho0; }
 
 /* ------------------------ NDMaterial methods ----------------------- */
 
@@ -188,19 +247,16 @@ int LinearElasticGGmax::setTrialStrain(const Vector &strn)
     const double gamma_used = computeShearStrain(epsilon);
     const double gg = computeGGmax(gamma_used);
 
-    ++trialCounter;
-
-    // --- Decide whether to update tangent (and thus mu_c) ---
+    // Decide whether to update tangent (and thus mu_c)
     bool doUpdate = false;
     if (updateOnDemand) {
         if (pendingOneShotUpdate) {
             doUpdate = true;
             pendingOneShotUpdate = false;
-            // keep step-based guard coherent if enabled
             lastUpdateCommit = commitCounter;
         }
     } else if (strideByStep) {
-        // At most one update per *converged time step*, every N steps
+        // At most one update per converged time step, every N steps
         const bool atNewStep = (commitCounter != lastUpdateCommit);
         if (atNewStep) {
             if (updateStride <= 1 || (commitCounter > 0 && (commitCounter % updateStride) == 0)) {
@@ -209,32 +265,34 @@ int LinearElasticGGmax::setTrialStrain(const Vector &strn)
             }
         }
     } else {
-        // Legacy behavior: count raw setTrialStrain calls
+        // Count raw setTrialStrain calls
         ++stepCounter;
-        if (updateStride <= 1 || (stepCounter % updateStride) == 0) {
+        int effectiveCounter = (stepCounter > 0) ? (stepCounter - 1) : 0;
+        if (updateStride <= 1 || (effectiveCounter % updateStride) == 0) {
             doUpdate = true;
         }
     }
 
-    // Choose the most useful “step” number to display:
-    // - If strideByStep == true  → show current TIME STEP index (commitCounter+1)
-    // - Otherwise (legacy/trial-based) → show TRIAL call count
-    const int   displayStep = strideByStep ? (commitCounter + 1) : trialCounter;
+    // Display step index for debug (time step or trial count)
+    const int   displayStep = strideByStep ? (commitCounter + 1)
+                                           : ((stepCounter > 0) ? (stepCounter - 1) : 0);
     const char* label       = strideByStep ? "timeStep " : "trial ";
+    const int   stepIndexEst = commitCounter + 1;
 
     if (doUpdate) {
         if (debugUpdate) {
             opserr << "LinearElasticGGmax(tag=" << this->getTag()
                    << "): UPDATE at " << label << displayStep
-                   << " (gg=" << gg << ", gamma_used=" << gamma_used << ")" << endln;
+                   << " (gg=" << gg << ", gamma_used=" << gamma_used << ")"
+                   << " [step=" << stepIndexEst << "]" << endln;
         }
-        // single place where we actually refresh the tangent
         computeTangent(gg);
         lastGG = gg;
     } else if (debugUpdate) {
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
            << "): SKIP   at " << label << displayStep
-           << " (using lastGG=" << lastGG << ")" << endln;
+           << " (using lastGG=" << lastGG << ")"
+           << " [step=" << stepIndexEst << "]" << endln;
     }
 
     // FAST path: sigma = 2*mu*eps + lambda*tr(eps)*I in Voigt form
@@ -259,11 +317,41 @@ int LinearElasticGGmax::setTrialStrain(const Vector &strn)
         sigma(2) = mu_c * gxy;   // tau_xy
     }
 
+    // Add viscous stress contribution by approximating strain rate as dStrain/ops_Dt (consistent with J2CyclicBoundingSurface)
+    sigma_vis.Zero();
+    extern double ops_Dt;
+
+    if (ops_Dt > 0.0) {
+        if (nDim == 3) {
+            Vector dE(6);
+            for (int i=0;i<6;++i) dE(i) = epsilon(i) - Cepsilon(i);
+            for (int i=0;i<6;++i) {
+                double acc = 0.0;
+                for (int j=0;j<6;++j) acc += Ddamp(i,j) * dE(j);
+                sigma_vis(i) = acc / ops_Dt;
+            }
+            // opserr << "Ddamp " << Ddamp << endln;
+
+        } else {
+            Vector dE(3);
+            for (int i=0;i<3;++i) dE(i) = epsilon(i) - Cepsilon(i);
+            for (int i=0;i<3;++i) {
+                double acc = 0.0;
+                for (int j=0;j<3;++j) acc += Ddamp(i,j) * dE(j);
+                sigma_vis(i) = acc / ops_Dt;
+            }
+        }
+        sigma.addVector(1.0, sigma_vis, 1.0);
+    }
+
     return 0;
 }
 
 int LinearElasticGGmax::setTrialStrain(const Vector &strain, const Vector &rate)
-{ return setTrialStrain(strain); }
+{
+    // Elements typically do not provide rate; ignore and rely on dStrain/ops_Dt approximation
+    return setTrialStrain(strain);
+}
 
 int LinearElasticGGmax::setTrialStrainIncr(const Vector &strain)
 {
@@ -277,19 +365,54 @@ int LinearElasticGGmax::setTrialStrainIncr(const Vector &strain, const Vector &r
 
 const Vector &LinearElasticGGmax::getStrain(void) { return epsilon; }
 const Vector &LinearElasticGGmax::getStress(void) { return sigma; }
-const Matrix &LinearElasticGGmax::getTangent(void) { return D; }
+const Matrix &LinearElasticGGmax::getTangent(void) {
+    // Return elastic tangent plus viscous contribution if time step is positive
+    extern double ops_Dt; // from OPS_Globals
+    Cep.Zero();
+    if (ops_Dt > 0.0 && chi != 0.0) {
+        if (nDim == 3) {
+            for (int i=0;i<6;++i)
+                for (int j=0;j<6;++j)
+                    Cep(i,j) = D(i,j) + (1.0/ops_Dt) * Ddamp(i,j);
+        } else {
+            // plane strain: use top-left 3x3 block
+            for (int i=0;i<3;++i)
+                for (int j=0;j<3;++j)
+                    Cep(i,j) = D(i,j) + (1.0/ops_Dt) * Ddamp(i,j);
+        }
+        return Cep;
+    }
+    // No damping term; return elastic tangent in Cep for consistency
+    if (nDim == 3) {
+        for (int i=0;i<6;++i)
+            for (int j=0;j<6;++j)
+                Cep(i,j) = D(i,j);
+    } else {
+        for (int i=0;i<3;++i)
+            for (int j=0;j<3;++j)
+                Cep(i,j) = D(i,j);
+    }
+    return Cep;
+}
 const Matrix &LinearElasticGGmax::getInitialTangent(void)
 {
-    // initial tangent: use ggmax=1
-    computeTangent(1.0);
-    return D;
+    // Return initial elastic tangent D0 (no degradation)
+    computeInitialElasticTangent();
+    return D0;
+}
+
+const Matrix &LinearElasticGGmax::getDampTangent(void)
+{
+    // Ensure damping tangent is up to date with current elastic tangent
+    computeDampingTangent();
+    return Ddamp;
 }
 
 int LinearElasticGGmax::commitState(void)
 {
     Cepsilon = epsilon;
     gammaMaxCommit = gammaMaxTrial;
-    // Count *converged time steps* (one bump per successful commit)
+    // Count converged time steps
     ++commitCounter;    
     return 0;
 }
@@ -303,7 +426,6 @@ int LinearElasticGGmax::revertToLastCommit(void)
     // Recompute tangent and stress consistent with restored strain
     const double gamma_used = computeShearStrain(epsilon);
     const double gg = computeGGmax(gamma_used);
-    // On revert, force consistency (refresh tangent immediately)
     computeTangent(gg);
     lastGG = gg;
 
@@ -332,10 +454,11 @@ int LinearElasticGGmax::revertToLastCommit(void)
 
 int LinearElasticGGmax::revertToStart(void)
 {
-    epsilon.Zero(); Cepsilon.Zero(); sigma.Zero();
+    epsilon.Zero(); Cepsilon.Zero(); sigma.Zero(); sigma_vis.Zero();
     gammaMaxTrial = 0.0;
     gammaMaxCommit = 0.0;
     computeTangent(1.0);
+    computeDampingTangent();
     lastGG = 1.0;
     return 0;
 }
@@ -345,9 +468,9 @@ NDMaterial* LinearElasticGGmax::getCopy(void)
     double second = hasK ? K0 : nu;
     LinearElasticGGmax *theCopy;
     if (curveType == 0) {
-        theCopy = new LinearElasticGGmax(this->getTag(), G0, second, rho0, userStrains, userGGmax);
+        theCopy = new LinearElasticGGmax(this->getTag(), G0, second, rho0, userStrains, userGGmax, chi);
     } else {
-        theCopy = new LinearElasticGGmax(this->getTag(), G0, second, rho0, curveType, param1, param2, param3);
+        theCopy = new LinearElasticGGmax(this->getTag(), G0, second, rho0, curveType, param1, param2, param3, chi);
     }
     theCopy->hasK = hasK;
     theCopy->epsilon = epsilon;
@@ -364,6 +487,11 @@ NDMaterial* LinearElasticGGmax::getCopy(void)
     theCopy->pendingOneShotUpdate = false;
     theCopy->lastGG = lastGG;   
     theCopy->debugUpdate = debugUpdate;    
+    theCopy->dampUsesInitial = dampUsesInitial;
+
+    // ensure damping tangent is consistent on the copy
+    theCopy->computeInitialElasticTangent();
+    theCopy->computeDampingTangent();
 
     return theCopy;
 }
@@ -387,7 +515,7 @@ int LinearElasticGGmax::getOrder(void) const
 
 int LinearElasticGGmax::sendSelf(int commitTag, Channel &theChannel)
 {
-    static Vector data(13);
+    Vector data(15);
     data(0) = this->getTag();
     data(1) = G0;
     data(2) = hasK ? K0 : nu;
@@ -400,7 +528,9 @@ int LinearElasticGGmax::sendSelf(int commitTag, Channel &theChannel)
     data(9) = (double)userStrains.size();
     data(10)= hasK ? 1.0 : 0.0;
     data(11)= gammaMaxCommit;
-    data(12)= 0.0;
+    data(12)= chi; // persist damping coefficient
+    data(13)= gammaScale; // optional: persist eq-linear scale
+    data(14)= dampUsesInitial ? 1.0 : 0.0; // persist damping mode
 
     int res = theChannel.sendVector(this->getDbTag(), commitTag, data);    
     if (res < 0) return res;
@@ -416,7 +546,7 @@ int LinearElasticGGmax::sendSelf(int commitTag, Channel &theChannel)
 
 int LinearElasticGGmax::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    static Vector data(13);
+    Vector data(15);
     int res = theChannel.recvVector(this->getDbTag(), commitTag, data);
     if (res < 0) return res;
 
@@ -430,6 +560,9 @@ int LinearElasticGGmax::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectB
     int nPts = (int)data(9);
     hasK = (data(10) > 0.5);
     gammaMaxCommit = data(11);
+    chi = data(12);
+    gammaScale = data(13);
+    dampUsesInitial = (data(14) > 0.5);
     gammaMaxTrial  = gammaMaxCommit;
 
     if (hasK) { K0 = second; nu = 0.0; }
@@ -442,6 +575,11 @@ int LinearElasticGGmax::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectB
         userStrains.resize(nPts); userGGmax.resize(nPts);
         for (int i=0;i<nPts;i++){ userStrains[i]=s(i); userGGmax[i]=g(i); }
     }
+
+    // Recompute tangents on restored state
+    computeInitialElasticTangent();
+    computeTangent(1.0);
+    computeDampingTangent();
     return 0;
 }
 
@@ -462,7 +600,7 @@ double LinearElasticGGmax::computeShearStrain(const Vector& strain)
 {
     double gamma = 0.0;
 
-    // octahedral-equivalent engineering shear gamma_oct = 2*sqrt(2/3 * e_dev:e_dev)
+    // Octahedral-equivalent engineering shear gamma_oct = 2*sqrt(2/3 * e_dev:e_dev)
     if (nDim == 3) {
         double exx = strain(0), eyy = strain(1), ezz = strain(2);
         double gxy = strain(3), gyz = strain(4), gxz = strain(5); // engineering shear
@@ -486,6 +624,8 @@ double LinearElasticGGmax::computeShearStrain(const Vector& strain)
     }
 
     gamma = std::fabs(gamma);
+    // Apply equivalent-linear scaling factor
+    gamma *= gammaScale;
 
     // --- keep a running maximum over the analysis history (trial state) ---
     if (gamma > gammaMaxTrial) {
@@ -538,6 +678,67 @@ void LinearElasticGGmax::computeTangent(double gg)
         D(0,1)=D(1,0)=lambda;
         D(2,2)=mu;
     }
+
+    // Update damping tangent consistently (proportional to elastic tangent)
+    computeDampingTangent();
+}
+
+void LinearElasticGGmax::computeDampingTangent()
+{
+    // Damping tangent: either proportional to CURRENT elastic tangent (D)
+    // or to the INITIAL elastic tangent (D0) depending on dampUsesInitial flag.
+    Ddamp.Zero();
+    if (dampUsesInitial) {
+        if (nDim == 3) {
+            for (int i=0;i<6;++i)
+                for (int j=0;j<6;++j)
+                    Ddamp(i,j) = chi * D0(i,j);
+        } else {
+            for (int i=0;i<3;++i)
+                for (int j=0;j<3;++j)
+                    Ddamp(i,j) = chi * D0(i,j);
+        }
+    } else {
+        // proportional to current tangent (default)
+        if (nDim == 3) {
+            for (int i=0;i<6;++i)
+                for (int j=0;j<6;++j)
+                    Ddamp(i,j) = chi * D(i,j);
+        } else {
+            for (int i=0;i<3;++i)
+                for (int j=0;j<3;++j)
+                    Ddamp(i,j) = chi * D(i,j);
+        }
+    }
+}
+
+void LinearElasticGGmax::computeInitialElasticTangent()
+{
+    // Build D0 using initial moduli (gg=1)
+    double mu = std::max(0.0, G0);
+    double lambda;
+    if (hasK) {
+        double K = K0;
+        lambda = K - (2.0/3.0)*mu;
+    } else {
+        lambda = (2.0*mu*nu) / (1.0 - 2.0*nu);
+    }
+
+    if (nDim == 3) {
+        D0.Zero();
+        double mup2 = lambda + 2.0*mu;
+        D0(0,0)=D0(1,1)=D0(2,2)=mup2;
+        D0(0,1)=D0(1,0)=lambda;
+        D0(0,2)=D0(2,0)=lambda;
+        D0(1,2)=D0(2,1)=lambda;
+        D0(3,3)=mu; D0(4,4)=mu; D0(5,5)=mu;
+    } else {
+        D0.Zero();
+        double mup2 = lambda + 2.0*mu;
+        D0(0,0)=D0(1,1)=mup2;
+        D0(0,1)=D0(1,0)=lambda;
+        D0(2,2)=mu;
+    }
 }
 
 /* --------------------- Parameter interface  ------------------- */
@@ -554,7 +755,6 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         if (argc >= 3) {
             int matTag = atoi(argv[1]);
             if (matTag == this->getTag()) {
-                // Recurse starting at the *real* parameter name
                 return this->setParameter(&argv[2], argc - 2, param);
             } else {
                 return -1; // not our tag
@@ -564,11 +764,7 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         }
     }
 
-    // (optional) trace to confirm we reached the actual name
-    opserr << "LinearElasticGGmax(tag=" << this->getTag()
-           << ")::setParameter name='" << argv[0] << "'" << endln;
-
-    // --- Your existing names ---
+    // Supported names
     if (strcmp(argv[0], "updateStride") == 0) {
         return param.addObject(1, this);
     } else if (strcmp(argv[0], "updateOnDemand") == 0) {
@@ -579,6 +775,12 @@ int LinearElasticGGmax::setParameter(const char **argv, int argc, Parameter &par
         return param.addObject(4, this);
     } else if (strcmp(argv[0], "strideByStep") == 0 || strcmp(argv[0], "updateStrideByStep") == 0) {
         return param.addObject(5, this);
+    } else if (strcmp(argv[0], "gammaScale") == 0 || strcmp(argv[0], "equivLinearFactor") == 0) {
+        return param.addObject(6, this);
+    } else if (strcmp(argv[0], "chi") == 0 || strcmp(argv[0], "dampingCoeff") == 0) {
+        return param.addObject(7, this);
+    } else if (strcmp(argv[0], "dampUseInitial") == 0 || strcmp(argv[0], "dampingUseInitial") == 0) {
+        return param.addObject(8, this);
     }
     return -1;
 }
@@ -587,7 +789,7 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
 {
     switch (paramID) {
     case 1: {
-        // cast to int safely; treat <1 as 1
+     // cast to int safely; treat <1 as 1
         int n = static_cast<int>(std::lround(info.theDouble));
         updateStride = (n < 1) ? 1 : n;
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
@@ -602,7 +804,7 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
         return 0;
     }
     case 3: {
-        // arm a one-shot update on next trial step
+     // arm a one-shot update on next trial step
         pendingOneShotUpdate = true;
         opserr << "LinearElasticGGmax(tag=" << this->getTag()
                << "): requestUpdate armed" << endln;        
@@ -622,7 +824,28 @@ int LinearElasticGGmax::updateParameter(int paramID, Information &info)
                << "): strideByStep=" << strideByStep << endln;
         return 0;    
     }
-        default:
+    case 6: {
+        gammaScale = info.theDouble;
+        if (gammaScale <= 0.0) gammaScale = 1.0; // guard
+        opserr << "LinearElasticGGmax(tag=" << this->getTag()
+               << "): gammaScale=" << gammaScale << endln;
+        return 0;
+    }
+    case 7: {
+        // viscous damping coefficient chi
+        chi = info.theDouble;
+        computeDampingTangent();
+        opserr << "LinearElasticGGmax(tag=" << this->getTag() << "): chi=" << chi << endln;
+        return 0;
+    }
+    case 8: {
+        int flag = static_cast<int>(std::lround(info.theDouble));
+        dampUsesInitial = (flag != 0);
+        computeDampingTangent();
+        opserr << "LinearElasticGGmax(tag=" << this->getTag() << "): dampUseInitial=" << dampUsesInitial << endln;
+        return 0;
+    }
+    default:
         return -1;
     }
 }
@@ -644,15 +867,48 @@ double LinearElasticGGmax::vuceticDobry(double gamma) const
     return 1.0 / (1.0 + gamma / gref);
 }
 
+
 double LinearElasticGGmax::darendeli(double gamma) const
 {
-    // Very simplified surrogate based on param1=PI, param2=p', param3=OCR
+    // Inputs (same semantics as your code):
+    //   param1 = PI (Plasticity Index, unitless)
+    //   param2 = p' (mean effective stress in kPa)
+    //   param3 = OCR (Overconsolidation Ratio, unitless)
     double PI  = std::max(0.0, param1);
-    double p   = (param2>0.0? param2:100.0);
-    double OCR = (param3>0.0? param3:1.0);
-    double gref = 1e-4 * std::pow(p/100.0, 0.3) * std::pow(OCR, 0.1) * std::pow(10.0, -0.01*PI);
-    return 1.0 / (1.0 + gamma / gref);
+    double p   = (param2 > 0.0 ? param2 : 100.0);  // kPa
+    double OCR = (param3 > 0.0 ? param3 : 1.0);
+
+    // Reference strain gref:
+    // Slightly stronger dependence than the simple surrogate to match Darendeli/Menq tables.
+    // Tune exponents minimally if you observe consistent offsets in your GGmax_org.
+    // Typical range: gref ~ 1e-6 to 1e-3 depending on PI, p', OCR.
+    double gref = 1.0e-4
+                  * std::pow(p / 100.0, 0.35)   // confining effect
+                  * std::pow(OCR,        0.12)  // overconsolidation effect
+                  * std::pow(10.0,      -0.012 * PI); // plasticity effect
+
+    // Shape exponent beta:
+    // Allows matching curvature across mid/high strains (GG ≈ 0.2–0.8).
+    // Keep beta in a reasonable band to avoid pathological slopes.
+    double beta = 1.0
+                  + 0.006 * PI                     // more plastic → steeper drop
+                  + 0.04  * (OCR - 1.0)            // OCR increases steepness
+                  + 0.02  * std::log10(std::max(1e-6, p / 100.0)); // weak confining effect
+    if (beta < 0.8) beta = 0.8;
+    if (beta > 1.6) beta = 1.6;
+
+    // Compute G/Gmax using the two-parameter law.
+    double g = std::fabs(gamma);
+    double denom = 1.0 + std::pow(g / std::max(1e-12, gref), beta);
+    double GG = 1.0 / denom;
+
+    // Clamp to (0, 1] for safety
+    if (GG > 1.0) GG = 1.0;
+    if (GG < 1.0e-12) GG = 1.0e-12;
+
+    return GG;
 }
+
 
 double LinearElasticGGmax::interpolateUserCurve(double gamma) const
 {

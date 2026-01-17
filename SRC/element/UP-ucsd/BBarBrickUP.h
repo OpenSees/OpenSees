@@ -70,7 +70,8 @@ class BBarBrickUP : public Element {
 			int node8,
 			NDMaterial &theMaterial,double bulk, double rhof,
 			double perm1, double perm2, double perm3,
-		   double b1 = 0.0, double b2 = 0.0, double b3 = 0.0) ;
+			double b1 = 0.0, double b2 = 0.0, double b3 = 0.0,
+			int massType = 0);
 
     //destructor
     virtual ~BBarBrickUP( ) ;
@@ -173,6 +174,8 @@ class BBarBrickUP : public Element {
     double rho;			// Fluid mass per unit volume
     double kc;   // combined bulk modulus
     double perm[3];  // permeability
+    
+    int massType;
 
     // [0,1,2=derivative wrt x,y,z;3=shape func][node][Gauss point]
     static double Shape[4][8][8]; // Stores shape functions and derivatives (overwritten)

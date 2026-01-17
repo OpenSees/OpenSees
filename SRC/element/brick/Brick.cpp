@@ -87,6 +87,7 @@ void* OPS_Brick()
     }
     //option,Tang.S
     int numData = 1;
+    int massType = 0;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         std::string theType = OPS_GetString();
         if (theType == "-damp") {
@@ -99,11 +100,13 @@ void* OPS_Brick()
                     return 0;
                 }
             }
+        } else if (theType == "-lumped") {
+            massType = 1;
         }
     }
 
     return new Brick(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],
-		     idata[8],*mat,data[0],data[1],data[2], theDamping);
+		     idata[8],*mat,data[0],data[1],data[2], theDamping, massType);
 }
 
 //static data
@@ -161,11 +164,16 @@ Brick::Brick(int tag,
 	     int node8,
 	     NDMaterial &theMaterial,
 	     double b1, double b2, double b3,
-       Damping *damping)
+       Damping *damping,
+       int matype)
   :Element(tag, ELE_TAG_Brick),
-   connectedExternalNodes(8), applyLoad(0), load(0), Ki(0)
+   connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), massType(matype)
 {
   B.Zero();
+  opserr << "Brick::constructor - tag: " << tag << endln;
+  if (massType == 1) {
+      opserr << "Brick::constructor - Using Lumped Mass Matrix\n";
+  }
 
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -859,6 +867,7 @@ void   Brick::formInertiaTerms( int tangFlag )
         resid( jj+p ) += ( temp * momentum(p) )  ;
 
       
+      
       if ( tangFlag == 1 ) {
 
 	 //multiply by density
@@ -868,10 +877,19 @@ void   Brick::formInertiaTerms( int tangFlag )
          kk = 0 ;
          for ( k = 0; k < numberNodes; k++ ) {
 
-	    massJK = temp * shp[massIndex][k] ;
-
-            for ( p = 0; p < ndf; p++ )  
-	      mass( jj+p, kk+p ) += massJK ;
+            if (massType == 0) {
+                // consistent mass matrix
+                massJK = temp * shp[massIndex][k] ;
+                for ( int p = 0; p < ndf; p++ )  
+                    mass( jj+p, kk+p ) += massJK ;
+            } else {
+                // lumped mass matrix
+                if (j == k) {
+                    massJK = temp ; // * shp[massIndex][k] ; // lumped mass 
+                    for ( int p = 0; p < ndf; p++ )  
+                        mass( jj+p, kk+p ) += massJK ;
+                }
+            }
             
             kk += ndf ;
           } // end for k loop
