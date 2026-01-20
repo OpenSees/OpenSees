@@ -97,11 +97,6 @@ LagrangeEQ_FE::LagrangeEQ_FE(int tag, Domain &theDomain, EQ_Constraint &TheEQ,
             opserr << "WARNING LagrangeEQ_FE::LagrangeEQ_FE() - no DOF_Group with Retained Node\n";
     }
 
-    if (theDofGroup->getID().Size() != 1) {
-        opserr << "WARNING LagrangeEQ_FE::LagrangeEQ_FE() - incorrect Lagrange size\n";
-        exit(-1);
-    }
-
     myDOF_Groups(nodeRetained.Size() + 1) = theDofGroup->getTag();
 
     if (theEQ->isTimeVarying() == false) {
@@ -227,7 +222,7 @@ LagrangeEQ_FE::getResidual(Integrator *theNewIntegrator)
     double Uc0 = theEQ->getConstrainedDOFsInitialDisplacement();
     int cdof = theEQ->getConstrainedDOFs();
     if (cdof < 0 || cdof >= Uc.Size()) {
-        opserr << "PenaltyEQ_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() - 1 << "]\n";
+        opserr << "LagrangeEQ_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() - 1 << "]\n";
         exit(-1);
     }
     UU(0) = Uc(cdof) - Uc0;
@@ -237,7 +232,7 @@ LagrangeEQ_FE::getResidual(Integrator *theNewIntegrator)
         int rdof = RetainedDOFs(i);
         const Vector& Ur = theRetainedNode[i]->getTrialDisp();
         if (rdof < 0 || rdof >= Ur.Size()) {
-            opserr << "PenaltyEQ_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() - 1 << "]\n";
+            opserr << "LagrangeEQ_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() - 1 << "]\n";
             exit(-1);
         }
         UU(i+1) = Ur(rdof) - Ur0(i);
