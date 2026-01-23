@@ -72,6 +72,7 @@ void* OPS_UniformExcitationPattern()
     TimeSeries *velSeries = 0;
     TimeSeries *dispSeries = 0;
     TimeSeriesIntegrator *seriesIntegrator = 0;
+    double dt = 0.01;
     double vel0 = 0.0;
     double fact = 1.0;
     
@@ -112,6 +113,8 @@ void* OPS_UniformExcitationPattern()
 		opserr << " pattern UniformExcitation -accel {series}\n";
 		return 0;
 	    }
+	
+	    dt = accelSeries->getTimeIncr(0.0);
 	    
 	} else if ((strcmp(flag,"-vel") == 0) || (strcmp(flag,"-velocity") == 0)) {
 
@@ -128,6 +131,8 @@ void* OPS_UniformExcitationPattern()
 		return 0;
 	    }
 	
+	    dt = velSeries->getTimeIncr(0.0);
+	
 	} else if ((strcmp(flag,"-disp") == 0) || (strcmp(flag,"-displacement") == 0)) {
 
 	    int tsTag;
@@ -143,6 +148,8 @@ void* OPS_UniformExcitationPattern()
 		opserr << " pattern UniformExcitation -disp {series}\n";
 		return 0;
 	    }
+	
+	    dt = dispSeries->getTimeIncr(0.0);
 	
 	} else if ((strcmp(flag,"-int") == 0) || (strcmp(flag,"-integrator") == 0)) {
 
@@ -162,7 +169,7 @@ void* OPS_UniformExcitationPattern()
     }
     
     GroundMotion *theMotion = new GroundMotion(dispSeries, velSeries,
-					       accelSeries, seriesIntegrator);
+					       accelSeries, seriesIntegrator, dt);
     
     if (theMotion == 0) {
 	opserr << "WARNING ran out of memory creating ground motion - pattern UniformExcitation ";

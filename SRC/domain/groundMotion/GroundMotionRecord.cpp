@@ -110,9 +110,30 @@ GroundMotionRecord::getPeakAccel(void)
 {
   if (theAccelTimeSeries != 0)
     return theAccelTimeSeries->getPeakFactor();
-  else
-    return 0.0;
 
+  // if theVel is not 0, differentiate vel series to get accel series
+  else if (theVelTimeSeries != 0) {
+    theAccelTimeSeries = this->differentiate(theVelTimeSeries, delta);
+    if (theAccelTimeSeries != 0)
+      return theAccelTimeSeries->getPeakFactor();      
+    else
+      return 0.0;
+  }
+
+  // if theDisp is not 0, differentiate vel series to get accel series
+  else if (theDispTimeSeries != 0) {
+    theVelTimeSeries = this->differentiate(theDispTimeSeries, delta);
+    if (theVelTimeSeries != 0) {
+      theAccelTimeSeries = this->differentiate(theVelTimeSeries, delta);
+      if (theAccelTimeSeries != 0)
+	return theAccelTimeSeries->getPeakFactor();      
+      else
+	return 0.0;
+    } else
+      return 0.0;
+  }
+
+  return 0.0;
 }
 
 double 
@@ -125,10 +146,20 @@ GroundMotionRecord::getPeakVel(void)
   else if (theAccelTimeSeries != 0) {
     theVelTimeSeries = this->integrate(theAccelTimeSeries, delta);
     if (theVelTimeSeries != 0)
-      return theVelTimeSeries->getPeakFactor();      
+      return theVelTimeSeries->getPeakFactor();
     else
       return 0.0;
   }
+
+  // if theDisp is not 0, differentiate disp series to get vel series
+  else if (theDispTimeSeries != 0) {
+    theVelTimeSeries = this->differentiate(theDispTimeSeries, delta);
+    if (theVelTimeSeries != 0)
+      return theVelTimeSeries->getPeakFactor();
+    else
+      return 0.0;
+  }
+
   return 0.0;
 }
 
@@ -142,7 +173,7 @@ GroundMotionRecord::getPeakDisp(void)
   else if (theVelTimeSeries != 0) {
     theDispTimeSeries = this->integrate(theVelTimeSeries, delta);
     if (theDispTimeSeries != 0)
-      return theDispTimeSeries->getPeakFactor();      
+      return theDispTimeSeries->getPeakFactor();
     else
       return 0.0;
   }
@@ -153,7 +184,7 @@ GroundMotionRecord::getPeakDisp(void)
     if (theVelTimeSeries != 0) {
       theDispTimeSeries = this->integrate(theVelTimeSeries, delta);
       if (theDispTimeSeries != 0)
-	return theDispTimeSeries->getPeakFactor();      
+	return theDispTimeSeries->getPeakFactor();
       else
 	return 0.0;
     } else
@@ -166,34 +197,65 @@ GroundMotionRecord::getPeakDisp(void)
 double 
 GroundMotionRecord::getAccel(double time)
 {
-  if (time < 0.0)
-    return 0.0;
+    if (time < 0.0)
+      return 0.0;
   
-  if (theAccelTimeSeries != 0)
-    return theAccelTimeSeries->getFactor(time);
-  else
+    if (theAccelTimeSeries != 0)
+      return theAccelTimeSeries->getFactor(time);
+
+    // if theVel is not 0, differentiate vel series to get accel series
+    else if (theVelTimeSeries != 0) {
+      theAccelTimeSeries = this->differentiate(theVelTimeSeries, delta);
+      if (theAccelTimeSeries != 0)
+        return theAccelTimeSeries->getFactor(time);
+      else
+        return 0.0;
+    }
+
+    // if theDisp is not 0, differentiate vel series to get accel series
+    else if (theDispTimeSeries != 0) {
+      theVelTimeSeries = this->differentiate(theDispTimeSeries, delta);
+      if (theVelTimeSeries != 0) {
+        theAccelTimeSeries = this->differentiate(theVelTimeSeries, delta);
+        if (theAccelTimeSeries != 0)
+          return theAccelTimeSeries->getFactor(time);
+        else
+          return 0.0;
+      } else
+        return 0.0;
+    }
+
     return 0.0;
-}     
+}
 
 double 
 GroundMotionRecord::getVel(double time)
 {
-  if (time < 0.0)
-    return 0.0;
-
-  if (theVelTimeSeries != 0) 
-    return theVelTimeSeries->getFactor(time);      
-  
-  // if theAccel is not 0, integrate accel series to get a vel series
-  else if (theAccelTimeSeries != 0) {
-    theVelTimeSeries = this->integrate(theAccelTimeSeries, delta);
-    if (theVelTimeSeries != 0)
-      return theVelTimeSeries->getFactor(time);      
-    else
+    if (time < 0.0)
       return 0.0;
-  }
+  
+    if (theVelTimeSeries != 0)
+      return theVelTimeSeries->getFactor(time);
 
-  return 0.0;
+    // if theAccel is not 0, integrate accel series to get a vel series
+    else if (theAccelTimeSeries != 0) {
+      theVelTimeSeries = this->integrate(theAccelTimeSeries, delta);
+      if (theVelTimeSeries != 0)
+        return theVelTimeSeries->getFactor(time);
+      else
+        return 0.0;
+    }
+
+    // if theDisp is not 0, differentiate disp series to get vel series
+    else if (theDispTimeSeries != 0) {
+      theVelTimeSeries = this->differentiate(theDispTimeSeries, delta);
+      if (theVelTimeSeries != 0)
+        return theVelTimeSeries->getFactor(time);
+      else
+        return 0.0;
+    }
+
+    return 0.0;
 }
 
 double 
@@ -209,7 +271,7 @@ GroundMotionRecord::getDisp(double time)
   else if (theVelTimeSeries != 0) {
     theDispTimeSeries = this->integrate(theVelTimeSeries, delta);
     if (theDispTimeSeries != 0)
-      return theDispTimeSeries->getFactor(time);      
+      return theDispTimeSeries->getFactor(time);
     else
       return 0.0;
   }
@@ -220,9 +282,9 @@ GroundMotionRecord::getDisp(double time)
     if (theVelTimeSeries != 0) {
       theDispTimeSeries = this->integrate(theVelTimeSeries, delta);
       if (theDispTimeSeries != 0)
-	return theDispTimeSeries->getFactor(time);      
+        return theDispTimeSeries->getFactor(time);
       else
-	return 0.0;
+        return 0.0;
     } else
       return 0.0;
   }
