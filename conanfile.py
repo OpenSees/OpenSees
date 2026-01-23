@@ -1,4 +1,8 @@
-from conans import ConanFile, CMake, tools
+
+from conan import ConanFile
+from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
+from conan.tools.files import copy
+from conan.errors import ConanInvalidConfiguration
 import os
 
 class OpenSeesDependencies(ConanFile):
@@ -7,45 +11,52 @@ class OpenSeesDependencies(ConanFile):
     description = "Provides Software Packages needed to build OpenSees"
     license = "BSD 3-Clause"
     author = "fmk fmckenna@berkeley.edu"
-    settings = {"os": None, "build_type": None, "compiler": None, "arch": ["x86_64"]}
-    options = {"shared": [True, False]}
-    default_options = {"mkl-static:threaded": False, "ipp-static:simcenter_backend": True}    
-    generators = "cmake", "cmake_find_package"
-    build_policy = "missing"
-    requires = "hdf5/1.14.0", \
-        "tcl/8.6.11", \
-        "zlib/1.3.1", \
-        "eigen/3.4.0"
-    # Custom attributes for Bincrafters recipe conventions
-    _source_subfolder = "source_subfolder"
-    _build_subfolder = "build_subfolder"
-    # Set short paths for Windows
-    short_paths = True    
-    scm = {
-        "type": "git",  # Use "type": "svn", if local repo is managed using SVN
-        "subfolder": _source_subfolder,
-        "url": "auto",
-        "revision": "auto"
-    }
 
+    # 1. Settings: Explicitly define the settings needed for compilation
+    settings = "os", "compiler", "build_type", "arch"
 
-    def configure(self):
-        self.options.shared = False
+    options = {}
+    default_options = {}
 
-    def configure_cmake(self):
-        cmake = CMake(self)
-        cmake.configure(source_folder=self._source_subfolder)
-        return cmake
-    
+    exports_sources = "CMakeLists.txt", "src/*", "applications/*", "LICENSE"
+
+    def layout(self):
+        # 5. Layout: This standardizes where source/build files go. 
+        # It replaces the manual '_source_subfolder' logic.
+        cmake_layout(self)
+
+    def requirements(self):
+        self.requires("hdf5/1.14.0")
+        self.requires("tcl/8.6.11")
+        self.requires("zlib/1.3.1")
+        self.requires("eigen/3.4.0")
+        # Note: If you rely on 'mkl-static', you must add self.requires("mkl-static/...") here.
+
+    def generate(self):
+        # 6. Generators: Standard toolchain and dependency generator
+        tc = CMakeToolchain(self)
+        tc.generate()
+        
+        deps = CMakeDeps(self)
+        deps.generate()
+
     def build(self):
-        cmake = self.configure_cmake()
+        cmake = CMake(self)
+        cmake.configure()
         cmake.build()
 
     def package(self):
-        self.copy(pattern="LICENSE", dst="licenses", src=self._source_subfolder)
-        cmake = self.configure_cmake()
+        # 7. Packaging: Use 'self.source_folder' which is auto-set by cmake_layout()
+        copy(self, "LICENSE", src=self.source_folder, dst=os.path.join(self.package_folder, "licenses"))
+        
+        cmake = CMake(self)
         cmake.install()
-        self.copy("*", dst="bin", src=self._source_subfolder + "/applications")
+        
+        # Copy extra applications if CMake install didn't catch them
+        copy(self, "*", 
+             src=os.path.join(self.source_folder, "applications"), 
+             dst=os.path.join(self.package_folder, "bin"))
 
     def package_info(self):
-        self.env_info.PATH.append(os.path.join(self.package_folder, "bin"))
+        # 8. RunEnv: Correctly add the bin folder to PATH for consumers
+        self.runenv_info.append_path("PATH", os.path.join(self.package_folder, "bin"))
