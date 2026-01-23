@@ -48,8 +48,6 @@ NDMaterial* createASDPlasticMaterial3D(int instance_tag, const char* yf_type, co
 void print_usage(void)
 {
     opserr <<
-       "nDMaterial ASDPlasticMaterial3D Error: Few arguments \n"
-       "\n"
        "SYNTAX:\n"
        "nDMaterial ASDPlasticMaterial3D $tag \\ \n"
        "    YF_type \\ \n"
@@ -67,11 +65,12 @@ void print_usage(void)
        "    ....\n"
        "End_Model_Parameters \\ \n"
        "Begin_Integration_Options \\ \n"
-       "    f_relative_tol (double value)\\ \n"
-       "    stress_relative_tol (double value)\\ \n"
+       "    f_absolute_tol (double value)\\ \n"
+       "    stress_absolute_tol (double value)\\ \n"
        "    n_max_iterations (int value)\\ \n"
        "    return_to_yield_surface (0 or 1)\\ \n"
        "    method (string) : Forward_Euler | Runge_Kutta_45_Error_Control\\ \n"
+       "    tangent (string) : Elastic | Numerical_Algorithmic_FirstOrder | Numerical_Algorithmic_SecondOrder\\ \n"
        "End_Integration_Options \\ \n"
        "\n";
 }
@@ -81,14 +80,15 @@ void *OPS_AllASDPlasticMaterial3Ds(void)
     // some kudos
     static bool first_done = false;
     if (!first_done) {
-        opserr << "Using ASDPlasticMaterial3D - Developed by: Jose Abell (UANDES), Massimo Petracca and Guido Camata (ASDEA Software Technology)\n";
+        opserr << "\n\nUsing ASDPlasticMaterial3D - Developed by: Jose Abell (UANDES), Massimo Petracca and Guido Camata (ASDEA Software Technology)\n\n";
         first_done = true;
     }
 
     // check arguments
     int numArgs = OPS_GetNumRemainingInputArgs();
-        opserr << "numArgs = " << numArgs << endln;
-    if (numArgs < 2) {
+    if (numArgs < 3) {
+        "nDMaterial ASDPlasticMaterial3D Error: Few arguments \n";
+        opserr << "    numArgs = " << numArgs << endln << endln;
         print_usage();
         return nullptr;
     }
@@ -127,6 +127,26 @@ void *OPS_AllASDPlasticMaterial3Ds(void)
 
     NDMaterial* instance = ASDPlasticMaterial3DFactory(tag, yf_type, pf_type, el_type, iv_type, available_models);
 
+    if(std::strcmp(yf_type, "list")==0)
+    {
+        cout << "Available models for YF = " << pf_type << endln;
+        for(model_spec_t &model : available_models)
+        {
+            std::string model_yf_type = std::get<0>(model);
+            std::string model_pf_type = std::get<1>(model);
+            std::string model_el_type = std::get<2>(model);
+            std::string model_iv_type = std::get<3>(model);
+            
+            if (std::strcmp(pf_type, model_yf_type.c_str())==0)
+            {
+                cout << "  PF = " << model_pf_type << endl;
+                cout << "  EL = " << model_el_type << endl;
+                cout << "  IV = " << model_iv_type << endl << endln;
+            }
+        }
+            
+    }
+
     if(instance==nullptr)
     {
 
@@ -149,15 +169,18 @@ void *OPS_AllASDPlasticMaterial3Ds(void)
                 matches_el = true;
         }
 
-        cout << endl;
-        print_usage();
-        cout << endl;
 
-        cout << "ASDPlasticMaterial3D -- Material not found for input specification:\n";
+        cout << "\n";
+        cout << "ASDPlasticMaterial3D -- ERROR! Material not found for input specification:\n";
         cout << "yf_type = " << yf_type << (matches_yf ? " :) " : " ") <<"\n";
         cout << "pf_type = " << pf_type << (matches_pf ? " :) " : " ") <<"\n";
         cout << "el_type = " << el_type << (matches_el ? " :) " : " ") <<"\n";
         cout << "iv_type = " << iv_type  <<"\n";
+        cout << "\n";
+
+        cout << endl;
+        print_usage();
+        cout << endl;
 
     }
 
@@ -174,7 +197,7 @@ NDMaterial*  ASDPlasticMaterial3DFactory(int instance_tag, const char * yf_type,
     std::list<NDMaterial*> instance_pointers;
 
 
-	#include "ASD_material_definitions.cpp"    
+    #include "ASD_material_definitions.cpp"    
 
     //Search for the valid pointer and return that one
     for(auto instance : instance_pointers)
@@ -258,10 +281,12 @@ void populate_ASDPlasticMaterial3D(T* instance)
     // Default integration options
     int method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
     int tangent = (int) ASDPlasticMaterial3D_Tangent_Operator_Type::Elastic;
-    double f_relative_tol = 1e-6; 
-    double stress_relative_tol = 1e-6; 
+    double f_absolute_tol = 1e-6; 
+    double stress_absolute_tol = 1e-6; 
     int n_max_iterations = 100;
     int return_to_yield_surface = 1;
+    double rk45_dT_min = 1e-2;
+    int rk45_niter_max = 110;
 
     // Loop over input arguments
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -318,7 +343,7 @@ void populate_ASDPlasticMaterial3D(T* instance)
         }
 
 
-        // set_constitutive_integration_method(int method, double f_relative_tol, double stress_relative_tol, int n_max_iterations)
+        // set_constitutive_integration_method(int method, double f_absolute_tol, double stress_absolute_tol, int n_max_iterations)
         if (std::strcmp(cmd, "Begin_Integration_Options") == 0)
         {
             cout << "\n\nReading Integration Options\n";
@@ -330,16 +355,16 @@ void populate_ASDPlasticMaterial3D(T* instance)
                     break;
                 }
 
-                if (std::strcmp(param_name, "f_relative_tol") == 0)
+                if (std::strcmp(param_name, "f_absolute_tol") == 0)
                 {
-                    OPS_GetDouble(&get_one_value, &f_relative_tol);
-                    cout << "   Setting f_relative_tol = " << f_relative_tol << endl;
+                    OPS_GetDouble(&get_one_value, &f_absolute_tol);
+                    cout << "   Setting f_absolute_tol = " << f_absolute_tol << endl;
                 }
 
-                if (std::strcmp(param_name, "stress_relative_tol") == 0)
+                if (std::strcmp(param_name, "stress_absolute_tol") == 0)
                 {
-                    OPS_GetDouble(&get_one_value, &stress_relative_tol);
-                    cout << "   Setting stress_relative_tol = " << stress_relative_tol << endl;
+                    OPS_GetDouble(&get_one_value, &stress_absolute_tol);
+                    cout << "   Setting stress_absolute_tol = " << stress_absolute_tol << endl;
                 }
 
                 if (std::strcmp(param_name, "n_max_iterations") == 0)
@@ -347,10 +372,30 @@ void populate_ASDPlasticMaterial3D(T* instance)
                     OPS_GetInt(&get_one_value, &n_max_iterations);
                     cout << "   Setting n_max_iterations = " << n_max_iterations << endl;
                 }
-                
+                if (std::strcmp(param_name, "rk45_dT_min") == 0)
+                {
+                    OPS_GetDouble(&get_one_value, &rk45_dT_min);
+                    cout << "   Setting rk45_dT_min = " << rk45_dT_min << endl;
+                }
+
+                if (std::strcmp(param_name, "rk45_niter_max") == 0)
+                {
+                    OPS_GetInt(&get_one_value, &rk45_niter_max);
+                    cout << "   Setting rk45_niter_max = " << rk45_niter_max << endl;
+                }
                 if (std::strcmp(param_name, "return_to_yield_surface") == 0)
                 {
-                    OPS_GetInt(&get_one_value, &return_to_yield_surface);
+                    // OPS_GetInt(&get_one_value, &return_to_yield_surface);
+                    const char *method_name = OPS_GetString();
+                    if (std::strcmp(method_name, "Disabled") == 0)
+                        return_to_yield_surface = 0;
+                    else if (std::strcmp(method_name, "One_Step_Return") == 0)
+                        return_to_yield_surface = 1;
+                    else if (std::strcmp(method_name, "Iterative_Return") == 0)
+                        return_to_yield_surface = 2;
+                    else
+                    	return_to_yield_surface = 1;
+
                     cout << "   Setting return_to_yield_surface = " << return_to_yield_surface << endl;
                 }
 
@@ -359,16 +404,26 @@ void populate_ASDPlasticMaterial3D(T* instance)
                     const char *method_name = OPS_GetString();
                     if (std::strcmp(method_name, "Forward_Euler") == 0)
                         method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Forward_Euler;
+                    else if (std::strcmp(method_name, "Forward_Euler_Subincrement") == 0)
+                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Forward_Euler_Subincrement;
+                    else if (std::strcmp(method_name, "Modified_Euler_Error_Control") == 0)
+                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Modified_Euler_Error_Control;
                     else if (std::strcmp(method_name, "Runge_Kutta_45_Error_Control") == 0)
                         method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
+                    else if (std::strcmp(method_name, "Runge_Kutta_45_Error_Control_old") == 0)
+                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control_old;
+                    else if (std::strcmp(method_name, "Backward_Euler") == 0)
+                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Backward_Euler;                    
+                    else if (std::strcmp(method_name, "Backward_Euler_LineSearch") == 0)
+                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Backward_Euler_LineSearch;
                     else
                     {
-                        cout << "WARNING! Unrecognised ASDPlasticMaterial3D_Constitutive_Integration_Method name " << method_name << endl;
-                        cout << "Defaulting to Runge_Kutta_45_Error_Control" << endl;
-                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Runge_Kutta_45_Error_Control;
+                        cout << "\n\nWARNING! Unrecognised ASDPlasticMaterial3D_Constitutive_Integration_Method name " << method_name << endl;
+                        cout << "Available methods: Forward_Euler, Forward_Euler_Subincrement, Modified_Euler_Error_Control, Runge_Kutta_45_Error_Control\n\n" << endl;
+                        cout << "Defaulting to Modified_Euler_Error_Control\n\n" << endl;
+                        method = (int) ASDPlasticMaterial3D_Constitutive_Integration_Method::Modified_Euler_Error_Control;
                     }
                     cout << "   Setting integration method = " << method_name << " method_int = " << method << endl;
-                    
                 }
 
                 if (std::strcmp(param_name, "tangent_type") == 0)
@@ -380,6 +435,10 @@ void populate_ASDPlasticMaterial3D(T* instance)
                         tangent = (int) ASDPlasticMaterial3D_Tangent_Operator_Type::Continuum;
                     else if (std::strcmp(tangent_type_name, "Secant") == 0)
                         tangent = (int) ASDPlasticMaterial3D_Tangent_Operator_Type::Secant;
+                    else if (std::strcmp(tangent_type_name, "Numerical_Algorithmic_FirstOrder") == 0)
+                        tangent = (int) ASDPlasticMaterial3D_Tangent_Operator_Type::Numerical_Algorithmic_FirstOrder;
+                    else if (std::strcmp(tangent_type_name, "Numerical_Algorithmic_SecondOrder") == 0)
+                        tangent = (int) ASDPlasticMaterial3D_Tangent_Operator_Type::Numerical_Algorithmic_SecondOrder;
                     else
                     {
                         cout << "WARNING! Unrecognised ASDPlasticMaterial3D_Tangent_Operator_Type name " << tangent_type_name << endl;
@@ -394,7 +453,7 @@ void populate_ASDPlasticMaterial3D(T* instance)
         }
     }
 
-    instance->set_constitutive_integration_method(method, tangent, f_relative_tol, stress_relative_tol, n_max_iterations, return_to_yield_surface);
+    instance->set_constitutive_integration_method(method, tangent, f_absolute_tol, stress_absolute_tol, n_max_iterations, return_to_yield_surface, rk45_niter_max, rk45_dT_min);
 }
 
 

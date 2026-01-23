@@ -54,8 +54,8 @@ public:
         auto s = sigma.deviator();
         vv_out = s - alpha;
 
-        double den = sqrt(vv_out.dot(vv_out));
-        if (abs(den) > sqrt(s.dot(s))*ASDPlasticMaterial3DGlobals::MACHINE_EPSILON)
+        double den = sqrt(tensor_dot_stress_like(vv_out, vv_out));
+        if (abs(den) > sqrt(tensor_dot_stress_like(s, s))*ASDPlasticMaterial3DGlobals::MACHINE_EPSILON)
             vv_out = vv_out / den;
 
         return vv_out;

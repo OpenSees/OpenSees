@@ -51,11 +51,32 @@ find_package(MPI)
 
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
- MESSAGE("COMPILER: Clang")
+ MESSAGE("STATUS" "COMPILER: Clang (macOS Configuration)")
+
+ set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
+ set(BUILD_SHARED_LIBS OFF)
+
+ # 1. Ask gfortran for the absolute path to the static (.a) files
+ execute_process(COMMAND gfortran --print-file-name=libgfortran.a OUTPUT_VARIABLE GF_STATIC OUTPUT_STRIP_TRAILING_WHITESPACE)
+ execute_process(COMMAND gfortran --print-file-name=libquadmath.a OUTPUT_VARIABLE QM_STATIC OUTPUT_STRIP_TRAILING_WHITESPACE)
+ execute_process(COMMAND gfortran --print-file-name=libgcc.a OUTPUT_VARIABLE GCC_STATIC OUTPUT_STRIP_TRAILING_WHITESPACE)
+
+ # 2. CLEAR THE IMPLICIT DYNAMIC FLAGS
+ # This prevents CMake from adding '-lgfortran -lquadmath' to the end of the command
+ set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "")
+
+ # 3. Force the linker to use these specific archive files
+ # link_libraries applies to all targets created after this line
+ link_libraries("${GF_STATIC}" "${QM_STATIC}" "${GCC_STATIC}")
+    
+ # Optional: ensure we search for static libs first for other dependencies
+ set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.dylib")
  # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
  set(BUILD_SHARED_LIBS OFF)
  # set(CMAKE_EXE_LINKER_FLAGS "-static")
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
+
  set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
  set(BUILD_SHARED_LIBS OFF)
  # set(CMAKE_EXE_LINKER_FLAGS "-static")
@@ -63,9 +84,11 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
  set(CMAKE_POSITION_INDEPENDENT_CODE ON)
  set(CMAKE_EXE_LINKER_FLAGS "-static-libgcc -static-libstdc++")
  MESSAGE("COMPILER: GNU")
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Intel")
  MESSAGE("COMPILER: Intel")
  add_compile_options(-fPIC)
+
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "MSVC")
  MESSAGE("COMPILER: MSVC")
  set(CMAKE_FIND_LIBRARY_SUFFIXES ".lib")
@@ -89,37 +112,46 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 
 MESSAGE("${CMAKE_BINARY_DIR}")
 
-if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
 
-   MESSAGE("USING CONAN")
-   include("${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-   conan_basic_setup()
-   set (Eigen3_FOUND TRUE)
-   set (HDF5_FOUND TRUE)
-   set (HDF5_LIBRARIES ${CONAN_LIBS_HDF5} ${CONAN_LIBS_ZLIB})
-   set (HDF5_VERSION "1.12.0")
-   set(USING_CONAN TRUE)
-   set(CMAKE_MODULE_PATH ${CMAKE_BINARY_DIR} ${CMAKE_MODULE_PATH})
-   set(CMAKE_PREFIX_PATH ${CMAKE_BINARY_DIR} ${CMAKE_PREFIX_PATH})
-   set(TCL_LIBRARIES ${TCL_LIBRARY})
-   include_directories(${TCL_INCLUDE_PATH})
+if(CONAN_EXPORTED)
+    message(STATUS "USING CONAN (via Transparent Integration)")
+    set(USING_CONAN TRUE)
+else()
+    message(STATUS "NOT USING CONAN (System Search)")
+    include(OpenSeesFunctions) # Your custom logic
+endif()
 
+find_package(ZLIB REQUIRED)
+find_package(HDF5 REQUIRED)
+find_package(TCL REQUIRED)
+find_package(Eigen3 REQUIRED)
+
+
+if(TARGET TCL::TCL)
+
+    set(TCL_LIBRARIES TCL::TCL)
+    # 1. Get the library location safely
+    get_target_property(TCL_LIB_PATH TCL::TCL IMPORTED_LOCATION)
+    if(NOT TCL_LIB_PATH)
+        get_target_property(TCL_LIB_PATH TCL::TCL IMPORTED_LOCATION_RELEASE)
+    endif()
+
+    # 2. Get the directory containing the library
+    get_filename_component(TCL_LIB_DIR "${TCL_LIB_PATH}" DIRECTORY)
+
+    # 3. Construct the path and FORCE it to be absolute
+    # This resolves the ".." correctly before the install command sees it
+    get_filename_component(TCL_INIT_FILE "${TCL_LIB_DIR}/tcl8.6/init.tcl" ABSOLUTE)
+    
 else()
 
-  MESSAGE("NOT USING CONAN")
-  include(OpenSeesFunctions)
-  set(NOT_USING_CONAN TRUE)
-  set (CONAN_LIBS )
-  find_package(ZLIB REQUIRED)
-  find_package(libaec REQUIRED)
-  find_package(HDF5 REQUIRED)
-  find_package(TCL REQUIRED)
-  find_package(Eigen3 REQUIRED)
-  include_directories(${TCL_INCLUDE_DIR})
-  set(TCL_INCLUDE_PATH ${TCL_INCLUDE_DIR})
-  set(TCL_LIBRARY ${TCL_LIBRARIES})
-
+    # Fallbacck
+    include_directories(${TCL_INCLUDE_DIR})
+    set(TCL_LIBRARIES ${TCL_LIBRARIES})
+    get_filename_component(TCL_INIT_FILE "${TCL_INCLUDE_PATH}/../lib/tcl8.6/init.tcl" ABSOLUTE)
+    
 endif()
+
 
 # define user-selectable options for end target
 set_property(CACHE OPS_FINAL_TARGET PROPERTY STRINGS
@@ -565,22 +597,35 @@ add_executable(OpenSees EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
 )
 
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
-  target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+if(TARGET TCL::TCL)
+    # --- CONAN 2 LOGIC ---
+    message(STATUS "Conan TCL found at: ${tcl_PACKAGE_FOLDER}")
+    
+    # In Conan 2, the library files are typically in the 'lib' subfolder of the package
+    set(CONAN_TCL_LIB_DIR "${tcl_PACKAGE_FOLDER}/lib")
 
-  FILE(COPY ${CONAN_LIB_DIRS_TCL}/tcl8.6
-       DESTINATION ${PROJECT_BINARY_DIR}/lib/tcl8.6
-       FILES_MATCHING PATTERN .tcl)
+    file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
+    
+    add_custom_command(
+        TARGET OpenSees POST_BUILD
+        COMMENT "Copying init.tcl from Conan TCL to binary directory"
+        COMMAND ${CMAKE_COMMAND} -E copy
+        "${CONAN_TCL_LIB_DIR}/tcl8.6/init.tcl"
+        "${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6"
+    )
+    
+    # Note: You don't usually need target_include_directories here 
+    # because target_link_libraries(OpenSees PRIVATE TCL::TCL) handles it.
 
-else ()
-     FILE(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
-     add_custom_command(
-       TARGET OpenSees POST_BUILD
-       COMMENT("Copying init.tcl to ${CMAKE_CURRENT_BINARY_DIR}")
-       COMMAND ${CMAKE_COMMAND} -E copy
-       ${CONAN_LIB_DIRS_TCL}/tcl8.6/init.tcl
-       ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6
-     )
+else()
+    # --- SYSTEM / NON-CONAN LOGIC ---
+    message(STATUS "Using System TCL")
+    
+    target_include_directories(OpenSees PUBLIC ${TCL_INCLUDE_PATH})
+
+    file(COPY ${TCL_INCLUDE_PATH}/../lib/tcl8.6  # Adjust path based on your system layout
+         DESTINATION ${PROJECT_BINARY_DIR}/lib/tcl8.6
+         FILES_MATCHING PATTERN "*.tcl")
 endif()
 
 
@@ -593,8 +638,10 @@ target_link_libraries(OpenSees
   OPS_Numerics
   OPS_Recorder
   ${CMAKE_DL_LIBS}
-  ${HDF5_LIBRARIES}
-  ${CONAN_LIBS}
+  HDF5::HDF5
+  tcl::tcl
+  ZLIB::ZLIB
+  Eigen3::Eigen
 )
 
 
@@ -650,8 +697,10 @@ if(MPI_FOUND)
        OPS_Numerics
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS}
-       ${HDF5_LIBRARIES}
-       ${CONAN_LIBS}
+       HDF5::HDF5
+       tcl::tcl
+       ZLIB::ZLIB
+       Eigen3::Eigen
        ${MPI_CXX_LIBRARIES}
        ${SCALAPACK_LIBRARIES}
        ${MPI_Fortran_LIBRARIES}
@@ -713,8 +762,10 @@ if(MPI_FOUND)
        OPS_Numerics
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS}
-       ${HDF5_LIBRARIES}
-       ${CONAN_LIBS}
+       HDF5::HDF5
+       tcl::tcl	
+       ZLIB::ZLIB		
+       Eigen3::Eigen
        ${MPI_CXX_LIBRARIES}
        ${SCALAPACK_LIBRARIES}
        ${MPI_Fortran_LIBRARIES}
@@ -742,8 +793,9 @@ target_link_libraries(OpenSeesPy
    OPS_Reliability
    OPS_Recorder
    OPS_Numerics
-   ${HDF5_LIBRARIES}
-   ${CONAN_LIBS}
+   HDF5::HDF5	
+   ZLIB::ZLIB	
+   Eigen3::Eigen	
    ${Python_LIBRARIES}
 )
 
@@ -753,8 +805,10 @@ target_link_libraries(OpenSeesPy
 #
 
 install (TARGETS OpenSees DESTINATION bin)
-set (TCL_INIT_FILE "${TCL_INCLUDE_PATH}/../lib/tcl8.6/init.tcl")
-install(FILES ${TCL_INIT_FILE} DESTINATION lib/tcl8.6)
+install(FILES "${TCL_INIT_FILE}"
+    DESTINATION lib/tcl8.6
+)
+
 
 # Set selected executable to be built by default
 set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
