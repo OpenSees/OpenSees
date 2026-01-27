@@ -17,18 +17,25 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-
-// $Revision: 1.19 $
+// $Revision: 1.1 $
 // $Date: 2008-12-18 23:40:51 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/HystereticSMMaterial.cpp,v $
+// // 10/01/2024 update
+// because this material can be used for modeling plastic rotations, the first deformation point is very low
+// hence the ductility-based damage parameter gets out of whack
+// 
 
-// Written: MHS
-// Created: July 2000
+// from original Hysteretic Material 
+//   Written: MHS
+//   Created: July 2000
 //
-// Extended to Multi-Point and DCR: SilviaMazzoni, silviamazzoni@yahoo.com
-// Updated: May 2023, new input format
+// Extended to Multi-Point and DCR: 
+//    Silvia Mazzoni, silviamazzoni@yahoo.com
+//    Updated: May 2023, new input format
 // You can have the same input format as Hysteretic, or the new format which allows a different number of points for each side.
 // NOTE: envelope must be softening, not stiffening!
+// 
+
 //
 // Description: This file contains the implementation of 
 // HystereticSMMaterial.  HystereticSMMaterial is
@@ -307,7 +314,7 @@ OPS_HystereticSMMaterial(void)
         opserr << "numArgs HystereticSM " << numArgs << endln;*/
         opserr << "Incorrect Input. Want: uniaxialMaterial HystereticSM tag? -posEnv mom1p? rot1p? mom2p? rot2p? <mom3p? rot3p? mom4p? rot4p? mom5p? rot5p? mom6p? rot6p? mom7p? rot7p?> "
             << "\n-negEnv mom1n? rot1n? mom2n? rot2n? <mom3n? rot3n? mom4n? rot4n? mom5n? rot5n? mom6n? rot6n? mom7n? rot7n?> "
-            << "\n<-pinch pinchX? pinchY?> <-damage damfc1? damfc2?> <-beta beta?> "
+            << "\n<-pinch pinchX? pinchY?> <-damage damfc1? damfc2? <damfc1dyp? damfc1dyn>> <-beta beta?> "
             << "\n<-degEnv degEnvp <degEnvn?>> "
             << "\n<-defoLimitStates lsD1? <lsD2?>...> "
             << "\n<-forceLimitStates lsF1? <lsF2?>...> ";
@@ -324,9 +331,9 @@ OPS_HystereticSMMaterial(void)
     Vector thepinchArray(&pinchArray[0], (int)pinchArray.size());
     Vector thedamageArray(&damageArray[0], (int)damageArray.size());
     Vector thedegEnvArray(&degEnvArray[0], (int)degEnvArray.size());
-    // Not dereferencing optionally empty forceLimitStates and/or defoLimitStates
     Vector theLSforce = forceLimitStates.size() > 0 ? Vector(&forceLimitStates[0], (int)forceLimitStates.size()) : Vector();
     Vector theLSdefo = defoLimitStates.size() > 0 ? Vector(&defoLimitStates[0], (int)defoLimitStates.size()) : Vector();
+
 
     double tmp = 0;
     if (YXorder == -1) {
@@ -2133,10 +2140,10 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
         return new MaterialResponse(this, 21, 0.0);
     }
 
-    if (strcmp(argv[0], "strain") == 0 ) {
+    if (strcmp(argv[0], "strain") == 0) {
         return new MaterialResponse(this, 111, 0.0);
     }
-    if (strcmp(argv[0], "stress") == 0 ) {
+    if (strcmp(argv[0], "stress") == 0) {
         return new MaterialResponse(this, 112, 0.0);
     }
 
