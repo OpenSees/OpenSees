@@ -456,6 +456,92 @@ SparseGenRowLinSOE::normRHS(void)
     
 }    
 
+int
+SparseGenRowLinSOE::saveSparseA(OPS_Stream& output, int baseIndex)
+{
+    if (size == 0 || A == nullptr || rowStartA == nullptr || colA == nullptr) {
+        opserr << "WARNING: SparseGenRowLinSOE::saveSparseA() - size is 0 or A, rowStartA, or colA is nullptr\n";
+        return -1;
+    }
+    
+    // Assume the header is already written to output stream
+    output << size << " " << size << " " << nnz << "\n";
+    
+    // Write the sparse matrix entries
+    int nnz_written = 0;
+    for (int row = 0; row < size; row++) {
+        for (int k = rowStartA[row]; k < rowStartA[row+1]; k++) {
+            int col = colA[k];
+            double value = A[k];
+            output << (row + baseIndex) << " " << (col + baseIndex) << " " << value << "\n";
+            nnz_written++;
+        }
+    }
+    if (nnz_written != nnz) {
+        opserr << "WARNING: SparseGenRowLinSOE::saveSparseA() - nnz_written != nnz\n";
+        return -1;
+    }
+    
+    return 0;
+}
+
+int
+SparseGenRowLinSOE::getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex)
+{
+    if (size == 0 || A == nullptr || rowStartA == nullptr || colA == nullptr) {
+        opserr << "WARNING: SparseGenRowLinSOE::getSparseA() - size is 0 or A, rowStartA, or colA is nullptr\n";
+        return -1;
+    }
+    
+    // Resize vectors to hold all non-zero elements
+    rowIndices.resize(nnz);
+    colIndices.resize(nnz);
+    values.resize(nnz);
+    
+    // Fill vectors with non-zero elements
+    int idx = 0;
+    for (int row = 0; row < size; row++) {
+        for (int k = rowStartA[row]; k < rowStartA[row+1]; k++) {
+            int col = colA[k];
+            double value = A[k];
+            rowIndices(idx) = row + baseIndex;
+            colIndices(idx) = col + baseIndex;
+            values(idx) = value;
+            idx++;
+        }
+    }
+    
+    return 0;
+}
+
+int
+SparseGenRowLinSOE::getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex)
+{
+    if (size == 0 || A == nullptr || rowStartA == nullptr || colA == nullptr) {
+        opserr << "WARNING: SparseGenRowLinSOE::getSparseA() - size is 0 or A, rowStartA, or colA is nullptr\n";
+        return -1;
+    }
+    
+    // Resize vectors to hold all non-zero elements
+    rowIndices.resize(nnz);
+    colIndices.resize(nnz);
+    values.resize(nnz);
+    
+    // Fill vectors with non-zero elements
+    int idx = 0;
+    for (int row = 0; row < size; row++) {
+        for (int k = rowStartA[row]; k < rowStartA[row+1]; k++) {
+            int col = colA[k];
+            double value = A[k];
+            rowIndices[idx] = row + baseIndex;
+            colIndices[idx] = col + baseIndex;
+            values[idx] = value;
+            idx++;
+        }
+    }
+    
+    return 0;
+}
 
 int
 SparseGenRowLinSOE::setSparseGenRowSolver(SparseGenRowLinSolver &newSolver)

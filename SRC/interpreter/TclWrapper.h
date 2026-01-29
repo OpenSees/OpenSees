@@ -27,6 +27,7 @@
 
 #include <OPS_Globals.h>
 #include <tcl.h>
+#include "GenericDict.h"
 
 class TclWrapper
 {
@@ -53,6 +54,7 @@ public:
     void setOutputs(Tcl_Interp* interp, int* data, int numArgs);
     void setOutputs(Tcl_Interp* interp, double* data, int numArgs);
     void setOutputs(Tcl_Interp* interp, const char* str);
+    void setGenericDictOutput(Tcl_Interp* interp, GenericDict& data);
 
 private:
 

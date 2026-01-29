@@ -94,6 +94,7 @@ class PythonModule: public DL_Interpreter
     virtual int setString(std::vector<std::vector<const char*>>& data);
     virtual int setString(std::map<const char*, const char*>& data);
     virtual int setString(std::map<const char*, std::vector<const char*>>& data);
+    virtual int setGenericDict(GenericDict& data);
 
     // methods to run a command in the interpreter
     virtual int runCommand(const char*);

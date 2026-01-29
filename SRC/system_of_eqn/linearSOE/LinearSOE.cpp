@@ -32,6 +32,9 @@
 
 #include<LinearSOE.h>
 #include<LinearSOESolver.h>
+#include<Matrix.h>
+#include<Vector.h>
+#include<ID.h>
 
 LinearSOE::LinearSOE(LinearSOESolver &theLinearSOESolver, int classtag)
     :MovableObject(classtag), theModel(0), theSolver(&theLinearSOESolver)
@@ -107,4 +110,94 @@ LinearSOE::addA(const Matrix &) {
 int
 LinearSOE::addColA(const Vector &col, int colIndex, double fact) {
   return -1;
+}
+
+int LinearSOE::saveSparseA(OPS_Stream& output, int baseIndex) {
+  const Matrix* A = this->getA();
+  
+  if (A == nullptr) {
+    return -1;
+  }
+  
+  int rows = A->noRows();
+  int cols = A->noCols();
+  int nnz = rows * cols;
+  
+  // Assume the header is already written to output stream
+  
+  output << rows << " " << cols << " " << nnz << "\n";
+  
+  // Write all elements with base index
+  int nnz_written = 0;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      double val = (*A)(i,j);
+      output << i + baseIndex << " " << j + baseIndex << " " << val << "\n";
+      nnz_written++;
+    }
+  }
+  if (nnz_written != nnz) {
+    return -1;
+  }
+  return 0;
+}
+
+int LinearSOE::getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex) {
+  const Matrix* A = this->getA();
+  
+  if (A == nullptr) {
+    return -1;
+  }
+  
+  int rows = A->noRows();
+  int cols = A->noCols();
+  int nnz = rows * cols;
+  
+  // Resize vectors to hold all elements
+  rowIndices.resize(nnz);
+  colIndices.resize(nnz);
+  values.resize(nnz);
+  
+  // Fill vectors with all elements
+  int idx = 0;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      rowIndices(idx) = i + baseIndex;
+      colIndices(idx) = j + baseIndex;
+      values(idx) = (*A)(i,j);
+      idx++;
+    }
+  }
+  
+  return 0;
+}
+
+int LinearSOE::getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex) {
+  const Matrix* A = this->getA();
+  
+  if (A == nullptr) {
+    return -1;
+  }
+  
+  int rows = A->noRows();
+  int cols = A->noCols();
+  int nnz = rows * cols;
+  
+  // Resize vectors to hold all elements
+  rowIndices.resize(nnz);
+  colIndices.resize(nnz);
+  values.resize(nnz);
+  
+  // Fill vectors with all elements
+  int idx = 0;
+  for (int i = 0; i < rows; i++) {
+    for (int j = 0; j < cols; j++) {
+      rowIndices[idx] = i + baseIndex;
+      colIndices[idx] = j + baseIndex;
+      values[idx] = (*A)(i,j);
+      idx++;
+    }
+  }
+  
+  return 0;
 }

@@ -178,6 +178,12 @@ int DL_Interpreter::setString(std::map<const char*, std::vector<const char*>>& d
 }
 
 int
+DL_Interpreter::setGenericDict(GenericDict& data)
+{
+    return -1;
+}
+
+int
 DL_Interpreter::runCommand(const char*)
 {
     return -1;
