@@ -1028,15 +1028,23 @@ int MixedBeamColumn3d::update() {
 
   for( i = 0; i < numSections; i++ ){
     V   = V   + initialLength * wt[i] * nd1T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i] - sectionFlexibility[i] * ( sectionForceShapeFcn[i] - sectionForceFibers[i] ) );
-    V2  = V2  + initialLength * wt[i] * nd2T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i]);
+    
+    //V2  = V2  + initialLength * wt[i] * nd2T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i]);
+    V2.addMatrixTransposeVector(1.0, nd2[i], sectionDefShapeFcn[i], initialLength*wt[i]);
+    V2.addMatrixTransposeVector(1.0, nd2[i], sectionDefFibers[i],  -initialLength*wt[i]);
+    
     //G   = G   + initialLength * wt[i] * nd1T[i] * nldhat[i];
-    G.addMatrixTransposeProduct(1.0, nd1[i],nldhat[i], initialLength*wt[i]);
+    G.addMatrixTransposeProduct(1.0, nd1[i], nldhat[i], initialLength*wt[i]);
+
     //G2  = G2  + initialLength * wt[i] * nd2T[i] * nldhat[i];
-    G2.addMatrixTransposeProduct(1.0, nd2[i],nldhat[i], initialLength*wt[i]);    
+    G2.addMatrixTransposeProduct(1.0, nd2[i], nldhat[i], initialLength*wt[i]);    
+
     //H   = H   + initialLength * wt[i] * nd1T[i] * sectionFlexibility[i] * nd1[i];
     H.addMatrixTripleProduct(1.0, nd1[i], sectionFlexibility[i], initialLength*wt[i]);
+
     //H12 = H12 + initialLength * wt[i] * nd1T[i] * sectionFlexibility[i] * nd2[i];
     H12.addMatrixTripleProduct(1.0, nd1[i], sectionFlexibility[i], nd2[i], initialLength*wt[i]);    
+
     //H22 = H22 + initialLength * wt[i] * nd2T[i] * sectionFlexibility[i] * nd2[i];
     H22.addMatrixTripleProduct(1.0, nd2[i], sectionFlexibility[i], initialLength*wt[i]);    
     if (!geomLinear) {
