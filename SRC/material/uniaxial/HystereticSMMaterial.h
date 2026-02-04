@@ -211,6 +211,22 @@ private:
 
 	void positiveIncrement(double dStrain);
 	void negativeIncrement(double dStrain);
+
+
+
+	// Reference (undegraded) envelope points (do NOT modify after ctor / param updates)
+	double mom2p_ref, mom3p_ref, mom4p_ref, mom5p_ref, mom6p_ref, mom7p_ref;
+	double rot2p_ref, rot3p_ref, rot4p_ref, rot5p_ref, rot6p_ref, rot7p_ref;
+
+	double mom2n_ref, mom3n_ref, mom4n_ref, mom5n_ref, mom6n_ref, mom7n_ref;
+	double rot2n_ref, rot3n_ref, rot4n_ref, rot5n_ref, rot6n_ref, rot7n_ref;
+
+
+	double CrotMaxDuctUsed, CrotMinDuctUsed;
+	double TrotMaxDuctUsed, TrotMinDuctUsed;
+
+
+
 };
 
 #endif
