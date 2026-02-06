@@ -44,7 +44,7 @@ class HystereticSMMaterial : public UniaxialMaterial
 public:
 
 	HystereticSMMaterial(int tag, const Vector& posEnv, const Vector& negEnv, const Vector& pinchArray, const Vector& damageArray, double beta,
-		const Vector& degEnvArray, const Vector& forceLimitStates, const Vector& defoLimitStates, Vector& internalValues, int YXorder = 1, int printInput = 0);
+		const Vector& degEnvArray, const Vector& rotYArray, const Vector& forceLimitStates, const Vector& defoLimitStates, Vector& internalValues, int YXorder = 1, int printInput = 0);
 	//HystereticSMMaterial(int tag,
 	//	double m1p, double r1p, double m2p, double r2p, double m3p, double r3p,
 	//	double mom4p, double rot4p, double mom5p, double rot5p, double mom6p, double rot6p, double mom7p, double rot7p,
@@ -105,6 +105,8 @@ private:
 	// Degrading envelope parameters
 	double degEnvp;
 	double degEnvn;
+	double rotYp;
+	double rotYn;
 
 
 	// Trial history variables
@@ -149,6 +151,8 @@ private:
 	double mom6n, rot6n;
 	double mom7n, rot7n;
 
+	double rot1pTot, rot1nTot;
+
 
 	double E1p, E1n;
 	double E2p, E2n;
@@ -174,6 +178,9 @@ private:
 	// Unloading parameter
 	double beta;
 
+	// Yield strain for "ductility" computations
+	double rotY;
+
 	int printInput;
 	int YXorder;
 	int xIndexIncr;
@@ -187,6 +194,8 @@ private:
 	//double degEnvFactor;
 	Vector degEnvArray;
 	int ndegEnvArray;
+	Vector rotYArray;
+	int nrotYArray;
 
 
 	void setEnvelope(void);
@@ -202,6 +211,22 @@ private:
 
 	void positiveIncrement(double dStrain);
 	void negativeIncrement(double dStrain);
+
+
+
+	// Reference (undegraded) envelope points (do NOT modify after ctor / param updates)
+	double mom2p_ref, mom3p_ref, mom4p_ref, mom5p_ref, mom6p_ref, mom7p_ref;
+	double rot2p_ref, rot3p_ref, rot4p_ref, rot5p_ref, rot6p_ref, rot7p_ref;
+
+	double mom2n_ref, mom3n_ref, mom4n_ref, mom5n_ref, mom6n_ref, mom7n_ref;
+	double rot2n_ref, rot3n_ref, rot4n_ref, rot5n_ref, rot6n_ref, rot7n_ref;
+
+
+	double CrotMaxDuctUsed, CrotMinDuctUsed;
+	double TrotMaxDuctUsed, TrotMinDuctUsed;
+
+
+
 };
 
 #endif
