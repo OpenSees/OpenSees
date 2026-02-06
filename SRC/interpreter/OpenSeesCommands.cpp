@@ -88,6 +88,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <TransientIntegrator.h>
 #include <PFEMSolver.h>
 #include <PFEMLinSOE.h>
+#include <SparsePythonFactory.h>
+#include <SparsePythonEigenFactory.h>
 #include <Accelerator.h>
 #include <KrylovAccelerator.h>
 #include <AcceleratedNewton.h>
@@ -261,7 +263,8 @@ OpenSeesCommands::setSOE(LinearSOE* soe)
 
 int
 OpenSeesCommands::eigen(int typeSolver, double shift,
-			bool generalizedAlgo, bool findSmallest)
+			bool generalizedAlgo, bool findSmallest,
+            EigenSOE *providedEigenSOE)
 {
     //
     // create a transient analysis if no analysis exists
@@ -303,52 +306,61 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
     }
 
     //
-    // create a new eigen system and solver
+    // create or assign an eigen system and solver
     //
-    if (theEigenSOE != 0) {
-	if (theEigenSOE->getClassTag() != typeSolver) {
-	    //	delete theEigenSOE;
-	    theEigenSOE = 0;
-	}
-    }
+    bool eigenSOEUpdated = false;
 
-    if (theEigenSOE == 0) {
+    if (providedEigenSOE != 0) {
+        theEigenSOE = providedEigenSOE;
+        eigenSOEUpdated = true;
+    } else {
+        if (theEigenSOE != 0) {
+            if (theEigenSOE->getClassTag() != typeSolver) {
+                //	delete theEigenSOE;
+                theEigenSOE = 0;
+            }
+        }
 
-	if (typeSolver == EigenSOE_TAGS_SymBandEigenSOE) {
-	    SymBandEigenSolver *theEigenSolver = new SymBandEigenSolver();
-	    theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel);
+        if (theEigenSOE == 0) {
 
-	} else if (typeSolver == EigenSOE_TAGS_FullGenEigenSOE) {
+            if (typeSolver == EigenSOE_TAGS_SymBandEigenSOE) {
+                SymBandEigenSolver *theEigenSolver = new SymBandEigenSolver();
+                theEigenSOE = new SymBandEigenSOE(*theEigenSolver, *theAnalysisModel);
 
-	    FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
-	    theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
+            } else if (typeSolver == EigenSOE_TAGS_FullGenEigenSOE) {
 
-	} else if (typeSolver == EigenSOE_TAGS_SymmGeneralizedEigenSOE) {
+                FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
+                theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
+
+            } else if (typeSolver == EigenSOE_TAGS_SymmGeneralizedEigenSOE) {
 
 #ifdef _WIN32
-	    opserr << "SymmGeneralizedEigenSolver not currently compiled for Windows" << endln;
+                opserr << "SymmGeneralizedEigenSolver not currently compiled for Windows" << endln;
 #else
-		SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
-	    theEigenSOE = new SymmGeneralizedEigenSOE(*theEigenSolver, *theAnalysisModel);
+                SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
+                theEigenSOE = new SymmGeneralizedEigenSOE(*theEigenSolver, *theAnalysisModel);
 #endif
-		
-	} else {
 
-	    theEigenSOE = new ArpackSOE(shift);
+            } else {
 
-	}
+                theEigenSOE = new ArpackSOE(shift);
 
-	//
-	// set the eigen soe in the system
-	//
+            }
 
-	if (theStaticAnalysis != 0) {
-	    theStaticAnalysis->setEigenSOE(*theEigenSOE);
-	} else if (theTransientAnalysis != 0) {
-	    theTransientAnalysis->setEigenSOE(*theEigenSOE);
-	}
+            eigenSOEUpdated = true;
+        }
+    }
 
-    } // theEigenSOE != 0
+    //
+    // set the eigen soe in the system if reassigned/created
+    //
+    if (eigenSOEUpdated && theEigenSOE != 0) {
+        if (theStaticAnalysis != 0) {
+            theStaticAnalysis->setEigenSOE(*theEigenSOE);
+        } else if (theTransientAnalysis != 0) {
+            theTransientAnalysis->setEigenSOE(*theEigenSOE);
+        }
+    }
 
 
     // run analysis
@@ -1149,6 +1161,13 @@ const char * OPS_GetStringFromAll(char* buffer, int len)
     return res;
 }
 
+void *OPS_GetVoidPtr(void)
+{
+    if (cmds == 0) return nullptr;
+    DL_Interpreter* interp = cmds->getInterpreter();
+    return interp->getVoidPtr();
+}
+
 int OPS_SetString(const char* str)
 {
     if (cmds == 0) return 0;
@@ -1461,6 +1480,15 @@ int OPS_System()
         }
 	}
 
+
+    } else if (strcmp(type,"PythonSparse") == 0) {
+
+        LinearSOE *pythonSOE = static_cast<LinearSOE *>(OPS_SparsePythonSolver());
+        if (pythonSOE == nullptr) {
+            return -1;
+        }
+
+        theSOE = pythonSOE;
 
     } else if ((strcmp(type,"SparseGeneral") == 0) ||
 	       (strcmp(type,"SuperLU") == 0) ||
@@ -2090,6 +2118,9 @@ int OPS_eigenAnalysis()
     bool findSmallest = true;
 
     // Check type of eigenvalue analysis
+    bool pythonSparseEigen = false;
+    EigenSOE *providedEigenSOE = 0;
+
     while (OPS_GetNumRemainingInputArgs() > 1) {
 
 	const char* type = OPS_GetString();
@@ -2136,7 +2167,14 @@ int OPS_eigenAnalysis()
         typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
     }
 
-    else {
+    else if (strcmp(type,"PythonSparse") == 0) {
+        pythonSparseEigen = true;
+        typeSolver = EigenSOE_TAGS_SparsePythonCompressedEigenSOE;
+        // will be updated to the actual type of the eigen solver
+        // after the EigenSOE is created
+        break;
+
+    } else {
         opserr << "eigen - unknown option specified " << type
                 << endln;
     }
@@ -2156,8 +2194,17 @@ int OPS_eigenAnalysis()
     }
     cmds->setNumEigen(numEigen);
 
+    if (pythonSparseEigen) {
+        void *eigenSOEPtr = OPS_SparsePythonEigenSolver();
+        if (eigenSOEPtr == 0) {
+            return -1;
+        }
+        providedEigenSOE = static_cast<EigenSOE *>(eigenSOEPtr);
+        typeSolver = providedEigenSOE->getClassTag();
+    }
+
     // set eigen soe
-    if (cmds->eigen(typeSolver,shift,generalizedAlgo,findSmallest) < 0) {
+    if (cmds->eigen(typeSolver,shift,generalizedAlgo,findSmallest, providedEigenSOE) < 0) {
 	opserr<<"WANRING failed to do eigen analysis\n";
 	return -1;
     }

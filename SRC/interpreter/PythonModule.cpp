@@ -320,6 +320,18 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
 #endif
 }
 
+void*
+PythonModule::getVoidPtr()
+{
+    if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
+        return nullptr;
+    }
+    PyObject *obj =
+        PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
+    wrapper.incrCurrentArg();
+    return static_cast<void*>(obj);
+}
+
 int
 PythonModule::getStringCopy(char **stringPtr) {
     return -1;
