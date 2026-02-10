@@ -961,31 +961,44 @@ int MixedBeamColumn3d::update() {
     // Transpose of shape functions
     for( j = 0; j < NDM_SECTION; j++ ){
       for( k = 0; k < NDM_NATURAL; k++ ){
-        nd1T[i](k,j) = nd1[i](j,k);
-        nd2T[i](k,j) = nd2[i](j,k);
+        //nd1T[i](k,j) = nd1[i](j,k);
+        //nd2T[i](k,j) = nd2[i](j,k);
       }
     }
   }
 
+  static Vector Vtmp(NDM_NATURAL);
+  Vtmp = V;
+  Vtmp.addMatrixVector(1.0, GMH, naturalIncrDeltaDisp, 1.0);
+  
   // Update natural force
   if (geomLinear) {
-    naturalForce = naturalForce + Hinv * ( GMH * naturalIncrDeltaDisp + V );
+    //naturalForce = naturalForce + Hinv * ( GMH * naturalIncrDeltaDisp + V );
+    naturalForce.addMatrixVector(1.0, Hinv, Vtmp, 1.0);
   } else {
-    naturalForce = naturalForce + Hinv * ( GMH * naturalIncrDeltaDisp + V );
+    //naturalForce = naturalForce + Hinv * ( GMH * naturalIncrDeltaDisp + V );
+    naturalForce.addMatrixVector(1.0, Hinv, Vtmp, 1.0);    
   }
 
+  static Vector sectionTmpForce(NDM_SECTION);  
 
   // Update sections
   for ( i = 0; i < numSections; i++){
     // Compute section deformations
-    sectionForceShapeFcn[i] = nd1[i] * naturalForce;
+    //sectionForceShapeFcn[i] = nd1[i] * naturalForce;
+    sectionForceShapeFcn[i].addMatrixVector(0.0, nd1[i], naturalForce, 1.0);
     if (sp != 0) {
       const Matrix &s_p = *sp;
       for ( j = 0; j < NDM_SECTION; j++ ) {
         sectionForceShapeFcn[i](j) += s_p(j,i);
       }
     }
-    sectionDefFibers[i] = sectionDefFibers[i] + sectionFlexibility[i] * ( sectionForceShapeFcn[i] - sectionForceFibers[i] );
+
+    sectionTmpForce = sectionForceShapeFcn[i];
+    sectionTmpForce.addVector(1.0, sectionForceFibers[i], -1.0);    
+
+    //sectionDefFibers[i] = sectionDefFibers[i] + sectionFlexibility[i] * ( sectionForceShapeFcn[i] - sectionForceFibers[i] );
+    sectionDefFibers[i].addMatrixVector(1.0, sectionFlexibility[i], sectionTmpForce, 1.0);
 
     // Send section deformation to section object
     double torsionalStrain = twist/currentLength;
@@ -1026,27 +1039,47 @@ int MixedBeamColumn3d::update() {
   Md.Zero();
   Kg.Zero();
 
+  static Vector sectionTmpDef(NDM_SECTION);
+  
   for( i = 0; i < numSections; i++ ){
-    V   = V   + initialLength * wt[i] * nd1T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i] - sectionFlexibility[i] * ( sectionForceShapeFcn[i] - sectionForceFibers[i] ) );
+    sectionTmpDef = sectionDefShapeFcn[i];
+    sectionTmpDef.addVector(1.0, sectionDefFibers[i], -1.0);
+
+    sectionTmpForce = sectionForceShapeFcn[i];
+    sectionTmpForce.addVector(1.0, sectionForceFibers[i], -1.0);    
+
+    if (!geomLinear) {
+      //V2  = V2  + initialLength * wt[i] * nd2T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i]);
+      //V2.addMatrixTransposeVector(1.0, nd2[i], sectionDefShapeFcn[i], initialLength*wt[i]);
+      //V2.addMatrixTransposeVector(1.0, nd2[i], sectionDefFibers[i],  -initialLength*wt[i]);
+      V2.addMatrixTransposeVector(1.0, nd2[i], sectionTmpDef, initialLength*wt[i]);
+    }
     
-    //V2  = V2  + initialLength * wt[i] * nd2T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i]);
-    V2.addMatrixTransposeVector(1.0, nd2[i], sectionDefShapeFcn[i], initialLength*wt[i]);
-    V2.addMatrixTransposeVector(1.0, nd2[i], sectionDefFibers[i],  -initialLength*wt[i]);
+    //V   = V   + initialLength * wt[i] * nd1T[i] * (sectionDefShapeFcn[i] - sectionDefFibers[i] - sectionFlexibility[i] * ( sectionForceShapeFcn[i] - sectionForceFibers[i] ) );
+    V.addMatrixTransposeVector(1.0, nd1[i], sectionTmpDef, initialLength*wt[i]);
+    sectionTmpDef.addMatrixVector(0.0, sectionFlexibility[i], sectionTmpForce, 1.0);
+    V.addMatrixTransposeVector(1.0, nd1[i], sectionTmpDef, -initialLength*wt[i]);    
     
     //G   = G   + initialLength * wt[i] * nd1T[i] * nldhat[i];
     G.addMatrixTransposeProduct(1.0, nd1[i], nldhat[i], initialLength*wt[i]);
 
-    //G2  = G2  + initialLength * wt[i] * nd2T[i] * nldhat[i];
-    G2.addMatrixTransposeProduct(1.0, nd2[i], nldhat[i], initialLength*wt[i]);    
+    if (!geomLinear) {
+      //G2  = G2  + initialLength * wt[i] * nd2T[i] * nldhat[i];
+      G2.addMatrixTransposeProduct(1.0, nd2[i], nldhat[i], initialLength*wt[i]);
+    }
 
     //H   = H   + initialLength * wt[i] * nd1T[i] * sectionFlexibility[i] * nd1[i];
     H.addMatrixTripleProduct(1.0, nd1[i], sectionFlexibility[i], initialLength*wt[i]);
 
-    //H12 = H12 + initialLength * wt[i] * nd1T[i] * sectionFlexibility[i] * nd2[i];
-    H12.addMatrixTripleProduct(1.0, nd1[i], sectionFlexibility[i], nd2[i], initialLength*wt[i]);    
+    if (!geomLinear) {
+      //H12 = H12 + initialLength * wt[i] * nd1T[i] * sectionFlexibility[i] * nd2[i];
+      H12.addMatrixTripleProduct(1.0, nd1[i], sectionFlexibility[i], nd2[i], initialLength*wt[i]);
+    }
 
-    //H22 = H22 + initialLength * wt[i] * nd2T[i] * sectionFlexibility[i] * nd2[i];
-    H22.addMatrixTripleProduct(1.0, nd2[i], sectionFlexibility[i], initialLength*wt[i]);    
+    if (!geomLinear) {
+      //H22 = H22 + initialLength * wt[i] * nd2T[i] * sectionFlexibility[i] * nd2[i];
+      H22.addMatrixTripleProduct(1.0, nd2[i], sectionFlexibility[i], initialLength*wt[i]);
+    }
     if (!geomLinear) {
       Kg = Kg  + initialLength * wt[i] * this->getKg(i, sectionForceFibers[i](0), currentLength);
         // sectionForceFibers[i](0) is the axial load, P
@@ -1060,19 +1093,21 @@ int MixedBeamColumn3d::update() {
   // Compute the GMH matrix ( G + Md - H12 ) and its transpose
   //GMH = G + Md - H12;
   GMH = G;
-  GMH.addMatrix(1.0, Md, 1.0);
-  GMH.addMatrix(1.0, H12, -1.0);
+  if (!geomLinear) {
+    GMH.addMatrix(1.0, Md, 1.0);
+    GMH.addMatrix(1.0, H12, -1.0);
+  }
   //GMH = G; // Omit P-small delta
 
   // Compute the transposes of the following matrices: G, G2, GMH
   //Matrix GT(NDM_NATURAL,NDM_NATURAL);
   //Matrix G2T(NDM_NATURAL,NDM_NATURAL);
-  Matrix GMHT(NDM_NATURAL,NDM_NATURAL);
+  //Matrix GMHT(NDM_NATURAL,NDM_NATURAL);
   for( i = 0; i < NDM_NATURAL; i++ ){
     for( j = 0; j < NDM_NATURAL; j++ ){
       //GT(i,j) = G(j,i);
       //G2T(i,j) = G2(j,i);
-      GMHT(i,j) = GMH(j,i);
+      //GMHT(i,j) = GMH(j,i);
     }
   }
 
@@ -1083,13 +1118,13 @@ int MixedBeamColumn3d::update() {
   if (geomLinear) {
     //internalForce = GT * naturalForce + V2 + GMHT * Hinv * V;
     internalForce.addMatrixTransposeVector(0.0, G, naturalForce, 1.0);
-    internalForce.addVector(1.0, V2, 1.0);
-    internalForce += GMHT * Hinv * V;
+    //internalForce.addVector(1.0, V2, 1.0); // Zero if geom linear
+    internalForce.addMatrixTransposeVector(1.0, GMH, Hinv * V, 1.0);        
   } else {
     //internalForce = GT * naturalForce + V2 + GMHT * Hinv * V;
     internalForce.addMatrixTransposeVector(0.0, G, naturalForce, 1.0);
     internalForce.addVector(1.0, V2, 1.0);
-    internalForce += GMHT * Hinv * V;    
+    internalForce.addMatrixTransposeVector(1.0, GMH, Hinv * V, 1.0);    
   }
 
   /*
@@ -1112,9 +1147,9 @@ int MixedBeamColumn3d::update() {
   if (geomLinear) {
     //K_temp = ( Kg + G2 + G2T - H22 ) + GMHT * Hinv * GMH;
     K_temp = Kg;
-    K_temp.addMatrix(1.0, G2, 1.0);
-    K_temp.addMatrixTranspose(1.0, G2, 1.0);
-    K_temp.addMatrixTranspose(1.0, H22, -1.0);
+    //K_temp.addMatrix(1.0, G2, 1.0); // G2, H22 are zero if geom linear
+    //K_temp.addMatrixTranspose(1.0, G2, 1.0);
+    //K_temp.addMatrixTranspose(1.0, H22, -1.0);
     K_temp.addMatrixTripleProduct(1.0, GMH, Hinv, 1.0);
   } else {
     //K_temp = ( Kg + G2 + G2T - H22 ) + GMHT * Hinv * GMH;
