@@ -1,4 +1,4 @@
-include ../../../Makefile.def
+include ../../../../Makefile.def
 
 OBJS       = SparsePythonCompressedEigenSOE.o \
 	SparsePythonCompressedEigenSolver.o \
