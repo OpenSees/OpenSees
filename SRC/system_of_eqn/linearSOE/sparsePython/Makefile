@@ -2,7 +2,7 @@ include ../../../../Makefile.def
 
 OBJS       = SparsePythonCompressedLinSOE.o SparsePythonCompressedLinSolver.o \
              SparsePythonCOOLinSOE.o SparsePythonCOOLinSolver.o \
-             SparsePythonFactory.o
+             SparsePythonFactory.o SparsePythonCommon.o
 
 all:         $(OBJS)
 
