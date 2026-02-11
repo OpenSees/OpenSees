@@ -77,7 +77,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
 
- set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
+ # set(CMAKE_FIND_LIBRARY_SUFFIXES ".so")
  set(BUILD_SHARED_LIBS OFF)
  # set(CMAKE_EXE_LINKER_FLAGS "-static")
  add_compile_options(-fPIC)

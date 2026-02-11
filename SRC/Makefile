@@ -1271,6 +1271,18 @@ SequentialSysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(SUPER_LU_OBJ) \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCommon.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonFactory.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCOOLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCOOLinSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCompressedLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCompressedLinSolver.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonEigenCommon.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonEigenFactory.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCOOEigenSOE.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCOOEigenSolver.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCompressedEigenSOE.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCompressedEigenSolver.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSOE.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSolver.o \
 	$(FE)/system_of_eqn/eigenSOE/SymmGeneralizedEigenSOE.o \
