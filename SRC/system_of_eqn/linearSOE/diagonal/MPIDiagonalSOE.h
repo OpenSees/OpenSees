@@ -30,7 +30,7 @@ class MPIDiagonalSolver;
 class MPIDiagonalSOE : public LinearSOE
 {
   public:
-    MPIDiagonalSOE(MPIDiagonalSolver &theSolver);
+    MPIDiagonalSOE(MPIDiagonalSolver &theSolver, bool lumped=false);
     ~MPIDiagonalSOE();
 
     int getNumEqn(void) const;
@@ -101,6 +101,8 @@ class MPIDiagonalSOE : public LinearSOE
     ID myDOFsShared;
     int numShared,maxShared;
     AnalysisModel *theModel;
+
+    bool lumpDiagonal;
 };
 
 

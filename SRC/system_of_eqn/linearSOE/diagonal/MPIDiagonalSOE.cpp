@@ -33,7 +33,7 @@
 
 
 
-MPIDiagonalSOE::MPIDiagonalSOE(MPIDiagonalSolver &the_Solver)
+MPIDiagonalSOE::MPIDiagonalSOE(MPIDiagonalSolver &the_Solver, bool lumped)
   :LinearSOE(the_Solver, LinSOE_TAGS_MPIDiagonalSOE),
    size(0), A(0), B(0), X(0), sharedA(0), sharedB(0), maxSharedA(0), maxSharedB(0), isAfactored(false), updateA(true),
    vectX(0), vectB(0), dataShared(0),
@@ -41,7 +41,7 @@ MPIDiagonalSOE::MPIDiagonalSOE(MPIDiagonalSolver &the_Solver)
    myDOFsArray(0), myDOFsSharedArray(0),maxDOFsSharedArray(0),posLocKey(0),
    processID(0), numProcesses(0),
    numChannels(0), theChannels(0), localCol(0),
-   myDOFs(0,32), myDOFsShared(0,16), numShared(0), theModel(0)
+   myDOFs(0,32), myDOFsShared(0,16), numShared(0), theModel(0), lumpDiagonal(lumped)
 {
   MPI_Comm_rank(MPI_COMM_WORLD, &processID);
   the_Solver.setLinearSOE(*this);
@@ -424,6 +424,17 @@ MPIDiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
       int pos = id(i);
       if (pos <size && pos >= 0) {
 	A[pos] += m(i,i);
+
+        // Lump diagonal logic
+        if (lumpDiagonal) {
+                for (int j = 0; j < i; j++) {
+                  A[pos] += m(j, i) ;
+                }
+                for (int j = i + 1; j < id.Size(); j++) {
+                  A[pos] += m(j, i) ;
+                }
+        }
+
 	dof = myDOFs[pos];
 	loc = myDOFsShared.getLocationOrdered(dof);
 	if ( (loc >=0 ) && (loc < numShared )) {
@@ -437,6 +448,17 @@ MPIDiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
       int pos = id(i);
       if (pos <size && pos >= 0) {
 	A[pos] -= m(i,i);
+
+        // Lump diagonal logic
+        if (lumpDiagonal) {
+                for (int j = 0; j < i; j++) {
+                  A[pos] -= m(j, i) ;
+                }
+                for (int j = i + 1; j < id.Size(); j++) {
+                  A[pos] -= m(j, i) ;
+                }
+        }
+
 	dof = myDOFs[pos];
 	loc = myDOFsShared.getLocationOrdered(dof);
 	if ( (loc >=0 ) && (loc < numShared )) {
@@ -450,6 +472,17 @@ MPIDiagonalSOE::addA(const Matrix &m, const ID &id, double fact)
       int pos = id(i);
       if (pos <size && pos >= 0) {
 	A[pos] += m(i,i) * fact;
+
+        // Lump diagonal logic
+        if (lumpDiagonal) {
+                for (int j = 0; j < i; j++) {
+                  A[pos] += m(j, i) * fact;
+                }
+                for (int j = i + 1; j < id.Size(); j++) {
+                  A[pos] += m(j, i) * fact;
+                }
+        }
+
 	dof = myDOFs[pos];
 	loc = myDOFsShared.getLocationOrdered(dof);
 	if ( (loc >=0 ) && (loc < numShared )) {

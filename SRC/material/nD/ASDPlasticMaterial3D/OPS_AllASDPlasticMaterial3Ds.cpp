@@ -30,6 +30,11 @@
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 #include <list>
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif // M_PI
+
 #include "AllASDPlasticMaterial3Ds.h"
 
 template <typename T>
