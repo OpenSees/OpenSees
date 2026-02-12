@@ -131,9 +131,9 @@ UniformDamping::Initialize(void)
   double delta = 0.05;
   double f1log = log10(freq1);
   double f2log = log10(freq2);
-  double pi = 6.28318530718;
-  double w1 = pi * freq1;
-  double w2 = pi * freq2;
+  double pi2 = 6.28318530718;
+  double w1 = pi2 * freq1;
+  double w2 = pi2 * freq2;
   
   nFilter = 2;
   for (int iter = 0; iter < 100; ++iter)
@@ -150,7 +150,7 @@ UniformDamping::Initialize(void)
 
     for (int i = 0; i < nFilter; ++i)
     {
-      double wc = pi * pow(10.0, f1log + i * dfreq);
+      double wc = pi2 * pow(10.0, f1log + i * dfreq);
       (*omegac)(i) = wc;
       (*psi)(i) = wc * atan((wc * (w2 - w1)) / (wc * wc + w1 * w2));
       (*y)(i) = wc * log((wc * wc + w2 * w2) / (wc * wc + w1 * w1));
@@ -183,7 +183,7 @@ UniformDamping::Initialize(void)
     double df = (f2log - f1log) / (nf - 1);
     for (int i = 0; i < nf; ++i)
     {
-      double omega = pi * pow(10.0, f1log + i * df);
+      double omega = pi2 * pow(10.0, f1log + i * df);
       double err = 0.0;
       for (int j = 0; j < nFilter; ++j)
       {
