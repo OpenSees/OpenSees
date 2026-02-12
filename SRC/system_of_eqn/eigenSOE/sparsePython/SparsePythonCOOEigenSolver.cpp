@@ -285,7 +285,7 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
         for (Py_ssize_t i = 0; i < numEigen; ++i) {
             PyObject *item = PyList_GetItem(pyEigenvalues, i);
             if (item == nullptr || !PyFloat_Check(item)) {
-                opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvalue at index " << i << "\n";
+                opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvalue at index " << (int)i << "\n";
                 PyGILState_Release(gilState);
                 return -12;
             }
@@ -301,7 +301,7 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
         Py_ssize_t numVecs = PyList_Size(pyEigenvectors);
         if (numVecs != numEigen) {
             opserr << "SparsePythonCOOEigenSolver::callPythonSolver - number of eigenvectors ("
-                   << numVecs << ") != number of eigenvalues (" << numEigen << ")\n";
+                   << (int)numVecs << ") != number of eigenvalues (" << (int)numEigen << ")\n";
             PyGILState_Release(gilState);
             return -14;
         }
@@ -311,14 +311,14 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
         for (Py_ssize_t i = 0; i < numVecs; ++i) {
             PyObject *vec = PyList_GetItem(pyEigenvectors, i);
             if (vec == nullptr || !PyList_Check(vec)) {
-                opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvector at index " << i << "\n";
+                opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvector at index " << (int)i << "\n";
                 PyGILState_Release(gilState);
                 return -15;
             }
             Py_ssize_t vecSize = PyList_Size(vec);
             if (vecSize != size) {
-                opserr << "SparsePythonCOOEigenSolver::callPythonSolver - eigenvector " << i
-                       << " size (" << vecSize << ") != system size (" << size << ")\n";
+                opserr << "SparsePythonCOOEigenSolver::callPythonSolver - eigenvector " << (int)i
+                       << " (int)size (" << (int)vecSize << ") != system size (" << (int)size << ")\n";
                 PyGILState_Release(gilState);
                 return -16;
             }
@@ -327,7 +327,7 @@ SparsePythonCOOEigenSolver::callPythonSolver(int numModes, bool generalized, boo
                 PyObject *item = PyList_GetItem(vec, j);
                 if (item == nullptr || !PyFloat_Check(item)) {
                     opserr << "SparsePythonCOOEigenSolver::callPythonSolver - invalid eigenvector element at ("
-                           << i << ", " << j << ")\n";
+                           << (int)i << ", " << (int)j << ")\n";
                     PyGILState_Release(gilState);
                     return -17;
                 }
