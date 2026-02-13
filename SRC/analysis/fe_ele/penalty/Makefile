@@ -1,6 +1,6 @@
 include ../../../../Makefile.def
 
-OBJS       = PenaltySP_FE.o PenaltyMP_FE.o
+OBJS       = PenaltySP_FE.o PenaltyMP_FE.o PenaltyEQ_FE.o
 
 # Compilation control
 
