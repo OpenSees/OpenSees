@@ -45,13 +45,6 @@
 
 extern ModelBuilder *theBuilder;
 
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-extern PartitionedDomain theDomain;
-#else
-extern Domain theDomain;
-#endif
-
 int
 specifyModelBuilder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
@@ -64,15 +57,16 @@ OPS_ResetInput(ClientData clientData,
 	       Domain *domain,
 	       TclModelBuilder *builder);
 
-int myCommands(Tcl_Interp *interp) {
+int myCommands(Tcl_Interp *interp, Domain &theDomain) {
     Tcl_CreateCommand(interp, "model", specifyModelBuilder,
-		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+		      (ClientData)&theDomain, (Tcl_CmdDeleteProc *)NULL);
     return 0;
 }
 
 int
 specifyModelBuilder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
+  Domain &theDomain = *((Domain *)clientData);
   int cArg = 0;
 
   // make sure at least one other argument to contain model builder type given
