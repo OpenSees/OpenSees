@@ -84,6 +84,10 @@ class Steel02 : public UniaxialMaterial
 
     int setParameter(const char **argv, int argc, Parameter &param);
     int updateParameter(int parameterID, Information &info);
+    int activateParameter(int parameterID);
+    double getStressSensitivity(int gradIndex, bool conditional);
+    double getInitialTangentSensitivity(int gradIndex);
+    int commitSensitivity(double strainGradient, int gradIndex, int numGrads);
     
     //by SAJalali
 	virtual double getEnergy() { return EnergyP; };
@@ -129,6 +133,27 @@ class Steel02 : public UniaxialMaterial
     double sig;   
     double e;     
     double eps;   //  = strain at current step
+	int parameterID;
+	Matrix* SHVs;  // Sensitivity history variables
+	// Row 0: strain sensitivity
+	// Row 1: stress sensitivity  
+	// Row 2: epsr sensitivity
+	// Row 3: sigr sensitivity
+	// Row 4: epss0 sensitivity
+	// Row 5: sigs0 sensitivity
+	// Row 6: epspl sensitivity
+
+	void computeAsymptoticPointSensitivities(
+		double& epss0Sensitivity,
+		double& sigs0Sensitivity,
+		double epsrSensitivity,
+		double sigrSensitivity,
+		int gradIndex
+	);
+	double computeStressGradient(double strainSensitivity,
+		double epsrSens, double sigrSens,
+		double epss0Sens, double sigs0Sens,
+		double epsplSens); 
 };
 
 
