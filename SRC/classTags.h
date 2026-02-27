@@ -52,6 +52,8 @@
 #define EigenSOE_TAGS_ArpackSOE 	5
 #define EigenSOE_TAGS_GeneralArpackSOE 	6
 #define EigenSOE_TAGS_SymmGeneralizedEigenSOE 	7
+#define EigenSOE_TAGS_SparsePythonCompressedEigenSOE 	8
+#define EigenSOE_TAGS_SparsePythonCOOEigenSOE 	9
 #define EigenSOLVER_TAGS_BandArpackSolver 	1
 #define EigenSOLVER_TAGS_SymArpackSolver 	2
 #define EigenSOLVER_TAGS_SymBandEigenSolver     3
@@ -59,6 +61,8 @@
 #define EigenSOLVER_TAGS_ArpackSolver  5
 #define EigenSOLVER_TAGS_GeneralArpackSolver  6
 #define EigenSOLVER_TAGS_SymmGeneralizedEigenSolver  7
+#define EigenSOLVER_TAGS_SparsePythonCompressedEigenSolver  8
+#define EigenSOLVER_TAGS_SparsePythonCOOEigenSolver  9
 
 #define EigenALGORITHM_TAGS_Frequency 1
 #define EigenALGORITHM_TAGS_Standard  2
@@ -521,11 +525,12 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
+// J2CyclicBoundingSurface material - P. Arduino
 #define ND_TAG_J2CyclicBoundingSurface            14023
 #define ND_TAG_J2CyclicBoundingSurface3D          14024
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
-
+// LinearElasticGGmax material - P. Arduino
+#define ND_TAG_LinearElasticGGmax             14026
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
 #define ND_TAG_MultiaxialCyclicPlasticity3D           10032
@@ -983,6 +988,7 @@
 #define CNSTRNT_TAG_MP_SimpleJoint2D    6
 #define CNSTRNT_TAG_MP_Joint3D          7
 #define CNSTRNT_TAG_Pressure_Constraint 8
+#define CNSTRNT_TAG_EQ_Constraint 	9
 
 
 #define MATRIX_TAG_Matrix 	1
@@ -1103,6 +1109,8 @@
 #define INTEGRATOR_TAGS_StagedLoadControl               58
 #define INTEGRATOR_TAGS_StagedNewmark                   59
 #define INTEGRATOR_TAGS_HarmonicSteadyState             60
+#define INTEGRATOR_TAGS_ExplicitBathe                   61
+#define INTEGRATOR_TAGS_ExplicitDifferenceStatic        62
 
 
 #define LinSOE_TAGS_FullGenLinSOE		1
@@ -1135,6 +1143,8 @@
 #define LinSOE_TAGS_PFEMCompressibleLinSOE 28
 #define LinSOE_TAGS_PFEMQuasiLinSOE 29
 #define LinSOE_TAGS_PFEMDiaLinSOE 30
+#define LinSOE_TAGS_SparsePythonCompressedLinSOE 100101
+#define LinSOE_TAGS_SparsePythonCOOLinSOE        100102
 #define LinSOE_TAGS_PARDISOGenLinSOE 99990
 
 
@@ -1171,6 +1181,8 @@
 #define SOLVER_TAGS_CuSP                                31
 #define SOLVER_TAGS_PFEMQuasiSolver                     32
 #define SOLVER_TAGS_PFEMDiaSolver                       33
+#define SOLVER_TAGS_SparsePythonCompressedLinSolver     100201
+#define SOLVER_TAGS_SparsePythonCOOLinSolver            100202
 
 #define RECORDER_TAGS_ElementRecorder		1
 #define RECORDER_TAGS_NodeRecorder		2

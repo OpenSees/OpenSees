@@ -162,7 +162,8 @@ FE_INCLUDES  = -I$(FE)/matrix \
                -I$(FE)/system_of_eqn/linearSOE/BJsolvers \
                -I$(FE)/system_of_eqn/linearSOE/itpack \
                -I$(FE)/system_of_eqn/linearSOE/mumps \
-               -I$(FE)/system_of_eqn/eigenSOE \
+               -I$(FE)/system_of_eqn/linearSOE/sparsePython \
+               -I$(FE)/system_of_eqn/eigenSOE/sparsePython \
                -I$(FE)/graph/graph \
                -I$(FE)/graph/numberer \
                -I$(FE)/graph/partitioner \

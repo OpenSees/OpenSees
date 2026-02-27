@@ -25,6 +25,7 @@ add_subdirectory(fullGEN)
 add_subdirectory(sparseGEN)
 add_subdirectory(sparseSYM)
 add_subdirectory(umfGEN)
+add_subdirectory(sparsePython)
 
 add_subdirectory(profileSPD)
 #add_subdirectory(cg)

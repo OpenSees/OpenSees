@@ -104,7 +104,19 @@ void* OPS_BbarBrickWithSensitivity()
 	}	
     }
 
-    return new BbarBrickWithSensitivity(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],idata[8],*mat,data[0],data[1],data[2]);
+    int massType = 0;
+
+    // Check for optional arguments
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *argv = OPS_GetString();
+        if (strcmp(argv, "-lumped") == 0) {
+            massType = 1;
+        } else {
+            // Unknown flag or extra argument
+        }
+    }
+
+    return new BbarBrickWithSensitivity(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],idata[8],*mat,data[0],data[1],data[2],massType);
 }
 
 //null constructor
@@ -137,9 +149,9 @@ BbarBrickWithSensitivity::BbarBrickWithSensitivity(  int tag,
                          int node7,
 			 int node8,
 			 NDMaterial &theMaterial,
-			 double b1, double b2, double b3) :
+			 double b1, double b2, double b3, int massType) :
 Element( tag, ELE_TAG_BbarBrickWithSensitivity ),
-connectedExternalNodes(8), applyLoad(0), load(0), Ki(0)
+connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), massType(massType)
 {
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -756,10 +768,17 @@ void   BbarBrickWithSensitivity::formInertiaTerms( int tangFlag )
          kk = 0 ;
          for ( k = 0; k < numberNodes; k++ ) {
 
-	    massJK = temp * shp[massIndex][k] ;
-
-            for ( p = 0; p < ndf; p++ )
-	      mass( jj+p, kk+p ) += massJK ;
+            if (massType == 0) {
+                massJK = temp * shp[massIndex][k] ;
+                for ( p = 0; p < ndf; p++ )
+                    mass( jj+p, kk+p ) += massJK ;
+            } else {
+                if (j == k) {
+                    massJK = temp ; 
+                    for ( int p = 0; p < ndf; p++ )
+                        mass( jj+p, kk+p ) += massJK ;
+                }
+            }
 
             kk += ndf ;
           } // end for k loop

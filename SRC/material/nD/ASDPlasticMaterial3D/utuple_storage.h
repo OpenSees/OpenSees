@@ -236,6 +236,14 @@ public:
         return *this;
     }
 
+    // Assignment operator
+    void updateTrialValueFromOther(const utuple_storage& other) {
+        if (this != &other) {
+            update_trial_value_from_other<0>(other.data);
+        }
+        return;
+    }
+
 private:
 
     // Implementations for print_components
@@ -401,6 +409,20 @@ private:
     void assign_from_other(const tuple_t&) {
         // Base case, do nothing.
     }
+
+    // Helper template function for update_trial_value_from_other
+    template <std::size_t I, typename std::enable_if<I < std::tuple_size<tuple_t>::value, int>::type = 0>
+    void update_trial_value_from_other(const tuple_t& other) {
+        std::get<I>(data).updateTrialValueFromOther(std::get<I>(other));
+        update_trial_value_from_other<I + 1>(other);
+    }
+
+    template <std::size_t I, typename std::enable_if<I == std::tuple_size<tuple_t>::value, int>::type = 0>
+    void update_trial_value_from_other(const tuple_t&) {
+        // Base case, do nothing.
+    }
+
+    // update_trial_value_from_other
 };  //end utuple_storage
 
 

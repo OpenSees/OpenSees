@@ -131,6 +131,9 @@ UniformDamping::Initialize(void)
   double delta = 0.05;
   double f1log = log10(freq1);
   double f2log = log10(freq2);
+  double pi2 = 6.28318530718;
+  double w1 = pi2 * freq1;
+  double w2 = pi2 * freq2;
   
   nFilter = 2;
   for (int iter = 0; iter < 100; ++iter)
@@ -141,29 +144,31 @@ UniformDamping::Initialize(void)
     alpha = new Vector(nFilter);
     omegac = new Vector(nFilter);
 
-    for (int i = 0; i < nFilter; ++i)
-    {
-      (*omegac)(i) = 6.28318530718 * pow(10.0, f1log + i * dfreq);
-    }
-
-    int nf = 100 * nFilter;
-    double df = (f2log - f1log) / (nf - 1);
     Vector *y = new Vector(nFilter);
     Matrix *X = new Matrix(nFilter, nFilter);
-    for (int i = 0; i < nf; ++i)
+    Vector *psi = new Vector(nFilter);
+
+    for (int i = 0; i < nFilter; ++i)
     {
-      double omega = 6.28318530718 * pow(10.0, f1log + i * df);
-      for (int j = 0; j < nFilter; ++j)
+      double wc = pi2 * pow(10.0, f1log + i * dfreq);
+      (*omegac)(i) = wc;
+      (*psi)(i) = wc * atan((wc * (w2 - w1)) / (wc * wc + w1 * w2));
+      (*y)(i) = wc * log((wc * wc + w2 * w2) / (wc * wc + w1 * w1));
+      (*X)(i, i) = 2.0 * (*psi)(i) - (
+        (2.0 * wc * wc * w2) / (wc * wc + w2 * w2) - 
+        (2.0 * wc * wc * w1) / (wc * wc + w1 * w1)
+      );
+    }
+
+    for (int i = 0; i < nFilter; ++i)
+    {
+      double wi = (*omegac)(i);
+      for (int j = i + 1; j < nFilter; ++j)
       {
-        double wjn = omega / (*omegac)[j];
-        double phij = 2.0 * wjn / (1.0 + wjn * wjn);
-        (*y)(j) += phij;
-        for (int k = 0; k < nFilter; ++k)
-        {
-          double wkn = omega / (*omegac)[k];
-          double phik = 2.0 * wkn / (1.0 + wkn * wkn);
-          (*X)(j, k) += phij * phik;
-        }
+        double wj = (*omegac)(j);
+        double val = (4.0 * wi * wj * ((*psi)(i) - (*psi)(j))) / (wi * wi - wj * wj);
+        (*X)(i, j) = val;
+        (*X)(j, i) = val;
       }
     }
 
@@ -171,11 +176,14 @@ UniformDamping::Initialize(void)
     
     delete y;
     delete X;
+    delete psi;
 
     bool converged = true;
+    int nf = 100 * nFilter;
+    double df = (f2log - f1log) / (nf - 1);
     for (int i = 0; i < nf; ++i)
     {
-      double omega = 6.28318530718 * pow(10.0, f1log + i * df);
+      double omega = pi2 * pow(10.0, f1log + i * df);
       double err = 0.0;
       for (int j = 0; j < nFilter; ++j)
       {

@@ -63,7 +63,8 @@ class Brick : public Element {
 	  int node8,
 	  NDMaterial &theMaterial,
 	  double b1 = 0.0, double b2 = 0.0, double b3 = 0.0,
-	  Damping *theDamping = 0);
+	  Damping *theDamping = 0,
+    int massType = 0);
     
     //destructor 
     virtual ~Brick( ) ;
@@ -146,6 +147,7 @@ class Brick : public Element {
 
     Vector *load;
     Matrix *Ki;
+    int massType;
 
     //
     // static attributes

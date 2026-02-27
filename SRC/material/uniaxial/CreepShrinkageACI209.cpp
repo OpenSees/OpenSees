@@ -400,6 +400,7 @@ int CreepShrinkageACI209::commitState(void)
 int 
   CreepShrinkageACI209::revertToLastCommit(void)
 {
+  iterationInStep = 0;
   // Restore trial state to last committed state
   trialTotalStrain = committedTotalStrain;
   trialShrinkageStrain = committedShrinkageStrain;

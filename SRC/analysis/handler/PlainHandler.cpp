@@ -45,6 +45,8 @@
 #include <SP_Constraint.h>
 #include <MP_ConstraintIter.h>
 #include <MP_Constraint.h>
+#include <EQ_ConstraintIter.h>
+#include <EQ_Constraint.h>
 #include <Integrator.h>
 #include <ID.h>
 #include <Subdomain.h>
@@ -137,7 +139,7 @@ PlainHandler::handle(const ID *nodesLast)
 	    }
 	}
 
-    	// loop through the MP_Constraints to see if any of the
+	// loop through the MP_Constraints to see if any of the
 	// DOFs are constrained, note constraint matrix must be diagonal
 	// with 1's on the diagonal
 	MP_ConstraintIter &theMPs = theDomain->getMPs();
@@ -188,6 +190,40 @@ PlainHandler::handle(const ID *nodesLast)
 		      
 		    }
 		  }
+		}
+	}
+
+	// loop through the EQ_Constraints to see if any of the
+	// DOFs are constrained, note constraint matrix must be diagonal
+	// with 1's on the diagonal
+	EQ_ConstraintIter &theEQs = theDomain->getEQs();
+	EQ_Constraint *eqPtr;
+	while ((eqPtr = theEQs()) != 0)
+	    if (eqPtr->getNodeConstrained() == nodeID) {
+		if (eqPtr->isTimeVarying() == true) {
+		    opserr << "WARNING PlainHandler::handle() - ";
+		    opserr << " time-varying constraint";
+		    opserr << " for node " << nodeID;
+		    opserr << " non-varyng assumed\n";
+		}
+		const Vector &C = eqPtr->getConstraint();
+		if (C.Size() > 1 || C(0) != 1.0) {
+			opserr << "WARNING PlainHandler::handle() - ";
+			opserr << " constraint matrix not identity, ignoring constraint";
+			opserr << " for node " << nodeID << endln;
+			opserr << " non-varyng assumed\n";
+		}
+		else {
+		    int dof = eqPtr->getConstrainedDOFs();
+		    const ID &id = dofPtr->getID();				
+		    if (id(dof) == -2) {
+				dofPtr->setID(dof, -4);
+				countDOF--;	
+		    } else {
+				opserr << "WARNING PlainHandler::handle() - ";
+				opserr << " constraint at dof " << dof << " already specified for constrained node";
+				opserr << " in EQ_Constraint at node " << nodeID << endln;
+		    } 
 		}
 	}
 

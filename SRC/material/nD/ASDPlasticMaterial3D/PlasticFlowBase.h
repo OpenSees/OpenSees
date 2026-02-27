@@ -52,7 +52,7 @@ struct pf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<type
         const VoigtVector &depsilon, \
         const VoigtVector& sigma, \
         const StorageType& internal_variables_storage,  \
-        const ParameterStorageType& parameters_storage)
+        const ParameterStorageType& parameters_storage) const
 
 #define GET_TRIAL_INTERNAL_VARIABLE(type) \
     ((internal_variables_storage).template get<type>().trial_value)

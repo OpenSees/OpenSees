@@ -90,6 +90,12 @@ DL_Interpreter::getString()
     return 0;
 }
 
+void*
+DL_Interpreter::getVoidPtr()
+{
+    return 0;
+}
+
 const char*
 DL_Interpreter::getStringFromAll(char* buffer, int len)
 {

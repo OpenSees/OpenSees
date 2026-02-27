@@ -29,6 +29,7 @@
 
 #include <Vector.h>
 #include <Channel.h>
+#include <Parameter.h>
 #include <elementAPI.h>
 
 #include <math.h>
@@ -345,4 +346,46 @@ void ElasticMultiLinear::Print(OPS_Stream &s, int flag)
 		s << stressPoints(numPts - 1) << "], ";
 		s << "\"eta\": " << eta << "}";
 	}
+}
+
+int
+ElasticMultiLinear::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 2) {
+    opserr << "ElasticMultiLinear::setParameter -- requires two arguments stress/strain ptNum" << endln;
+    return -1;
+  }
+
+  int whichPoint = atoi(argv[1]);
+  if (whichPoint < 1 || whichPoint > numDataPoints) {
+    opserr << "ElasticMultiLinear::setParameter -- invalid ptNum, should be between 1 and "
+	   << numDataPoints << endln;
+    return -1;
+  }
+  
+  if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stressPoint") == 0) {
+    param.setValue(stressPoints(whichPoint-1));
+    return param.addObject(whichPoint, this);
+  }
+  if (strcmp(argv[0],"strain") == 0 || strcmp(argv[0],"strainPoint") == 0) {
+    param.setValue(strainPoints(whichPoint-1));
+    return param.addObject(-whichPoint, this);
+  }
+
+  return -1;
+}
+
+int
+ElasticMultiLinear::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID > 0) {
+    stressPoints(parameterID-1) = info.theDouble;
+    return 0;
+  }
+  if (parameterID < 0) {
+    strainPoints(-parameterID-1) = info.theDouble;
+    return 0;
+  }
+
+  return -1;
 }

@@ -50,6 +50,21 @@ using DuncanChang_n = ModelParameterType<double, YoungsModulusName>;
 struct InternalFrictionAngleName { static constexpr const char* name = "InternalFrictionAngle";};
 using InternalFrictionAngle = ModelParameterType<double, InternalFrictionAngleName>;
 
+// Mohr-Coulomb
+struct MC_phi_Name { static constexpr const char* name = "MC_phi";};   // friction angle
+using MC_phi = ModelParameterType<double, MC_phi_Name>;
+struct MC_c_Name { static constexpr const char* name = "MC_c";};       // cohesion
+using MC_c = ModelParameterType<double, MC_c_Name>;
+struct MC_ds_Name { static constexpr const char* name = "MC_ds";};     // relative stress increment for plastic flow direction
+using MC_ds = ModelParameterType<double, MC_ds_Name>;
+struct MC_psi_Name { static constexpr const char* name = "MC_psi";};   // dilatancy angle
+using MC_psi = ModelParameterType<double, MC_psi_Name>;
+struct MC_psi_cv_Name { static constexpr const char* name = "MC_psi_cv";};   // dilatancy angle
+using MC_psi_cv = ModelParameterType<double, MC_psi_cv_Name>;
+
+struct TC_min_stress_Name { static constexpr const char* name = "TC_min_stress";};
+using TC_min_stress = ModelParameterType<double, TC_min_stress_Name>;
+
 //RMC: Rounded-Mohr-Coulomb
 struct RMC_m_Name { static constexpr const char* name = "RMC_m";};
 using RMC_m = ModelParameterType<double, RMC_m_Name>;
@@ -60,7 +75,13 @@ using RMC_pc = ModelParameterType<double, RMC_pc_Name>;
 struct RMC_e_Name { static constexpr const char* name = "RMC_e";};
 using RMC_e = ModelParameterType<double, RMC_e_Name>;
 
-
+//Drucker-Prager
+struct DP_eta_Name { static constexpr const char* name = "DP_eta";};   // xi * c - adjusted cohesion (depending on how the DP is to be fit to the MC )
+using DP_eta = ModelParameterType<double, DP_eta_Name>;
+struct DP_xi_c_Name { static constexpr const char* name = "DP_xi_c";};   // xi * c - adjusted cohesion (depending on how the DP is to be fit to the MC )
+using DP_xi_c = ModelParameterType<double, DP_xi_c_Name>;
+struct DP_etabar_Name { static constexpr const char* name = "DP_etabar";};   // for non-associated DP, slope from dilatancy angle 
+using DP_etabar = ModelParameterType<double, DP_etabar_Name>;
 
 // ============================================================================
 // Model Parameters associated with Plastic flow

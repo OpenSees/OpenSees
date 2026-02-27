@@ -103,6 +103,8 @@ void* OPS_RCSection2d();
 void* OPS_WFSection2d();
 void* OPS_RCCircularSection();
 void* OPS_RCTunnelSection();
+void* OPS_MVLEMSection2d();
+void* OPS_SFIMVLEMSection2d();
 void* OPS_UniaxialSection();
 void* OPS_RCTBeamSection2d();
 void* OPS_RCTBeamSectionUniMat2d();
@@ -293,6 +295,9 @@ namespace {
 	functionMap.insert(std::make_pair("Elliptical", &OPS_Elliptical2));	
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
+	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEMSection2d));
+	functionMap.insert(std::make_pair("SFIMVLEM", &OPS_SFIMVLEMSection2d));
+	functionMap.insert(std::make_pair("SFI_MVLEM", &OPS_SFIMVLEMSection2d));		
 	functionMap.insert(std::make_pair("RCTunnelSection", &OPS_RCTunnelSection));
 	functionMap.insert(std::make_pair("ReinforcedConcreteLayeredMembraneSection", &OPS_ReinforcedConcreteLayeredMembraneSection));
 	functionMap.insert(std::make_pair("RCLayeredMembraneSection", &OPS_ReinforcedConcreteLayeredMembraneSection));

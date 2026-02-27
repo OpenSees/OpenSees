@@ -355,6 +355,17 @@ namespace {
 	}
     }
 
+    static void* OPS_ModElasticBeam()
+    {
+	int ndm = OPS_GetNDM();
+	if(ndm == 2) {
+	    ID info;
+	    return OPS_ModElasticBeam2d();
+	} else {
+	    return OPS_ModElasticBeam3d();
+	}
+    }  
+
     static void* OPS_MVLEM2d3d()
     {
 	int ndm = OPS_GetNDM();
@@ -702,6 +713,8 @@ namespace {
 	functionMap.insert(std::make_pair("componentElement2d", &OPS_ComponentElement));
 	functionMap.insert(std::make_pair("componentElement", &OPS_ComponentElement));	
 	functionMap.insert(std::make_pair("zeroLengthImpact3D", &OPS_ZeroLengthImpact3D));
+	functionMap.insert(std::make_pair("ModElasticBeam", &OPS_ModElasticBeam));
+	functionMap.insert(std::make_pair("modElasticBeam", &OPS_ModElasticBeam));
 	functionMap.insert(std::make_pair("ModElasticBeam2d", &OPS_ModElasticBeam2d));
 	functionMap.insert(std::make_pair("modElasticBeam2d", &OPS_ModElasticBeam2d));
 	functionMap.insert(std::make_pair("ModElasticBeam3d", &OPS_ModElasticBeam3d));

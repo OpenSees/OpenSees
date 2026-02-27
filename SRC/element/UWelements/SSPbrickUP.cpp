@@ -99,17 +99,22 @@ OPS_SSPbrickUP(void)
 		return 0;
     }
 
-	if (numRemainingInputArgs == 20) {
-    	numData = 3;
-    	if (OPS_GetDoubleInput(&numData, &dData[7]) != 0) {
-      		opserr << "WARNING invalid optional data: element SSPbrickUP " << iData[0] << endln;
-	  		return 0;
-    	}
-  	}
+	int massType = 0;
+    int currentParam = 7;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *arg = OPS_GetString();
+        if (strcmp(arg, "-lumped") == 0) {
+            massType = 1;
+        } else {
+            if (currentParam < 10) {
+                dData[currentParam++] = atof(arg);
+            }
+        }
+    }
 
   	// parsing was successful, allocate the element
   	theElement = new SSPbrickUP(iData[0], iData[1], iData[2], iData[3], iData[4], iData[5], iData[6], iData[7], iData[8], *theMaterial, 
-	                            dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], dData[9]);
+	                            dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], dData[9], massType);
 
   	if (theElement == 0) {
     	opserr << "WARNING could not create element of type SSPbrickUP\n";
@@ -119,10 +124,9 @@ OPS_SSPbrickUP(void)
   	return theElement;
 }
 
-// full constructor
 SSPbrickUP::SSPbrickUP(int tag, int Nd1, int Nd2, int Nd3, int Nd4, int Nd5, int Nd6, int Nd7, int Nd8,
                        NDMaterial &theMat, double Kf, double Rf, double k1, double k2, double k3,
-					   double eVoid, double alpha, double b1, double b2, double b3)
+					   double eVoid, double alpha, double b1, double b2, double b3, int massType)
   :Element(tag,ELE_TAG_SSPbrickUP),
   	theMaterial(0),
 	mExternalNodes(SBUP_NUM_NODE),
@@ -149,10 +153,18 @@ SSPbrickUP::SSPbrickUP(int tag, int Nd1, int Nd2, int Nd3, int Nd4, int Nd5, int
 	hstu(8),
 	fBulk(Kf),
 	fDens(Rf),
-	mPorosity(0),
+	mPorosity(eVoid/(1.0+eVoid)),
 	mAlpha(alpha),
-	applyLoad(0)
+	applyLoad(0),
+    massType(massType)
 {
+	if (b1 != 0.0 || b2 != 0.0 || b3 != 0.0) {
+		appliedB[0] = b1;
+		appliedB[1] = b2;
+		appliedB[2] = b3;
+		applyLoad = 1;
+	}
+
 	mExternalNodes(0) = Nd1;
 	mExternalNodes(1) = Nd2;
 	mExternalNodes(2) = Nd3;
@@ -577,7 +589,19 @@ SSPbrickUP::getMass(void)
         	mMass(IIp1,JJp2) = mSolidM(Ip1,Jp2);
         
         	// contribution of compressibility and stabilization matrices
-        	mMass(IIp3,JJp3) = oneOverQ - mPressStab(i,j);
+            if (massType == 1) {
+                if (i == j) {
+                    double rowSum = 0.0;
+                    for (int k = 0; k < 8; k++) {
+                        rowSum += mPressStab(i, k);
+                    }
+                    mMass(IIp3, JJp3) = 8.0 * oneOverQ - rowSum;
+                } else {
+                    mMass(IIp3, JJp3) = 0.0;
+                }
+            } else {
+        	    mMass(IIp3,JJp3) = oneOverQ - mPressStab(i,j);
+            }
 		}
 	}
 
@@ -1138,6 +1162,8 @@ SSPbrickUP::setResponse(const char **argv, int argc, OPS_Stream &eleInfo)
 	}
 	if (strcmp(argv[0],"strain3D6") == 0) {
 		return new ElementResponse(this, 2, Vector(6));
+	} else if (strcmp(argv[0], "mass") == 0) {
+		return new ElementResponse(this, 3, Matrix(SBUP_NUM_DOF, SBUP_NUM_DOF));
 	} else {
 		// no special recorders for this element, call the method in the material class
 		return theMaterial->setResponse(argv, argc, eleInfo);
@@ -1157,6 +1183,8 @@ SSPbrickUP::getResponse(int responseID, Information &eleInfo)
 
 		const Vector &mStrain = theMaterial->getStrain();
 		return eleInfo.setVector(mStrain);
+	} else if (responseID == 3) {
+		return eleInfo.setMatrix(this->getMass());
 	} else {
 		// no special recorders for this element, call the method in the material class
 		return theMaterial->getResponse(responseID, eleInfo);

@@ -20,6 +20,7 @@
 **   Boris Jeremic    (jeremic@ucdavis.edu)                           **
 **   Zaohui Yang      (zhyang@ucdavis.edu)                            **
 **   Zhao Cheng       (zcheng@ucdavis.edu)                            **
+**   Pedro Arduino    (parduino@uw.edu)                               **
 **                                                                    **
 **                                                                    **
 **                                                                    **
@@ -83,6 +84,7 @@ extern  void *OPS_ManzariDafaliasMaterial(void);
 extern  void *OPS_ManzariDafaliasMaterialRO(void);
 extern  void *OPS_PM4SandMaterial(void);
 extern  void *OPS_PM4SiltMaterial(void);
+extern  void *OPS_LinearElasticGGmaxMaterial(void);
 extern  void *OPS_J2CyclicBoundingSurfaceMaterial(void);
 extern  void *OPS_CycLiqCPMaterial(void);
 extern  void *OPS_CycLiqCPSPMaterial(void);
@@ -494,23 +496,33 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	return TCL_ERROR;
     }
 
-	else if ((strcmp(argv[1], "J2CyclicBoundingSurface") == 0)) {
+    else if ((strcmp(argv[1], "J2CyclicBoundingSurface") == 0)) {
 
-		void *theMat = OPS_J2CyclicBoundingSurfaceMaterial();
-		if (theMat != 0)
-			theMaterial = (NDMaterial *)theMat;
-		else
-			return TCL_ERROR;
-	}
+	void *theMat = OPS_J2CyclicBoundingSurfaceMaterial();
+	if (theMat != 0)
+		theMaterial = (NDMaterial *)theMat;
+	else
+		return TCL_ERROR;
+    }
 	
-	else if ((strcmp(argv[1], "PM4Silt") == 0)) {
+    else if ((strcmp(argv[1], "PM4Silt") == 0)) {
 
-		void *theMat = OPS_PM4SiltMaterial();
-		if (theMat != 0)
-			theMaterial = (NDMaterial *)theMat;
-		else
-			return TCL_ERROR;
-	}
+	void *theMat = OPS_PM4SiltMaterial();
+	if (theMat != 0)
+		theMaterial = (NDMaterial *)theMat;
+	else
+		return TCL_ERROR;
+    }
+
+    else if ((strcmp(argv[1], "LinearElasticGGmax") == 0)) {
+
+	void *theMat = OPS_LinearElasticGGmaxMaterial();
+	if (theMat != 0)
+		theMaterial = (NDMaterial *)theMat;
+	else
+		return TCL_ERROR;
+    }
+
 
     else if ((strcmp(argv[1],"ContactMaterial2D") == 0)){
 

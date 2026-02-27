@@ -136,6 +136,12 @@ TclModelBuilder_addBrick(ClientData clientData, Tcl_Interp *interp,  int argc,
   int dampingTag = 0;
   Damping *theDamping = 0;
 
+  int massType = 0;
+  if (strcmp(argv[argc-1], "-lumped") == 0) {
+      massType = 1;
+      argc--;
+  }
+
   if ((argc-eleArgStart) == 13) {
     if (strcmp(argv[11+eleArgStart],"-damp") == 0 && Tcl_GetInt(interp, argv[12+eleArgStart], &dampingTag) == TCL_OK) {
 	    theDamping = OPS_getDamping(dampingTag);
@@ -204,16 +210,16 @@ TclModelBuilder_addBrick(ClientData clientData, Tcl_Interp *interp,  int argc,
   if (strcmp(argv[1],"stdBrick") == 0) {
     theBrick = new Brick(BrickId,Node1,Node2,Node3,Node4,
 			 Node5, Node6, Node7, Node8, *theMaterial,
-			 b1, b2, b3, theDamping);
+			 b1, b2, b3, theDamping, massType);
   }
   else if (strcmp(argv[1],"bbarBrickWithSensitivity") == 0) {
     theBrick = new BbarBrickWithSensitivity(BrickId,Node1,Node2,Node3,Node4,
 			 Node5, Node6, Node7, Node8, *theMaterial,
-			 b1, b2, b3);
+			 b1, b2, b3, massType);
   }
   else if (strcmp(argv[1],"bbarBrick") == 0) {
     theBrick = new BbarBrick(BrickId,Node1,Node2,Node3,Node4,
-			     Node5, Node6, Node7, Node8, *theMaterial, b1, b2, b3);
+			     Node5, Node6, Node7, Node8, *theMaterial, b1, b2, b3, massType);
 	#ifdef _FLBrick
 	  } else if (strcmp(argv[1],"flBrick") == 0) {
 		theBrick = new FLBrick(BrickId,Node1,Node2,Node3,Node4,

@@ -213,6 +213,7 @@ extern "C" int         OPS_SetStringLists(std::vector<std::vector<const char*>>&
 extern "C" int         OPS_SetStringDict(std::map<const char*, const char*>& data);
 extern "C" int         OPS_SetStringDictList(std::map<const char*, std::vector<const char*>>& data);
 extern "C" int         OPS_SetGenericDict(GenericDict& data);
+extern "C" void*       OPS_GetVoidPtr();
 extern "C" int         OPS_GetStringCopy(char** cArray); // returns a new copy
 extern "C" matObj*     OPS_GetMaterial(int* matTag, int* matType);
 extern "C" eleObj*     OPS_GetElement(int* eleTag);
@@ -303,6 +304,7 @@ int    OPS_GetNodeVel(int* nodeTag, int* sizeData, double* data);
 int    OPS_GetNodeAcc(int* nodeTag, int* sizeData, double* data);
 int    OPS_GetNodeIncrDisp(int* nodeTag, int* sizeData, double* data);
 int    OPS_GetNodeIncrDeltaDisp(int* nodeTag, int* sizeData, double* data);
+void*  OPS_GetVoidPtr();
 
 AnalysisModel** OPS_GetAnalysisModel(void);
 EquiSolnAlgo** OPS_GetAlgorithm(void);

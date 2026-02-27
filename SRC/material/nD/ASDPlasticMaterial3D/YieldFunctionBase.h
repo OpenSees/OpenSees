@@ -63,14 +63,23 @@ struct yf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<type
 #define YIELD_FUNCTION_STRESS_DERIVATIVE template <typename IVStorageType, typename ParameterStorageType> \
     const VoigtVector& df_dsigma_ij(const VoigtVector& sigma, \
         const IVStorageType& internal_variables_storage, \
-        const ParameterStorageType& parameters_storage)
+        const ParameterStorageType& parameters_storage) const
 
-#define YIELD_FUNCTION_XI_STAR_H_STAR template <typename IVStorageType, typename ParameterStorageType> \
+#define YIELD_FUNCTION_HARDENING template <typename IVStorageType, typename ParameterStorageType> \
     double hardening(const VoigtVector& depsilon, \
         const VoigtVector& m, \
         const VoigtVector& sigma,\
         const IVStorageType& internal_variables_storage,\
-        const ParameterStorageType& parameters_storage)
+        const ParameterStorageType& parameters_storage) const
+
+#define CHECK_APEX_REGION template <typename IVStorageType, typename ParameterStorageType> \
+    bool check_apex_region( const VoigtVector& sigma, \
+        const IVStorageType& internal_variables_storage, \
+        const ParameterStorageType& parameters_storage) const 
+
+#define APEX_STRESS template <typename IVStorageType, typename ParameterStorageType> \
+    const VoigtVector& apex_stress(const IVStorageType& internal_variables_storage, \
+                        const ParameterStorageType& parameters_storage) const
 
 #define GET_INTERNAL_VARIABLE_HARDENING(type) \
     internal_variables_storage.template get<type> ().hardening_function(depsilon, m, sigma, parameters_storage)
@@ -79,6 +88,8 @@ struct yf_has_internal_variables_t<T, typename std::enable_if<!std::is_same<type
     ((internal_variables_storage).template get<type>().trial_value)
 
 #define GET_PARAMETER_VALUE(type) parameters_storage.template get<type> ().value
+
+#define YF(SIGMA) (this)->operator()(SIGMA, internal_variables_storage, parameters_storage)
 
 template <class T>
 class YieldFunctionBase
@@ -99,7 +110,7 @@ public:
         return static_cast<T*>(this)->df_dsigma_ij(sigma, internal_variables_storage, parameters_storage);
     }
 
-    YIELD_FUNCTION_XI_STAR_H_STAR
+    YIELD_FUNCTION_HARDENING
     {
         return static_cast<T*>(this)->df_dxi_star_h_star(depsilon, m , sigma, internal_variables_storage, parameters_storage);
     }

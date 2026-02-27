@@ -276,25 +276,34 @@ TclModelBuilder_addBrickUP(ClientData clientData, Tcl_Interp *interp,
      return TCL_ERROR;
   }
 
-	if ((argc-argStart) >= 16) {
-		if (Tcl_GetDouble(interp, argv[15+argStart], &b1) != TCL_OK) {
-			opserr << "WARNING invalid b1\n";
-			opserr << "brickUP element: " << brickUPId << endln;
-			return TCL_ERROR;
-		}
-	}
-	if ((argc-argStart) >= 17) {
-		if (Tcl_GetDouble(interp, argv[16+argStart], &b2) != TCL_OK) {
-			opserr << "WARNING invalid b2\n";
-			opserr << "brickUP element: " << brickUPId << endln;
-			return TCL_ERROR;
-		}
-	}
-	if ((argc-argStart) >= 18) {
-		if (Tcl_GetDouble(interp, argv[17+argStart], &b3) != TCL_OK) {
-			opserr << "WARNING invalid b3\n";
-			opserr << "brickUP element: " << brickUPId << endln;
-			return TCL_ERROR;
+	int massType = 0;
+	int bCount = 0;
+	for (int i = 15+argStart; i < argc; i++) {
+		if (strcmp(argv[i], "-lumped") == 0) {
+			massType = 1;
+		} else {
+			if (bCount == 0) {
+				if (Tcl_GetDouble(interp, argv[i], &b1) != TCL_OK) {
+					opserr << "WARNING invalid b1\n";
+					opserr << "brickUP element: " << brickUPId << endln;
+					return TCL_ERROR;
+				}
+				bCount++;
+			} else if (bCount == 1) {
+				if (Tcl_GetDouble(interp, argv[i], &b2) != TCL_OK) {
+					opserr << "WARNING invalid b2\n";
+					opserr << "brickUP element: " << brickUPId << endln;
+					return TCL_ERROR;
+				}
+				bCount++;
+			} else if (bCount == 2) {
+				if (Tcl_GetDouble(interp, argv[i], &b3) != TCL_OK) {
+					opserr << "WARNING invalid b3\n";
+					opserr << "brickUP element: " << brickUPId << endln;
+					return TCL_ERROR;
+				}
+				bCount++;
+			}
 		}
 	}
 
@@ -310,7 +319,7 @@ TclModelBuilder_addBrickUP(ClientData clientData, Tcl_Interp *interp,
   // now create the brickUP and add it to the Domain
   BrickUP *theBrickUP =
       new BrickUP(brickUPId,Nod[0],Nod[1],Nod[2],Nod[3],Nod[4],Nod[5],Nod[6],Nod[7],
-		       *theMaterial, bk, r, perm1, perm2, perm3, b1, b2, b3);
+		       *theMaterial, bk, r, perm1, perm2, perm3, b1, b2, b3, massType);
   if (theBrickUP == 0) {
       opserr << "WARNING ran out of memory creating element\n";
       opserr << "brickUP element: " << brickUPId << endln;
@@ -854,25 +863,34 @@ TclModelBuilder_addBBarBrickUP(ClientData clientData, Tcl_Interp *interp,
      return TCL_ERROR;
   }
 
-	if ((argc-argStart) >= 16) {
-		if (Tcl_GetDouble(interp, argv[15+argStart], &b1) != TCL_OK) {
-			opserr << "WARNING invalid b1\n";
-			opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;
-			return TCL_ERROR;
-		}
-	}
-	if ((argc-argStart) >= 17) {
-		if (Tcl_GetDouble(interp, argv[16+argStart], &b2) != TCL_OK) {
-			opserr << "WARNING invalid b2\n";
-			opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;
-			return TCL_ERROR;
-		}
-	}
-	if ((argc-argStart) >= 18) {
-		if (Tcl_GetDouble(interp, argv[17+argStart], &b3) != TCL_OK) {
-			opserr << "WARNING invalid b3\n";
-			opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;
-			return TCL_ERROR;
+	int massType = 0;
+	int bCount = 0;
+	for (int i = 15+argStart; i < argc; i++) {
+		if (strcmp(argv[i], "-lumped") == 0) {
+			massType = 1;
+		} else {
+			if (bCount == 0) {
+				if (Tcl_GetDouble(interp, argv[i], &b1) != TCL_OK) {
+					opserr << "WARNING invalid b1\n";
+					opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;
+					return TCL_ERROR;
+				}
+				bCount++;
+			} else if (bCount == 1) {
+				if (Tcl_GetDouble(interp, argv[i], &b2) != TCL_OK) {
+					opserr << "WARNING invalid b2\n";
+					opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;
+					return TCL_ERROR;
+				}
+				bCount++;
+			} else if (bCount == 2) {
+				if (Tcl_GetDouble(interp, argv[i], &b3) != TCL_OK) {
+					opserr << "WARNING invalid b3\n";
+					opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;
+					return TCL_ERROR;
+				}
+				bCount++;
+			}
 		}
 	}
 
@@ -888,7 +906,7 @@ TclModelBuilder_addBBarBrickUP(ClientData clientData, Tcl_Interp *interp,
   // now create the BBarBrickUP and add it to the Domain
   BBarBrickUP *theBBarBrickUP =
       new BBarBrickUP(BBarBrickUPId,Nod[0],Nod[1],Nod[2],Nod[3],Nod[4],Nod[5],Nod[6],Nod[7],
-		       *theMaterial, bk, r, perm1, perm2, perm3, b1, b2, b3);
+		       *theMaterial, bk, r, perm1, perm2, perm3, b1, b2, b3, massType);
   if (theBBarBrickUP == 0) {
       opserr << "WARNING ran out of memory creating element\n";
       opserr << "BBarBrickUP element: " << BBarBrickUPId << endln;

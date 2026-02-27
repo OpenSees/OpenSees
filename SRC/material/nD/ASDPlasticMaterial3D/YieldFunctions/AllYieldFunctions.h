@@ -26,4 +26,6 @@
 
 #include "VonMises_YF.h"
 #include "DruckerPrager_YF.h"
-#include "RoundedMohrCoulomb_YF.h"
+// #include "RoundedMohrCoulomb_YF.h"
+#include "MohrCoulomb_YF.h"
+#include "TensionCutoff_YF.h"

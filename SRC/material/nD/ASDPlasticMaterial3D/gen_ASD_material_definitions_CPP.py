@@ -3,51 +3,65 @@ from itertools import product
 
 EL = [
     "LinearIsotropic3D_EL",
-    "DuncanChang_EL",
+    # "DuncanChang_EL",
 ]
 
 YF = [
     "VonMises_YF",
     "DruckerPrager_YF",
-    # "RoundedMohrCoulomb_YF",
+    "MohrCoulomb_YF",
+    # "TensionCutoff_YF",
 ]
 
 PF = [
     "VonMises_PF",
     "DruckerPrager_PF",
-    "ConstantDilatancy_PF"
+    # "ConstantDilatancy_PF",
+    "MohrCoulomb_PF"
 ]
+
+# Possible combinations of IV with YFs
 
 IV_YF = {}
 
 IV_YF["VonMises_YF"] = [
-    "BackStress<TensorLinearHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
-    # "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
+    "BackStress<TensorLinearHardeningFunction>,YieldStress<ScalarLinearHardeningFunction>",
+    "BackStress<ArmstrongFrederickHardeningFunction>,YieldStress<ScalarLinearHardeningFunction>",
 ]
 
-IV_YF["DruckerPrager_YF"] = IV_YF["VonMises_YF"] 
-
-IV_YF["RoundedMohrCoulomb_YF"] = [
-    "ScalarInternalVariable<ScalarLinearHardeningFunction>"
+IV_YF["DruckerPrager_YF"] = [
+    "BackStress<TensorLinearHardeningFunction>,DP_cohesion<ScalarLinearHardeningFunction>",
+    "BackStress<ArmstrongFrederickHardeningFunction>,DP_cohesion<ScalarLinearHardeningFunction>",
 ]
 
+IV_YF["MohrCoulomb_YF"] = [
+    "BackStress<NullHardeningTensorFunction>"
+]
 
+IV_YF["TensionCutoff_YF"] = [
+    "BackStress<NullHardeningTensorFunction>"
+]
+
+# Possible combinations of IV with PFs
 #Options for PF variables depend on the model
 IV_PF = {
     "VonMises_PF": [
+    "BackStress<NullHardeningTensorFunction>",
     "BackStress<TensorLinearHardeningFunction>",
     "BackStress<ArmstrongFrederickHardeningFunction>",
     ],
     "DruckerPrager_PF":
     [
-    "BackStress<TensorLinearHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
-    # "BackStress<ArmstrongFrederickHardeningFunction>,VonMisesRadius<ScalarLinearHardeningFunction>",
+    "BackStress<TensorLinearHardeningFunction>, DP_cohesion<ScalarLinearHardeningFunction>",
+    "BackStress<ArmstrongFrederickHardeningFunction>, DP_cohesion<ScalarLinearHardeningFunction>",
     ]
 }
 
 IV_PF["ConstantDilatancy_PF"] = IV_PF["VonMises_PF"]
 
-
+IV_PF["MohrCoulomb_PF"] = [
+    "BackStress<NullHardeningTensorFunction>"
+]
 
 
 
