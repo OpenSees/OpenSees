@@ -163,7 +163,6 @@ TrapezoidalTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double del
 
   Fi = 0.0;
 
-  opserr<<"differentiate()\n";
   for (long long i = 0; i < numSteps; i++, dummyTime += delta) {
     Fj = theSeries->getFactor(dummyTime);
 
@@ -173,8 +172,6 @@ TrapezoidalTimeSeriesIntegrator::differentiate(TimeSeries *theSeries, double del
     (*theDif)[i] = f;
 
     Fi = Fj;
-    if (i < 10)
-      opserr<<"data"<<f<<" "<<Fi<<" "<<Fj<<"\n";
   }
 
   // Set the method return value
