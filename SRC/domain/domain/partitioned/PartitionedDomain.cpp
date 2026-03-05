@@ -130,11 +130,12 @@ PartitionedDomain::PartitionedDomain(DomainPartitioner &thePartitioner)
 
 
 PartitionedDomain::PartitionedDomain(int numNodes, int numElements,
-                                     int numSPs, int numMPs, int numLoadPatterns,
+                                     int numSPs, int numMPs, int numEQs,
+				     int numLoadPatterns,
                                      int numSubdomains,
                                      DomainPartitioner &thePartitioner)
 
-  : Domain(numNodes, 0, numSPs, numMPs, numLoadPatterns),
+  : Domain(numNodes, 0, numSPs, numMPs, numEQs, numLoadPatterns),
     theSubdomains(0), theDomainPartitioner(&thePartitioner),
     theSubdomainIter(0), mySubdomainGraph(0), has_sent_yet(false)
 {

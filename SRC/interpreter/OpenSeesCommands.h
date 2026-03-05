@@ -157,7 +157,8 @@ public:
     void wipeAnalysis();
     void wipe();
     int eigen(int typeSolver, double shift,
-	      bool generalizedAlgo, bool findSmallest);
+	      bool generalizedAlgo, bool findSmallest,
+              EigenSOE *providedEigenSOE = nullptr);
 
 private:
 
@@ -477,6 +478,7 @@ int OPS_Node();
 int OPS_HomogeneousBC();
 int OPS_EqualDOF();
 int OPS_EqualDOF_Mixed();
+int OPS_EquationConstraint();
 int OPS_HomogeneousBC_X();
 int OPS_HomogeneousBC_Y();
 int OPS_HomogeneousBC_Z();

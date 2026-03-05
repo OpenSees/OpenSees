@@ -336,6 +336,12 @@
     <ClCompile Include="..\..\..\SRC\domain\pattern\MPAccSeries.cpp">
       <Filter>timeSeries</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\constraints\EQ_Constraint.cpp">
+      <Filter>constraints</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\domain\domain\single\SingleDomEQ_Iter.cpp">
+      <Filter>domain</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\domain\node\NodalLoad.h">

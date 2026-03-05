@@ -42,3 +42,5 @@ target_sources(OPS_SysOfEqn
     SymArpackSolver.h
 )
 
+add_subdirectory(sparsePython)
+

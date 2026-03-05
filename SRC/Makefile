@@ -1271,6 +1271,18 @@ SequentialSysOfEqn_LIBS =	$(FE)/system_of_eqn/linearSOE/LinearSOE.o \
 	$(SUPER_LU_OBJ) \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSOE.o \
 	$(FE)/system_of_eqn/linearSOE/umfGEN/UmfpackGenLinSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCommon.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonFactory.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCOOLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCOOLinSolver.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCompressedLinSOE.o \
+	$(FE)/system_of_eqn/linearSOE/sparsePython/SparsePythonCompressedLinSolver.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonEigenCommon.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonEigenFactory.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCOOEigenSOE.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCOOEigenSolver.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCompressedEigenSOE.o \
+	$(FE)/system_of_eqn/eigenSOE/sparsePython/SparsePythonCompressedEigenSolver.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSOE.o \
 	$(FE)/system_of_eqn/eigenSOE/FullGenEigenSolver.o \
 	$(FE)/system_of_eqn/eigenSOE/SymmGeneralizedEigenSOE.o \
@@ -1308,6 +1320,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/domain/single/SingleDomPC_Iter.o \
 	$(FE)/domain/domain/single/SingleDomAllSP_Iter.o \
 	$(FE)/domain/domain/single/SingleDomMP_Iter.o \
+	$(FE)/domain/domain/single/SingleDomEQ_Iter.o \
 	$(FE)/domain/domain/single/SingleDomParamIter.o \
 	$(FE)/domain/domain/partitioned/PartitionedDomain.o \
 	$(FE)/domain/domain/partitioned/PartitionedDomainEleIter.o \
@@ -1318,6 +1331,7 @@ DOMAIN_LIBS =  $(FE)/domain/component/DomainComponent.o \
 	$(FE)/domain/node/NodalLoad.o \
 	$(FE)/domain/constraints/SP_Constraint.o \
 	$(FE)/domain/constraints/MP_Constraint.o \
+	$(FE)/domain/constraints/EQ_Constraint.o \
 	$(FE)/domain/constraints/Pressure_Constraint.o \
 	$(FE)/domain/constraints/ImposedMotionSP.o \
 	$(FE)/domain/constraints/ImposedMotionSP1.o \
@@ -1519,8 +1533,10 @@ ANALYSIS_LIBS = $(FE)/analysis/analysis/Analysis.o \
 	$(FE)/analysis/fe_ele/FE_Element.o \
 	$(FE)/analysis/fe_ele/penalty/PenaltySP_FE.o \
 	$(FE)/analysis/fe_ele/penalty/PenaltyMP_FE.o \
+	$(FE)/analysis/fe_ele/penalty/PenaltyEQ_FE.o \
 	$(FE)/analysis/fe_ele/lagrange/LagrangeSP_FE.o \
 	$(FE)/analysis/fe_ele/lagrange/LagrangeMP_FE.o \
+	$(FE)/analysis/fe_ele/lagrange/LagrangeEQ_FE.o \
 	$(FE)/analysis/fe_ele/transformation/TransformationFE.o
 
 

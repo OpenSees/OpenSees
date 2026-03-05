@@ -27,10 +27,15 @@
 #ifndef MohrCoulomb_PF_H
 #define MohrCoulomb_PF_H
 
+
 #include "../PlasticFlowBase.h"
 #include "../ASDPlasticMaterial3DGlobals.h"
 #include <cmath>
 #include <typeinfo>
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif // M_PI
 
 template<class NO_HARDENING>
 class MohrCoulomb_PF : public PlasticFlowBase<MohrCoulomb_PF<NO_HARDENING>>// CRTP

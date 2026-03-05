@@ -10,6 +10,90 @@ on:
   workflow_dispatch:
 
 jobs:
+  build-ubuntu:
+    name: Build Ubuntu
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: 2.1. Obtaining OpenSees Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install conan
+        run: |
+          pip install conan
+          conan profile detect --force
+      - name: build OpenSees & OpenSeesPy
+        run: |
+          conan install . --build=missing
+          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin
+          cd build/Release
+          cmake --build . --target OpenSees -j8
+          cmake --build . --target OpenSeesPy -j8
+          mv OpenSeesPy.so opensees.so
+      - name: Verification OpenSeesPy  # Simple Sanity Test
+        run: |
+          export PYTHONPATH="./build/Release"
+          python3 -c "import sys; print(sys.path)"
+          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+      - name: Run pytest in tests/ folder
+        run: |
+          python3 -m pip install pytest
+          cp build/Release/opensees.so tests/
+          cd tests
+          pytest -v
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: OpenSees_Ubuntu
+            path: |
+              ./build/Release/OpenSees
+              ./build/Release/opensees.so
+
+  build-mac-conan:
+    name: Build Mac OS
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - name: 2.1. Obtaining OpenSees Source Code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: conan install	  
+        run: |
+          pip install conan
+          conan profile detect --force	  
+      - name: 2.3.2. Building the OpenSees Applications and Python module
+        run: |
+          export FC=/opt/homebrew/bin/gfortran-13
+          export LDFLAGS="-L/opt/homebrew/lib/gcc/current -lgfortran"
+          conan install . --build=missing
+          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin	
+          cd build/Release
+          cmake --build . --target OpenSees -j8
+          cmake --build . --target OpenSeesPy -j8
+          mv ./OpenSeesPy.dylib ./opensees.so
+      - name: Verification OpenSeesPySP
+        run: |
+          export PYTHONPATH="./build/Release"
+          python3 -c "import sys; print(sys.path)"
+          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+            name: OpenSees_Mac
+            path: |
+              ./build/Release/OpenSees
+              ./build/Release/opensees.so
+
   build-win:
     name: Build Windows VS2022
     runs-on: windows-2022
@@ -37,34 +121,34 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
-      - name: Conan 1.x
-        run: pip install conan<2.0
+      - name: Install conan
+        run: |
+          pip install conan
+          conan profile detect --force	  
       - name: MUMPS
         shell: cmd
         run: |
           git clone https://github.com/OpenSees/mumps.git
           cd mumps
-          mkdir build
-          cd build
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
-          cmake .. -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -G Ninja
-          cmake --build . --config Release --parallel 4
+          cmake -S . -B build -G Ninja -Darith=d -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DCMAKE_EXE_LINKER_FLAGS="/link /FORCE:MULTIPLE"  -DCMAKE_SHARED_LINKER_FLAGS="/link /FORCE:MULTIPLE"	  
+          cd build
+          cmake --build . --config Release
       - name: 2.2.2. Building the OpenSees Applications and Python module
         shell: cmd
         run: |
-          mkdir build
-          cd build
-          conan install .. --build missing --settings compiler="Visual Studio" --settings compiler.runtime="MT" --settings compiler.version=16
+          conan install . -s arch=x86_64 -s compiler.runtime=static --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
-          cmake .. -DBLA_STATIC=ON -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64 -DMUMPS_DIR="..\..\mumps\build"
+          cmake.exe -S . -B build/Release -G "Ninja"  -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DCMAKE_Fortran_COMPILER="ifx" -DBLA_STATIC=ON  -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64  -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_EXE_LINKER_FLAGS="/FORCE:MULTIPLE" -DCMAKE_SHARED_LINKER_FLAGS="/FORCE:MULTIPLE" -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON
+          cd build/Release
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
-          mv ./build/bin/OpenSeesPy.dll ./build/bin/opensees.pyd
-          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/bin/
-          $env:PYTHONPATH = "./build/bin/"
+          mv ./build/Release/OpenSeesPy.dll ./build/Release/opensees.pyd
+          cp "C:\Program Files (x86)\Intel\oneAPI\compiler\2024.1\bin\libiomp5md.dll" ./build/Release/
+          $env:PYTHONPATH = "./build/Release/"
           python -c "import sys; print(sys.path)"
           python ./EXAMPLES/ExamplePython/example_variable_analysis.py
       - name: Upload Artifacts
@@ -72,106 +156,6 @@ jobs:
         with:
             name: OpenSees_Windows
             path: |
-              ./build/bin/OpenSees.exe
-              ./build/bin/opensees.pyd
-              ./build/bin/libiomp5md.dll
-
-  build-mac:
-    name: Build Mac OS
-    runs-on: macos-latest
-    timeout-minutes: 30
-    steps:
-      - name: 2.1. Obtaining OpenSees Source Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      # - name: XCode Command Line Tools is already installed.
-      - name: Install other dependencies via Homebrew
-        run: |
-         ln -s /opt/homebrew/bin/gcc-13 /usr/local/bin/gcc
-         ln -s /opt/homebrew/bin/gfortran-13 /usr/local/bin/gfortran
-         brew install eigen
-         brew install hdf5
-         brew install open-mpi
-         brew install scalapack
-         sudo ln -sf /opt/homebrew/include/eigen3/Eigen /opt/homebrew/include/Eigen
-      - name: MUMPS
-        run: |
-          git clone https://github.com/OpenSees/mumps.git
-          cd mumps
-          mkdir build
-          cd build
-          cmake .. -Darith=d
-          cmake --build . --config Release --parallel 4
-      - name: 2.3.2. Building the OpenSees Applications and Python module
-        run: |
-          mkdir build
-          cd build
-          cmake .. -DMUMPS_DIR=$PWD/../../mumps/build -DCMAKE_PREFIX_PATH=/usr/local/Cellar/libaec/1.1.3/cmake
-          cmake --build . --target OpenSees -j8
-          cmake --build . --target OpenSeesPy -j8
-          mv ./OpenSeesPy.dylib ./opensees.so
-      - name: Verification OpenSeesPySP
-        run: |
-          export PYTHONPATH="./build/"
-          python3 -c "import sys; print(sys.path)"
-          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-            name: OpenSees_Mac
-            path: |
-              ./build/OpenSees
-              ./build/opensees.so
-
-  build-ubuntu:
-    name: Build Ubuntu
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - name: 2.1. Obtaining OpenSees Source Code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-      - name: Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      # - name: Needed Applications and Libraries are already satisfied.
-      - name: Conan 1.x
-        run: pip install "conan<2.0"
-      - name: 2.4.2. Building the OpenSees Applications and Python module
-        run: |
-          mkdir build
-          cd build
-          conan install .. --build missing # conan executables location is different.
-          cmake ..
-          cmake --build . --target OpenSees -j8
-          cmake --build . --target OpenSeesPy -j8
-          mv lib/OpenSeesPy.so lib/opensees.so
-      - name: Verification OpenSeesPySP   # Simple Sanity Test
-        run: |
-          export PYTHONPATH="./build/lib/"
-          python3 -c "import sys; print(sys.path)"
-          python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
-      - name: Run pytest in tests/ folder
-        run: |
-          python3 -m pip install pytest
-          cp build/lib/opensees.so tests/
-          cd tests
-          pytest -v
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-            name: OpenSees_Ubuntu
-            path: |
-              ./build/bin/OpenSees
-              ./build/lib/opensees.so
-#        # Simple MP sanity test
-#        - name: Verification OpenSeesPyMP
-#          run: |
-#            mpiexec -np 2 python ../EXAMPLES/ExamplePython/example_mpi_paralleltruss_explicit.py
+              ./build/Release/OpenSees.exe
+              ./build/Release/opensees.pyd
+              ./build/Release/libiomp5md.dll

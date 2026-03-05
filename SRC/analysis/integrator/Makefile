@@ -7,6 +7,7 @@ OBJS       = AlphaOS.o \
     EQPath.o \
     AlphaOSGeneralized.o \
     ExplicitDifference.o \
+    ExplicitDifferenceStatic.o \
 	AlphaOSGeneralized_TP.o \
 	ArcLength.o \
 	ArcLength1.o \

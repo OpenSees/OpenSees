@@ -27,6 +27,11 @@
 #ifndef MohrCoulomb_YF_H
 #define MohrCoulomb_YF_H
 
+
+#ifndef M_PI
+#define M_PI 3.1415926535897932384626433832795
+#endif // M_PI
+
 #include "../YieldFunctionBase.h"
 #include "cmath"
 #include <iostream>

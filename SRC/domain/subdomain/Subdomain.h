@@ -66,6 +66,7 @@ class Subdomain: public Element, public Domain
 	      TaggedObjectStorage &theElementsStorage,
 	      TaggedObjectStorage &theLoadPatternsStorage,	      
 	      TaggedObjectStorage &theMPsStorage,
+	      TaggedObjectStorage &theEQsStorage,
 	      TaggedObjectStorage &theSPsStorage);
     
     virtual  ~Subdomain();    
