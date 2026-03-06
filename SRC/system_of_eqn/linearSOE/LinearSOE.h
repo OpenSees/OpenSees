@@ -40,6 +40,8 @@
 // What: "@(#) LinearSOE.h, revA"
 
 #include <MovableObject.h>
+#include <OPS_Stream.h>
+#include <vector>
 
 class LinearSOESolver;
 class Graph;
@@ -77,6 +79,9 @@ class LinearSOE : public MovableObject
     virtual const Vector &getX(void) = 0;
     virtual const Vector &getB(void) = 0;    
     virtual const Matrix *getA(void) {return 0;};    
+    virtual int saveSparseA(OPS_Stream& output, int baseIndex = 0); 
+    virtual int getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex = 0);
+    virtual int getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex = 0);
     virtual double getDeterminant(void);
     virtual double normRHS(void) = 0;
 
