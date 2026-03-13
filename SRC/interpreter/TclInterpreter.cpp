@@ -585,3 +585,10 @@ TclInterpreter::setString(const char* str)
     wrapper.setOutputs(interp, str);
     return 0;
 }
+
+int
+TclInterpreter::setGenericDict(GenericDict& data)
+{
+    wrapper.setGenericDictOutput(interp, data);
+    return 0;
+}
