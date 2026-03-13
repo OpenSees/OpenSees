@@ -143,6 +143,8 @@ jobs:
           cd build/Release
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
+          cmake --build . --config Release --target OpenSeesMP -j8
+          cmake --build . --config Release --target OpenSeesSP -j8	  	  
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
