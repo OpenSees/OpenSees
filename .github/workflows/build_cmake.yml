@@ -34,6 +34,8 @@ jobs:
           cd build/Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
+          cmake --build . --target OpenSeesSP -j8
+          cmake --build . --target OpenSeesMP -j8	  
           mv OpenSeesPy.so opensees.so
       - name: Verification OpenSeesPy  # Simple Sanity Test
         run: |
@@ -143,8 +145,6 @@ jobs:
           cd build/Release
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
-          cmake --build . --config Release --target OpenSeesMP -j8
-          cmake --build . --config Release --target OpenSeesSP -j8	  	  
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
