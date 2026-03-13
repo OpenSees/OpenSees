@@ -2,7 +2,7 @@ include ../../../../Makefile.def
 
 OBJS       = SingleDomEleIter.o SingleDomNodIter.o \
 	SingleDomSP_Iter.o SingleDomMP_Iter.o SingleDomAllSP_Iter.o \
-	SingleDomParamIter.o SingleDomPC_Iter.o
+	SingleDomParamIter.o SingleDomPC_Iter.o SingleDomEQ_Iter.o
 
 # Compilation control
 

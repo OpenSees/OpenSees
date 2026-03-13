@@ -88,6 +88,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <FullGenEigenSolver.h>
 #include <FullGenEigenSOE.h>
 #include <ArpackSOE.h>
+#include <SparsePythonEigenFactory.h>
 #include <iostream>
 #include <ProfileSPDLinSOE.h>
 
@@ -411,8 +412,27 @@ void PythonAnalysisBuilder::newPFEMAnalysis(double dtmax, double dtmin, double r
     this->resetTransient();
 }
 
-void PythonAnalysisBuilder::newEigenAnalysis(int typeSolver, double shift)
+void PythonAnalysisBuilder::newEigenAnalysis(int typeSolver, double shift, EigenSOE *providedEigenSOE)
 {
+    // If a pre-constructed EigenSOE was provided (e.g., from Python factory), use it
+    if (providedEigenSOE != NULL) {
+        if (theEigenSOE != 0 && theEigenSOE != providedEigenSOE) {
+            delete theEigenSOE;
+        }
+        theEigenSOE = providedEigenSOE;
+        theEigenSOE->setLinks(*theAnalysisModel);
+        if (theSOE != 0) {
+            theEigenSOE->setLinearSOE(*theSOE);
+        }
+        
+        if (theStaticAnalysis != 0) {
+            theStaticAnalysis->setEigenSOE(*theEigenSOE);
+        } else if (theTransientAnalysis != 0) {
+            theTransientAnalysis->setEigenSOE(*theEigenSOE);
+        }
+        return;
+    }
+
     // create a new eigen system and solver
     if(theEigenSOE != 0) {
 	if(theEigenSOE->getClassTag() != typeSolver) {
@@ -432,6 +452,11 @@ void PythonAnalysisBuilder::newEigenAnalysis(int typeSolver, double shift)
 	    FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
 	    theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
 
+	} else if(typeSolver == EigenSOE_TAGS_SparsePythonCompressedEigenSOE ||
+	          typeSolver == EigenSOE_TAGS_SparsePythonCOOEigenSOE) {
+	    // This case should not be reached here - should use providedEigenSOE instead
+	    opserr << "WARNING: PythonCompressedSparseEigenSOE should be created via factory function" << endln;
+	    theEigenSOE = new ArpackSOE(shift);
 	} else {
 	    theEigenSOE = new ArpackSOE(shift);    
 	}
@@ -1128,7 +1153,7 @@ PyObject *ops_eigenAnalysis(PyObject *self, PyObject *args)
     // check inputs
     int numArgs = OPS_GetNumRemainingInputArgs();
     if(numArgs < 1) {
-	PyErr_SetString(PyExc_RuntimeError,"ERROR eigen('type',numModes)");
+	PyErr_SetString(PyExc_RuntimeError,"ERROR eigen('type',numModes) or eigen('PythonSparse',numModes,dict)");
 	return NULL;
     }
 
@@ -1138,35 +1163,57 @@ PyObject *ops_eigenAnalysis(PyObject *self, PyObject *args)
     double shift = 0.0;
     bool findSmallest = true;
     int numEigen = 0;
+    EigenSOE *providedEigenSOE = nullptr;
 
-    // check type of eigenvalue analysis
-    if(numArgs >1) {
-	std::string type = OPS_GetString();
-	if(type=="frequency"||type=="-frenquency"||type=="generalized"||type=="-generalized") {
-	    generalizedAlgo = true;
-	} else if(type=="standard"||type=="-standard") {
-	    generalizedAlgo = false;
-	} else if(type=="-findLargest") {
-	    findSmallest = false;
-	} else if(type=="genBandArpack"||type=="--genBandArpack"||
-		  type=="genBandArpackEigen"||type=="-genBandArpackEigen") {
-	    typeSolver = EigenSOE_TAGS_ArpackSOE;
-	} else if(type=="symmBandLapack"||type=="-symmBandLapack"||
-		  type=="symmBandLapackEigen"||type=="-symmBandLapackEigen") {
-	    typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
-	} else if(type=="fullGenLapack"||type=="-fullGenLapack"||
-		  type=="fullGenLapackEigen"||type=="-fullGenLapackEigen") {
-	    typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
-	} else {
-	    PyErr_SetString(PyExc_RuntimeError,"eigen - unknown option specified");
-	    return NULL;
-	}
+    // Check if first argument is "PythonSparse" - if so, expect numModes and dict
+    std::string firstArg = OPS_GetString();
+    if (firstArg == "PythonSparse" || firstArg == "PythonCompressedSparseEigen") {
+        // PythonSparse eigen solver - requires numModes as second argument, dict as third
+        // First get numModes
+        int numData = 1;
+        if(OPS_GetIntInput(&numData,&numEigen) < 0) {
+            PyErr_SetString(PyExc_RuntimeError,"ERROR eigen('PythonSparse',numModes,dict) - invalid numModes");
+            return NULL;
+        }
+        
+        // Then get dict argument
+        extern void *OPS_SparsePythonEigenSolver();
+        void *eigenSOEPtr = OPS_SparsePythonEigenSolver();
+        if (eigenSOEPtr == NULL) {
+            return NULL;
+        }
+        providedEigenSOE = static_cast<EigenSOE *>(eigenSOEPtr);
+        typeSolver = providedEigenSOE->getClassTag();
+    } else {
+        // Traditional eigen analysis - parse type and numModes
+        // check type of eigenvalue analysis
+        if(numArgs > 1) {
+            if(firstArg=="frequency"||firstArg=="-frequency"||firstArg=="generalized"||firstArg=="-generalized") {
+                generalizedAlgo = true;
+            } else if(firstArg=="standard"||firstArg=="-standard") {
+                generalizedAlgo = false;
+            } else if(firstArg=="-findLargest") {
+                findSmallest = false;
+            } else if(firstArg=="genBandArpack"||firstArg=="--genBandArpack"||
+                      firstArg=="genBandArpackEigen"||firstArg=="-genBandArpackEigen") {
+                typeSolver = EigenSOE_TAGS_ArpackSOE;
+            } else if(firstArg=="symmBandLapack"||firstArg=="-symmBandLapack"||
+                      firstArg=="symmBandLapackEigen"||firstArg=="-symmBandLapackEigen") {
+                typeSolver = EigenSOE_TAGS_SymBandEigenSOE;
+            } else if(firstArg=="fullGenLapack"||firstArg=="-fullGenLapack"||
+                      firstArg=="fullGenLapackEigen"||firstArg=="-fullGenLapackEigen") {
+                typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
+            } else {
+                PyErr_SetString(PyExc_RuntimeError,"eigen - unknown option specified");
+                return NULL;
+            }
+        }
+
+        int numData = 1;
+        if(OPS_GetIntInput(&numData,&numEigen) < 0) return NULL;
     }
 
-    int numData = 1;
-    if(OPS_GetIntInput(&numData,&numEigen) < 0) return NULL;
-
-    anaBuilder.newEigenAnalysis(typeSolver,shift);
+    anaBuilder.newEigenAnalysis(typeSolver, shift, providedEigenSOE);
 
     // create a transient analysis if no analysis exists
     Domain* theDomain = OPS_GetDomain();

@@ -10,6 +10,7 @@ target_sources(OPS_Domain
     SingleDomNodIter.cpp
     SingleDomSP_Iter.cpp 
     SingleDomMP_Iter.cpp 
+    SingleDomEQ_Iter.cpp 
     SingleDomAllSP_Iter.cpp
     SingleDomParamIter.cpp  
     SingleDomPC_Iter.cpp
@@ -18,6 +19,7 @@ target_sources(OPS_Domain
     SingleDomNodIter.h
     SingleDomSP_Iter.h 
     SingleDomMP_Iter.h 
+    SingleDomEQ_Iter.h 
     SingleDomAllSP_Iter.h
     SingleDomParamIter.h  
     SingleDomPC_Iter.h

@@ -463,7 +463,7 @@ DistributedBandSPDLinSOE::setB(const Vector &v, double fact)
 
 
     if (v.Size() != size) {
-	opserr << "WARNING DistributedBandGenLinSOE::setB() -";
+	opserr << "WARNING DistributedBandSPDLinSOE::setB() -";
 	opserr << " incompatible sizes " << size << " and " << v.Size() << endln;
 	return -1;
     }

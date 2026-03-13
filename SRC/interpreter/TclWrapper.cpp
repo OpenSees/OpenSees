@@ -90,6 +90,60 @@ TclWrapper::setOutputs(Tcl_Interp* interp, const char* str)
     Tcl_SetResult(interp, (char*)str, TCL_VOLATILE);
 }
 
+void
+TclWrapper::setGenericDictOutput(Tcl_Interp* interp, GenericDict& data)
+{
+    // Create TCL dictionary
+    Tcl_Obj* dict = Tcl_NewDictObj();
+    
+    for (auto& [key, value] : data) {
+        Tcl_Obj* tclValue = nullptr;
+        
+        // Use std::visit to convert variant to TCL object
+        std::visit([&](auto&& arg) {
+            using T = std::decay_t<decltype(arg)>;
+            
+            if constexpr (std::is_same_v<T, int>) {
+                tclValue = Tcl_NewIntObj(arg);
+                
+            } else if constexpr (std::is_same_v<T, double>) {
+                tclValue = Tcl_NewDoubleObj(arg);
+                
+            } else if constexpr (std::is_same_v<T, std::string>) {
+                tclValue = Tcl_NewStringObj(arg.c_str(), -1);
+                
+            } else if constexpr (std::is_same_v<T, std::vector<int>>) {
+                std::vector<Tcl_Obj*> list(arg.size());
+                for (size_t i = 0; i < arg.size(); i++) {
+                    list[i] = Tcl_NewIntObj(arg[i]);
+                }
+                tclValue = Tcl_NewListObj((int)list.size(), &list[0]);
+                
+            } else if constexpr (std::is_same_v<T, std::vector<double>>) {
+                std::vector<Tcl_Obj*> list(arg.size());
+                for (size_t i = 0; i < arg.size(); i++) {
+                    list[i] = Tcl_NewDoubleObj(arg[i]);
+                }
+                tclValue = Tcl_NewListObj((int)list.size(), &list[0]);
+                
+            } else if constexpr (std::is_same_v<T, std::vector<std::string>>) {
+                std::vector<Tcl_Obj*> list(arg.size());
+                for (size_t i = 0; i < arg.size(); i++) {
+                    list[i] = Tcl_NewStringObj(arg[i].c_str(), -1);
+                }
+                tclValue = Tcl_NewListObj((int)list.size(), &list[0]);
+            }
+        }, value);
+        
+        if (tclValue != nullptr) {
+            Tcl_DictObjPut(interp, dict,
+                          Tcl_NewStringObj(key.c_str(), -1), tclValue);
+        }
+    }
+    
+    Tcl_SetObjResult(interp, dict);
+}
+
 ///////////////////////////////////////////
 /////// Tcl wrapper functions  ////////////
 ///////////////////////////////////////////
@@ -449,6 +503,14 @@ static int Tcl_ops_equalDOF(ClientData clientData, Tcl_Interp *interp, int argc,
     wrapper->resetCommandLine(argc, 1, argv);
 
     if (OPS_EqualDOF() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_equationConstraint(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_EquationConstraint() < 0) return TCL_ERROR;
 
     return TCL_OK;
 }
@@ -977,6 +1039,14 @@ static int Tcl_ops_sectionWeight(ClientData clientData, Tcl_Interp *interp, int 
     wrapper->resetCommandLine(argc, 1, argv);
 
     if (OPS_sectionWeight() < 0) return TCL_ERROR;
+
+    return TCL_OK;
+}
+
+static int Tcl_ops_sectionResponseType(ClientData clientData, Tcl_Interp *interp, int argc,   TCL_Char **argv) {
+    wrapper->resetCommandLine(argc, 1, argv);
+
+    if (OPS_sectionResponseType() < 0) return TCL_ERROR;
 
     return TCL_OK;
 }
@@ -1716,6 +1786,7 @@ TclWrapper::addOpenSeesCommands(Tcl_Interp* interp)
     addCommand(interp,"remove", &Tcl_ops_remove);
     addCommand(interp,"mass", &Tcl_ops_mass);
     addCommand(interp,"equalDOF", &Tcl_ops_equalDOF);
+    addCommand(interp,"equationConstraint", &Tcl_ops_equationConstraint);
     addCommand(interp,"nodeEigenvector", &Tcl_ops_nodeEigenvector);
     addCommand(interp,"getTime", &Tcl_ops_getTime);
     addCommand(interp,"setCreep", &Tcl_ops_setCreep);

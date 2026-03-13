@@ -44,6 +44,7 @@ class Node;
 class SP_Constraint;
 class MP_Constraint;
 class Pressure_Constraint;
+class EQ_Constraint;
 class NodalLoad;
 class ElementalLoad;
 class LoadPattern;
@@ -54,6 +55,7 @@ class NodeIter;
 class SP_ConstraintIter;
 class MP_ConstraintIter;
 class Pressure_ConstraintIter;
+class EQ_ConstraintIter;
 class LoadPatternIter;
 class ParameterIter;
 
@@ -62,6 +64,7 @@ class SingleDomNodIter;
 class SingleDomSP_Iter;
 class SingleDomMP_Iter;
 class SingleDomPC_Iter;
+class SingleDomEQ_Iter;
 class SingleDomAllSP_Iter;
 class SingleDomParamIter;
 
@@ -81,13 +84,14 @@ class Domain
 {
   public:
     Domain();
-    Domain(int numNodes, int numElements, int numSPs, int numMPs,
+    Domain(int numNodes, int numElements, int numSPs, int numMPs, int numEQs,
 	   int numLoadPatterns);
 
     Domain(TaggedObjectStorage &theNodesStorage,
 	   TaggedObjectStorage &theElementsStorage,
 	   TaggedObjectStorage &theMPsStorage,
 	   TaggedObjectStorage &theSPsStorage,
+	   TaggedObjectStorage &theEQsStorage,
 	   TaggedObjectStorage &theLoadPatternsStorage);
 
     Domain(TaggedObjectStorage &theStorageType);
@@ -104,6 +108,7 @@ class Domain
 				   const ID &fixityCodes, 
 				   double tol=1e-10);
     virtual  bool addMP_Constraint(MP_Constraint *); 
+    virtual  bool addEQ_Constraint(EQ_Constraint *); 
     virtual  bool addLoadPattern(LoadPattern *);            
     virtual  bool addParameter(Parameter *);            
     
@@ -119,9 +124,11 @@ class Domain
     virtual SP_Constraint *removeSP_Constraint(int tag);
     virtual Pressure_Constraint *removePressure_Constraint(int tag);
     virtual MP_Constraint *removeMP_Constraint(int tag);
+    virtual EQ_Constraint *removeEQ_Constraint(int tag);
 
     virtual int removeMP_Constraints(int constrainedNodeTag);
     virtual int removeSP_Constraint(int nodeTag, int dof, int loadPatternTag);
+    virtual int removeEQ_Constraints(int constrainedNodeTag);
 
     virtual LoadPattern   *removeLoadPattern(int tag);
     virtual Parameter     *removeParameter(int tag);
@@ -137,6 +144,7 @@ class Domain
     virtual  SP_ConstraintIter &getSPs();
     virtual  Pressure_ConstraintIter &getPCs();
     virtual  MP_ConstraintIter &getMPs();
+    virtual  EQ_ConstraintIter &getEQs();
     virtual  LoadPatternIter   &getLoadPatterns();
     virtual  SP_ConstraintIter &getDomainAndLoadPatternSPs();
     virtual  ParameterIter     &getParameters();
@@ -146,6 +154,7 @@ class Domain
     virtual  SP_Constraint *getSP_Constraint(int tag);    
     virtual  Pressure_Constraint *getPressure_Constraint(int tag);    
     virtual  MP_Constraint *getMP_Constraint(int tag);    
+    virtual  EQ_Constraint *getEQ_Constraint(int tag);    
     virtual  LoadPattern   *getLoadPattern(int tag);        
     virtual  Parameter     *getParameter(int tag);        
     // Following two methods to map index to tag and vice versa
@@ -162,6 +171,7 @@ class Domain
     virtual int getNumSPs(void) const;
     virtual int getNumPCs(void) const;
     virtual int getNumMPs(void) const;
+    virtual int getNumEQs(void) const;
     virtual int getNumLoadPatterns(void) const;            
     virtual int getNumParameters(void) const;            
     virtual const Vector &getPhysicalBounds(void); 
@@ -260,7 +270,7 @@ class Domain
     bool   hasDomainChangedFlag;      // a bool flag used to indicate if GeoTag needs to be ++
     int    theDbTag;                   // the Domains unique database tag == 0
     int    lastGeoSendTag;            // the value of currentGeoTag when sendSelf was last invoked
-    int dbEle, dbNod, dbSPs, dbPCs, dbMPs, dbLPs, dbParam; // database tags for storing info
+    int dbEle, dbNod, dbSPs, dbPCs, dbMPs, dbEQs, dbLPs, dbParam; // database tags for storing info
 
     bool eleGraphBuiltFlag;
     bool nodeGraphBuiltFlag;
@@ -273,6 +283,7 @@ class Domain
     TaggedObjectStorage  *theSPs;    
     TaggedObjectStorage  *thePCs;    
     TaggedObjectStorage  *theMPs;    
+    TaggedObjectStorage  *theEQs;    
     TaggedObjectStorage  *theLoadPatterns;        
     TaggedObjectStorage  *theParameters;        
 
@@ -281,6 +292,7 @@ class Domain
     SingleDomSP_Iter      *theSP_Iter;
     SingleDomPC_Iter      *thePC_Iter;
     SingleDomMP_Iter      *theMP_Iter;
+    SingleDomEQ_Iter      *theEQ_Iter;
     LoadPatternIter       *theLoadPatternIter;        
     SingleDomAllSP_Iter   *allSP_Iter;
     SingleDomParamIter    *theParamIter;

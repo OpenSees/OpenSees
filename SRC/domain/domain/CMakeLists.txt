@@ -14,6 +14,7 @@ target_sources(OPS_Domain
     ElementIter.h
     LoadCaseIter.h
     MP_ConstraintIter.h
+    EQ_ConstraintIter.h
     NodeIter.h
     ParameterIter.h
     Pressure_ConstraintIter.h

@@ -66,6 +66,9 @@ class DiagonalSOE : public LinearSOE
   const Matrix *getA(void);
     double normRHS(void);
 
+    int saveSparseA(OPS_Stream &output, int baseIndex = 0);
+    int getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex = 0);
+    int getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex = 0);
     int setDiagonalSolver(DiagonalSolver &newSolver);    
     
     int sendSelf(int commitTag, Channel &theChannel);

@@ -392,6 +392,18 @@
     <ClCompile Include="..\..\..\SRC\analysis\analysis\SDFAnalysis.cpp">
       <Filter>analysis</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifferenceStatic.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitBathe.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltyEQ_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeEQ_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\SRC\analysis\analysis\Analysis.h">

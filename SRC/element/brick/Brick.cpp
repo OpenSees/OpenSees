@@ -170,10 +170,12 @@ Brick::Brick(int tag,
    connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), massType(matype)
 {
   B.Zero();
+#ifdef _G3DEBUG
   opserr << "Brick::constructor - tag: " << tag << endln;
   if (massType == 1) {
       opserr << "Brick::constructor - Using Lumped Mass Matrix\n";
   }
+#endif
 
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;

@@ -48,6 +48,7 @@
 #include <SP_Constraint.h>
 #include <Pressure_Constraint.h>
 #include <MP_Constraint.h>
+#include <EQ_Constraint.h>
 #include <NodalLoad.h>
 #include <ElementalLoad.h>
 #include <LoadPattern.h>
@@ -62,6 +63,7 @@
 #include <SingleDomSP_Iter.h>
 #include <SingleDomPC_Iter.h>
 #include <SingleDomMP_Iter.h>
+#include <SingleDomEQ_Iter.h>
 #include <LoadPatternIter.h>
 #include <SingleDomAllSP_Iter.h>
 #include <SingleDomParamIter.h>
@@ -95,7 +97,7 @@ Domain::Domain()
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
  hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
- dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
+ dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbEQs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false),  nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
@@ -112,6 +114,7 @@ Domain::Domain()
     theSPs      = new MapOfTaggedObjects();
     thePCs      = new MapOfTaggedObjects();
     theMPs      = new MapOfTaggedObjects();    
+    theEQs      = new MapOfTaggedObjects();    
     theLoadPatterns = new MapOfTaggedObjects();
     theParameters   = new MapOfTaggedObjects();
 
@@ -121,15 +124,16 @@ Domain::Domain()
     theSP_Iter = new SingleDomSP_Iter(theSPs);
     thePC_Iter = new SingleDomPC_Iter(thePCs);
     theMP_Iter = new SingleDomMP_Iter(theMPs);
+    theEQ_Iter = new SingleDomEQ_Iter(theEQs);
     theLoadPatternIter = new LoadPatternIter(theLoadPatterns);
     allSP_Iter = new SingleDomAllSP_Iter(*this);
     theParamIter = new SingleDomParamIter(theParameters);
     
     // check that there was space to create the data structures    
     if (theElements ==0 || theNodes == 0 || 
-	theSPs == 0 || theMPs == 0 || thePCs == 0 ||
+	theSPs == 0 || theMPs == 0 || thePCs == 0 || theEQs == 0 ||
 	theEleIter == 0 || theNodIter == 0 || 
-	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 ||
+	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 || theEQ_Iter == 0 ||
 	theLoadPatterns == 0 || theLoadPatternIter == 0 ||
 	theParameters == 0) {	
 
@@ -146,12 +150,12 @@ Domain::Domain()
 }
 
 
-Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
+Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs, int numEQs,
 	       int numLoadPatterns)
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
  hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
- dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
+ dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbEQs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0),
  theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
@@ -166,6 +170,7 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
     theSPs      = new MapOfTaggedObjects();
     thePCs      = new MapOfTaggedObjects();
     theMPs      = new MapOfTaggedObjects();    
+    theEQs      = new MapOfTaggedObjects();    
     theLoadPatterns = new MapOfTaggedObjects();
     theParameters   = new MapOfTaggedObjects();
     
@@ -175,15 +180,16 @@ Domain::Domain(int numNodes, int numElements, int numSPs, int numMPs,
     theSP_Iter = new SingleDomSP_Iter(theSPs);
     thePC_Iter = new SingleDomPC_Iter(thePCs);
     theMP_Iter = new SingleDomMP_Iter(theMPs);
+    theEQ_Iter = new SingleDomEQ_Iter(theEQs);
     theLoadPatternIter = new LoadPatternIter(theLoadPatterns);
     allSP_Iter = new SingleDomAllSP_Iter(*this);
     theParamIter = new SingleDomParamIter(theParameters);
     
     // check that there was space to create the data structures    
     if (theElements ==0 || theNodes == 0 || 
-	theSPs == 0 || theMPs == 0 || thePCs == 0 ||
+	theSPs == 0 || theMPs == 0 || thePCs == 0 || theEQs == 0 ||
 	theEleIter == 0 || theNodIter == 0 || 
-	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 ||
+	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 || theEQ_Iter == 0 ||
 	theLoadPatterns == 0 || theLoadPatternIter == 0 ||
 	theParameters == 0) {	
 
@@ -203,17 +209,19 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
 	       TaggedObjectStorage &theElementsStorage,
 	       TaggedObjectStorage &theMPsStorage,
 	       TaggedObjectStorage &theSPsStorage,
+	       TaggedObjectStorage &theEQsStorage,
 	       TaggedObjectStorage &theLoadPatternsStorage)
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
  hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
- dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
+ dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbEQs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theElements(&theElementsStorage),
  theNodes(&theNodesStorage),
  theSPs(&theSPsStorage),
  theMPs(&theMPsStorage), 
+ theEQs(&theEQsStorage), 
  theLoadPatterns(&theLoadPatternsStorage),
  theRegions(0), numRegions(0), commitTag(0), initBounds(true), resetBounds(false),
  theBounds(6), theEigenvalues(0), theEigenvalueSetTime(0), 
@@ -230,6 +238,7 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
     theSP_Iter = new SingleDomSP_Iter(theSPs);
     thePC_Iter = new SingleDomPC_Iter(thePCs);
     theMP_Iter = new SingleDomMP_Iter(theMPs);
+    theEQ_Iter = new SingleDomEQ_Iter(theEQs);
     theLoadPatternIter = new LoadPatternIter(theLoadPatterns);
     allSP_Iter = new SingleDomAllSP_Iter(*this);
     theParameters   = new MapOfTaggedObjects();    
@@ -240,6 +249,7 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
 	theNodes->getNumComponents() != 0 ||
 	theSPs->getNumComponents() != 0 ||
 	theMPs->getNumComponents() != 0 ||
+	theEQs->getNumComponents() != 0 ||
 	theLoadPatterns->getNumComponents() != 0 ) {
 
 	opserr << ("Domain::Domain(&, & ...) - out of memory\n");	
@@ -247,9 +257,9 @@ Domain::Domain(TaggedObjectStorage &theNodesStorage,
 	
     // check that there was space to create the data structures    
     if (theElements ==0 || theNodes == 0 || 
-	theSPs == 0 || theMPs == 0 || thePCs == 0 ||
+	theSPs == 0 || theMPs == 0 || thePCs == 0 || theEQs == 0 ||
 	theEleIter == 0 || theNodIter == 0 ||
-	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 ||
+	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 || theEQ_Iter == 0 ||
 	theLoadPatterns == 0 || theLoadPatternIter == 0) { 
     
 	opserr << "FATAL Domain::Domain(TaggedObjectStorage, ...) - ";
@@ -271,7 +281,7 @@ Domain::Domain(TaggedObjectStorage &theStorage)
 :theRecorders(0), numRecorders(0),
  currentTime(0.0), committedTime(0.0), dT(0.0), currentGeoTag(0),
  hasDomainChangedFlag(false), theDbTag(0), lastGeoSendTag(-1),
- dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbLPs(0), dbParam(0),
+ dbEle(0), dbNod(0), dbSPs(0), dbPCs(0), dbMPs(0), dbEQs(0), dbLPs(0), dbParam(0),
  eleGraphBuiltFlag(false), nodeGraphBuiltFlag(false), theNodeGraph(0), 
  theElementGraph(0), 
  theRegions(0), numRegions(0), commitTag(0),initBounds(true), resetBounds(false),
@@ -287,6 +297,7 @@ Domain::Domain(TaggedObjectStorage &theStorage)
     theSPs      = theStorage.getEmptyCopy();
     thePCs      = theStorage.getEmptyCopy();
     theMPs      = theStorage.getEmptyCopy();
+    theEQs      = theStorage.getEmptyCopy();
     theLoadPatterns = theStorage.getEmptyCopy();    
     theParameters   = theStorage.getEmptyCopy();    
 
@@ -296,15 +307,16 @@ Domain::Domain(TaggedObjectStorage &theStorage)
     theSP_Iter = new SingleDomSP_Iter(theSPs);
     thePC_Iter = new SingleDomPC_Iter(thePCs);
     theMP_Iter = new SingleDomMP_Iter(theMPs);
+    theEQ_Iter = new SingleDomEQ_Iter(theEQs);
     theLoadPatternIter = new LoadPatternIter(theLoadPatterns);
     allSP_Iter = new SingleDomAllSP_Iter(*this);
     theParamIter = new SingleDomParamIter(theParameters);
 
     // check that there was space to create the data structures    
     if (theElements ==0 || theNodes == 0 || 
-	theSPs == 0 || theMPs == 0 || thePCs == 0 ||
+	theSPs == 0 || theMPs == 0 || thePCs == 0 || theEQs == 0 ||
 	theEleIter == 0 || theNodIter == 0 ||
-	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 ||
+	theMP_Iter == 0 || theSP_Iter == 0 || thePC_Iter == 0 || theEQ_Iter == 0 ||
 	theLoadPatterns == 0 || theLoadPatternIter == 0 ||
 	theParameters == 0) { 
 	
@@ -318,7 +330,7 @@ Domain::Domain(TaggedObjectStorage &theStorage)
     theBounds(4) = 0;    
     theBounds(5) = 0;            
 
-    dbEle =0; dbNod =0; dbSPs =0; dbPCs = 0; dbMPs =0; dbLPs = 0; dbParam = 0;
+    dbEle =0; dbNod =0; dbSPs =0; dbPCs = 0; dbMPs =0; dbEQs = 0; dbLPs = 0; dbParam = 0;
 }
 
 
@@ -353,6 +365,9 @@ Domain::~Domain()
   if (theMPs != 0)
     delete theMPs;
   
+  if (theEQs != 0)
+    delete theEQs;
+  
   if (theLoadPatterns != 0)
     delete theLoadPatterns;
 
@@ -376,6 +391,9 @@ Domain::~Domain()
   
   if (theMP_Iter != 0)
     delete theMP_Iter;
+  
+  if (theEQ_Iter != 0)
+    delete theEQ_Iter;
   
   if (allSP_Iter != 0)
     delete allSP_Iter;
@@ -764,6 +782,52 @@ Domain::addMP_Constraint(MP_Constraint *mpConstraint)
   return result;
 }
 
+bool
+Domain::addEQ_Constraint(EQ_Constraint *eqConstraint)
+{
+//#ifdef _G3DEBUG
+    // perform the checks
+    int nodeConstrained = eqConstraint->getNodeConstrained();
+    Node *nodePtr = this->getNode(nodeConstrained);
+    if (nodePtr == 0) {
+      opserr << "Domain::addEQ_Constraint -cannot add as constrained node with tag" <<
+	nodeConstrained << "does not exist in model\n";       		
+      return false;
+    }
+    
+    const ID& nodeRetained = eqConstraint->getNodeRetained();      
+    for (int i = 0; i < nodeRetained.Size(); ++i) {
+      nodePtr = this->getNode(nodeRetained(i));
+      if (nodePtr == 0) {
+        opserr << "Domain::addEQ_Constraint - cannot add as retained node with tag" <<
+          nodeRetained << "does not exist in model\n"; 	
+        return false;
+      }      
+    }
+    
+//#endif
+
+  // check that no other object with similar tag exists in model
+  int tag = eqConstraint->getTag();
+  TaggedObject *other = theEQs->getComponentPtr(tag);
+  if (other != 0) {
+    opserr << "Domain::addEQ_Constraint - cannot add as constraint with tag" <<
+      tag << " already exists in model";             
+			      
+    return false;
+  }
+  
+  bool result = theEQs->addComponent(eqConstraint);
+  if (result == true) {
+      eqConstraint->setDomain(this);
+      this->domainChange();
+  } else
+    opserr << "Domain::addEQ_Constraint - cannot add constraint with tag" << 
+      tag << "to the container\n";                   
+  
+  return result;
+}
+
 bool 
 Domain::addLoadPattern(LoadPattern *load)
 {
@@ -1036,7 +1100,7 @@ Domain::clearAll(void) {
   nodeGraphBuiltFlag = false;
   eleGraphBuiltFlag = false;
   
-  dbEle =0; dbNod =0; dbSPs =0; dbPCs = 0; dbMPs =0; dbLPs = 0; dbParam = 0;
+  dbEle =0; dbNod =0; dbSPs =0; dbPCs = 0; dbMPs = 0; dbEQs = 0; dbLPs = 0; dbParam = 0;
 
   currentGeoTag = 0;
   lastGeoSendTag = -1;
@@ -1055,7 +1119,7 @@ Domain::clearAll(void) {
     delete theElementGraph;
   theElementGraph = 0;
   
-  dbEle =0; dbNod =0; dbSPs =0; dbPCs = 0; dbMPs =0; dbLPs = 0; dbParam = 0;
+  dbEle =0; dbNod =0; dbSPs =0; dbPCs = 0; dbMPs = 0; dbEQs = 0; dbLPs = 0; dbParam = 0;
 }
 
 
@@ -1239,6 +1303,59 @@ Domain::removeMP_Constraints(int nodeTag)
   for (int i=0; i<sizeTags; i++) {
     int  tag = tagsToRemove(i);
     TaggedObject *mc = theMPs->removeComponent(tag);
+    if (mc != 0)
+      delete mc;
+  }
+    
+  // mark the domain as having changed    
+  this->domainChange();
+    
+  return sizeTags;
+}    
+
+
+EQ_Constraint *
+Domain::removeEQ_Constraint(int tag)
+{
+    // remove the object from the container        
+    TaggedObject *mc = theMPs->removeComponent(tag);
+    
+    // if not there return 0    
+    if (mc == 0) 
+	return 0;
+
+    // mark the domain as having changed    
+    this->domainChange();
+    
+    // perform a downward cast, set the objects domain pointer to 0
+    // and return the result of the cast        
+    EQ_Constraint *result = (EQ_Constraint *)mc;
+    // result->setDomain(0);
+    return result;
+}    
+
+
+int
+Domain::removeEQ_Constraints(int nodeTag)
+{
+  ID tagsToRemove(0); int sizeTags = 0;
+  EQ_Constraint *theEQ = 0;
+  EQ_ConstraintIter &theEQIter = this->getEQs();
+  while ((theEQ = theEQIter()) != 0) {
+    int cNode = theEQ->getNodeConstrained();
+    if (cNode == nodeTag) {
+      int eqTag = theEQ->getTag();
+      tagsToRemove[sizeTags] = eqTag;
+      sizeTags++;
+    }
+  }
+
+  if (sizeTags == 0)
+    return 0;
+
+  for (int i=0; i<sizeTags; i++) {
+    int  tag = tagsToRemove(i);
+    TaggedObject *mc = theEQs->removeComponent(tag);
     if (mc != 0)
       delete mc;
   }
@@ -1441,6 +1558,14 @@ Domain::getMPs()
 }
 
 
+EQ_ConstraintIter &
+Domain::getEQs()
+{
+    theEQ_Iter->reset();
+    return *theEQ_Iter;
+}
+
+
 LoadPatternIter &
 Domain::getLoadPatterns()
 {
@@ -1519,6 +1644,18 @@ Domain::getMP_Constraint(int tag)
   if (mc == 0) 
       return 0;
   MP_Constraint *result = (MP_Constraint *)mc;
+  return result;
+}
+
+EQ_Constraint *
+Domain::getEQ_Constraint(int tag) 
+{
+  TaggedObject *mc = theEQs->getComponentPtr(tag);
+
+  // if not there return 0 otherwise perform a cast and return that
+  if (mc == 0) 
+      return 0;
+  EQ_Constraint *result = (EQ_Constraint *)mc;
   return result;
 }
 
@@ -1624,6 +1761,12 @@ int
 Domain::getNumMPs(void) const
 {
     return theMPs->getNumComponents();
+}
+
+int 
+Domain::getNumEQs(void) const
+{
+    return theEQs->getNumComponents();
 }
 
 int 
@@ -1912,6 +2055,11 @@ Domain::applyLoad(double timeStep)
     MP_Constraint *theMP;
     while ((theMP = theMPs()) != 0)
       theMP->applyConstraint(timeStep);
+    
+    EQ_ConstraintIter &theEQs = this->getEQs();
+    EQ_Constraint *theEQ;
+    while ((theEQ = theEQs()) != 0)
+      theEQ->applyConstraint(timeStep);
     
     SP_ConstraintIter &theSPs = this->getSPs();
     SP_Constraint *theSP;
@@ -2408,6 +2556,9 @@ Domain::Print(OPS_Stream &s, int flag)
   s << "\nMP_Constraints: numConstraints: " << theMPs->getNumComponents() << "\n";
   theMPs->Print(s, flag);
   
+  s << "\nEQ_Constraints: numConstraints: " << theEQs->getNumComponents() << "\n";
+  theMPs->Print(s, flag);
+  
   s << "\nLOAD PATTERNS: numPatterns: " << theLoadPatterns->getNumComponents() << "\n\n";
   theLoadPatterns->Print(s, flag);
   
@@ -2806,22 +2957,24 @@ Domain::sendSelf(int cTag, Channel &theChannel)
 
   // first we send info about the current domain flag and the number of
   // elements, nodes, constraints and load patterns currently in the domain
-  int numEle, numNod, numSPs, numPCs, numMPs, numLPs, numParam;
+  int numEle, numNod, numSPs, numPCs, numMPs, numEQs, numLPs, numParam;
   numNod = theNodes->getNumComponents();
   numEle = theElements->getNumComponents();
   numSPs = theSPs->getNumComponents();
   numPCs = thePCs->getNumComponents();
   numMPs = theMPs->getNumComponents();  
+  numEQs = theEQs->getNumComponents();  
   numLPs = theLoadPatterns->getNumComponents();
   numParam = theParameters->getNumComponents();
 
-  ID domainData(15);
+  ID domainData(17);
   domainData(0) = currentGeoTag;
   domainData(1) = numNod;
   domainData(2) = numEle;
   domainData(3) = numSPs;
   domainData(13) = numPCs;
   domainData(4) = numMPs;
+  domainData(15) = numEQs;
   domainData(5) = numLPs;
   domainData(11) = numParam;
 
@@ -2834,6 +2987,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     dbSPs = theChannel.getDbTag();
     dbPCs = theChannel.getDbTag();
     dbMPs = theChannel.getDbTag();
+    dbEQs = theChannel.getDbTag();
     dbLPs = theChannel.getDbTag();
     dbParam = theChannel.getDbTag();
   } 
@@ -2843,6 +2997,7 @@ Domain::sendSelf(int cTag, Channel &theChannel)
   domainData(8) = dbSPs;
   domainData(14) = dbPCs;
   domainData(9) = dbMPs;
+  domainData(16) = dbEQs;
   domainData(10) = dbLPs;
   domainData(12) = dbParam;
 
@@ -3031,6 +3186,35 @@ Domain::sendSelf(int cTag, Channel &theChannel)
       }
     }
 
+    // we do the same for EQ_Constraints as for Nodes above .. see comments
+    // for nodes if you can't figure what's going on!    
+    
+    if (numEQs != 0) {
+      ID eqData(numEQs*2);
+      EQ_Constraint *theEQ;
+      EQ_ConstraintIter &theEQs = this->getEQs();
+      int loc = 0;
+    
+      while ((theEQ = theEQs()) != 0) {
+	eqData(loc) = theEQ->getClassTag();
+	int dbTag = theEQ->getDbTag();
+	
+	if (dbTag == 0) {// go get a new tag and setDbTag in ele if this not 0 
+	  dbTag = theChannel.getDbTag();
+	  if (dbTag != 0)
+	    theEQ->setDbTag(dbTag);
+	}
+      
+	eqData(loc+1) = dbTag;
+	loc+=2;
+      }    
+
+      if (theChannel.sendID(dbEQs, currentGeoTag, eqData) < 0) {
+	opserr << "Domain::send - channel failed to send the EQ_Constraint ID\n";
+	return -5;
+      }
+    }
+
     // we do the same for LoadPatterns as we did for Nodes above .. see comments
     // for nodes if you can't figure what's going on!    
 
@@ -3152,6 +3336,16 @@ Domain::sendSelf(int cTag, Channel &theChannel)
     }
   }    
 
+  // send the equation constraints
+  EQ_Constraint *theEQ;
+  EQ_ConstraintIter &theEQs = this->getEQs();
+  while ((theEQ = theEQs()) != 0) {
+    if (theEQ->sendSelf(commitTag, theChannel) < 0) {
+      opserr << "Domain::send - EQ_Constraint with tag " << theEQ->getTag() << " failed in sendSelf\n";
+      return -10;
+    }
+  }    
+
   // send the load patterns
   LoadPattern *theLP;
   LoadPatternIter &theLPs = this->getLoadPatterns();
@@ -3222,7 +3416,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     int geoTag = domainData(0);
 
     int i, loc;
-    int numEle, numNod, numSPs, numPCs, numMPs, numLPs;
+    int numEle, numNod, numSPs, numPCs, numMPs, numEQs, numLPs;
 
     // if receiving set lastGeoSendTag to be equal to currentGeoTag 
     // at time all the data was sent if not we must clear out the objects and rebuild
@@ -3446,6 +3640,47 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     }
 
     // 
+    // now we rebuild the EQ_Constraints .. same as nodes above .. see above if can't understand!!
+    //
+    
+    numEQs = domainData(4);
+    dbEQs = domainData(9);
+
+    if (numEQs != 0) {
+      ID eqData(2*numEQs);
+
+      if (theChannel.recvID(dbEQs, geoTag, eqData) < 0) {
+	opserr << "Domain::recv - channel failed to recv the EQ_Constraints ID\n";
+	return -2;
+      }
+
+      loc = 0;
+      for (i=0; i<numEQs; i++) {
+	int classTag = eqData(loc);
+	int dbTag = eqData(loc+1);
+      
+	EQ_Constraint *theEQ = theBroker.getNewEQ(classTag);
+	if (theEQ == 0) {
+	  opserr << "Domain::recv - cannot create EQ_Constraint with classTag " << classTag << endln;
+	  return -2;
+	}			
+	theEQ->setDbTag(dbTag);
+      
+	if (theEQ->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	  opserr << "Domain::recv - EQ_Constraint with dbTag " << dbTag << " failed in recvSelf\n";
+	  return -2;
+	}			
+
+	if (this->addEQ_Constraint(theEQ) == false) {
+	  opserr << "Domain::recv - could not add EQ_Constraint with tag " << theEQ->getTag() << " into domain!\n";
+	  return -3;
+	}			
+	
+	loc+=2;
+      }
+    }
+
+    // 
     // now we rebuild the LoadPatterns .. same as nodes above .. see above if can't understand!!
     //
     
@@ -3579,6 +3814,15 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     while ((theMP = theMPs()) != 0) {
       if (theMP->recvSelf(commitTag, theChannel, theBroker) < 0) {
 	opserr << "Domain::recv - MP_Constraint with tag " << theMP->getTag() << " failed in recvSelf\n";
+	return -10;
+      }
+    }    
+
+    EQ_Constraint *theEQ;
+    EQ_ConstraintIter &theEQs = this->getEQs();
+    while ((theEQ = theEQs()) != 0) {
+      if (theEQ->recvSelf(commitTag, theChannel, theBroker) < 0) {
+	opserr << "Domain::recv - EQ_Constraint with tag " << theEQ->getTag() << " failed in recvSelf\n";
 	return -10;
       }
     }    

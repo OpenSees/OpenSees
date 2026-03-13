@@ -42,6 +42,7 @@ class Node;
 class MP_Constraint;
 class SP_Constraint;
 class Pressure_Constraint;
+class EQ_Constraint;
 class NodalLoad;
 class ElementalLoad;
 class LoadPattern;
@@ -116,6 +117,7 @@ class FEM_ObjectBroker
     virtual MP_Constraint *getNewMP(int classTag);
     virtual SP_Constraint *getNewSP(int classTag);
     virtual Pressure_Constraint *getNewPC(int classTag);
+    virtual EQ_Constraint *getNewEQ(int classTag);
     virtual NodalLoad     *getNewNodalLoad(int classTag);
     virtual ElementalLoad *getNewElementalLoad(int classTag);
     

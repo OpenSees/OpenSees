@@ -53,16 +53,19 @@ void* OPS_GroundMotion()
 	    int numData = 1;
 	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
 	    accelSeries = OPS_getTimeSeries(tstag);
+	    dtInt = accelSeries->getTimeIncr(0.0);
 	} else if(type == "-vel"||type == "-velocity") {
 	    int tstag;
 	    int numData = 1;
 	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
 	    velSeries = OPS_getTimeSeries(tstag);
+	    dtInt = velSeries->getTimeIncr(0.0);
 	} else if(type == "-disp"||type == "-displacement") {
 	    int tstag;
 	    int numData = 1;
 	    if(OPS_GetIntInput(&numData,&tstag) < 0) return 0;
 	    dispSeries = OPS_getTimeSeries(tstag);
+	    dtInt = dispSeries->getTimeIncr(0.0);
 	} else if(type == "-fact"||type == "-factor") {
 	    int numData = 1;
 	    if(OPS_GetDoubleInput(&numData,&fact) < 0) return 0;
@@ -93,6 +96,12 @@ GroundMotion::GroundMotion(TimeSeries *dispSeries,
 
   if (theVelSeries != 0 && theDispSeries == 0 ) 
     theDispSeries = this->integrate(theVelSeries, delta);
+
+  if (theDispSeries != 0 && theVelSeries == 0 ) 
+    theVelSeries = this->differentiate(theDispSeries, delta);
+
+  if (theVelSeries != 0 && theAccelSeries == 0 ) 
+    theAccelSeries = this->differentiate(theVelSeries, delta);
 }
 
 
@@ -156,6 +165,35 @@ GroundMotion::integrate(TimeSeries *theSeries, double delta)
   return theNewSeries;
 }
 
+TimeSeries*
+GroundMotion::differentiate(TimeSeries *theSeries, double delta)
+{
+  // check that an integrator & accel series exist
+  if(theIntegrator == 0) {
+    theIntegrator = new TrapezoidalTimeSeriesIntegrator();
+
+    if(theIntegrator == 0) {
+      opserr << "WARNING:GroundMotion::differentiate() - no TimeSeriesIntegrator provided - failed to create a Trapezoidal .. memory problems! \n";
+      return 0;
+    }
+  }
+
+  if(theSeries == 0) {
+    opserr << "GroundMotion::differentiate - no TimeSeries specified\n";
+    return 0;
+  }
+
+  // integrate the series, if no vel series exists set it to new one
+  TimeSeries *theNewSeries = theIntegrator->differentiate(theSeries, delta);
+
+  if(theNewSeries == 0) {
+    opserr << "GroundMotion::differentiate - no TimeSeriesIntegrator failed to integrate\n";
+    return 0;
+  }
+
+  return theNewSeries;
+}
+
 double 
 GroundMotion::getDuration(void)
 {
@@ -170,9 +208,30 @@ GroundMotion::getPeakAccel(void)
 {
   if (theAccelSeries != 0)
     return fact*(theAccelSeries->getPeakFactor());
-  else
-    return 0.0;
 
+  // if theVel is not 0, differentiate vel series to get accel series
+  else if (theVelSeries != 0) {
+    theAccelSeries = this->differentiate(theVelSeries, delta);
+    if (theAccelSeries != 0)
+      return fact*(theAccelSeries->getPeakFactor());
+    else
+      return 0.0;
+  }
+
+  // if theDisp is not 0, differentiate vel series to get accel series
+  else if (theDispSeries != 0) {
+    theVelSeries = this->differentiate(theDispSeries, delta);
+    if (theVelSeries != 0) {
+      theAccelSeries = this->differentiate(theVelSeries, delta);
+      if (theAccelSeries != 0)
+        return fact*(theAccelSeries->getPeakFactor());
+      else
+        return 0.0;
+    } else
+      return 0.0;
+  }
+
+  return 0.0;
 }
 
 double 
@@ -185,10 +244,20 @@ GroundMotion::getPeakVel(void)
   else if (theAccelSeries != 0) {
     theVelSeries = this->integrate(theAccelSeries, delta);
     if (theVelSeries != 0)
-      return fact*(theVelSeries->getPeakFactor());      
+      return fact*(theVelSeries->getPeakFactor());
     else
       return 0.0;
   }
+
+  // if theDisp is not 0, differentiate disp series to get vel series
+  else if (theDispSeries != 0) {
+    theVelSeries = this->differentiate(theDispSeries, delta);
+    if (theVelSeries != 0)
+      return fact*(theVelSeries->getPeakFactor());
+    else
+      return 0.0;
+  }
+
   return 0.0;
 }
 
@@ -202,7 +271,7 @@ GroundMotion::getPeakDisp(void)
   else if (theVelSeries != 0) {
     theDispSeries = this->integrate(theVelSeries, delta);
     if (theDispSeries != 0)
-      return fact*(theDispSeries->getPeakFactor());      
+      return fact*(theDispSeries->getPeakFactor());
     else
       return 0.0;
   }
@@ -213,7 +282,7 @@ GroundMotion::getPeakDisp(void)
     if (theVelSeries != 0) {
       theDispSeries = this->integrate(theVelSeries, delta);
       if (theDispSeries != 0)
-	return fact*(theDispSeries->getPeakFactor());      
+	return fact*(theDispSeries->getPeakFactor());
       else
 	return 0.0;
     } else
@@ -231,8 +300,30 @@ GroundMotion::getAccel(double time)
   
   if (theAccelSeries != 0)
     return fact*(theAccelSeries->getFactor(time));
-  else
-    return 0.0;
+
+  // if theVel is not 0, differentiate vel series to get accel series
+  else if (theVelSeries != 0) {
+    theAccelSeries = this->differentiate(theVelSeries, delta);
+    if (theAccelSeries != 0)
+      return fact*(theAccelSeries->getFactor(time));
+    else
+      return 0.0;
+  }
+
+  // if theDisp is not 0, differentiate vel series to get accel series
+  else if (theDispSeries != 0) {
+    theVelSeries = this->differentiate(theDispSeries, delta);
+    if (theVelSeries != 0) {
+      theAccelSeries = this->differentiate(theVelSeries, delta);
+      if (theAccelSeries != 0)
+        return fact*(theAccelSeries->getFactor(time));
+      else
+        return 0.0;
+    } else
+      return 0.0;
+  }
+
+  return 0.0;
 }     
 
 double 
@@ -243,8 +334,30 @@ GroundMotion::getAccelSensitivity(double time)
   
   if (theAccelSeries != 0)
     return fact*(theAccelSeries->getFactorSensitivity(time));
-  else
-    return 0.0;
+
+  // if theVel is not 0, differentiate vel series to get accel series
+  else if (theVelSeries != 0) {
+    theAccelSeries = this->differentiate(theVelSeries, delta);
+    if (theAccelSeries != 0)
+      return fact*(theAccelSeries->getFactorSensitivity(time));
+    else
+      return 0.0;
+  }
+
+  // if theDisp is not 0, differentiate vel series to get accel series
+  else if (theDispSeries != 0) {
+    theVelSeries = this->differentiate(theDispSeries, delta);
+    if (theVelSeries != 0) {
+      theAccelSeries = this->differentiate(theVelSeries, delta);
+      if (theAccelSeries != 0)
+        return fact*(theAccelSeries->getFactorSensitivity(time));
+      else
+        return 0.0;
+    } else
+      return 0.0;
+  }
+
+  return 0.0;
 }     
 
 double 
@@ -254,20 +367,24 @@ GroundMotion::getVel(double time)
     return 0.0;
   
   if (theVelSeries != 0)
-    return fact*(theVelSeries->getFactor(time));      
-  
+    return fact*(theVelSeries->getFactor(time));
+
   // if theAccel is not 0, integrate accel series to get a vel series
   else if (theAccelSeries != 0) {
-    //opserr << " WARNING: GroundMotion::getVel(double time) - integration is required to get the ground velocities from the ground accelerations\n";
     theVelSeries = this->integrate(theAccelSeries, delta);
-    
-    if (theVelSeries != 0) {
-      return fact*(theVelSeries->getFactor(time));      
-      
-    } else {
-      opserr << " WARNING: GroundMotion::getVel(double time) - failed to integrate\n";
+    if (theVelSeries != 0)
+      return fact*(theVelSeries->getFactor(time));
+    else
       return 0.0;
-    }
+  }
+
+  // if theDisp is not 0, differentiate disp series to get vel series
+  else if (theDispSeries != 0) {
+    theVelSeries = this->differentiate(theDispSeries, delta);
+    if (theVelSeries != 0)
+      return fact*(theVelSeries->getFactor(time));
+    else
+      return 0.0;
   }
 
   return 0.0;
@@ -284,24 +401,22 @@ GroundMotion::getDisp(double time)
 
   // if theVel is not 0, integrate vel series to get disp series
   else if (theVelSeries != 0) {
-    opserr << " WARNING: GroundMotion::getDisp(double time) - integration is required to get the ground displacements from the ground velocities\n";
     theDispSeries = this->integrate(theVelSeries, delta);
     if (theDispSeries != 0)
-      return fact*(theDispSeries->getFactor(time));      
+      return fact*(theDispSeries->getFactor(time));
     else
       return 0.0;
   }
 
   // if theAccel is not 0, integrate vel series to get disp series
-  else if (theAccelSeries != 0) {    
-    opserr << " WARNING: GroundMotion::getDisp(double time) - default integration required to get the ground displacements from the ground velocities via the ground accelerations\n";
+  else if (theAccelSeries != 0) {
     theVelSeries = this->integrate(theAccelSeries, delta);
     if (theVelSeries != 0) {
       theDispSeries = this->integrate(theVelSeries, delta);
       if (theDispSeries != 0)
-	return fact*(theDispSeries->getFactor(time));      
+        return fact*(theDispSeries->getFactor(time));
       else
-	return 0.0;
+        return 0.0;
     } else
       return 0.0;
   }

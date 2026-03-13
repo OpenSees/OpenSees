@@ -581,6 +581,8 @@
 // Pressure_Constraint header file
 #include "Pressure_Constraint.h"
 
+#include "EQ_Constraint.h"
+
 // nodal load header files
 #include "NodalLoad.h"
 
@@ -1285,6 +1287,23 @@ FEM_ObjectBrokerAllClasses::getNewMP(int classTag)
 	default:
 	     opserr << "FEM_ObjectBrokerAllClasses::getNewMP - ";
 	     opserr << " - no MP_Constraint type exists for class tag ";
+	     opserr << classTag << endln;
+	     return 0;
+	     
+	 }    
+}
+
+
+EQ_Constraint *
+FEM_ObjectBrokerAllClasses::getNewEQ(int classTag)
+{
+    switch(classTag) {
+	case CNSTRNT_TAG_EQ_Constraint:  
+	     return new EQ_Constraint(classTag);
+
+	default:
+	     opserr << "FEM_ObjectBrokerAllClasses::getNewEQ - ";
+	     opserr << " - no EQ_Constraint type exists for class tag ";
 	     opserr << classTag << endln;
 	     return 0;
 	     

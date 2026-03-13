@@ -98,6 +98,13 @@ FEM_ObjectBroker::getNewMP(int classTag)
 }
 
 
+EQ_Constraint *
+FEM_ObjectBroker::getNewEQ(int classTag)
+{
+  return 0;
+}
+
+
 SP_Constraint *
 FEM_ObjectBroker::getNewSP(int classTag)
 {

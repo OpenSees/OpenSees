@@ -320,6 +320,18 @@ const char *PythonModule::getStringFromAll(char* buffer, int len) {
 #endif
 }
 
+void*
+PythonModule::getVoidPtr()
+{
+    if (wrapper.getCurrentArg() >= wrapper.getNumberArgs()) {
+        return nullptr;
+    }
+    PyObject *obj =
+        PyTuple_GetItem(wrapper.getCurrentArgv(), wrapper.getCurrentArg());
+    wrapper.incrCurrentArg();
+    return static_cast<void*>(obj);
+}
+
 int
 PythonModule::getStringCopy(char **stringPtr) {
     return -1;
@@ -437,6 +449,11 @@ int PythonModule::setString(std::map<const char*, const char*>& data) {
 
 int PythonModule::setString(std::map<const char*, std::vector<const char*>>& data) {
     wrapper.setOutputs(data);
+    return 0;
+}
+
+int PythonModule::setGenericDict(GenericDict& data) {
+    wrapper.setGenericDictOutput(data);
     return 0;
 }
 

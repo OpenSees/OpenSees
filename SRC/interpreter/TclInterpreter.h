@@ -69,6 +69,7 @@ class TclInterpreter: public DL_Interpreter
     virtual int setInt(int *, int numArgs, bool scalar);
     virtual int setDouble(double *, int numArgs, bool scalar);
     virtual int setString(const char*);
+    virtual int setGenericDict(GenericDict& data);
     
   private:
     Tcl_Obj *resultPtr;

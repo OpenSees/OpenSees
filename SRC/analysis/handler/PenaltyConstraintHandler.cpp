@@ -44,6 +44,8 @@
 #include <SP_Constraint.h>
 #include <MP_ConstraintIter.h>
 #include <MP_Constraint.h>
+#include <EQ_ConstraintIter.h>
+#include <EQ_Constraint.h>
 #include <Integrator.h>
 #include <ID.h>
 #include <Subdomain.h>
@@ -51,6 +53,7 @@
 #include <FEM_ObjectBroker.h>
 #include <PenaltySP_FE.h>
 #include <PenaltyMP_FE.h>
+#include <PenaltyEQ_FE.h>
 #include <elementAPI.h>
 
 void* OPS_PenaltyConstraintHandler()
@@ -107,6 +110,7 @@ PenaltyConstraintHandler::handle(const ID *nodesLast)
     NodeIter &theNod = theDomain->getNodes();
     Node *nodPtr;
     MP_Constraint *mpPtr;    
+    EQ_Constraint *eqPtr;    
     DOF_Group *dofPtr;
     
     int numDofGrp = 0;
@@ -218,6 +222,21 @@ PenaltyConstraintHandler::handle(const ID *nodesLast)
 	    opserr << "WARNING PenaltyConstraintHandler::handle()";
 	    opserr << " - ran out of memory";
 	    opserr << " creating PenaltyMP_FE " << endln; 
+	    return -5;
+	}		
+	theModel->addFE_Element(fePtr);
+	numFeEle++;
+    }	        
+
+    // create the PenaltyEQ_FE for the EQ_Constraints and 
+    // add to the AnalysisModel    
+
+    EQ_ConstraintIter &theEQs = theDomain->getEQs();
+    while ((eqPtr = theEQs()) != 0) {
+	if ((fePtr = new PenaltyEQ_FE(numFeEle, *theDomain, *eqPtr, alphaMP)) == 0) {
+	    opserr << "WARNING PenaltyConstraintHandler::handle()";
+	    opserr << " - ran out of memory";
+	    opserr << " creating PenaltyEQ_FE " << endln; 
 	    return -5;
 	}		
 	theModel->addFE_Element(fePtr);
