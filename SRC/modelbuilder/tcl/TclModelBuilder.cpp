@@ -662,7 +662,7 @@ TclModelBuilder::TclModelBuilder(Domain &theDomain, Tcl_Interp *interp, int NDM,
   // Added by Alborz Ghofrani - U.Washington
   Tcl_CreateCommand(interp, "generateInterfacePoints",
                     TclCommand_GenerateInterfacePoints,
-                    (ClientData)NULL, NULL);
+                    (ClientData)&theDomain, NULL);
   // End Added by Alborz
   // set the static pointers in this file
   theTclBuilder = this;

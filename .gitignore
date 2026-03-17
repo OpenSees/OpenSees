@@ -52,7 +52,6 @@ cmake-build-release
 .dropbox.attr
 
 # VSCode
-.vscode
 .clang-format
 
 # OTHER
@@ -91,3 +90,6 @@ build
 bin
 __pycache__
 *.dat
+CMakeUserPresets.json
+
+/downloads/

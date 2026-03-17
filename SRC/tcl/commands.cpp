@@ -674,7 +674,7 @@ setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
 //extern 
 int OpenSeesExit(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
-extern int myCommands(Tcl_Interp *interp);
+extern int myCommands(Tcl_Interp *interp, Domain &domain);
 
 //extern "C" int Tcl_InterpObjCmd(ClientData clientData,  
 //			Tcl_Interp *interp, 
@@ -1182,7 +1182,7 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     theTclVideoPlayer = 0;
 #endif
    
-    return myCommands(interp);
+    return myCommands(interp, theDomain);
 }
 
 
