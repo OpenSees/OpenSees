@@ -241,10 +241,10 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
     // Close the file temporarily to reopen it in SWMR write mode
     H5Fclose(file_id);
     
-    // Reopen the file in SWMR write mode
-    file_id = H5Fopen(name, H5F_ACC_RDWR | H5F_ACC_SWMR_WRITE, fapl_id);
+    // Reopen the file in RDWR mode (enable SWMR later after creating structure)
+    file_id = H5Fopen(name, H5F_ACC_RDWR, fapl_id);
     if (file_id < 0) {
-        opserr << "Error: Could not reopen HDF5 file in SWMR write mode " << name << endln;
+        opserr << "Error: Could not reopen HDF5 file " << name << endln;
         H5Pclose(fapl_id);
         return;
     }
@@ -1406,6 +1406,9 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
         opserr << "Warning: Could not enable SWMR write mode for " << name << endln;
         opserr << "         File will still be created but concurrent reading may not work optimally" << endln;
     }
+    
+    // Flush the initial structure to disk ensuring readers see it immediately
+    H5Fflush(file_id, H5F_SCOPE_GLOBAL);
 
 }
 
@@ -2008,8 +2011,10 @@ int VTKHDF_Recorder::writeMesh() {
 
 
     // -------------------------------------------------------------
+    // -------------------------------------------------------------
     // Mark that we've(re)written the mesh
     // -------------------------------------------------------------
+    H5Fflush(file_id, H5F_SCOPE_GLOBAL);
     initDone = true;
     return 0;
 }
