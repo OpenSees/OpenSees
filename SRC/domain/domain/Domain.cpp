@@ -3379,7 +3379,7 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
   this->hasDomainChanged();
 
   // first we get the data about the state of the domain for this commitTag
-  ID domainData(15);
+  ID domainData(17);
   if (theChannel.recvID(theDbTag, commitTag, domainData) < 0) {
     opserr << "Domain::recv - channel failed to recv the initial ID\n";
     return -1;
@@ -3643,8 +3643,8 @@ Domain::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
     // now we rebuild the EQ_Constraints .. same as nodes above .. see above if can't understand!!
     //
     
-    numEQs = domainData(4);
-    dbEQs = domainData(9);
+    numEQs = domainData(15);
+    dbEQs = domainData(16);
 
     if (numEQs != 0) {
       ID eqData(2*numEQs);
