@@ -3870,6 +3870,8 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContactASDimplex ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
+					// ./twoNodeLink
+					elem_class_tag == ELE_TAG_TwoNodeLinkSection ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||
 					elem_class_tag == ELE_TAG_ElasticBeam3d ||
