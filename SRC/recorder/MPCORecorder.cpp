@@ -913,7 +913,7 @@ namespace mpco {
 		struct SectionAssignment
 		{
 			SectionAssignment()
-				: is_new(true), name("UnkownClassType"), fiber_section_data(), assignments() {}
+				: is_new(true), name("UnknownClassType"), fiber_section_data(), assignments() {}
 			bool is_new;
 			std::string name;
 			FiberSectionData fiber_section_data;
