@@ -3870,6 +3870,8 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContactASDimplex ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
+					// ./twoNodeLink
+					elem_class_tag == ELE_TAG_TwoNodeLinkSection ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||
 					elem_class_tag == ELE_TAG_ElasticBeam3d ||
@@ -3915,7 +3917,10 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ForceBeamColumn2d || /* <- OK! this one defines everything ! good job*/
 					elem_class_tag == ELE_TAG_ForceBeamColumn3d || /* <- OK! this one defines everything ! good job*/
 					elem_class_tag == ELE_TAG_ForceBeamColumnCBDI2d || /* <- OK! this one defines everything ! good job*/
-					elem_class_tag == ELE_TAG_ForceBeamColumnWarping2d /* <- OK! this one defines everything ! good job*/
+					elem_class_tag == ELE_TAG_ForceBeamColumnWarping2d || /* <- OK! this one defines everything ! good job*/
+					// ./mixedBeamColumn
+					elem_class_tag == ELE_TAG_MixedBeamColumn2d ||
+					elem_class_tag == ELE_TAG_MixedBeamColumn3d
 					) {
 					geom_type = ElementGeometryType::Line_2N;
 					int_type = ElementIntegrationRuleType::CustomIntegrationRule;
