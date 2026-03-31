@@ -63,6 +63,7 @@
 #include "BoucWenInfill.h"
 #include "SPSW02.h"			//SAJalali
 #include "ElasticMaterial.h"
+#include "ElasticMaterialThermal.h"
 #include "ElasticMultiLinear.h"
 #include "ElasticPowerFunc.h"
 #include "Elastic2Material.h"
@@ -1722,6 +1723,8 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		return new BoucWenInfill();		
 	case MAT_TAG_ElasticMaterial:
 	     return new ElasticMaterial();
+	case MAT_TAG_ElasticMaterialThermal:
+	  return new ElasticMaterialThermal();	     
 
 	case MAT_TAG_Elastic2Material:  
 	     return new Elastic2Material(); 

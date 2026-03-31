@@ -637,7 +637,7 @@ int OPS_ElementalLoad()
     }
 
     //--Adding identifier for Beam2dThermalAction:[BEGIN] by UoE OpenSees Group--//
-    else if (strcmp(type,"-beamThermal") == 0) {
+    else if (strcmp(type,"-beamThermal") == 0 || strcmp(type,"beamThermal") == 0) {
 
 	// get the current pattern tag if no tag given in i/p
 	int loadPatternTag = theActiveLoadPattern->getTag();
