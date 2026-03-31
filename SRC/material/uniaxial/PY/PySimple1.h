@@ -62,11 +62,12 @@ class PySimple1 : public UniaxialMaterial
   public:
     PySimple1(int tag, int classtag, int soilType, double pult, double y50, 
 	      double drag, double dashpot);
+  PySimple1(int tag, int classtag);
     PySimple1();
     ~PySimple1();
 
 
-    const char *getClassType(void) const {return "PySimple1";};
+    virtual const char *getClassType(void) const {return "PySimple1";};
 
     int setTrialStrain(double y, double yRate); 
     double getStrain(void);          
@@ -102,6 +103,7 @@ class PySimple1 : public UniaxialMaterial
 	double nd;			// exponent for hardening shape of drag component
 	double dashpot;     // dashpot on the far-field (elastic) component
 
+  double getTolerance() {return 1.0e-12;}
 
   private:
 

@@ -40,6 +40,7 @@
 
 #include <KikuchiAikenHDR.h>
 #include <Vector.h>
+#include <ID.h>
 #include <Channel.h>
 
 #include <string.h>
@@ -130,15 +131,8 @@ void* OPS_KikuchiAikenHDR()
 
 
 
-
-
-
-KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr, 
-			 double cg, double ch, double cu, double rs, double rf)
-  :UniaxialMaterial(tag,MAT_TAG_KikuchiAikenHDR),Tp(tp),Ar(ar),Hr(hr),
-   Cg(cg),Ch(ch),Cu(cu),Rs(rs),Rf(rf)
-{
-  
+void
+KikuchiAikenHDR::setType(int Tp) {
   //parameter function for each rubber
   switch (Tp) {
     
@@ -214,6 +208,16 @@ KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr,
     calcC   = KikuchiAikenHDR::calcCTp6;
     break;
   }
+}
+
+
+KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr, 
+			 double cg, double ch, double cu, double rs, double rf)
+  :UniaxialMaterial(tag,MAT_TAG_KikuchiAikenHDR),Tp(tp),Ar(ar),Hr(hr),
+   Cg(cg),Ch(ch),Cu(cu),Rs(rs),Rf(rf)
+{
+  
+  this->setType(Tp);
   
 
   // initialize
@@ -229,6 +233,15 @@ KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr,
   revB      = new double [numIdx];
   revAlpha  = new double [numIdx];
 
+  for (int i = 0; i < numIdx; i++) {
+    revXBgn[i] = 0.0;
+    revQ2Bgn[i] = 0.0;
+    revXEnd[i] = 0.0;
+    revQ2End[i] = 0.0;
+    revB[i] = 0.0;
+    revAlpha[i] = 0.0;
+  }
+  
   trialDeform  = 0.0;
   trialForce        = 0.0;
   trialStiff    = initialStiff;
@@ -268,7 +281,13 @@ KikuchiAikenHDR::KikuchiAikenHDR(int tag, int tp, double ar, double hr,
 KikuchiAikenHDR::KikuchiAikenHDR()
   :UniaxialMaterial(0,MAT_TAG_KikuchiAikenHDR)
 {
-
+  revXBgn   = 0;
+  revQ2Bgn  = 0;
+  revXEnd   = 0;
+  revQ2End  = 0;
+  revB      = 0;
+  revAlpha  = 0;
+  
   //
 
   trialDeform  = 0.0;
@@ -381,10 +400,10 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   if ( trialIfElastic || fabs(trialStrain) == trialMaxStrain ) {
 
     //if elastic, tmpstrain is max(fabs(trialStrain),trgStrain)
-    tmpStrain = (fabs(trialStrain)>trgStrain) ? fabs(trialStrain) : trgStrain ; //max(fabs(trialStrain),trgStrain)
+    double tmpStrain = (fabs(trialStrain)>trgStrain) ? fabs(trialStrain) : trgStrain ; //max(fabs(trialStrain),trgStrain)
     
     geq = (this->calcGeq)(tmpStrain)*Cg;
-    heq = (this->calcHeq)(tmpStrain)*Ch;
+    double heq = (this->calcHeq)(tmpStrain)*Ch;
     u = (this->calcU)(tmpStrain)*Cu;
 
     n = (this->calcN)(fabs(trialStrain));
@@ -397,7 +416,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   }
   
   // normalized strain
-  x = (xm>0.0) ? trialStrain/xm : 0.0;
+  double x = (xm>0.0) ? trialStrain/xm : 0.0;
 
 
   // reversal points
@@ -406,7 +425,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
     // unload or reverse
     if (trialDStrain*commitDStrainLastSign < 0) {
 
-            
+      double b;
       if ( trialIdxRev == 0 ) { // unload
 
 	trialIdxRev = 1;
@@ -486,6 +505,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
 
 	
 	//alpha
+	double alpha;
 	if (trialDStrain > 0) {
 	  alpha = (this->compAlpha)(a,revB[trialIdxRev-1],b,c,revXEnd[trialIdxRev],revXBgn[trialIdxRev],revAlpha[trialIdxRev-1]);
 	} else {
@@ -515,6 +535,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   // calculate stress
 
   // Q1 component (nonlinear elastic)
+  double q1Tan;
   if (trialStrain > 0) {
     trialQ1 = (this->compQ1)(u,n,fm,x);
     q1Tan   = (this->compQ1Derivertive)(u,n,geq,x);
@@ -524,6 +545,7 @@ KikuchiAikenHDR::setTrialStrain(double strain, double strainRate)
   }
         
   // Q2 component (hysteretic)
+  double q2Tan;
   if (trialIdxRev == 0) {// skeleton curve
     
     if (trialDStrain > 0) {
@@ -704,18 +726,18 @@ KikuchiAikenHDR::getCopy(void)
 					 Cg, Ch, Cu, Rs, Rf );
 
   // Copy temporary variables
-  theCopy->tmpStrain = tmpStrain;
+  //theCopy->tmpStrain = tmpStrain;
   theCopy->geq = geq;
-  theCopy->heq = heq;
+  //theCopy->heq = heq;
   theCopy->u = u;
   theCopy->n = n;
   theCopy->a = a;
-  theCopy->b = b;
+  //theCopy->b = b;
   theCopy->c = c;
   theCopy->xm = xm;
   theCopy->fm = fm;
-  theCopy->x = x;
-  theCopy->alpha = alpha;
+  //theCopy->x = x;
+  //theCopy->alpha = alpha;
 
   // Copy trial variables
   theCopy->trialDeform = trialDeform;
@@ -757,14 +779,141 @@ KikuchiAikenHDR::getCopy(void)
 int 
 KikuchiAikenHDR::sendSelf(int cTag, Channel &theChannel)
 {
-  return -1;
+  int res = 0;
+
+  ID idata(3);
+  idata(0) = this->getTag();
+  idata(1) = Tp;
+  idata(2) = numIdx;
+
+  res = theChannel.sendID(this->getDbTag(), cTag, idata);
+  if (res < 0) {
+    opserr << "KikuchiAikenHDR::sendSelf - failed to send ID data" << endln;
+    return -1;
+  }  
+
+  Vector data(7+3+13+6*numIdx);
+  data(0) = Ar;
+  data(1) = Hr;
+  data(2) = Cg;
+  data(3) = Ch;
+  data(4) = Cu;
+  data(5) = Rs;
+  data(6) = Rf;
+
+  data(7) = trgStrain;
+  data(8) = lmtStrain;
+  data(9) = initialStiff;
+
+  data(10) = commitDeform;
+  data(11) = commitForce;
+  data(12) = commitStiff;
+  data(13) = commitStrain;
+  data(14) = commitStress;
+  data(15) = commitTangent;
+  data(16) = commitIfElastic ? 1.0 : -1.0;
+  data(17) = commitQ1;
+  data(18) = commitQ2;
+  data(19) = commitMaxStrain;
+  data(20) = commitDStrain;
+  data(21) = commitDStrainLastSign;
+  data(22) = commitIdxRev;          
+
+  for (int i = 0; i < numIdx; i++) {
+    data(23 +            i) = revXBgn[i];
+    data(23 +   numIdx + i) = revQ2Bgn[i];
+    data(23 + 2*numIdx + i) = revXEnd[i];
+    data(23 + 3*numIdx + i) = revQ2End[i];
+    data(23 + 4*numIdx + i) = revB[i];
+    data(23 + 5*numIdx + i) = revAlpha[i];                    
+  }
+  
+  res = theChannel.sendVector(this->getDbTag(), cTag, data);
+  if (res < 0) {
+    opserr << "KikuchiAikenHDR::sendSelf - failed to send vector data" << endln;
+    return -2;
+  }
+  
+  return res;
 }
 
 int 
 KikuchiAikenHDR::recvSelf(int cTag, Channel &theChannel, 
 			      FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int res = 0;
+
+  ID idata(3);
+  res = theChannel.recvID(this->getDbTag(), cTag, idata);
+  if (res < 0) {
+    opserr << "KikuchiAikenHDR::recvSelf - failed to receive ID data" << endln;
+    return -1;
+  }
+
+  this->setTag(idata(0));
+  Tp = idata(1);
+  numIdx = idata(2);
+
+  this->setType(Tp);
+  
+  Vector data(7+3+13+6*numIdx);
+  res = theChannel.recvVector(this->getDbTag(), cTag, data);
+  if (res < 0) {
+    opserr << "KikuchiAikenHDR::recvSelf - failed to receive vector data" << endln;
+    return -2;
+  }
+
+  Ar = data(0);
+  Hr = data(1);
+  Cg = data(2);
+  Ch = data(3);
+  Cu = data(4);
+  Rs = data(5);
+  Rf = data(6);
+
+  trgStrain = data(7);
+  lmtStrain = data(8);
+  initialStiff = data(9);
+
+  commitDeform = data(10);
+  commitForce = data(11);
+  commitStiff = data(12);
+  commitStrain = data(13);
+  commitStress = data(14);
+  commitTangent = data(15);
+  commitIfElastic = data(16) > 0.0 ? true : false;
+  commitQ1 = data(17);
+  commitQ2 = data(18);
+  commitMaxStrain = data(19);
+  commitDStrain = data(20);
+  commitDStrainLastSign = int(data(21));
+  commitIdxRev = int(data(22));          
+
+  if (revXBgn != 0) delete [] revXBgn;
+  revXBgn = new double[numIdx];
+  if (revQ2Bgn != 0) delete [] revQ2Bgn;
+  revQ2Bgn = new double[numIdx];
+  if (revXEnd != 0) delete [] revXEnd;
+  revXEnd = new double[numIdx];
+  if (revQ2End != 0) delete [] revQ2End;
+  revQ2End = new double[numIdx];
+  if (revB != 0) delete [] revB;
+  revB = new double[numIdx];
+  if (revAlpha != 0) delete [] revAlpha;
+  revAlpha = new double[numIdx];        
+  
+  for (int i = 0; i < numIdx; i++) {
+    revXBgn[i]  = data(23 +            i);
+    revQ2Bgn[i] = data(23 +   numIdx + i);
+    revXEnd[i]  = data(23 + 2*numIdx + i);
+    revQ2End[i] = data(23 + 3*numIdx + i);
+    revB[i]     = data(23 + 4*numIdx + i);
+    revAlpha[i] = data(23 + 5*numIdx + i);
+  }
+
+  this->revertToLastCommit();
+  
+  return res;
 }
 
 void 

@@ -320,6 +320,9 @@
     <ClCompile Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.cpp">
       <Filter>handler</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\handler\AutoConstraintHandler.cpp">
+      <Filter>handler</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.cpp">
       <Filter>lineSearch</Filter>
     </ClCompile>
@@ -388,6 +391,18 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\analysis\analysis\SDFAnalysis.cpp">
       <Filter>analysis</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitDifferenceStatic.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\integrator\ExplicitBathe.cpp">
+      <Filter>integrator</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\penalty\PenaltyEQ_FE.cpp">
+      <Filter>fe_ele</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\analysis\fe_ele\lagrange\LagrangeEQ_FE.cpp">
+      <Filter>fe_ele</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -668,6 +683,9 @@
       <Filter>handler</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.h">
+      <Filter>handler</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\analysis\handler\AutoConstraintHandler.h">
       <Filter>handler</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.h">

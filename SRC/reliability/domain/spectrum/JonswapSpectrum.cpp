@@ -83,7 +83,7 @@ JonswapSpectrum::getAmplitude(double frequency)
 		sigma = 0.09;
 	}
 
-	double power = exp(-(frequency-wp)/(2.0*sigma*sigma*wp*wp));
+	double power = exp(-(frequency-wp)*(frequency-wp)/(2.0*sigma*sigma*wp*wp));
 	double GAMMA = pow(gamma,power);
 
 	return GAMMA*alpha*pow(frequency,-5.0)*exp(-5.0/4.0*pow((frequency/wp),-4.0));

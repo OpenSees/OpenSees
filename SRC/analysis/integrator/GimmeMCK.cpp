@@ -182,6 +182,13 @@ int GimmeMCK::revertToLastStep()
     return 0;
 }
 
+int GimmeMCK::revertToStart()
+{
+  // Really shouldn't do anything here
+    
+    return 0;  
+}
+
 
 int GimmeMCK::formEleTangent(FE_Element *theEle)
 {

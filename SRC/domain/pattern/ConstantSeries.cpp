@@ -151,7 +151,7 @@ ConstantSeries::Print(OPS_Stream &s, int flag)
     s << "Constant Series: factor: " << cFactor << "\n";
 }
 
-    // AddingSensitivity:BEGIN //////////////////////////////////////////
+
 double
 ConstantSeries::getFactorSensitivity(double pseudoTime)
 {
@@ -164,7 +164,7 @@ ConstantSeries::getFactorSensitivity(double pseudoTime)
 int 
 ConstantSeries::setParameter(const char **argv, int argc, Parameter &param)
 {
-  if (strstr(argv[0],"factor") != 0) {
+  if (strncmp(argv[0],"factor",80) == 0) {
     param.setValue(cFactor);
     return param.addObject(1, this);
   }

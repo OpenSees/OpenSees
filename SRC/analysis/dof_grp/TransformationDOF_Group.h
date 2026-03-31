@@ -40,6 +40,15 @@
 
 #include <DOF_Group.h>
 
+// M.Petracca 2024. Unified approach to constraints
+#define TRANSF_INCREMENTAL_SP
+#define TRANSF_INCREMENTAL_MP
+//#define TRANSF_INCREMENTAL_MP_DEBUG
+
+#ifdef TRANSF_INCREMENTAL_MP
+#include <Vector.h>
+#endif // TRANSF_INCREMENTAL_MP
+
 class MP_Constraint;
 class SP_Constraint;
 class TransformationConstraintHandler;
@@ -129,6 +138,14 @@ class TransformationDOF_Group: public DOF_Group
     static Vector **modVectors;  // array of pointers to class widde vectors
     static int numTransDOFs;           // number of objects        
     static TransformationConstraintHandler *theHandler;
+
+#ifdef TRANSF_INCREMENTAL_MP
+    // used to store locally the total displacement as we cannot rely 
+    // on getting it from the retained node when processing the constrained node:
+    // the retained node may have been processed before
+    Vector modTotalDisp;
+#endif // TRANSF_INCREMENTAL_MP
+
 };
 
 #endif

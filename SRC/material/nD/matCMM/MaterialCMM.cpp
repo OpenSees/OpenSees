@@ -67,14 +67,14 @@ OPS_MaterialCMM(void)
   
   int numData = 2;
   if (OPS_GetInt(&numData, iData) != 0) {
-    opserr << "WARNING invalid integer tag: nDMaterial ElasticOrthotropic \n";
+    opserr << "WARNING invalid integer tag: nDMaterial MaterialCMMc \n";
     return 0;
   }
   
   numData = MaterialCMM_NumParameters;
   
   if (OPS_GetDouble(&numData, dData) != 0) {
-    opserr << "WARNING invalid data: nDMaterial EasticIsotropic : " << iData[0] <<"\n";
+    opserr << "WARNING invalid data: nDMaterial MaterialCMMc : " << iData[0] <<"\n";
     return 0;
   }  
   

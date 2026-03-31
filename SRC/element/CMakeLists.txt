@@ -66,10 +66,10 @@ add_subdirectory(generic)
 add_subdirectory(joint)
 add_subdirectory(surfaceLoad)
 
-
 add_subdirectory(feap)
 
 add_subdirectory(PFEMElement)
+add_subdirectory(pipe)
 
 add_subdirectory(mvlem)
 add_subdirectory(pyMacro)
@@ -82,4 +82,4 @@ add_subdirectory(CEqElement)
 
 add_subdirectory(IGA)
 
-
+add_subdirectory(mefi)

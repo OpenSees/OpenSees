@@ -21,8 +21,8 @@
 // crack closure effects. 
 //
 // References:
-// 1) Chang, G.A. and Mander, J.B. (1994), ìSeismic Energy Based Fatigue Damage 
-// Analysis of Bridge Columns: Part I ñ Evaluation of Seismic Capacityî, NCEER 
+// 1) Chang, G.A. and Mander, J.B. (1994), ‚ÄúSeismic Energy Based Fatigue Damage 
+// Analysis of Bridge Columns: Part I ‚Äì Evaluation of Seismic Capacity‚Äù, NCEER 
 // Technical Report No. NCEER-94-0006, State University of New York, Buffalo.
 // 2) Kutay Orakcal (2004), "Nonlinear Modeling and Analysis of Slender Reinforced 
 // Concrete Walls", PhD Dissertation, Department of Civil and Environmental Engineering, 
@@ -41,11 +41,11 @@ class ConcreteCM : public UniaxialMaterial
 {
 public:
 	// Constructors
-	ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp);
-	ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp, int mon); 
-	ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp, int Gap, int dummy); 
+  ConcreteCM(int tag, double fpcc, double epcc, double Ec, double rc, double xcrn, double ft, double et, double rt, double xcrp, int mon=0, int Gap=0);
 	ConcreteCM(int tag);
 	ConcreteCM();
+
+        const char *getClassType(void) const {return "ConcreteCM";};
 
 	// Destructor
 	~ConcreteCM();

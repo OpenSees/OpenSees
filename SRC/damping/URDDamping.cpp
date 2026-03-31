@@ -146,6 +146,10 @@ URDDamping::Initialize(void)
   }
 
   //Calculate interpolation parameters
+  if (Freqlog) delete Freqlog;
+  if (Fredif) delete Fredif;
+  if (Freqk) delete Freqk;
+  if (Freqb) delete Freqb;
   Freqlog = new Vector(numfreq);
   Fredif = new Vector(numfreq - 1);
   Freqk = new Vector(numfreq - 1);
@@ -181,8 +185,11 @@ URDDamping::Initialize(void)
           nFilter = nFilter + numfreq - 1;
       }
       
-      omegac = new Vector(nFilter);
+      if (alpha) delete alpha;
+      if (omegac) delete omegac;
+      if (omegaetaf) delete omegaetaf;
       alpha = new Vector(nFilter);
+      omegac = new Vector(nFilter);
       omegaetaf = new Vector(nFilter);
       
       //Calculate omegac

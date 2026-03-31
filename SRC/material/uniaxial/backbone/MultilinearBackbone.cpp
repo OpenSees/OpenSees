@@ -31,6 +31,7 @@
 
 #include <MultilinearBackbone.h>
 #include <Vector.h>
+#include <ID.h>
 #include <Channel.h>
 
 #include <elementAPI.h>
@@ -102,14 +103,12 @@ MultilinearBackbone::MultilinearBackbone(int tag, int num,
   
   bool error = false;
   
-  int i;
-  
-  for (i = 1; i <= numPoints; i++) {
+  for (int i = 1; i <= numPoints; i++) {
     e[i] = def(i-1);
     s[i] = force(i-1);
   }
   
-  for (i = 1; i <= numPoints; i++)
+  for (int i = 1; i <= numPoints; i++)
     if (e[i] < e[i-1])
       error = true;
   
@@ -121,10 +120,11 @@ MultilinearBackbone::MultilinearBackbone(int tag, int num,
     
     opserr << "MultilinearBackbone::MultilinearBackbone -- input backbone is not unique (one-to-one)" << endln;
   }
-  
-  for (i = 1; i <= numPoints; i++) {
-    E[i-1] = (s[i]-s[i-1])/(e[i]-e[i-1]);
-    c[i] = c[i-1] + 0.5*(s[i]-s[i-1])*(e[i]-e[i-1]);
+  else {
+    for (int i = 1; i <= numPoints; i++) {
+      E[i-1] = (s[i]-s[i-1])/(e[i]-e[i-1]);
+      c[i] = c[i-1] + 0.5*(s[i]-s[i-1])*(e[i]-e[i-1]);
+    }
   }
 }
 
@@ -236,12 +236,79 @@ MultilinearBackbone::getVariable (int varID, double &theValue)
 int
 MultilinearBackbone::sendSelf(int commitTag, Channel &theChannel)
 {
-  return -1;
+  int dbTag = this->getDbTag();
+  
+  ID idata(2);
+  idata(0) = this->getTag();
+  idata(1) = numPoints;
+
+  if (theChannel.sendID(dbTag, commitTag, idata) < 0) {
+    opserr << "MultilinearBackbone::sendSelf - failed to send ID data" << endln;
+    return -1;
+  }
+
+  Vector data(4*numPoints + 3);
+  for (int i = 0; i < numPoints; i++) {
+    data(i) = e[i];
+    data(numPoints+1 + i) = s[i];
+    data(2*(numPoints+1) + i) = c[i];
+    data(3*(numPoints+1) + i) = E[i];
+  }
+  data(numPoints) = e[numPoints];
+  data(2*numPoints+1) = s[numPoints];
+  data(3*numPoints+2) = c[numPoints];
+
+  if (theChannel.sendVector(dbTag, commitTag, data) < 0) {
+    opserr << "MultilinearBackbone::sendSelf - failed to send data" << endln;
+    return -2;
+  }
+  
+  return 0;
 }
 
 int
 MultilinearBackbone::recvSelf(int commitTag, Channel &theChannel, 
 			      FEM_ObjectBroker &theBroker)
 {
-  return -1;
+  int dbTag = this->getDbTag();
+  
+  ID idata(2);
+
+  if (theChannel.recvID(dbTag, commitTag, idata) < 0) {
+    opserr << "MultilinearBackbone::recvSelf -- could not receive ID data" << endln;
+    return -1;
+  }
+
+  this->setTag(idata(0));
+  numPoints = idata(1);
+
+  Vector data(4*numPoints + 3);
+  if (theChannel.recvVector(dbTag, commitTag, data) < 0) {
+    opserr << "MultilinearBackbone::recvSelf -- could not receive data" << endln;
+    return -2;
+  }  
+  
+  if (numPoints > 0) {
+    if (e != 0) delete [] e;
+    if (s != 0) delete [] s;
+    if (c != 0) delete [] c;
+    if (E != 0) delete [] E;
+
+    e = new double[numPoints+1];
+    s = new double[numPoints+1];
+    c = new double[numPoints+1];
+    E = new double[numPoints];    
+    
+    for (int i = 0; i < numPoints; i++) {
+      e[i] = data(i);
+      s[i] = data(numPoints+1 + i);
+      c[i] = data(2*(numPoints+1) + i);
+      E[i] = data(3*(numPoints+1) + i);
+    }
+    e[numPoints] = data(numPoints);
+    s[numPoints] = data(2*numPoints+1);
+    c[numPoints] = data(3*numPoints+2);
+  }
+
+  return 0;
 }

@@ -227,7 +227,7 @@ double ShellDKGT::wg[4] ;
 //null constructor
 ShellDKGT::ShellDKGT( ) :                            
 Element( 0, ELE_TAG_ShellDKGT ),
-connectedExternalNodes(3), load(0), Ki(0)
+connectedExternalNodes(3), load(0), Ki(0), applyLoad(0)
 { 
   for (int i = 0 ;  i < 4; i++ ) 
     materialPointers[i] = 0;
@@ -269,7 +269,7 @@ ShellDKGT::ShellDKGT(  int tag,
                        SectionForceDeformation &theMaterial,
                        Damping *damping) :
 Element( tag, ELE_TAG_ShellDKGT ),
-connectedExternalNodes(3), load(0), Ki(0)
+connectedExternalNodes(3), load(0), Ki(0), applyLoad(0)
 {
   int i;
   connectedExternalNodes(0) = node1 ;           
@@ -578,7 +578,8 @@ ShellDKGT::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse = new ElementResponse(this, 1, this->getResistingForce());
   } 
 
-  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0) {
+  else if (strcmp(argv[0],"material") == 0 || strcmp(argv[0],"Material") == 0 ||
+	   strcmp(argv[0],"section") == 0) {
     if (argc < 2) {
       opserr << "ShellDKGT::setResponse() - need to specify more data\n";
       return 0;
@@ -756,6 +757,34 @@ ShellDKGT::getResponse(int responseID, Information &eleInfo)
   //return 0;
 }
 
+int
+ShellDKGT::setParameter(const char **argv, int argc, Parameter &param)
+{
+  int res = -1;
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    for (int i=0; i<4; i++) {
+      int dmpRes =  theDamping[i]->setParameter(argv, argc, param);
+      if (dmpRes != -1)
+        res = dmpRes;
+    }
+    return res;
+  }
+
+  // Send to all sections
+  for (int i = 0; i < 4; i++) {
+    int secRes = materialPointers[i]->setParameter(argv, argc, param);
+    if (secRes != -1) {
+      res = secRes;
+    }
+  }
+  return res;
+}
 
 //return stiffness matrix 
 const Matrix&  ShellDKGT::getTangentStiff( ) 
@@ -1563,7 +1592,7 @@ ShellDKGT::formResidAndTangent( int tang_flag )
       {
           const int numberGauss = 4 ;
           const int nShape = 3 ;
-          const int numberNodes = 4 ;
+          const int numberNodes = 3 ;
           const int massIndex = nShape - 1 ;
           double temp, rhoH;
           //If defined, apply self-weight
@@ -1795,7 +1824,7 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
   // Now quad sends the ids of its materials
   int matDbTag;
   
-  static ID idData(14);
+  static ID idData(15);
   
   int i;
   for (i = 0; i < 4; i++) {
@@ -1815,7 +1844,8 @@ int  ShellDKGT::sendSelf (int commitTag, Channel &theChannel)
   idData(9) = connectedExternalNodes(0);
   idData(10) = connectedExternalNodes(1);
   idData(11) = connectedExternalNodes(2);
-
+  idData(14) = applyLoad;
+  
   idData(12) = 0;
   idData(13) = 0;
   if (theDamping[0]) {
@@ -1881,7 +1911,7 @@ int  ShellDKGT::recvSelf (int commitTag,
   
   int dataTag = this->getDbTag();
 
-  static ID idData(14);
+  static ID idData(15);
   // Quad now receives the tags of its four external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {
@@ -1893,7 +1923,7 @@ int  ShellDKGT::recvSelf (int commitTag,
   connectedExternalNodes(0) = idData(9);
   connectedExternalNodes(1) = idData(10);
   connectedExternalNodes(2) = idData(11);
-
+  applyLoad = idData(14);
 
   static Vector vectData(4);
   res += theChannel.recvVector(dataTag, commitTag, vectData);

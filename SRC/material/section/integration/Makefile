@@ -4,7 +4,9 @@ OBJS       = SectionIntegration.o \
 	WideFlangeSectionIntegration.o RCSectionIntegration.o \
 	RCTBeamSectionIntegration.o RCCircularSectionIntegration.o \
 	TubeSectionIntegration.o RCTunnelSectionIntegration.o \
-	HSSSectionIntegration.o
+	HSSSectionIntegration.o \
+	MVLEMSectionIntegration.o \
+	SFIMVLEMSectionIntegration.o
 
 # Compilation control
 

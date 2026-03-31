@@ -60,6 +60,8 @@ class ElasticIsotropicMaterial : public NDMaterial
     virtual const char *getClassType(void) const {return "ElasticIsotropicMaterial";};
 
     virtual double getRho( ) ;
+    virtual double getElasticModulus( ) { return E; }
+    virtual double getPoissonsRatio( )  { return v; }
 
     virtual int setTrialStrain (const Vector &v);
     virtual int setTrialStrain (const Vector &v, const Vector &r);

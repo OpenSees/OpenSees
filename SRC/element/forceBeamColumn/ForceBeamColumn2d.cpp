@@ -1084,6 +1084,12 @@ ForceBeamColumn2d::computeReactions(double *p0)
       p0[1] -= V;
       p0[2] -= V;
     }
+    if (type == LOAD_TAG_BeamUniformMoment) {
+      double mz = data(2)*loadFactor;  // About z
+      
+      p0[1] += mz;
+      p0[2] -= mz;
+    }    
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double waa = data(2)*loadFactor;  // Axial
       double wab = data(3)*loadFactor;  // Axial
@@ -1347,6 +1353,9 @@ ForceBeamColumn2d::update()
 	    double xL1 = xL-1.0;
 	    double wtL = wt[i]*L;
 
+        // store the length of the current integration point
+        current_section_lch = wtL;
+
 	    // calculate total section forces
 	    // Ss = b*Se + bp*currDistrLoad;
 	    // Ss.addMatrixVector(0.0, b[i], Se, 1.0);
@@ -1510,6 +1519,10 @@ ForceBeamColumn2d::update()
 	    }
 	  }
 	  
+      // reset it to the default (whole length) in case the getChatacteristiLength function
+      // is called in the wrong place
+      current_section_lch = L;
+
 	  // calculate element stiffness matrix
 	  // invert3by3Matrix(f, kv);	  
 	  if (f.Solve(I, kvTrial) < 0)
@@ -1734,6 +1747,24 @@ ForceBeamColumn2d::computeSectionForces(Vector &sp, int isec)
 	  break;
 	}
       }
+    }
+    else if (type == LOAD_TAG_BeamUniformMoment) {
+      double mz = data(2)*loadFactor;  // About z
+
+      for (int ii = 0; ii < order; ii++) {
+	
+	switch(code(ii)) {
+	case SECTION_RESPONSE_P:
+	  break;
+	case SECTION_RESPONSE_MZ:
+	  break;
+	case SECTION_RESPONSE_VY:
+	  sp(ii) += mz;
+	  break;
+	default:
+	  break;
+	}
+      }      
     }
     else if (type == LOAD_TAG_Beam2dPartialUniformLoad) {
       double waa = data(2)*loadFactor;  // Axial
@@ -3415,6 +3446,17 @@ ForceBeamColumn2d::getResponse(int responseID, Information &eleInfo)
     return -1;
 }
 
+double ForceBeamColumn2d::getCharacteristicLength(void)
+{
+    // The default implementation of Element::getCharacteristicLength()
+    // returns the whole element length.
+    // However, FB element localizes only in a 1 integration point
+    // so we should return the i-th integration-point's length
+    if (current_section_lch > 0.0)
+        return current_section_lch;
+    return Element::getCharacteristicLength();
+}
+
 int 
 ForceBeamColumn2d::getResponseSensitivity(int responseID, int gradNumber,
 					  Information &eleInfo)
@@ -3577,6 +3619,15 @@ ForceBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
   if (strcmp(argv[0],"rho") == 0) {
     param.setValue(rho);
     return param.addObject(1, this);
+  }
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
   }
   
   // section response -

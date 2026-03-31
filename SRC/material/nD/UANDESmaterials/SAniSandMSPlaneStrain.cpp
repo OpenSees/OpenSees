@@ -45,7 +45,7 @@ SAniSandMSPlaneStrain::SAniSandMSPlaneStrain(int tag, double G0, double nu, doub
 
 // null constructor
 SAniSandMSPlaneStrain::SAniSandMSPlaneStrain() 
-  : SAniSandMS()
+  : SAniSandMS(ND_TAG_SAniSandMSPlaneStrain)
 {  
 }
 

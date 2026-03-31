@@ -79,8 +79,19 @@ DL_Interpreter::getDouble(double *, int numArgs)
     return -1;
 }
 
+int DL_Interpreter::getDoubleList(int* size, Vector* data)
+{
+    return -1;
+}
+
 const char*
 DL_Interpreter::getString()
+{
+    return 0;
+}
+
+void*
+DL_Interpreter::getVoidPtr()
 {
     return 0;
 }
@@ -95,6 +106,11 @@ int
 DL_Interpreter::getStringCopy(char **stringPtr)
 {
     return -1;
+}
+
+int DL_Interpreter::evalDoubleStringExpression(const char* theExpression, double& current_val)
+{
+	return -1;
 }
 
 void
@@ -164,6 +180,12 @@ DL_Interpreter::setString(std::vector<std::vector<const char*>>& data)
 }
 
 int DL_Interpreter::setString(std::map<const char*, std::vector<const char*>>& data) {
+    return -1;
+}
+
+int
+DL_Interpreter::setGenericDict(GenericDict& data)
+{
     return -1;
 }
 

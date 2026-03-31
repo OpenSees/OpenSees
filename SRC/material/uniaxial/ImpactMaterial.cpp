@@ -93,12 +93,12 @@ ImpactMaterial::ImpactMaterial(int tag, double k1, double k2, double delta_y, do
     K1(k1), K2(k2), Delta_y(delta_y), gap(gap0)
 {
     if (gap>=0) {
-        opserr << "ImpactMaterial::ImpactMaterial -- Initial gap size must be negative for compression-only material\n";
-        exit(-1);
+        opserr << "ImpactMaterial::ImpactMaterial -- Initial gap size will be set to negative value for compression-only material\n";
+        gap = -fabs(gap);
     }
     if (Delta_y>=0) {
-        opserr << "ImpactMaterial::ImpactMaterial -- Yield displacement must be negative for compression-only material\n";
-        exit(-1);
+        opserr << "ImpactMaterial::ImpactMaterial -- Yield displacement will be set to negative value for compression-only material\n";
+        Delta_y = -fabs(Delta_y);
     }
 
     // Initialize history variables

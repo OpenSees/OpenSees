@@ -54,6 +54,8 @@ public:
 	// destructor
 	~E_SFI();
 
+  const char *getClassType(void) const {return "E_SFI_MVLEM2d";}
+  
 	// public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);

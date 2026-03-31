@@ -29,6 +29,7 @@
 
 #include <Vector.h>
 #include <Channel.h>
+#include <Parameter.h>
 #include <elementAPI.h>
 
 #include <math.h>
@@ -52,8 +53,8 @@ void *OPS_ElasticMultiLinear()
     }
     
     int tag[1];
-    double strainData[64];
-    double stressData[64];
+    Vector strainData;
+    Vector stressData;
     double eta = 0.0;
     const char *paraStr;
     
@@ -76,9 +77,13 @@ void *OPS_ElasticMultiLinear()
     
     // get strain data points
     numData = (argc - 3)/2;
+    if (numData > 0) {
+        strainData.resize(numData);
+        stressData.resize(numData);
+    }
     paraStr = OPS_GetString();
     if (strcmp(paraStr,"-strain") == 0)  {
-        if (OPS_GetDoubleInput(&numData,strainData) != 0)  {
+        if (OPS_GetDoubleInput(&numData, &strainData(0)) != 0)  {
             opserr << "WARNING invalid strainPoints\n";
             opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
             return 0;
@@ -88,12 +93,12 @@ void *OPS_ElasticMultiLinear()
         opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
         return 0;
     }
-    Vector strainPts(strainData,numData);
+    // Vector strainPts(strainData,numData);
     
     // get stress data points
     paraStr = OPS_GetString();
     if (strcmp(paraStr,"-stress") == 0)  {
-        if (OPS_GetDoubleInput(&numData, stressData) != 0)  {
+        if (OPS_GetDoubleInput(&numData, &stressData(0)) != 0)  {
             opserr << "WARNING invalid stressPoints\n";
             opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
             return 0;
@@ -103,10 +108,10 @@ void *OPS_ElasticMultiLinear()
         opserr << "uniaxialMaterial ElasticMultiLinear: " << tag[0] << endln;
         return 0;
     }
-    Vector stressPts(stressData,numData);
+    // Vector stressPts(stressData,numData);
     
     // Parsing was successful, allocate the material
-    theMaterial = new ElasticMultiLinear(tag[0], strainPts, stressPts, eta);
+    theMaterial = new ElasticMultiLinear(tag[0], strainData, stressData, eta);
     
     if (theMaterial == 0) {
         opserr << "WARNING could not create uniaxialMaterial of type ";
@@ -341,4 +346,46 @@ void ElasticMultiLinear::Print(OPS_Stream &s, int flag)
 		s << stressPoints(numPts - 1) << "], ";
 		s << "\"eta\": " << eta << "}";
 	}
+}
+
+int
+ElasticMultiLinear::setParameter(const char **argv, int argc, Parameter &param)
+{
+  if (argc < 2) {
+    opserr << "ElasticMultiLinear::setParameter -- requires two arguments stress/strain ptNum" << endln;
+    return -1;
+  }
+
+  int whichPoint = atoi(argv[1]);
+  if (whichPoint < 1 || whichPoint > numDataPoints) {
+    opserr << "ElasticMultiLinear::setParameter -- invalid ptNum, should be between 1 and "
+	   << numDataPoints << endln;
+    return -1;
+  }
+  
+  if (strcmp(argv[0],"stress") == 0 || strcmp(argv[0],"stressPoint") == 0) {
+    param.setValue(stressPoints(whichPoint-1));
+    return param.addObject(whichPoint, this);
+  }
+  if (strcmp(argv[0],"strain") == 0 || strcmp(argv[0],"strainPoint") == 0) {
+    param.setValue(strainPoints(whichPoint-1));
+    return param.addObject(-whichPoint, this);
+  }
+
+  return -1;
+}
+
+int
+ElasticMultiLinear::updateParameter(int parameterID, Information &info)
+{
+  if (parameterID > 0) {
+    stressPoints(parameterID-1) = info.theDouble;
+    return 0;
+  }
+  if (parameterID < 0) {
+    strainPoints(-parameterID-1) = info.theDouble;
+    return 0;
+  }
+
+  return -1;
 }

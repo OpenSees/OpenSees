@@ -140,18 +140,36 @@ const Vector &
 LagrangeSP_FE::getResidual(Integrator *theNewIntegrator)
 {
     double constraint = theSP->getValue();
+    double initialValue = theSP->getInitialValue();
     int constrainedDOF = theSP->getDOF_Number();
     const Vector &nodeDisp = theNode->getTrialDisp();
+    const Vector& lambda = theDofGroup->getTrialDisp();
 
     if (constrainedDOF < 0 || constrainedDOF >= nodeDisp.Size()) {
-	opserr << "LagrangeSP_FE::formResidual() -";
-	opserr << " constrained DOF " << constrainedDOF << " outside range\n";
-	(*resid)(1) = 0;
+        opserr << "LagrangeSP_FE::getResidual() -";
+        opserr << " constrained DOF " << constrainedDOF << " outside range\n";
+        resid->Zero();
+        return *resid;
+    }
+    if (lambda.Size() != 1) {
+        opserr << "LagrangeSP_FE::getResidual() -";
+        opserr << " Lambda.Size() = " << lambda.Size() << " != 1\n";
+        resid->Zero();
+        return *resid;
     }
     
-    (*resid)(1) = alpha *(constraint - nodeDisp(constrainedDOF));
-//    opserr << "LagrangeSP_FE::getResidual() " << constraint << " " << nodeDisp(constrainedDOF) << " " << constrainedDOF << nodeDisp;
-//    opserr << "LagrangeSP_FE::getResidual() " << *resid << this->getID();    
+    /*
+    R = -C*U + G
+       .R = generalized residual vector
+       .C = constraint matrix
+       .U = generalized solution vector (displacement, lagrange multipliers)
+       .G = imposed displacement values
+    | Ru |    | 0  A | | u |   | 0 |
+    |    | = -|      |*|   | + |   |
+    | Rl |    | A  0 | | l |   | g |
+    */
+    (*resid)(0) = alpha * (-lambda(0));
+    (*resid)(1) = alpha *(constraint - (nodeDisp(constrainedDOF) - initialValue));
     return *resid;
 }
 

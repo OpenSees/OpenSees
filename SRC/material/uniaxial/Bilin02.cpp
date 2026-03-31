@@ -52,7 +52,8 @@ OPS_Bilin02(void)
   if (numBilin02Materials == 0) {
     numBilin02Materials++;
     opserr << "Modified Ibarra-Medina-Krawinkler Model with Bilinear Hysteretic Response\n";   // Updated: Filipe Ribeiro and Andre Barbosa
-	opserr << "Implementation and Calibration for CPH and FLPH by F.L.A. Ribeiro and A.R. Barbosa\n";   // Updated: Filipe Ribeiro and Andre Barbosa
+    //opserr << "Implementation and Calibration for CPH and FLPH by F.L.A. Ribeiro and A.R. Barbosa\n";   // Updated: Filipe Ribeiro and Andre Barbosa
+    opserr << "WARNING: DO NOT USE THE \"Bilin02\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKBilin\" or \"HystereticSM\" INSTEAD.\n";
   }
   
   // Pointer to a uniaxial material that will be returned

@@ -28,6 +28,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <string.h>
 #include <ID.h>
 #include <Channel.h>
 #include <Message.h>
@@ -188,12 +189,14 @@ DataFileStream::open(void)
 }
 
 int 
-DataFileStream::close(void)
+DataFileStream::close(openMode nextOpenMode)
 {
   if (fileOpen != 0)
     theFile.close();
   fileOpen = 0;
-
+  
+  theOpenMode = nextOpenMode;
+  
   return 0;
 }
 
@@ -937,11 +940,6 @@ DataFileStream::setOrder(const ID &orderData)
       }
       count++;
     }
-    /*  
-	opserr << "PRINT MAPPING: " << printMapping;
-	opserr << "colADD" << *commonColumns;
-	opserr << "DONE";
-    */
   }
 
   return 0;

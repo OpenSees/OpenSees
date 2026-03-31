@@ -247,13 +247,13 @@ MVLEM::MVLEM(int tag,
   // Check thickness and width input
   if (thickness == 0) {
     opserr << "MVLEM::MVLEM() - "
-	   << "Null thickness array passed.\n";
+	   << "Null thickness array passed." << endln;
     exit(-1);
   }
   
   if (width == 0) {
     opserr << "MVLEM::MVLEM() - "
-	   << "Null width array passed.\n";
+	   << "Null width array passed." << endln;
     exit(-1);
   }
   
@@ -321,7 +321,7 @@ MVLEM::MVLEM(int tag,
   if (materialsConcrete == 0)
     {
       opserr << "MVLEM::MVLEM() - "
-	     << "null Concrete material array passed.\n";
+	     << "null Concrete material array passed." << endln;
       exit(-1);
     }
   
@@ -329,7 +329,7 @@ MVLEM::MVLEM(int tag,
   if (materialsSteel == 0)
     {
       opserr << "MVLEM::MVLEM() - "
-	     << "null Steel material array passed.\n";
+	     << "null Steel material array passed." << endln;
       exit(-1);
     }
   
@@ -337,7 +337,7 @@ MVLEM::MVLEM(int tag,
   if (materialsShear == 0)
     {
       opserr << "MVLEM::MVLEM() - "
-	     << "null Shear material passed.\n";
+	     << "null Shear material passed." << endln;
       exit(-1);
     }
   
@@ -346,7 +346,7 @@ MVLEM::MVLEM(int tag,
   if (theMaterialsConcrete == 0)
     {
       opserr << "MVLEM::MVLEM() - "
-	     << "failed to allocate pointers for Concrete uniaxial materials.\n";
+	     << "failed to allocate pointers for Concrete uniaxial materials." << endln;
       exit(-1);
     }
   
@@ -356,14 +356,14 @@ MVLEM::MVLEM(int tag,
       if (materialsConcrete[i] == 0)
 	{
 	  opserr << "MVLEM::MVLEM() - "
-	    "null uniaxial Concrete material pointer passed.\n";
+		 << "null uniaxial Concrete material pointer passed." << endln;
 	  exit(-1);
 	}
       theMaterialsConcrete[i] = materialsConcrete[i]->getCopy();
       if (theMaterialsConcrete[i] == 0)
 	{
 	  opserr << "MVLEM::MVLEM() - "
-		 << "failed to copy Concrete uniaxial material.\n";
+		 << "failed to copy Concrete uniaxial material." << endln;
 	  exit(-1);
 	}
     }
@@ -373,7 +373,7 @@ MVLEM::MVLEM(int tag,
   if (theMaterialsSteel == 0)
     {
       opserr << "MVLEM::MVLEM() - "
-	     << "failed to allocate pointers for Steel uniaxial materials.\n";
+	     << "failed to allocate pointers for Steel uniaxial materials." << endln;
       exit(-1);
     }
   
@@ -383,14 +383,14 @@ MVLEM::MVLEM(int tag,
       if (materialsSteel[i] == 0)
 	{
 	  opserr << "MVLEM::MVLEM() - "
-	    "null uniaxial Steel material pointer passed.\n";
+		 << "null uniaxial Steel material pointer passed." << endln;
 	  exit(-1);
 	}
       theMaterialsSteel[i] = materialsSteel[i]->getCopy();
       if (theMaterialsSteel[i] == 0)
 	{
 	  opserr << "MVLEM::MVLEM() - "
-		 << "failed to copy Steel uniaxial material.\n";
+		 << "failed to copy Steel uniaxial material." << endln;
 	  exit(-1);
 	}
     }
@@ -400,7 +400,7 @@ MVLEM::MVLEM(int tag,
   if (theMaterialsShear == 0)
     {
       opserr << "MVLEM::MVLEM() - "
-	     << "failed to allocate pointers for Shear uniaxial materials.\n";
+	     << "failed to allocate pointers for Shear uniaxial materials." << endln;
       exit(-1);
     }
   
@@ -410,14 +410,14 @@ MVLEM::MVLEM(int tag,
       if (materialsShear[i] == 0)
 	{
 	  opserr << "MVLEM::MVLEM() - "
-	    "null uniaxial Shear material pointer passed.\n";
+		 << "null uniaxial Shear material pointer passed." << endln;
 	  exit(-1);
 	}
       theMaterialsShear[i] = materialsShear[i]->getCopy();
       if (theMaterialsShear[i] == 0)
 	{
 	  opserr << "MVLEM::MVLEM() - "
-		 << "failed to copy Shear uniaxial material.\n";
+		 << "failed to copy Shear uniaxial material." << endln;
 	  exit(-1);
 	}
     }
@@ -432,7 +432,7 @@ MVLEM::MVLEM()
    density(0.0),
    externalNodes(2),
    theMaterialsConcrete(0), theMaterialsSteel(0), theMaterialsShear(0),
-   theLoad(0), MVLEMStrain(0),
+   theLoad(0), MVLEMStrain(0), NodeMass(0.0),
    b(0), t(0), rho(0), x(0), As(0), Ac(0),
    h(0.0), c(0.0), m(0)
 {
@@ -549,25 +549,25 @@ MVLEM::setDomain(Domain *theDomain)
   
   // Calculate the element height and perform checks
   if (end1Crd.Size() != 2 && end2Crd.Size() != 2) {
-    opserr << "MVLEM::setDomain(): 2 coords required at nodes, not enough provided for  element " << this->getTag();
+    opserr << "MVLEM::setDomain(): 2 coords required at nodes, not enough provided for  element " << this->getTag() << endln;
     exit(-1);
   }
 
   h = end2Crd(1) - end1Crd(1);
   
   if (h < 0.0) {
-    opserr << "WARNING: Element height is negative. Define Nodes from bottom to top!";
+    opserr << "WARNING: Element height is negative. Define Nodes from bottom to top!" << endln;
     exit(-1);
   }
   
   if (h == 0.0) {
-    opserr << "WARNING: Element height is ZERO!";
+    opserr << "WARNING: Element height is ZERO!" << endln;
     exit(-1);
   }
   
   // Currently element can be only vertical
   if (end2Crd(0) != end1Crd(0)) {
-    opserr << "WARNING: Element is NOT vertical!";
+    opserr << "WARNING: Element is NOT vertical!" << endln;
     exit(-1);
   }
   
@@ -938,11 +938,14 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	idData0(3) = m;
 
 	res = theChannel.sendID(dataTag, commitTag, idData0);
-
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;	
+	}
 
 	
 	int matDbTag;
-	// Send the connected nodes (2) and material class/db tags (4m flex, 2 shear)
+	// send material class/db tags (4m flex, 2 shear)
 	ID idData(2 + 4*m);
 	for (int i = 0; i < m; i++) {
 	  idData(i) = theMaterialsConcrete[i]->getClassTag();
@@ -973,7 +976,11 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	idData(4*m+1) = matDbTag;	  	
 	
 	res = theChannel.sendID(dataTag, commitTag, idData);
-
+	if (res < 0) {
+	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
+	  return -2;	
+	}
+	
 	
 	Vector data(3 + 3*m);
 
@@ -986,7 +993,6 @@ MVLEM::sendSelf(int commitTag, Channel &theChannel)
 	  data(i+2*m) = rho[i];
 	}
 
-	// MVLEM then sends the tags of it's two end nodes
 	res = theChannel.sendVector(dataTag, commitTag, data);
 	if (res < 0) {
 	  opserr << "WARNING MVLEM::sendSelf() - failed to send ID\n";
@@ -1041,7 +1047,6 @@ MVLEM::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 	
 	ID idData(2 + 4*m);
 	
-	// MVLEM now receives the tags of it's two external nodes
 	res = theChannel.recvID(dataTag, commitTag, idData);
 	if (res < 0) {
 	  opserr << "WARNING MVLEM::recvSelf() - failed to receive ID\n";

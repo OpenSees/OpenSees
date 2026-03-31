@@ -1242,7 +1242,17 @@ MasonPan12::setResponse(const char **argv, int argc, OPS_Stream &output)
                 output.tag("ResponseType",outputData);
             }
             theResponse = new ElementResponse(this, 4, Vector(2*6));
-
+	
+//Panel shear strain vs shear force
+	} else if ((strcmp(argv[0],"Shear")==0) ||
+	    (strcmp(argv[0],"shear")==0)){
+			int i;
+			sprintf(outputData,"e%d",0);
+			output.tag("ResponseType",outputData);
+			sprintf(outputData,"P%d",1);
+			output.tag("ResponseType",outputData);
+			theResponse=new ElementResponse(this, 15 ,Vector(2));
+			
     // a material quantity
     } else if (strcmp(argv[0],"material") == 0) {
       if (argc > 2) {
@@ -1277,6 +1287,12 @@ MasonPan12::getResponse(int responseID, Information &eleInformation)
     const Vector& disp12 = theNodes[11]->getTrialDisp();
 	
     const Vector  diff  = disp2-disp1;
+	double Lon;
+	double hei;
+	double f1;
+	double f2;
+	double ex1;
+	double ex2;
 
     switch (responseID) {
     case -1:
@@ -1314,11 +1330,31 @@ MasonPan12::getResponse(int responseID, Information &eleInformation)
                 (*(eleInformation.theVector))(i) = theMaterial[i]->getStrain();
                 (*(eleInformation.theVector))(i+6) = trans(i,3)*theMaterial[i]->getStress();
 			}
-	//		     (*(eleInformation.theVector))(6) = theMaterial2->getStrain();
-  //              (*(eleInformation.theVector))(13) = trans(6,0)*theMaterial2->getStress();
 		}
         return 0;      
-
+				// compute shear strain and shear force of the panel
+	case 15:
+		if(eleInformation.theVector != 0){
+			f1 = 0;
+			f2 = 0;
+			for (int i=0; i<3; i++){
+				f1 +=trans(i,3)*abs(trans(i,1))*abs(trans(i,2))*theMaterial[i]->getStress();
+			}
+			for (int i=3; i<6; i++){
+				f2 +=trans(i,3)*abs(trans(i,1))*abs(trans(i,2))*theMaterial[i]->getStress();
+			}
+			ex1=theMaterial[0]->getStrain();
+			ex2=theMaterial[3]->getStrain();
+			hei=abs(trans(0,2)*trans(0,0));
+			Lon=abs(trans(0,1)*trans(0,0));
+			
+			(*(eleInformation.theVector))(1)=-(f1-f2);
+			(*(eleInformation.theVector))(0)=0.5*(ex2-ex1)*(Lon*Lon+hei*hei)/(Lon*hei);
+				
+			
+		}
+        return 0;
+		
     default:
         return -1;
     }

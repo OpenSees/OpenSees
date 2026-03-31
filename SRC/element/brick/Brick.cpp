@@ -87,6 +87,7 @@ void* OPS_Brick()
     }
     //option,Tang.S
     int numData = 1;
+    int massType = 0;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         std::string theType = OPS_GetString();
         if (theType == "-damp") {
@@ -99,11 +100,13 @@ void* OPS_Brick()
                     return 0;
                 }
             }
+        } else if (theType == "-lumped") {
+            massType = 1;
         }
     }
 
     return new Brick(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],
-		     idata[8],*mat,data[0],data[1],data[2], theDamping);
+		     idata[8],*mat,data[0],data[1],data[2], theDamping, massType);
 }
 
 //static data
@@ -161,11 +164,18 @@ Brick::Brick(int tag,
 	     int node8,
 	     NDMaterial &theMaterial,
 	     double b1, double b2, double b3,
-       Damping *damping)
+       Damping *damping,
+       int matype)
   :Element(tag, ELE_TAG_Brick),
-   connectedExternalNodes(8), applyLoad(0), load(0), Ki(0)
+   connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), massType(matype)
 {
   B.Zero();
+#ifdef _G3DEBUG
+  opserr << "Brick::constructor - tag: " << tag << endln;
+  if (massType == 1) {
+      opserr << "Brick::constructor - Using Lumped Mass Matrix\n";
+  }
+#endif
 
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -859,6 +869,7 @@ void   Brick::formInertiaTerms( int tangFlag )
         resid( jj+p ) += ( temp * momentum(p) )  ;
 
       
+      
       if ( tangFlag == 1 ) {
 
 	 //multiply by density
@@ -868,10 +879,19 @@ void   Brick::formInertiaTerms( int tangFlag )
          kk = 0 ;
          for ( k = 0; k < numberNodes; k++ ) {
 
-	    massJK = temp * shp[massIndex][k] ;
-
-            for ( p = 0; p < ndf; p++ )  
-	      mass( jj+p, kk+p ) += massJK ;
+            if (massType == 0) {
+                // consistent mass matrix
+                massJK = temp * shp[massIndex][k] ;
+                for ( int p = 0; p < ndf; p++ )  
+                    mass( jj+p, kk+p ) += massJK ;
+            } else {
+                // lumped mass matrix
+                if (j == k) {
+                    massJK = temp ; // * shp[massIndex][k] ; // lumped mass 
+                    for ( int p = 0; p < ndf; p++ )  
+                        mass( jj+p, kk+p ) += massJK ;
+                }
+            }
             
             kk += ndf ;
           } // end for k loop
@@ -1777,9 +1797,47 @@ Brick::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     theResponse =  new ElementResponse(this, 5, Vector(48));
 
-  }
+  } else if (strcmp(argv[0],"stress3D6") == 0) {
+    // this response if for vtkhdf recorder which averages the stresses
+    // over the 8 gauss points and returns the 6 values
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
 
-  
+    output.tag("ResponseType","sigma11");
+    output.tag("ResponseType","sigma22");
+    output.tag("ResponseType","sigma33");
+    output.tag("ResponseType","sigma12");
+    output.tag("ResponseType","sigma23");
+    output.tag("ResponseType","sigma13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+    theResponse =  new ElementResponse(this, 6, Vector(6));
+
+  } else if (strcmp(argv[0],"strain3D6") == 0) { 
+    // this response if for vtkhdf recorder which averages the strains
+    // over the 8 gauss points and returns the 6 values
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
+
+    output.tag("ResponseType","eps11");
+    output.tag("ResponseType","eps22");
+    output.tag("ResponseType","eps33");
+    output.tag("ResponseType","eps12");
+    output.tag("ResponseType","eps23");
+    output.tag("ResponseType","eps13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+
+    theResponse =  new ElementResponse(this, 7, Vector(6));
+  }
   output.endTag(); // ElementOutput
   return theResponse;
 }
@@ -1846,8 +1904,43 @@ Brick::getResponse(int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(stresses);
 
-  }
+  } else if (responseID == 6) {
+    
+    // Loop over the integration points
+    Vector tmpStress(6);
+    for (int i = 0; i < 8; i++) {
+      
+      // Get material stress
+      const Vector &sigma = materialPointers[i]->getStress();
+      tmpStress(0) += sigma(0)*0.125;
+      tmpStress(1) += sigma(1)*0.125;
+      tmpStress(2) += sigma(2)*0.125;
+      tmpStress(3) += sigma(3)*0.125;
+      tmpStress(4) += sigma(4)*0.125;
+      tmpStress(5) += sigma(5)*0.125;
+    }
 
+    return eleInfo.setVector(tmpStress);
+  } else if (responseID == 7) {
+    
+    // Loop over the integration points
+    int cnt = 0;
+    Vector tmpStrain(6);
+    for (int i = 0; i < 8; i++) {
+      
+      // Get material strain
+      const Vector &sigma = materialPointers[i]->getStrain();
+      tmpStrain(0) += sigma(0);
+      tmpStrain(1) += sigma(1);
+      tmpStrain(2) += sigma(2);
+      tmpStrain(3) += sigma(3);
+      tmpStrain(4) += sigma(4);
+      tmpStrain(5) += sigma(5);
+    }
+    tmpStrain /= 8.0;
+
+    return eleInfo.setVector(tmpStrain);
+  } 
   else
     return -1;
 }
@@ -1855,12 +1948,27 @@ Brick::getResponse(int responseID, Information &eleInfo)
 int
 Brick::setParameter(const char **argv, int argc, Parameter &param)
 {
+  int res = -1;
+
   if (argc < 1)
     return -1;
 
-  int res = -1;
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
 
-  if ((strstr(argv[0],"material") != 0) && (strcmp(argv[0],"materialState") != 0)) {
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    for (int i=0; i<4; i++) {
+      int dmpRes =  theDamping[i]->setParameter(argv, argc, param);
+      if (dmpRes != -1)
+        res = dmpRes;
+    }
+    return res;
+  }
+
+  // specific material point
+  if (strstr(argv[0],"material") != 0) {
 
     if (argc < 3)
       return -1;
@@ -1872,16 +1980,12 @@ Brick::setParameter(const char **argv, int argc, Parameter &param)
       return -1;
   }
   
-  // otherwise it could be just a forall material parameter
-  else {
-    int matRes = res;
-    for (int i=0; i<8; i++) {
-      matRes =  materialPointers[i]->setParameter(argv, argc, param);
-      if (matRes != -1)
-	res = matRes;
-    }
+  // all material points
+  for (int i=0; i<8; i++) {
+    int matRes =  materialPointers[i]->setParameter(argv, argc, param);
+    if (matRes != -1)
+      res = matRes;
   }
-  
   return res;
 }
     

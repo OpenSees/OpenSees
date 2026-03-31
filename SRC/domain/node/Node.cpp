@@ -36,6 +36,7 @@
 
 #include <Element.h>
 #include <Vector.h>
+#include <Versor.h>
 #include <Matrix.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -100,6 +101,7 @@ int OPS_Node()
     // check options
     Vector disp,vel,mass,dispLoc;
     Matrix ndmass;
+    double T = 0.0;
     while(OPS_GetNumRemainingInputArgs() > 0) {
 	const char* type = OPS_GetString();
 	
@@ -140,6 +142,17 @@ int OPS_Node()
 	    for(int i=0; i<ndf; i++) {
 		ndmass(i,i) = data(i);
 	    }
+
+  } else if(strcmp(type,"-temp")==0 || strcmp(type,"-Temp")==0) {
+      if(OPS_GetNumRemainingInputArgs() < 1) {
+        opserr<<"incorrect number of nodal temperature\n";
+        return -1;
+	    }
+      int num = 1;
+      if (OPS_GetDoubleInput(&num, &T) < 0) {
+        opserr << "WARNING: failed to read temperature\n";
+        return -1;
+      }
 
 	} else if(strcmp(type,"-dispLoc")==0 || strcmp(type,"-dispLoc")==0) {
 	    if(OPS_GetNumRemainingInputArgs() < ndm) {
@@ -194,6 +207,7 @@ int OPS_Node()
     if(dispLoc.Size() == ndm) {
 	theNode->setDisplayCrds(dispLoc);
     }
+    theNode->setTemp(T);
     theNode->commitState();
 
     // add node to domain
@@ -214,8 +228,9 @@ Node::Node(int theClassTag)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0), 
  incrDeltaDisp(0),
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0), displayLocation(0)
+ index(-1), reaction(0), displayLocation(0), temperature(0)
 {
   // for FEM_ObjectBroker, recvSelf() must be invoked on object
 
@@ -237,8 +252,9 @@ Node::Node(int tag, int theClassTag)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
   R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0), displayLocation(0)
+ index(-1), reaction(0), displayLocation(0), temperature(0)
 {
   // for subclasses - they must implement all the methods with
   // their own data structures.
@@ -260,8 +276,9 @@ Node::Node(int tag, int ndof, double Crd1, Vector *dLoc)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0), 
- index(-1), reaction(0), displayLocation(0)
+ index(-1), reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -292,8 +309,9 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0), displayLocation(0)
+ reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -326,8 +344,9 @@ Node::Node(int tag, int ndof, double Crd1, double Crd2, Vector *dLoc)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
- reaction(0), displayLocation(0)
+ reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -361,8 +380,9 @@ Node::Node(const Node &otherNode, bool copyMass)
  trialDisp(0), trialVel(0), trialAccel(0), unbalLoad(0), incrDisp(0),
  incrDeltaDisp(0), 
  disp(0), vel(0), accel(0), dbTag1(0), dbTag2(0), dbTag3(0), dbTag4(0),
+ rotation(nullptr),
  R(0), mass(0), unbalLoadWithInertia(0), alphaM(0.0), theEigenvectors(0),
-   reaction(0), displayLocation(0)
+   reaction(0), displayLocation(0), temperature(0)
 {
   // AddingSensitivity:BEGIN /////////////////////////////////////////
   dispSensitivity = 0;
@@ -436,6 +456,8 @@ Node::Node(const Node &otherNode, bool copyMass)
     }
   }
 
+  temperature = otherNode.temperature;
+
   index = -1;
 }
 
@@ -466,6 +488,10 @@ Node::~Node()
 
     if (trialAccel != 0)
 	delete trialAccel;
+
+    if (rotation != nullptr)
+      delete[] rotation;
+
 
     if (incrDisp != 0)
 	delete incrDisp;
@@ -678,6 +704,17 @@ Node::getIncrDeltaDisp(void)
     return *incrDeltaDisp;
 }
 
+Versor
+Node::getTrialRotation()
+{
+  if (rotation == nullptr) [[unlikely]] {
+    rotation = new Versor[2];
+    rotation[0] = Versor{{0.0, 0.0, 0.0}, 1.0};
+    rotation[1] = Versor{{0.0, 0.0, 0.0}, 1.0};
+  }
+
+  return rotation[1];
+}
 
 int
 Node::setTrialDisp(double value, int dof)
@@ -799,6 +836,10 @@ Node::incrTrialDisp(const Vector &incrDispl)
 	opserr << "WARNING Node::incrTrialDisp() - incompatible sizes\n";
 	return -2;
     }    
+
+    if (rotation != nullptr && this->getNumberDOF() >= 6)
+      rotation[1] = rotation[1]*Versor::from_vector(&disp[3*numberDOF+3]);
+
 
     // create a copy if no trial exists and add committed
     if (trialDisp == 0) {
@@ -1072,6 +1113,8 @@ Node::commitState()
 	accel[i+numberDOF] = accel[i];
     }
 
+    if (rotation != nullptr)
+        rotation[0] = rotation[1];
     // if we get here we are done
     return 0;
 }
@@ -1102,6 +1145,8 @@ Node::revertToLastCommit()
 	accel[i] = accel[numberDOF+i];
     }
 
+    if (rotation != nullptr)
+        rotation[1] = rotation[0];
     // if we get here we are done
     return 0;
 }
@@ -1132,6 +1177,10 @@ Node::revertToStart()
 	(*unbalLoad) *= 0;
 
 
+    if (rotation != nullptr) {
+      rotation[0] = Versor{{0.0, 0.0, 0.0}, 1.0};
+      rotation[1] = rotation[0];
+    }
 
 
 // AddingSensitivity: BEGIN /////////////////////////////////
@@ -1273,7 +1322,7 @@ Node::setR(int row, int col, double Value)
   }
   
   // ensure row, col in range (matrix assignment will catch this - extra work)
-  if (row < 0 || row > numberDOF || col < 0 || col > R->noCols()) {
+  if (row < 0 || row >= numberDOF || col < 0 || col >= R->noCols()) {
     opserr << "Node:setR() - row, col index out of range\n";
     return -1;
   }
@@ -1357,9 +1406,11 @@ Node::setNumEigenvectors(int numVectorsToStore)
       opserr << "Node::setNumEigenvectors() - out of memory\n";
       return -2;
     }
-  } else
+  } else {
+
     // zero the eigenvector matrix
     theEigenvectors->Zero();
+  }
   
     return 0;
 }
@@ -1479,7 +1530,7 @@ Node::sendSelf(int cTag, Channel &theChannel)
     }
     
     if (R != 0) {
-	res = theChannel.sendMatrix(dataTag, cTag, *R);
+	res = theChannel.sendMatrix(dbTag2, cTag, *R);
 	if (res < 0) {
 	  opserr << " Node::sendSelf() - failed to send R data\n";
 	  return res;
@@ -1619,7 +1670,7 @@ Node::recvSelf(int cTag, Channel &theChannel,
 	}
       }
       // now recv the R matrix
-      if (theChannel.recvMatrix(dataTag, cTag, *R) < 0) {
+      if (theChannel.recvMatrix(dbTag2, cTag, *R) < 0) {
 	opserr << "Node::recvSelf() - failed to receive R data\n";
 	return res;
       }
@@ -2106,7 +2157,8 @@ Node::addReactionForce(const Vector &add, double factor){
   else if (factor == -1.0)
     *reaction -= add;
   else
-    *reaction = add * factor;
+    //*reaction = add * factor;
+    reaction->addVector(1.0,add,factor);
 
   return 0;
 }

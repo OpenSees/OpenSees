@@ -57,7 +57,7 @@ FileDatastore::FileDatastore(const char *dataBaseName,
 			     Domain &theDomain, 
 			     FEM_ObjectBroker &theObjBroker) 
   :FE_Datastore(theDomain, theObjBroker), 
-   data(0), sizeData(0), currentMaxInt(0), currentMaxDouble(0)
+   data(0), sizeData(0), currentMaxInt(0), currentMaxDouble(0), currentCommitTag(-1)
 {
   dataBase = new char [strlen(dataBaseName)+1];
   strcpy(dataBase, dataBaseName);

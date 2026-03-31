@@ -24,6 +24,7 @@ public:
   UVCuniaxial(int tag, double E, double sy0, double qInf, double b,
     double dInf, double a,
     std::vector<double> cK, std::vector<double> gammaK);
+  UVCuniaxial();
   //! Destructor
   ~UVCuniaxial();
 
@@ -88,11 +89,12 @@ private:
 
 private:
   // Parameters
-  const int N_BASIC_PARAMS = 4;
-  const int N_PARAM_PER_BACK = 2;
-  const double RETURN_MAP_TOL = 10.0e-10;
-  const int MAXIMUM_ITERATIONS = 1000;
-
+  //const int N_BASIC_PARAMS = 4;
+  //const int N_PARAM_PER_BACK = 2;
+  //const double RETURN_MAP_TOL = 10.0e-10;
+  //const int MAXIMUM_ITERATIONS = 1000;
+  enum {MAX_BACKSTRESSES = 8};
+  
   // Material properties, set by the constructor
   double elasticModulus;
   double yieldStress;

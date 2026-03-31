@@ -232,10 +232,25 @@ TzSimple2::setTrialStrain (double newz, double zRate)
 	//
 	int numSteps = 1;
 	double stepSize = 1.0;
-	if(fabs(dt/tult) > 0.5)  numSteps = 1 + int(fabs(dt/(0.5*tult)));
-	if(fabs(dz/z50)  > 1.0 ) numSteps = 1 + int(fabs(dz/(1.0*z50)));
-	stepSize = 1.0/float(numSteps);
+	double temp = fabs(dt/tult);
+	if(temp > 0.5) {
+		if (temp > 50) {
+			numSteps = 100;
+		} else {
+			numSteps = 1 + int(temp * 2.0);
+		}
+	}
+
+	temp = fabs(dz/z50);
+	if(temp > 1.0) {
+		if (temp > 100) {
+			numSteps = 100;
+		} else {
+			numSteps = 1 + int(temp);
+		}
+	}
 	if(numSteps > 100) numSteps = 100;
+	stepSize = 1.0/double(numSteps);
 
 	dz = stepSize * dz;
 

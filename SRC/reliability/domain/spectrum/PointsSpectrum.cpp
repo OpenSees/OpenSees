@@ -91,7 +91,7 @@ PointsSpectrum::getAmplitude(double frequency)
 	else {
 		double dy, dx, a, b;
 		for (int i=1; i<frequencies.Size(); i++) {
-			if (frequency > frequencies(i-1) && frequency < frequencies(i)) {
+			if (frequency > frequencies(i-1) && frequency <= frequencies(i)) {
 				dy = amplitudes(i)  -  amplitudes(i-1);
 				dx = frequencies(i)  -  frequencies(i-1);
 				a = dy/dx;

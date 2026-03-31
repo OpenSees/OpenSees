@@ -545,7 +545,7 @@ DistributedDiagonalSOE::sendSelf(int cTag, Channel &theChannel)
       int nextNumChannels = numChannels + 1;
       Channel **nextChannels = new Channel *[nextNumChannels];
       if (nextNumChannels == 0) {
-	opserr << "DistributedBandGenLinSOE::sendSelf() - failed to allocate channel array of size: " << 
+	opserr << "DistributedDiagonalSOE::sendSelf() - failed to allocate channel array of size: " << 
 	  nextNumChannels << endln;
 	return -1;
       }
@@ -563,7 +563,7 @@ DistributedDiagonalSOE::sendSelf(int cTag, Channel &theChannel)
 	delete [] localCol;
       localCol = new ID *[numChannels];
       if (localCol == 0) {
-	opserr << "DistributedBandGenLinSOE::sendSelf() - failed to allocate id array of size: " << 
+	opserr << "DistributedDiagonalSOE::sendSelf() - failed to allocate id array of size: " << 
 	  nextNumChannels << endln;
 	return -1;
       }
@@ -624,7 +624,7 @@ DistributedDiagonalSOE::recvSelf(int cTag, Channel &theChannel,
 
   DistributedDiagonalSolver *theDistributedDiagonalSolver = new DistributedDiagonalSolver();
   if (theDistributedDiagonalSolver->recvSelf(cTag, theChannel, theBroker) < 0) {
-    opserr <<"WARNING DistributedBandgenLinSOE::sendSelf() - failed to recv solver\n";
+    opserr <<"WARNING DistributedDiagonalSOE::sendSelf() - failed to recv solver\n";
     return -1;
   }
   theDistributedDiagonalSolver->setLinearSOE(*this);

@@ -47,8 +47,8 @@ class SteelDRC : public UniaxialMaterial
 	SteelDRC(int tag, double Es, double fy, double eu, double fu, double esh,
 		double esh1, double fsh1, double eft, double omegaFac, int bauschType, 
 		int stiffoption, double C_visc, double alpha, double Dfu);
-    SteelDRC(int tag);
-	SteelDRC();
+    SteelDRC(int tag=0);
+	//SteelDRC();
     ~SteelDRC();
 
     int setTrialStrain(double strain, double strainRate); 

@@ -71,6 +71,8 @@ void *OPS_ConcreteCM(void)
   
   int iData[1];
   double dData[9];
+  int mon = 0;
+  int gap = 0;
   
   int numData = 1;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -91,7 +93,7 @@ void *OPS_ConcreteCM(void)
   } else if (numArgs == 11) {
     
     numData = 1;
-    int mon;
+
     if (OPS_GetIntInput(&numData, &mon) != 0) {
       opserr << "Invalid $mon parameter for uniaxialMaterial ConcreteCM with tag  " << iData[0] << endln;
       return 0;
@@ -106,7 +108,6 @@ void *OPS_ConcreteCM(void)
     
   } else {
 
-    int gap;
     numData = 1;
     
     const char *str = OPS_GetString();
@@ -128,60 +129,17 @@ void *OPS_ConcreteCM(void)
       return 0;
     }
     
-    int check = 0; // dummy variable
-    theMaterial = new ConcreteCM(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], gap, check);
+    theMaterial = new ConcreteCM(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7], dData[8], mon, gap);
   }
   
   return theMaterial;
 }
 
-// Typical Constructor: mon=0 (default), Gap=0 (default)
-ConcreteCM::ConcreteCM
-(int tag, double FPCC, double EPCC, double EC, double RC, double XCRN, double FT, double ET, double RT, double XCRP)
-:UniaxialMaterial(tag, MAT_TAG_ConcreteCM),
-fpcc(FPCC), epcc(EPCC), Ec(EC), rc(RC), xcrn(XCRN), ft(FT), et(ET), rt(RT), xcrp(XCRP), mon(0), Gap(0),// input
-Ceunn(0.0), Cfunn(0.0), Ceunp(0.0), Cfunp(0.0), Cer(0.0), Cfr(0.0), Cer0n(0.0), // history and state variables
-Cfr0n(0.0), Cer0p(0.0), Cfr0p(0.0), Ce0(0.0), Cea(0.0), Ceb(0.0), Ced(0.0), Cinc(0.0), 
-Crule(0.0), Cstrain(0.0), Cstress(0.0), Ctangent(0.0) 
-
-{
-
-	// Set trial values
-	this->revertToLastCommit();
-
-	// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-	// AddingSensitivity:END //////////////////////////////////////
-
-}
-
-// Constructor for monotonic stress-strain relationship only:  mon=1 (invoked in FSAM only), Gap=0 (no impact since monotonic)
-ConcreteCM::ConcreteCM
-(int tag, double FPCC, double EPCC, double EC, double RC, double XCRN, double FT, double ET, double RT, double XCRP, int MON)
-:UniaxialMaterial(tag, MAT_TAG_ConcreteCM),
-fpcc(FPCC), epcc(EPCC), Ec(EC), rc(RC), xcrn(XCRN), ft(FT), et(ET), rt(RT), xcrp(XCRP), mon(MON), Gap(0),// input
-Ceunn(0.0), Cfunn(0.0), Ceunp(0.0), Cfunp(0.0), Cer(0.0), Cfr(0.0), Cer0n(0.0), // history and state variables
-Cfr0n(0.0), Cer0p(0.0), Cfr0p(0.0), Ce0(0.0), Cea(0.0), Ceb(0.0), Ced(0.0), Cinc(0.0), 
-Crule(0.0), Cstrain(0.0), Cstress(0.0), Ctangent(0.0) 
-
-{
-
-	// Set trial values
-	this->revertToLastCommit();
-
-	// AddingSensitivity:BEGIN /////////////////////////////////////
-	parameterID = 0;
-	SHVs = 0;
-	// AddingSensitivity:END ///////////////////////////////////////
-
-}
-
 // Constructor for optional gradual gap closure: mon=0 (default), Gap=0 or 1 (optional user-generated input, see Eplpf member function)
 ConcreteCM::ConcreteCM
-(int tag, double FPCC, double EPCC, double EC, double RC, double XCRN, double FT, double ET, double RT, double XCRP, int GAP, int DUMMY)
+(int tag, double FPCC, double EPCC, double EC, double RC, double XCRN, double FT, double ET, double RT, double XCRP, int MON, int GAP)
 :UniaxialMaterial(tag, MAT_TAG_ConcreteCM),
-fpcc(FPCC), epcc(EPCC), Ec(EC), rc(RC), xcrn(XCRN), ft(FT), et(ET), rt(RT), xcrp(XCRP), mon(0), Gap(GAP),// input
+fpcc(FPCC), epcc(EPCC), Ec(EC), rc(RC), xcrn(XCRN), ft(FT), et(ET), rt(RT), xcrp(XCRP), mon(MON), Gap(GAP),// input
 Ceunn(0.0), Cfunn(0.0), Ceunp(0.0), Cfunp(0.0), Cer(0.0), Cfr(0.0), Cer0n(0.0), // history and state variables
 Cfr0n(0.0), Cer0p(0.0), Cfr0p(0.0), Ce0(0.0), Cea(0.0), Ceb(0.0), Ced(0.0), Cinc(0.0),
 Crule(0.0), Cstrain(0.0), Cstress(0.0), Ctangent(0.0)
@@ -4467,6 +4425,23 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 
 	void ConcreteCM::Print (OPS_Stream& s, int flag)
 	{
+		if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+			s << "\t\t\t{";
+			s << "\"name\": \"" << this->getTag() << "\", ";
+			s << "\"type\": \"ConcreteCM\", ";
+			s << "\"fpcc\": " << fpcc << ", ";
+			s << "\"epcc\": " << epcc << ", ";
+			s << "\"Ec\": " << Ec << ", ";
+			s << "\"rc\": " << rc << ", ";
+			s << "\"xcrn\": " << xcrn << ", ";
+			s << "\"ft\": " << ft << ", ";
+			s << "\"et\": " << et << ", ";
+			s << "\"rt\": " << rt << ", ";
+			s << "\"xcrp\": " << xcrp << ", ";
+			s << "\"mon\": " << mon << ", ";
+			s << "\"Gap\": " << Gap << "}";
+			return;
+	  	}
 		s << "ConcreteCM:(strain, stress, tangent) " << Cstrain << " " << Cstress << " " << Ctangent << endln;
 	}
 

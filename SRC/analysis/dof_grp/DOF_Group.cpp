@@ -650,14 +650,14 @@ void
 DOF_Group::incrNodeDisp(const Vector &u)
 {
     if (myNode == 0) {
-	opserr << "DOF_Group::setNodeDisp: 0 Node Pointer\n";
+	opserr << "DOF_Group::incrNodeDisp: 0 Node Pointer\n";
 	exit(-1);
     }
 
     Vector &disp = *unbalance;;
 
     if (disp.Size() == 0) {
-      opserr << "DOF_Group::setNodeIncrDisp - out of space\n";
+      opserr << "DOF_Group::incrNodeDisp - out of space\n";
       return;
     }
     int i;
@@ -683,7 +683,7 @@ DOF_Group::incrNodeVel(const Vector &udot)
 {
 
     if (myNode == 0) {
-	opserr << "DOF_Group::setNodeVel: 0 Node Pointer\n";
+	opserr << "DOF_Group::incrNodeVel: 0 Node Pointer\n";
 	exit(-1);
     }
     
@@ -711,7 +711,7 @@ DOF_Group::incrNodeAccel(const Vector &udotdot)
 {
 
     if (myNode == 0) {
-	opserr << "DOF_Group::setNodeAccel: 0 Node Pointer\n";
+	opserr << "DOF_Group::incrNodeAccel: 0 Node Pointer\n";
 	exit(-1);
     }
 
@@ -769,7 +769,7 @@ DOF_Group::setEigenvector(int mode, const Vector &theVector)
 {
 
     if (myNode == 0) {
-	opserr << "DOF_Group::setNodeAccel: 0 Node Pointer\n";
+	opserr << "DOF_Group::setEigenvector: 0 Node Pointer\n";
 	exit(-1);
     }
 
@@ -792,7 +792,7 @@ const Matrix &
 DOF_Group::getEigenvectors(void)
 {
   if (myNode == 0) {
-    opserr << "DOF_Group::setNodeAccel: 0 Node Pointer\n";
+    opserr << "DOF_Group::getEigenvectors: 0 Node Pointer\n";
     exit(-1);
   }
 

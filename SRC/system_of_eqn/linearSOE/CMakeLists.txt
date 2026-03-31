@@ -25,10 +25,11 @@ add_subdirectory(fullGEN)
 add_subdirectory(sparseGEN)
 add_subdirectory(sparseSYM)
 add_subdirectory(umfGEN)
+add_subdirectory(sparsePython)
 
 add_subdirectory(profileSPD)
 #add_subdirectory(cg)
 #add_subdirectory(petsc)
 #add_subdirectory(mumps)
-#add_subdirectory(itpack)
+add_subdirectory(itpack)
 

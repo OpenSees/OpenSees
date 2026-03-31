@@ -41,52 +41,123 @@
 //#include <fstream>
 #include <math.h>
 
+#include <elementAPI.h>
+#include <Spectrum.h>
+#include <OpenSeesReliabilityCommands.h>
+
+CStdLibRandGenerator SimulatedRandomProcessSeries::randGenerator;
+
+void *
+OPS_SimulatedRandomProcessSeries(void)
+{
+  // Pointer that will be returned
+  TimeSeries *theSeries = 0;
+
+  int tag;
+  double mean;
+  int spectrumTag, NfreqIntervals;
+
+  int numData = 1;
+
+  int numRemainingArgs = OPS_GetNumRemainingInputArgs();
+  if (numRemainingArgs < 4) {
+    opserr << "ERROR: Insufficient arguments for SimulatedRandomProcess series" << endln;
+    return 0;
+  }
+
+  if (OPS_GetIntInput(&numData, &tag) != 0) {
+    opserr << "WARNING invalid tag for SimulatedRandomProcess" << endln;
+    return 0;
+  }
+  if (OPS_GetInt(&numData, &spectrumTag) != 0) {
+    opserr << "WARNING invalid spectrum tag for SimulatedRandomProcess with tag: " << tag << endln;
+    return 0;
+  }  
+  if (OPS_GetDouble(&numData, &mean) != 0) {
+    opserr << "WARNING invalid mean for SimulatedRandomProcess with tag: " << tag << endln;
+    return 0;
+  }
+  if (OPS_GetInt(&numData, &NfreqIntervals) != 0) {
+    opserr << "WARNING invalid num frequency internvals for SimulatedRandomProcess with tag: " << tag << endln;
+    return 0;
+  }  
+
+  ReliabilityDomain *theReliabilityDomain = OPS_GetReliabilityDomain();
+  if (theReliabilityDomain == 0) {
+    opserr << "ERROR SimulatedRandomProcess -- reliability domain not defined" << endln;
+    return 0;
+  }
+
+  Spectrum *theSpectrum = theReliabilityDomain->getSpectrum(spectrumTag);
+  if (theSpectrum == 0) {
+    opserr << "ERROR SimulatedRandomProcess -- spectrum with tag " << spectrumTag
+	   << " not found" << endln;
+    return 0;
+  }
+
+  /*
+  RandomNumberGenerator *theRandNumGenerator = cmds->getRandomNumberGenerator();
+  if (theRandNumGenerator == 0) {
+    opserr << "ERROR SimulatedRandomProcess -- random number generator not defined" << endln;
+    return 0;
+  }
+  */
+  RandomNumberGenerator *theRandNumGenerator = 0;
+  
+  theSeries = new SimulatedRandomProcessSeries(tag, theRandNumGenerator,
+					       theSpectrum, NfreqIntervals, mean);
+  
+  if (theSeries == 0) {
+    opserr << "WARNING ran out of memory creating DiscretizedRandomProcess series with tag: " << tag << endln;
+    return 0;
+  }
+
+  return theSeries;
+}
+
 SimulatedRandomProcessSeries::SimulatedRandomProcessSeries(int tag,
 							   RandomNumberGenerator *theRandNumGenerator,
 							   Spectrum *theSpectr,
 							   int numFreqInt,
 							   double pmean)
- :TimeSeries(tag, TSERIES_TAG_SimulatedRandomProcessSeries)
+  :TimeSeries(tag, TSERIES_TAG_SimulatedRandomProcessSeries),
+   theSpectrum(theSpectr), numFreqIntervals(numFreqInt), mean(pmean),
+   deltaW(0.0), theta(numFreqInt), A(numFreqInt)
 {
-	theRandomNumberGenerator = theRandNumGenerator;
-	theSpectrum = theSpectr;
-	numFreqIntervals = numFreqInt;
-	mean = pmean;
-
+  //theRandomNumberGenerator = theRandNumGenerator;
+	theRandomNumberGenerator = &randGenerator;
 	
 	// Generate random numbers, uniformly distributed between 0 and 2pi
 	double pi = 3.14159265358979;
 	theRandomNumberGenerator->generate_nIndependentUniformNumbers(numFreqIntervals,0.0,(2*pi));
-	Vector theta1 = theRandomNumberGenerator->getGeneratedNumbers();
-	theta = new Vector(theta1);
-	
+	theta = theRandomNumberGenerator->getGeneratedNumbers();
 
 	// Generate standard normal random numbers
 	theRandomNumberGenerator->generate_nIndependentStdNormalNumbers(numFreqIntervals);
-	Vector A1 = theRandomNumberGenerator->getGeneratedNumbers();
-	A = new Vector(A1);
-
+	A = theRandomNumberGenerator->getGeneratedNumbers();
 
 	// Length of each interval
 	deltaW = (theSpectrum->getMaxFrequency()-theSpectrum->getMinFrequency())/numFreqIntervals;
-
-
 }
 
 
 
 TimeSeries *
 SimulatedRandomProcessSeries::getCopy(void) {
-  opserr << "SimulatedRandomProcessSeries::getCopy(void) - not yet implemented\n";
-  return 0;
+
+  SimulatedRandomProcessSeries *theCopy =
+    new SimulatedRandomProcessSeries(this->getTag(),
+				     theRandomNumberGenerator,
+				     theSpectrum, numFreqIntervals, mean);
+  theCopy->theta = theta;
+  theCopy->A = A;
+
+  return theCopy;
 }
 
 SimulatedRandomProcessSeries::~SimulatedRandomProcessSeries()
 {
-	if (theta != 0)
-		delete theta;
-	if (A != 0) 
-		delete A;
+
 }
 
 
@@ -106,7 +177,7 @@ SimulatedRandomProcessSeries::getFactor(double time)
 		for (int i=0; i<numFreqIntervals; i++) {
 			W = (i+0.5)*deltaW+theSpectrum->getMinFrequency();
 			S = theSpectrum->getAmplitude(W);
-			factor += sqrt(2.0*S*deltaW) * (*A)(i) * cos(W*time+(*theta)(i));
+			factor += sqrt(2.0*S*deltaW) * A(i) * cos(W*time+theta(i));
 		}
 
 //outputFile << (mean+factor) << endl;

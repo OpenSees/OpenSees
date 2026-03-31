@@ -165,8 +165,8 @@ ExpressNewton::sendSelf(int cTag, Channel &theChannel)
   static Vector data(4);
   data(0) = nIter;
   data(1) = kMultiplier1;
-  data(1) = kMultiplier2;
-  data(2) = factorOnce;
+  data(2) = kMultiplier2;
+  data(3) = factorOnce;
   return theChannel.sendVector(this->getDbTag(), cTag, data);
 
 

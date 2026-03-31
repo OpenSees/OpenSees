@@ -52,7 +52,8 @@ class Truss : public Element
 	  UniaxialMaterial &theMaterial,
 	  double A, double rho = 0.0, 
 	  int doRayleighDamping = 0,
-      int cMass = 0);
+	  int cMass = 0,
+	  bool initDisp = true);
     
     Truss();    
     ~Truss();
@@ -128,7 +129,8 @@ class Truss : public Element
     double rho;             // rho: mass density per unit length
     int doRayleighDamping;  // flag to include Rayleigh damping
     int cMass;              // consistent mass flag
-
+  bool useInitialDisp;
+  
     double cosX[3];  // direction cosines
 
     Node *theNodes[2];

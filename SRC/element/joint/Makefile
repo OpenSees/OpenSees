@@ -5,6 +5,7 @@ OBJS       = TclJoint2dCommand.o \
 	MP_Joint2D.o \
 	BeamColumnJoint2d.o \
 	Joint3D.o \
+	Inno3DPnPJoint.o \
 	LehighJoint2d.o \
 	MP_Joint3D.o \
 	BeamColumnJoint3d.o \

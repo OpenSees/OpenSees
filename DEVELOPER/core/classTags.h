@@ -432,9 +432,12 @@
 #define ND_TAG_PM4Sand                        14021
 // PM4Silt material - L.Chen
 #define ND_TAG_PM4Silt                        14022
-// J2CyclicBoundingSurface material - D.Turello
-#define ND_TAG_J2CyclicBoundingSurface        14023
-
+// J2CyclicBoundingSurface material - P. Arduino,  D.Turello
+#define ND_TAG_J2CyclicBoundingSurface            14023
+#define ND_TAG_J2CyclicBoundingSurface3D          14024
+#define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
+// LinearElasticGGmax material - P. Arduino
+#define ND_TAG_LinearElasticGGmax             14026
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
 #define ND_TAG_MultiaxialCyclicPlasticity3D           10032
@@ -725,6 +728,8 @@
 
 #define ELE_TAG_ASDEmbeddedNodeElement             217  // Massimo Petracca (ASDEA)
 
+#define ELE_TAG_Inno3DPnPJoint			  263
+
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
 #define FRN_TAG_VelPressureDep     3
@@ -808,6 +813,7 @@
 #define HANDLER_TAG_PenaltyConstraintHandler    	3
 #define HANDLER_TAG_TransformationConstraintHandler    	4
 #define HANDLER_TAG_PenaltyHandlerNoHomoSPMultipliers   5
+#define HANDLER_TAG_AutoConstraintHandler    6
 
 #define NUMBERER_TAG_DOF_Numberer      	1
 #define NUMBERER_TAG_PlainNumberer 	2

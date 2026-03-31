@@ -122,6 +122,7 @@ const Vector &
 PenaltySP_FE::getResidual(Integrator *theNewIntegrator)
 {
     double constraint = theSP->getValue();
+    double initialValue = theSP->getInitialValue();
     int constrainedDOF = theSP->getDOF_Number();
     const Vector &nodeDisp = theNode->getTrialDisp();
 	
@@ -135,7 +136,7 @@ PenaltySP_FE::getResidual(Integrator *theNewIntegrator)
     // is replace with the following to remove possible problems with
     // subtracting very small numbers
 
-    resid(0) = alpha * (constraint - nodeDisp(constrainedDOF));    
+    resid(0) = alpha * (constraint - (nodeDisp(constrainedDOF) - initialValue));    
 
     return resid;
 }

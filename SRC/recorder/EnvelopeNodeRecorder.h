@@ -60,7 +60,8 @@ class EnvelopeNodeRecorder: public Recorder
 			 double deltaT = 0.0,
 			 double relDeltaTTol = 0.00001,
 			 bool echoTimeFlag = false,
-			 TimeSeries **theTimeSeries =0); 
+			 TimeSeries **theTimeSeries =0,
+			 bool closeOnWrite = false); 
     
     ~EnvelopeNodeRecorder();
 
@@ -105,6 +106,7 @@ class EnvelopeNodeRecorder: public Recorder
     int addColumnInfo;
     TimeSeries **theTimeSeries;
     double *timeSeriesValues;
+  bool closeOnWrite;
 };
 
 #endif

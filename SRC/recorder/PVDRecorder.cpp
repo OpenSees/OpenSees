@@ -111,10 +111,9 @@ void* OPS_PVDRecorder()
 	    }
 	    PVDRecorder::EleData edata;
 	    numdata = OPS_GetNumRemainingInputArgs();
-	    edata.resize(numdata);
-	    for(int i=0; i<numdata; i++) {
-		edata[i] = OPS_GetString();
-	    }
+	    edata.resize(1);
+	    edata[0] = OPS_GetString();
+	    // opserr << "WARNING - EDATA[i]="<< edata[0].c_str() << "\n";
 	    eledata.push_back(edata);
 	} else if(strcmp(type, "-dT") == 0) {
 	    numdata = OPS_GetNumRemainingInputArgs();
@@ -1987,6 +1986,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_SFI_MVLEM_3D] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_E_SFI_MVLEM_3D] = VTK_POLY_VERTEX;
 	vtktypes[ELE_TAG_E_SFI] = VTK_POLY_VERTEX;
+	vtktypes[ELE_TAG_MEFI] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_PFEMElement2DFIC] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_TaylorHood2D] = VTK_QUADRATIC_TRIANGLE;
     vtktypes[ELE_TAG_PFEMElement2DQuasi] = VTK_TRIANGLE;
@@ -1995,7 +1995,6 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_FourNodeTetrahedron] = VTK_TETRA;
     vtktypes[ELE_TAG_PFEMElement3DBubble] = VTK_TETRA;
     vtktypes[ELE_TAG_TriSurfaceLoad] = VTK_TRIANGLE;
-    vtktypes[ELE_TAG_ShellANDeS] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_PFEMContact2D] = VTK_TRIANGLE;
@@ -2003,6 +2002,9 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary3D] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_FSIFluidElement2D] = VTK_QUAD;
+    vtktypes[ELE_TAG_FSIInterfaceElement2D] = VTK_LINE;
+    vtktypes[ELE_TAG_FSIFluidBoundaryElement2D] = VTK_LINE;
 }
 
 void

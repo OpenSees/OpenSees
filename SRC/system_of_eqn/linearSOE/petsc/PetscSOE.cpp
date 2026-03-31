@@ -952,7 +952,7 @@ PetscSOE::sendSelf(int cTag, Channel &theChannel)
 
     if (nextNumChannels == 0)
     {
-      cerr << "DistributedBandGenLinSOE::sendSelf() - failed to allocate channel array of size: " <<
+      cerr << "PetscSOE::sendSelf() - failed to allocate channel array of size: " <<
            nextNumChannels << endln;
       return -1;
     }
@@ -981,7 +981,7 @@ PetscSOE::sendSelf(int cTag, Channel &theChannel)
 
     if (localCol == 0)
     {
-      cerr << "DistributedBandGenLinSOE::sendSelf() - failed to allocate id array of size: " <<
+      cerr << "PetscSOE::sendSelf() - failed to allocate id array of size: " <<
            nextNumChannels << endln;
       return -1;
     }

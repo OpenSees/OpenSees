@@ -49,7 +49,9 @@ class SAWSMaterial : public UniaxialMaterial
 	       double ALPHA, double BETA );
   SAWSMaterial();
   ~SAWSMaterial();
-  
+
+  const char *getClassType(void) const {return "SAWSMaterial";}
+
   int setTrialStrain(double strain, double strainRate = 0.0);
   double getStrain(void);
   double getStress(void);
@@ -85,7 +87,7 @@ class SAWSMaterial : public UniaxialMaterial
   double BETA;
 
   // History Variables
-  double TOL     ;
+  //double TOL     ;
   int    IFLAG   ;
   int    JFLAG   ;
   int    IMODE   ;

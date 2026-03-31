@@ -17,7 +17,7 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-                                                                        
+                                                                          
 // $Revision$
 // $Date$
 // $Source$
@@ -30,19 +30,19 @@
 #include <Information.h>
 #include <Parameter.h>
 
-Vector Beam3dPartialUniformLoad::data(5);
+Vector Beam3dPartialUniformLoad::data(8);
 
-Beam3dPartialUniformLoad::Beam3dPartialUniformLoad(int tag, double wy, double wz, double wa,
-						   double aL, double bL, int theElementTag)
+Beam3dPartialUniformLoad::Beam3dPartialUniformLoad(int tag, double wya, double wza, double waa,
+						   double aL, double bL, double wyb, double wzb, double wab, int theElementTag)
   :ElementalLoad(tag, LOAD_TAG_Beam3dPartialUniformLoad, theElementTag),
-   wTransy(wy), wTransz(wz), wAxial(wa), aOverL(aL), bOverL(bL), parameterID(0)
+   wTransya(wya), wTransza(wza), wAxiala(waa), aOverL(aL), bOverL(bL), wTransyb(wyb), wTranszb(wzb), wAxialb(wab), parameterID(0)
 {
 
 }
 
 Beam3dPartialUniformLoad::Beam3dPartialUniformLoad()
   :ElementalLoad(LOAD_TAG_Beam3dPartialUniformLoad),
-   wTransy(0.0), wTransz(0.0), wAxial(0.0), aOverL(0.0), bOverL(0.0), parameterID(0)
+   wTransya(0.0), wTransza(0.0), wAxiala(0.0), aOverL(0.0), bOverL(0.0), wTransyb(0.0), wTranszb(0.0), wAxialb(0.0), parameterID(0)
 {
 
 }
@@ -56,11 +56,14 @@ const Vector &
 Beam3dPartialUniformLoad::getData(int &type, double loadFactor)
 {
   type = LOAD_TAG_Beam3dPartialUniformLoad;
-  data(0) = wTransy;
-  data(1) = wTransz;
-  data(2) = wAxial;
+  data(0) = wTransya;
+  data(1) = wTransza;
+  data(2) = wAxiala;
   data(3) = aOverL;
   data(4) = bOverL;
+  data(5) = wTransyb;
+  data(6) = wTranszb;
+  data(7) = wAxialb;
   return data;
 }
 
@@ -70,15 +73,17 @@ Beam3dPartialUniformLoad::sendSelf(int commitTag, Channel &theChannel)
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(7);
-  vectData(0) = wTransy;
-  vectData(1) = wTransz;  
-  vectData(2) = wAxial;
+  static Vector vectData(10);
+  vectData(0) = wTransya;
+  vectData(1) = wTransza;  
+  vectData(2) = wAxiala;
   vectData(3) = eleTag;
   vectData(4) = this->getTag();
   vectData(5) = aOverL;
   vectData(6) = bOverL;
-
+  vectData(7) = wTransyb;
+  vectData(8) = wTranszb;
+  vectData(9) = wAxialb;
   int result = theChannel.sendVector(dbTag, commitTag, vectData);
   if (result < 0) {
     opserr << "Beam3dPartialUniformLoad::sendSelf - failed to send data\n";
@@ -93,7 +98,7 @@ Beam3dPartialUniformLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_Obje
 {
   int dbTag = this->getDbTag();
 
-  static Vector vectData(7);
+  static Vector vectData(10);
 
   int result = theChannel.recvVector(dbTag, commitTag, vectData);
   if (result < 0) {
@@ -102,12 +107,15 @@ Beam3dPartialUniformLoad::recvSelf(int commitTag, Channel &theChannel,  FEM_Obje
   }
 
   this->setTag(vectData(4));
-  wTransy = vectData(0);
-  wTransz = vectData(1);  
-  wAxial = vectData(2);
+  wTransya = vectData(0);
+  wTransza = vectData(1);  
+  wAxiala = vectData(2);
   eleTag = vectData(3);
   aOverL = vectData(5);
   bOverL = vectData(6);
+  wTransyb = vectData(7);
+  wTranszb = vectData(8);
+  wAxialb = vectData(9);
 
   return 0;
 }
@@ -116,9 +124,9 @@ void
 Beam3dPartialUniformLoad::Print(OPS_Stream &s, int flag)
 {
   s << "Beam3dPartialUniformLoad - tag " << this->getTag() << endln;
-  s << "  Transverse y: " << wTransy << endln;
-  s << "  Transverse z: " << wTransz << endln;
-  s << "  Axial:      " << wAxial << endln;
+  s << "  Transverse y: at start:" << wTransya << " , at end:" << wTransyb << endln;
+  s << "  Transverse z: at start:" << wTransza << " , at end:" << wTranszb << endln;
+  s << "  Axial:        at start:" << wAxiala << " , at end:" << wAxialb << endln;
   s << "  Region:     " << aOverL << " to " << bOverL << endln;
   s << "  Element acted on: " << eleTag << endln;
 }
@@ -129,13 +137,13 @@ Beam3dPartialUniformLoad::setParameter(const char **argv, int argc, Parameter &p
   if (argc < 1)
     return -1;
   
-  if (strcmp(argv[0],"wTransy") == 0 || strcmp(argv[0],"wy") == 0)
+  if (strcmp(argv[0],"wTransya") == 0 || strcmp(argv[0],"wya") == 0)
     return param.addObject(1, this);
 
-  if (strcmp(argv[0],"wTransz") == 0 || strcmp(argv[0],"wz") == 0)
+  if (strcmp(argv[0],"wTransza") == 0 || strcmp(argv[0],"wza") == 0)
     return param.addObject(5, this);  
 
-  if (strcmp(argv[0],"wAxial") == 0 || strcmp(argv[0],"wx") == 0)
+  if (strcmp(argv[0],"wAxiala") == 0 || strcmp(argv[0],"wxa") == 0)
     return param.addObject(2, this);
 
   if (strcmp(argv[0],"aOverL") == 0 || strcmp(argv[0],"a") == 0)
@@ -143,6 +151,15 @@ Beam3dPartialUniformLoad::setParameter(const char **argv, int argc, Parameter &p
 
   if (strcmp(argv[0],"bOverL") == 0 || strcmp(argv[0],"b") == 0)
     return param.addObject(4, this);
+
+  if (strcmp(argv[0], "wTransyb") == 0 || strcmp(argv[0], "wyb") == 0)
+    return param.addObject(6, this);
+
+  if (strcmp(argv[0], "wTranszb") == 0 || strcmp(argv[0], "wzb") == 0)
+    return param.addObject(7, this);
+
+  if (strcmp(argv[0], "wAxialb") == 0 || strcmp(argv[0], "wxb") == 0)
+    return param.addObject(8, this);
 
   return -1;
 }
@@ -152,19 +169,28 @@ Beam3dPartialUniformLoad::updateParameter(int parameterID, Information &info)
 {
   switch (parameterID) {
   case 1:
-    wTransy = info.theDouble;
+    wTransya = info.theDouble;
     return 0;
   case 5:
-    wTransz = info.theDouble;
+    wTransza = info.theDouble;
     return 0;    
   case 2:
-    wAxial = info.theDouble;
+    wAxiala = info.theDouble;
     return 0;
   case 3:
     aOverL = info.theDouble;
     return 0;
   case 4:
     bOverL = info.theDouble;
+    return 0;
+  case 6:
+    wTransyb = info.theDouble;
+    return 0;
+  case 7:
+    wTranszb = info.theDouble;
+    return 0;
+  case 8:
+    wAxialb = info.theDouble;
     return 0;
   default:
     return -1;
@@ -200,9 +226,17 @@ Beam3dPartialUniformLoad::getSensitivityData(int gradNumber)
   case 4:
     data(4) = 1.0;
     break;
+  case 6:
+    data(5) = 1.0;
+    break;
+  case 7:
+    data(6) = 1.0;
+    break;
+  case 8:
+    data(7) = 1.0;
+    break;
   default:
     break;
   }
-
   return data;
 }

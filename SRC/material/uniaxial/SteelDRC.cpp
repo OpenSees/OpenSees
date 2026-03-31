@@ -175,8 +175,12 @@ OPS_SteelDRC()
 // Material Constructors and destructor
 // Simplest class constructor, used to generate copy of the object
 SteelDRC::SteelDRC(int tag)
-	:UniaxialMaterial(tag, MAT_TAG_SteelDRC) {
+	:UniaxialMaterial(tag, MAT_TAG_SteelDRC)
+{
+	// To initialize variables
+	this->revertToStart();
 }
+
 // Constructor for the case when all the model parameters are given and strain hardening is defined from (esh1, fsh1)
 SteelDRC::SteelDRC(int tag, double Es, double fy, double eu, double fu, double esh,
 	double esh1, double fsh1, double eft, double omegaFac, int bauschType,
@@ -669,7 +673,7 @@ SteelDRC::sendSelf(int cTag, Channel &theChannel)
 {
 	int res = 0;
 	int index = 0;
-	static Vector data(70);
+	static Vector data(85);
 	
 	data(index++) = this->getTag();
 	data(index++) = Teps;
@@ -771,7 +775,7 @@ SteelDRC::recvSelf(int cTag, Channel &theChannel,
 FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(70);
+	static Vector data(85);
 	res = theChannel.recvVector(this->getDbTag(), cTag, data);
 	if (res < 0)
 		opserr << "SteelDRC::recvSelf() - failed to recv data\n";

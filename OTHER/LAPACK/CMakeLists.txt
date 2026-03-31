@@ -15,6 +15,13 @@
 add_library(LAPACK)
 
 target_sources(LAPACK PUBLIC
+  lsame.f
+  lsamen.f
+  xerbla.f
+  ilaenv.f
+  xlaenv.f
+  ieeeck.f
+
   dgeqr2.f
   dlabad.f
   dlacon.f
@@ -136,6 +143,26 @@ target_sources(LAPACK PUBLIC
   dlatrs.f
   dla_rpvgrw.f
   dla_gerpvgrw.f
+
+  dsygvx.f
+  dsygst.f
+  dsygs2.f
+  dsyevx.f
+  dormtr.f
+  dorgtr.f
+  dorgql.f 
+  dorg2l.f
+  dormql.f
+  dorm2l.f
+  dlansy.f
+  dlarf1l.f
+  iladlr.f
+  iladlc.f
+  disnan.f
+  dlaisnan.f
+  dsytrd.f
+  dlatrd.f
+  dsytd2.f
 )  
 
 add_library(LAPACK_C)
@@ -148,7 +175,7 @@ target_sources(LAPACK_C PUBLIC
   BLAS_error.c
 )
 
-target_link_libraries(LAPACK PUBLIC LAPACK_C)
+target_link_libraries(LAPACK PUBLIC LAPACK_C BLAS)
 
 
 

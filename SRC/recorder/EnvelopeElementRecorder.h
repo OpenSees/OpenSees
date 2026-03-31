@@ -54,7 +54,8 @@ class EnvelopeElementRecorder: public Recorder
 			    double deltaT = 0.0,
 			    double relDeltaTTol = 0.00001,
 			    bool echoTimeFlag = true,
-			    const ID *dof =0); 
+			    const ID *dof =0,
+			    bool closeOnWrite = false); 
 
 
     ~EnvelopeElementRecorder();
@@ -100,6 +101,7 @@ class EnvelopeElementRecorder: public Recorder
     bool echoTimeFlag; 
 
     int addColumnInfo;
+    bool closeOnWrite;
 };
 
 

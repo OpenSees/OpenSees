@@ -1038,7 +1038,9 @@ SectionAggregator::Print(OPS_Stream &s, int flag)
     }
     
     if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
-        theSection->Print(s, flag);
+        if (theSection) {
+            theSection->Print(s, flag);
+        }
     }
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {

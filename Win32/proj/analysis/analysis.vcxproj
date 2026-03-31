@@ -25,7 +25,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>MultiByte</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings">
@@ -214,6 +214,7 @@
     <ClCompile Include="..\..\..\SRC\analysis\handler\PenaltyConstraintHandler.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\handler\PlainHandler.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.cpp" />
+    <ClCompile Include="..\..\..\SRC\analysis\handler\AutoConstraintHandler.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\InitialInterpolatedLineSearch.cpp" />
     <ClCompile Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\LineSearch.cpp" />
@@ -329,6 +330,7 @@
     <ClInclude Include="..\..\..\SRC\analysis\handler\PenaltyConstraintHandler.h" />
     <ClInclude Include="..\..\..\SRC\analysis\handler\PlainHandler.h" />
     <ClInclude Include="..\..\..\SRC\analysis\handler\TransformationConstraintHandler.h" />
+    <ClInclude Include="..\..\..\SRC\analysis\handler\AutoConstraintHandler.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\BisectionLineSearch.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\InitialInterpolatedLineSearch.h" />
     <ClInclude Include="..\..\..\SRC\analysis\algorithm\equiSolnAlgo\LineSearch.h" />

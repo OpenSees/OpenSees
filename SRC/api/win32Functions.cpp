@@ -41,7 +41,7 @@ BOOL APIENTRY DllMain(HANDLE hModule,
 
 OPS_Stream* opserrPtr = 0;
 SimulationInformation* theSimulationInfo = 0;
-//Domain *ops_TheActiveDomain = 0;
+Domain *ops_TheActiveDomain = 0;
 
 typedef int(*OPS_ErrorPtrType)(char*, int);
 typedef int(*OPS_GetNumRemainingInputArgsType)();

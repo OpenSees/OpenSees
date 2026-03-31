@@ -62,10 +62,11 @@ class QzSimple1 : public UniaxialMaterial
   public:
     QzSimple1(int tag, int qzType, double Qult, double z50, double suction,
 		      double dashpot);
+  QzSimple1(int tag, int classtag);
     QzSimple1();
     ~QzSimple1();
 
-    const char *getClassType(void) const {return "QzSimple1";};
+    virtual const char *getClassType(void) const {return "QzSimple1";};
 
     int setTrialStrain(double z, double zRate); 
     double getStrain(void);          
@@ -101,7 +102,9 @@ class QzSimple1 : public UniaxialMaterial
 	double maxElast;	// max size of elastic range (in terms of dQ/Qult)
 	double nd;			// exponent for hardening shape of suction component
 	double dashpot;     // dashpot on the far-field (elastic) component
-	
+
+  double getTolerance() {return 1.0e-12;}
+  
   private:
 
 	// Functions to get Q & z for each component individually

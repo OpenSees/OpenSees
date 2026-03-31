@@ -2,6 +2,7 @@ include ../../../Makefile.def
 
 OBJS       = ConstraintHandler.o PlainHandler.o \
 	PenaltyConstraintHandler.o LagrangeConstraintHandler.o \
+	AutoConstraintHandler.o \
 	TransformationConstraintHandler.o PenaltyHandlerNoHomoSPMultipliers.o
 
 # Compilation control

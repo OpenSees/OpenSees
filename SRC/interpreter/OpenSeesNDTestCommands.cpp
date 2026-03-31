@@ -38,7 +38,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 // 2021 By Jose Abell @ Universidad de los Andes, Chile
 // www.joseabell.com | https://github.com/jaabell | jaabell@miuandes.cl
 // ============================================================================
-// Implements simple routines to test nDMaterials using direct strains. 
+// Implements simple routines to test nDMaterials using direct strains.
 //
 // ============================================================================
 
@@ -53,6 +53,8 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include "Matrix.h"
 #include "NDMaterial.h"
 #include "Information.h"
+#include "Response.h"
+#include "MaterialResponse.h"
 
 //Forward declaration for indexing purposes
 void * OPS_NDSetStrain();               // To set a trial strain on the material
@@ -62,8 +64,9 @@ void * OPS_NDGetStrain();               // Return current strains to a list vari
 void * OPS_NDGetStress();               // Return current stresses to a list variable
 void * OPS_NDGetTangentStiffness();     // Return current tangent stiffness to a list variable
 void * OPS_NDCommitState();             // To commit the state of the material after last trial strain
-void * OPS_NDUpdateIntegerParameter();  // To change an integer parameter in the material 
+void * OPS_NDUpdateIntegerParameter();  // To change an integer parameter in the material
 void * OPS_NDUpdateDoubleParameter();   // To change a double parameter in the material
+void * OPS_NDGetResponse();             // To get other responses
 
 void* OPS_NDSetStrain()
 {
@@ -214,6 +217,47 @@ void* OPS_NDGetStress()
     return 0;
 }
 
+void* OPS_NDGetResponse()
+{
+    int tag = 0;
+
+    int numdata = 1;
+    if (OPS_GetIntInput(&numdata, &tag) < 0)
+    {
+        return 0;
+    }
+
+
+    NDMaterial* mat = OPS_getNDMaterial(tag);
+    if (mat == NULL)
+    {
+        opserr << "OPS_NDGetStress() - Material tag " << tag << " not declared" << endln;
+    }
+
+
+    const char* response_type = OPS_GetString();
+
+    Response* theResponse = mat->setResponse(&response_type, 1, opserr);
+    theResponse->getResponse();
+    Information& theInformation = theResponse->getInformation();
+
+    const Vector &respose = *theInformation.theVector;
+
+    int size = respose.Size();
+    std::vector<double> values(size);
+    for (int i = 0; i < size; i++) {
+        values[i] = respose(i);
+    }
+    if (OPS_SetDoubleOutput(&size, &values[0], false) < 0) {
+        opserr << "WARNING OPS_NDGetStress - failed to set double inputs\n";
+        return 0;
+    }
+
+
+    return 0;
+}
+
+
 
 void* OPS_NDGetTangentStiffness()
 {
@@ -270,7 +314,7 @@ void* OPS_NDCommitState()
         opserr << "OPS_NDCommitState - material with tag " << tag << " does not exist" << endln;
         return 0;
     }
-    
+
 
     mat->commitState();
 
@@ -280,14 +324,20 @@ void* OPS_NDCommitState()
 
 void* OPS_NDUpdateIntegerParameter()
 {
+
+    opserr << "OPS_NDUpdateIntegerParameter" << endln;
+
     int tag = 0;
     int responseID = 0;
     int theNewIntegerParameterValue = 0;
 
     int numdata = 1;
     if (OPS_GetIntInput(&numdata, &tag) < 0) return 0;
+    opserr << "tag = " << tag  << endln;
     if (OPS_GetIntInput(&numdata, &responseID) < 0) return 0;
+    opserr << "responseID = " << responseID  << endln;
     if (OPS_GetIntInput(&numdata, &theNewIntegerParameterValue) < 0) return 0;
+    opserr << "theNewIntegerParameterValue = " << theNewIntegerParameterValue  << endln;
 
 
     NDMaterial* mat = OPS_getNDMaterial(tag);
@@ -327,7 +377,7 @@ void* OPS_NDUpdateDoubleParameter()
         opserr << "OPS_NDUpdateDoubleParameter - material with tag " << tag << " does not exist" << endln;
         return 0;
     }
-    
+
     Information info;
 
     info.theDouble = theNewDoubleParameterValue;
@@ -363,6 +413,7 @@ static int setUpFunctions(void)
     functionMap.insert(std::make_pair("GetTangentStiffness", &OPS_NDGetTangentStiffness));
     functionMap.insert(std::make_pair("UpdateIntegerParameter", &OPS_NDUpdateIntegerParameter));
     functionMap.insert(std::make_pair("UpdateDoubleParameter", &OPS_NDUpdateDoubleParameter));
+    functionMap.insert(std::make_pair("GetResponse", &OPS_NDGetResponse));
 
     return 0;
 }

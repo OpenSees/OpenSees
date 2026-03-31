@@ -96,23 +96,25 @@ void* OPS_BrickUP()
 	return 0;
     }
 
-    // b1, b2, b3
+    int massType = 0;
+    
     double opt[3] = {0,0,0};
-    num = OPS_GetNumRemainingInputArgs();
-    if (num > 3) {
-	num = 3;
-    }
-    if (num > 0) {
-	if (OPS_GetDoubleInput(&num,opt) < 0) {
-	    opserr<<"WARNING: invalid double input\n";
-	    return 0;
-	}
+    int bCount = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* flag = OPS_GetString();
+        if (strcmp(flag, "-lumped") == 0) {
+            massType = 1;
+        } else {
+             if (bCount < 3) {
+                 opt[bCount++] = atof(flag);
+             }
+        }
     }
 
     return new BrickUP(tags[0],tags[1],tags[2],tags[3],tags[4],
 		       tags[5],tags[6],tags[7],tags[8],
 		       *mat,data[0],data[1],data[2],data[3],data[4],
-		       opt[0],opt[1],opt[2]);
+		       opt[0],opt[1],opt[2], massType);
 }
 
 //static data
@@ -123,7 +125,6 @@ Vector  BrickUP::resid(32) ;
 Matrix  BrickUP::mass(32,32) ;
 Matrix  BrickUP::damp(32,32) ;
 
-//quadrature data
 const double  BrickUP::root3 = sqrt(3.0) ;
 const double  BrickUP::one_over_root3 = 1.0 / root3 ;
 
@@ -162,9 +163,9 @@ BrickUP::BrickUP(  int tag,
 			             int node8,
 			 NDMaterial &theMaterial, double bulk, double rhof,
 			double p1, double p2, double p3,
-		   double b1, double b2, double b3) :
+		   double b1, double b2, double b3, int massType) :
 Element( tag, ELE_TAG_BrickUP ),
-connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), kc(bulk), rho(rhof)
+connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), kc(bulk), rho(rhof), massType(massType)
 {
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -903,20 +904,34 @@ void   BrickUP::formInertiaTerms( int tangFlag )
 	 //multiply by density
 	 temp *= rhot ;
 
-	 //node-node mass
+     if (massType == 1) {
+         // Lumped mass
+         // Solid mass
+         for ( p = 0; p < ndf; p++ ) {
+             mass( jj+p, jj+p ) += temp ;
+         }
+
+         // Compressibility
+         // Row sum lumping
+         mass( jj+3, jj+3 ) += -dvol[i]*Shape[3][j][i]/kc;
+
+     } else {
+         // Consistent mass
+         //node-node mass
          kk = 0 ;
          for ( k = 0; k < numberNodes; k++ ) {
 
-	    massJK = temp * shp[massIndex][k] ;
+            massJK = temp * shp[massIndex][k] ;
 
             for ( p = 0; p < ndf; p++ )
-	          mass( jj+p, kk+p ) += massJK ;
+              mass( jj+p, kk+p ) += massJK ;
 
             // Compute compressibility terms
             mass( jj+3, kk+3 ) += -dvol[i]*Shape[3][j][i]*Shape[3][k][i]/kc;
 
             kk += ndff ;
           } // end for k loop
+     }
 
       jj += ndff ;
     } // end for j loop
@@ -1567,6 +1582,40 @@ BrickUP::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.endTag(); // GaussPoint
     }
     theResponse = new ElementResponse(this, 5, Vector(48));
+  } else if (strcmp(argv[0],"stress3D6")==0) {
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
+
+    output.tag("ResponseType","sigma11");
+    output.tag("ResponseType","sigma22");
+    output.tag("ResponseType","sigma33");
+    output.tag("ResponseType","sigma12");
+    output.tag("ResponseType","sigma23");
+    output.tag("ResponseType","sigma13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+    theResponse =  new ElementResponse(this, 6, Vector(6));
+  } else if (strcmp(argv[0],"strain3D6")==0) {
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
+
+    output.tag("ResponseType","eps11");
+    output.tag("ResponseType","eps22");
+    output.tag("ResponseType","eps33");
+    output.tag("ResponseType","eps12");
+    output.tag("ResponseType","eps23");
+    output.tag("ResponseType","eps13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+    theResponse =  new ElementResponse(this, 7, Vector(6));
   }
 
   output.endTag(); // ElementOutput
@@ -1608,7 +1657,34 @@ BrickUP::getResponse(int responseID, Information &eleInfo)
     }
     return eleInfo.setVector(stresses);
 
-  }
+  } else if (responseID == 6) {
+
+    Vector tmpStress(6);
+    for (int i = 0; i < 8; i++) {
+      // Get material stress response
+      const Vector &sigma = materialPointers[i]->getStress();
+      tmpStress(0) = sigma(0) * 0.125;
+      tmpStress(1) = sigma(1) * 0.125;
+      tmpStress(2) = sigma(2) * 0.125;
+      tmpStress(3) = sigma(3) * 0.125;
+      tmpStress(4) = sigma(4) * 0.125;
+      tmpStress(5) = sigma(5) * 0.125;
+    }
+    return eleInfo.setVector(tmpStress);
+  } else if (responseID == 7) {
+    Vector tmpStrain(6);
+    for (int i = 0; i < 8; i++) {
+      // Get material strain response
+      const Vector &eps = materialPointers[i]->getStrain();
+      tmpStrain(0) = eps(0) * 0.125;
+      tmpStrain(1) = eps(1) * 0.125;
+      tmpStrain(2) = eps(2) * 0.125;
+      tmpStrain(3) = eps(3) * 0.125;
+      tmpStrain(4) = eps(4) * 0.125;
+      tmpStrain(5) = eps(5) * 0.125;
+    }
+    return eleInfo.setVector(tmpStrain);
+  } 
   else
 
     return -1;

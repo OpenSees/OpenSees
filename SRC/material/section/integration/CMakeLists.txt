@@ -13,6 +13,8 @@ target_sources(OPS_Material
     RCCircularSectionIntegration.cpp
     TubeSectionIntegration.cpp 
     RCTunnelSectionIntegration.cpp
+    MVLEMSectionIntegration.cpp
+    SFIMVLEMSectionIntegration.cpp
     HSSSectionIntegration.cpp    
     PUBLIC
     SectionIntegration.h 
@@ -22,6 +24,8 @@ target_sources(OPS_Material
     RCCircularSectionIntegration.h
     TubeSectionIntegration.h 
     RCTunnelSectionIntegration.h
+    MVLEMSectionIntegration.h
+    SFIMVLEMSectionIntegration.h
     HSSSectionIntegration.h    
 )
 

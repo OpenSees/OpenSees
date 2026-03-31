@@ -440,7 +440,18 @@ PlaneStressLayeredMaterial::recvSelf(int commitTag, Channel &theChannel, FEM_Obj
  
 
 
-Response* 
+int PlaneStressLayeredMaterial::setParameter(const char** argv, int argc, Parameter& param)
+{
+    // forward to the sub-materials
+    int res = -1;
+    for (int i = 0; i < nLayers; ++i) {
+        if (theFibers[i]->setParameter(argv, argc, param) == 0)
+            res = 0;
+    }
+    return res;
+}
+
+Response*
 PlaneStressLayeredMaterial::setResponse (const char **argv, int argc, 
 					 OPS_Stream &output)
 {

@@ -113,6 +113,7 @@ Bidirectional::Bidirectional
 		eP_n1[i] = 0.0;
 		q_n[i]  = 0.0;
 		q_n1[i] = 0.0;
+		e_n1[i] = 0.0;		
 	}
 
 	alpha_n  = 0.0;
@@ -128,6 +129,7 @@ Bidirectional::Bidirectional():
 		eP_n1[i] = 0.0;
 		q_n[i]  = 0.0;
 		q_n1[i] = 0.0;
+		e_n1[i] = 0.0;		
 	}
 
 	alpha_n  = 0.0;
@@ -317,6 +319,14 @@ Bidirectional::commitState(void)
 int
 Bidirectional::revertToLastCommit(void)
 {
+	eP_n1[0] = eP_n[0];
+	eP_n1[1] = eP_n[1];
+
+	q_n1[0] = q_n[0];
+	q_n1[1] = q_n[1];
+
+	alpha_n1 = alpha_n;
+	
 	return 0;
 }
 
@@ -328,6 +338,7 @@ Bidirectional::revertToStart(void)
 		eP_n1[i] = 0.0;
 		q_n[i]  = 0.0;
 		q_n1[i] = 0.0;
+		e_n1[i] = 0.0;
 	}
 
 	alpha_n  = 0.0;
@@ -347,6 +358,7 @@ Bidirectional::getCopy(void)
 		theCopy->eP_n1[i] = eP_n1[i];
 		theCopy->q_n[i]  = q_n[i];
 		theCopy->q_n1[i] = q_n1[i];
+		theCopy->e_n1[i] = e_n1[i];		
 	}
 
 	theCopy->alpha_n  = alpha_n;

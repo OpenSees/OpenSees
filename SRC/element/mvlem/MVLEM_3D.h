@@ -65,6 +65,8 @@ public:
 	// destructor
 	~MVLEM_3D();
 
+  const char *getClassType(void) const {return "MVLEM3d";}
+  
 	// public methods to obtain information about dof & connectivity
 	int getNumExternalNodes(void) const;
 	const ID &getExternalNodes(void);
@@ -163,12 +165,6 @@ private:
 	double *rho;							// fiber reinforcing ratio
 	double *Ac;								// concrete area
 	double *As;								// steel area
-	double *Ec;								// concrete tangent modulus
-	double *Es;								// steel tangent modulus	
-	double *stressC;						// concrete stress
-	double *stressS;						// steel stress
-	double *ky;								// fiber axial stiffness in Y direction
-	double *kh;								// element shear stiffness		
 	double *MVLEM_3DStrain;					// fiber strains (0 to m-1), shear deformation (m)
 
 	// Class-wide matrices/vectors/doubles

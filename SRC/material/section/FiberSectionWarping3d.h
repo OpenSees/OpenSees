@@ -98,11 +98,13 @@ class FiberSectionWarping3d : public SectionForceDeformation
     int numFibers, sizeFibers;                   // number of fibers in the section
     UniaxialMaterial **theMaterials; // array of pointers to materials
     double   *matData;               // data for the materials [yloc and area]
-    double   kData[25];               // data for ks matrix 
+    double   kData[36];               // data for ks matrix 
     double   sData[6];               // data for s vector 
    // double   Height;
     double yBar;       // Section centroid
     double zBar;
+
+    SectionIntegration *sectionIntegr;
   
     static ID code;
 

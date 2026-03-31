@@ -37,10 +37,6 @@
 // Tolerance for zero length of element
 #define	LENTOL 1.0e-6
 
-// Type of dimension of element NxDy has dimension x=1,2,3 and
-// y=2,4,6,12 degrees-of-freedom for the element
-enum Etype { D1N2, D2N4, D2N6, D3N6, D3N12 };
-
 class Node;
 class UniaxialMaterial;
 
@@ -105,7 +101,10 @@ class CoupledZeroLength : public Element {
  protected:
     
  private:
-    Etype elemType;
+  // Type of dimension of element NxDy has dimension x=1,2,3 and
+  // y=2,4,6,12 degrees-of-freedom for the element
+  enum Etype { D1N2, D2N4, D2N6, D3N6, D3N12 };
+  Etype elemType;
   
     // private attributes - a copy for each object of the class
     ID  connectedExternalNodes;         // contains the tags of the end nodes
@@ -131,6 +130,8 @@ class CoupledZeroLength : public Element {
     // vector pointers to initial disp and vel if present
     Vector *d0;
     Vector *v0;
+
+    int mInitialize;  // tag to fix bug in recvSelf/setDomain when using database command  
 };
 
 #endif

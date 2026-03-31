@@ -708,7 +708,7 @@ DistributedSparseGenRowLinSOE::sendSelf(int cTag, Channel &theChannel)
       int nextNumChannels = numChannels + 1;
       Channel **nextChannels = new Channel *[nextNumChannels];
       if (nextNumChannels == 0) {
-	opserr << "DistributedBandGenLinSOE::sendSelf() - failed to allocate channel array of size: " << 
+	opserr << "DistributedSparseGenRowLinSOE::sendSelf() - failed to allocate channel array of size: " << 
 	  nextNumChannels << endln;
 	return -1;
       }
@@ -726,7 +726,7 @@ DistributedSparseGenRowLinSOE::sendSelf(int cTag, Channel &theChannel)
 	delete [] localCol;
       localCol = new ID *[numChannels];
       if (localCol == 0) {
-	opserr << "DistributedBandGenLinSOE::sendSelf() - failed to allocate id array of size: " << 
+	opserr << "DistributedSparseGenRowLinSOE::sendSelf() - failed to allocate id array of size: " << 
 	  nextNumChannels << endln;
 	return -1;
       }

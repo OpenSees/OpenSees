@@ -827,3 +827,15 @@ bool  Element::isActive()
     // }
     return is_this_element_active;
 }
+
+
+
+Vector Element::getRayleighDampingFactors() const
+{
+   Vector out(4);
+   out(0) = alphaM;
+   out(1) = betaK;
+   out(2) = betaK0;
+   out(3) = betaKc;
+   return out;
+}

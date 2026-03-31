@@ -84,8 +84,20 @@ void* OPS_BbarBrick()
 	}	
     }
 
+    int massType = 0;
+    
+    // Check for optional arguments
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *argv = OPS_GetString();
+        if (strcmp(argv, "-lumped") == 0) {
+            massType = 1;
+        } else {
+             // Unknown flag or extra argument
+        }
+    }
+
     return new BbarBrick(idata[0],idata[1],idata[2],idata[3],idata[4],idata[5],idata[6],idata[7],
-			 idata[8],*mat,data[0],data[1],data[2]);
+			 idata[8],*mat,data[0],data[1],data[2],massType);
 }
 
 //static data
@@ -135,9 +147,9 @@ BbarBrick::BbarBrick(  int tag,
                          int node7,
 			 int node8,
 			 NDMaterial &theMaterial,
-			 double b1, double b2, double b3) :
+			 double b1, double b2, double b3, int massType) :
 Element( tag, ELE_TAG_BbarBrick ),
-connectedExternalNodes(8), applyLoad(0), load(0), Ki(0)
+connectedExternalNodes(8), applyLoad(0), load(0), Ki(0), massType(massType)
 {
   connectedExternalNodes(0) = node1 ;
   connectedExternalNodes(1) = node2 ;
@@ -752,10 +764,17 @@ void   BbarBrick::formInertiaTerms( int tangFlag )
          kk = 0 ;
          for ( k = 0; k < numberNodes; k++ ) {
 
-	    massJK = temp * shp[massIndex][k] ;
-
-            for ( p = 0; p < ndf; p++ )
-	      mass( jj+p, kk+p ) += massJK ;
+            if (massType == 0) {
+                massJK = temp * shp[massIndex][k] ;
+                for ( p = 0; p < ndf; p++ )
+                    mass( jj+p, kk+p ) += massJK ;
+            } else {
+                if (j == k) {
+                    massJK = temp ; 
+                    for ( int p = 0; p < ndf; p++ )
+                        mass( jj+p, kk+p ) += massJK ;
+                }
+            }
 
             kk += ndf ;
           } // end for k loop
@@ -1464,7 +1483,43 @@ BbarBrick::setResponse(const char **argv, int argc, OPS_Stream &output)
       output.endTag(); // GaussPoint
     }
     theResponse =  new ElementResponse(this, 4, Vector(48));
+  } else if (strcmp(argv[0],"stress3D6") == 0) {
+
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
+
+    output.tag("ResponseType","sigma11");
+    output.tag("ResponseType","sigma22");
+    output.tag("ResponseType","sigma33");
+    output.tag("ResponseType","sigma12");
+    output.tag("ResponseType","sigma23");
+    output.tag("ResponseType","sigma13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+    theResponse =  new ElementResponse(this, 5, Vector(6));
+  } else if (strcmp(argv[0],"strain3D6") == 0) {
+    output.tag("GaussPoint");
+    output.attr("number",1);
+    output.tag("NdMaterialOutput");
+    output.attr("classType", materialPointers[0]->getClassTag());
+    output.attr("tag", materialPointers[0]->getTag());
+
+    output.tag("ResponseType","eps11");
+    output.tag("ResponseType","eps22");
+    output.tag("ResponseType","eps33");
+    output.tag("ResponseType","eps12");
+    output.tag("ResponseType","eps23");
+    output.tag("ResponseType","eps13");
+
+    output.endTag(); // NdMaterialOutput
+    output.endTag(); // GaussPoint
+    theResponse =  new ElementResponse(this, 6, Vector(6));
   }
+      
 
   output.endTag(); // ElementOutput
   return theResponse;
@@ -1513,7 +1568,33 @@ BbarBrick::getResponse(int responseID, Information &eleInfo)
       stresses(cnt++) = sigma(5);
     }
     return eleInfo.setVector(stresses);
+  } else if (responseID == 5) {
+
+    Vector tmpStress(6);
+    for (int i = 0; i < 8; i++) {
+      const Vector &sigma = materialPointers[i]->getStress();
+      tmpStress(0) += sigma(0) * 0.125;
+      tmpStress(1) += sigma(1) * 0.125;
+      tmpStress(2) += sigma(2) * 0.125;
+      tmpStress(3) += sigma(3) * 0.125;
+      tmpStress(4) += sigma(4) * 0.125;
+      tmpStress(5) += sigma(5) * 0.125;
+    }
+    return eleInfo.setVector(tmpStress);
+  } else if (responseID == 6) {
+    Vector tmpStrain(6);
+    for (int i = 0; i < 8; i++) {
+      const Vector &sigma = materialPointers[i]->getStrain();
+      tmpStrain(0) += sigma(0) * 0.125;
+      tmpStrain(1) += sigma(1) * 0.125;
+      tmpStrain(2) += sigma(2) * 0.125;
+      tmpStrain(3) += sigma(3) * 0.125;
+      tmpStrain(4) += sigma(4) * 0.125;
+      tmpStrain(5) += sigma(5) * 0.125;
+    }
+    return eleInfo.setVector(tmpStrain);
   }
+    // Get)
 
   else
     return -1;

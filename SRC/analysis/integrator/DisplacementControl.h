@@ -94,8 +94,8 @@ class DisplacementControl : public StaticIntegrator
       double dlambdadh; // deltaLambdaI1 for the first iteration J=1
       double Dlambdadh;// deltaLambdaIJ: for J>1
       double dLambda;
-     double calldLambda1dh;//Abbas
-      int CallParam;
+  //double calldLambda1dh;//Abbas
+  //  int CallParam;
   
           //  IncrementalIntegrator *K_newStep;
    private:
@@ -121,7 +121,7 @@ class DisplacementControl : public StaticIntegrator
       // the reference load vector
       double deltaLambdaStep, currentLambda;  // dLambda(i) & current value of lambda  
       double dLambdaStepDh ;//Abbas
-      double specNumIncrStep, numIncrLastStep; // Jd & J(i-1) 
+      int specNumIncrStep, numIncrLastStep; // Jd & J(i-1) 
       double minIncrement, maxIncrement; // min/max values of deltaU at (i)
 
       int tangFlag;

@@ -42,6 +42,7 @@ class Node;
 class MP_Constraint;
 class SP_Constraint;
 class Pressure_Constraint;
+class EQ_Constraint;
 class NodalLoad;
 class ElementalLoad;
 class LoadPattern;
@@ -80,7 +81,11 @@ class SectionForceDeformation;
 class NDMaterial;
 class Fiber;
 class FrictionModel;
+
 class HystereticBackbone;
+class UnloadingRule;
+class StiffnessDegradation;
+class StrengthDegradation;
 
 class ConvergenceTest;
 class GroundMotion;
@@ -112,6 +117,7 @@ class FEM_ObjectBroker
     virtual MP_Constraint *getNewMP(int classTag);
     virtual SP_Constraint *getNewSP(int classTag);
     virtual Pressure_Constraint *getNewPC(int classTag);
+    virtual EQ_Constraint *getNewEQ(int classTag);
     virtual NodalLoad     *getNewNodalLoad(int classTag);
     virtual ElementalLoad *getNewElementalLoad(int classTag);
     
@@ -128,6 +134,9 @@ class FEM_ObjectBroker
     virtual FrictionModel *getNewFrictionModel(int classTag);
 
   virtual HystereticBackbone *getNewHystereticBackbone(int classTag);
+  virtual UnloadingRule *getNewUnloadingRule(int classTag);
+  virtual StiffnessDegradation *getNewStiffnessDegradation(int classTag);
+  virtual StrengthDegradation *getNewStrengthDegradation(int classTag);    
   
     virtual ConvergenceTest *getNewConvergenceTest(int classTag);
     virtual LoadPattern *getNewLoadPattern(int classTag);

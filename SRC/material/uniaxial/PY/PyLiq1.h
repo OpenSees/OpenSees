@@ -74,6 +74,8 @@ class PyLiq1 : public PySimple1
   PyLiq1();
   ~PyLiq1();
 
+  const char *getClassType(void) const {return "PyLiq1";};
+  
   int setTrialStrain(double y, double yRate); 
   double getStrain(void);          
   double getStress(void);
@@ -102,7 +104,6 @@ class PyLiq1 : public PySimple1
   protected:
     
   private:
-
   // Residual p (other parameters in PySimple1 base class)
   double pRes;
   

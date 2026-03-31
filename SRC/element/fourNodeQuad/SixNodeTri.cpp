@@ -859,7 +859,7 @@ SixNodeTri::recvSelf(int commitTag, Channel &theChannel,
   betaK0 = data(7);
   betaKc = data(8);
 
-  static ID idData(18); // 2*3 + 6
+  static ID idData(2*nip+nnodes);
   // Quad now receives the tags of its nine external nodes
   res += theChannel.recvID(dataTag, commitTag, idData);
   if (res < 0) {

@@ -43,9 +43,10 @@ ops.parameter(13, 'randomVariable', 25,
               "element", 1, "A")
 ops.parameter(14, 'randomVariable', 33,
               "element", 1, "fy")
-ops.parameter(23, "node", 2, "disp", 1)
+#ops.parameter(23, "node", 2, "disp", 1)
 
-ops.performanceFunction(76, "5.5-par[23]")
+#ops.performanceFunction(76, "5.5-par[23]")
+ops.performanceFunction(76, "5.5-ops.nodeDisp(2,1)")
 
 ops.sensitivityAlgorithm("-computeAtEachStep")
 
@@ -55,6 +56,7 @@ ops.reliabilityConvergenceCheck('Standard', "-e1", 1e-2,
                                 "-e2", 1e-2, "-print", 1)
 ops.functionEvaluator('Python', "-file", "opensees.analyze(55)")
 ops.gradientEvaluator('Implicit')
+ops.gradientEvaluator('FiniteDifference')
 ops.searchDirection('iHLRF')
 ops.meritFunctionCheck('AdkZhang', "-multi", 2.0, "-add", 10.0,
                        "-factor", 0.5)

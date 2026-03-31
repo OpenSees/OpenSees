@@ -38,6 +38,7 @@
 #include <TimeSeries.h>
 #include <Spectrum.h>
 #include <RandomNumberGenerator.h>
+#include <CStdLibRandGenerator.h>
 
 class SimulatedRandomProcessSeries : public TimeSeries
 {
@@ -76,8 +77,10 @@ private:
 	int numFreqIntervals;
 	double mean;
 	double deltaW;
-	Vector *theta;
-	Vector *A;
+	Vector theta;
+	Vector A;
+
+  static CStdLibRandGenerator randGenerator;
 };
 
 #endif

@@ -77,7 +77,14 @@ class PathSeries : public TimeSeries
         FEM_ObjectBroker &theBroker);
     
     void Print(OPS_Stream &s, int flag =0);
-    
+
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    double getFactorSensitivity(double pseudoTime);
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+    int activateParameter(int parameterID);
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+  
   protected:
     
   private:
@@ -88,6 +95,8 @@ class PathSeries : public TimeSeries
     int lastSendCommitTag;
     bool useLast;
     double startTime;
+
+  int parameterID;
 };
 
 #endif

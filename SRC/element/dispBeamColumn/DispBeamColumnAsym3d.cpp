@@ -95,6 +95,7 @@ void* OPS_DispBeamColumnAsym3d()
 	    cmass = 1;
 	} else if(strcmp(type,"-mass") == 0) {
 	    if(OPS_GetNumRemainingInputArgs() > 0) {
+		numData = 1;
 		if(OPS_GetDoubleInput(&numData,&mass) < 0) {
 		    opserr<<"WARNING: invalid mass\n";
 		    return 0;

@@ -1080,7 +1080,7 @@ ComponentElement3d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(19);
+  static Vector data(19+8+4+4); // 35
   
   data(0) = A;
   data(1) = E; 
@@ -1089,22 +1089,62 @@ ComponentElement3d::sendSelf(int cTag, Channel &theChannel)
   data(17) = G;
   data(18) = J;
   data(3) = rho;
-  //  data(4) = cMass;
+  data(4) = cMass;
   data(5) = this->getTag();
   data(6) = connectedExternalNodes(0);
   data(7) = connectedExternalNodes(1);
+
+  for (int i = 0; i < 4; i++) {
+    data(27+i) = uzCommit(i);
+    data(31+i) = uyCommit(i);
+  }
+  
   data(8) = theCoordTransf->getClassTag();
-  
   int dbTag = theCoordTransf->getDbTag();
-  
   if (dbTag == 0) {
     dbTag = theChannel.getDbTag();
     if (dbTag != 0)
       theCoordTransf->setDbTag(dbTag);
   }
-  
   data(9) = dbTag;
 
+  data(19) = end1zHinge->getClassTag();
+  dbTag = end1zHinge->getDbTag();
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      end1zHinge->setDbTag(dbTag);
+  }
+  data(20) = dbTag;
+
+  data(21) = end2zHinge->getClassTag();
+  dbTag = end2zHinge->getDbTag();
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      end2zHinge->setDbTag(dbTag);
+  }
+  data(22) = dbTag;
+
+  data(23) = end1yHinge->getClassTag();
+  dbTag = end1yHinge->getDbTag();
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      end1yHinge->setDbTag(dbTag);
+  }
+  data(24) = dbTag;
+
+  data(25) = end2yHinge->getClassTag();
+  dbTag = end2yHinge->getDbTag();
+  if (dbTag == 0) {
+    dbTag = theChannel.getDbTag();
+    if (dbTag != 0)
+      end2yHinge->setDbTag(dbTag);
+  }
+  data(26) = dbTag;    
+
+  
   // data(10) = alpha;
   //  data(11) = d;
   
@@ -1126,6 +1166,34 @@ ComponentElement3d::sendSelf(int cTag, Channel &theChannel)
     opserr << "ComponentElement3d::sendSelf -- could not send CoordTransf\n";
     return res;
   }
+
+  // Ask hinge 1 to send itself
+  res += end1zHinge->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement3d::sendSelf -- could not send hinge 1z\n";
+    return res;
+  }
+
+  // Ask hinge 2 to send itself
+  res += end2zHinge->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement3d::sendSelf -- could not send hinge 2z\n";
+    return res;
+  }
+
+  // Ask hinge 1 to send itself
+  res += end1yHinge->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement3d::sendSelf -- could not send hinge 1y\n";
+    return res;
+  }
+
+  // Ask hinge 2 to send itself
+  res += end2yHinge->sendSelf(cTag, theChannel);
+  if (res < 0) {
+    opserr << "ComponentElement3d::sendSelf -- could not send hinge 2y\n";
+    return res;
+  }  
   
   return res;
 }
@@ -1135,7 +1203,7 @@ ComponentElement3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
 {
     int res = 0;
 	
-    static Vector data(19);
+    static Vector data(19+8+4+4); // 35
 
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -1159,11 +1227,16 @@ ComponentElement3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
     betaKc = data(15);
 
     rho = data(3);
-    //    cMass = (int)data(4);
+    cMass = (int)data(4);
     this->setTag((int)data(5));
     connectedExternalNodes(0) = (int)data(6);
     connectedExternalNodes(1) = (int)data(7);
 
+    for (int i = 0; i < 4; i++) {
+      uzCommit(i) = data(27+i);
+      uyCommit(i) = data(31+i);
+    }
+    
     // Check if the CoordTransf is null; if so, get a new one
     int crdTag = (int)data(8);
     if (theCoordTransf == 0) {
@@ -1192,6 +1265,131 @@ ComponentElement3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &th
       opserr << "ComponentElement3d::recvSelf -- could not receive CoordTransf\n";
       return res;
     }
+
+
+
+    // Check if hinge 1 is null; if so, get a new one
+    int hinge1zTag = (int)data(19);
+    if (end1zHinge == 0) {
+      end1zHinge = theBroker.getNewUniaxialMaterial(hinge1zTag);
+      if (end1zHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 1z UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+    
+    // Check that hinge 1 is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (end1zHinge->getClassTag() != hinge1zTag) {
+      delete end1zHinge;
+      end1zHinge = theBroker.getNewUniaxialMaterial(hinge1zTag);
+      if (end1zHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 1z UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+	
+    // Now, receive hinge 1
+    end1zHinge->setDbTag((int)data(20));
+    res += end1zHinge->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ComponentElement3d::recvSelf -- could not receive hinge 1z" << endln;
+      return res;
+    }
+
+
+    // Check if hinge 2 is null; if so, get a new one
+    int hinge2zTag = (int)data(21);
+    if (end2zHinge == 0) {
+      end2zHinge = theBroker.getNewUniaxialMaterial(hinge2zTag);
+      if (end2zHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 2z UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+    
+    // Check that hinge 2 is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (end2zHinge->getClassTag() != hinge2zTag) {
+      delete end2zHinge;
+      end2zHinge = theBroker.getNewUniaxialMaterial(hinge2zTag);
+      if (end2zHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 2z UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+	
+    // Now, receive hinge 2
+    end2zHinge->setDbTag((int)data(22));
+    res += end2zHinge->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ComponentElement3d::recvSelf -- could not receive hinge 2z" << endln;
+      return res;
+    }
+
+
+
+
+    // Check if hinge 1 is null; if so, get a new one
+    int hinge1yTag = (int)data(23);
+    if (end1yHinge == 0) {
+      end1yHinge = theBroker.getNewUniaxialMaterial(hinge1yTag);
+      if (end1yHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 1y UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+    
+    // Check that hinge 1 is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (end1yHinge->getClassTag() != hinge1yTag) {
+      delete end1yHinge;
+      end1yHinge = theBroker.getNewUniaxialMaterial(hinge1yTag);
+      if (end1yHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 1y UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+	
+    // Now, receive hinge 1
+    end1yHinge->setDbTag((int)data(24));
+    res += end1yHinge->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ComponentElement3d::recvSelf -- could not receive hinge y" << endln;
+      return res;
+    }
+
+
+    // Check if hinge 2 is null; if so, get a new one
+    int hinge2yTag = (int)data(25);
+    if (end2yHinge == 0) {
+      end2yHinge = theBroker.getNewUniaxialMaterial(hinge2yTag);
+      if (end2yHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 2y UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+    
+    // Check that hinge 2 is of the right type; if not, delete
+    // the current one and get a new one of the right type
+    if (end2yHinge->getClassTag() != hinge2yTag) {
+      delete end2yHinge;
+      end2yHinge = theBroker.getNewUniaxialMaterial(hinge2yTag);
+      if (end2yHinge == 0) {
+	opserr << "ComponentElement3d::recvSelf -- could not get hinge 2y UniaxialMaterial" << endln;
+	exit(-1);
+      }
+    }
+	
+    // Now, receive hinge 2
+    end2yHinge->setDbTag((int)data(26));
+    res += end2yHinge->recvSelf(cTag, theChannel, theBroker);
+    if (res < 0) {
+      opserr << "ComponentElement3d::recvSelf -- could not receive hinge 2y" << endln;
+      return res;
+    }
+
+    this->revertToLastCommit();
     
     return res;
 }

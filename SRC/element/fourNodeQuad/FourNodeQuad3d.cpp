@@ -80,7 +80,6 @@ OPS_FourNodeQuad3d()
   int numData;
   int matTag = 0;
   int eleTag = 0;
-  const char *pType;
 
   numData = 5;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -95,15 +94,11 @@ OPS_FourNodeQuad3d()
     return 0;
   }
 
-  pType = OPS_GetString();
-  if (pType != 0) {
-    opserr << "WARNING element FourNodeQuad3d : invalid pType for element: " << eleTag << "\n";
-  }
+  const char *pType = OPS_GetString();
 
   numData = 1;
   if (OPS_GetIntInput(&numData, &matTag) != 0) {
     opserr << "WARNING element FourNodeQuad3d : invalid matTag for element: " << eleTag << "\n";
-    delete [] pType;
     return 0;
   }
 
@@ -119,7 +114,6 @@ OPS_FourNodeQuad3d()
     numData = 4;
     if (OPS_GetDoubleInput(&numData, &dData[1]) != 0) {
       opserr << "WARNING element FourNodeQuad3d : invalid optional args for element: " << eleTag << "\n";
-      delete [] pType;
       return 0;
     }
   }
@@ -132,11 +126,9 @@ OPS_FourNodeQuad3d()
   if (theEle == 0) {
     opserr << "WARNING ran out of memory creating element with tag " << eleTag << endln;
     delete theMaterial;
-      delete [] pType;
     return 0;
   }
 
-  delete [] pType;
   return theEle;
 }
 

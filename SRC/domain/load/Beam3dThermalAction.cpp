@@ -39,7 +39,26 @@
 #include <Beam3dThermalAction.h>
 #include <Vector.h>
 #include <Element.h>
-Vector Beam3dThermalAction::data(25);
+Vector Beam3dThermalAction::data(35);
+
+// It allows for linear interpolation in a 5x5 grid (5 locs in Z and Y)
+Beam3dThermalAction::Beam3dThermalAction(int tag,
+	double indata[],
+	int theElementTag)
+	:ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),
+	ThermalActionType(LOAD_TAG_Beam3dThermalAction), theSeries(0)
+{
+	for (int i = 0; i < 5; i++) {
+		Loc[i] = indata[i]; Loc[i + 5] = indata[i + 5];
+	}
+	for (int i = 0; i < 25; i++) {
+		Temp[i] = indata[i + 10];
+	}
+
+	Factors.Zero();
+	indicator = 6; // without path timeseries defined;
+}
+
 //Basically there are 5 datapoints respectively in the top flange , the web , and the bottom flange . 
 // And 5 loc data for defining the zones along y direction, and another 5 for z direction.
 Beam3dThermalAction::Beam3dThermalAction(int tag,
@@ -50,7 +69,7 @@ Beam3dThermalAction::Beam3dThermalAction(int tag,
                          double t12, double t13, double locZ4, double t14, double t15,double locZ5,
 			             int theElementTag)
   :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),
-  ThermalActionType(LOAD_TAG_Beam3dThermalAction)
+  ThermalActionType(LOAD_TAG_Beam3dThermalAction), theSeries(0)
 {
   Temp[0]=t1; Temp[1] = t2; Temp[2] = t3; Temp[3] = t4; Temp[4] = t5;
   Temp[5]=t6; Temp[6] = t8; Temp[7] = t10; Temp[8] = t12; Temp[9] = t14;
@@ -71,7 +90,7 @@ Beam3dThermalAction::Beam3dThermalAction(int tag,
 					 double t9, double locY9, 
 					 int theElementTag)
   :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag), 
-   ThermalActionType(LOAD_TAG_Beam3dThermalAction)
+   ThermalActionType(LOAD_TAG_Beam3dThermalAction), theSeries(0)
 {
   Temp[0]=t1; Temp[1] = t2; Temp[2] = t3; Temp[3] = t4; Temp[4] = t5;
   Temp[5]=t6; Temp[6] = t7; Temp[7] = t8; Temp[8] = t9; 
@@ -135,7 +154,7 @@ Beam3dThermalAction::Beam3dThermalAction(int tag,
 
 Beam3dThermalAction::Beam3dThermalAction(int tag,  
 					 int theElementTag)
-  :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),ThermalActionType(LOAD_TAG_NodalThermalAction)
+  :ElementalLoad(tag, LOAD_TAG_Beam3dThermalAction, theElementTag),ThermalActionType(LOAD_TAG_NodalThermalAction), theSeries(0)
 {
 	 Factors.Zero();
 	 for(int i=0 ;i<15;i++) {
@@ -180,7 +199,18 @@ Beam3dThermalAction::getData(int &type, double loadFactor)
 		data(2*i+1)= Loc[i];
 	}
 	  
- } 
+ }
+ else if (indicator == 6) {
+	 data.resize(35);
+	 for (int i = 0; i < 5; i++) {
+		 data(i) = Loc[i];            //5 locs through y
+		 data(i + 5) = Loc[i + 5];    //5 locs through z
+	 }
+	 for (int j = 0; j < 25; j++) {
+		 data(j + 10) = TempApp[j];   //25 temps
+	 }
+
+ }
  else{
 	 data.resize(25);
   for(int i=0; i<5;i++) {
@@ -207,7 +237,7 @@ Beam3dThermalAction::applyLoad(const Vector &factors)
 	   }
 	}
 	else{
-	   for(int i=0; i<15 ;i++) {
+	   for(int i=0; i<25 ;i++) {
 		  TempApp[i]= Temp[i]*factors(i);
 	   }
 	}
@@ -229,8 +259,8 @@ Beam3dThermalAction::applyLoad(double loadfactor)
 		   //PathTimeSeriesThermal returns absolute temperature;
 		  TempApp[i]=Factors(i);
 		}
-	}else if(indicator ==1) {
-		for(int i=0;i<15;i++) {
+	}else if(indicator ==1 || indicator == 6) {
+		for(int i=0;i<25;i++) {
 		  TempApp[i]=Temp[i]*loadfactor;
 		}
 	}
@@ -271,6 +301,11 @@ Beam3dThermalAction::Print(OPS_Stream &s, int flag)
 	if (indicator == 4 || indicator == 5) {
 		s << "Beam3dThermalAction - reference load : " << TempApp[0] << " at bot\n";
 		s << TempApp[8] << " at top\n";
+		s << "  element acted on: " << eleTag << endln;
+	}
+	else if (indicator == 6) {
+		s << "Beam3dThermalAction - reference load : " << TempApp[0] << " at bot\n";
+		s << TempApp[24] << " at top\n";
 		s << "  element acted on: " << eleTag << endln;
 	}
 	else {

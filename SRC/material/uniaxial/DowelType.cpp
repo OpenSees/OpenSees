@@ -37,19 +37,12 @@
 
 #include <elementAPI.h>
 #include <Vector.h>
+#include <ID.h>
 #include <Channel.h>
 #include <math.h>
 #include <float.h>
 #include "DowelType.h"
 
-
-#ifdef _USRDLL
-#define OPS_Export extern "C" _declspec(dllexport)
-#elif _MACOSX
-#define OPS_Export extern "C" __attribute__((visibility("default")))
-#else
-#define OPS_Export extern "C"
-#endif
 
 #define PRECISION 1.0e-12
 #define PI 3.14159265358979323846
@@ -1151,6 +1144,16 @@ int DowelType::revertToStart(void)
     tDmax = cDmax = 0.0;
     tFdmax = cFdmax = 0.0;
     tPath = cPath = 1;
+
+    isPHC = true;
+    ePHC_p = ePHC_n = 0.0;
+    eFHC_p = eFHC_n = 0.0;
+
+    for (int i=0; i < 20; i++) {
+      pxs[i] = 0.0;
+      pys[i] = 0.0;
+    }
+    
     return 0;
 }
 
@@ -1224,6 +1227,10 @@ UniaxialMaterial *DowelType::getCopy(void)
     theCopy->ePHC_n = ePHC_n;
     theCopy->eFHC_p = eFHC_p;
     theCopy->eFHC_n = eFHC_n;
+    for (int i=0; i < 20; i++) {
+      theCopy->pxs[i] = pxs[i];
+      theCopy->pys[i] = pys[i];
+    }
     return theCopy;
 }
 
@@ -1231,8 +1238,20 @@ UniaxialMaterial *DowelType::getCopy(void)
 int DowelType::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
-    static Vector data(98 + 2 * envSize);
-    data(0)  = this->getTag();
+    int dbTag = this->getDbTag();
+    
+    ID idata(3);
+    idata(0) = this->getTag();
+    idata(1) = envSize;
+    idata(2) = envZero;    
+    res = theChannel.sendID(dbTag, cTag, idata);
+    if (res < 0) {
+      opserr << "DowelType::sendSelf() - failed to send ID data" << endln;
+      return res;
+    }
+    
+    Vector data(98 + 2 * envSize);
+    //data(0)  = this->getTag();
     data(1)  = fi;
     data(2)  = kp;
     data(3)  = ru;
@@ -1244,6 +1263,7 @@ int DowelType::sendSelf(int cTag, Channel &theChannel)
     data(9)  = alpha_p;
     data(10) = alpha_u;
     data(11) = alpha_r;
+    
     data(12) = envType;
     data(13) = k0_p;
     data(14) = k0_n;
@@ -1257,10 +1277,12 @@ int DowelType::sendSelf(int cTag, Channel &theChannel)
     data(22) = dult_n;
     data(23) = kdesc_p;
     data(24) = kdesc_n;
+
     data(25) = dinter_p;
     data(26) = dinter_n;
     data(27) = eMono_p;
     data(28) = eMono_n;
+
     data(29) = k1_p;
     data(30) = k1_n;
     data(31) = f0_p;
@@ -1273,71 +1295,65 @@ int DowelType::sendSelf(int cTag, Channel &theChannel)
     data(38) = denv2_n;
     data(39) = fenv2_p;
     data(40) = fenv2_n;
-    data(41) = envSize;
-    data(42) = envZero;
-    data(43) = isPHC;
+
+    //data(41) = envSize;
+    //data(42) = envZero;
+
+    data(43) = isPHC ? 1.0 : -1.0;
     data(44) = ePHC_p;
     data(45) = ePHC_n;
     data(46) = eFHC_p;
     data(47) = eFHC_n;
-    data(48) = pxs[0];
-    data(49) = pxs[1];
-    data(50) = pxs[2];
-    data(51) = pxs[3];
-    data(52) = pxs[4];
-    data(53) = pxs[5];
-    data(54) = pxs[6];
-    data(55) = pxs[7];
-    data(56) = pxs[8];
-    data(57) = pxs[9];
-    data(58) = pxs[10];
-    data(59) = pxs[11];
-    data(60) = pxs[12];
-    data(61) = pxs[13];
-    data(62) = pxs[14];
-    data(63) = pxs[15];
-    data(64) = pys[0];
-    data(65) = pys[1];
-    data(66) = pys[2];
-    data(67) = pys[3];
-    data(68) = pys[4];
-    data(69) = pys[5];
-    data(70) = pys[6];
-    data(71) = pys[7];
-    data(72) = pys[8];
-    data(73) = pys[9];
-    data(74) = pys[10];
-    data(75) = pys[11];
-    data(76) = pys[12];
-    data(77) = pys[13];
-    data(78) = pys[14];
-    data(79) = pys[15];
-    data(92) = cStrain;
-    data(93) = cStress;
-    data(94) = cTangent;
-    data(95) = cPath;   
-    data(96) = cDmin;
-    data(97) = cDmax;
+
+    for (int i = 0; i < 20; i++) {
+      data(48+i) = pxs[i];
+      data(68+i) = pys[i];
+    }    
+
+    data(90) = cStrain;
+    data(91) = cStress;
+    data(92) = cTangent;
+    data(93) = cPath;   
+    data(94) = cDmin;
+    data(95) = cDmax;
+    data(96) = cFdmin;
+    data(97) = cFdmax;
     for (int i = 0; i < envSize; i++) {
         data(98 + i * 2) = denvs[i];
         data(98 + i * 2 + 1) = fenvs[i];
     }
-    res = theChannel.sendVector(this->getDbTag(), cTag, data);
-    if (res < 0)
-        opserr << "DowelType::sendSelf() - failed to send data\n";
-    return res;
+    res = theChannel.sendVector(dbTag, cTag, data);
+    if (res < 0) {
+      opserr << "DowelType::sendSelf() - failed to send data" << endln;
+      return res;
+    }
+    return 0;
 }
 
 int DowelType::recvSelf(int cTag, Channel &theChannel,
                  FEM_ObjectBroker &theBroker)
 {
     int res = 0;
-    static Vector data(98 + 2 * envSize);
-    res = theChannel.recvVector(this->getDbTag(), cTag, data);
-    if (res < 0)
-        opserr << "DowelType::recvSelf() - failed to recv data\n";
+    int dbTag = this->getDbTag();
+    
+    ID idata(3);
+    if (theChannel.recvID(dbTag, cTag, idata) < 0) {
+      opserr << "DowelType::recvSelf() - failed to recv ID data" << endln;
+      return -1;
+    }
+
+    this->setTag(idata(0));
+    envSize = idata(1);
+    envZero = idata(2);
+    
+    Vector data(98 + 2 * envSize);
+    res = theChannel.recvVector(dbTag, cTag, data);
+    if (res < 0) {
+      opserr << "DowelType::recvSelf() - failed to recv data" << endln;
+      return res;
+    }
     else {
-        this->setTag(data(0));
+      //this->setTag(data(0));
         fi = data(1);
         kp = data(2);
         ru = data(3);
@@ -1349,6 +1365,7 @@ int DowelType::recvSelf(int cTag, Channel &theChannel,
         alpha_p = data(9);
         alpha_u = data(10);
         alpha_r = data(11);
+	
         envType = data(12);
         k0_p = data(13);
         k0_n = data(14);
@@ -1362,15 +1379,18 @@ int DowelType::recvSelf(int cTag, Channel &theChannel,
         dult_n = data(22);
         kdesc_p = data(23);
         kdesc_n = data(24);
-        dinter_p = data(25);
+
+	dinter_p = data(25);
         dinter_n = data(26);
         eMono_p = data(27);
         eMono_n = data(28);
-        k1_p = data(29);
+
+	k1_p = data(29);
         k1_n = data(30);
         f0_p = data(31);
         f0_n = data(32);
-        denv1_p = data(33);
+
+	denv1_p = data(33);
         denv1_n = data(34);
         fenv1_p = data(35);
         fenv1_n = data(36);
@@ -1378,57 +1398,37 @@ int DowelType::recvSelf(int cTag, Channel &theChannel,
         denv2_n = data(38);
         fenv2_p = data(39);
         fenv2_n = data(40);
-        envSize = data(41);
-        envZero = data(42);
-        isPHC = data(43);
+
+	//envSize = data(41);
+        //envZero = data(42);
+
+	isPHC = (data(43) > 0.0) ? true : false;
         ePHC_p = data(44);
         ePHC_n = data(45);
         eFHC_p = data(46);
         eFHC_n = data(47);
-        pxs[0] = data(48);
-        pxs[1] = data(49);
-        pxs[2] = data(50);
-        pxs[3] = data(51);
-        pxs[4] = data(52);
-        pxs[5] = data(53);
-        pxs[6] = data(54);
-        pxs[7] = data(55);
-        pxs[8] = data(56);
-        pxs[9] = data(57);
-        pxs[10] = data(58);
-        pxs[11] = data(59);
-        pxs[12] = data(60);
-        pxs[13] = data(61);
-        pxs[14] = data(62);
-        pxs[15] = data(63);
-        pys[0] = data(64);
-        pys[1] = data(65);
-        pys[2] = data(66);
-        pys[3] = data(67);
-        pys[4] = data(68);
-        pys[5] = data(69);
-        pys[6] = data(70);
-        pys[7] = data(71);
-        pys[8] = data(72);
-        pys[9] = data(73);
-        pys[10] = data(74);
-        pys[11] = data(75);
-        pys[12] = data(76);
-        pys[13] = data(77);
-        pys[14] = data(78);
-        pys[15] = data(79);
-        cStrain = data(92);
-        cStress = data(93);
-        cTangent = data(94);
-        cPath = data(95);   
-        cDmin = data(96);
-        cDmax = data(97);
+
+	for (int i = 0; i < 20; i++) {
+	  pxs[i] = data(48+i);
+	  pys[i] = data(68+i);
+	}
+
+	cStrain = data(90);
+        cStress = data(91);
+        cTangent = data(92);
+        cPath = data(93);   
+        cDmin = data(94);
+        cDmax = data(95);
+	cFdmin = data(96);
+	cFdmax = data(97);	
         double * denvsCopy = new double[envSize];
         double * fenvsCopy = new double[envSize];
         for (int i = 0; i < envSize; i++) {
             denvsCopy[i] = data(98 + i * 2);
             fenvsCopy[i] = data(98 + i * 2 + 1);
         }
+	if (denvs != 0) delete [] denvs;
+	if (fenvs != 0) delete [] fenvs;	
         denvs = denvsCopy;
         fenvs = fenvsCopy;
         this->revertToLastCommit();

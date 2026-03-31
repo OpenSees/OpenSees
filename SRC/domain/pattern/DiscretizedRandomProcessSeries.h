@@ -80,7 +80,7 @@ private:
 	double c;
 	double mean;
 	double maxStdv;
-	double maxStdvTime;
+  //double maxStdvTime;
     ModulatingFunction **theModulatingFunctions;
 	Vector *randomVariables;
 	Vector *kickInTimes;

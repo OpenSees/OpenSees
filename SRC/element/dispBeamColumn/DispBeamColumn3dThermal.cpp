@@ -852,10 +852,7 @@ else if (type == LOAD_TAG_Beam3dThermalAction) {
 	// Zero for integration
 	//q.Zero();
 	  Vector* dataMixV;
-	  if(data.Size()==18)
-		  dataMixV = new Vector(18);
-	  else
-		  dataMixV = new Vector(25);
+      dataMixV = new Vector(data.Size());
 
       *dataMixV=data;
 

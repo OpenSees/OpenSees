@@ -858,8 +858,8 @@ Response* E_SFI::setResponse(const char** argv, int argc, OPS_Stream& s)
 	}
 
 	// Material output
-	else if (strcmp(argv[0], "RCpanel") == 0 || strcmp(argv[0], "RCPanel")
-		|| strcmp(argv[0], "RC_panel") || strcmp(argv[0], "RC_Panel") == 0)
+	else if (strcmp(argv[0], "RCpanel") == 0 || strcmp(argv[0], "RCPanel") == 0
+		|| strcmp(argv[0], "RC_panel") == 0 || strcmp(argv[0], "RC_Panel") == 0)
 	{
 
 		// Check if correct # of arguments passed

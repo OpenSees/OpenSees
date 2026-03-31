@@ -50,6 +50,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 #include <StrengthDegradation.h>
 #include <UniaxialMaterial.h>
 #include <UnloadingRule.h>
+#include <PipeMaterial.h>
 #include <elementAPI.h>
 
 #include <map>
@@ -148,6 +149,8 @@ void* OPS_Pinching4Material();
 void* OPS_ECC01();
 void* OPS_SelfCenteringMaterial();
 void* OPS_ASD_SMA_3K();
+void* OPS_ASDConcrete1DMaterial();
+void* OPS_ASDSteel1DMaterial();
 void* OPS_ViscousMaterial();
 void* OPS_BoucWenMaterial();
 void* OPS_BoucWenOriginal();
@@ -261,6 +264,7 @@ void* OPS_TDConcreteNL(void);
 void* OPS_TDConcreteMC10(void);
 void* OPS_TDConcreteMC10NL(void);
 void* OPS_CreepMaterial(void);
+void* OPS_CreepShrinkageACI209(void);
 
 void* OPS_CoulombDamperMaterial();
 void* OPS_GMG_CyclicReinforcedConcrete();
@@ -275,6 +279,13 @@ void *OPS_Trilinwp2(void);
 void *OPS_Masonryt(void);
 
 void* OPS_Ratchet(void); // Yi Xiao
+void* OPS_APDVFD(void);
+void* OPS_APDMD(void);
+void* OPS_APDFMD(void);
+void* OPS_PipeMaterial();
+void* OPS_TzSandCPT(void);
+void* OPS_QbSandCPT(void);
+
 
 namespace {
 
@@ -452,6 +463,10 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("ASD_SMA_3K", &OPS_ASD_SMA_3K));
   uniaxialMaterialsMap.insert(
+      std::make_pair("ASDConcrete1D", &OPS_ASDConcrete1DMaterial));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("ASDSteel1D", &OPS_ASDSteel1DMaterial));
+  uniaxialMaterialsMap.insert(
       std::make_pair("Viscous", &OPS_ViscousMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("BoucWen", &OPS_BoucWenMaterial));
@@ -612,9 +627,17 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("Creep", &OPS_CreepMaterial));  
   uniaxialMaterialsMap.insert(
+      std::make_pair("CreepShrinkageACI209", &OPS_CreepShrinkageACI209));
+  uniaxialMaterialsMap.insert(
       std::make_pair("CoulombDamper", &OPS_CoulombDamperMaterial));
   uniaxialMaterialsMap.insert(std::make_pair(
 	  "GMG_CyclicReinforcedConcrete", &OPS_GMG_CyclicReinforcedConcrete));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDVFD", &OPS_APDVFD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDMD", &OPS_APDMD));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("APDFMD", &OPS_APDFMD));
   uniaxialMaterialsMap.insert(
       std::make_pair("Hertzdamp", &OPS_Hertzdamp));
   uniaxialMaterialsMap.insert(
@@ -628,7 +651,9 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp2", &OPS_Trilinwp2));
   uniaxialMaterialsMap.insert(std::make_pair("Ratchet", &OPS_Ratchet));
-  
+  uniaxialMaterialsMap.insert(std::make_pair("Pipe", &OPS_PipeMaterial));
+  uniaxialMaterialsMap.insert(std::make_pair("TzSandCPT", &OPS_TzSandCPT));
+  uniaxialMaterialsMap.insert(std::make_pair("QbSandCPT", &OPS_QbSandCPT));
   return 0;
 }
 
@@ -649,16 +674,6 @@ static int setUpHystereticBackbones(void) {
       std::make_pair("Material", &OPS_MaterialBackbone));  
   hystereticBackbonesMap.insert(std::make_pair(
       "ReeseStiffClayBelowWS", &OPS_ReeseStiffClayBelowWS));
-  hystereticBackbonesMap.insert(std::make_pair(
-      "ReeseStiffClayAboveWS", &OPS_ReeseStiffClayAboveWS));
-  hystereticBackbonesMap.insert(
-      std::make_pair("VuggyLimestone", &OPS_VuggyLimestone));
-  hystereticBackbonesMap.insert(
-      std::make_pair("CementedSoil", &OPS_CementedSoil));
-  hystereticBackbonesMap.insert(
-      std::make_pair("WeakRock", &OPS_WeakRock));
-  hystereticBackbonesMap.insert(
-      std::make_pair("LiquefiedSand", &OPS_LiquefiedSand));
   hystereticBackbonesMap.insert(
       std::make_pair("Raynor", &OPS_RaynorBackbone));
   hystereticBackbonesMap.insert(
@@ -755,7 +770,7 @@ int OPS_UniaxialMaterial() {
 
   // Now add the material to the modelBuilder
   if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    opserr << "ERROR could not add uniaaialMaterial.\n";
+    opserr << "ERROR could not add uniaxialMaterial.\n";
     delete theMaterial;  // invoke the material objects
                          // destructor, otherwise mem leak
     return -1;

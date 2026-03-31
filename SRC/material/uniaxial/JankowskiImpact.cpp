@@ -112,8 +112,9 @@ JankowskiImpact::JankowskiImpact(int tag, double kh, double xiin, double meff, d
  Kh(kh), xi(xiin), mEff(meff), gap(gap0), n(dispexp)
 {
 	if (gap >= 0) {
-	  opserr << "JankowskiImpact::JankowskiImpact -- Initial gap size must be negative for compression-only material\n";
-	  exit(-1);
+	  opserr << "JankowskiImpact::JankowskiImpact -- Initial gap size should be negative for compression-only material\n";
+	  gap = -gap;
+	  opserr << "Setting gap to negative value, " << gap << endln;
 	}
 	this->revertToStart(); // initialize state variables
 	printFlag = 0; // initialize print flag for impact event

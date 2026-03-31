@@ -30,6 +30,7 @@
 #include <ID.h>
 #include <Channel.h>
 #include <Message.h>
+#include <string.h>
 
 
 using std::cerr;
@@ -444,7 +445,7 @@ FileStream::operator<<(unsigned int n)
     this->open();
 
   if (fileOpen != 0)
-    theFile << 1.0*n;
+    theFile << n;
 
   return *this;
 }

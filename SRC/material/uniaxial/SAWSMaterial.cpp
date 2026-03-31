@@ -98,27 +98,7 @@ F0(f0), FI(fI), DU(dU), S0(s0), R1(r1), R2(r2), R3(r3), R4(r4),
 ALPHA(A), BETA(B)
 {
   
-  TOL    = 1.0E-6 ;  //  Tolerance for bi-section search.
-
-  LPATH   = 1;
-  cLPATH  = 1;
-  LPPREV  = 1;
-  cLPPREV = 1;
-  IYPLUS  = 0;
-  IYMINS  = 0;
-
-  DOLD   = 0.0;
-  DUNP   = 0.0;
-  FUNP   = 0.0;
-  DUNM   = 0.0;
-  FUNM   = 0.0;
-  DMAXP  = 0.0;
-  FMAXP  = 0.0;
-  DMAXM  = 0.0;
-  FMAXM  = 0.0;
-  SP     = 0.0;
-
-  STIFF  = S0;
+  //TOL    = 1.0E-6 ;  //  Tolerance for bi-section search.
 
   // Initialize history variables
   this->revertToStart();
@@ -132,7 +112,11 @@ SAWSMaterial::SAWSMaterial()
    F0(0.0), FI(0.0), DU(0.0), S0(0.0), R1(0.0), R2(0.0), R3(0.0), R4(0.0),
    ALPHA(0.0), BETA(0.0)
 {
+  //TOL    = 1.0E-6 ;  //  Tolerance for bi-section search.
 
+  // Initialize history variables
+  this->revertToStart();
+  this->revertToLastCommit();
 }
 
 SAWSMaterial::~SAWSMaterial()
@@ -279,6 +263,7 @@ SAWSMaterial::setTrialStrain(double strain, double strainRate)
      Edited by Patxi 6/12/2006
   */
 
+  const double TOL = 1e-6;
   DIFF = TOL+1.0;
 
   while ( fabs(DIFF) > TOL ) {
@@ -1221,23 +1206,23 @@ SAWSMaterial::revertToLastCommit(void)
 int
 SAWSMaterial::revertToStart(void)
 {
-  DISPL  = 0.0;
-  FORCE  = 0.0;
-  STIFF  = S0 ;
-  LPATH  = 1  ;
-  LPPREV = 1  ;
-  IYPLUS = 0  ;
-  IYMINS = 0  ;
-  DOLD   = 0.0;
-  DUNP   = 0.0;
-  FUNP   = 0.0;
-  DUNM   = 0.0;
-  FUNM   = 0.0;
-  DMAXP  = 0.0;
-  FMAXP  = 0.0;
-  DMAXM  = 0.0;
-  FMAXM  = 0.0;
-  SP     = 0.0;
+  cDISPL  = 0.0;
+  cFORCE  = 0.0;
+  cSTIFF  = S0 ;
+  cLPATH  = 1  ;
+  cLPPREV = 1  ;
+  cIYPLUS = 0  ;
+  cIYMINS = 0  ;
+  cDOLD   = 0.0;
+  cDUNP   = 0.0;
+  cFUNP   = 0.0;
+  cDUNM   = 0.0;
+  cFUNM   = 0.0;
+  cDMAXP  = 0.0;
+  cFMAXP  = 0.0;
+  cDMAXM  = 0.0;
+  cFMAXM  = 0.0;
+  cSP     = 0.0;
   return 0;
 }
 

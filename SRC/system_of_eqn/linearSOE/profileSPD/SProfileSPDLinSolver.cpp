@@ -45,7 +45,7 @@ void* OPS_SProfileSPDLinSolver()
 
 SProfileSPDLinSolver::SProfileSPDLinSolver(double tol)
 :LinearSOESolver(SOLVER_TAGS_SProfileSPDLinSolver),
- minDiagTol(tol), size(0), RowTop(0), topRowPtr(0), invD(0)
+ theSOE(0), minDiagTol(tol), size(0), RowTop(0), topRowPtr(0), invD(0)
 {
 
 }

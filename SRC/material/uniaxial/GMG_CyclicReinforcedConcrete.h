@@ -332,9 +332,9 @@ private:
 	double ratio;
 	double Cratio;
 
-	double a, b, c, ee, ff;
+  //double a, b, c, ee, ff;
 
-	int commitCalledOnce;		
+  //int commitCalledOnce;		
 };
 
 #endif

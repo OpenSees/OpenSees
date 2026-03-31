@@ -907,6 +907,17 @@ DispBeamColumn2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     q0[1] -= M;
     q0[2] += M;
   }
+  else if (type == LOAD_TAG_BeamUniformMoment) {
+    double mz = data(2)*loadFactor;  // About z
+
+    // Reactions in basic system
+    p0[1] += mz;
+    p0[2] -= mz;
+
+    // Fixed end forces in basic system
+    //q0[1] -= 0.0;
+    //q0[2] += 0.0;
+  }  
   else if (type == LOAD_TAG_Beam2dPointLoad) {
     double P = data(0)*loadFactor;
     double N = data(1)*loadFactor;
@@ -1960,6 +1971,16 @@ DispBeamColumn2d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(rho);
     return param.addObject(1, this);
   }
+
+  // damping
+  if (strstr(argv[0], "damp") != 0) {
+
+    if (argc < 2 || !theDamping)
+      return -1;
+
+    return theDamping->setParameter(&argv[1], argc-1, param);
+  }
+
   if (strstr(argv[0],"sectionX") != 0) {
     if (argc < 3)
 		return -1;

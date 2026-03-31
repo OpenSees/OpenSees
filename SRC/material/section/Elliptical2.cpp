@@ -438,6 +438,11 @@ Elliptical2::commitState(void)
 int
 Elliptical2::revertToLastCommit(void)
 {
+  eP_n1[0] = eP_n[0];
+  eP_n1[1] = eP_n[1];
+  
+  alpha_n1 = alpha_n;
+  
   return 0;
 }
 

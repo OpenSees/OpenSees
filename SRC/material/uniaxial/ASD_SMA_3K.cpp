@@ -149,7 +149,7 @@ ASD_SMA_3K::setTrialStrain(double strain, double strainRate)
 {
 
 
-    diffStrain = strain - Cstrain;
+  double diffStrain = strain - Cstrain;
 
     if (fabs(diffStrain) < DBL_EPSILON)
         return 0;
@@ -428,13 +428,36 @@ ASD_SMA_3K::commitState(void)
       Ctangent = Ttangent;
 
       CLastStrain = TLastStrain;
-  
+
+      CNo_k2_Pos = No_k2_Pos;
+      CNo_k2_Neg = No_k2_Neg;
+      CNo_Y_Pos = No_Y_Pos;
+      CNo_Y_Neg = No_Y_Neg;      
+      
       return 0;
 }
 
 int 
 ASD_SMA_3K::revertToLastCommit(void)
 {
+      TactivStrainPos = CactivStrainPos;
+      TactivStrainNeg = CactivStrainNeg;
+      TupperStrainPos = CupperStrainPos;
+      TlowerStrainPos = ClowerStrainPos;	
+      TupperStressPos = CupperStressPos;
+      TlowerStressPos = ClowerStressPos;
+      TupperStrainNeg = CupperStrainNeg;
+      TlowerStrainNeg = ClowerStrainNeg;
+      TupperStressNeg = CupperStressNeg;
+      TlowerStressNeg = ClowerStressNeg;
+
+      TLastStrain = CLastStrain;
+
+      No_k2_Pos = CNo_k2_Pos;
+      No_k2_Neg = CNo_k2_Neg;
+      No_Y_Pos = CNo_Y_Pos;
+      No_Y_Neg = CNo_Y_Neg;
+      
   Tstrain = Cstrain;
   Tstress = Cstress;
   Ttangent = Ctangent;
@@ -451,40 +474,25 @@ ASD_SMA_3K::revertToStart(void)
   CupperStrainPos = ActDef;
   ClowerStrainPos = (1-beta) * ActDef;	
   CupperStressPos = ActF;
-  ClowerStrainPos = (1 - beta) * ActDef;
+  ClowerStressPos = (1 - beta) * ActF;
   CupperStrainNeg = -CupperStrainPos;
   ClowerStrainNeg = -ClowerStrainPos;
   CupperStressNeg = -CupperStressPos;
   ClowerStressNeg = -ClowerStressPos;
 
   CLastStrain = 0.0;
-  
-  // Reset trial history variables
-  TactivStrainPos = 0.0;
-  TactivStrainNeg = 0.0;
-  TupperStrainPos = ActDef;
-  TlowerStrainPos = (1-beta) * ActDef;	
-  TupperStressPos = ActF;
-  TlowerStressPos = (1-beta) * ActF;
-  TupperStrainNeg = -CupperStrainPos;
-  TlowerStrainNeg = -ClowerStrainPos;
-  TupperStressNeg = -CupperStressPos;
-  TlowerStressNeg = -ClowerStressPos;
 
-  TLastStrain = 0.0;
-  
-  // Initialize state variables
-  Tstrain = 0.0;
-  Tstress = 0.0;
-  Ttangent = k1;
-  
   Cstrain = 0.0;
-
-  No_k2_Pos = 0;
-  No_k2_Neg = 0;
-  No_Y_Pos = 0;
-  No_Y_Neg = 0;
+  Cstress = 0.0;
+  Ctangent = k1;
   
+  CNo_k2_Pos = 0;
+  CNo_k2_Neg = 0;
+  CNo_Y_Pos = 0;
+  CNo_Y_Neg = 0;
+  
+  this->revertToLastCommit();
+
   return 0;
 }
 
@@ -493,42 +501,9 @@ ASD_SMA_3K::getCopy(void)
 {
   ASD_SMA_3K *theCopy =
     new ASD_SMA_3K(this->getTag(), k1, k2, k3, ActF, beta);
-  
-  // Copy committed history variables
-  theCopy->CactivStrainPos = CactivStrainPos;
-  theCopy->CactivStrainNeg = CactivStrainNeg;
-  theCopy->CupperStrainPos = CupperStrainPos;
-  theCopy->ClowerStrainPos = ClowerStrainPos;	
-  theCopy->CupperStressPos = CupperStressPos;
-  theCopy->ClowerStressPos = ClowerStressPos;
-  theCopy->CupperStrainNeg = CupperStrainNeg;
-  theCopy->ClowerStrainNeg = ClowerStrainNeg;
-  theCopy->CupperStressNeg = CupperStressNeg;
-  theCopy->ClowerStressNeg = ClowerStressNeg;
 
-  theCopy->CLastStrain = CLastStrain;
-  
-  // Copy trial history variables
-  theCopy->TactivStrainPos = TactivStrainPos;
-  theCopy->TactivStrainNeg = TactivStrainNeg;
-  theCopy->TupperStrainPos = TupperStrainPos;
-  theCopy->TlowerStrainPos = TlowerStrainPos;	
-  theCopy->TupperStressPos = TupperStressPos;
-  theCopy->TlowerStressPos = TlowerStressPos;
-  theCopy->TupperStrainNeg = TupperStrainNeg;
-  theCopy->TlowerStrainNeg = TlowerStrainNeg;
-  theCopy->TupperStressNeg = TupperStressNeg;
-  theCopy->TlowerStressNeg = TlowerStressNeg;
+  *theCopy = *this;
 
-  theCopy->TLastStrain = TLastStrain;
-  
-  // Copy trial state variables
-  theCopy->Tstrain = Tstrain;
-  theCopy->Tstress = Tstress;
-  theCopy->Ttangent = Ttangent;
-  
-  theCopy->Cstrain = Cstrain;
-  
   return theCopy;
 }
 
@@ -537,7 +512,7 @@ ASD_SMA_3K::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
   
-  static Vector data(23);
+  static Vector data(25);
   
   data(0) = this->getTag();
   data(1) = k1;
@@ -556,12 +531,14 @@ ASD_SMA_3K::sendSelf(int cTag, Channel &theChannel)
   data(14) = ClowerStrainNeg;
   data(15) = CupperStressNeg;
   data(16) = ClowerStressNeg;
-  data(17) = Tstrain;
-  data(18) = Tstress;
-  data(19) = Ttangent;
-  data(20) = Cstrain;
-  data(21) = TLastStrain;
-  data(22) = CLastStrain;
+  data(17) = Cstrain;
+  data(18) = Cstress;
+  data(19) = Ctangent;  
+  data(20) = CLastStrain;
+  data(21) = CNo_k2_Pos;
+  data(22) = CNo_k2_Neg;
+  data(23) = CNo_Y_Pos;
+  data(24) = CNo_Y_Neg;    
   
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0) 
@@ -576,7 +553,7 @@ ASD_SMA_3K::recvSelf(int cTag, Channel &theChannel,
 {
   int res = 0;
   
-  static Vector data(23);
+  static Vector data(25);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   
   if (res < 0) {
@@ -601,12 +578,16 @@ ASD_SMA_3K::recvSelf(int cTag, Channel &theChannel,
 	ClowerStrainNeg = data(14);
 	CupperStressNeg = data(15);
 	ClowerStressNeg = data(16);
-    Tstrain = data(17);
-	Tstress = data(18);
-	Ttangent = data(19);
-	Cstrain = data(20);
-    TLastStrain = data(21) ;
-    CLastStrain=data(22) ;
+	Cstrain = data(17);
+	Cstress = data(18);
+	Ctangent = data(19);	
+    CLastStrain=data(20) ;
+    CNo_k2_Pos = int(data(21));
+    CNo_k2_Neg = int(data(22));
+    CNo_Y_Pos = int(data(23));
+    CNo_Y_Neg = int(data(24));
+
+    this->revertToLastCommit();
   }
     
   return res;

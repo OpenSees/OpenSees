@@ -109,7 +109,7 @@ int pfsfct(int neqns, double *diag, double **penv, int nblks,
 	 }
 	 diag[jrow] -= dot_real(js->nz, work, iband);
 	 if (diag[jrow] == 0) {
-	     printf("!!!pfsfct(): The diagonal entry %d is zero !!!\n", jrow);
+	     fprintf(stderr,"!!!pfsfct(): The diagonal entry %d is zero !!!\n", jrow);
 	     return (1);
 	 }
 	 free (work);
@@ -224,7 +224,7 @@ int pfefct(int neqns, double **penv, double *diag)
       free (work);
 
       if ( fabs(diag[i]) < 1.0e-60)  {
-	  printf("!!! pfefct(): diagonal %d is zero !!!\n", i); 
+	  fprintf(stderr,"!!! pfefct(): diagonal %d is zero !!!\n", i); 
 	  return (1); 
       } 
    }

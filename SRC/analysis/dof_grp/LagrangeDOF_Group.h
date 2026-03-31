@@ -39,14 +39,17 @@
 // What: "@(#) LagrangeDOF_Group.h, revA"
 
 #include <DOF_Group.h>
+#include <Vector.h>
 class SP_Constraint;
 class MP_Constraint;
+class EQ_Constraint;
 
 class LagrangeDOF_Group: public DOF_Group
 {
   public:
     LagrangeDOF_Group(int tag, SP_Constraint &spPtr);    
     LagrangeDOF_Group(int tag, MP_Constraint &mpPtr);        
+    LagrangeDOF_Group(int tag, EQ_Constraint &eqPtr);        
     virtual ~LagrangeDOF_Group();    
 
     // methods to form the tangent
@@ -59,6 +62,9 @@ class LagrangeDOF_Group: public DOF_Group
     virtual const Vector &getCommittedDisp(void);
     virtual const Vector &getCommittedVel(void);
     virtual const Vector &getCommittedAccel(void);
+    virtual const Vector &getTrialDisp();
+    virtual const Vector &getTrialVel();
+    virtual const Vector &getTrialAccel();
     
     // methods to update the trial response at the nodes
     virtual void setNodeDisp(const Vector &u);
@@ -69,6 +75,8 @@ class LagrangeDOF_Group: public DOF_Group
     virtual void incrNodeVel(const Vector &udot);
     virtual void incrNodeAccel(const Vector &udotdot);
 
+  virtual void setEigenvector(int mode, const Vector &eigenvector);
+  
     virtual void  zeroTangent(void);
     virtual void  addMtoTang(double fact = 1.0);    
     virtual void  zeroUnbalance(void);
@@ -83,6 +91,9 @@ class LagrangeDOF_Group: public DOF_Group
   protected:
     
   private:
+    // we don't have a physical Node, so we need a persistent storage
+    // for the lagrange multipliers so that the lagrange FE can correctly compute the residual
+    Vector m_lagrange_variable;
 
 };
 

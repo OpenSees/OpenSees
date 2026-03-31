@@ -50,7 +50,7 @@ static PyObject *ops_UniaxialMaterialCommand(PyObject *self, PyObject *args)
   
   // Now add the material to the modelBuilder
   if (OPS_addUniaxialMaterial(theMaterial) == false) {
-    PyErr_SetString(PyExc_RuntimeError, "ERROR could not add uniaaialMaterial.");
+    PyErr_SetString(PyExc_RuntimeError, "ERROR could not add uniaxialMaterial.");
     delete theMaterial; // invoke the material objects destructor, otherwise mem leak
     return NULL;
   }

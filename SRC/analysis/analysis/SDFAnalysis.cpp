@@ -31,8 +31,21 @@ int OPS_sdfResponse()
   
   int numOptionalArgs = 0;
   int numArgs = OPS_GetNumRemainingInputArgs();
+  double t_end = 0.0; bool t_end_specified = false;
   while (OPS_GetNumRemainingInputArgs() > 0) {
     std::string type = OPS_GetString();
+    if (type == "-tend") {
+      numOptionalArgs++;
+      if (OPS_GetNumRemainingInputArgs() > 0) {
+	numData = 1;
+	if (OPS_GetDoubleInput(&numData, &t_end) < 0) {
+	  opserr << "ERROR sdfResponse - failed to read tend" << endln;
+	  return 0;
+	}
+	numOptionalArgs++;
+	t_end_specified = true;
+      }      
+    }
     if (type == "-uresid" || type == "-uresidual") {
       numOptionalArgs++;
       if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -64,8 +77,8 @@ int OPS_sdfResponse()
     
     if (numArgs < 7 || numArgs > 8) {
 	opserr << "Incorrect number of arguments to sdfResponse --";
-	opserr << "m, zeta, k, Fy, alpha, dtF, filename, dt, <-uresidual, uresid, -umaxprev, umaxp>" << endln;
-	opserr << "m, zeta, k, Fy, alpha, tsTag, dt, <-uresidual, uresid, -umaxprev, umaxp>" << endln;	
+	opserr << "m, zeta, k, Fy, alpha, dtF, filename, dt, <-uresidual, uresid, -umaxprev, umaxp, -tend, tend>" << endln;
+	opserr << "m, zeta, k, Fy, alpha, tsTag, dt, <-uresidual, uresid, -umaxprev, umaxp, -tend, tend>" << endln;	
 	return -1;
     }
 
@@ -171,7 +184,7 @@ int OPS_sdfResponse()
     int i = 0;
     double ft, u=0, du, v, a, fs, zs, ftrial, kT, kTeff, dg, phat, R, R0, accel;
     double time = accelSeries->getStartTime();
-    double Tend = accelSeries->getDuration();
+    double Tend = t_end_specified ? t_end : accelSeries->getDuration();
     while (time < Tend) {
 
       ft = accelSeries->getFactor(time);

@@ -47,9 +47,9 @@ class ItpackLinSolver;
 class ItpackLinSOE : public LinearSOE
 {
   public:
-    ItpackLinSOE(ItpackLinSolver &theSolver);        
+  ItpackLinSOE(ItpackLinSolver &theSolver, bool symmetric = true);        
     ItpackLinSOE(int N, int NNZ, int *rowStartA, int *colA,
-		    ItpackLinSolver &theSolver);        
+		 ItpackLinSolver &theSolver, bool symmetric = true);        
 
     ~ItpackLinSOE();
 
@@ -89,6 +89,7 @@ class ItpackLinSOE : public LinearSOE
     int Asize, Bsize;    // size of the 1d array holding A
 
     bool Aformed;        // false when zeroA() is called
+  bool symmetric;
 };
 
 #endif

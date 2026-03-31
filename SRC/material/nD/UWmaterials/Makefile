@@ -19,7 +19,8 @@ OBJS       = BoundingCamClay.o \
 	     PM4Silt.o\
 	     J2CyclicBoundingSurface.o\
 	     J2CyclicBoundingSurface3D.o\
-	     J2CyclicBoundingSurfacePlaneStrain.o
+	     J2CyclicBoundingSurfacePlaneStrain.o\
+         LinearElasticGGmax.o
 
 all:	$(OBJS)
 

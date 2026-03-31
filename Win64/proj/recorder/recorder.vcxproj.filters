@@ -184,6 +184,9 @@
     <ClInclude Include="..\..\..\SRC\recorder\VTK_Recorder.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\..\SRC\recorder\VTKHDF_Recorder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\..\SRC\recorder\ElementRecorderRMS.h">
       <Filter>Header Files</Filter>
     </ClInclude>

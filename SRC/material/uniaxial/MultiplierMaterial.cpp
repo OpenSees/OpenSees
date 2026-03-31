@@ -416,3 +416,11 @@ MultiplierMaterial::commitSensitivity(double strainGradient, int gradIndex, int 
   else
     return -1;
 }
+
+double MultiplierMaterial::getEnergy(void)
+{
+    if (theMaterial)
+        return multiplier * theMaterial->getEnergy();
+    else
+        return 0.0;
+}

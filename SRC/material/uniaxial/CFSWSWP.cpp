@@ -54,6 +54,11 @@ OPS_CFSWSWP(void)
     numCFSWSWP =1;
   }
 
+  opserr << "Due to known issues and unreliable results, this material has been" << endln;
+  opserr << "temporarily removed from the compiled versions of OpenSees (Tcl and Py)" << endln;
+  opserr << "The material source code remains available. Compile at your own risk." << endln;
+  return 0;  
+  
   // Pointer to a uniaxial material that will be returned
   UniaxialMaterial *theMaterial = 0;
 
@@ -98,7 +103,7 @@ CFSWSWP::CFSWSWP(int tag,
                   double Ifi, double ts,
                   double np, double ds, double Vs,
                   double sc, double nc, double type, double A, double L):
-                  UniaxialMaterial(tag, MAT_TAG_Pinching4),
+                  UniaxialMaterial(tag, MAT_TAG_CFSWSWP),
                   hight(H), width(B), fuf(fuf),
                   tf(tf), Ife(Ife), Ifi(Ifi), ts(ts), np(np), ds(ds),
                   Vs(Vs),screw_Spacing(sc), nc(nc),type(type), A(A), L(L),
@@ -294,7 +299,7 @@ void CFSWSWP :: lateralShearStrength(void) {
 }
 
  CFSWSWP::CFSWSWP():
-   UniaxialMaterial(0, MAT_TAG_Pinching4),
+   UniaxialMaterial(0, MAT_TAG_CFSWSWP),
    stress1p(0.0), strain1p(0.0), stress2p(0.0), strain2p(0.0),
    stress3p(0.0), strain3p(0.0), stress4p(0.0), strain4p(0.0),
    stress1n(0.0), strain1n(0.0), stress2n(0.0), strain2n(0.0),
@@ -472,7 +477,7 @@ static int getIndexNeg(Vector v,double value)
 			if(X[3] - X[0] < 0)
 			{
 				printf("erreur2\n");
-				while(1);
+				//while(1);
 			}
 			
 			a0 = GetTangentFromCurve(state4Strain(0));
@@ -1497,7 +1502,7 @@ double CFSWSWP::posEnvlpStress(double u)
 								 if(isnan(f))
 								 {
 										 printf("erreur3");
-										 while(1);
+										 //while(1);
 								 }
 								 if(f != 10e8)
 								 {
@@ -1525,7 +1530,7 @@ double CFSWSWP::posEnvlpStress(double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s3Strain(0),s3Strain(3));
 								 if(u > s3Strain(3))
 								 {
-									 while(1);
+									 //while(1);
 								 }
                                  return f;
                          }
@@ -1539,7 +1544,7 @@ double CFSWSWP::posEnvlpStress(double u)
 								 if(isnan(f))
 								 {
 										 printf("erreur4");
-										 while(1);
+										 //while(1);
 								 }
 								 if(f != 10e8)
 								 {
@@ -1567,7 +1572,7 @@ double CFSWSWP::posEnvlpStress(double u)
 								 printf("Strain = %f	Stress = %f	Min = %f, Max = %f\n",u,f,s4Strain(0),s4Strain(3));
 								 if(u > s4Strain(3))
 								 {
-									 while(1);
+									 //while(1);
 								 }
                                  return f;
                          }

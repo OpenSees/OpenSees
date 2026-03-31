@@ -91,8 +91,6 @@ class PathTimeSeries : public TimeSeries
     int currentTimeLoc;   // current location in time
     double cFactor;       // additional factor on the returned load factor
     int dbTag1, dbTag2;   // additional database tags needed for vector objects
-    int lastSendCommitTag;
-    Channel *lastChannel;
     bool useLast;
 };
 

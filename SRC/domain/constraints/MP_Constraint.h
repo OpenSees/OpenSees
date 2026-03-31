@@ -68,6 +68,9 @@ class MP_Constraint : public DomainComponent
     // destructor    
     virtual ~MP_Constraint();
 
+    // domain component
+    void setDomain(Domain* theDomain);
+
     // method to get information about the constraint
     virtual int getNodeRetained(void) const;
     virtual int getNodeConstrained(void) const;    
@@ -76,6 +79,8 @@ class MP_Constraint : public DomainComponent
     virtual int applyConstraint(double pseudoTime);
     virtual bool isTimeVarying(void) const;
     virtual const Matrix &getConstraint(void);    
+    virtual const Vector &getConstrainedDOFsInitialDisplacement(void) const;
+    virtual const Vector &getRetainedDOFsInitialDisplacement(void) const;
 
     // methods for output
     virtual int sendSelf(int commitTag, Channel &theChannel);
@@ -92,7 +97,9 @@ class MP_Constraint : public DomainComponent
     Matrix *constraint;      // pointer to the constraint matrix
     ID *constrDOF;           // ID of constrained DOF at constrained node
     ID *retainDOF;           // ID of related DOF at retained node
-    
+    Vector Uc0;              // initial displacement at constrained DOFs (same size as constrDOF)
+    Vector Ur0;              // initial displacement at retained node  (same size as retainDOF)
+    bool initialized;        // a flag to avoid recomputing the intial values in setDomain if already initialized
     int dbTag1, dbTag2;      // need a dbTag for the two ID's
 };
 

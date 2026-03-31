@@ -233,6 +233,7 @@ CircPatch::getCopy (void) const
  
 void CircPatch::Print(OPS_Stream &s, int flag) const
 {
+	if (flag == OPS_PRINT_PRINTMODEL_SECTION || flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
    s << "\nPatch Type: CircPatch";
    s << "\nMaterial Id: " << matID;
    s << "\nNumber of subdivisions in the radial direction: " << nDivRad;
@@ -240,6 +241,14 @@ void CircPatch::Print(OPS_Stream &s, int flag) const
    s << "\nCenter Position: " << centerPosit;
    s << "\nInternal Radius: " << intRad << "\tExternal Radius: " << extRad;
    s << "\nInitial Angle: " << initAng << "\tFinal Angle: " << finalAng;
+}
+if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+	 s << "\t\t\t\t{\"type\": \"circ\", \"material\": "<<matID<<", \"divisions\":[" << nDivRad << ","<< nDivCirc<<"], ";
+	 s << "\"center\": ["<<centerPosit(0)<<","<<centerPosit(1)<<"], ";
+	 s << "\"radii\": ["<<intRad<<", "<<extRad<<"],";
+	 s << "\"angles\": ["<<initAng<<", "<<finalAng<<"]";
+	 s <<"}";
+}
 }
 
 

@@ -112,7 +112,9 @@ class ShellNLDKGT : public Element {
 
     Response* setResponse( const char **argv, int argc, OPS_Stream &output );
     int getResponse( int responseID, Information &eleInfo );
-      
+
+  int setParameter(const char **argv, int argc, Parameter &param);
+  
     //plotting 
     int displaySelf( Renderer &theViewer, int displayMode, float fact );
 

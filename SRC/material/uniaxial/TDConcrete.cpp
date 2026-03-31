@@ -75,16 +75,6 @@
 #include <Vector.h>
 
 
-//Added by AMK to use dylib:
-//-----------------------------------------------------------------------
-	#ifdef _USRDLL
-	#define OPS_Export extern "C" _declspec(dllexport)
-	#elif _MACOSX
-	#define OPS_Export extern "C" __attribute__((visibility("default")))
-	#else
-	#define OPS_Export extern "C"
-	#endif
-
 	static int numTDConcrete = 0;
 
 //	OPS_Export void *
@@ -147,6 +137,7 @@ TDConcrete::TDConcrete(int tag, double _fc, double _ft, double _Ec, double _beta
   fc(_fc), ft(_ft), Ec(_Ec), beta(_beta), age(_age), epsshu(_epsshu), epssha(_epssha), tcr(_tcr), epscru(_epscru), epscra(_epscra), epscrd(_epscrd), tcast(_tcast)
 {
   ecminP = 0.0;
+  ecmaxP = 0.0;
   deptP = 0.0;
 
   //sigCr = fabs(sigCr);
@@ -210,7 +201,7 @@ TDConcrete::getInitialTangent(void)
 double
 TDConcrete::getCurrentTime(void)
 {
-	double currentTime;
+	double currentTime = 0.0;
 	Domain * theDomain = ops_TheActiveDomain;
 
 	if (theDomain != 0) {

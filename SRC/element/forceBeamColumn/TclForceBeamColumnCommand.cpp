@@ -46,6 +46,7 @@
 #include <DispBeamColumn2dThermal.h>
 #include <DispBeamColumn3dThermal.h> //L.Jiang [SIF]
 #include <ForceBeamColumn2dThermal.h> //L.Jiang [SIF]
+#include <ForceBeamColumn3dThermal.h> //GR
 
 #include <CrdTransf.h>
 
@@ -71,6 +72,8 @@
 #include <UserDefinedHingeIntegration.h>
 #include <DistHingeIntegration.h>
 #include <RegularizedHingeIntegration.h>
+#include <ConcentratedCurvatureBeamIntegration.h>
+#include <ConcentratedPlasticityBeamIntegration.h>
 
 #include <TrapezoidalBeamIntegration.h>
 #include <CompositeSimpsonBeamIntegration.h>
@@ -182,6 +185,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       (strcmp(argv[6],"HingeEndpoint") != 0) &&
       (strcmp(argv[6],"HingeRadau") != 0) &&
       (strcmp(argv[6],"HingeRadauTwo") != 0) &&
+      (strcmp(argv[6],"ConcentratedCurvature") != 0) &&
+      (strcmp(argv[6],"ConcentratedPlasticity") != 0) &&      
       (strcmp(argv[6],"UserHinge") != 0) &&
       (strcmp(argv[6],"DistHinge") != 0) &&
       (strcmp(argv[6],"RegularizedHinge") != 0) &&
@@ -515,6 +520,8 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
 	theElement = new TimoshenkoBeamColumn3d(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);      
       else if (strcmp(argv[1], "dispBeamColumnThermal") == 0)
 	theElement = new DispBeamColumn3dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);//added by L.Jiang[SIF]
+      else if (strcmp(argv[1], "forceBeamColumnThermal") == 0)
+    theElement = new ForceBeamColumn3dThermal(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass, numIter, tol, numSub, subFac, theDamping);//added by GR
       else if (strcmp(argv[1],"dispBeamColumnWithSensitivity") == 0)
 	theElement = new DispBeamColumn3dWithSensitivity(eleTag, iNode, jNode, nIP, sections, *beamIntegr, *theTransf3d, mass);
       else
@@ -737,10 +744,72 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
     beamIntegr = new UserDefinedBeamIntegration(numSections, pts, wts);
   }
 
+  else if (strcmp(argv[6],"ConcentratedPlasticity") == 0) {
+    
+    if (argc < 10) {
+      opserr << "WARNING insufficient arguments\n";
+      printCommand(argc, argv);
+      opserr << "Want: element " << argv[1] << " eleTag? iNode? jNode? transfTag? type secTagI? secTagJ? secTagE?\n";
+      return TCL_ERROR;
+    }
+
+    int secTagI, secTagJ, secTagE;
+    
+    if (Tcl_GetInt(interp, argv[7], &secTagI) != TCL_OK) {
+      opserr << "WARNING invalid secTagI\n";
+      opserr << "" << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+    if (Tcl_GetInt(interp, argv[8], &secTagJ) != TCL_OK) {
+      opserr << "WARNING invalid secTagJ\n";
+      opserr << "" << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+    if (Tcl_GetInt(interp, argv[9], &secTagE) != TCL_OK) {
+      opserr << "WARNING invalid secTagE\n";
+      opserr << "" << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+
+    SectionForceDeformation *sectionI = theTclBuilder->getSection(secTagI);
+    if (sectionI == 0) {
+      opserr << "WARNING section not found\n";
+      opserr << "Section: " << secTagI;
+      opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+    SectionForceDeformation *sectionJ = theTclBuilder->getSection(secTagJ);
+    if (sectionJ == 0) {
+      opserr << "WARNING section not found\n";
+      opserr << "Section: " << secTagJ;
+      opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+    
+    SectionForceDeformation *sectionE = theTclBuilder->getSection(secTagE);
+    if (sectionJ == 0) {
+      opserr << "WARNING section not found\n";
+      opserr << "Section: " << secTagE;
+      opserr << "\n" << argv[1] << " element: " << eleTag << endln;
+      return TCL_ERROR;
+    }
+    
+    sections = new SectionForceDeformation*[5];
+
+    beamIntegr = new ConcentratedPlasticityBeamIntegration();
+    numSections = 5;
+    sections[0] = sectionI;
+    sections[1] = sectionE;
+    sections[2] = sectionE;
+    sections[3] = sectionE;    
+    sections[4] = sectionJ;
+  }
+  
   else if (strcmp(argv[6],"HingeMidpoint") == 0 ||
 	   strcmp(argv[6],"HingeRadau") == 0 ||
 	   strcmp(argv[6],"HingeRadauTwo") == 0 ||
-	   strcmp(argv[6],"HingeEndpoint") == 0) {
+	   strcmp(argv[6],"HingeEndpoing") == 0 ||	   
+	   strcmp(argv[6],"ConcentratedCurvature") == 0) {
     
     if (argc < 12) {
       opserr << "WARNING insufficient arguments\n";
@@ -831,6 +900,15 @@ TclModelBuilder_addForceBeamColumn(ClientData clientData, Tcl_Interp *interp,
       sections[4] = sectionJ;
       sections[5] = sectionJ;
     }
+    else if (strcmp(argv[6],"ConcentratedCurvature") == 0) {
+      beamIntegr = new ConcentratedCurvatureBeamIntegration(lpI, lpJ);
+      numSections = 5;
+      sections[0] = sectionI;
+      sections[1] = sectionE;
+      sections[2] = sectionE;
+      sections[3] = sectionE;
+      sections[4] = sectionJ;
+    }    
     else {
       beamIntegr = new HingeEndpointBeamIntegration(lpI, lpJ);
       numSections = 4;

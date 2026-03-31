@@ -54,11 +54,17 @@ extern "C" {
 extern void OPS_clearAllUniaxialMaterial(void);
 extern void OPS_clearAllNDMaterial(void);
 extern void OPS_clearAllSectionForceDeformation(void);
+extern void OPS_clearAllSectionRepres(void);
 
 extern void OPS_clearAllHystereticBackbone(void);
 extern void OPS_clearAllStiffnessDegradation(void);
 extern void OPS_clearAllStrengthDegradation(void);
 extern void OPS_clearAllUnloadingRule(void);
+
+int OPS_sectionLocation();
+int OPS_sectionWeight();
+int OPS_sectionTag();
+int OPS_sectionDisplacement();
 
 // the following is a little kludgy but it works!
 #ifdef _USING_STL_STREAMS
@@ -178,6 +184,8 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <LagrangeConstraintHandler.h>
 #include <TransformationConstraintHandler.h>
 
+extern void* OPS_AutoConstraintHandler(void);
+
 // numberers
 #include <PlainNumberer.h>
 #include <DOF_Numberer.h>
@@ -218,6 +226,8 @@ extern void *OPS_AlphaOSGeneralized(void);
 extern void *OPS_AlphaOSGeneralized_TP(void);
 extern void *OPS_ExplicitDifference(void);
 extern void *OPS_CentralDifference(void);
+extern void *OPS_ExplicitBathe(void);
+extern void *OPS_ExplicitDifferenceStatic(void);
 extern void *OPS_CentralDifferenceAlternative(void);
 extern void *OPS_CentralDifferenceNoDamping(void);
 extern void *OPS_Collocation(void);
@@ -252,6 +262,8 @@ extern int OPS_DomainModalProperties(void);
 extern int OPS_ResponseSpectrumAnalysis(void);
 extern int OPS_sdfResponse(void);
 
+extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
+
 #include <Newmark.h>
 #include <StagedNewmark.h>
 #include <TRBDF2.h>
@@ -279,8 +291,8 @@ extern int OPS_sdfResponse(void);
 #include <ConjugateGradientSolver.h>
 
 #ifdef _ITPACK
-//#include <ItpackLinSOE.h>
-//#include <ItpackLinSolver.h>
+#include <ItpackLinSOE.h>
+#include <ItpackLinSolver.h>
 #endif
 
 #include <FullGenLinSOE.h>
@@ -1068,6 +1080,10 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "sectionLocation", &sectionLocation, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "sectionWeight", &sectionWeight, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "sectionTag", &sectionTag, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
+    Tcl_CreateCommand(interp, "sectionDisplacement", &sectionDisplacement, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
     Tcl_CreateCommand(interp, "basicDeformation", &basicDeformation, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);  
@@ -1274,6 +1290,11 @@ reliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv
   if (theReliabilityBuilder == 0) {
 
     theReliabilityBuilder = new TclReliabilityBuilder(theDomain,interp);
+    if (theReliabilityBuilder == 0) {
+      opserr << "Failed to create reliability domain" << endln;
+      return TCL_ERROR;
+    }
+    OPS_SetReliabilityDomain(theReliabilityBuilder->getReliabilityDomain());
     return TCL_OK;
   }
   else
@@ -1286,6 +1307,7 @@ wipeReliability(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 {
   if (theReliabilityBuilder != 0) {
     delete theReliabilityBuilder;
+    OPS_SetReliabilityDomain(0);
     theReliabilityBuilder = 0;
   }
   return TCL_OK;
@@ -1433,6 +1455,7 @@ wipeModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_clearAllUniaxialMaterial();
   OPS_clearAllNDMaterial();
   OPS_clearAllSectionForceDeformation();
+  OPS_clearAllSectionRepres();
 
   OPS_clearAllHystereticBackbone();
   OPS_clearAllStiffnessDegradation();
@@ -2318,6 +2341,10 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_Stream *output = &opserr;
 
   bool ret = false;
+  bool fileSparse = false;
+  int baseIndex = 0;
+  int precision = 6;
+
   int currentArg = 1;
   while (currentArg < argc) {
       if ((strcmp(argv[currentArg], "file") == 0) ||
@@ -2334,6 +2361,31 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           (strcmp(argv[currentArg], "-ret") == 0)) {
           ret = true;
       }
+      else if ((strcmp(argv[currentArg], "sparse") == 0) ||
+          (strcmp(argv[currentArg], "-sparse") == 0)) {
+          fileSparse = true;
+          currentArg++;
+          if (currentArg < argc) {
+              if (Tcl_GetInt(interp, argv[currentArg], &baseIndex) != TCL_OK) {
+                  opserr << "WARNING: printA - failed to read -sparse <baseIndex>\n";
+                  return TCL_ERROR;
+              }
+          }
+      }
+      else if ((strcmp(argv[currentArg], "precision") == 0) ||
+          (strcmp(argv[currentArg], "-precision") == 0)) {
+          currentArg++;
+          if (currentArg < argc) {
+              if (Tcl_GetInt(interp, argv[currentArg], &precision) != TCL_OK) {
+                  opserr << "WARNING: printA - failed to read precision\n";
+                  return TCL_ERROR;
+              }
+              if (precision < 0 || precision > 16) {
+                  opserr << "WARNING: printA - precision must be between 0 and 16\n";
+                  return TCL_ERROR;
+              }
+          }
+      }
       currentArg++;
   }
   if (theSOE != 0) {
@@ -2341,7 +2393,55 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theStaticIntegrator->formTangent();
     else if (theTransientIntegrator != 0)
       theTransientIntegrator->formTangent(0);
-      
+    
+    output->setPrecision(precision);
+    if (fileSparse) {
+        if (!ret) {
+          if (baseIndex == 1) {
+              *output << "%%MatrixMarket matrix coordinate real general\n";
+          } else {
+              *output << "%%Sparse matrix in COO format\n";
+          }
+          *output << "% First non-commented line contains the number of rows, columns, and non-zero elements\n";
+          *output << "% The remaining lines contain the indices and values of the non-zero elements\n";
+          *output << "% Indices are " << baseIndex << "-based\n";
+          *output << "% (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
+          res = theSOE->saveSparseA(*output, baseIndex);
+          outputFile.close();
+          if (res != 0) {
+            opserr << "WARNING: printA -sparse failed to save sparse matrix" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+            return TCL_ERROR;
+          }
+          // Return 0 to indicate success
+          char buffer[10];
+          sprintf(buffer, "%d", res);
+          Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+          return TCL_OK;
+        } else {
+          // Support sparse matrix with -ret flag using GenericDict
+          std::vector<int> rowIndices, colIndices;
+          std::vector<double> values;
+          int result = theSOE->getSparseA(rowIndices, colIndices, values, baseIndex);
+          if (result != 0) {
+            opserr << "WARNING: printA -sparse -ret failed to get sparse matrix data" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+            return TCL_ERROR;
+          }
+          
+          // Build generic dictionary and return
+          GenericDict dict;
+          dict["rowIndices"] = rowIndices;
+          dict["colIndices"] = colIndices;
+          dict["values"] = values;
+          
+          if (OPS_SetGenericDict(dict) < 0) {
+            opserr << "WARNING: printA -sparse -ret failed to set output" << endln;
+            return TCL_ERROR;
+          }
+          return TCL_OK;
+        }
+    }
     const Matrix *A = theSOE->getA();
     if (A != 0) {
         if (ret) {
@@ -2363,6 +2463,13 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
             outputFile.close();
         }
     }
+  }
+  
+  // Return 0 to indicate success when not using -ret flag
+  if (!ret) {
+      char buffer[10];
+      sprintf(buffer, "%d", res);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
   }
   
   return res;
@@ -3094,14 +3201,18 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
 
   else if(strcmp(argv[1], "PFEM") == 0) {
+    
       if(argc <= 2) {
           PFEMSolver* theSolver = new PFEMSolver();
           theSOE = new PFEMLinSOE(*theSolver);
       } else if(strcmp(argv[2], "-quasi") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
+
       } else if (strcmp(argv[2],"-mumps") ==0) {
-#ifdef _PARALLEL_INTERPRETERS
+
+#ifdef _MUMPS
+	
 	  int relax = 20;
 	  if (argc > 3) {
 	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
@@ -3111,9 +3222,11 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMSolver_Mumps* theSolver = new PFEMSolver_Mumps(relax,0,0,0);
           theSOE = new PFEMLinSOE(*theSolver);
-#endif // _PARALLEL_INTERPRETERS
+#endif // _MUMPS
+
       } else if (strcmp(argv[2],"-quasi-mumps")==0) {
-#ifdef _PARALLEL_INTERPRETERS
+
+#ifdef _MUMPS
 	  int relax = 20;
 	  if (argc > 3) {
 	      if (Tcl_GetInt(interp, argv[3], &relax) != TCL_OK) {
@@ -3123,7 +3236,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  }
 	  PFEMCompressibleSolver_Mumps* theSolver = new PFEMCompressibleSolver_Mumps(relax,0,0);
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
-#endif // _PARALLEL_INTERPRETERS
+#endif // _MUMPS
       }
   }
 
@@ -3407,21 +3520,21 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
-  
-#ifdef _ITPACK
-//  else if (strcmp(argv[1],"Itpack") == 0) {
-//    
-//    // now must determine the type of solver to create from rest of args
-//    int method = 1;
-//    if (argc == 3) {
-//      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
-//	return TCL_ERROR;
-//    }
-//    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
-//    theSOE = new ItpackLinSOE(*theSolver);      
-//  }
-#endif	// _ITPACK
 
+#ifdef _ITPACK
+  else if (strcmp(argv[1],"Itpack") == 0) {
+    
+    // now must determine the type of solver to create from rest of args
+    int method = 1;
+    if (argc == 3) {
+      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
+	return TCL_ERROR;
+    }
+    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
+    theSOE = new ItpackLinSOE(*theSolver);      
+  }
+#endif
+  
   else if (strcmp(argv[1],"FullGeneral") == 0) {
     // now must determine the type of solver to create from rest of args
     FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
@@ -3769,6 +3882,13 @@ specifyConstraintHandler(ClientData clientData, Tcl_Interp *interp, int argc,
   else if (strcmp(argv[1],"Transformation") == 0) {
     theHandler = new TransformationConstraintHandler();
   }    
+
+  else if (strcmp(argv[1],"Auto") == 0) {
+      OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+      theHandler = (ConstraintHandler*)OPS_AutoConstraintHandler();
+      if (theHandler == 0)
+          return TCL_ERROR;
+  }
 
   else {
     opserr << "WARNING No ConstraintHandler type exists (Plain, Penalty,\n";
@@ -5350,6 +5470,20 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"CentralDifferenceNoDamping") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifferenceNoDamping();
+    
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+
+  else if (strcmp(argv[1],"ExplicitBathe") == 0) {
+    theTransientIntegrator = (TransientIntegrator *)OPS_ExplicitBathe();
+    
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+
+  else if (strcmp(argv[1],"ExplicitDifferenceStatic") == 0) {
+    theTransientIntegrator = (TransientIntegrator *) OPS_ExplicitDifferenceStatic();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);
@@ -7281,7 +7415,7 @@ nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   int tag;
   
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+    opserr << "WARNING nodeDOFs nodeTag? nodeDOF? \n";
     return TCL_ERROR;	        
   }    
   
@@ -7311,21 +7445,24 @@ nodeDOFs(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 int 
 nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  if (argc < 3) {
-    opserr << "WARNING want - nodeMass nodeTag? nodeDOF?\n";
+  if (argc < 2) {
+    opserr << "WARNING want - nodeMass nodeTag? <nodeDOF?>\n";
     return TCL_ERROR;
   }    
   
-  int tag, dof;
+  int tag;
+  int dof = -1;
   
   if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
     opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
     return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
-    opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
-    return TCL_ERROR;	        
-  }    
+  }
+
+  if (argc == 3)
+    if (Tcl_GetInt(interp, argv[2], &dof) != TCL_OK) {
+      opserr << "WARNING nodeMass nodeTag? nodeDOF? \n";
+      return TCL_ERROR;	        
+    }    
   
   char buffer[40];
 
@@ -7335,14 +7472,24 @@ nodeMass(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     return TCL_ERROR;
   }
   int numDOF = theNode->getNumberDOF();
-  if (dof < 1 || dof > numDOF) {
-    opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
-    return TCL_ERROR;
-  }
-  else {
-    const Matrix &mass = theNode->getMass();
-    sprintf(buffer, "%35.20f", mass(dof-1,dof-1));
-    Tcl_AppendResult(interp, buffer, NULL);
+  if (dof == -1) {
+      const Matrix &mass = theNode->getMass();
+      for (int i =0; i<mass.noRows(); i++) {
+	sprintf(buffer, "%35.20f", mass(i,i));
+	Tcl_AppendResult(interp, buffer, NULL);
+      }
+	
+  } else {
+    if (dof < 1 || dof > numDOF) {
+      opserr << "WARNING nodeMass dof " << dof << " not in range" << endln;
+      return TCL_ERROR;
+    }
+    else {
+      const Matrix &mass = theNode->getMass();
+      
+      sprintf(buffer, "%35.20f", mass(dof-1,dof-1));
+      Tcl_AppendResult(interp, buffer, NULL);
+    }
   }
   
   return TCL_OK;
@@ -8187,59 +8334,10 @@ sectionDeformation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char
 int 
 sectionLocation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  // make sure at least one other argument to contain type of system
-  if (argc < 3) {
-    opserr << "WARNING want - sectionLocation eleTag? secNum? \n";
-    return TCL_ERROR;
-  }    
+  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
   
-  //opserr << "sectionDeformation: ";
-  //for (int i = 0; i < argc; i++) 
-  //  opserr << argv[i] << ' ' ;
-  //opserr << endln;
-
-  int tag, secNum;
-
-  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING sectionLocation eleTag? secNum? - could not read eleTag? \n";
-    return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << "WARNING sectionLocation eleTag? secNum? - could not read secNum? \n";
-    return TCL_ERROR;	        
-  }    
-
-  Element *theElement = theDomain.getElement(tag);
-  if (theElement == 0) {
-    opserr << "WARNING sectionLocation element with tag " << tag << " not found in domain \n";
-    return TCL_ERROR; 
-  }
-
-  int argcc = 1;
-  char a[80] = "integrationPoints";
-  const char *argvv[1];
-  argvv[0] = a;
-
-  DummyStream dummy;
-
-  Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
-  if (theResponse == 0) {
-    char buffer [] = "0.0";
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-    return TCL_OK;
-  }
-
-  theResponse->getResponse();
-  Information &info = theResponse->getInformation();
-
-  const Vector &theVec = *(info.theVector);
-
-  char buffer[40];
-  sprintf(buffer,"%12.8g",theVec(secNum-1));
-
-  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-
-  delete theResponse;
+  if (OPS_sectionLocation() < 0)
+    return TCL_ERROR;
 
   return TCL_OK;
 }
@@ -8247,59 +8345,32 @@ sectionLocation(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **
 int 
 sectionWeight(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-  // make sure at least one other argument to contain type of system
-  if (argc < 3) {
-    opserr << "WARNING want - sectionWeight eleTag? secNum? \n";
-    return TCL_ERROR;
-  }    
+  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
   
-  //opserr << "sectionDeformation: ";
-  //for (int i = 0; i < argc; i++) 
-  //  opserr << argv[i] << ' ' ;
-  //opserr << endln;
+  if (OPS_sectionWeight() < 0)
+    return TCL_ERROR;
 
-  int tag, secNum;
+  return TCL_OK;
+}
 
-  if (Tcl_GetInt(interp, argv[1], &tag) != TCL_OK) {
-    opserr << "WARNING sectionWeight eleTag? secNum? - could not read eleTag? \n";
-    return TCL_ERROR;	        
-  }    
-  if (Tcl_GetInt(interp, argv[2], &secNum) != TCL_OK) {
-    opserr << "WARNING sectionWeight eleTag? secNum? - could not read secNum? \n";
-    return TCL_ERROR;	        
-  }    
+int 
+sectionTag(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+  
+  if (OPS_sectionTag() < 0)
+    return TCL_ERROR;
 
-  Element *theElement = theDomain.getElement(tag);
-  if (theElement == 0) {
-    opserr << "WARNING sectionWeight element with tag " << tag << " not found in domain \n";
-    return TCL_ERROR; 
-  }
+  return TCL_OK;
+}
 
-  int argcc = 1;
-  char a[80] = "integrationWeights";
-  const char *argvv[1];
-  argvv[0] = a;
-
-  DummyStream dummy;
-
-  Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
-  if (theResponse == 0) {
-    char buffer[] = "0.0";
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-    return TCL_OK;
-  }
-
-  theResponse->getResponse();
-  Information &info = theResponse->getInformation();
-
-  const Vector &theVec = *(info.theVector);
-
-  char buffer[40];
-  sprintf(buffer,"%12.8g",theVec(secNum-1));
-
-  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
-
-  delete theResponse;
+int 
+sectionDisplacement(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+  
+  if (OPS_sectionDisplacement() < 0)
+    return TCL_ERROR;
 
   return TCL_OK;
 }

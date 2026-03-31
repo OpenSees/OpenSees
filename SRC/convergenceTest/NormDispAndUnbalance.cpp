@@ -33,6 +33,7 @@
 void* OPS_NormDispAndUnbalance()
 {
     double data[2] = {0,0};
+    int idata[4] = {0,0,2,-1};
 
     if (OPS_GetNumRemainingInputArgs() >= 2) {
 	int numdata = 2;
@@ -40,11 +41,19 @@ void* OPS_NormDispAndUnbalance()
 	    opserr << "WARNING NormDispAndUnbalance failed to get tolerance\n";
 	    return 0;
 	}
+	numdata = 2;
+	if (OPS_GetIntInput(&numdata, idata) < 0) {
+	    opserr << "WARNING NormDispAndUnbalance failed to get max iter and print flag\n";
+	    return 0;
+	}	
+    }
+    else {
+      opserr << "ERROR - NormDispAndUnbalance insufficient arguments" << endln;
+      return 0;
     }
 
-    int idata[4] = {0,0,2,-1};
-    if (OPS_GetNumRemainingInputArgs() >= 4) {
-	int numdata = 4;
+    if (OPS_GetNumRemainingInputArgs() >= 2) {
+	int numdata = 2;
 	if (OPS_GetIntInput(&numdata, idata) < 0) {
 	    opserr << "WARNING NormDispAndUnbalance failed to get int values\n";
 	    return 0;

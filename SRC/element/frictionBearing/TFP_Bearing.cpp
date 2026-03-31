@@ -91,11 +91,11 @@ OPS_TFP_Bearing()
     numData = 21;
     dData[21] = 10.0; // initial Axial Load = 0.0
     dData[22] = 1.0e12;
-    dData[23] = 0.01;
+    dData[23] = 1.0e12;
   } else if (numRemainingArgs == 25) {
     numData = 22;
     dData[22] = 1.0e12;    
-    dData[23] = 0.01;
+    dData[23] = 1.0e12;
   } else if (numRemainingArgs == 26) {
     numData = 23;
     dData[22] = 1.0e12;

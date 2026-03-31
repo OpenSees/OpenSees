@@ -149,8 +149,8 @@ DisplacementControl::DisplacementControl(int node, int dof,
    if (numIncr == 0) {
       opserr << "WARNING DisplacementControl::DisplacementControl() -";
       opserr << " numIncr set to 0, 1 assumed\n";
-      specNumIncrStep = 1.0;
-      numIncrLastStep = 1.0;
+      specNumIncrStep = 1;
+      numIncrLastStep = 1;
            
    }
 
@@ -206,8 +206,11 @@ DisplacementControl::newStep(void)
       return -1;
    }
 
+   if (theDomain == 0)
+     theDomain = theModel->getDomainPtr();   
+     
    // determine increment for this iteration
-   double factor = specNumIncrStep/numIncrLastStep;
+   double factor = double(specNumIncrStep)/numIncrLastStep;
    theIncrement *=factor;
 
    if (theIncrement < minIncrement)
@@ -556,8 +559,24 @@ int
 DisplacementControl::sendSelf(int cTag,
       Channel &theChannel)
 {
-   // TO FINISH
-   return 0;
+  Vector data(10);
+  data(0) = theNode;
+  data(1) = theDof;
+  data(2) = theIncrement;
+  data(3) = theDofID;
+  data(4) = deltaLambdaStep;
+  data(5) = currentLambda;
+  data(6) = specNumIncrStep;
+  data(7) = numIncrLastStep;
+  data(8) = minIncrement;
+  data(9) = maxIncrement;
+
+  if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << "DisplacementControl::sendSelf() - failed to send the Vector\n";
+    return -1;
+  }
+  
+  return 0;  
 }
 
 
@@ -565,8 +584,24 @@ int
 DisplacementControl::recvSelf(int cTag,
       Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-   // TO FINISH
-   return 0;
+  Vector data(10);
+  if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
+    opserr << "DisplacementControl::sendSelf() - failed to send the Vector\n";
+    return -1;
+  }
+
+  theNode = (int)data(0);
+  theDof = (int)data(1);
+  theIncrement = data(2);
+  theDofID = (int)data(3);
+  deltaLambdaStep = data(4);
+  currentLambda = data(5);
+  specNumIncrStep = (int)data(6);
+  numIncrLastStep = (int)data(7);
+  minIncrement = data(8);
+  maxIncrement = data(9);
+  
+  return 0;
 }
 
 void

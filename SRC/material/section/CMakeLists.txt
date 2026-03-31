@@ -30,6 +30,7 @@ target_sources(OPS_Material
     FiberSectionGJThermal.cpp    
     GenericSection1d.cpp
     Isolator2spring.cpp
+    ASDCoupledHinge3D.cpp
     LayeredShellFiberSection.cpp
     LayeredShellFiberSectionThermal.cpp
     MembranePlateFiberSection.cpp
@@ -38,6 +39,7 @@ target_sources(OPS_Material
     NDFiberSection3d.cpp
     NDFiberSectionWarping2d.cpp
     ParallelSection.cpp
+    PipeSection.cpp
     SectionAggregator.cpp
     SectionForceDeformation.cpp
     TimoshenkoSection3d.cpp
@@ -66,6 +68,7 @@ target_sources(OPS_Material
     FiberSectionGJThermal.h
     GenericSection1d.h
     Isolator2spring.h
+    ASDCoupledHinge3D.h
     LayeredShellFiberSection.h
     LayeredShellFiberSectionThermal.h
     MembranePlateFiberSection.h
@@ -74,6 +77,7 @@ target_sources(OPS_Material
     NDFiberSection3d.h
     NDFiberSectionWarping2d.h
     ParallelSection.h
+    PipeSection.h
     SectionAggregator.h
     SectionForceDeformation.h
     TimoshenkoSection3d.h
@@ -85,4 +89,4 @@ add_subdirectory(fiber)
 add_subdirectory(repres)
 add_subdirectory(yieldSurface)
 add_subdirectory(integration)
-
+add_subdirectory(LayeredMembraneSection)

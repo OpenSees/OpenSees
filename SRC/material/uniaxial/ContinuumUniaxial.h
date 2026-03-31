@@ -46,6 +46,8 @@ class ContinuumUniaxial: public UniaxialMaterial {
   ContinuumUniaxial(int tag, NDMaterial &theMat);
   ContinuumUniaxial(void);
   virtual ~ContinuumUniaxial(void);
+
+  const char *getClassType(void) const {return "ContinuumUniaxial";}
   
   int setTrialStrain(double strain, double strainRate = 0.0);
   double getStrain(void);

@@ -39,6 +39,8 @@
 #include <string.h>
 #include <stdlib.h>
 
+//#include <R3vectors.h>
+
 Vector J2PlateFibre::sigma(5);
 Matrix J2PlateFibre::D(5,5);
 
@@ -50,12 +52,12 @@ OPS_J2PlateFibreMaterial(void)
   int numArgs = OPS_GetNumRemainingInputArgs();
   
   if (numArgs < 6) {
-    opserr << "Want: nDMaterial J2PlateFibre $tag $E $v $sigmaY $Hiso $Hkin <$rho>" << endln;
+    opserr << "Want: nDMaterial J2PlateFibre $tag $E $v $sigmaY $Hiso $Hkin <$rho $sigmaYn>" << endln;
     return 0;	
   }
   
   int iData[1];
-  double dData[6];
+  double dData[7];
   dData[5] = 0.0;
   
   int numData = 1;
@@ -64,27 +66,45 @@ OPS_J2PlateFibreMaterial(void)
     return 0;
   }
   
-  if (numArgs > 6) 
-    numData = 6;
-  else
-    numData = 5;
-  
+  numData = 5;
   if (OPS_GetDouble(&numData, dData) != 0) {
     opserr << "WARNING invalid data: nDMaterial J2PlateFibre : " << iData[0] <<"\n";
     return 0;
   }  
+
+  if (numArgs > 6) {
+    numData = 1;
+    if (OPS_GetDouble(&numData, &dData[5]) != 0) {
+      opserr << "WARNING invalid data: nDMaterial J2PlateFibre : " << iData[0] <<"\n";
+      return 0;
+    }
+  }
+
+  dData[6] = dData[2];
+  if (numArgs > 7) {
+    numData = 1;
+    if (OPS_GetDouble(&numData, &dData[6]) != 0) {
+      opserr << "WARNING invalid data: nDMaterial J2PlateFibre : " << iData[0] <<"\n";
+      return 0;
+    }
+  }  
   
-  theMaterial = new J2PlateFibre(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4]);
+  theMaterial = new J2PlateFibre(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4],
+				 dData[5], dData[6]);
   
   return theMaterial;
 }
 
 J2PlateFibre::J2PlateFibre
-(int tag, double e, double g, double sy, double hi, double hk):
+(int tag, double e, double g, double sy, double hi, double hk, double r, double syn):
   NDMaterial(tag, ND_TAG_J2PlateFibre),
   E(e), nu(g), sigmaY(sy), Hiso(hi), Hkin(hk),
+  rho(r), sigmaYn(syn),
   parameterID(0), SHVs(0), Tepsilon(5), dg_n1(0.0)
 {
+  sigmaY = fabs(sigmaY);
+  sigmaYn = fabs(sigmaYn);
+  
   epsPn[0] = 0.0;
   epsPn[1] = 0.0;
   epsPn[2] = 0.0;
@@ -103,7 +123,8 @@ J2PlateFibre::J2PlateFibre
 
 J2PlateFibre::J2PlateFibre():
   NDMaterial(0, ND_TAG_J2PlateFibre),
-  E(0.0), nu(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0), 
+  E(0.0), nu(0.0), sigmaY(0.0), Hiso(0.0), Hkin(0.0),
+  rho(0.0), sigmaYn(0.0),
   parameterID(0), SHVs(0), Tepsilon(5), dg_n1(0.0)
 {
   epsPn[0] = 0.0;
@@ -171,6 +192,26 @@ J2PlateFibre::getTangent (void)
   sig[3] = G*(Tepsilon(3)-epsPn[3]);
   sig[4] = G*(Tepsilon(4)-epsPn[4]);
 
+  /*
+  // Get principal stresses
+  static Matrix m(3,3);
+  m(0,0) = sig[0];
+  m(1,1) = sig[1];
+  m(2,2) = 0.0;
+  m(0,1) = m(1,0) = sig[2];
+  m(1,2) = m(2,1) = sig[3];
+  m(0,2) = m(2,0) = sig[4];  
+
+  static Vector d(3);
+  d = LovelyEig(m);
+
+  double p = (d(0)+d(1)+d(2))/3.0;
+  */
+  double p = (sig[0]+sig[1])/3.0;
+  double Fy = sigmaY;
+  if (p < 0)
+    Fy = sigmaYn;
+  
   static const double one3 = 1.0/3;
   static const double two3 = 2.0*one3;
   static const double root23 = sqrt(two3);
@@ -186,7 +227,7 @@ J2PlateFibre::getTangent (void)
 
   double q = sqrt(two3*(xsi[0]*xsi[0] + xsi[1]*xsi[1] - xsi[0]*xsi[1]) +
 		  2.0*(xsi[2]*xsi[2] + xsi[3]*xsi[3] + xsi[4]*xsi[4]));
-  double F = q - root23*(sigmaY + Hiso*alphan);
+  double F = q - root23*(Fy + Hiso*alphan);
 
   if (F < -100*DBL_EPSILON) {
     D.Zero();
@@ -256,7 +297,7 @@ J2PlateFibre::getTangent (void)
       R(2) = x(2) - xsi[2] + dg*(twoG+two3Hkin)*x(2);
       R(3) = x(3) - xsi[3] + dg*(twoG+two3Hkin)*x(3);
       R(4) = x(4) - xsi[4] + dg*(twoG+two3Hkin)*x(4);
-      R(5) = q - root23*(sigmaY + Hiso*(alphan+dg*root23*q));
+      R(5) = q - root23*(Fy + Hiso*(alphan+dg*root23*q));
     }
 
     if (iter == maxIter) {
@@ -366,6 +407,26 @@ J2PlateFibre::getStress (void)
   sigma(3) = G*(Tepsilon(3)-epsPn[3]);
   sigma(4) = G*(Tepsilon(4)-epsPn[4]);
 
+  /*
+  // Get principal stresses
+  static Matrix m(3,3);
+  m(0,0) = sigma(0);
+  m(1,1) = sigma(1);
+  m(2,2) = 0.0;
+  m(0,1) = m(1,0) = sigma(2);
+  m(1,2) = m(2,1) = sigma(3);
+  m(0,2) = m(2,0) = sigma(4);  
+
+  static Vector d(3);
+  d = LovelyEig(m);
+
+  double p = (d(0)+d(1)+d(2))/3.0;
+  */
+  double p = (sigma(0)+sigma(1))/3.0;
+  double Fy = sigmaY;
+  if (p < 0)
+    Fy = sigmaYn;
+  
   static const double one3 = 1.0/3;
   static const double two3 = 2.0*one3;
   static const double root23 = sqrt(two3);
@@ -381,7 +442,7 @@ J2PlateFibre::getStress (void)
 
   double q = sqrt(two3*(xsi[0]*xsi[0] + xsi[1]*xsi[1] - xsi[0]*xsi[1]) +
 		  2.0*(xsi[2]*xsi[2] + xsi[3]*xsi[3] + xsi[4]*xsi[4]));
-  double F = q - root23*(sigmaY + Hiso*alphan);
+  double F = q - root23*(Fy + Hiso*alphan);
 
   if (F < -100*DBL_EPSILON) {
     epsPn1[0] = epsPn[0];
@@ -443,7 +504,7 @@ J2PlateFibre::getStress (void)
       R(2) = x(2) - xsi[2] + dg*(twoG+two3Hkin)*x(2);
       R(3) = x(3) - xsi[3] + dg*(twoG+two3Hkin)*x(3);
       R(4) = x(4) - xsi[4] + dg*(twoG+two3Hkin)*x(4);
-      R(5) = q - root23*(sigmaY + Hiso*(alphan+dg*root23*q));
+      R(5) = q - root23*(Fy + Hiso*(alphan+dg*root23*q));
     }
     if (iter == maxIter) {
       //opserr << "J2PlateFibre::getStress -- maxIter reached " << R.Norm() << endln;
@@ -533,7 +594,7 @@ NDMaterial*
 J2PlateFibre::getCopy (void)
 {
   J2PlateFibre *theCopy =
-    new J2PlateFibre (this->getTag(), E, nu, sigmaY, Hiso, Hkin);
+    new J2PlateFibre (this->getTag(), E, nu, sigmaY, Hiso, Hkin, rho, sigmaYn);
 
   return theCopy;
 }
@@ -832,7 +893,7 @@ J2PlateFibre::sendSelf (int commitTag, Channel &theChannel)
 {
   int res = 0;
 
-  static Vector data(6+6);
+  static Vector data(8+6);
   
   data(0) = this->getTag();
   data(1) = E;
@@ -846,6 +907,8 @@ J2PlateFibre::sendSelf (int commitTag, Channel &theChannel)
   data(9) = epsPn[3];
   data(10) = epsPn[4];
   data(11) = alphan;
+  data(12) = rho;
+  data(13) = sigmaYn;
   
   res += theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -862,7 +925,7 @@ J2PlateFibre::recvSelf (int commitTag, Channel &theChannel,
 {
   int res = 0;
   
-  static Vector data(6+6);
+  static Vector data(8+6);
   
   res += theChannel.recvVector(this->getDbTag(), commitTag, data);
   if (res < 0) {
@@ -882,21 +945,40 @@ J2PlateFibre::recvSelf (int commitTag, Channel &theChannel,
   epsPn[3] = data(9);
   epsPn[4] = data(10);
   alphan = data(11);
+  rho = data(12);
+  sigmaYn = data(13);
+  
+  this->revertToLastCommit();
   
   return res;
 }
 
 void
-J2PlateFibre::Print (OPS_Stream &s, int flag)
+J2PlateFibre::Print(OPS_Stream &s, int flag)
 {
-  s << "J2 Plate Fibre Material Model" << endln;
-  s << "\tE:  " << E << endln;
-  s << "\tnu:  " << nu << endln;
-  s << "\tsigmaY:  " << sigmaY << endln;
-  s << "\tHiso:  " << Hiso << endln;
-  s << "\tHkin:  " << Hkin << endln;
-  
-  return;
+    if (flag == OPS_PRINT_PRINTMODEL_MATERIAL) {
+        s << "J2 Plate Fibre Material Model" << endln;
+        s << "\tE:  " << E << endln;
+        s << "\tnu:  " << nu << endln;
+        s << "\trho:  " << rho << endln;	
+        s << "\tsigmaY:  " << sigmaY << endln;
+        s << "\tsigmaYn:  " << sigmaYn << endln;	
+        s << "\tHiso:  " << Hiso << endln;
+        s << "\tHkin:  " << Hkin << endln;
+    }
+
+    if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+        s << "\t\t\t{";
+        s << "\"name\": \"" << this->getTag() << "\", ";
+        s << "\"type\": \"J2PlateFibre\", ";
+        s << "\"E\": " << E << ", ";
+        s << "\"nu\": " << nu << ", ";
+        s << "\"rho\": " << rho << ", ";	
+        s << "\"fy\": " << sigmaY << ", ";
+        s << "\"fyn\": " << sigmaYn << ", ";	
+        s << "\"Hiso\": " << Hiso << ", ";
+        s << "\"Hkin\": " << Hkin << "}";
+    }
 }
 
 int
@@ -911,6 +993,10 @@ J2PlateFibre::setParameter(const char **argv, int argc,
     param.setValue(nu);
     return param.addObject(2, this);  
   }
+  else if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
+    return param.addObject(3, this);  
+  }  
   else if (strcmp(argv[0],"sigmaY") == 0 || strcmp(argv[0],"fy") == 0 || strcmp(argv[0],"Fy") == 0) {
     param.setValue(sigmaY);
     return param.addObject(5, this);
@@ -923,6 +1009,10 @@ J2PlateFibre::setParameter(const char **argv, int argc,
     param.setValue(Hiso);
     return param.addObject(7, this);
   }
+  else if (strcmp(argv[0],"sigmaYn") == 0 || strcmp(argv[0],"fyn") == 0 || strcmp(argv[0],"Fyn") == 0) {
+    param.setValue(sigmaYn);
+    return param.addObject(8, this);
+  }  
 
   return -1;
 }
@@ -937,6 +1027,9 @@ J2PlateFibre::updateParameter(int parameterID, Information &info)
   case 2:
     nu = info.theDouble;
     return 0;
+  case 3:
+    rho = info.theDouble;
+    return 0;    
   case 5:
     sigmaY = info.theDouble;
     return 0;
@@ -946,6 +1039,9 @@ J2PlateFibre::updateParameter(int parameterID, Information &info)
   case 7:
     Hiso = info.theDouble;
     return 0;
+  case 8:
+    sigmaYn = info.theDouble;
+    return 0;    
   default:
     return -1;
   }

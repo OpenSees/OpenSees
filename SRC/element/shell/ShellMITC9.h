@@ -97,7 +97,8 @@ class ShellMITC9 : public Element
     int recvSelf (int commitTag, Channel &theChannel, FEM_ObjectBroker 
 		  &theBroker);
 
-
+  int setParameter(const char **argv, int argc, Parameter &param);
+  
     Response* setResponse(const char **argv, int argc, OPS_Stream &output);
     int getResponse(int responseID, Information &eleInfo);
       

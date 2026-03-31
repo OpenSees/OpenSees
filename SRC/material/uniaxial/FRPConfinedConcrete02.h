@@ -31,7 +31,6 @@
 #define FRPConfinedConcrete02_h
 
 #include <UniaxialMaterial.h>
-#define MAT_TAG_FRPConfinedConcrete02 5010
 
 class FRPConfinedConcrete02 : public UniaxialMaterial
 {
@@ -42,6 +41,8 @@ public:
 	FRPConfinedConcrete02();    
 
 	~FRPConfinedConcrete02();
+
+	const char *getClassType(void) const {return "FRPConfinedConcrete02";}
 
 	int setTrialStrain(double strain, double strainRate = 0.0); 
 	double getStrain(void);          

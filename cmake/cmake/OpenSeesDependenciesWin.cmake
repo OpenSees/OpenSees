@@ -10,7 +10,7 @@
 
 
 find_package(TCL REQUIRED)
-find_package(MySQL REQUIRED)
+find_package(MySQL ) # Not required
 
 #
 #sudo apt-get install libhdf5-serial-dev

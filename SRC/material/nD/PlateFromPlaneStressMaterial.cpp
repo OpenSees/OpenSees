@@ -405,4 +405,10 @@ PlateFromPlaneStressMaterial::setResponse(const char** argv, int argc, OPS_Strea
 
     return theResponse;  // implemented, get damage response from theMat
 }
+
 //setResponse - added by V.K. Papanikolaou [AUTh] - end
+
+int PlateFromPlaneStressMaterial::setParameter(const char** argv, int argc, Parameter& param)
+{
+    return theMat->setParameter(argv, argc, param);
+}

@@ -169,6 +169,11 @@ TransformationDOF_Group::TransformationDOF_Group(int tag, Node *node,
 	    exit(-1);
 	}
     }
+
+#ifdef TRANSF_INCREMENTAL_MP
+    modTotalDisp.resize(modNumDOF);
+    modTotalDisp = getTrialDisp();
+#endif // TRANSF_INCREMENTAL_MP
     
     numTransDOFs++;
     theHandler = theTHandler;
@@ -191,6 +196,7 @@ TransformationDOF_Group::TransformationDOF_Group(int tag,
 :DOF_Group(tag,node),
  theMP(0),Trans(0),modTangent(0),modUnbalance(0),modID(0),theSPs(0) 
 {
+    needRetainedData = -1;
     modNumDOF = node->getNumberDOF();
     // create space for the SP_Constraint array
     theSPs = new SP_Constraint *[modNumDOF];
@@ -225,6 +231,11 @@ TransformationDOF_Group::TransformationDOF_Group(int tag,
 	    modVectors[i] = 0;
 	}
     }    
+
+#ifdef TRANSF_INCREMENTAL_MP
+    modTotalDisp.resize(modNumDOF);
+    modTotalDisp = getTrialDisp();
+#endif // TRANSF_INCREMENTAL_MP
 
     numTransDOFs++;
     theHandler = theTHandler;
@@ -468,6 +479,12 @@ TransformationDOF_Group::getCommittedAccel(void)
 void
 TransformationDOF_Group::setNodeDisp(const Vector &u)
 {
+#ifdef TRANSF_INCREMENTAL_MP
+    // save the previous mod trial here
+    static Vector modTrialDispOld;
+    modTrialDispOld = modTotalDisp; // at previous iteration
+#endif // TRANSF_INCREMENTAL_MP
+
   // call base class method and return if no MP_Constraint
   if (theMP == 0) {
     this->DOF_Group::setNodeDisp(u);
@@ -498,6 +515,31 @@ TransformationDOF_Group::setNodeDisp(const Vector &u)
     }
   }
 
+#ifdef TRANSF_INCREMENTAL_MP
+  modTotalDisp = *modUnbalance; // save it for next iteration
+#endif // TRANSF_INCREMENTAL_MP
+
+  // at this point the modUnbalance contains the reduced total displacement.
+  // remove the trial one to obtain the increment, so that we transform only the increment
+#ifdef TRANSF_INCREMENTAL_MP
+  modUnbalance->addVector(1.0, modTrialDispOld, -1.0);
+#ifdef TRANSF_INCREMENTAL_MP_DEBUG
+  opserr << " N = " << myNode->getTag() << "\n";
+  opserr << " solut: " << u;
+  opserr << " oldtr: " << modTrialDispOld;
+  opserr << " trial: " << myNode->getTrialDisp();
+  opserr << " commi: " << myNode->getDisp();
+  opserr << " incre: " << myNode->getIncrDisp();
+  opserr << " delta: " << myNode->getIncrDeltaDisp();
+  Domain* dom = myNode->getDomain();
+  Node* ret = dom->getNode(theMP->getNodeRetained());
+  opserr << " R VEL: " << ret->getTrialVel();
+  opserr << " C VEL: " << ret->getTrialVel();
+  opserr << " R ACC: " << ret->getTrialAccel();
+  opserr << " C ACC: " << ret->getTrialAccel();
+#endif // TRANSF_INCREMENTAL_MP_DEBUG
+#endif // TRANSF_INCREMENTAL_MP
+
   Matrix *T = this->getT();
   // *unbalance = (*T) * (*modUnbalance);
   unbalance->addMatrixVector(0.0, *T, *modUnbalance, 1.0);
@@ -507,9 +549,18 @@ TransformationDOF_Group::setNodeDisp(const Vector &u)
   int numDOF = myNode->getNumberDOF();
   for (int i=0; i<numDOF; i++) {
     if (theSPs[i] != 0)
+#ifdef TRANSF_INCREMENTAL_MP
+      (*unbalance)(i) = 0.0; // don't enfore the SP here as in incrNodeDisp!
+#else
       (*unbalance)(i) = disp(i);
+#endif // TRANSF_INCREMENTAL_MP
   }
+
+#ifdef TRANSF_INCREMENTAL_MP
+  myNode->incrTrialDisp(*unbalance);
+#else
   myNode->setTrialDisp(*unbalance);
+#endif // #ifdef TRANSF_INCREMENTAL_MP
 }
 
 void
@@ -627,6 +678,10 @@ TransformationDOF_Group::incrNodeDisp(const Vector &u)
        (*modUnbalance)(i) = 0.0;	    
    }    
    
+#ifdef TRANSF_INCREMENTAL_MP
+   modTotalDisp.addVector(1.0, *modUnbalance, 1.0); // accumulate it for next iteration
+#endif // TRANSF_INCREMENTAL_MP
+
    Matrix *T = this->getT();
    // *unbalance = (*T) * (*modUnbalance);
    unbalance->addMatrixVector(0.0, *T, *modUnbalance, 1.0);
@@ -984,7 +1039,16 @@ TransformationDOF_Group::enforceSPs(int doMP)
     for (int i=0; i<numDof; i++)
       if (theSPs[i] != 0) {
 	double value = theSPs[i]->getValue();
-	myNode->setTrialDisp(value, i);
+#ifdef TRANSF_INCREMENTAL_SP
+    // include the initial value for staged analyses.
+    // note: do it only here. No need to do it when doMP == 0
+    // because it will be called after doMP == 1 and the value
+    // has already been set to the retained node
+    double initial_value = theSPs[i]->getInitialValue();
+    myNode->setTrialDisp(value + initial_value, i);
+#else
+    myNode->setTrialDisp(value, i);
+#endif // TRANSF_INCREMENTAL_SP
       }
   } 
 

@@ -465,7 +465,7 @@ ParallelMaterial::recvSelf(int cTag, Channel &theChannel,
     for (int i=0; i<numMaterials; i++) {
       int matClassTag = classTags(i);
       if (theModels[i] == 0 || theModels[i]->getClassTag() != matClassTag) {
-	if (theModels[i] == 0)
+	if (theModels[i] != 0)
 	  delete theModels[i];
 	UniaxialMaterial *theMaterialModel = 
 	    theBroker.getNewUniaxialMaterial(matClassTag);

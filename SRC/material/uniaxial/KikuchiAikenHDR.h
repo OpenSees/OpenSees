@@ -76,6 +76,8 @@ class KikuchiAikenHDR : public UniaxialMaterial
 
  private:
 
+  void setType(int Tp);
+  
   // input values
   int    Tp; // type = 1;X0.6(standard compressive stress), 2;X0.6(zero compressive stress), 3;X0.4(standard), 4;X0.4(zero), 5;X0.3(standard), 6;X0.3(zero)
   double Ar; // area [m^2]
@@ -92,20 +94,20 @@ class KikuchiAikenHDR : public UniaxialMaterial
   double initialStiff;   // initial stiffness
 
   // temporary values for Kikuchi&Aiken model
-  double tmpStrain; //
+  //double tmpStrain; //
   double geq; //Geq
-  double heq; //heq
+  //double heq; //heq
   double u;   //u
   double n;   //n
   double a;   //a
-  double b;   //b
+  //double b;   //b
   double c;   //c
   double xm;  //maximum strain
   double fm;  //maximum stress
-  double x;   //normarized strain
-  double alpha; //
-  double q1Tan; //tangent of Q1
-  double q2Tan; //tangent of Q2
+  //double x;   //normarized strain
+  //double alpha; //
+  //double q1Tan; //tangent of Q1
+  //double q2Tan; //tangent of Q2
 
 
   // trial values

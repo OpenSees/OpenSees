@@ -51,6 +51,7 @@ OPS_ModIMKPeakOriented02()
   if (numModIMKPeakOriented02Materials == 0) {
     numModIMKPeakOriented02Materials++;
     opserr << "Modified Ibarra-Medina-Krawinkler Model with Peak-Oriented02 Hysteretic Response\n";
+    opserr << "WARNING: DO NOT USE THE \"ModIMKPeakOriented02\" MATERIAL, IT HAS BEEN REPLACED. Use \"IMKPeakOriented\" or \"HystereticSM\" INSTEAD.\n";        
   }
  
   // Pointer to a uniaxial material that will be returned
