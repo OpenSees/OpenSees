@@ -52,7 +52,7 @@ OPS_SteelECThermal(void)
 
   int    iData[2];
   double dData[7];
-  const char *typeChar = new char[20];
+  const char * typeChar = new char[20];
   int numData = 1;
   
  if (OPS_GetIntInput(&numData, iData) != 0) 
@@ -613,7 +613,7 @@ UniaxialMaterial* SteelECThermal::getCopy ()
 int SteelECThermal::sendSelf (int commitTag, Channel& theChannel)
 {
    int res = 0;
-   static Vector data(17);
+   static Vector data(21);
    data(0) = this->getTag();
 
    // Material properties
@@ -626,6 +626,11 @@ int SteelECThermal::sendSelf (int commitTag, Channel& theChannel)
    data(7) = a3;
    data(8) = a4;
 
+   data(17) = fyT;
+   data(18) = E0T;
+   data(19) = fp;
+   data(20) = TemperatureC;
+   
    // History variables from last converged state
    data(9) = CminStrain;
    data(10) = CmaxStrain;
@@ -652,7 +657,7 @@ int SteelECThermal::recvSelf (int commitTag, Channel& theChannel,
                                 FEM_ObjectBroker& theBroker)
 {
    int res = 0;
-   static Vector data(17);
+   static Vector data(21);
    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
    if (res < 0) {
@@ -663,15 +668,20 @@ int SteelECThermal::recvSelf (int commitTag, Channel& theChannel,
       this->setTag(int(data(0)));
 
       // Material properties
-      typeTag = data (1);
-	  fy = data(2);
-	  E0 = data(3);
-	  b = data(4);
+      typeTag = int(data(1));
+      fy = data(2);
+      E0 = data(3);
+      b = data(4);
       a1 = data(5);
       a2 = data(6);
       a3 = data(7);
       a4 = data(8);
 
+      fyT = data(17);
+      E0T = data(18);
+      fp = data(19);
+      TemperatureC = data(20);
+      
       // History variables from last converged state
       CminStrain = data(9);
       CmaxStrain = data(10);
@@ -959,11 +969,13 @@ SteelECThermal::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 // AddingSensitivity:END /////////////////////////////////////////////
 
 
-//this function is no use, just for the definition of pure virtual function.
 int SteelECThermal::setTrialStrain (double strain, double strainRate)
 {
-  opserr << "SteelECThermal::setTrialStrain (double strain, double strainRate) - should never be called\n";
-  return 0;
+  //opserr << "SteelECThermal::setTrialStrain (double strain, double strainRate) - should never be called\n";
+  //return 0;
+
+  // Let's just use T=0, heh? MHS
+  return this->setTrialStrain(strain, 0.0, strainRate);
 }
 
 
