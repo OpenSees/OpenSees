@@ -4886,7 +4886,7 @@ int MPCORecorder::initialize()
 	std::string the_filename;
 	{
 		std::vector<std::string> filename_words;
-		utils::strings::split(m_data->filename, '.', filename_words, true);
+		utils::strings::split(m_data->filename, '.', filename_words, false);
 		if (filename_words.size() == 0) 
 			filename_words.push_back("DefaultName");
 		if (filename_words.back() != "mpco")
