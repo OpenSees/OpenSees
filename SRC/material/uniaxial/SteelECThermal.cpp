@@ -51,6 +51,7 @@ OPS_SteelECThermal(void)
 
 
   int    iData[2];
+  iData[1] = 0;
   double dData[7];
   const char * typeChar = new char[20];
   int numData = 1;
@@ -83,12 +84,8 @@ OPS_SteelECThermal(void)
 		  }
 	 
   }
-  else if (OPS_GetNumRemainingInputArgs()==3 ||OPS_GetNumRemainingInputArgs()==7) 
-  {
-    iData[1] = 0;
-  }
 
-
+  delete [] typeChar;
 
   numData = OPS_GetNumRemainingInputArgs();
 
