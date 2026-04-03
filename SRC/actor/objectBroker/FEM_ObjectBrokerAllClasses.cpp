@@ -92,6 +92,7 @@
 #include "CreepMaterial.h"
 #include "OriginCentered.h"
 #include "Steel01.h"
+#include "Steel01Thermal.h"
 #include "Steel02.h"
 #include "SteelMPF.h"
 #include "Steel2.h"
@@ -1806,6 +1807,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Steel01:  
 	     return new Steel01();
+
+	case MAT_TAG_Steel01Thermal:  
+	     return new Steel01Thermal();	     
 
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
