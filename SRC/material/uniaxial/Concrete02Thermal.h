@@ -13,6 +13,7 @@ class Concrete02Thermal : public UniaxialMaterial
   public:
     Concrete02Thermal(int tag, double _fc, double _epsc0, double _fcu,
 	     double _epscu, double _rat, double _ft, double _Ets);
+  Concrete02Thermal(int tag, double _fc, double _epsc0, double _fcu, double _epscu);
 
     Concrete02Thermal(void);
 
