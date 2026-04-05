@@ -96,6 +96,7 @@
 #include "Steel02.h"
 #include "Steel02Thermal.h"
 #include "SteelECThermal.h"
+#include "StainlessECThermal.h"
 #include "SteelMPF.h"
 #include "Steel2.h"
 #include "Steel4.h"
@@ -1821,6 +1822,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
     case MAT_TAG_SteelECThermal:
       return new SteelECThermal();
+
+    case MAT_TAG_StainlessECThermal:
+      return new StainlessECThermal();      
       
 	case MAT_TAG_SteelMPF:  
 	     return new SteelMPF();	     
