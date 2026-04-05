@@ -79,6 +79,8 @@
 #include "Concrete01.h"
 #include "Concrete01WithSITC.h"
 #include "Concrete02.h"
+#include "Concrete02Thermal.h"
+#include "ConcreteECThermal.h"
 #include "Concrete02IS.h"
 #include "Concrete04.h"
 #include "Concrete06.h" 
@@ -1774,6 +1776,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Concrete02:  
 	     return new Concrete02();
+
+	case MAT_TAG_Concrete02Thermal:  
+	     return new Concrete02Thermal();
+
+	case MAT_TAG_ConcreteECThermal:  
+	     return new ConcreteECThermal();	     	     
 
 	case MAT_TAG_Concrete02IS:  
 	     return new Concrete02IS();	     
