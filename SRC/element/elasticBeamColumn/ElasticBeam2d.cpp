@@ -928,22 +928,28 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     // fixed end forces due to a linear thermal load
     double dT1 = Ttop1-Tbot1;
     double dT = (Ttop2-Tbot2)-(Ttop1-Tbot1);
-    double a = alpha/d;  // constant based on temp difference at top and bottom, 
-    // coefficient of thermal expansion and beam depth
-    double M1 = a*E*I*(-dT1+(4.0/3.0)*dT); //Fixed End Moment end 1
-    double M2 = a*E*I*(dT1+(5.0/3.0)*dT); //Fixed End Moment end 2
-    double F = alpha*(((Ttop2+Ttop1)/2+(Tbot2+Tbot1)/2)/2)*E*A; // Fixed End Axial Force
-    double M1M2divL =(M1+M2)/L; // Fixed End Shear
-    
-    // Reactions in basic system
-    p0[0] += 0;
-    p0[1] += M1M2divL;
-    p0[2] -= M1M2divL;
+    double M1 = 0.0; double M2 = 0.0;
+    if (d > 0.0) {
+      double a = alpha/d;  // constant based on temp difference at top and bottom, 
+      // coefficient of thermal expansion and beam depth
+      M1 = a*E*I*(-dT1+(4.0/3.0)*dT); //Fixed End Moment end 1
+      M2 = a*E*I*(dT1+(5.0/3.0)*dT); //Fixed End Moment end 2
+      double M1M2divL =(M1+M2)/L; // Fixed End Shear
+      
+      // Reactions in basic system
+      //p0[0] += 0;
+      p0[1] += M1M2divL;
+      p0[2] -= M1M2divL;
 
-    // Fixed end forces in basic system
+      // Fixed end forces in basic system
+      q0[1] += M1;
+      q0[2] += M2;      
+    }
+
+    double F = alpha*(((Ttop2+Ttop1)/2+(Tbot2+Tbot1)/2)/2)*E*A; // Fixed End Axial Force
+
+    // Fixed end axial force in basic system
     q0[0] -= F;
-    q0[1] += M1;
-    q0[2] += M2;
   }
 
   else {
@@ -1287,6 +1293,7 @@ ElasticBeam2d::Print(OPS_Stream &s, int flag)
     s << "\tConnected Nodes: " << connectedExternalNodes ;
     s << "\tCoordTransf: " << theCoordTransf->getTag() << endln;
     s << "\tmass density:  " << rho << ", cMass: " << cMass << endln;
+    s << "\talpha:  " << alpha << ", depth: " << d << endln;    
     s << "\trelease code:  " << release << endln;
     double P  = q(0);
     double M1 = q(1);

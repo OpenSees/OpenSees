@@ -2697,7 +2697,7 @@ TclCommand_addElementalLoad(ClientData clientData, Tcl_Interp *interp, int argc,
   //------------------------end  of using ThermalActionWrapper--------------------------
   //-----------------Adding tcl command for beam thermal action(2D&3D), 2013..[Begin]---------------
 
-  else if (strcmp(argv[count], "-beamThermal") == 0) {
+  else if (strcmp(argv[count], "-beamThermal") == 0 || strcmp(argv[count], "beamThermal") == 0) {
 	  count++;
 	  //For two dimensional model
 	  if (ndm == 2) {

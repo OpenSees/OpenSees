@@ -116,7 +116,7 @@ OPS_StainlessECThermal(void)
 	}
 
 //StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, double Fu, double A1, double A2, double A3, double A4): UniaxialMaterial(tag,MAT_TAG_StainlessECThermal),gradeTag(grade), fyT(Fy), E0T(E),fuT(Fu), a1(A1), a2(A2), a3(A3), a4(A4)
-StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, double Fu,double sigInit) : UniaxialMaterial(tag, MAT_TAG_StainlessECThermal), gradeTag(grade)
+StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, double Fu,double sigInit) : UniaxialMaterial(tag, MAT_TAG_StainlessECThermal), gradeTag(grade), SHVs(0)
 {
    // Sets all history and state variables to initial values
    // History variables
@@ -209,7 +209,7 @@ StainlessECThermal::StainlessECThermal(int tag, int grade, double Fy, double E, 
 
 }
 // default constructor
-StainlessECThermal::StainlessECThermal():UniaxialMaterial(0,MAT_TAG_StainlessECThermal),gradeTag(0),fyT(0.0), E0T(0.0), fuT(0.0),sigini(0.0)
+StainlessECThermal::StainlessECThermal():UniaxialMaterial(0,MAT_TAG_StainlessECThermal),gradeTag(0),fyT(0.0), E0T(0.0), fuT(0.0),sigini(0.0), SHVs(0)
 {
 	  ThermalElongation = 0; //initialize
 	  E0 = E0T;
@@ -223,7 +223,8 @@ StainlessECThermal::StainlessECThermal():UniaxialMaterial(0,MAT_TAG_StainlessECT
 
 StainlessECThermal::~StainlessECThermal ()
 {
-	// do nothing
+  if (SHVs != 0)
+    delete SHVs;
 }
 //
 double StainlessECThermal::determineYieldSurface(double sigini)  // Added by Mian Zhou 10/16
@@ -739,7 +740,7 @@ UniaxialMaterial* StainlessECThermal::getCopy ()
 int StainlessECThermal::sendSelf (int commitTag, Channel& theChannel)
 {
    int res = 0;
-   static Vector data(17);
+   static Vector data(22);
    data(0) = this->getTag();
 
    // Material properties
@@ -760,6 +761,16 @@ int StainlessECThermal::sendSelf (int commitTag, Channel& theChannel)
    data(11) = Cstress;
    data(12) = Ctangent;
 
+   data(13) = fyT;
+   data(14) = E0T;
+   data(15) = fuT;
+   data(16) = Ect;
+   data(17) = EctT;
+   data(18) = EpsiU;
+   data(19) = EpsiUT;
+   data(20) = sigini;
+   data(21) = epsini;
+   
    // Data is only sent after convergence, so no trial variables
    // need to be sent through data vector
 
@@ -774,7 +785,7 @@ int StainlessECThermal::recvSelf (int commitTag, Channel& theChannel,
                                 FEM_ObjectBroker& theBroker)
 {
    int res = 0;
-   static Vector data(16);
+   static Vector data(22);
    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
    if (res < 0) {
@@ -785,12 +796,21 @@ int StainlessECThermal::recvSelf (int commitTag, Channel& theChannel,
       this->setTag(int(data(0)));
 
       // Material properties
-      gradeTag = data (1);
-	  fy = data(2);
+      gradeTag = int(data(1));
+      fy = data(2);
       E0 = data(3);
-	  fu = data(4);
- 
+      fu = data(4);
 
+      fyT = data(13);
+      E0T = data(14);
+      fuT = data(15);
+      Ect = data(16);
+      EctT = data(17);
+      EpsiU = data(18);
+      EpsiUT = data(19);
+      sigini = data(20);
+      epsini = data(21);
+      
       // History variables from last converged state
       CminStrain = data(5);
       CmaxStrain = data(6);
@@ -1073,11 +1093,13 @@ StainlessECThermal::commitSensitivity(double TstrainSensitivity, int gradIndex, 
 
 // AddingSensitivity:END /////////////////////////////////////////////
 
-//this function is no use, just for the definition of pure virtual function.
 int StainlessECThermal::setTrialStrain (double strain, double strainRate)
 {
-  opserr << "StainlessECThermal::setTrialStrain (double strain, double strainRate) - should never be called\n";
-  return 0;
+  //opserr << "StainlessECThermal::setTrialStrain (double strain, double strainRate) - should never be called\n";
+  //return 0;
+
+  // Let's call with T=0. MHS
+  return this->setTrialStrain(strain, 0.0, strainRate);
 }
 
 

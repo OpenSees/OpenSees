@@ -186,9 +186,12 @@ void* OPS_pyUCLA();
 void* OPS_ElasticMaterialThermal();
 void* OPS_Steel01Thermal();
 void* OPS_Steel02Thermal();
+void* OPS_SteelECThermal();
+void* OPS_StainlessECThermal();
 void* OPS_ConcretewBeta();
 void* OPS_ConcreteSakaiKawashima();
 void* OPS_Concrete02Thermal();
+void* OPS_ConcreteECThermal();
 void* OPS_ResilienceLow();
 void* OPS_ResilienceMaterialHR();
 void* OPS_Elastic2Material();
@@ -539,11 +542,17 @@ static int setUpUniaxialMaterials(void) {
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel02Thermal", &OPS_Steel02Thermal));
   uniaxialMaterialsMap.insert(
+      std::make_pair("SteelECThermal", &OPS_SteelECThermal));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("StainlessECThermal", &OPS_StainlessECThermal));  
+  uniaxialMaterialsMap.insert(			      
       std::make_pair("ConcretewBeta", &OPS_ConcretewBeta));
   uniaxialMaterialsMap.insert(std::make_pair(
       "ConcreteSakaiKawashima", &OPS_ConcreteSakaiKawashima));
   uniaxialMaterialsMap.insert(std::make_pair(
       "Concrete02Thermal", &OPS_Concrete02Thermal));
+  uniaxialMaterialsMap.insert(std::make_pair(
+      "ConcreteECThermal", &OPS_ConcreteECThermal));  
   uniaxialMaterialsMap.insert(
       std::make_pair("ResilienceLow", &OPS_ResilienceLow));
   uniaxialMaterialsMap.insert(std::make_pair(

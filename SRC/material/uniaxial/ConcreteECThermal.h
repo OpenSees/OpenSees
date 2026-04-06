@@ -41,6 +41,7 @@ class ConcreteECThermal : public UniaxialMaterial
   public:
     ConcreteECThermal(int tag, double _fc, double _epsc0, double _fcu,
 	     double _epscu, double _rat, double _ft, double _Ets);
+  ConcreteECThermal(int tag, double _fc, double _epsc0, double _fcu, double _epscu);  
 
     ConcreteECThermal(void);
 

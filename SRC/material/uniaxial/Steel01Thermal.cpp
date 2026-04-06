@@ -40,9 +40,9 @@ static int numSteel01Th = 0;
 void *
 OPS_Steel01Thermal()
 {
-    // print out some KUDO's
+    // print out some KUDO's (for modification? Really?)
     if (numSteel01Th == 0) {
-        opserr << "Steel01Th unaxial material - Modified by Princeton\n";
+      //opserr << "Steel01Th unaxial material - Modified by Princeton\n";
         numSteel01Th =1;
     }
     
@@ -884,7 +884,7 @@ UniaxialMaterial* Steel01Thermal::getCopy ()
 int Steel01Thermal::sendSelf (int commitTag, Channel& theChannel)
 {
    int res = 0;
-   static Vector data(16);
+   static Vector data(21);
    data(0) = this->getTag();
 
    // Material properties
@@ -896,6 +896,11 @@ int Steel01Thermal::sendSelf (int commitTag, Channel& theChannel)
    data(6) = a3;
    data(7) = a4;
 
+   data(17) = fyT;
+   data(18) = E0T;
+   data(19) = fp;
+   data(20) = TemperautreC;
+   
    // History variables from last converged state
    data(8) = CminStrain;
    data(9) = CmaxStrain;
@@ -907,6 +912,7 @@ int Steel01Thermal::sendSelf (int commitTag, Channel& theChannel)
    data(13) = Cstrain;
    data(14) = Cstress;
    data(15) = Ctangent;
+   data(16) = Cmodulus;
 
    // Data is only sent after convergence, so no trial variables
    // need to be sent through data vector
@@ -922,7 +928,7 @@ int Steel01Thermal::recvSelf (int commitTag, Channel& theChannel,
                                 FEM_ObjectBroker& theBroker)
 {
    int res = 0;
-   static Vector data(16);
+   static Vector data(21);
    res = theChannel.recvVector(this->getDbTag(), commitTag, data);
   
    if (res < 0) {
@@ -941,6 +947,11 @@ int Steel01Thermal::recvSelf (int commitTag, Channel& theChannel,
       a3 = data(6);
       a4 = data(7);
 
+      fyT = data(17);
+      E0T = data(18);
+      fp = data(19);
+      TemperautreC = data(20);
+      
       // History variables from last converged state
       CminStrain = data(8);
       CmaxStrain = data(9);
@@ -959,7 +970,8 @@ int Steel01Thermal::recvSelf (int commitTag, Channel& theChannel,
       // State variables from last converged state
       Cstrain = data(13);
       Cstress = data(14);
-      Ctangent = data(15);      
+      Ctangent = data(15);
+      Cmodulus = data(16);
 
       // Copy converged state values into trial values
       Tstrain = Cstrain;
@@ -1232,8 +1244,11 @@ Steel01Thermal::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 //this function is no use, just for the definition of pure virtual function.
 int Steel01Thermal::setTrialStrain (double strain, double strainRate)
 {
-  opserr << "Steel01Thermal::setTrialStrain (double strain, double strainRate) - should never be called\n";
-  return 0;
+  //opserr << "Steel01Thermal::setTrialStrain (double strain, double strainRate) - should never be called\n";
+  //return 0;
+
+  // Or, how about we just call the duplicated function with temp=0? MHS
+  return this->setTrialStrain(strain, 0.0, strainRate);
 }
 
 

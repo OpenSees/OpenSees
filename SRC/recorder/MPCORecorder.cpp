@@ -913,7 +913,7 @@ namespace mpco {
 		struct SectionAssignment
 		{
 			SectionAssignment()
-				: is_new(true), name("UnkownClassType"), fiber_section_data(), assignments() {}
+				: is_new(true), name("UnknownClassType"), fiber_section_data(), assignments() {}
 			bool is_new;
 			std::string name;
 			FiberSectionData fiber_section_data;
@@ -3870,6 +3870,8 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ZeroLengthContact3D ||
 					elem_class_tag == ELE_TAG_ZeroLengthContactASDimplex ||
 					elem_class_tag == ELE_Tag_ZeroLengthImpact3D ||
+					// ./twoNodeLink
+					elem_class_tag == ELE_TAG_TwoNodeLinkSection ||
 					// ./elasticBeamColumn
 					elem_class_tag == ELE_TAG_ElasticBeam2d ||
 					elem_class_tag == ELE_TAG_ElasticBeam3d ||
@@ -3915,7 +3917,10 @@ namespace mpco {
 					elem_class_tag == ELE_TAG_ForceBeamColumn2d || /* <- OK! this one defines everything ! good job*/
 					elem_class_tag == ELE_TAG_ForceBeamColumn3d || /* <- OK! this one defines everything ! good job*/
 					elem_class_tag == ELE_TAG_ForceBeamColumnCBDI2d || /* <- OK! this one defines everything ! good job*/
-					elem_class_tag == ELE_TAG_ForceBeamColumnWarping2d /* <- OK! this one defines everything ! good job*/
+					elem_class_tag == ELE_TAG_ForceBeamColumnWarping2d || /* <- OK! this one defines everything ! good job*/
+					// ./mixedBeamColumn
+					elem_class_tag == ELE_TAG_MixedBeamColumn2d ||
+					elem_class_tag == ELE_TAG_MixedBeamColumn3d
 					) {
 					geom_type = ElementGeometryType::Line_2N;
 					int_type = ElementIntegrationRuleType::CustomIntegrationRule;
@@ -4881,7 +4886,7 @@ int MPCORecorder::initialize()
 	std::string the_filename;
 	{
 		std::vector<std::string> filename_words;
-		utils::strings::split(m_data->filename, '.', filename_words, true);
+		utils::strings::split(m_data->filename, '.', filename_words, false);
 		if (filename_words.size() == 0) 
 			filename_words.push_back("DefaultName");
 		if (filename_words.back() != "mpco")

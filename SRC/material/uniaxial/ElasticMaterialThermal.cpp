@@ -250,13 +250,19 @@ int
 ElasticMaterialThermal::sendSelf(int cTag, Channel &theChannel)
 {
 	int res = 0;
-	static Vector data(6);
+	static Vector data(11);
 	data(0) = this->getTag();
 	data(1) = Epos;
 	data(2) = Eneg;
 	data(3) = eta;
-	data(4) = committedStrain;
-	data(5) = committedStrainRate;
+	data(4) = Alpha;
+	data(5) = E0;
+	data(6) = Eneg0;
+	data(7) = softIndex;
+	data(8) = parameterID;
+	data(9) = ThermalElongation;
+	data(10) = Temp;
+
 	res = theChannel.sendVector(this->getDbTag(), cTag, data);
 	if (res < 0)
 		opserr << "ElasticMaterialThermal::sendSelf() - failed to send data\n";
@@ -270,7 +276,7 @@ ElasticMaterialThermal::recvSelf(int cTag, Channel &theChannel,
 	FEM_ObjectBroker &theBroker)
 {
 	int res = 0;
-	static Vector data(6);
+	static Vector data(11);
 	res = theChannel.recvVector(this->getDbTag(), cTag, data);
 
 	if (res < 0) {
@@ -283,8 +289,14 @@ ElasticMaterialThermal::recvSelf(int cTag, Channel &theChannel,
 		Epos = data(1);
 		Eneg = data(2);
 		eta = data(3);
-		committedStrain = data(4);
-		committedStrainRate = data(5);
+		Alpha = data(4);
+		E0 = data(5);
+		Eneg0 = data(6);
+		softIndex = int(data(7));
+		parameterID = int(data(8));
+		ThermalElongation = data(9);
+		Temp = data(10);
+		
 		this->revertToLastCommit();
 	}
 

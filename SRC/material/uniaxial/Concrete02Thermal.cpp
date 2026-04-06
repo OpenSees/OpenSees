@@ -30,8 +30,8 @@ OPS_Concrete02Thermal()
 
   numData = OPS_GetNumRemainingInputArgs();
 
-  if (numData != 7) {
-    opserr << "Invalid #args, want: uniaxialMaterial Concrete02Thermal " << iData[0] << "fpc? epsc0? fpcu? epscu? rat? ft? Ets?\n";
+  if (numData != 4 && numData != 7) {
+    opserr << "Invalid #args, want: uniaxialMaterial Concrete02Thermal " << iData[0] << "fpc? epsc0? fpcu? epscu? <rat? ft? Ets?>\n";
     return 0;
   }
 
@@ -42,7 +42,10 @@ OPS_Concrete02Thermal()
 
 
   // Parsing was successful, allocate the material
-  theMaterial = new Concrete02Thermal(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+  if (numData == 7)
+    theMaterial = new Concrete02Thermal(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6]);
+  else
+    theMaterial = new Concrete02Thermal(iData[0], dData[0], dData[1], dData[2], dData[3]);    
   
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type Concrete02Thermal Material\n";
@@ -59,7 +62,11 @@ Concrete02Thermal::Concrete02Thermal(int tag, double _fc, double _epsc0, double 
   //fc(_fc), epsc0(_epsc0), fcu(_fcu), epscu(_epscu), rat(_rat), ft(_ft), Ets(_Ets)
   fcT(_fc), epsc0T(_epsc0), fcuT(_fcu), epscuT(_epscu), rat(_rat), ftT(_ft), EtsT(_Ets) //JZ
 {
-
+  if (fcT > 0) fcT = -fcT;
+  if (epsc0T > 0) epsc0T = -epsc0T;
+  if (fcuT > 0) fcuT = -fcuT;
+  if (epscuT > 0) epscuT = -epscuT;
+  
 //JZ 07/10 /////////////////////////////////////////////////////////////start
   fc = fcT;
   epsc0 = epsc0T;
@@ -88,6 +95,51 @@ Concrete02Thermal::Concrete02Thermal(int tag, double _fc, double _epsc0, double 
   cooling=0; //PK add
   TempP = 0.0; //Pk add previous temp
 
+}
+
+Concrete02Thermal::Concrete02Thermal(int tag, double _fc, double _epsc0, double _fcu,
+				     double _epscu):
+  UniaxialMaterial(tag, MAT_TAG_Concrete02Thermal),
+  fcT(_fc), epsc0T(_epsc0), fcuT(_fcu), epscuT(_epscu)
+{
+  if (fcT > 0) fcT = -fcT;
+  if (epsc0T > 0) epsc0T = -epsc0T;
+  if (fcuT > 0) fcuT = -fcuT;
+  if (epscuT > 0) epscuT = -epscuT;
+  
+//JZ 07/10 /////////////////////////////////////////////////////////////start
+  fc = fcT;
+  epsc0 = epsc0T;
+  fcu = fcuT;
+  epscu = epscuT;
+  ft = ftT;
+  Ets = EtsT;
+//JZ 07/10 /////////////////////////////////////////////////////////////end 
+
+  ecminP = 0.0;
+  deptP = 0.0;
+
+  eP = 2.0*fc/epsc0;  
+  //eP = 1.5*fc/epsc0; //for the euro code, the 2.0 should be changed into 1.5
+  epsP = 0.0;
+  sigP = 0.0;
+  eps = 0.0;
+  sig = 0.0;
+  e = 2.0*fc/epsc0;
+  //e = 1.5*fc/epsc0;//for the euro code, the 2.0 should be changed into 1.5
+
+  //if epsc0 is not 0.0025, then epsc0 = strainRatio*0.0025
+  strainRatio = epsc0/0.0025;
+  ThermalElongation = 0; //initialize 
+
+  cooling=0; //PK add
+  TempP = 0.0; //Pk add previous temp
+
+  rat = 0.1;
+  ft = ftT = 0.1*fc;
+  if (ft < 0.0) ft = -ft;
+  if (ftT < 0.0) ftT = -ftT;  
+  Ets = EtsT = 0.1*fc/epsc0;
 }
 
 Concrete02Thermal::Concrete02Thermal(void):
@@ -783,10 +835,12 @@ Concrete02Thermal::getVariable(const char *varName, Information &theInfo)
 
 
 
-//this function is no use, just for the definition of pure virtual function.
 int
 Concrete02Thermal::setTrialStrain(double strain, double strainRate)
 {
-  opserr << "Concrete02Thermal::setTrialStrain(double strain, double strainRate) - should never be called\n";
-  return -1;
+  //opserr << "Concrete02Thermal::setTrialStrain(double strain, double strainRate) - should never be called\n";
+  //return -1;
+
+  // Let's just use T=0. MHS
+  return this->setTrialStrain(strain, 0.0, strainRate);
 }

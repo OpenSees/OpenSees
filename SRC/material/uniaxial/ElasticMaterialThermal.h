@@ -23,8 +23,8 @@
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/ElasticMaterialThermal.h,v $
                                                                         
                                                                         
-#ifndef ElasticMaterial_h
-#define ElasticMaterial_h
+#ifndef ElasticMaterialThermal_h
+#define ElasticMaterialThermal_h
 
 // Written: fmk 
 // Created: 07/98

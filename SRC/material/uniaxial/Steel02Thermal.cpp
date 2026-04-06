@@ -691,12 +691,14 @@ Steel02Thermal::Print(OPS_Stream &s, int flag)
 }
 
 
-//this function is no use, just for the definition of pure virtual function.
 int
 Steel02Thermal::setTrialStrain(double strain, double strainRate)
 {
-  opserr << "Steel02Thermal::setTrialStrain(double strain, strainRate) - should never be called\n";
-  return 0;
+  //opserr << "Steel02Thermal::setTrialStrain(double strain, strainRate) - should never be called\n";
+  //return 0;
+
+  // How about we just use T=0? MHS
+  return this->setTrialStrain(strain, 0.0, strainRate);
 }
 
 
