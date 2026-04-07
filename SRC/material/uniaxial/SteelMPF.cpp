@@ -415,15 +415,19 @@ void SteelMPF::determineTrialState(double def)
 	// Determine initial loading condition
 	if (incold == 0) {
 
+		static const double strainTol = 1.0e-14;
+
 		Rptwoprev = R0;
 		Rntwoprev = R0;
 		outp = 1;
 		outn = 1;
 
-		if (e < 0.0) {
+		if (e < -strainTol) {
 			inc = -1;
-		} else {
+		} else if (e > strainTol) {
 			inc = 1;
+		} else {
+			inc = 0;
 		}
 
 		erp=0.0;
@@ -449,44 +453,50 @@ void SteelMPF::determineTrialState(double def)
 		e0ntwoprev=e0n;
 		sig0ntwoprev=sig0n;
 
-		if (e==0.0) {
-			nloop=0;
-		} else {
-			nloop=1;
-		}
-
 		Rp = R0;
 		Rn = R0;
 
-		if (inc==1) {
+		if (inc == 0) {
 
-			e0p=eyieldp;
-			sig0p=sigyieldp;
-			e0ptwoprev=e0p;
-			sig0ptwoprev=sig0p;
-
-			double estp=(e-erp)/(e0p-erp);
-			double sigstp=bp*estp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*estp; 
-			double sig=sigrp+sigstp*(sig0p-sigrp);
-			double Et=((sig0p-sigrp)/(e0p-erp))*(bp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*(1.0-pow(estp,Rp)/(1.0+pow(estp,Rp))));
-
-			F = sig;
-			stif = Et;
+			F = 0.0;
+			stif = E0;
+			nloop = 0;
 
 		} else {
 
-			e0n=-eyieldn;
-			sig0n=-sigyieldn;
-			e0ntwoprev=e0n;
-			sig0ntwoprev=sig0n;
+			nloop = 1;
 
-			double estn=(e-ern)/(e0n-ern);
-			double sigstn=bn*estn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*estn;
-			double sig=sigrn+sigstn*(sig0n-sigrn);
-			double Et=((sig0n-sigrn)/(e0n-ern))*(bn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*(1.0-pow(estn,Rn)/(1.0+pow(estn,Rn))));
+			if (inc==1) {
 
-			F = sig;
-			stif = Et;
+				e0p=eyieldp;
+				sig0p=sigyieldp;
+				e0ptwoprev=e0p;
+				sig0ptwoprev=sig0p;
+
+				double estp=(e-erp)/(e0p-erp);
+				double sigstp=bp*estp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*estp; 
+				double sig=sigrp+sigstp*(sig0p-sigrp);
+				double Et=((sig0p-sigrp)/(e0p-erp))*(bp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*(1.0-pow(estp,Rp)/(1.0+pow(estp,Rp))));
+
+				F = sig;
+				stif = Et;
+
+			} else {
+
+				e0n=-eyieldn;
+				sig0n=-sigyieldn;
+				e0ntwoprev=e0n;
+				sig0ntwoprev=sig0n;
+
+				double estn=(e-ern)/(e0n-ern);
+				double sigstn=bn*estn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*estn;
+				double sig=sigrn+sigstn*(sig0n-sigrn);
+				double Et=((sig0n-sigrn)/(e0n-ern))*(bn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*(1.0-pow(estn,Rn)/(1.0+pow(estn,Rn))));
+
+				F = sig;
+				stif = Et;
+
+			}
 
 		}
 
