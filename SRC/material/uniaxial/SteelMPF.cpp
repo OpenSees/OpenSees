@@ -320,50 +320,9 @@ SteelMPF::~SteelMPF ()
 
 int SteelMPF::setTrialStrain(double strain, double strainRate)
 {
-	// Reset history variables to last converged state
-	inc = incold;
-
-	Rptwoprev = Rptwoprevold;
-	Rntwoprev = Rntwoprevold;
-
-	outp = outpold;
-	outn = outnold;
-
-	erp = erpold;
-	sigrp = sigrpold;
-
-	ern = ernold;
-	sigrn = sigrnold;
-
-	erpmaxmax = erpmaxmaxold;
-	ernmaxmax = ernmaxmaxold;
-
-	e0p = e0pold;
-	sig0p = sig0pold;
-
-	e0n = e0nold;
-	sig0n = sig0nold;
-
-	erntwoprev = erntwoprevold;
-	sigrntwoprev = sigrntwoprevold;
-	e0ntwoprev = e0ntwoprevold;
-	sig0ntwoprev = sig0ntwoprevold;
-
-	erptwoprev = erptwoprevold;
-	sigrptwoprev = sigrptwoprevold;
-	e0ptwoprev = e0ptwoprevold;
-	sig0ptwoprev = sig0ptwoprevold;
-
-	Rp = Rpold;
-	Rn = Rnold;
-
-	nloop = nloopold;
-
-	// Set trial strain
+	// Trial strain; trial history is set from committed (*old) state inside determineTrialState
 	def = strain;
-
-	// Calculate the trial state given the trial strain
-	this->determineTrialState(def);
+	determineTrialState(def);
 
 	return 0;
 }
@@ -371,50 +330,8 @@ int SteelMPF::setTrialStrain(double strain, double strainRate)
 
 int SteelMPF::setTrial (double strain, double &stress, double &tangent, double strainRate)
 {
-	// Reset history variables to last converged state
-	inc = incold;
-
-	Rptwoprev = Rptwoprevold;
-	Rntwoprev = Rntwoprevold;
-
-	outp = outpold;
-	outn = outnold;
-
-	erp = erpold;
-	sigrp = sigrpold;
-
-	ern = ernold;
-	sigrn = sigrnold;
-
-	erpmaxmax = erpmaxmaxold;
-	ernmaxmax = ernmaxmaxold;
-
-	e0p = e0pold;
-	sig0p = sig0pold;
-
-	e0n = e0nold;
-	sig0n = sig0nold;
-
-	erntwoprev = erntwoprevold;
-	sigrntwoprev = sigrntwoprevold;
-	e0ntwoprev = e0ntwoprevold;
-	sig0ntwoprev = sig0ntwoprevold;
-
-	erptwoprev = erptwoprevold;
-	sigrptwoprev = sigrptwoprevold;
-	e0ptwoprev = e0ptwoprevold;
-	sig0ptwoprev = sig0ptwoprevold;
-
-	Rp = Rpold;
-	Rn = Rnold;
-
-	nloop = nloopold;
-
-	// Set trial strain
 	def = strain;
-
-	// Calculate the trial state given the trial strain
-	this->determineTrialState(def);
+	determineTrialState(def);
 
 	stress = F; 
 	tangent = stif;
