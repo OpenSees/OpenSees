@@ -684,7 +684,7 @@ void SteelMPF::determineTrialState(double def)
 			}
 		}
 
-		if (incold == -1) {
+		else if (incold == -1) {
 
 			if (e > eold) {
 
