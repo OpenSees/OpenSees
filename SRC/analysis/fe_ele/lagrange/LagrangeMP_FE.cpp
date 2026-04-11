@@ -110,11 +110,6 @@ LagrangeMP_FE::LagrangeMP_FE(int tag, Domain &theDomain, MP_Constraint &TheMP,
 	exit(-1);	
     }            
     
-    if (theDofGroup->getID().Size() != theConstrainedNodesDOFs->getID().Size()) {
-        opserr << "WARNING LagrangeMP_FE::LagrangeMP_FE()";
-        opserr << " - ConstrainedDOFs size != Lagrange size\n";
-        exit(-1);
-    }
 
     myDOF_Groups(0) = theConstrainedNodesDOFs->getTag();
     myDOF_Groups(1) = theRetainedNodesDOFs->getTag();
@@ -251,7 +246,7 @@ LagrangeMP_FE::getResidual(Integrator *theNewIntegrator)
     for (int i = 0; i < id1.Size(); ++i) {
         int cdof = id1(i);
         if (cdof < 0 || cdof >= Uc.Size()) {
-            opserr << "PenaltyMP_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
+            opserr << "LagrangeMP_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
             exit(-1);
         }
         UU(i) = Uc(cdof) - Uc0(i);
@@ -259,7 +254,7 @@ LagrangeMP_FE::getResidual(Integrator *theNewIntegrator)
     for (int i = 0; i < id2.Size(); ++i) {
         int rdof = id2(i);
         if (rdof < 0 || rdof >= Ur.Size()) {
-            opserr << "PenaltyMP_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
+            opserr << "LagrangeMP_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
             exit(-1);
         }
         UU(i + id1.Size()) = Ur(rdof) - Ur0(i);

@@ -155,7 +155,17 @@ int OPS_SetDoubleOutput(int *numData, double *data, bool scalar)
   return 0;  
 }
 
+extern "C" 
+int OPS_SetString(const char *str)
+{
+  return 0;  
+}
 
+extern "C" int
+OPS_SetStringList(std::vector<const char*>& data)
+{
+  return 0;
+}
 
 extern "C" 
 const char *OPS_GetString(void)

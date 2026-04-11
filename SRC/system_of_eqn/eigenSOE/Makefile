@@ -7,9 +7,12 @@ OBJS       = EigenSOE.o \
 	SymBandEigenSOE.o \
 	SymBandEigenSolver.o \
 	FullGenEigenSOE.o \
-	FullGenEigenSolver.o
+	FullGenEigenSolver.o \
+	SymmGeneralizedEigenSOE.o \
+	SymmGeneralizedEigenSolver.o 
 
 all:    $(OBJS)
+	@$(CD) $(FE)/system_of_eqn/eigenSOE/sparsePython; $(MAKE);
 
 # Miscellaneous
 tidy:	
@@ -20,6 +23,7 @@ clean: tidy
 
 spotless: clean
 	@$(RM) $(RMFLAGS)
+	@$(CD) $(FE)/system_of_eqn/eigenSOE/sparsePython; $(MAKE) wipe;
 
 wipe: spotless
 

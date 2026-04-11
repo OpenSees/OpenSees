@@ -1,15 +1,25 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
+//
+//===----------------------------------------------------------------------===//
+//
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
 //
 //===----------------------------------------------------------------------===//
 //
 #include <tcl.h>
 #include <stdlib.h>
+#include <Logging.h>
+#include <Parsing.h>
 #include <assert.h>
 #include <string.h>
 #include <OPS_Stream.h>
-#include <G3_Logging.h>
 #include <Domain.h>
 #include <MovableObject.h>
 #include <Element.h>
@@ -36,19 +46,18 @@ extern ReliabilityDomain *theReliabilityDomain;
 
 #endif
 
+//  parameter tag <specific parameter args>
 int
-TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
+TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
                      TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
-  Domain* domain = (Domain*)clientData; 
+  Domain* domain = static_cast<Domain*>(clientData); 
 
 
-  // check at least two arguments so don't segemnt fault on strcmp
+  // ensure at least two arguments
   if (argc < 2) {
     opserr << "WARNING need to specify a parameter tag\n";
-    opserr << "Want: parameter tag <specific parameter args> .. see manual for "
-              "valid parameter types and arguments\n";
     return TCL_ERROR;
   }
 
@@ -59,8 +68,6 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   Parameter *theParameter = domain->getParameter(paramTag);
-  int eleTag = -1;
-  bool isele = false;
 
   // First, check special case of a blank parameter
   if (argc == 2 && strcmp(argv[0], "parameter") == 0) {
@@ -94,8 +101,14 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
   }
 
-  if (argc >= 6 && strcmp(argv[0], "parameter") == 0 &&
-      strcmp(argv[2], "node") == 0 && strcmp(argv[4], "disp") == 0) {
+  int eleTag = -1;
+  bool isele = false;
+
+
+  if (argc >= 6 && 
+      strcmp(argv[0], "parameter") == 0 &&
+      strcmp(argv[2], "node") == 0 &&
+      strcmp(argv[4], "disp") == 0) {
 
     int nodeTag;
     if (Tcl_GetInt(interp, argv[3], &nodeTag) != TCL_OK) {
@@ -120,55 +133,42 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
     return TCL_OK;
   }
 
-  if (argc >= 5 && strcmp(argv[0], "parameter") == 0 &&
-      strcmp(argv[2], "pattern") == 0 && strcmp(argv[4], "lambda") == 0) {
+  if (argc >= 5 && 
+      strcmp(argv[0], "parameter") == 0 &&
+      strcmp(argv[2], "pattern") == 0 && 
+      strcmp(argv[4], "lambda") == 0) {
 
     int patternTag;
     if (Tcl_GetInt(interp, argv[3], &patternTag) != TCL_OK) {
+      opserr << OpenSees::PromptValueError
+             << "failed to read pattern tag\n";
       return TCL_ERROR;
     }
+
     LoadPattern *thePattern = domain->getLoadPattern(patternTag);
 
     Parameter *newParameter = new LoadFactorParameter(paramTag, thePattern);
 
     domain->addParameter(newParameter);
 
-    char buffer[40];
-    sprintf(buffer, "%d", paramTag);
-    Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+    Tcl_SetObjResult(interp, Tcl_NewIntObj(paramTag));
 
     return TCL_OK;
   }
 
 
+  //
   // Now handle the parameter according to which command is invoked
+  //
   if (strcmp(argv[0], "parameter") == 0 ||
       strcmp(argv[0], "addToParameter") == 0) {
-    // RandomVariable *theRV = 0;
-    void *theRV = 0;
+    void *theRV = nullptr;
 
     MovableObject *theObject = nullptr;
 
     if (strstr(argv[2], "randomVariable") != 0) {
-#ifdef _RELIABILITY
-      int rvTag;
-      if (Tcl_GetInt(interp, argv[3], &rvTag) != TCL_OK) {
-        return TCL_ERROR;
-      }
-
-      if (theReliabilityDomain == 0) {
-        opserr << "ERROR parameter " << paramTag
-               << " -- reliability domain has not been created" << endln;
-      }
-
-      theRV = theReliabilityDomain->getRandomVariablePtr(rvTag);
-      if (theRV == 0) {
-        opserr << "ERROR parameter " << paramTag
-               << " -- random variable with tag " << rvTag << " not defined"
-               << endln;
-        return TCL_ERROR;
-      }
-#endif
+      // return TCL_ERROR;
+      // REMOVED
     }
 
     int argStart = (theRV) ? 4 : 2;
@@ -212,8 +212,8 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
       theObject = static_cast<MovableObject *>(domain->getNode(nodeTag));
 
       argStart = (theRV) ? 6 : 4;
-
-    } else if (argc > argStart && strstr(argv[argStart], "loadPattern") != 0) {
+    }
+    else if (argc > argStart && strstr(argv[argStart], "loadPattern") != 0) {
 
 
       if (argc < 4) {
@@ -241,7 +241,7 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
       return TCL_ERROR;
     }
 
-    ///////////////////////////////////
+
 
     // Create new parameter
     if (strcmp(argv[0], "parameter") == 0) {
@@ -267,7 +267,7 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
       } else
         newParameter = new Parameter(paramTag, 0, 0, 0);
 
-      if (theRV != 0) {
+      if (theRV != nullptr) {
 #ifdef _RELIABILITY
         RVParameter *newRVParameter =
             new RVParameter(paramTag, theRV, newParameter);
@@ -287,7 +287,7 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
     // Add to an existing parameter
     else if (strcmp(argv[0], "addToParameter") == 0) {
 
-      if (theParameter == 0) {
+      if (theParameter == nullptr) {
         opserr << "WARNING addToParameter -- parameter with tag " << paramTag
                << " not found in domain\n";
         return TCL_ERROR;
@@ -298,8 +298,13 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
                                      argc - argStart);
         else {
           theObject = static_cast<MovableObject *>(domain->getElement(eleTag));
+          if (theObject == nullptr) {
+            opserr << OpenSees::PromptValueError << "failed to find element with tag " << eleTag << "\n";
+            return TCL_ERROR;
+          }
           theParameter->addComponent(theObject, (const char **)&argv[argStart],
                                      argc - argStart);
+
           // Sorry, Frank, had to change this -- MHS
           // theParameter->addComponent(eleTag, (const char **)&argv[argStart],
           // argc-argStart);
@@ -313,7 +318,7 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
   else if (strcmp(argv[0], "updateParameter") == 0) {
 
     // Cannot update a parameter that is not present
-    if (theParameter == 0) {
+    if (theParameter == nullptr) {
       opserr << "WARNING updateParameter -- parameter with tag " << paramTag
              << " not found in domain\n";
       //  return TCL_ERROR;
@@ -333,7 +338,7 @@ TclCommand_parameter(ClientData clientData, Tcl_Interp *interp, int argc,
 }
 
 int
-getParamTags(ClientData clientData, Tcl_Interp *interp, int argc,
+getParamTags(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
@@ -342,18 +347,20 @@ getParamTags(ClientData clientData, Tcl_Interp *interp, int argc,
   Parameter *theParam;
   ParameterIter &paramIter = the_domain->getParameters();
 
-  char buffer[20];
+  Tcl_Obj* result = Tcl_NewListObj(0, nullptr);
 
-  while ((theParam = paramIter()) != nullptr) {
-    sprintf(buffer, "%d ", theParam->getTag());
-    Tcl_AppendResult(interp, buffer, NULL);
-  }
+  while ((theParam = paramIter()) != nullptr)
+    Tcl_ListObjAppendElement(interp, result, Tcl_NewIntObj(theParam->getTag()));
+
+
+  Tcl_SetObjResult(interp, result);
 
   return TCL_OK;
 }
 
+
 int
-getParamValue(ClientData clientData, Tcl_Interp *interp, int argc,
+getParamValue(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
               TCL_Char ** const argv)
 {
   assert(clientData != nullptr);
@@ -367,7 +374,7 @@ getParamValue(ClientData clientData, Tcl_Interp *interp, int argc,
   int paramTag;
 
   if (Tcl_GetInt(interp, argv[1], &paramTag) != TCL_OK) {
-    opserr << G3_ERROR_PROMPT << "getParamValue -- could not read paramTag \n";
+    opserr << OpenSees::PromptValueError << "getParamValue -- could not read paramTag \n";
     return TCL_ERROR;
   }
 
@@ -383,24 +390,25 @@ getParamValue(ClientData clientData, Tcl_Interp *interp, int argc,
 
 
 int
-setParameter(ClientData clientData, Tcl_Interp *interp, int argc,
+TclCommand_setParameter(ClientData clientData, Tcl_Interp *interp, Tcl_Size argc,
              TCL_Char ** const argv)
 {
   Domain *theDomain = (Domain*)clientData;
 
-  int argLoc = 1;
   double newValue = 0.0;
   ID eleIDs(0, 32);
   int numEle = 0;
   int flag = 0;
 
-  if (strstr(argv[argLoc], "-val") != 0) {
+  int argLoc = 1;
+  if ((strstr(argv[argLoc], "-val") != 0) ||
+      (strcmp(argv[argLoc], "-value") == 0)) {
     if (Tcl_GetDouble(interp, argv[argLoc + 1], &newValue) != TCL_OK) {
-      opserr << "WARNING setParameter: invalid parameter value\n";
+      opserr << "WARNING invalid parameter value\n";
       return TCL_ERROR;
     }
   } else {
-    opserr << "WARNING setParameter:  -val not found " << endln;
+    opserr << "WARNING setParameter:  -val not found\n";
     return TCL_ERROR;
   }
 

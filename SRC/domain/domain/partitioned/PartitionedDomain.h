@@ -59,7 +59,8 @@ class PartitionedDomain: public Domain
     PartitionedDomain(DomainPartitioner &thePartitioner);    
 
     PartitionedDomain(int numNodes, int numElements, 
-		      int numSPs, int numMPs, int numLoadPatterns,
+		      int numSPs, int numMPs, int numEQs,
+		      int numLoadPatterns,
 		      int numSubdomains,
 		      DomainPartitioner &thePartitioner);
     

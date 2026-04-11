@@ -36,6 +36,8 @@ namespace ASDPlasticMaterial3DGlobals
 {
 
 
+constexpr double SQRT_2  = 1.4142135623730951;//sqrt(2.0 ); //in case unsupported by compiler
+constexpr double SQRT_3  = 1.7320508075688772;//sqrt(3.0); //in case unsupported by compiler
 constexpr double SQRT_2_over_3  = 0.816496580928;//sqrt(2.0 / 3.0); //in case unsupported by compiler
 //constexpr double SQRT_2_over_3  = sqrt(2.0 / 3.0);
 constexpr double SQRT_2_over_27 = 0.272165526976;//sqrt(2.0 / 27.0); //in case unsupported by compiler
@@ -53,11 +55,11 @@ enum struct ASDPlasticMaterial3D_Constitutive_Integration_Method : int
     Multistep_Forward_Euler_Crisfield,
     Modified_Euler_Error_Control,
     Runge_Kutta_45_Error_Control,
+    Runge_Kutta_45_Error_Control_old,
     Backward_Euler,
     Full_Backward_Euler,
     Forward_Euler_Subincrement,
-    Backward_Euler_ddlambda,
-    Backward_Euler_ddlambda_Subincrement
+    Backward_Euler_LineSearch,
 };
 
 enum struct ASDPlasticMaterial3D_Tangent_Operator_Type : int
@@ -66,7 +68,8 @@ enum struct ASDPlasticMaterial3D_Tangent_Operator_Type : int
     Continuum,
     Secant,
     Algorithmic,
-    Numerical_Algorithmic,
+    Numerical_Algorithmic_FirstOrder,
+    Numerical_Algorithmic_SecondOrder,
 
 };
 

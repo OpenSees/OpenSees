@@ -120,7 +120,7 @@ public:
         return vv_out;
     }
 
-    YIELD_FUNCTION_XI_STAR_H_STAR
+    YIELD_FUNCTION_HARDENING
     {
         double dbl_result = 0.0;
         double eta = GET_TRIAL_INTERNAL_VARIABLE(EtaHardeningType).value();

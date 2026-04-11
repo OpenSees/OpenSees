@@ -12,6 +12,7 @@ OBJS       = Load.o \
 	BrickSelfWeight.o \
 	Beam2dTempLoad.o \
 	Beam2dThermalAction.o \
+	BeamUniformMoment.o \
 	NodalThermalAction.o \
 	ThermalActionWrapper.o \
 	Beam3dThermalAction.o \

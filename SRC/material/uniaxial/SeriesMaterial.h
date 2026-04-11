@@ -85,7 +85,12 @@ class SeriesMaterial : public UniaxialMaterial
     double *stress;
     double *flex;
     double *strain;
-    
+
+  // Values from last committed state
+  double *stress_n;
+  double *tangent_n;
+  double *strain_n;
+  
     bool initialFlag;
 
     int numMaterials;   // the number of UniaxialMaterials in the aggregation

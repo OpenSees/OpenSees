@@ -63,6 +63,7 @@
 #include "BoucWenInfill.h"
 #include "SPSW02.h"			//SAJalali
 #include "ElasticMaterial.h"
+#include "ElasticMaterialThermal.h"
 #include "ElasticMultiLinear.h"
 #include "ElasticPowerFunc.h"
 #include "Elastic2Material.h"
@@ -74,9 +75,12 @@
 #include "TensionOnlyMaterial.h"
 #include "ASD_SMA_3K.h"
 #include "ASDConcrete1DMaterial.h"
+#include "ASDSteel1DMaterial.h"
 #include "Concrete01.h"
 #include "Concrete01WithSITC.h"
 #include "Concrete02.h"
+#include "Concrete02Thermal.h"
+#include "ConcreteECThermal.h"
 #include "Concrete02IS.h"
 #include "Concrete04.h"
 #include "Concrete06.h" 
@@ -90,7 +94,11 @@
 #include "CreepMaterial.h"
 #include "OriginCentered.h"
 #include "Steel01.h"
+#include "Steel01Thermal.h"
 #include "Steel02.h"
+#include "Steel02Thermal.h"
+#include "SteelECThermal.h"
+#include "StainlessECThermal.h"
 #include "SteelMPF.h"
 #include "Steel2.h"
 #include "Steel4.h"
@@ -296,6 +304,7 @@
 #include "J2CyclicBoundingSurface.h"
 #include "J2CyclicBoundingSurface3D.h"
 #include "J2CyclicBoundingSurfacePlaneStrain.h"
+#include "UWmaterials/LinearElasticGGmax.h"
 #include "UWmaterials/InitialStateAnalysisWrapper.h"
 #include "stressDensityModel/stressDensity.h"
 #include "InitStressNDMaterial.h"
@@ -579,6 +588,8 @@
 // Pressure_Constraint header file
 #include "Pressure_Constraint.h"
 
+#include "EQ_Constraint.h"
+
 // nodal load header files
 #include "NodalLoad.h"
 
@@ -588,6 +599,7 @@
 #include "Beam2dPointLoad.h"
 #include "Beam3dUniformLoad.h"
 #include "Beam3dPointLoad.h"
+#include "BeamUniformMoment.h"
 #include "BrickSelfWeight.h"
 #include "SelfWeight.h"
 #include "SurfaceLoader.h"
@@ -1289,6 +1301,23 @@ FEM_ObjectBrokerAllClasses::getNewMP(int classTag)
 }
 
 
+EQ_Constraint *
+FEM_ObjectBrokerAllClasses::getNewEQ(int classTag)
+{
+    switch(classTag) {
+	case CNSTRNT_TAG_EQ_Constraint:  
+	     return new EQ_Constraint(classTag);
+
+	default:
+	     opserr << "FEM_ObjectBrokerAllClasses::getNewEQ - ";
+	     opserr << " - no EQ_Constraint type exists for class tag ";
+	     opserr << classTag << endln;
+	     return 0;
+	     
+	 }    
+}
+
+
 SP_Constraint *
 FEM_ObjectBrokerAllClasses::getNewSP(int classTag)
 {
@@ -1361,6 +1390,9 @@ FEM_ObjectBrokerAllClasses::getNewElementalLoad(int classTag)
     
     case LOAD_TAG_Beam3dPointLoad:
       return new Beam3dPointLoad();
+
+    case LOAD_TAG_BeamUniformMoment:
+      return new BeamUniformMoment();      
     
     case LOAD_TAG_BrickSelfWeight:
       return new BrickSelfWeight();	     
@@ -1697,6 +1729,8 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 		return new BoucWenInfill();		
 	case MAT_TAG_ElasticMaterial:
 	     return new ElasticMaterial();
+	case MAT_TAG_ElasticMaterialThermal:
+	  return new ElasticMaterialThermal();	     
 
 	case MAT_TAG_Elastic2Material:  
 	     return new Elastic2Material(); 
@@ -1731,6 +1765,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ASDConcrete1DMaterial:  
 	     return new ASDConcrete1DMaterial();
 
+	case MAT_TAG_ASDSteel1DMaterial:  
+	     return new ASDSteel1DMaterial();
+
 	case MAT_TAG_Concrete01:  
 	     return new Concrete01();
 
@@ -1739,6 +1776,12 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Concrete02:  
 	     return new Concrete02();
+
+	case MAT_TAG_Concrete02Thermal:  
+	     return new Concrete02Thermal();
+
+	case MAT_TAG_ConcreteECThermal:  
+	     return new ConcreteECThermal();	     	     
 
 	case MAT_TAG_Concrete02IS:  
 	     return new Concrete02IS();	     
@@ -1776,9 +1819,21 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_Steel01:  
 	     return new Steel01();
 
+	case MAT_TAG_Steel01Thermal:  
+	     return new Steel01Thermal();	     
+
 	case MAT_TAG_Steel02:  
 	     return new Steel02();
 
+    case MAT_TAG_Steel02Thermal:
+      return new Steel02Thermal();
+
+    case MAT_TAG_SteelECThermal:
+      return new SteelECThermal();
+
+    case MAT_TAG_StainlessECThermal:
+      return new StainlessECThermal();      
+      
 	case MAT_TAG_SteelMPF:  
 	     return new SteelMPF();	     
 
@@ -2366,6 +2421,9 @@ FEM_ObjectBrokerAllClasses::getNewNDMaterial(int classTag)
   
   case ND_TAG_J2CyclicBoundingSurfacePlaneStrain:
 	  return new J2CyclicBoundingSurfacePlaneStrain();
+
+  case ND_TAG_LinearElasticGGmax:
+	  return new LinearElasticGGmax();    
 
   case ND_TAG_InitialStateAnalysisWrapper:
       return new InitialStateAnalysisWrapper(); 

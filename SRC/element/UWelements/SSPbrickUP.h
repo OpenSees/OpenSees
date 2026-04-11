@@ -57,7 +57,7 @@ class SSPbrickUP : public Element
   public:
     SSPbrickUP(int tag, int Nd1, int Nd2, int Nd3, int Nd4, int Nd5, int Nd6, int Nd7, int Nd8,
                       NDMaterial &theMat, double Kf, double Rf, double k1, double k2, double k3,
-					  double eVoid, double alpha, double b1 = 0.0, double b2 = 0.0, double b3 = 0.0);
+					  double eVoid, double alpha, double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, int massType = 0);
     SSPbrickUP();
     ~SSPbrickUP();
 
@@ -140,6 +140,7 @@ class SSPbrickUP : public Element
 	double J[20];                                       // jacobian determinant terms
 	double mVol;                                        // element volume
 	double mPorosity;                                   // porosity of solid phase n = e/(1+e)
+    int massType;                                       // mass matrix type (0 = consistent, 1 = lumped)
 	
 	Matrix Bnot;                                        // mapping matrix for membrane modes
 	Matrix Kstab;                                       // stabilization stiffness matrix

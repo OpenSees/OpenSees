@@ -47,6 +47,9 @@
     <Filter Include="pardiso">
       <UniqueIdentifier>{723fd79e-0d4a-4e38-8be8-aebeea3e8a24}</UniqueIdentifier>
     </Filter>
+    <Filter Include="sparsePython">
+      <UniqueIdentifier>{855cfee0-eb5a-40cb-aac3-e2839bb85ddb}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\DomainSolver.cpp">
@@ -231,6 +234,42 @@
     </ClCompile>
     <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparseGEN\PFEMSolver_Mumps.cpp">
       <Filter>sparseGEN</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCommon.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSOE.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSolver.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSOE.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSolver.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonFactory.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSOE.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSolver.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSOE.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSolver.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenCommon.cpp">
+      <Filter>sparsePython</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenFactory.cpp">
+      <Filter>sparsePython</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

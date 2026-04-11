@@ -29,13 +29,14 @@
 
 #include "../PlasticFlowBase.h"
 #include "../ASDPlasticMaterial3DGlobals.h"
+using namespace ASDPlasticMaterial3DGlobals;
 
 #include <cmath>
 #include <typeinfo>
 
 
-template<class AlphaHardeningType, class KHardeningType>
-class DruckerPrager_PF : public PlasticFlowBase<DruckerPrager_PF<AlphaHardeningType, KHardeningType>> // CRTP
+template<class AlphaHardeningType, class EtaHardeningType>
+class DruckerPrager_PF : public PlasticFlowBase<DruckerPrager_PF<AlphaHardeningType, EtaHardeningType>> // CRTP
 {
 public:
 
@@ -43,29 +44,43 @@ public:
 
 
     DruckerPrager_PF( ):
-        PlasticFlowBase<DruckerPrager_PF<AlphaHardeningType, KHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
+        PlasticFlowBase<DruckerPrager_PF<AlphaHardeningType, EtaHardeningType >>::PlasticFlowBase()  // Note here that we need to fully-qualify the type of YieldFunctionBase, e.g. use scope resolution :: to tell compiler which instance of YieldFunctionBase will be used :/
                 { }
 
     PLASTIC_FLOW_DIRECTION
     {
-        double p = -sigma.meanStress();
         auto s = sigma.deviator();
-        
         auto alpha = GET_TRIAL_INTERNAL_VARIABLE(AlphaHardeningType);
-        auto k = GET_TRIAL_INTERNAL_VARIABLE(KHardeningType);
-
-        auto r = s / p;
-
-        double den = (SQRT_2_over_3 * k).value();
-        auto n = (r - alpha) / den;
-        double nr = n.dot(r);
-        vv_out = n - nr * kronecker_delta() / 3;
-
+        
+        // Get dilation parameter (etabar) from parameters
+        double etabar = GET_PARAMETER_VALUE(DP_etabar);  // dilation parameter (controls plastic volume change)
+        
+        // Compute deviatoric part
+        VoigtVector dev_part = s - alpha;
+        double den = sqrt(0.5*tensor_dot_stress_like(dev_part, dev_part));
+        
+        if (abs(den) > sqrt(0.5*tensor_dot_stress_like(s, s))*ASDPlasticMaterial3DGlobals::MACHINE_EPSILON)
+            dev_part = dev_part / den;
+        else
+            dev_part *= 0.0;  // Zero out if denominator too small
+            
+        // Add pressure-dependent part: etabar * dp/dsigma = etabar/3 * I
+        VoigtVector pressure_part;
+        pressure_part *= 0.0;  // Initialize to zero
+        pressure_part(0) = etabar / 3.0;  // sigma_xx component
+        pressure_part(1) = etabar / 3.0;  // sigma_yy component  
+        pressure_part(2) = etabar / 3.0;  // sigma_zz component
+        // shear components remain zero
+        
+        vv_out = dev_part + pressure_part;
+        
         return vv_out;
     }
 
-    using internal_variables_t = std::tuple<AlphaHardeningType, KHardeningType>;
-    using parameters_t = std::tuple<>;
+
+
+    using internal_variables_t = std::tuple<AlphaHardeningType, EtaHardeningType>;
+    using parameters_t = std::tuple<DP_etabar>;
 
 private:
 
@@ -74,7 +89,7 @@ private:
 };
 
 
-template<class AlphaHardeningType, class KHardeningType>
-VoigtVector DruckerPrager_PF<AlphaHardeningType, KHardeningType  >::vv_out;
+template<class AlphaHardeningType, class EtaHardeningType>
+VoigtVector DruckerPrager_PF<AlphaHardeningType, EtaHardeningType  >::vv_out;
 
 #endif

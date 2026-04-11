@@ -128,7 +128,8 @@ SeriesMaterial::SeriesMaterial(int tag, int num,
  Tstrain(0.0), Cstrain(0.0), Tstress(0.0), Cstress(0.0),
  Ttangent(0.0), Ctangent(0.0), 
  maxIterations(maxIter), tolerance(tol),
- stress(0), flex(0), strain(0), initialFlag(false),
+ stress(0), flex(0), strain(0),
+ stress_n(0), tangent_n(0), strain_n(0), initialFlag(false),
  numMaterials(num), theModels(0)
 {
     theModels = new UniaxialMaterial *[numMaterials];
@@ -165,10 +166,32 @@ SeriesMaterial::SeriesMaterial(int tag, int num,
       exit(-1);
     }
 
+    stress_n = new double [numMaterials];
+    if (stress_n == 0) {
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate stress_n array" << endln;
+      exit(-1);
+    }
+    
+    tangent_n = new double [numMaterials];
+    if (tangent_n == 0) {
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate tangent_n array" << endln;
+      exit(-1);
+    }
+
+    strain_n = new double [numMaterials];
+    if (strain_n == 0) {
+      opserr << "SeriesMaterial::SeriesMaterial -- failed to allocate strain_n array" << endln;
+      exit(-1);
+    }    
+
     for (i = 0; i < numMaterials; i++) {
       strain[i] = 0.0;
       stress[i] = 0.0;
       flex[i] = 0.0;
+
+      stress_n[i] = 0.0;
+      tangent_n[i] = 0.0;
+      strain_n[i] = 0.0;      
     }
 
     Ttangent = this->getInitialTangent();
@@ -180,7 +203,8 @@ SeriesMaterial::SeriesMaterial()
  Tstrain(0.0), Cstrain(0.0), Tstress(0.0), Cstress(0.0),
  Ttangent(0.0), Ctangent(0.0), 
  maxIterations(0), tolerance(0.0),
- stress(0), flex(0), strain(0), initialFlag(false),
+ stress(0), flex(0), strain(0),
+ stress_n(0), tangent_n(0), strain_n(0), initialFlag(false),
  numMaterials(0), theModels(0)
 {
 
@@ -202,6 +226,13 @@ SeriesMaterial::~SeriesMaterial()
 
 	if (flex)
 		delete [] flex;
+
+	if (stress_n)
+	  delete [] stress_n;
+	if (tangent_n)
+	  delete [] tangent_n;
+	if (strain_n)
+	  delete [] strain_n;
 
 }
 
@@ -340,8 +371,12 @@ SeriesMaterial::commitState(void)
 	Cstress = Tstress;
 	Ctangent = Ttangent;
 
-	for (int i = 0; i < numMaterials; i++)
+	for (int i = 0; i < numMaterials; i++) {
 		err += theModels[i]->commitState();
+		stress_n[i] = stress[i]; // Cstress; // or get from material?
+		tangent_n[i] = theModels[i]->getTangent();
+		strain_n[i] = strain[i]; // theModels[i]->getStrain(); // or get from strain[i]?
+	}
 
 	// Commented out for the same reason it was taken
 	// out of the NLBeamColumn commitState() -- MHS
@@ -362,9 +397,12 @@ SeriesMaterial::revertToLastCommit(void)
 	for (int i = 0; i < numMaterials; i++) {
 		err += theModels[i]->revertToLastCommit();
 
-		strain[i] = theModels[i]->getStrain();
-		stress[i] = theModels[i]->getStress();
-		flex[i] = theModels[i]->getTangent();
+		//strain[i] = theModels[i]->getStrain();
+		//stress[i] = theModels[i]->getStress();
+		//flex[i] = theModels[i]->getTangent();
+		strain[i] = strain_n[i];
+		stress[i] = stress_n[i];
+		flex[i] = tangent_n[i];
 		
 		if (fabs(flex[i]) > 1.0e-12)
 			flex[i] = 1.0/flex[i];
@@ -396,7 +434,16 @@ SeriesMaterial::revertToStart(void)
 
 		strain[i] = 0.0;
 		stress[i] = 0.0;
-		flex[i] = 0.0;
+
+		strain_n[i] = 0.0;
+		stress_n[i] = 0.0;
+		tangent_n[i] = theModels[i]->getInitialTangent();
+		flex[i] = tangent_n[i];
+
+		if (fabs(flex[i]) > 1.0e-12)
+			flex[i] = 1.0/flex[i];
+		else
+			flex[i] = (flex[i] < 0.0) ? -1.0e12 : 1.0e12;		
 	}
 
     return err;    
@@ -423,6 +470,10 @@ SeriesMaterial::getCopy(void)
       theCopy->strain[i] = strain[i];
       theCopy->stress[i] = stress[i];
       theCopy->flex[i] = flex[i];
+
+      theCopy->strain_n[i] = strain_n[i];
+      theCopy->stress_n[i] = stress_n[i];
+      theCopy->tangent_n[i] = tangent_n[i];      
     }
     
     return theCopy;

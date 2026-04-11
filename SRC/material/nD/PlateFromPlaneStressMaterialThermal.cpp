@@ -374,6 +374,11 @@ PlateFromPlaneStressMaterialThermal::recvSelf(int commitTag, Channel &theChannel
   
   return res;
 }
+
+int PlateFromPlaneStressMaterialThermal::setParameter(const char** argv, int argc, Parameter& param)
+{
+    return theMat->setParameter(argv, argc, param);
+}
  
 
 double 

@@ -174,52 +174,45 @@ RigidDiaphragm::RigidDiaphragm(Domain &theDomain, int nR, ID &nC,
 	  
 	  // rigid diaphragm in xy plane
 	  if (perpPlaneConstrained == 2) { 
+		  
+	    // dof corresponding to dX, dY and theta Z (0,1,5)
+	    id(0) = 0; id(1) = 1; id(2) = 5;
 
+	    // set up transformation matrix
+	    mat(0,2) = - deltaY;
+	    mat(1,2) = deltaX;
+	  
 	    // check constrained node in xy plane with retained node
-	    if (deltaZ == 0.0) {
-
-	      // dof corresponding to dX, dY and theta Z (0,1,5)
-	      id(0) = 0; id(1) = 1; id(2) = 5;
-
-	      // set up transformation matrix
-	      mat(0,2) = - deltaY;
-	      mat(1,2) = deltaX;
-	      
-	    } else 
-	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << ", not in xy plane\n";
+	    if (deltaZ != 0.0)
+	      opserr << "RigidDiaphragm::RigidDiaphragm - proceeding with constrained Node " << ndC << " not in xy plane\n";
 
 	  // rigid diaphragm in xz plane
 	  } else if (perpPlaneConstrained == 1) { 
 
+	    // dof corresponding to dX, dZ and theta Y (0,2,4)
+	    id(0) = 0; id(1) = 2; id(2) = 4;
+
+	    // set up transformation matrix
+	    mat(0,2) = deltaZ;
+	    mat(1,2) = -deltaX;
+
 	    // check constrained node in xy plane with retained node
-	    if (deltaY == 0.0) {
-
-	      // dof corresponding to dX, dZ and theta Y (0,2,4)
-	      id(0) = 0; id(1) = 2; id(2) = 4;
-
-	      // set up transformation matrix
-	      mat(0,2) = deltaZ;
-	      mat(1,2) = -deltaX;
-
-	    } else
-	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << ", not in xz plane\n";
+	    if (deltaY != 0.0)
+	      opserr << "RigidDiaphragm::RigidDiaphragm - proceeding with constrained Node " << ndC << " not in xz plane\n";
 
 	  // rigid diaphragm in yz plane
 	  } else {	  
 
+	    // dof corresponding to dY, dZ and theta X (1,2,3)
+	    id(0) = 1; id(1) = 2; id(2) = 3;
+
+	    // set up transformation matrix
+	    mat(0,2) = -deltaZ;
+	    mat(1,2) = deltaY;
+
 	    // check constrained node in xy plane with retained node
-	    if (deltaX == 0.0) {
-
-	      // dof corresponding to dY, dZ and theta X (1,2,3)
-	      id(0) = 1; id(1) = 2; id(2) = 3;
-
-	      // set up transformation matrix
-	      mat(0,2) = -deltaZ;
-	      mat(1,2) = deltaY;
-
-	    } else
-	      opserr << "RigidDiaphragm::RigidDiaphragm - ignoring constrained Node " << ndC << 
-		", not in xz plane\n";
+	    if (deltaX != 0.0)
+	      opserr << "RigidDiaphragm::RigidDiaphragm - proceeding with constrained Node " << ndC << " not in yz plane\n";
 	  }
 	}
 	else  // node not in proper space

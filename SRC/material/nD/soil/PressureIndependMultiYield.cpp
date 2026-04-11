@@ -73,9 +73,11 @@ void* OPS_PressureIndependMultiYield()
     param[5] = 0.0;
     param[6] = 100.;
     param[7] = 0.0;
-    numdata = 5;
+    numdata = 8;
     if (OPS_GetDoubleInput(&numdata, &param[0]) < 0) {
-	opserr << "WARNING invalid PressureIndependMultiYield double inputs" << "\n";
+	opserr << "WARNING invalid PressureIndependMultiYield double inputs\n";
+	opserr << "Be sure to input frictionAng, refPress, and pressDependCoe.\n";
+	opserr << "These inputs are now required; recommended 0, 100 kPa, and 0, respectively" << endln;
 	return 0;
     }
 
@@ -1595,5 +1597,6 @@ int PressureIndependMultiYield:: isCrossingNextSurface(void)
 
   return 0;
 }
+
 
 

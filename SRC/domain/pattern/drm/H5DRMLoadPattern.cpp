@@ -737,6 +737,10 @@ void H5DRMLoadPattern::cleanup()
     // Close individual HDF5 resources
     HDF5_CLOSE_AND_REPORT(ih5_vel, H5Dclose, "motion dataset");
     HDF5_CLOSE_AND_REPORT(ih5_vel_ds, H5Sclose, "motion dataspace");
+    HDF5_CLOSE_AND_REPORT(ih5_dis, H5Dclose, "displacement dataset");
+    HDF5_CLOSE_AND_REPORT(ih5_dis_ds, H5Sclose, "displacement dataspace");
+    HDF5_CLOSE_AND_REPORT(ih5_acc, H5Dclose, "acceleration dataset");
+    HDF5_CLOSE_AND_REPORT(ih5_acc_ds, H5Sclose, "acceleration dataspace");
     HDF5_CLOSE_AND_REPORT(ih5_one_node_ms, H5Sclose, "one node memspace");
 
     // Get the number of open objects associated with the file
@@ -960,9 +964,6 @@ bool H5DRMLoadPattern::drm_direct_read(double t)
         H5DRMout << "t = " << t << " dt = " << dt << " i1 = " << i1 << " i2 = " << i2 << " t1 = " << t1 << " t2 = " << t2 << " dtau = " << dtau << endln;
     }
 
-    ih5_acc_ds = H5Dget_space(ih5_acc);
-    ih5_dis_ds = H5Dget_space(ih5_dis);
-
     double umax = -std::numeric_limits<double>::infinity();
     double amax = -std::numeric_limits<double>::infinity();
     double umin =  std::numeric_limits<double>::infinity();
@@ -1121,7 +1122,6 @@ bool H5DRMLoadPattern::drm_differentiate_displacements(double t)
 
     double dtau = (t - t1) / (t2 - t1);
 
-    ih5_dis_ds = H5Dget_space(ih5_dis);
     hsize_t i_first = i1 - 1;
     hsize_t i_last  = i1 + 2;
 
@@ -1629,6 +1629,17 @@ void H5DRMLoadPattern::node_matching_BruteForce(double d_tol, const ID & interna
     while ((node_ptr = node_iter()) != 0)
     {
         int tag = node_ptr->getTag();
+        
+        // Skip nodes with more than 6 DOF
+        int numDOF = node_ptr->getNumberDOF();
+        if (numDOF > 6) {
+            if (DEBUG_NODE_MATCHING)
+            {
+                fprintf(fptrdrm, "Node # %05d skipped - has %d DOF (>6)\n", tag, numDOF);
+            }
+            continue;
+        }
+        
         const Vector& node_xyz  =  node_ptr->getCrds();
         double dmin = std::numeric_limits<double>::infinity();
         int ii_station_min = 0;
@@ -1805,6 +1816,7 @@ bool read_int_dataset_into_id(const hid_t & h5drm_dataset, std::string dataset_n
 
     H5Sclose(ih5_ds);
     H5Sclose(ih5_ms);
+    H5Pclose(ih5_xfer_plist);
     H5Dclose(ih5_dataset);
 
     delete [] d;
@@ -1842,6 +1854,7 @@ bool read_double_dataset_into_vector(const hid_t & h5drm_dataset, std::string da
 
     H5Sclose(ih5_ds);
     H5Sclose(ih5_ms);
+    H5Pclose(ih5_xfer_plist);
     H5Dclose(ih5_dataset);
     delete [] d;
     return true;
@@ -1869,6 +1882,7 @@ bool read_scalar_double_dataset_into_double(const hid_t & h5drm_dataset, std::st
 
     H5Sclose(ih5_ds);
     H5Sclose(ih5_ms);
+    H5Pclose(ih5_xfer_plist);
     H5Dclose(ih5_dataset);
 
     return true;
@@ -1916,6 +1930,7 @@ bool read_double_dataset_into_matrix(const hid_t & h5drm_dataset, std::string da
 
     H5Sclose(ih5_ds);
     H5Sclose(ih5_ms);
+    H5Pclose(ih5_xfer_plist);
     H5Dclose(ih5_dataset);
 
     delete [] d;
@@ -1948,6 +1963,7 @@ bool read_int_dataset_into_array(const hid_t & h5drm_dataset, std::string datase
 
     H5Sclose(ih5_ds);
     H5Sclose(ih5_ms);
+    H5Pclose(ih5_xfer_plist);
     H5Dclose(ih5_dataset);
 
     return true;

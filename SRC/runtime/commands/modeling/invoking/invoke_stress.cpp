@@ -1,9 +1,10 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
 //
 //===----------------------------------------------------------------------===//
-//
+//                              https://xara.so
+//===----------------------------------------------------------------------===//
 // Written: cmp
 //
 #include <stdlib.h>
@@ -13,7 +14,7 @@
 #include <Matrix.h>
 #include <NDMaterial.h>
 #include <BasicModelBuilder.h>
-#include <G3_Logging.h>
+#include <Logging.h>
 
 typedef const char TCL_Char;
 
@@ -61,10 +62,6 @@ int TclCommand_usePlaneStress(ClientData clientData, Tcl_Interp *interp, int arg
   Tcl_CreateCommand(interp, "getTangent",
                     PlaneStress_getTangPlaneStressMaterial,
                     (ClientData)theMaterial, NULL);
-
-
-
-
 
 
 

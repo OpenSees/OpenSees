@@ -89,6 +89,9 @@ RELIABILITY_FLAG = -D_RELIABILITY
 # remove the directory from DIRS.
 
 BASE		= ./usr/local
+# Uncomment the HOME directory and if OpnSees is cloned to the 
+# path /home/ubuntu/OpenSees the HOME directory should be /home/ubuntu
+# HOME		= /home/ubuntu
 FE		= $(HOME)/OpenSees/SRC
 
 AMDdir       = $(HOME)/OpenSees/OTHER/AMD

@@ -1,6 +1,6 @@
 include ../../../../Makefile.def
 
-OBJS       = LagrangeMP_FE.o LagrangeSP_FE.o 
+OBJS       = LagrangeMP_FE.o LagrangeSP_FE.o LagrangeEQ_FE.o  
 
 # Compilation control
 

@@ -226,6 +226,8 @@ extern void *OPS_AlphaOSGeneralized(void);
 extern void *OPS_AlphaOSGeneralized_TP(void);
 extern void *OPS_ExplicitDifference(void);
 extern void *OPS_CentralDifference(void);
+extern void *OPS_ExplicitBathe(void);
+extern void *OPS_ExplicitDifferenceStatic(void);
 extern void *OPS_CentralDifferenceAlternative(void);
 extern void *OPS_CentralDifferenceNoDamping(void);
 extern void *OPS_Collocation(void);
@@ -289,8 +291,8 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <ConjugateGradientSolver.h>
 
 #ifdef _ITPACK
-//#include <ItpackLinSOE.h>
-//#include <ItpackLinSolver.h>
+#include <ItpackLinSOE.h>
+#include <ItpackLinSolver.h>
 #endif
 
 #include <FullGenLinSOE.h>
@@ -2339,6 +2341,10 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   OPS_Stream *output = &opserr;
 
   bool ret = false;
+  bool fileSparse = false;
+  int baseIndex = 0;
+  int precision = 6;
+
   int currentArg = 1;
   while (currentArg < argc) {
       if ((strcmp(argv[currentArg], "file") == 0) ||
@@ -2355,6 +2361,31 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
           (strcmp(argv[currentArg], "-ret") == 0)) {
           ret = true;
       }
+      else if ((strcmp(argv[currentArg], "sparse") == 0) ||
+          (strcmp(argv[currentArg], "-sparse") == 0)) {
+          fileSparse = true;
+          currentArg++;
+          if (currentArg < argc) {
+              if (Tcl_GetInt(interp, argv[currentArg], &baseIndex) != TCL_OK) {
+                  opserr << "WARNING: printA - failed to read -sparse <baseIndex>\n";
+                  return TCL_ERROR;
+              }
+          }
+      }
+      else if ((strcmp(argv[currentArg], "precision") == 0) ||
+          (strcmp(argv[currentArg], "-precision") == 0)) {
+          currentArg++;
+          if (currentArg < argc) {
+              if (Tcl_GetInt(interp, argv[currentArg], &precision) != TCL_OK) {
+                  opserr << "WARNING: printA - failed to read precision\n";
+                  return TCL_ERROR;
+              }
+              if (precision < 0 || precision > 16) {
+                  opserr << "WARNING: printA - precision must be between 0 and 16\n";
+                  return TCL_ERROR;
+              }
+          }
+      }
       currentArg++;
   }
   if (theSOE != 0) {
@@ -2362,7 +2393,55 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theStaticIntegrator->formTangent();
     else if (theTransientIntegrator != 0)
       theTransientIntegrator->formTangent(0);
-      
+    
+    output->setPrecision(precision);
+    if (fileSparse) {
+        if (!ret) {
+          if (baseIndex == 1) {
+              *output << "%%MatrixMarket matrix coordinate real general\n";
+          } else {
+              *output << "%%Sparse matrix in COO format\n";
+          }
+          *output << "% First non-commented line contains the number of rows, columns, and non-zero elements\n";
+          *output << "% The remaining lines contain the indices and values of the non-zero elements\n";
+          *output << "% Indices are " << baseIndex << "-based\n";
+          *output << "% (i.e. A(" << baseIndex << "," << baseIndex << ") is the first element)\n";
+          res = theSOE->saveSparseA(*output, baseIndex);
+          outputFile.close();
+          if (res != 0) {
+            opserr << "WARNING: printA -sparse failed to save sparse matrix" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+            return TCL_ERROR;
+          }
+          // Return 0 to indicate success
+          char buffer[10];
+          sprintf(buffer, "%d", res);
+          Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+          return TCL_OK;
+        } else {
+          // Support sparse matrix with -ret flag using GenericDict
+          std::vector<int> rowIndices, colIndices;
+          std::vector<double> values;
+          int result = theSOE->getSparseA(rowIndices, colIndices, values, baseIndex);
+          if (result != 0) {
+            opserr << "WARNING: printA -sparse -ret failed to get sparse matrix data" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+            return TCL_ERROR;
+          }
+          
+          // Build generic dictionary and return
+          GenericDict dict;
+          dict["rowIndices"] = rowIndices;
+          dict["colIndices"] = colIndices;
+          dict["values"] = values;
+          
+          if (OPS_SetGenericDict(dict) < 0) {
+            opserr << "WARNING: printA -sparse -ret failed to set output" << endln;
+            return TCL_ERROR;
+          }
+          return TCL_OK;
+        }
+    }
     const Matrix *A = theSOE->getA();
     if (A != 0) {
         if (ret) {
@@ -2384,6 +2463,13 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
             outputFile.close();
         }
     }
+  }
+  
+  // Return 0 to indicate success when not using -ret flag
+  if (!ret) {
+      char buffer[10];
+      sprintf(buffer, "%d", res);
+      Tcl_SetResult(interp, buffer, TCL_VOLATILE);
   }
   
   return res;
@@ -3434,21 +3520,21 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
-  
-#ifdef _ITPACK
-//  else if (strcmp(argv[1],"Itpack") == 0) {
-//    
-//    // now must determine the type of solver to create from rest of args
-//    int method = 1;
-//    if (argc == 3) {
-//      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
-//	return TCL_ERROR;
-//    }
-//    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
-//    theSOE = new ItpackLinSOE(*theSolver);      
-//  }
-#endif	// _ITPACK
 
+#ifdef _ITPACK
+  else if (strcmp(argv[1],"Itpack") == 0) {
+    
+    // now must determine the type of solver to create from rest of args
+    int method = 1;
+    if (argc == 3) {
+      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
+	return TCL_ERROR;
+    }
+    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
+    theSOE = new ItpackLinSOE(*theSolver);      
+  }
+#endif
+  
   else if (strcmp(argv[1],"FullGeneral") == 0) {
     // now must determine the type of solver to create from rest of args
     FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
@@ -5384,6 +5470,20 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"CentralDifferenceNoDamping") == 0) {
     theTransientIntegrator = (TransientIntegrator *)OPS_CentralDifferenceNoDamping();
+    
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+
+  else if (strcmp(argv[1],"ExplicitBathe") == 0) {
+    theTransientIntegrator = (TransientIntegrator *)OPS_ExplicitBathe();
+    
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
+  }
+
+  else if (strcmp(argv[1],"ExplicitDifferenceStatic") == 0) {
+    theTransientIntegrator = (TransientIntegrator *) OPS_ExplicitDifferenceStatic();
     
     if (theTransientAnalysis != 0)
       theTransientAnalysis->setIntegrator(*theTransientIntegrator);

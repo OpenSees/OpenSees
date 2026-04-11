@@ -34,12 +34,57 @@
 #include <ItpackLinSolver.h>
 #include <ItpackLinSOE.h>
 #include <ID.h>
+#include <elementAPI.h>
 
-ItpackLinSolver::ItpackLinSolver(int meth, int iter, double om)
+void* OPS_ItpackLinSolver()
+{
+  int method = 1;
+  int numData = 1;
+  
+  int nArgs = OPS_GetNumRemainingInputArgs();
+  if (nArgs == 0) {
+    opserr << "WARNING Itpack -- no method specified, using JCG" << endln;
+  }
+  if (nArgs > 0 && OPS_GetIntInput(&numData,&method) < 0) {
+    opserr << "WARNING Itpack -- error reading method\n";
+    return 0;
+  }
+  
+  int iter = 100;
+  double omega = 1.0;
+  bool symmetric = true;
+  double zeta = 5e-6;
+  while (OPS_GetNumRemainingInputArgs() > 1) {
+    const char *arg = OPS_GetString();
+    if (strcmp(arg,"-iter") == 0) {
+      if (OPS_GetIntInput(&numData,&iter) < 0)
+	return 0;
+    }
+    if (strcmp(arg,"-omega") == 0) {
+      if (OPS_GetDoubleInput(&numData,&omega) < 0)
+	return 0;
+    }
+    if (strcmp(arg,"-symmetric") == 0) {
+      int symm;
+      if (OPS_GetIntInput(&numData,&symm) < 0)
+	return 0;
+      symmetric = (symm != 0) ? true : false;
+    }        
+    if (strcmp(arg,"-zeta") == 0) {
+      if (OPS_GetDoubleInput(&numData,&zeta) < 0)
+	return 0;
+    }
+  }
+  
+  ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega, zeta);
+  return new ItpackLinSOE(*theSolver, symmetric);  
+}
+
+ItpackLinSolver::ItpackLinSolver(int meth, int iter, double om, double z)
   :LinearSOESolver(SOLVER_TAGS_Itpack),
    theSOE(0), IA(0), JA(0), n(0),
    iwksp(0), wksp(0), nwksp(0), maxIter(iter),
-   method(meth), omega(om)
+   method(meth), omega(om), zeta(z)
 {
 
 }    
@@ -48,7 +93,7 @@ ItpackLinSolver::ItpackLinSolver()
   :LinearSOESolver(SOLVER_TAGS_Itpack),
    theSOE(0), IA(0), JA(0), n(0),
    iwksp(0), wksp(0), nwksp(0), maxIter(0),
-   method(0), omega(0.0)
+   method(0), omega(0.0), zeta(0.0)
 {
 
 }    
@@ -153,8 +198,8 @@ ItpackLinSolver::setSize(void)
   for (i = 0; i <= n; i++) 
     IA[i] = iaPtr[i] + 1;
 
-  opserr << "ItpackLinSolver::setSize() -- method = " << method
-	 << ", ITMAX = " << maxIter << endln;
+  //opserr << "ItpackLinSolver::setSize() -- method = " << method
+  //	 << ", ITMAX = " << maxIter << endln;
 
   return 0;
 }
@@ -288,8 +333,22 @@ ItpackLinSolver::solve(void)
   // Overwrite default max number of iterations
   iparm[0] = maxIter;
 
+  /* Set convergence tolerance for inexact Newton methods.
+   * ITPACK stopping criterion: ||Ax-b|| / ||x|| * C < rparm[0]
+   * For (1+p)-order convergence: rparm[0] < ||b||^(1+p)
+   * Reference: Dembo et al. (1982) Inexact Newton Methods. 
+   *            SIAM Journal on Numerical Analysis, 19(2), 400–408. 
+   *            https://doi.org/10.1137/0719025
+   */
+  double norm_b = theSOE->normRHS();
+  double norm_b_squared = norm_b * norm_b;
+  rparm[0] = (zeta < norm_b_squared) ? zeta : norm_b_squared;
+
+  // Print flag
+  iparm[1] = 0;
+  
   // Sparse matrix storage scheme (0 = symmetric, 1 = nonsymmetric)
-  iparm[4] = 1;
+  iparm[4] = theSOE->symmetric ? 0 : 1;
 
   double *aPtr = theSOE->A;
   double *xPtr = theSOE->X;
@@ -316,8 +375,8 @@ ItpackLinSolver::solve(void)
   int nb = theSOE->size-1; // I think this is what it should be
 
   // Fill the x vector with zeros as initial guess to solution of Ax=b
-  //double val = 0.0;
-  //vfill_(&n, xPtr, &val);
+  double val = 0.0;
+  vfill_(&n, xPtr, &val);
 
   switch (method) {
   case ItpackJCG:
@@ -360,8 +419,11 @@ ItpackLinSolver::solve(void)
 
   if (ier > 0) {
     opserr << "ItpackLinSolver::solve() -- returned ier = " << ier << endln;
+    opserr << "Maximum iterations: " << iparm[0] << ", rparm = " << rparm[0] << endln;
     return -ier;
   }
-  else
+  else {
+    //opserr << "Converged in " << iparm[0] << " iterations" << endln;
     return 0;
+  }
 }

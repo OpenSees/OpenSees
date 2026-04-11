@@ -1072,6 +1072,9 @@ void
 	  double xL  = xi[i];
 	  double xL1 = xL-1.0;
 	  double wtL = wt[i]*L;
+
+      // store the length of the current integration point
+      current_section_lch = wtL;
 	  
 	  // calculate total section forces
 	  // Ss = b*Se + bp*currDistrLoad;
@@ -1301,6 +1304,10 @@ void
 		}
 	      }
 	    }
+
+        // reset it to the default (whole length) in case the getChatacteristiLength function
+        // is called in the wrong place
+        current_section_lch = L;
 
 	    if (!isTorsion) {
 	      f(5,5) = DefaultLoverGJ;
@@ -1697,7 +1704,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += x*Vz1;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) -= Vz1;
+	    sp(ii) += Vz1;
 	    break;
 	  default:
 	    break;
@@ -1715,7 +1722,7 @@ ForceBeamColumn3d::computeSectionForces(Vector &sp, int isec)
 	    sp(ii) += (L-x)*Vz2;
 	    break;
 	  case SECTION_RESPONSE_VZ:
-	    sp(ii) += Vz2;
+	    sp(ii) -= Vz2;
 	    break;
 	  default:
 	    break;
@@ -3670,6 +3677,17 @@ ForceBeamColumn3d::getResponse(int responseID, Information &eleInfo)
 
   else
     return -1;
+}
+
+double ForceBeamColumn3d::getCharacteristicLength(void)
+{
+    // The default implementation of Element::getCharacteristicLength()
+    // returns the whole element length.
+    // However, FB element localizes only in a 1 integration point
+    // so we should return the i-th integration-point's length
+    if (current_section_lch > 0.0)
+        return current_section_lch;
+    return Element::getCharacteristicLength();
 }
 
 int 

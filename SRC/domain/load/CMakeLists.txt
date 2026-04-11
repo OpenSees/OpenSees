@@ -17,6 +17,7 @@ target_sources(OPS_Domain
     Beam3dUniformLoad.cpp
     Beam3dPointLoad.cpp
     Beam3dPartialUniformLoad.cpp
+    BeamUniformMoment.cpp
     BrickSelfWeight.cpp
     SurfaceLoader.cpp
     SelfWeight.cpp
@@ -32,6 +33,7 @@ target_sources(OPS_Domain
     Beam3dUniformLoad.h
     Beam3dPointLoad.h
     Beam3dPartialUniformLoad.h
+    BeamUniformMoment.h
     BrickSelfWeight.h
     SurfaceLoader.h
     SelfWeight.h

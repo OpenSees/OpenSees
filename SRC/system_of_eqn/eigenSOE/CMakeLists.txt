@@ -14,6 +14,8 @@ target_sources(OPS_SysOfEqn
         FullGenEigenSolver.cpp
         SymBandEigenSOE.cpp
         SymBandEigenSolver.cpp
+	SymmGeneralizedEigenSOE.cpp
+	SymmGeneralizedEigenSolver.cpp	
     PUBLIC
         ArpackSOE.h
         ArpackSolver.h
@@ -23,6 +25,8 @@ target_sources(OPS_SysOfEqn
         FullGenEigenSolver.h
         SymBandEigenSOE.h
         SymBandEigenSolver.h
+	SymmGeneralizedEigenSOE.h
+	SymmGeneralizedEigenSolver.h	
 )
 
 target_sources(OPS_SysOfEqn
@@ -37,4 +41,6 @@ target_sources(OPS_SysOfEqn
     SymArpackSOE.h
     SymArpackSolver.h
 )
+
+add_subdirectory(sparsePython)
 

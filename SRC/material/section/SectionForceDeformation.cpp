@@ -260,6 +260,135 @@ int OPS_sectionWeight()
     return 0;
 }
 
+int OPS_sectionResponseType()
+{
+    // make sure at least one other argument to contain type of system
+    if (OPS_GetNumRemainingInputArgs() < 2) {
+	    opserr << "WARNING want - sectionCode eleTag? secNum? <dof?> \n";
+	    return -1;
+    }
+
+    //opserr << "sectionCode: ";
+    //for (int i = 0; i < argc; i++)
+    //  opserr << argv[i] << ' ';
+    //opserr << endln;
+
+    int numdata = 2;
+    int data[3];
+
+    if (OPS_GetIntInput(&numdata, data) < 0) {
+	    opserr << "WARNING sectionResponseType eleTag? secNum? <dof?> - could not read int input? \n";
+	    return -1;
+    }
+
+    int tag = data[0];
+    int secNum = data[1];
+    int dof = -1;
+
+    Domain* theDomain = OPS_GetDomain();
+    if (theDomain == 0) return -1;
+
+    Element *theElement = theDomain->getElement(tag);
+    if (theElement == 0) {
+	    opserr << "WARNING sectionResponseType element with tag " << tag << " not found in domain \n";
+	    return -1;
+    }
+
+    int argcc = 3;
+    char a[80] = "section";
+    char b[80];
+    sprintf(b, "%d", secNum);
+    char c[80] = "code";
+    const char *argvv[3];
+    argvv[0] = a;
+    argvv[1] = b;
+    argvv[2] = c;
+
+    DummyStream dummy;
+
+    Response *theResponse = theElement->setResponse(argvv, argcc, dummy);
+    if (theResponse == 0) {
+	return 0;
+    }
+
+    theResponse->getResponse();
+    Information &info = theResponse->getInformation();
+    const ID &theID = *(info.theID);
+
+    static const std::map<int, std::string> SectionResponseNames = {
+      {SECTION_RESPONSE_NONE, "NONE"},
+      {SECTION_RESPONSE_MZ,   "MZ"},
+      {SECTION_RESPONSE_P,    "P"},
+      {SECTION_RESPONSE_VY,   "VY"},
+      {SECTION_RESPONSE_MY,   "MY"},
+      {SECTION_RESPONSE_VZ,   "VZ"},
+      {SECTION_RESPONSE_T,    "T"},
+      {SECTION_RESPONSE_R,    "R"},
+      {SECTION_RESPONSE_Q,    "Q"},
+      {SECTION_RESPONSE_B,    "B"},
+      {SECTION_RESPONSE_W,    "W"},
+      {SECTION_RESPONSE_FXX,  "FXX"},
+      {SECTION_RESPONSE_FYY,  "FYY"},
+      {SECTION_RESPONSE_FXY,  "FXY"},
+      {SECTION_RESPONSE_MXX,  "MXX"},
+      {SECTION_RESPONSE_MYY,  "MYY"},
+      {SECTION_RESPONSE_MXY,  "MXY"},
+      {SECTION_RESPONSE_VXZ,  "VXZ"},
+      {SECTION_RESPONSE_VYZ,  "VYZ"}
+  };
+    
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+      numdata = 1;
+      if (OPS_GetIntInput(&numdata, &dof) < 0) {
+	    opserr << "WARNING sectionResponseType eleTag? secNum? dof? - could not read int input? \n";
+	    delete theResponse;
+	    return -1;
+      }      
+    }
+
+    int ndof = theID.Size();
+    if (dof > 0 && dof <= ndof) {
+      int value = theID(dof - 1);
+      numdata = 1;
+      auto it = SectionResponseNames.find(value);
+      if (it == SectionResponseNames.end()) {
+          opserr << "WARNING section ID type " << value
+                << " is unknown\n";
+          return -1;
+      }
+      if (OPS_SetString(it->second.c_str()) < 0) {
+          opserr << "WARNING failed to set output\n";
+          delete theResponse;
+          return -1;
+      }
+    } else { // All IPs in a list
+      std::vector<const char*> sdata;
+      sdata.reserve(ndof);
+
+      for (int i = 0; i < ndof; ++i) {
+          int value = theID(i);
+          auto it = SectionResponseNames.find(value);
+          if (it == SectionResponseNames.end()) {
+              opserr << "WARNING section ID type " << value
+                    << " is unknown\n";
+              delete theResponse;
+              return -1;
+          }
+          sdata.push_back(it->second.c_str());
+      }
+
+      if (OPS_SetStringList(sdata) < 0) {
+          opserr << "WARNING failed to set output\n";
+          delete theResponse;
+          return -1;
+      }      
+    }
+
+    delete theResponse;
+
+    return 0;
+}
+
 int OPS_sectionTag()
 {
     // make sure at least one other argument to contain type of system
@@ -735,6 +864,10 @@ SectionForceDeformation::setResponse(const char **argv, int argc,
   else if (strcmp(argv[0],"flexibility") == 0) {
     theResponse =  new MaterialResponse(this, 13, this->getSectionFlexibility());
   }
+
+  else if (strcmp(argv[0],"code") == 0) {
+    theResponse =  new MaterialResponse(this, 14, type);
+  }
   
 
   output.endTag(); // SectionOutput
@@ -769,6 +902,11 @@ SectionForceDeformation::getResponse(int responseID, Information &secInfo)
 
   case 13:
     return secInfo.setMatrix(this->getSectionFlexibility());
+
+  case 14: {
+    const ID &type = this->getType();
+    return secInfo.setID(type);
+  }
 
   default:
     return -1;

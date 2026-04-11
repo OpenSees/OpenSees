@@ -1,11 +1,17 @@
 //===----------------------------------------------------------------------===//
 //
-//        OpenSees - Open System for Earthquake Engineering Simulation
+//                                   xara
+//                              https://xara.so
 //
 //===----------------------------------------------------------------------===//
 //
-// Description: This file contains the function invoked when the user invokes
-// the groundMotion command in the interpreter.
+// Copyright (c) 2025, OpenSees/Xara Developers
+// All rights reserved.  No warranty, explicit or implicit, is provided.
+//
+// This source code is licensed under the BSD 2-Clause License.
+// See LICENSE file or https://opensource.org/licenses/BSD-2-Clause
+//
+//===----------------------------------------------------------------------===//
 //
 // Written: fmk
 // Created: 11/00
