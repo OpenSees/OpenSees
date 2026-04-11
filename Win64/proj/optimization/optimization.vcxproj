@@ -88,6 +88,7 @@
       <ObjectFileName>.\..\..\obj\optimization\debug/</ObjectFileName>
       <ProgramDataBaseFileName>.\..\..\obj\optimization\debug/</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\optimization.lib</OutputFile>
@@ -138,6 +139,7 @@
       <AssemblerListingLocation>.\..\..\obj\optimization\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\optimization\release/</ObjectFileName>
       <ProgramDataBaseFileName>.\..\..\obj\optimization\release/</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\release\optimization.lib</OutputFile>

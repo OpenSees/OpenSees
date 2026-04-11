@@ -88,6 +88,7 @@
       <ObjectFileName>.\..\..\obj\damage\debug/</ObjectFileName>
       <ProgramDataBaseFileName>.\..\..\obj\damage\debug/</ProgramDataBaseFileName>
       <BrowseInformation>true</BrowseInformation>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\debug\damage.lib</OutputFile>
@@ -138,6 +139,7 @@
       <AssemblerListingLocation>.\..\..\obj\damage\release/</AssemblerListingLocation>
       <ObjectFileName>.\..\..\obj\damage\release/</ObjectFileName>
       <ProgramDataBaseFileName>.\..\..\obj\damage\release/</ProgramDataBaseFileName>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Lib>
       <OutputFile>.\..\..\lib\release\damage.lib</OutputFile>
