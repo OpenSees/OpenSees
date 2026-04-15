@@ -87,6 +87,10 @@ BandSPDLinLapackSolver::solve(void)
     }
 
     int n = theSOE->size;
+
+    if (n == 0)
+	return 0;
+
     int kd = theSOE->half_band -1;
     int ldA = kd +1;
     int nrhs = 1;

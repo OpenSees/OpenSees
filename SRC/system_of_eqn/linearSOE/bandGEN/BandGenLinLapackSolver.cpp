@@ -89,7 +89,11 @@ BandGenLinLapackSolver::solve(void)
 	return -1;
     }
 
-    int n = theSOE->size;    
+    int n = theSOE->size;
+
+    if (n == 0)
+	return 0;
+
     // check iPiv is large enough
     if (iPivSize < n) {
 	opserr << "WARNING BandGenLinLapackSolver::solve(void)- ";
@@ -157,6 +161,9 @@ BandGenLinLapackSolver::solve(void)
 int
 BandGenLinLapackSolver::setSize()
 {
+    if (theSOE->size == 0)
+	return 0;
+
     // if iPiv not big enough, free it and get one large enough
     if (iPivSize < theSOE->size) {
 	if (iPiv != 0)
