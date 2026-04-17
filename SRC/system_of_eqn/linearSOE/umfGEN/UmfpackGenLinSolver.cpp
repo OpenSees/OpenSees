@@ -26,7 +26,7 @@
 // Written: fmk 
 // Created: 11/98
 //
-// Description: This file contains the class definition for 
+// Description: This file contains the class definition for
 // UmfpackGenLinSolver. It solves the UmfpackGenLinSOEobject by calling
 // UMFPACK5.7.1 routines.
 //
@@ -35,26 +35,67 @@
 #include <UmfpackGenLinSOE.h>
 #include <UmfpackGenLinSolver.h>
 #include <math.h>
+#include <cstring>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 void* OPS_UmfpackGenLinSolver()
 {
-    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    return new UmfpackGenLinSOE(*theSolver);  
+    bool useLongIndices = false;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *opt = OPS_GetString();
+        if (opt == nullptr) {
+            opt = "";
+        }
+        if (strcmp(opt, "useLongIndices") == 0 ||
+            strcmp(opt, "-useLongIndices") == 0) {
+            useLongIndices = true;
+        } else {
+            opserr << "WARNING UmfpackGenLinSolver: unknown option \"" << opt
+                   << "\" (expected useLongIndices or -useLongIndices)\n";
+            return nullptr;
+        }
+    }
+
+    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver(useLongIndices);
+    return new UmfpackGenLinSOE(*theSolver);
 }
 
 UmfpackGenLinSolver::
-UmfpackGenLinSolver()
-    :LinearSOESolver(SOLVER_TAGS_UmfpackGenLinSolver), Symbolic(0), theSOE(0)
+UmfpackGenLinSolver(bool useLongIndices)
+    : LinearSOESolver(SOLVER_TAGS_UmfpackGenLinSolver),
+      useLongIndices(useLongIndices),
+      Symbolic(0),
+      theSOE(0)
 {
 }
-
 
 UmfpackGenLinSolver::~UmfpackGenLinSolver()
 {
     if (Symbolic != 0) {
-	umfpack_di_free_symbolic(&Symbolic);
+        if (useLongIndices) {
+            umfpack_dl_free_symbolic(&Symbolic);
+        } else {
+            umfpack_di_free_symbolic(&Symbolic);
+        }
+    }
+}
+
+void
+UmfpackGenLinSolver::syncIndexBuffers(void)
+{
+    if (!useLongIndices) return;
+
+    const int n = theSOE->X.Size();
+    const std::size_t nnz = theSOE->Ai.size();
+    Ap64.resize(static_cast<std::size_t>(n) + 1u);
+    Ai64.resize(nnz);
+    for (std::size_t i = 0; i < Ap64.size(); ++i) {
+        Ap64[i] = static_cast<SuiteSparse_long>(theSOE->Ap[i]);
+    }
+    for (std::size_t k = 0; k < nnz; ++k) {
+        Ai64[k] = static_cast<SuiteSparse_long>(theSOE->Ai[k]);
     }
 }
 
@@ -64,75 +105,149 @@ UmfpackGenLinSolver::solve(void)
     int n = theSOE->X.Size();
     int nnz = (int)theSOE->Ai.size();
     if (n == 0 || nnz==0) return 0;
-    
-    int* Ap = &(theSOE->Ap[0]);
-    int* Ai = &(theSOE->Ai[0]);
-    double* Ax = &(theSOE->Ax[0]);
+
+    double* Ax = theSOE->Ax.data();
     double* X = &(theSOE->X(0));
     double* B = &(theSOE->B(0));
 
     // check if symbolic is done
     if (Symbolic == 0) {
-	opserr<<"WARNING: setSize has not been called -- Umfpackgenlinsolver::solve\n";
-	return -1;
+        opserr<<"WARNING: setSize has not been called -- Umfpackgenlinsolver::solve\n";
+        return -1;
     }
-    
-    // numerical analysis
+
     void* Numeric = 0;
-    int status = umfpack_di_numeric(Ap,Ai,Ax,Symbolic,&Numeric,Control,Info);
 
-    // check error
-    if (status!=UMFPACK_OK) {
-	opserr<<"WARNING: numeric analysis returns "<<status<<" -- Umfpackgenlinsolver::solve\n";
-	return -1;
-    }
+    if (useLongIndices) {
+        // numeric analysis
+        SuiteSparse_long *Ap = Ap64.data();
+        SuiteSparse_long *Ai = Ai64.data();
+        SuiteSparse_long status =
+            umfpack_dl_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
+        
+        // check error
+        if (status != UMFPACK_OK) {
+            opserr << "WARNING: numeric analysis returns "
+                   << static_cast<int>(status)
+                   << " -- Umfpackgenlinsolver::solve\n";
+            return -1;
+        }
 
-    // solve
-    status = umfpack_di_solve(UMFPACK_A,Ap,Ai,Ax,X,B,Numeric,Control,Info);
+        // solve
+        status = umfpack_dl_solve(UMFPACK_A, Ap, Ai, Ax, X, B, Numeric, Control,
+                                  Info);
+        
+        // delete Numeric
+        if (Numeric != 0) {
+            umfpack_dl_free_numeric(&Numeric);
+        }
 
-    // delete Numeric
-    if (Numeric != 0) {
-	umfpack_di_free_numeric(&Numeric);
-    }
-    
-    // check error
-    if (status!=UMFPACK_OK) {
-	opserr<<"WARNING: solving returns "<<status<<" -- Umfpackgenlinsolver::solve\n";
-	return -1;
+        // check error
+        if (status != UMFPACK_OK) {
+            opserr << "WARNING: solving returns " << static_cast<int>(status)
+                   << " -- Umfpackgenlinsolver::solve\n";
+            return -1;
+        }
+    } else {
+        // numeric analysis
+        int *Ap = theSOE->Ap.data();
+        int *Ai = theSOE->Ai.data();
+        int status =
+            umfpack_di_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
+        
+        
+        // check error
+        if (status != UMFPACK_OK) {
+            opserr << "WARNING: numeric analysis returns " << status
+                   << " -- Umfpackgenlinsolver::solve\n";
+            return -1;
+        }
+
+        // solve
+        status = umfpack_di_solve(UMFPACK_A, Ap, Ai, Ax, X, B, Numeric, Control,
+                                  Info);
+
+        // delete Numeric
+        if (Numeric != 0) {
+            umfpack_di_free_numeric(&Numeric);
+        }
+        
+        // check error
+        if (status != UMFPACK_OK) {
+            opserr << "WARNING: solving returns " << status
+                   << " -- Umfpackgenlinsolver::solve\n";
+            return -1;
+        }
     }
 
     return 0;
 }
 
-
 int
 UmfpackGenLinSolver::setSize()
 {
-    // set default control parameters
-    umfpack_di_defaults(Control);
-    Control[UMFPACK_PIVOT_TOLERANCE] = 1.0;
-    Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC;
-
     int n = theSOE->X.Size();
     int nnz = (int)theSOE->Ai.size();
-    if (n == 0 || nnz==0) return 0;
-    
-    int* Ap = &(theSOE->Ap[0]);
-    int* Ai = &(theSOE->Ai[0]);
-    double* Ax = &(theSOE->Ax[0]);
-
-    // symbolic analysis
-    if (Symbolic != 0) {
-	umfpack_di_free_symbolic(&Symbolic);
+    if (n == 0 || nnz == 0) {
+        Ap64.clear();
+        Ai64.clear();
+        return 0;
     }
-    int status = umfpack_di_symbolic(n,n,Ap,Ai,Ax,&Symbolic,Control,Info);
 
-    // check error
-    if (status!=UMFPACK_OK) {
-	opserr<<"WARNING: symbolic analysis returns "<<status<<" -- Umfpackgenlinsolver::setsize\n";
-	Symbolic = 0;
-	return -1;
+    if (useLongIndices) {
+        // set default control parameters
+        umfpack_dl_defaults(Control);
+        Control[UMFPACK_PIVOT_TOLERANCE] = 1.0;
+        Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC;
+
+        syncIndexBuffers();
+        SuiteSparse_long *Ap = Ap64.data();
+        SuiteSparse_long *Ai = Ai64.data();
+        double *Ax = theSOE->Ax.data();
+
+        // symbolic analysis
+        if (Symbolic != 0) {
+            umfpack_dl_free_symbolic(&Symbolic);
+        }
+        SuiteSparse_long status = umfpack_dl_symbolic(
+            (SuiteSparse_long)n, (SuiteSparse_long)n, Ap, Ai, Ax, &Symbolic,
+            Control, Info);
+
+        // check error
+        if (status != UMFPACK_OK) {
+            opserr << "WARNING: symbolic analysis returns "
+                   << static_cast<int>(status)
+                   << " -- Umfpackgenlinsolver::setsize\n";
+            Symbolic = 0;
+            return -1;
+        }
+    } else {
+        // set default control parameters
+        umfpack_di_defaults(Control);
+        Control[UMFPACK_PIVOT_TOLERANCE] = 1.0;
+        Control[UMFPACK_STRATEGY] = UMFPACK_STRATEGY_SYMMETRIC;
+
+        int *Ap = theSOE->Ap.data();
+        int *Ai = theSOE->Ai.data();
+        double *Ax = theSOE->Ax.data();
+
+        // symbolic analysis
+        if (Symbolic != 0) {
+            umfpack_di_free_symbolic(&Symbolic);
+        }
+        int status =
+            umfpack_di_symbolic(n, n, Ap, Ai, Ax, &Symbolic, Control, Info);
+        
+        
+        // check error
+        if (status != UMFPACK_OK) {
+            opserr << "WARNING: symbolic analysis returns " << status
+                   << " -- Umfpackgenlinsolver::setsize\n";
+            Symbolic = 0;
+            return -1;
+        }
     }
+
     return 0;
 }
 
@@ -151,11 +266,10 @@ UmfpackGenLinSolver::sendSelf(int cTag, Channel &theChannel)
 }
 
 int
-UmfpackGenLinSolver::recvSelf(int ctag,
-			      Channel &theChannel, 
-			      FEM_ObjectBroker &theBroker)
+UmfpackGenLinSolver::recvSelf(int ctag, 
+                              Channel &theChannel,
+                              FEM_ObjectBroker &theBroker)
 {
     // nothing to do
     return 0;
 }
-

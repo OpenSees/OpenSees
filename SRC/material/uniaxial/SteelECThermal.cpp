@@ -53,7 +53,7 @@ OPS_SteelECThermal(void)
   int    iData[2];
   iData[1] = 0;
   double dData[7];
-  const char * typeChar = new char[20];
+  const char * typeChar = 0; //new char[20]; // no need to initilize, it's reassigned later
   int numData = 1;
   
  if (OPS_GetIntInput(&numData, iData) != 0) 
@@ -85,7 +85,7 @@ OPS_SteelECThermal(void)
 	 
   }
 
-  delete [] typeChar;
+  //delete [] typeChar; // wrong, trying to free reassigned pointer
 
   numData = OPS_GetNumRemainingInputArgs();
 

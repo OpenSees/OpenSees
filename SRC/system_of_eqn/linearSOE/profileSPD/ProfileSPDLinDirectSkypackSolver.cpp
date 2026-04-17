@@ -163,6 +163,20 @@ ProfileSPDLinDirectSkypackSolver::solve(void)
     for (int ii=0; ii<theSize; ii++)
 	X[ii] = B[ii];
 
+    if (theSize == 1) {
+	// ignoring positive definiteness check for n = 1
+	double a = theSOE->A[0];
+	if (fabs(a) < 1.0e-15) {
+	    opserr << "ProfileSPDLinDirectSkypackSolver::solve() - singular 1x1 (|aii| < 1e-15)\n";
+	    return -2;
+	}
+	X[0] = B[0] / a;
+	invD[0] = 1.0 / a;
+	theSOE->isAfactored = true;
+	theSOE->numInt = 0;
+	return 0;
+    }
+
     char *FILE = "INCORE";
     
     if (theSOE->isAfactored == false)  {

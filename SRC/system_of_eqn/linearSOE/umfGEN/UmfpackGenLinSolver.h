@@ -36,6 +36,7 @@
 #define UmfpackGenLinSolver_h
 
 #include <LinearSOESolver.h>
+#include <vector>
 #include "../../../../OTHER/UMFPACK/umfpack.h"
 
 class UmfpackGenLinSOE;
@@ -43,7 +44,7 @@ class UmfpackGenLinSOE;
 class UmfpackGenLinSolver : public LinearSOESolver
 {
   public:
-    UmfpackGenLinSolver();     
+    UmfpackGenLinSolver(bool useLongIndices = false);
     ~UmfpackGenLinSolver();
 
     int solve(void);
@@ -52,16 +53,20 @@ class UmfpackGenLinSolver : public LinearSOESolver
     int setLinearSOE(UmfpackGenLinSOE &theSOE);
     
     int sendSelf(int commitTag, Channel &theChannel);
-    int recvSelf(int commitTag, Channel &theChannel, 
-		 FEM_ObjectBroker &theBroker);    
-    
+    int recvSelf(int commitTag, Channel &theChannel,
+                 FEM_ObjectBroker &theBroker);
+
   protected:
 
   private:
+    void syncIndexBuffers(void);
+
+    bool useLongIndices;
     void *Symbolic;
     double Control[UMFPACK_CONTROL], Info[UMFPACK_INFO];
     UmfpackGenLinSOE *theSOE;
+    std::vector<SuiteSparse_long> Ap64;
+    std::vector<SuiteSparse_long> Ai64;
 };
 
 #endif
-
