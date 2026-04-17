@@ -106,7 +106,7 @@ UmfpackGenLinSolver::solve(void)
     int nnz = (int)theSOE->Ai.size();
     if (n == 0 || nnz==0) return 0;
 
-    double* Ax = &(theSOE->Ax[0]);
+    double* Ax = theSOE->Ax.data();
     double* X = &(theSOE->X(0));
     double* B = &(theSOE->B(0));
 
@@ -127,7 +127,8 @@ UmfpackGenLinSolver::solve(void)
         
         // check error
         if (status != UMFPACK_OK) {
-            opserr << "WARNING: numeric analysis returns " << status
+            opserr << "WARNING: numeric analysis returns "
+                   << static_cast<int>(status)
                    << " -- Umfpackgenlinsolver::solve\n";
             return -1;
         }
@@ -143,14 +144,14 @@ UmfpackGenLinSolver::solve(void)
 
         // check error
         if (status != UMFPACK_OK) {
-            opserr << "WARNING: solving returns " << status
+            opserr << "WARNING: solving returns " << static_cast<int>(status)
                    << " -- Umfpackgenlinsolver::solve\n";
             return -1;
         }
     } else {
         // numeric analysis
-        int *Ap = &(theSOE->Ap[0]);
-        int *Ai = &(theSOE->Ai[0]);
+        int *Ap = theSOE->Ap.data();
+        int *Ai = theSOE->Ai.data();
         int status =
             umfpack_di_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
         
@@ -214,7 +215,8 @@ UmfpackGenLinSolver::setSize()
 
         // check error
         if (status != UMFPACK_OK) {
-            opserr << "WARNING: symbolic analysis returns " << status
+            opserr << "WARNING: symbolic analysis returns "
+                   << static_cast<int>(status)
                    << " -- Umfpackgenlinsolver::setsize\n";
             Symbolic = 0;
             return -1;
