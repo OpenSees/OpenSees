@@ -138,6 +138,21 @@ SProfileSPDLinSolver::solve(void)
 	doubleB[ii] = B[ii];
     }
 
+    if (theSize == 1) {
+	// ignoring positive definiteness check for n = 1
+	float a = theSOE->A[0];
+	if (fabs((double)a) < 1.0e-15) {
+	    opserr << "SProfileSPDLinSolver::solve() - singular 1x1 (|aii| < 1e-15)\n";
+	    return -2;
+	}
+	X[0] = B[0] / a;
+	doubleX[0] = (double)X[0];
+	invD[0] = 1.0f / a;
+	theSOE->isAfactored = true;
+	theSOE->numInt = 0;
+	return 0;
+    }
+
     /*
       for (int iii=0; iii<theSize; iii++) {
       int rowiiitop = RowTop[iii];
