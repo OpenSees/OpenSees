@@ -3433,10 +3433,10 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	  if (Tcl_GetInt(interp, argv[count], &npCol) != TCL_OK)
 	    return TCL_ERROR;		     
       } else if ((strcmp(argv[count],"permSpec") == 0) || (strcmp(argv[count],"-permSpec") == 0)) {
-	count++;
-	if (count < argc)
-	  if (Tcl_GetInt(interp, argv[count], &permSpec) != TCL_OK)
-	    return TCL_ERROR;
+        count++;
+        if (count < argc)
+          if (Tcl_GetInt(interp, argv[count], &permSpec) != TCL_OK)
+            return TCL_ERROR;
       }
       count++;
     }
@@ -3531,15 +3531,54 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
 #ifdef _ITPACK
   else if (strcmp(argv[1],"Itpack") == 0) {
-    
-    // now must determine the type of solver to create from rest of args
+    // Match OPS_ItpackLinSolver (ItpackLinSolver.cpp): method int first if
+    // present, then -iter, -omega, -symmetric, -zeta.
     int method = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
-	return TCL_ERROR;
+    int iter = 100;
+    double omega = 1.0;
+    bool symmetric = true;
+    double zeta = 5e-6;
+    int i = 2;
+
+    if (argc == 2) {
+      opserr << "WARNING Itpack -- no method specified, using JCG" << endln;
+    } else {
+      if (Tcl_GetInt(interp, argv[i], &method) != TCL_OK)
+        return TCL_ERROR;
+      i++;
     }
-    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
-    theSOE = new ItpackLinSOE(*theSolver);      
+
+    while (i < argc) {
+      if (strcmp(argv[i], "-iter") == 0) {
+        i++;
+        if (i >= argc || Tcl_GetInt(interp, argv[i], &iter) != TCL_OK)
+          return TCL_ERROR;
+        i++;
+      } else if (strcmp(argv[i], "-omega") == 0) {
+        i++;
+        if (i >= argc || Tcl_GetDouble(interp, argv[i], &omega) != TCL_OK)
+          return TCL_ERROR;
+        i++;
+      } else if (strcmp(argv[i], "-symmetric") == 0) {
+        int symm;
+        i++;
+        if (i >= argc || Tcl_GetInt(interp, argv[i], &symm) != TCL_OK)
+          return TCL_ERROR;
+        symmetric = (symm != 0);
+        i++;
+      } else if (strcmp(argv[i], "-zeta") == 0) {
+        i++;
+        if (i >= argc || Tcl_GetDouble(interp, argv[i], &zeta) != TCL_OK)
+          return TCL_ERROR;
+        i++;
+      } else {
+        opserr << "WARNING Itpack -- unknown option " << argv[i] << endln;
+        return TCL_ERROR;
+      }
+    }
+
+    ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega, zeta);
+    theSOE = new ItpackLinSOE(*theSolver, symmetric);
   }
 #endif
   
