@@ -3203,9 +3203,11 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   else if(strcmp(argv[1], "PFEM") == 0) {
     
       if(argc <= 2) {
-          PFEMSolver* theSolver = new PFEMSolver();
+          // Default matches OPS_PFEMSolver_Umfpack: ptol, pmaxiter, print
+          PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack(1.0e-4, 100, 0);
           theSOE = new PFEMLinSOE(*theSolver);
-      } else if(strcmp(argv[2], "-quasi") == 0) {
+      } else if (strcmp(argv[2], "-quasi") == 0 ||
+                 strcmp(argv[2], "-compressible") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
 
