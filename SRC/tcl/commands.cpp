@@ -3404,6 +3404,9 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int npRow = 1;
     int npCol = 1;
     int np = 1;
+    int permSpec = 1;
+    int panelSize = 6;
+    int relax = 6;
 
     // defaults for threaded SuperLU
 
@@ -3429,13 +3432,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	if (count < argc)
 	  if (Tcl_GetInt(interp, argv[count], &npCol) != TCL_OK)
 	    return TCL_ERROR;		     
-      } 
+      } else if ((strcmp(argv[count],"permSpec") == 0) || (strcmp(argv[count],"-permSpec") == 0)) {
+	count++;
+	if (count < argc)
+	  if (Tcl_GetInt(interp, argv[count], &permSpec) != TCL_OK)
+	    return TCL_ERROR;
+      }
       count++;
     }
-
-    int permSpec = 0;
-    int panelSize = 6;
-    int relax = 6;
 
 
 #ifdef _THREADS
