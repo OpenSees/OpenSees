@@ -43,7 +43,8 @@
 void* OPS_UmfpackGenLinSolver()
 {
     bool useLongIndices = false;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
         const char *opt = OPS_GetString();
         if (opt == nullptr) {
             opt = "";
@@ -53,8 +54,7 @@ void* OPS_UmfpackGenLinSolver()
             useLongIndices = true;
         } else {
             opserr << "WARNING UmfpackGenLinSolver: unknown option \"" << opt
-                   << "\" (expected useLongIndices or -useLongIndices)\n";
-            return nullptr;
+                   << "\", ignoring\n";
         }
     }
 
