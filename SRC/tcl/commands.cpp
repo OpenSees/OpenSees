@@ -3501,6 +3501,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int factLVALUE = 10;
     int factorOnce=0;
     int printTime = 0;
+    bool useLongIndices = false;
     int count = 2;
 
     while (count < argc) {
@@ -3512,11 +3513,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	factorOnce = 1;
       } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
 	printTime = 1;
+      } else if ((strcmp(argv[count],"-useLongIndices") == 0) ||
+                 (strcmp(argv[count],"useLongIndices") == 0)) {
+        useLongIndices = true;
       }
       count++;
     }
     
-    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
+    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver(useLongIndices);
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
