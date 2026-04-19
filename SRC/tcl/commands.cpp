@@ -3103,23 +3103,32 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       DistributedDiagonalSolver    *theSolver = new DistributedDiagonalSolver();   
       theSOE = new DistributedDiagonalSOE(*theSolver);
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+      bool lumped = false;
+      if (argc >= 3 && (strcmp(argv[2], "lumped") == 0 ||
+                        strcmp(argv[2], "-lumped") == 0)) {
+        lumped = true;
+      }
+      DiagonalSolver    *theSolver = new DiagonalDirectSolver();
+      theSOE = new DiagonalSOE(*theSolver, lumped);
 #endif
 
-
-  } 
+  }
   // Diagonal SOE & SOLVER
   else if (strcmp(argv[1],"MPIDiagonal") == 0) {
+    bool lumped = false;
+    if (argc >= 3 && (strcmp(argv[2], "lumped") == 0 ||
+                      strcmp(argv[2], "-lumped") == 0)) {
+      lumped = true;
+    }
 #ifdef _PARALLEL_INTERPRETERS
-      MPIDiagonalSolver    *theSolver = new MPIDiagonalSolver();   
-      theSOE = new MPIDiagonalSOE(*theSolver);
+      MPIDiagonalSolver    *theSolver = new MPIDiagonalSolver();
+      theSOE = new MPIDiagonalSOE(*theSolver, lumped);
       setMPIDSOEFlag = true;
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+      DiagonalSolver    *theSolver = new DiagonalDirectSolver();
+      theSOE = new DiagonalSOE(*theSolver, lumped);
 #endif
-  } 
+  }
 
 
   // PROFILE SPD SOE * SOLVER
@@ -3203,9 +3212,11 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   else if(strcmp(argv[1], "PFEM") == 0) {
     
       if(argc <= 2) {
-          PFEMSolver* theSolver = new PFEMSolver();
+          // Default matches OPS_PFEMSolver_Umfpack: ptol, pmaxiter, print
+          PFEMSolver_Umfpack* theSolver = new PFEMSolver_Umfpack(1.0e-4, 100, 0);
           theSOE = new PFEMLinSOE(*theSolver);
-      } else if(strcmp(argv[2], "-quasi") == 0) {
+      } else if (strcmp(argv[2], "-quasi") == 0 ||
+                 strcmp(argv[2], "-compressible") == 0) {
           PFEMCompressibleSolver* theSolver = new PFEMCompressibleSolver();
           theSOE = new PFEMCompressibleLinSOE(*theSolver);
 
@@ -3404,6 +3415,9 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int npRow = 1;
     int npCol = 1;
     int np = 1;
+    int permSpec = 1;
+    int panelSize = 6;
+    int relax = 6;
 
     // defaults for threaded SuperLU
 
@@ -3429,13 +3443,14 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	if (count < argc)
 	  if (Tcl_GetInt(interp, argv[count], &npCol) != TCL_OK)
 	    return TCL_ERROR;		     
-      } 
+      } else if ((strcmp(argv[count],"permSpec") == 0) || (strcmp(argv[count],"-permSpec") == 0)) {
+        count++;
+        if (count < argc)
+          if (Tcl_GetInt(interp, argv[count], &permSpec) != TCL_OK)
+            return TCL_ERROR;
+      }
       count++;
     }
-
-    int permSpec = 0;
-    int panelSize = 6;
-    int relax = 6;
 
 
 #ifdef _THREADS
@@ -3501,6 +3516,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int factLVALUE = 10;
     int factorOnce=0;
     int printTime = 0;
+    bool useLongIndices = false;
     int count = 2;
 
     while (count < argc) {
@@ -3512,26 +3528,68 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 	factorOnce = 1;
       } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
 	printTime = 1;
+      } else if ((strcmp(argv[count],"-useLongIndices") == 0) ||
+                 (strcmp(argv[count],"useLongIndices") == 0)) {
+        useLongIndices = true;
       }
       count++;
     }
     
-    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
+    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver(useLongIndices);
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
 
 #ifdef _ITPACK
   else if (strcmp(argv[1],"Itpack") == 0) {
-    
-    // now must determine the type of solver to create from rest of args
+    // Match OPS_ItpackLinSolver (ItpackLinSolver.cpp): method int first if
+    // present, then -iter, -omega, -symmetric, -zeta.
     int method = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &method) != TCL_OK)
-	return TCL_ERROR;
+    int iter = 100;
+    double omega = 1.0;
+    bool symmetric = true;
+    double zeta = 5e-6;
+    int i = 2;
+
+    if (argc == 2) {
+      opserr << "WARNING Itpack -- no method specified, using JCG" << endln;
+    } else {
+      if (Tcl_GetInt(interp, argv[i], &method) != TCL_OK)
+        return TCL_ERROR;
+      i++;
     }
-    ItpackLinSolver *theSolver = new ItpackLinSolver(method);
-    theSOE = new ItpackLinSOE(*theSolver);      
+
+    while (i < argc) {
+      if (strcmp(argv[i], "-iter") == 0) {
+        i++;
+        if (i >= argc || Tcl_GetInt(interp, argv[i], &iter) != TCL_OK)
+          return TCL_ERROR;
+        i++;
+      } else if (strcmp(argv[i], "-omega") == 0) {
+        i++;
+        if (i >= argc || Tcl_GetDouble(interp, argv[i], &omega) != TCL_OK)
+          return TCL_ERROR;
+        i++;
+      } else if (strcmp(argv[i], "-symmetric") == 0) {
+        int symm;
+        i++;
+        if (i >= argc || Tcl_GetInt(interp, argv[i], &symm) != TCL_OK)
+          return TCL_ERROR;
+        symmetric = (symm != 0);
+        i++;
+      } else if (strcmp(argv[i], "-zeta") == 0) {
+        i++;
+        if (i >= argc || Tcl_GetDouble(interp, argv[i], &zeta) != TCL_OK)
+          return TCL_ERROR;
+        i++;
+      } else {
+        opserr << "WARNING Itpack -- unknown option " << argv[i] << endln;
+        return TCL_ERROR;
+      }
+    }
+
+    ItpackLinSolver *theSolver = new ItpackLinSolver(method, iter, omega, zeta);
+    theSOE = new ItpackLinSOE(*theSolver, symmetric);
   }
 #endif
   
