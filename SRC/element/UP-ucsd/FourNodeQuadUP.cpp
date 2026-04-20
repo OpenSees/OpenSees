@@ -29,7 +29,9 @@
 #include <ElementResponse.h>
 #include <ElementalLoad.h>
 #include <elementAPI.h>
-
+#ifndef RESP_QV_GAUSS
+#define RESP_QV_GAUSS 1001
+#endif
 void* OPS_FourNodeQuadUP()
 {
     if (OPS_GetNDM() != 2 || OPS_GetNDF() != 3) {
@@ -1138,6 +1140,26 @@ FourNodeQuadUP::setResponse(const char **argv, int argc, OPS_Stream &output)
 
       output.endTag(); // GaussPoint
     }
+
+        // --- New: flux Gauss point (qv) ---
+  } else if (strcmp(argv[0], "flux") == 0 || strcmp(argv[0], "flux_q") == 0) {
+        output.tag("ResponseType", "flux_gp1_x");
+        output.tag("ResponseType", "flux_gp1_y");
+        output.tag("ResponseType", "flux_gp2_x");
+        output.tag("ResponseType", "flux_gp2_y");
+        output.tag("ResponseType", "flux_gp3_x");
+        output.tag("ResponseType", "flux_gp3_y");
+        output.tag("ResponseType", "flux_gp4_x");
+        output.tag("ResponseType", "flux_gp4_y");
+        // ID 1001
+        theResponse = new ElementResponse(this, 1001, Vector(8));
+
+  } else if (strcmp(argv[0], "flux_center") == 0) {
+        // Darcy flux evaluated at the element center (xi=0, eta=0)
+        output.tag("ResponseType", "flux_center_x");
+        output.tag("ResponseType", "flux_center_y");
+        // ID 1002
+        theResponse = new ElementResponse(this, 1002, Vector(2));
   }
 
   output.endTag(); // ElementOutput
@@ -1154,6 +1176,136 @@ FourNodeQuadUP::getResponse(int responseID, Information &eleInfo)
 
   case 2:
     return eleInfo.setMatrix(this->getTangentStiff());
+        
+  case 1001: {
+    // --- 0) Update shape functions and derivatives
+    this->shapeFunction();
+
+    // --- 1) Nodal pore pressures (DOF 3)
+    double pnod[4];
+    {
+        const Vector& d1 = nd1Ptr->getTrialVel();
+        const Vector& d2 = nd2Ptr->getTrialVel();
+        const Vector& d3 = nd3Ptr->getTrialVel();
+        const Vector& d4 = nd4Ptr->getTrialVel();
+        pnod[0] = d1(2);
+        pnod[1] = d2(2);
+        pnod[2] = d3(2);
+        pnod[3] = d4(2);
+    }
+
+    // --- 2) Gravity vector and magnitude
+    const double bx = b[0];
+    const double by = b[1];
+    const double gmag = std::sqrt(bx * bx + by * by);
+
+    // --- 3) Unit weight of water according to model parameters
+    //       (rhoW_ should match the value used in the rest of the element)
+    const double gammaW = 1.0 * gmag;  // No default values assumed
+
+    // --- 4) Elevation direction (opposite to gravity vector)
+    double ezx = 0.0, ezy = 0.0;
+    ezx = -bx / gmag;
+    ezy = -by / gmag;
+       
+    // --- 5) Hydraulic conductivities (in [length/time] consistent with model units)
+    const double kx = perm[0];
+    const double ky = perm[1];
+
+    // --- 6) Darcy flux at Gauss points: q = -K * ( grad(p)/gammaW + e_z )
+    static Vector res(8); // (qx,qy) at the 4 Gauss points
+    int k = 0;
+    for (int gp = 0; gp < 4; ++gp) {
+        double dpdx = 0.0, dpdy = 0.0;
+        for (int a = 0; a < 4; ++a) {
+            dpdx += shp[0][a][gp] * pnod[a];   // dN_a/dx
+            dpdy += shp[1][a][gp] * pnod[a];   // dN_a/dy
+        }
+
+        const double dhdx = (dpdx / gammaW) + ezx;
+        const double dhdy = (dpdy / gammaW) + ezy;
+
+        res(k++) = -kx * dhdx;
+        res(k++) = -ky * dhdy;
+    }
+
+    return eleInfo.setVector(res);
+  }
+
+  case 1002: {
+    // --- Darcy flux at the element center (xi=0, eta=0) ---
+
+    // --- 1) Nodal coordinates
+    const Vector &c1 = nd1Ptr->getCrds();
+    const Vector &c2 = nd2Ptr->getCrds();
+    const Vector &c3 = nd3Ptr->getCrds();
+    const Vector &c4 = nd4Ptr->getCrds();
+
+    // --- 2) Jacobian at center (xi=eta=0)
+    //   dN/dxi  = 0.25 * { -1, +1, +1, -1 }  (oneMinuseta=onePluseta=1)
+    //   dN/deta = 0.25 * { -1, -1, +1, +1 }  (oneMinusxi=onePlusxi=1)
+    double J00 = 0.25*(-c1(0) + c2(0) + c3(0) - c4(0));
+    double J01 = 0.25*(-c1(0) - c2(0) + c3(0) + c4(0));
+    double J10 = 0.25*(-c1(1) + c2(1) + c3(1) - c4(1));
+    double J11 = 0.25*(-c1(1) - c2(1) + c3(1) + c4(1));
+
+    double detJ = J00*J11 - J01*J10;
+    if (detJ == 0.0) return -1;
+    double ood = 1.0 / detJ;
+
+    // L = J^{-1}  (matches shapeFunction convention:
+    //   L00 = dxi/dx  = +J[1][1]/det,  L01 = deta/dx = -J[1][0]/det
+    //   L10 = dxi/dy  = -J[0][1]/det,  L11 = deta/dy = +J[0][0]/det )
+    double L00 =  J11*ood;   double L01 = -J10*ood;
+    double L10 = -J01*ood;   double L11 =  J00*ood;
+
+    // --- 3) Physical shape-function derivatives at center
+    //   dN_a/dxi  coefficients (scaled by 0.25 already in Jacobian entries)
+    //   raw dN/dxi: { -1, +1, +1, -1 } * 0.25
+    //   raw dN/deta:{ -1, -1, +1, +1 } * 0.25
+    const double dxi [4] = { -0.25,  0.25,  0.25, -0.25 };
+    const double deta[4] = { -0.25, -0.25,  0.25,  0.25 };
+
+    double dNdx[4], dNdy[4];
+    for (int a = 0; a < 4; ++a) {
+        dNdx[a] = L00*dxi[a] + L01*deta[a];
+        dNdy[a] = L10*dxi[a] + L11*deta[a];
+    }
+
+    // --- 4) Nodal pore pressures
+    double pnod[4];
+    pnod[0] = nd1Ptr->getTrialVel()(2);
+    pnod[1] = nd2Ptr->getTrialVel()(2);
+    pnod[2] = nd3Ptr->getTrialVel()(2);
+    pnod[3] = nd4Ptr->getTrialVel()(2);
+
+    // --- 5) Pressure gradient at center
+    double dpdx = 0.0, dpdy = 0.0;
+    for (int a = 0; a < 4; ++a) {
+        dpdx += dNdx[a] * pnod[a];
+        dpdy += dNdy[a] * pnod[a];
+    }
+
+    // --- 6) Hydraulic head gradient and Darcy flux
+    const double bx = b[0];
+    const double by = b[1];
+    const double gmag = std::sqrt(bx*bx + by*by);
+
+    static Vector res2(2);
+    if (gmag == 0.0) {
+        // No gravity: flux driven purely by pressure gradient
+        res2(0) = -perm[0] * dpdx;
+        res2(1) = -perm[1] * dpdy;
+    } else {
+        const double gammaW = gmag;         // unit weight = rho*g magnitude
+        const double ezx = -bx / gmag;     // elevation unit vector
+        const double ezy = -by / gmag;
+        res2(0) = -perm[0] * ((dpdx / gammaW) + ezx);
+        res2(1) = -perm[1] * ((dpdy / gammaW) + ezy);
+    }
+
+    return eleInfo.setVector(res2);
+  }
 
   default:
     return -1;
