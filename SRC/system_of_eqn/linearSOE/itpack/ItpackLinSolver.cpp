@@ -124,8 +124,35 @@ ItpackLinSolver::setLinearSOE(ItpackLinSOE &theItpackSOE)
 int
 ItpackLinSolver::setSize(void)
 {
+  if (theSOE == 0) {
+    opserr << "WARNING ItpackLinSolver::setSize(void)- no LinearSOE set\n";
+    return -1;
+  }
+
   // Get number of equations from SOE
   n = theSOE->size;
+
+  if (n <= 0) {
+    n = 0;
+    if (iwksp != 0) {
+      delete [] iwksp;
+      iwksp = 0;
+    }
+    if (wksp != 0) {
+      delete [] wksp;
+      wksp = 0;
+    }
+    if (IA != 0) {
+      delete [] IA;
+      IA = 0;
+    }
+    if (JA != 0) {
+      delete [] JA;
+      JA = 0;
+    }
+    nwksp = 0;
+    return 0;
+  }
 
   if (n > 0) {
     if (iwksp != 0)
@@ -311,6 +338,13 @@ extern "C" int rssi_(int *n, int *ia, int *ja, double *a, double *rhs,
 int
 ItpackLinSolver::solve(void)
 {
+  if (theSOE == 0) {
+    opserr << "WARNING ItpackLinSolver::solve(void)- no LinearSOE set\n";
+    return -1;
+  }
+  if (n == 0)
+    return 0;
+
   // Let ITPACK fill in default parameter values
   dfault_(iparm, rparm);
 

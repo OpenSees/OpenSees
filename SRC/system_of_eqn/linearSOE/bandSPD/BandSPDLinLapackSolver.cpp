@@ -87,6 +87,22 @@ BandSPDLinLapackSolver::solve(void)
     }
 
     int n = theSOE->size;
+
+    if (n == 0)
+	return 0;
+
+    if (n == 1) {
+	// ignoring positive definiteness check for n = 1
+	double a = theSOE->A[0];
+	if (fabs(a) < 1.0e-15) {
+	    opserr << "WARNING BandSPDLinLapackSolver::solve() - singular 1x1 system\n";
+	    return -1;
+	}
+	theSOE->X[0] = theSOE->B[0] / a;
+	theSOE->factored = true;
+	return 0;
+    }
+
     int kd = theSOE->half_band -1;
     int ldA = kd +1;
     int nrhs = 1;

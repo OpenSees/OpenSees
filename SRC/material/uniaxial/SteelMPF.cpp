@@ -37,6 +37,24 @@
 #include <elementAPI.h>
 #define OPS_Export 
 
+namespace {
+
+// Menegotto–Pinto along strain-stress chord: est = ε* (normalized strain).
+// *sigst = σ* (required, non-null). If tangent != nullptr, *tangent = dσ*/dε*; Et = chordSlope * etInner.
+inline void mpStressTangent(double est, double R, double b, double *sigst,
+	double *tangent = nullptr)
+{
+	const double eR = pow(est, R);
+	const double onePluseR = 1.0 + eR;
+	const double phi = pow(onePluseR, 1.0 / R);
+	const double c = (1.0 - b) / phi;
+	*sigst = b * est + c * est;
+	if (tangent != nullptr)
+		*tangent = b + c * (1.0 - eR / onePluseR);
+}
+
+} // namespace
+
 // Read input parameters and build the material
 OPS_Export void *OPS_SteelMPF(void)
 {
@@ -302,50 +320,9 @@ SteelMPF::~SteelMPF ()
 
 int SteelMPF::setTrialStrain(double strain, double strainRate)
 {
-	// Reset history variables to last converged state
-	inc = incold;
-
-	Rptwoprev = Rptwoprevold;
-	Rntwoprev = Rntwoprevold;
-
-	outp = outpold;
-	outn = outnold;
-
-	erp = erpold;
-	sigrp = sigrpold;
-
-	ern = ernold;
-	sigrn = sigrnold;
-
-	erpmaxmax = erpmaxmaxold;
-	ernmaxmax = ernmaxmaxold;
-
-	e0p = e0pold;
-	sig0p = sig0pold;
-
-	e0n = e0nold;
-	sig0n = sig0nold;
-
-	erntwoprev = erntwoprevold;
-	sigrntwoprev = sigrntwoprevold;
-	e0ntwoprev = e0ntwoprevold;
-	sig0ntwoprev = sig0ntwoprevold;
-
-	erptwoprev = erptwoprevold;
-	sigrptwoprev = sigrptwoprevold;
-	e0ptwoprev = e0ptwoprevold;
-	sig0ptwoprev = sig0ptwoprevold;
-
-	Rp = Rpold;
-	Rn = Rnold;
-
-	nloop = nloopold;
-
-	// Set trial strain
+	// Trial strain; trial history is set from committed (*old) state inside determineTrialState
 	def = strain;
-
-	// Calculate the trial state given the trial strain
-	this->determineTrialState(def);
+	determineTrialState(def);
 
 	return 0;
 }
@@ -353,50 +330,8 @@ int SteelMPF::setTrialStrain(double strain, double strainRate)
 
 int SteelMPF::setTrial (double strain, double &stress, double &tangent, double strainRate)
 {
-	// Reset history variables to last converged state
-	inc = incold;
-
-	Rptwoprev = Rptwoprevold;
-	Rntwoprev = Rntwoprevold;
-
-	outp = outpold;
-	outn = outnold;
-
-	erp = erpold;
-	sigrp = sigrpold;
-
-	ern = ernold;
-	sigrn = sigrnold;
-
-	erpmaxmax = erpmaxmaxold;
-	ernmaxmax = ernmaxmaxold;
-
-	e0p = e0pold;
-	sig0p = sig0pold;
-
-	e0n = e0nold;
-	sig0n = sig0nold;
-
-	erntwoprev = erntwoprevold;
-	sigrntwoprev = sigrntwoprevold;
-	e0ntwoprev = e0ntwoprevold;
-	sig0ntwoprev = sig0ntwoprevold;
-
-	erptwoprev = erptwoprevold;
-	sigrptwoprev = sigrptwoprevold;
-	e0ptwoprev = e0ptwoprevold;
-	sig0ptwoprev = sig0ptwoprevold;
-
-	Rp = Rpold;
-	Rn = Rnold;
-
-	nloop = nloopold;
-
-	// Set trial strain
 	def = strain;
-
-	// Calculate the trial state given the trial strain
-	this->determineTrialState(def);
+	determineTrialState(def);
 
 	stress = F; 
 	tangent = stif;
@@ -415,15 +350,19 @@ void SteelMPF::determineTrialState(double def)
 	// Determine initial loading condition
 	if (incold == 0) {
 
+		static const double strainTol = 1.0e-14;
+
 		Rptwoprev = R0;
 		Rntwoprev = R0;
 		outp = 1;
 		outn = 1;
 
-		if (e < 0.0) {
+		if (e < -strainTol) {
 			inc = -1;
-		} else {
+		} else if (e > strainTol) {
 			inc = 1;
+		} else {
+			inc = 0;
 		}
 
 		erp=0.0;
@@ -449,44 +388,52 @@ void SteelMPF::determineTrialState(double def)
 		e0ntwoprev=e0n;
 		sig0ntwoprev=sig0n;
 
-		if (e==0.0) {
-			nloop=0;
-		} else {
-			nloop=1;
-		}
-
 		Rp = R0;
 		Rn = R0;
 
-		if (inc==1) {
+		if (inc == 0) {
 
-			e0p=eyieldp;
-			sig0p=sigyieldp;
-			e0ptwoprev=e0p;
-			sig0ptwoprev=sig0p;
-
-			double estp=(e-erp)/(e0p-erp);
-			double sigstp=bp*estp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*estp; 
-			double sig=sigrp+sigstp*(sig0p-sigrp);
-			double Et=((sig0p-sigrp)/(e0p-erp))*(bp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*(1.0-pow(estp,Rp)/(1.0+pow(estp,Rp))));
-
-			F = sig;
-			stif = Et;
+			F = 0.0;
+			stif = E0;
+			nloop = 0;
 
 		} else {
 
-			e0n=-eyieldn;
-			sig0n=-sigyieldn;
-			e0ntwoprev=e0n;
-			sig0ntwoprev=sig0n;
+			nloop = 1;
 
-			double estn=(e-ern)/(e0n-ern);
-			double sigstn=bn*estn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*estn;
-			double sig=sigrn+sigstn*(sig0n-sigrn);
-			double Et=((sig0n-sigrn)/(e0n-ern))*(bn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*(1.0-pow(estn,Rn)/(1.0+pow(estn,Rn))));
+			if (inc==1) {
 
-			F = sig;
-			stif = Et;
+				e0p=eyieldp;
+				sig0p=sigyieldp;
+				e0ptwoprev=e0p;
+				sig0ptwoprev=sig0p;
+
+				double estp=(e-erp)/(e0p-erp);
+				double sigstp, etInnerp;
+				mpStressTangent(estp, Rp, bp, &sigstp, &etInnerp);
+				double sig=sigrp+sigstp*(sig0p-sigrp);
+				double Et=((sig0p-sigrp)/(e0p-erp))*etInnerp;
+
+				F = sig;
+				stif = Et;
+
+			} else {
+
+				e0n=-eyieldn;
+				sig0n=-sigyieldn;
+				e0ntwoprev=e0n;
+				sig0ntwoprev=sig0n;
+
+				double estn=(e-ern)/(e0n-ern);
+				double sigstn, etInnern;
+				mpStressTangent(estn, Rn, bn, &sigstn, &etInnern);
+				double sig=sigrn+sigstn*(sig0n-sigrn);
+				double Et=((sig0n-sigrn)/(e0n-ern))*etInnern;
+
+				F = sig;
+				stif = Et;
+
+			}
 
 		}
 
@@ -595,20 +542,23 @@ void SteelMPF::determineTrialState(double def)
 				}
 
 				double estn=(e-ern)/(e0n-ern);
-				double sigstn=bn*estn+((1.0-bn)/pow((1+pow(estn,Rn)),(1.0/Rn)))*estn;
+				double sigstn, etInnern;
+				mpStressTangent(estn, Rn, bn, &sigstn, &etInnern);
 
 				double sig=sigrn+sigstn*(sig0n-sigrn);
-				double Et=((sig0n-sigrn)/(e0n-ern))*(bn+((1.0-bn)/pow((1+pow(estn,Rn)),(1.0/Rn)))*(1.0-pow(estn,Rn)/(1+pow(estn,Rn))));
+				double Et=((sig0n-sigrn)/(e0n-ern))*etInnern;
 
 				double estnlimit=(e-erntwoprev)/(e0ntwoprev-erntwoprev);
-				double sigstnlimit=bn*estnlimit+((1.0-bn)/pow((1+pow(estnlimit,Rntwoprev)),(1.0/Rntwoprev)))*estnlimit;
+				double sigstnlimit, etInnerNlimit;
+				mpStressTangent(estnlimit, Rntwoprev, bn, &sigstnlimit, &etInnerNlimit);
 
 				double siglimit=sigrntwoprev+sigstnlimit*(sig0ntwoprev-sigrntwoprev);
-				double Etlimit=((sig0ntwoprev-sigrntwoprev)/(e0ntwoprev-erntwoprev))*(bn+((1.0-bn)/pow((1+pow(estnlimit,Rntwoprev)),(1.0/Rntwoprev)))*(1.0-pow(estnlimit,Rntwoprev)/(1+pow(estnlimit,Rntwoprev))));
+				double Etlimit=((sig0ntwoprev-sigrntwoprev)/(e0ntwoprev-erntwoprev))*etInnerNlimit;
 
 				double Rcontrol=Rntwoprev;
 				double estcontrol=(ern-erntwoprev)/(e0ntwoprev-erntwoprev);
-				double sigstcontrol=bn*estcontrol+((1-bn)/pow((1.0+pow(estcontrol,Rcontrol)),(1.0/Rcontrol)))*estcontrol;
+				double sigstcontrol;
+				mpStressTangent(estcontrol, Rcontrol, bn, &sigstcontrol, nullptr);
 				double sigcontrol=sigrntwoprev+sigstcontrol*(sig0ntwoprev-sigrntwoprev);
 
 				if (sigrn < sigcontrol) {
@@ -641,16 +591,18 @@ void SteelMPF::determineTrialState(double def)
 				Rp=Rpold;
 
 				double estp=(e-erp)/(e0p-erp);
-				double sigstp=bp*estp+((1.0-bp)/pow((1+pow(estp,Rp)),(1.0/Rp)))*estp;
+				double sigstp, etInnerp;
+				mpStressTangent(estp, Rp, bp, &sigstp, &etInnerp);
 
 				double sig=sigrp+sigstp*(sig0p-sigrp);
-				double Et=((sig0p-sigrp)/(e0p-erp))*(bp+((1.0-bp)/pow((1+pow(estp,Rp)),(1.0/Rp)))*(1.0-pow(estp,Rp)/(1+pow(estp,Rp))));
+				double Et=((sig0p-sigrp)/(e0p-erp))*etInnerp;
 
 				double estplimit=(e-erptwoprev)/(e0ptwoprev-erptwoprev);
-				double sigstplimit=bp*estplimit+((1.0-bp)/pow((1+pow(estplimit,Rptwoprev)),(1.0/Rptwoprev)))*estplimit;
+				double sigstplimit, etInnerPlimit;
+				mpStressTangent(estplimit, Rptwoprev, bp, &sigstplimit, &etInnerPlimit);
 
 				double siglimit=sigrptwoprev+sigstplimit*(sig0ptwoprev-sigrptwoprev);
-				double Etlimit=((sig0ptwoprev-sigrptwoprev)/(e0ptwoprev-erptwoprev))*(bp+((1.0-bp)/pow((1+pow(estplimit,Rptwoprev)),(1.0/Rptwoprev)))*(1.0-pow(estplimit,Rptwoprev)/(1+pow(estplimit,Rptwoprev))));
+				double Etlimit=((sig0ptwoprev-sigrptwoprev)/(e0ptwoprev-erptwoprev))*etInnerPlimit;
 
 				if (erp>erptwoprev && outp==0) {
 
@@ -674,7 +626,7 @@ void SteelMPF::determineTrialState(double def)
 			}
 		}
 
-		if (incold == -1) {
+		else if (incold == -1) {
 
 			if (e > eold) {
 
@@ -729,20 +681,23 @@ void SteelMPF::determineTrialState(double def)
 				}
 
 				double estp=(e-erp)/(e0p-erp);
-				double sigstp=bp*estp+((1.0-bp)/pow((1+pow(estp,Rp)),(1.0/Rp)))*estp;
+				double sigstp, etInnerp;
+				mpStressTangent(estp, Rp, bp, &sigstp, &etInnerp);
 
 				double sig=sigrp+sigstp*(sig0p-sigrp);
-				double Et=((sig0p-sigrp)/(e0p-erp))*(bp+((1.0-bp)/pow((1.0+pow(estp,Rp)),(1.0/Rp)))*(1.0-pow(estp,Rp)/(1.0+pow(estp,Rp))));
+				double Et=((sig0p-sigrp)/(e0p-erp))*etInnerp;
 
 				double estplimit=(e-erptwoprev)/(e0ptwoprev-erptwoprev);
-				double sigstplimit=bp*estplimit+((1.0-bp)/pow((1+pow(estplimit,Rptwoprev)),(1.0/Rptwoprev)))*estplimit;
+				double sigstplimit, etInnerPlimit;
+				mpStressTangent(estplimit, Rptwoprev, bp, &sigstplimit, &etInnerPlimit);
 
 				double siglimit=sigrptwoprev+sigstplimit*(sig0ptwoprev-sigrptwoprev);
-				double Etlimit=((sig0ptwoprev-sigrptwoprev)/(e0ptwoprev-erptwoprev))*(bp+((1.0-bp)/pow((1+pow(estplimit,Rptwoprev)),(1.0/Rptwoprev)))*(1.0-pow(estplimit,Rptwoprev)/(1+pow(estplimit,Rptwoprev))));
+				double Etlimit=((sig0ptwoprev-sigrptwoprev)/(e0ptwoprev-erptwoprev))*etInnerPlimit;
 
 				double Rcontrol=Rptwoprev;
 				double estcontrol=(erp-erptwoprev)/(e0ptwoprev-erptwoprev);
-				double sigstcontrol=bp*estcontrol+((1-bp)/pow((1.0+pow(estcontrol,Rcontrol)),(1.0/Rcontrol)))*estcontrol;
+				double sigstcontrol;
+				mpStressTangent(estcontrol, Rcontrol, bp, &sigstcontrol, nullptr);
 				double sigcontrol=sigrptwoprev+sigstcontrol*(sig0ptwoprev-sigrptwoprev);
 
 				if (sigrp > sigcontrol) {
@@ -773,16 +728,18 @@ void SteelMPF::determineTrialState(double def)
 				Rn=Rnold;
 
 				double estn=(e-ern)/(e0n-ern);
-				double sigstn=bn*estn+((1.0-bn)/pow((1+pow(estn,Rn)),(1.0/Rn)))*estn;
+				double sigstn, etInnern;
+				mpStressTangent(estn, Rn, bn, &sigstn, &etInnern);
 
 				double sig=sigrn+sigstn*(sig0n-sigrn);
-				double Et=((sig0n-sigrn)/(e0n-ern))*(bn+((1.0-bn)/pow((1.0+pow(estn,Rn)),(1.0/Rn)))*(1.0-pow(estn,Rn)/(1.0+pow(estn,Rn))));
+				double Et=((sig0n-sigrn)/(e0n-ern))*etInnern;
 
 				double estnlimit=(e-erntwoprev)/(e0ntwoprev-erntwoprev);
-				double sigstnlimit=bn*estnlimit+((1.0-bn)/pow((1+pow(estnlimit,Rntwoprev)),(1.0/Rntwoprev)))*estnlimit;
+				double sigstnlimit, etInnerNlimit;
+				mpStressTangent(estnlimit, Rntwoprev, bn, &sigstnlimit, &etInnerNlimit);
 
 				double siglimit=sigrntwoprev+sigstnlimit*(sig0ntwoprev-sigrntwoprev);
-				double Etlimit=((sig0ntwoprev-sigrntwoprev)/(e0ntwoprev-erntwoprev))*(bn+((1.0-bn)/pow((1+pow(estnlimit,Rntwoprev)),(1.0/Rntwoprev)))*(1.0-pow(estnlimit,Rntwoprev)/(1+pow(estnlimit,Rntwoprev))));
+				double Etlimit=((sig0ntwoprev-sigrntwoprev)/(e0ntwoprev-erntwoprev))*etInnerNlimit;
 
 				if (ern < erntwoprev && outn == 0) {
 

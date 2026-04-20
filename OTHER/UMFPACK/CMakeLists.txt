@@ -55,6 +55,22 @@ add_umflib(umf_store_lu_drop      umf_store_lu.c   DROP)
 add_umflib(umfpack_solve          umfpack_solve.c)
 add_umflib(umfpack_di_wsolve      umfpack_solve.c  WSOLVE)
 
+# DLONG variants (SuiteSparse_long indices, umfpack_dl_* entry points)
+add_umflib(umf_triplet_nomap_nox_dl  umf_triplet.c DLONG)
+add_umflib(umf_triplet_map_x_dl      umf_triplet.c    DO_MAP  DO_VALUES DLONG)
+add_umflib(umf_triplet_map_nox_dl    umf_triplet.c    DO_MAP DLONG)
+add_umflib(umf_triplet_nomap_x_dl    umf_triplet.c            DO_VALUES DLONG)
+add_umflib(umf_ltsolve_dl            umf_ltsolve.c DLONG)
+add_umflib(umf_lhsolve_dl            umf_ltsolve.c    CONJUGATE_SOLVE DLONG)
+add_umflib(umf_utsolve_dl            umf_utsolve.c DLONG)
+add_umflib(umf_uhsolve_dl            umf_utsolve.c    CONJUGATE_SOLVE DLONG)
+add_umflib(umf_assemble_dl           umf_assemble.c DLONG)
+add_umflib(umf_assemble_dl_fixq      umf_assemble.c   FIXQ DLONG)
+add_umflib(umf_store_lu_dl          umf_store_lu.c DLONG)
+add_umflib(umf_store_lu_drop_dl     umf_store_lu.c   DROP DLONG)
+add_umflib(umfpack_solve_dl         umfpack_solve.c DLONG)
+add_umflib(umfpack_dl_wsolve        umfpack_solve.c  WSOLVE DLONG)
+
 #----------------------------------------------------------
 # source files
 #----------------------------------------------------------
@@ -162,9 +178,15 @@ add_library(UMF OBJECT ${UMFCH})
 add_library(UMFPACK_GN OBJECT ${GENERIC})
 add_library(UMFPACK_II OBJECT ${UMFINT})
 add_library(UMFPACK_DI OBJECT ${UMF} ${UMFPACK_USER})
+add_library(UMF_DL OBJECT ${UMFCH})
+add_library(UMFPACK_II_DL OBJECT ${UMFINT})
+add_library(UMFPACK_DL OBJECT ${UMFPACK_USER})
 target_compile_definitions(UMF         PRIVATE DINT)
 target_compile_definitions(UMFPACK_II  PRIVATE DINT)
 target_compile_definitions(UMFPACK_DI  PRIVATE DINT)
+target_compile_definitions(UMF_DL      PRIVATE DLONG)
+target_compile_definitions(UMFPACK_II_DL PRIVATE DLONG)
+target_compile_definitions(UMFPACK_DL  PRIVATE DLONG)
 
 #----------------------------------------------------------------------
 # Create the libumfpack.a library
@@ -174,9 +196,12 @@ add_library(UMFPACK #INTERFACE)
 #target_sources(umfpack
   #"-Wl,--whole-archive"
   $<TARGET_OBJECTS:UMFPACK_DI>
+  $<TARGET_OBJECTS:UMFPACK_DL>
   $<TARGET_OBJECTS:UMFPACK_II>
+  $<TARGET_OBJECTS:UMFPACK_II_DL>
   $<TARGET_OBJECTS:UMFPACK_GN>
   $<TARGET_OBJECTS:UMF>
+  $<TARGET_OBJECTS:UMF_DL>
   #${UMF_CREATED}
   #"-Wl,--no-whole-archive"
   #${AMD_LIBRARIES}

@@ -30,6 +30,7 @@
 #include <DistributedDiagonalSolver.h>
 #include <DistributedDiagonalSOE.h>
 #include <Channel.h>
+#include <OPS_Globals.h>
 
 DistributedDiagonalSolver::DistributedDiagonalSolver(int classTag)
 :LinearSOESolver(classTag),
@@ -68,7 +69,15 @@ DistributedDiagonalSolver::setSize(void)
 int 
 DistributedDiagonalSolver::solve(void)
 {
+  if (theSOE == 0) {
+    opserr << "WARNING DistributedDiagonalSolver::solve(void)- no SOE set\n";
+    return -1;
+  }
+
   int size = theSOE->size;
+  if (size == 0)
+    return 0;
+
   int processID = theSOE->processID;
 
   Channel **theChannels = theSOE->theChannels;

@@ -187,6 +187,20 @@ ProfileSPDLinDirectThreadSolver::solve(void)
     // copy B into X
     for (int ii=0; ii<size; ii++)
 	X[ii] = B[ii];
+
+    if (size == 1) {
+	// ignoring positive definiteness check for n = 1
+	double a = A[0];
+	if (fabs(a) < 1.0e-15) {
+	    opserr << "ProfileSPDLinDirectThreadSolver::solve() - singular 1x1 (|aii| < 1e-15)\n";
+	    return -2;
+	}
+	X[0] = B[0] / a;
+	invD[0] = 1.0 / a;
+	theSOE->isAfactored = true;
+	theSOE->numInt = 0;
+	return 0;
+    }
     
     if (theSOE->isAfactored == false)  {
       // start threads running

@@ -44,6 +44,8 @@ StandardStream::~StandardStream()
 {
   if (fileOpen == 1)
     theFile.close();
+  if (indentString != 0)
+	delete [] indentString;
 }
 
 int 
