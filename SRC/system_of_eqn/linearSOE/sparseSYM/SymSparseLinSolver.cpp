@@ -33,10 +33,16 @@ void* OPS_SymSparseLinSolver()
     //   3 -- RCM
     int lSparse = 1;
     int numdata = 1;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
+    const int nargs = OPS_GetNumRemainingInputArgs();
+    // Match Tcl: read lSparse only when there is exactly one trailing argument.
+    if (nargs == 1) {
 	if (OPS_GetIntInput(&numdata, &lSparse) < 0) {
 	    opserr << "WARNING SparseSPD failed to read lSparse\n";
 	    return 0;
+	}
+    } else if (nargs > 1) {
+	while (OPS_GetNumRemainingInputArgs() > 0) {
+	    (void)OPS_GetString();
 	}
     }
 

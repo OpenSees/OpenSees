@@ -42,10 +42,15 @@
 
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 //#include <Timer.h>
 
 void* OPS_ProfileSPDLinDirectSolver()
 {
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        (void)OPS_GetString();
+    }
+
     ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver();
     ProfileSPDLinSOE* theSOE = new ProfileSPDLinSOE(*theSolver);
     return theSOE;

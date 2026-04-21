@@ -97,6 +97,8 @@ OPS_Stream *opserrPtr = &sserr;
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 extern void *OPS_UmfpackGenLinSolver(void);
 extern void *OPS_FullGenLinLapackSolver(void);
+extern void *OPS_ProfileSPDLinDirectSolver(void);
+extern void *OPS_SymSparseLinSolver(void);
 
 #include <packages.h>
 
@@ -361,8 +363,6 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #endif
 
 #include <SparseGenRowLinSOE.h>
-#include <SymSparseLinSOE.h>
-#include <SymSparseLinSolver.h>
 #include <EigenSOE.h>
 #include <EigenSolver.h>
 #include <ArpackSOE.h>
@@ -3128,64 +3128,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 
   else if (strcmp(argv[1],"ProfileSPD") == 0) {
-    // now must determine the type of solver to create from rest of args
-    ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver(); 	
-
-    /* *********** Some misc solvers i play with ******************
-    else if (strcmp(argv[2],"Normal") == 0) {
-      theSolver = new ProfileSPDLinDirectSolver(); 	
-    } 
-
-    else if (strcmp(argv[2],"Block") == 0) {  
-      int blockSize = 4;
-      if (argc == 4) {
-	if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-	  return TCL_ERROR;
-      }
-      theSolver = theSolver = new ProfileSPDLinDirectBlockSolver(1.0e-12,blockSize); 
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *prRes = OPS_ProfileSPDLinDirectSolver();
+    if (prRes == nullptr) {
+      return TCL_ERROR;
     }
-
-    
-      int blockSize = 4;
-      int numThreads = 1;
-      if (argc == 5) {
-	if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-	  return TCL_ERROR;
-	if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-	  return TCL_ERROR;
-      }
-      theSolver = new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12); 
-      } else if (strcmp(argv[2],"Thread") == 0) {  
-      int blockSize = 4;
-      int numThreads = 1;
-      if (argc == 5) {
-	if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-	  return TCL_ERROR;
-	if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-	  return TCL_ERROR;
-      }
-      theSolver = new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12); 
-    } 
-    else if (strcmp(argv[2],"Skypack") == 0) {  
-      if (argc == 5) {
-	int mCols, mRows;
-	if (Tcl_GetInt(interp, argv[3], &mCols) != TCL_OK)
-	  return TCL_ERROR;
-	if (Tcl_GetInt(interp, argv[4], &mRows) != TCL_OK)
-	  return TCL_ERROR;
-	theSolver = new ProfileSPDLinDirectSkypackSolver(mCols, mRows); 
-      } else 
-	theSolver = new ProfileSPDLinDirectSkypackSolver(); 	
-    }
-    else 
-      theSolver = new ProfileSPDLinDirectSolver(); 	
-    ***************************************************************  */
-
-#ifdef _PARALLEL_PROCESSING
-    theSOE = new DistributedProfileSPDLinSOE(*theSolver);
-#else
-    theSOE = new ProfileSPDLinSOE(*theSolver);      
-#endif
+    theSOE = static_cast<LinearSOE *>(prRes);
   }
 
 #ifdef _PARALLEL_INTERPRETERS
@@ -3478,21 +3426,13 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   
   else if ((strcmp(argv[1],"SparseSPD") == 0) || (strcmp(argv[1],"SparseSYM") == 0)) {
-    // now must determine the type of solver to create from rest of args
-
-    // now determine ordering scheme
-    //   1 -- MMD
-    //   2 -- ND
-    //   3 -- RCM
-    int lSparse = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &lSparse) != TCL_OK)
-	return TCL_ERROR;
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *symRes = OPS_SymSparseLinSolver();
+    if (symRes == nullptr) {
+      return TCL_ERROR;
     }
-
-    SymSparseLinSolver *theSolver = new SymSparseLinSolver();
-    theSOE = new SymSparseLinSOE(*theSolver, lSparse);      
-  }    
+    theSOE = static_cast<LinearSOE *>(symRes);
+  }
   else if ((strcmp(argv[1],"UmfPack") == 0) || (strcmp(argv[1],"Umfpack") == 0)) {
     OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
     void *umfRes = OPS_UmfpackGenLinSolver();
