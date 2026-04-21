@@ -101,6 +101,7 @@ extern void *OPS_ProfileSPDLinDirectSolver(void);
 extern void *OPS_SymSparseLinSolver(void);
 extern void *OPS_BandGenLinLapack(void);
 extern void *OPS_BandSPDLinLapack(void);
+extern void *OPS_SuperLUSolver(void);
 
 #include <packages.h>
 
@@ -3354,7 +3355,8 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // SPARSE GENERAL SOE * SOLVER
   else if ((strcmp(argv[1],"SparseGeneral") == 0) || (strcmp(argv[1],"SuperLU") == 0) ||
 	   (strcmp(argv[1],"SparseGEN") == 0)) {
-    
+#ifdef _PARALLEL_PROCESSING
+
     SparseGenColLinSolver *theSolver =0;    
     int count = 2;
     double thresh = 0.0;
@@ -3400,7 +3402,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theSolver = new ThreadedSuperLU(np, permSpec, panelSize, relax, thresh); 	
 #endif
 
-#ifdef _PARALLEL_PROCESSING
     if (theSolver != 0)
       delete theSolver;
     theSolver = 0;
@@ -3409,29 +3410,17 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theSolver = new DistributedSuperLU(npRow, npCol);
       opserr << "commands.cpp: DistributedSuperLU\n";
     }
-#else
 
-    char symmetric = 'N';
-    double drop_tol = 0.0;
-
-    while (count < argc) {
-      if (strcmp(argv[count],"s") == 0 || strcmp(argv[count],"symmetric") ||
-	  strcmp(argv[count],"-symm")) {
-	symmetric = 'Y';
-      }
-      count++;
-    }
-    
-    theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric); 	
-
-#endif
-
-#ifdef _PARALLEL_PROCESSING
     opserr << "commands.cpp: DistributedSparseGenColLinSOE\n";
 
     theSOE = new DistributedSparseGenColLinSOE(*theSolver);      
 #else
-    theSOE = new SparseGenColLinSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *sluRes = OPS_SuperLUSolver();
+    if (sluRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(sluRes);
 #endif
   }
 
