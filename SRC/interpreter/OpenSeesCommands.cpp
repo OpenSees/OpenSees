@@ -3820,7 +3820,7 @@ void* OPS_MumpsSolver() {
     int icntl14 = 20;
     int icntl7 = 7;
     int matType = 0; // 0: unsymmetric, 1: symmetric positive definite, 2: symmetric general
-    while (OPS_GetNumRemainingInputArgs() > 2) {
+    while (OPS_GetNumRemainingInputArgs() >= 2) {
         const char* opt = OPS_GetString();
         int num = 1;
         if (strcmp(opt, "-ICNTL14") == 0) {
