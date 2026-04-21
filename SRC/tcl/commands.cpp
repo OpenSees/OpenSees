@@ -102,6 +102,7 @@ extern void *OPS_SymSparseLinSolver(void);
 extern void *OPS_BandGenLinLapack(void);
 extern void *OPS_BandSPDLinLapack(void);
 extern void *OPS_SuperLUSolver(void);
+extern void *OPS_DiagonalDirectSolver(void);
 
 #include <packages.h>
 
@@ -3113,8 +3114,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       DistributedDiagonalSolver    *theSolver = new DistributedDiagonalSolver();   
       theSOE = new DistributedDiagonalSOE(*theSolver);
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *ddRes = OPS_DiagonalDirectSolver();
+    if (ddRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(ddRes);
 #endif
 
 
