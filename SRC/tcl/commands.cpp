@@ -96,6 +96,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <elementAPI.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 extern void *OPS_UmfpackGenLinSolver(void);
+extern void *OPS_FullGenLinLapackSolver(void);
 
 #include <packages.h>
 
@@ -296,8 +297,6 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <ItpackLinSolver.h>
 #endif
 
-#include <FullGenLinSOE.h>
-#include <FullGenLinLapackSolver.h>
 
 #include <ProfileSPDLinSOE.h>
 #include <ProfileSPDLinDirectSolver.h>
@@ -3518,9 +3517,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
   
   else if (strcmp(argv[1],"FullGeneral") == 0) {
-    // now must determine the type of solver to create from rest of args
-    FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
-    theSOE = new FullGenLinSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *fgRes = OPS_FullGenLinLapackSolver();
+    if (fgRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(fgRes);
   }
 
 #ifdef _PETSC
