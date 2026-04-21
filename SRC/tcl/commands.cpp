@@ -99,6 +99,8 @@ extern void *OPS_UmfpackGenLinSolver(void);
 extern void *OPS_FullGenLinLapackSolver(void);
 extern void *OPS_ProfileSPDLinDirectSolver(void);
 extern void *OPS_SymSparseLinSolver(void);
+extern void *OPS_BandGenLinLapack(void);
+extern void *OPS_BandSPDLinLapack(void);
 
 #include <packages.h>
 
@@ -286,13 +288,14 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <PFEMAnalysis.h>
 
 // system of eqn and solvers
+#include <ConjugateGradientSolver.h>
+
+#ifdef _PARALLEL_PROCESSING
 #include <BandSPDLinSOE.h>
 #include <BandSPDLinLapackSolver.h>
-
 #include <BandGenLinSOE.h>
 #include <BandGenLinLapackSolver.h>
-
-#include <ConjugateGradientSolver.h>
+#endif
 
 #ifdef _ITPACK
 #include <ItpackLinSOE.h>
@@ -492,7 +495,6 @@ bool setMPIDSOEFlag = false;
 #include <DistributedBandSPDLinSOE.h>
 #include <DistributedSparseGenColLinSOE.h>
 #include <DistributedSparseGenRowLinSOE.h>
-
 
 #include <DistributedBandGenLinSOE.h>
 #include <DistributedDiagonalSOE.h>
@@ -3068,11 +3070,16 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // BAND GENERAL SOE & SOLVER
   if ((strcmp(argv[1],"BandGeneral") == 0) || (strcmp(argv[1],"BandGEN") == 0)
       || (strcmp(argv[1],"BandGen") == 0)){
-    BandGenLinSolver    *theSolver = new BandGenLinLapackSolver();
 #ifdef _PARALLEL_PROCESSING
-    theSOE = new DistributedBandGenLinSOE(*theSolver);      
+    BandGenLinSolver *theSolver = new BandGenLinLapackSolver();
+    theSOE = new DistributedBandGenLinSOE(*theSolver);
 #else
-    theSOE = new BandGenLinSOE(*theSolver);      
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *bandRes = OPS_BandGenLinLapack();
+    if (bandRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(bandRes);
 #endif
   } 
 
@@ -3086,13 +3093,17 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   // BAND SPD SOE & SOLVER
   else if (strcmp(argv[1],"BandSPD") == 0) {
-      BandSPDLinSolver    *theSolver = new BandSPDLinLapackSolver();   
 #ifdef _PARALLEL_PROCESSING
-      theSOE = new DistributedBandSPDLinSOE(*theSolver);        
+    BandSPDLinSolver *theSolver = new BandSPDLinLapackSolver();
+    theSOE = new DistributedBandSPDLinSOE(*theSolver);
 #else
-      theSOE = new BandSPDLinSOE(*theSolver);        
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *bandRes = OPS_BandSPDLinLapack();
+    if (bandRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(bandRes);
 #endif
-
   } 
 
   // Diagonal SOE & SOLVER
