@@ -3864,8 +3864,7 @@ void* OPS_MumpsSolver() {
 #else
 #ifdef _MUMPS
     MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-    theSOE = new MumpsSOE(*theSolver, matType);
-    return theSOE;
+    return new MumpsSOE(*theSolver, matType);
 #endif
 #endif
     return 0;

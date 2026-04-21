@@ -104,6 +104,7 @@ extern void *OPS_BandSPDLinLapack(void);
 extern void *OPS_SuperLUSolver(void);
 extern void *OPS_DiagonalDirectSolver(void);
 extern void *OPS_MPIDiagonalSolver(void);
+extern void *OPS_MumpsSolver(void);
 
 #include <packages.h>
 
@@ -3558,6 +3559,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #ifdef _MUMPS
 
   else if (strcmp(argv[1],"Mumps") == 0) {
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 
     int icntl14 = 20;    
     int icntl7 = 7;
@@ -3590,15 +3592,21 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #ifdef _PARALLEL_PROCESSING
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
     theSOE = new MumpsParallelSOE(*theSolver);
-#elif _PARALLEL_INTERPRETERS
+#elif defined(_PARALLEL_INTERPRETERS)
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
     MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver, matType);
     theParallelSOE->setProcessID(OPS_rank);
     theParallelSOE->setChannels(numChannels, theChannels);
     theSOE = theParallelSOE;
+#endif
+
 #else
-    MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-    theSOE = new MumpsSOE(*theSolver, matType);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *mumpsRes = OPS_MumpsSolver();
+    if (mumpsRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(mumpsRes);
 #endif
 
   }
