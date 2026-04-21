@@ -103,6 +103,7 @@ extern void *OPS_BandGenLinLapack(void);
 extern void *OPS_BandSPDLinLapack(void);
 extern void *OPS_SuperLUSolver(void);
 extern void *OPS_DiagonalDirectSolver(void);
+extern void *OPS_MPIDiagonalSolver(void);
 
 #include <packages.h>
 
@@ -3127,12 +3128,20 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // Diagonal SOE & SOLVER
   else if (strcmp(argv[1],"MPIDiagonal") == 0) {
 #ifdef _PARALLEL_INTERPRETERS
-      MPIDiagonalSolver    *theSolver = new MPIDiagonalSolver();   
-      theSOE = new MPIDiagonalSOE(*theSolver);
-      setMPIDSOEFlag = true;
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *mpdRes = OPS_MPIDiagonalSolver();
+    if (mpdRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(mpdRes);
+    setMPIDSOEFlag = true;
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *ddRes = OPS_DiagonalDirectSolver();
+    if (ddRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(ddRes);
 #endif
   } 
 
