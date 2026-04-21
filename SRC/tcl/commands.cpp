@@ -95,6 +95,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 #include <elementAPI.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+extern void *OPS_UmfpackGenLinSolver(void);
 
 #include <packages.h>
 
@@ -363,8 +364,6 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <SparseGenRowLinSOE.h>
 #include <SymSparseLinSOE.h>
 #include <SymSparseLinSolver.h>
-#include <UmfpackGenLinSOE.h>
-#include <UmfpackGenLinSolver.h>
 #include <EigenSOE.h>
 #include <EigenSolver.h>
 #include <ArpackSOE.h>
@@ -3496,29 +3495,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     theSOE = new SymSparseLinSOE(*theSolver, lSparse);      
   }    
   else if ((strcmp(argv[1],"UmfPack") == 0) || (strcmp(argv[1],"Umfpack") == 0)) {
-    
-    // now must determine the type of solver to create from rest of args
-    int factLVALUE = 10;
-    int factorOnce=0;
-    int printTime = 0;
-    int count = 2;
-
-    while (count < argc) {
-      if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0) || (strcmp(argv[count],"-LVALUE") == 0)) {
-	if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
-	  return TCL_ERROR;
-	count++;
-      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-	factorOnce = 1;
-      } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
-	printTime = 1;
-      }
-      count++;
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *umfRes = OPS_UmfpackGenLinSolver();
+    if (umfRes == nullptr) {
+      return TCL_ERROR;
     }
-    
-    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
-    theSOE = new UmfpackGenLinSOE(*theSolver);      
+    theSOE = static_cast<LinearSOE *>(umfRes);
   }
 
 #ifdef _ITPACK
