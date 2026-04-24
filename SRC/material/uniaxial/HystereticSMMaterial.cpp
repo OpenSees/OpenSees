@@ -344,7 +344,14 @@ OPS_HystereticSMMaterial(void)
 
 
 
-    if (numArgs != 1 || nposEnv < 4 || nposEnv >14 || nnegEnv > 14 || npinchArray > 2 || ndamageArray > 2 || nposEnv == 1 || nposEnv == 3 || nposEnv == 5 || nposEnv == 7 || nposEnv == 9 || nposEnv == 11 || nposEnv == 13 || nnegEnv == 1 || nnegEnv == 3 || nnegEnv == 5 || nnegEnv == 7 || nnegEnv == 9 || nnegEnv == 11 || nnegEnv == 13) {
+    if (numArgs != 1 ||
+        nposEnv < 4 ||
+        nposEnv > 14 ||
+        nnegEnv > 14 ||
+        nposEnv % 2 != 0 ||
+        nnegEnv % 2 != 0 ||
+        npinchArray > 2 ||
+        ndamageArray > 2) {
         /*opserr << "numargs0 HystereticSM " << numargs0 << endln;
         opserr << "numOptionalArgs HystereticSM " << numOptionalArgs << endln;
         opserr << "numArgs HystereticSM " << numArgs << endln;*/
@@ -972,6 +979,7 @@ HystereticSMMaterial::HystereticSMMaterial(int tag, const Vector& posEnvIN, cons
     internalValues(38) = rotYn;
 
 
+    commitEnvelope();
 
     // Initialize history variables
     this->revertToStart();
@@ -1493,6 +1501,40 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
 
 }
 
+// new helpers, Silvia Mazzoni April 2026
+void
+HystereticSMMaterial::commitEnvelope()
+{
+    Cmom2p = mom2p; Cmom3p = mom3p; Cmom4p = mom4p;
+    Cmom5p = mom5p; Cmom6p = mom6p; Cmom7p = mom7p;
+
+    Crot2p = rot2p; Crot3p = rot3p; Crot4p = rot4p;
+    Crot5p = rot5p; Crot6p = rot6p; Crot7p = rot7p;
+
+    Cmom2n = mom2n; Cmom3n = mom3n; Cmom4n = mom4n;
+    Cmom5n = mom5n; Cmom6n = mom6n; Cmom7n = mom7n;
+
+    Crot2n = rot2n; Crot3n = rot3n; Crot4n = rot4n;
+    Crot5n = rot5n; Crot6n = rot6n; Crot7n = rot7n;
+}
+
+void
+HystereticSMMaterial::revertEnvelopeToCommit()
+{
+    mom2p = Cmom2p; mom3p = Cmom3p; mom4p = Cmom4p;
+    mom5p = Cmom5p; mom6p = Cmom6p; mom7p = Cmom7p;
+
+    rot2p = Crot2p; rot3p = Crot3p; rot4p = Crot4p;
+    rot5p = Crot5p; rot6p = Crot6p; rot7p = Crot7p;
+
+    mom2n = Cmom2n; mom3n = Cmom3n; mom4n = Cmom4n;
+    mom5n = Cmom5n; mom6n = Cmom6n; mom7n = Cmom7n;
+
+    rot2n = Crot2n; rot3n = Crot3n; rot4n = Crot4n;
+    rot5n = Crot5n; rot6n = Crot6n; rot7n = Crot7n;
+
+    this->setEnvelope();
+}
 
 
 int
@@ -1514,7 +1556,7 @@ HystereticSMMaterial::commitState(void)
 
     CdamfcPeak = TdamfcPeak;
 
-
+    commitEnvelope();
 
     return 0;
 }
@@ -1538,7 +1580,7 @@ HystereticSMMaterial::revertToLastCommit(void)
 
     TdamfcPeak = CdamfcPeak;
 
-
+    revertEnvelopeToCommit();
 
     return 0;
 }
@@ -1569,6 +1611,20 @@ HystereticSMMaterial::revertToStart(void)
     CdamfcPeak = 0.0;
     TdamfcPeak = 0.0;
 
+    mom2p = mom2p_ref; mom3p = mom3p_ref; mom4p = mom4p_ref;
+    mom5p = mom5p_ref; mom6p = mom6p_ref; mom7p = mom7p_ref;
+
+    rot2p = rot2p_ref; rot3p = rot3p_ref; rot4p = rot4p_ref;
+    rot5p = rot5p_ref; rot6p = rot6p_ref; rot7p = rot7p_ref;
+
+    mom2n = mom2n_ref; mom3n = mom3n_ref; mom4n = mom4n_ref;
+    mom5n = mom5n_ref; mom6n = mom6n_ref; mom7n = mom7n_ref;
+
+    rot2n = rot2n_ref; rot3n = rot3n_ref; rot4n = rot4n_ref;
+    rot5n = rot5n_ref; rot6n = rot6n_ref; rot7n = rot7n_ref;
+
+    this->setEnvelope();
+    commitEnvelope();
 
     return 0;
 }
@@ -1592,6 +1648,45 @@ HystereticSMMaterial::getCopy(void)
     theCopy->Cstrain = Cstrain;
     theCopy->Ttangent = Ttangent;
 
+    theCopy->CrotMaxDuctUsed = CrotMaxDuctUsed;
+    theCopy->CrotMinDuctUsed = CrotMinDuctUsed;
+    theCopy->TrotMaxDuctUsed = TrotMaxDuctUsed;
+    theCopy->TrotMinDuctUsed = TrotMinDuctUsed;
+
+    theCopy->CdamfcPeak = CdamfcPeak;
+    theCopy->TdamfcPeak = TdamfcPeak;
+
+    theCopy->mom2p_ref = mom2p_ref; theCopy->mom3p_ref = mom3p_ref; theCopy->mom4p_ref = mom4p_ref;
+    theCopy->mom5p_ref = mom5p_ref; theCopy->mom6p_ref = mom6p_ref; theCopy->mom7p_ref = mom7p_ref;
+
+    theCopy->rot1p_ref = rot1p_ref;
+    theCopy->rot2p_ref = rot2p_ref; theCopy->rot3p_ref = rot3p_ref; theCopy->rot4p_ref = rot4p_ref;
+    theCopy->rot5p_ref = rot5p_ref; theCopy->rot6p_ref = rot6p_ref; theCopy->rot7p_ref = rot7p_ref;
+
+    theCopy->mom2n_ref = mom2n_ref; theCopy->mom3n_ref = mom3n_ref; theCopy->mom4n_ref = mom4n_ref;
+    theCopy->mom5n_ref = mom5n_ref; theCopy->mom6n_ref = mom6n_ref; theCopy->mom7n_ref = mom7n_ref;
+
+    theCopy->rot1n_ref = rot1n_ref;
+    theCopy->rot2n_ref = rot2n_ref; theCopy->rot3n_ref = rot3n_ref; theCopy->rot4n_ref = rot4n_ref;
+    theCopy->rot5n_ref = rot5n_ref; theCopy->rot6n_ref = rot6n_ref; theCopy->rot7n_ref = rot7n_ref;
+
+    theCopy->Cmom2p = Cmom2p; theCopy->Cmom3p = Cmom3p; theCopy->Cmom4p = Cmom4p;
+    theCopy->Cmom5p = Cmom5p; theCopy->Cmom6p = Cmom6p; theCopy->Cmom7p = Cmom7p;
+
+    theCopy->Crot2p = Crot2p; theCopy->Crot3p = Crot3p; theCopy->Crot4p = Crot4p;
+    theCopy->Crot5p = Crot5p; theCopy->Crot6p = Crot6p; theCopy->Crot7p = Crot7p;
+
+    theCopy->Cmom2n = Cmom2n; theCopy->Cmom3n = Cmom3n; theCopy->Cmom4n = Cmom4n;
+    theCopy->Cmom5n = Cmom5n; theCopy->Cmom6n = Cmom6n; theCopy->Cmom7n = Cmom7n;
+
+    theCopy->Crot2n = Crot2n; theCopy->Crot3n = Crot3n; theCopy->Crot4n = Crot4n;
+    theCopy->Crot5n = Crot5n; theCopy->Crot6n = Crot6n; theCopy->Crot7n = Crot7n;
+
+    theCopy->KeP = KeP;
+    theCopy->KeN = KeN;
+    theCopy->damfc1Mag = damfc1Mag;
+    theCopy->ductBothSides = ductBothSides;
+
     return theCopy;
 }
 
@@ -1602,7 +1697,7 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
 {
     int res = 0;
 
-    static Vector data(48);
+    static Vector data(106);
 
     data(0) = this->getTag();
     data(1) = mom1p;
@@ -1653,6 +1748,42 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
     data(46) = Cstrain;
     data(47) = Ttangent;
 
+    data(48) = CrotMaxDuctUsed;
+    data(49) = CrotMinDuctUsed;
+    data(50) = TrotMaxDuctUsed;
+    data(51) = TrotMinDuctUsed;
+    data(52) = CdamfcPeak;
+    data(53) = TdamfcPeak;
+
+    data(54) = mom2p_ref; data(55) = mom3p_ref; data(56) = mom4p_ref;
+    data(57) = mom5p_ref; data(58) = mom6p_ref; data(59) = mom7p_ref;
+
+    data(60) = rot1p_ref;
+    data(61) = rot2p_ref; data(62) = rot3p_ref; data(63) = rot4p_ref;
+    data(64) = rot5p_ref; data(65) = rot6p_ref; data(66) = rot7p_ref;
+
+    data(67) = mom2n_ref; data(68) = mom3n_ref; data(69) = mom4n_ref;
+    data(70) = mom5n_ref; data(71) = mom6n_ref; data(72) = mom7n_ref;
+
+    data(73) = rot1n_ref;
+    data(74) = rot2n_ref; data(75) = rot3n_ref; data(76) = rot4n_ref;
+    data(77) = rot5n_ref; data(78) = rot6n_ref; data(79) = rot7n_ref;
+
+    data(80) = Cmom2p; data(81) = Cmom3p; data(82) = Cmom4p;
+    data(83) = Cmom5p; data(84) = Cmom6p; data(85) = Cmom7p;
+
+    data(86) = Crot2p; data(87) = Crot3p; data(88) = Crot4p;
+    data(89) = Crot5p; data(90) = Crot6p; data(91) = Crot7p;
+
+    data(92) = KeP;
+    data(93) = KeN;
+
+    data(94) = Cmom2n; data(95) = Cmom3n; data(96) = Cmom4n;
+    data(97) = Cmom5n; data(98) = Cmom6n; data(99) = Cmom7n;
+
+    data(100) = Crot2n; data(101) = Crot3n; data(102) = Crot4n;
+    data(103) = Crot5n; data(104) = Crot6n; data(105) = Crot7n;
+
 
     res = theChannel.sendVector(this->getDbTag(), commitTag, data);
     if (res < 0)
@@ -1668,7 +1799,7 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
 {
     int res = 0;
 
-    static Vector data(48);
+    static Vector data(106);
     res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
     if (res < 0) {
@@ -1725,7 +1856,41 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
         Cstrain = data(46);
         Ttangent = data(47);
 
+        CrotMaxDuctUsed = data(48);
+        CrotMinDuctUsed = data(49);
+        TrotMaxDuctUsed = data(50);
+        TrotMinDuctUsed = data(51);
+        CdamfcPeak = data(52);
+        TdamfcPeak = data(53);
 
+        mom2p_ref = data(54); mom3p_ref = data(55); mom4p_ref = data(56);
+        mom5p_ref = data(57); mom6p_ref = data(58); mom7p_ref = data(59);
+
+        rot1p_ref = data(60);
+        rot2p_ref = data(61); rot3p_ref = data(62); rot4p_ref = data(63);
+        rot5p_ref = data(64); rot6p_ref = data(65); rot7p_ref = data(66);
+
+        mom2n_ref = data(67); mom3n_ref = data(68); mom4n_ref = data(69);
+        mom5n_ref = data(70); mom6n_ref = data(71); mom7n_ref = data(72);
+
+        rot1n_ref = data(73);
+        rot2n_ref = data(74); rot3n_ref = data(75); rot4n_ref = data(76);
+        rot5n_ref = data(77); rot6n_ref = data(78); rot7n_ref = data(79);
+
+        Cmom2p = data(80); Cmom3p = data(81); Cmom4p = data(82);
+        Cmom5p = data(83); Cmom6p = data(84); Cmom7p = data(85);
+
+        Crot2p = data(86); Crot3p = data(87); Crot4p = data(88);
+        Crot5p = data(89); Crot6p = data(90); Crot7p = data(91);
+
+        KeP = data(92);
+        KeN = data(93);
+
+        Cmom2n = data(94); Cmom3n = data(95); Cmom4n = data(96);
+        Cmom5n = data(97); Cmom6n = data(98); Cmom7n = data(99);
+
+        Crot2n = data(100); Crot3n = data(101); Crot4n = data(102);
+        Crot5n = data(103); Crot6n = data(104); Crot7n = data(105);
 
         // set the trial values
         TrotMax = CrotMax;
@@ -1738,6 +1903,7 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
         Tstrain = Cstrain;
     }
 
+    revertEnvelopeToCommit();
     // Set envelope slopes
     this->setEnvelope();
 
@@ -2437,7 +2603,7 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
     }
     // max
     else if (strcmp(argv[0], "defoDCRMax") == 0) {
-        return new MaterialResponse(this, 312, Vector(7));
+        return new MaterialResponse(this, 312, Vector(14));
     }
 
     // user-defined limit states DCR
@@ -2469,9 +2635,9 @@ HystereticSMMaterial::setResponse(const char** argv, int argc, OPS_Stream& theOu
     else if (strcmp(argv[0], "AllData") == 0) {
         return new MaterialResponse(this, 99, Vector(48));
     }
-    //else if (strcmp(argv[0], "AllDataHeader") == 0) {
-    //    return new MaterialResponse(this, 991, 0.0);
-    //}
+    else if (strcmp(argv[0], "AllDataHeader") == 0) {
+        return new MaterialResponse(this, 991, 0.0);
+    }
 
     //by default, See if the response is one of the defaults
     Response* res = UniaxialMaterial::setResponse(argv, argc, theOutput);
@@ -2550,20 +2716,21 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     // max
     else if (responseID == 312) {
         static Vector data(14);
-        data(0) = this->CrotPu / rot1p;
-        data(0 + 7) = this->CrotNu / rot1n;
-        data(1) = this->CrotPu / rot2p;
-        data(1 + 7) = this->CrotNu / rot2n;
-        data(2) = this->CrotPu / rot3p;
-        data(2 + 7) = this->CrotNu / rot3n;
-        data(3) = this->CrotPu / rot4p;
-        data(3 + 7) = this->CrotNu / rot4n;
-        data(4) = this->CrotPu / rot5p;
-        data(4 + 7) = this->CrotNu / rot5n;
-        data(5) = this->CrotPu / rot6p;
-        data(5 + 7) = this->CrotNu / rot6n;
-        data(6) = this->CrotPu / rot7p;
-        data(6 + 7) = this->CrotNu / rot7n;
+        data(0) = this->CrotMax / rot1p;
+        data(1) = this->CrotMax / rot2p;
+        data(2) = this->CrotMax / rot3p;
+        data(3) = this->CrotMax / rot4p;
+        data(4) = this->CrotMax / rot5p;
+        data(5) = this->CrotMax / rot6p;
+        data(6) = this->CrotMax / rot7p;
+
+        data(7) = this->CrotMin / rot1n;
+        data(8) = this->CrotMin / rot2n;
+        data(9) = this->CrotMin / rot3n;
+        data(10) = this->CrotMin / rot4n;
+        data(11) = this->CrotMin / rot5n;
+        data(12) = this->CrotMin / rot6n;
+        data(13) = this->CrotMin / rot7n;
         return matInfo.setVector(data);
     }
 
@@ -2578,22 +2745,28 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     }
     // current step
     else if (responseID == 961) {
-        static Vector data(nDefoLimitStates);
+        Vector data(nDefoLimitStates);
         for (int i = 0; i < nDefoLimitStates; i++) {
-            data(i) = this->Cstrain / defoLimitStates[i];
+            const double limit = defoLimitStates[i];
+            data(i) = (limit != 0.0) ? this->Cstrain / limit : 0.0;
         }
         return matInfo.setVector(data);
     }
 
     // Maximum value
     else if (responseID == 962) {
-        static Vector data(nDefoLimitStates);
+        Vector data(nDefoLimitStates);
         for (int i = 0; i < nDefoLimitStates; i++) {
-            if (defoLimitStates[i] > 0) {
-                data(i) = this->CrotPu / defoLimitStates[i];
+            const double limit = defoLimitStates[i];
+
+            if (limit > 0.0) {
+                data(i) = this->CrotMax / limit;
+            }
+            else if (limit < 0.0) {
+                data(i) = this->CrotMin / limit;
             }
             else {
-                data(i) = this->CrotNu / defoLimitStates[i];
+                data(i) = 0.0;
             }
         }
         return matInfo.setVector(data);
@@ -2601,11 +2774,18 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
 
     // Maximum absolute
     else if (responseID == 963) {
-        static Vector data(nDefoLimitStates);
+        Vector data(nDefoLimitStates);
         for (int i = 0; i < nDefoLimitStates; i++) {
-            data(i) = fabs(CrotNu / defoLimitStates[i]);
-            if (fabs(CrotPu / defoLimitStates[i]) > data(i)) {
-                data(i) = fabs(CrotPu / defoLimitStates[i]);
+            const double limit = defoLimitStates[i];
+
+            if (limit != 0.0) {
+                data(i) = fabs(CrotMin / limit);
+                if (fabs(CrotMax / limit) > data(i)) {
+                    data(i) = fabs(CrotMax / limit);
+                }
+            }
+            else {
+                data(i) = 0.0;
             }
         }
         return matInfo.setVector(data);
@@ -2621,7 +2801,7 @@ HystereticSMMaterial::getResponse(int responseID, Information& matInfo)
     }
     // current step
     else if (responseID == 971) {
-        static Vector data(nForceLimitStates);
+        Vector data(nForceLimitStates);
         for (int i = 0; i < nForceLimitStates; i++) {
             data(i) = this->Cstress / forceLimitStates[i];
         }
