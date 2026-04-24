@@ -37,9 +37,14 @@
 #include <math.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
+#include <elementAPI.h>
 
 void* OPS_FullGenLinLapackSolver()
 {
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        (void)OPS_GetString();
+    }
+
     FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
     return new FullGenLinSOE(*theSolver);
 }

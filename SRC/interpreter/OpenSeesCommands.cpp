@@ -1434,11 +1434,12 @@ int OPS_System()
 
     } else if (strcmp(type,"MPIDiagonal") == 0) {
 #ifdef _PARALLEL_INTERPRETERS
-        MPIDiagonalSolver* theSolver = new MPIDiagonalSolver();
-        theSOE = new MPIDiagonalSOE(*theSolver);
+        theSOE = static_cast<LinearSOE *>(OPS_MPIDiagonalSolver());
+        if (theSOE == nullptr) {
+            return -1;
+        }
         setMPIDSOEFlag = true;
 #else
-	// Diagonal SOE & SOLVER
 	theSOE = (LinearSOE*)OPS_DiagonalDirectSolver();
 #endif
 
@@ -3819,7 +3820,7 @@ void* OPS_MumpsSolver() {
     int icntl14 = 20;
     int icntl7 = 7;
     int matType = 0; // 0: unsymmetric, 1: symmetric positive definite, 2: symmetric general
-    while (OPS_GetNumRemainingInputArgs() > 2) {
+    while (OPS_GetNumRemainingInputArgs() >= 2) {
         const char* opt = OPS_GetString();
         int num = 1;
         if (strcmp(opt, "-ICNTL14") == 0) {
@@ -3863,8 +3864,7 @@ void* OPS_MumpsSolver() {
 #else
 #ifdef _MUMPS
     MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-    theSOE = new MumpsSOE(*theSolver, matType);
-    return theSOE;
+    return new MumpsSOE(*theSolver, matType);
 #endif
 #endif
     return 0;
