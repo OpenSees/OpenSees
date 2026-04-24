@@ -364,13 +364,14 @@ OPS_HystereticSMMaterial(void)
 
     // Parsing was successful, allocate the material
     Vector theposEnv(posEnv.data(), (int)posEnv.size());
-    Vector thenegEnv(negEnv.data(), (int)negEnv.size());
-    Vector thepinchArray(pinchArray.data(), (int)pinchArray.size());
-    Vector thedamageArray(damageArray.data(), (int)damageArray.size());
-    Vector thedegEnvArray(degEnvArray.data(), (int)degEnvArray.size());
-    Vector therotYArray(rotYArray.data(), (int)rotYArray.size());
-    Vector theLSforce(forceLimitStates.data(), (int)forceLimitStates.size());
-    Vector theLSdefo(defoLimitStates.data(), (int)defoLimitStates.size());
+    // optional inputs:
+    Vector thenegEnv = negEnv.empty() ? Vector() : Vector(&negEnv[0], (int)negEnv.size());
+    Vector thepinchArray = pinchArray.empty() ? Vector() : Vector(&pinchArray[0], (int)pinchArray.size());
+    Vector thedamageArray = damageArray.empty() ? Vector() : Vector(&damageArray[0], (int)damageArray.size());
+    Vector thedegEnvArray = degEnvArray.empty() ? Vector() : Vector(&degEnvArray[0], (int)degEnvArray.size());
+    Vector therotYArray = rotYArray.empty() ? Vector() : Vector(&rotYArray[0], (int)rotYArray.size());
+    Vector theLSforce = forceLimitStates.size() > 0 ? Vector(&forceLimitStates[0], (int)forceLimitStates.size()) : Vector();
+    Vector theLSdefo = defoLimitStates.size() > 0 ? Vector(&defoLimitStates[0], (int)defoLimitStates.size()) : Vector();
 
 
     double tmp = 0;
