@@ -601,6 +601,11 @@ target_link_libraries(G3
 
 add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
+#
+# For UMFPACK long int DLONG version -- Gustavo, Michael
+#
+target_compile_definitions(OpenSeesLIB PUBLIC _UMFPACK_DLONG)
+
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
     OPS_Actor
