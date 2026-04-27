@@ -522,11 +522,14 @@ SeriesMaterial::sendSelf(int cTag, Channel &theChannel)
   }
 
   // Note: will not clash with Vector of length 5 above
-  Vector stateData(3*numMaterials);
+  Vector stateData(6*numMaterials);
   for (int i = 0; i < numMaterials; i++) {
     stateData(i               ) = strain[i];
     stateData(i+  numMaterials) = stress[i];
-    stateData(i+2*numMaterials) = flex[i];    
+    stateData(i+2*numMaterials) = flex[i];
+    stateData(i+3*numMaterials) = stress_n[i];
+    stateData(i+4*numMaterials) = tangent_n[i];
+    stateData(i+5*numMaterials) = strain_n[i];            
   }
   
   if (theChannel.sendVector(dataTag, cTag, stateData) < 0) {
@@ -589,6 +592,15 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
     if (flex != 0)
       delete [] flex;
 
+    if (stress_n != 0)
+      delete [] stress_n;
+
+    if (tangent_n != 0)
+      delete [] tangent_n;
+
+    if (strain_n != 0)
+      delete [] strain_n;
+    
     // allocate new memory for data
     numMaterials = (int)data(1);
     theModels = new UniaxialMaterial *[numMaterials];
@@ -617,6 +629,24 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
       opserr << "SeriesMaterial::recvSelf -- failed to allocate flex array" << endln;
       return -3;
     }
+
+    stress_n = new double [numMaterials];
+    if (stress_n == 0) {
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate stress_n array" << endln;
+      return -3;
+    }
+
+    tangent_n = new double [numMaterials];
+    if (tangent_n == 0) {
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate tangent_n array" << endln;
+      return -3;
+    }
+
+    strain_n = new double [numMaterials];
+    if (strain_n == 0) {
+      opserr << "SeriesMaterial::recvSelf -- failed to allocate strain_n array" << endln;
+      return -3;
+    }    
   }
 
   ID classTags(2*numMaterials);
@@ -625,7 +655,7 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
     return -4;
   }
 
-  Vector stateData(3*numMaterials);
+  Vector stateData(6*numMaterials);
   if (theChannel.recvVector(dataTag, cTag, stateData) < 0) {
     opserr << "SeriesMaterial::recvSelf -- failed to receive stateData Vector" << endln;
     return -5;
@@ -634,6 +664,9 @@ SeriesMaterial::recvSelf(int cTag, Channel &theChannel,
     strain[i] = stateData(i               );
     stress[i] = stateData(i+  numMaterials);
     flex[i]   = stateData(i+2*numMaterials);
+    stress_n[i]   = stateData(i+3*numMaterials);
+    tangent_n[i]  = stateData(i+4*numMaterials);
+    strain_n[i]   = stateData(i+5*numMaterials);    
   }
   
   for (int i = 0; i < numMaterials; i++) {
