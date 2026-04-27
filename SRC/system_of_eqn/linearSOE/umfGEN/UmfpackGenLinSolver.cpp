@@ -75,7 +75,9 @@ UmfpackGenLinSolver::~UmfpackGenLinSolver()
 {
     if (Symbolic != 0) {
         if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
             umfpack_dl_free_symbolic(&Symbolic);
+#endif
         } else {
             umfpack_di_free_symbolic(&Symbolic);
         }
@@ -119,6 +121,7 @@ UmfpackGenLinSolver::solve(void)
     void* Numeric = 0;
 
     if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
         // numeric analysis
         SuiteSparse_long *Ap = Ap64.data();
         SuiteSparse_long *Ai = Ai64.data();
@@ -148,6 +151,7 @@ UmfpackGenLinSolver::solve(void)
                    << " -- Umfpackgenlinsolver::solve\n";
             return -1;
         }
+#endif
     } else {
         // numeric analysis
         int *Ap = theSOE->Ap.data();
@@ -195,6 +199,7 @@ UmfpackGenLinSolver::setSize()
     }
 
     if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
         // set default control parameters
         umfpack_dl_defaults(Control);
         Control[UMFPACK_PIVOT_TOLERANCE] = 1.0;
@@ -221,6 +226,7 @@ UmfpackGenLinSolver::setSize()
             Symbolic = 0;
             return -1;
         }
+#endif
     } else {
         // set default control parameters
         umfpack_di_defaults(Control);
