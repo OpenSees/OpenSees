@@ -40,6 +40,82 @@
 #include <ConvergenceTest.h>
 #include <ID.h>
 
+#include <InitialInterpolatedLineSearch.h>
+#include <BisectionLineSearch.h>
+#include <SecantLineSearch.h>
+#include <RegulaFalsiLineSearch.h>
+
+#include <elementAPI.h>
+#include <string.h>
+
+// Shared Tcl/Python OPS_NewtonLineSearch; ConvergenceTest attached by interpreter.
+void* OPS_NewtonLineSearch()
+{
+    double tol        = 0.8;
+    int    maxIter    = 10;
+    double maxEta     = 10.0;
+    double minEta     = 0.1;
+    int    pFlag      = 1;
+    int    typeSearch = 0;
+
+    int numdata = 1;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* flag = OPS_GetString();
+
+	if (strcmp(flag, "-tol") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetDoubleInput(&numdata, &tol) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read tol\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-maxIter") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetIntInput(&numdata, &maxIter) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read maxIter\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-pFlag") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetIntInput(&numdata, &pFlag) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read pFlag\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-minEta") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetDoubleInput(&numdata, &minEta) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read minEta\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-maxEta") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetDoubleInput(&numdata, &maxEta) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read maxEta\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-type") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    const char* flag2 = OPS_GetString();
+	    if (strcmp(flag2, "Bisection") == 0)
+		typeSearch = 1;
+	    else if (strcmp(flag2, "Secant") == 0)
+		typeSearch = 2;
+	    else if (strcmp(flag2, "RegulaFalsi") == 0)
+		typeSearch = 3;
+	    else if (strcmp(flag2, "LinearInterpolated") == 0)
+		typeSearch = 3;
+	    else if (strcmp(flag2, "InitialInterpolated") == 0)
+		typeSearch = 0;
+	}
+    }
+
+    LineSearch *theLineSearch = 0;
+    if (typeSearch == 0)
+	theLineSearch = new InitialInterpolatedLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+    else if (typeSearch == 1)
+	theLineSearch = new BisectionLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+    else if (typeSearch == 2)
+	theLineSearch = new SecantLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+    else if (typeSearch == 3)
+	theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+
+    return new NewtonLineSearch(theLineSearch);
+}
+
 
 //Null Constructor
 NewtonLineSearch::NewtonLineSearch( )
@@ -57,6 +133,18 @@ NewtonLineSearch::NewtonLineSearch( ConvergenceTest &theT,
 {
   theOtherTest = theTest->getCopy(10);
   theOtherTest->setEquiSolnAlgo(*this);
+}
+
+
+// Constructor with deferred ConvergenceTest assignment.
+// The test is wired in later via setConvergenceTest() (e.g. by the
+// interpreter-level setAlgorithm() / StaticAnalysis bookkeeping). Keeps
+// argument-parsing factories like OPS_NewtonLineSearch() free from any
+// dependency on a specific interpreter's "current test" state.
+NewtonLineSearch::NewtonLineSearch(LineSearch *theSearch)
+:EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonLineSearch),
+ theTest(0), theOtherTest(0), theLineSearch(theSearch)
+{
 }
 
 

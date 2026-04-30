@@ -69,7 +69,7 @@ class SecantAccelerator3: public Accelerator
   Vector *vOld;
   Vector *rOld;
   Vector *r_1;
-    
+
   int maxIterations;
   int theTangent;
   bool cutOut;

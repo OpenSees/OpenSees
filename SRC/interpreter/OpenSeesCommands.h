@@ -579,6 +579,7 @@ void* OPS_ExplicitDifference();
 void* OPS_LinearAlgorithm();
 void* OPS_NewtonRaphsonAlgorithm();
 void* OPS_ModifiedNewton();
+void* OPS_NewtonHallM();
 void* OPS_Broyden();
 void* OPS_BFGS();
 

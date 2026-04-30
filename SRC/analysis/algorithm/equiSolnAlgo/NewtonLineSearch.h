@@ -46,6 +46,7 @@ class NewtonLineSearch: public EquiSolnAlgo
   public:
     NewtonLineSearch( );    
     NewtonLineSearch(ConvergenceTest &theTest, LineSearch *theLineSearch);
+    NewtonLineSearch(LineSearch *theLineSearch);
     ~NewtonLineSearch( );
 
     int solveCurrentStep(void);    
