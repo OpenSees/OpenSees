@@ -109,8 +109,8 @@ SecantAccelerator3::accelerate(Vector &vStar, LinearSOE &theSOE,
   // Current right hand side
   const Vector &rNew  = theSOE.getB();
 
-  // Store for next iteration
-  *r_1 = vStar;
+  // Local copy: incoming raw Newton increment before acceleration changes vStar
+  Vector rawNewton(vStar);
 
   // No acceleration on first iteration
   if (iteration == 0) {
@@ -120,14 +120,14 @@ SecantAccelerator3::accelerate(Vector &vStar, LinearSOE &theSOE,
     // Store gamma in rOld ... \gamma = R_i - R_{i-1}
     rOld->addVector(-1.0, rNew, 1.0);
 
-    // Store alpha in r_1 ... \alpha = r_i - r_{i-1}
-    r_1->addVector(-1.0, vStar, 1.0);
+    // Store alpha in r_1 ... \alpha = r_i - r_{i-1} (r_1 still holds r_{i-1} from last call)
+    r_1->addVector(-1.0, rawNewton, 1.0);
     
     double den = 1.0 / ((*vOld)^(*rOld));
     double C   = ((*vOld)^rNew) * den;
     double A   = 1.0-C;
     double B   = -C - ((*r_1)^rNew) * den + C*((*r_1)^(*rOld)) * den;
-    double D   = -C - A*(vStar^(*rOld))*den;
+    double D   = -C - A*(rawNewton^(*rOld))*den;
     double DA  = D/A;
 
     //opserr << "D = " << D << endln;
@@ -149,6 +149,7 @@ SecantAccelerator3::accelerate(Vector &vStar, LinearSOE &theSOE,
   // Store old values for next iteration
   *rOld = rNew;
   *vOld = vStar;
+  *r_1 = rawNewton;
 
   iteration++;
 

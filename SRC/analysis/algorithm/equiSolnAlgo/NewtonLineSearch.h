@@ -45,10 +45,13 @@ class NewtonLineSearch: public EquiSolnAlgo
 {
   public:
     NewtonLineSearch( );    
-    NewtonLineSearch(ConvergenceTest &theTest, LineSearch *theLineSearch);
+    NewtonLineSearch(ConvergenceTest &theTest, LineSearch *theLineSearch,
+		      int factorOnce = 0);
+    NewtonLineSearch(LineSearch *theLineSearch, int factorOnce = 0);
     ~NewtonLineSearch( );
 
-    int solveCurrentStep(void);    
+    int solveCurrentStep(void);
+    int domainChanged(void);
     int setConvergenceTest(ConvergenceTest *theNewTest);
     ConvergenceTest *getConvergenceTest(void);     
     
@@ -64,6 +67,9 @@ class NewtonLineSearch: public EquiSolnAlgo
     ConvergenceTest *theTest;
     ConvergenceTest *theOtherTest;
     LineSearch *theLineSearch;
+    // factorOnce: 0=every iter; 1->2 after one formTangent; 2=skip formTangent (reuse factor).
+    // domainChanged() resets 2->1.
+    int factorOnce;
 };
 
 #endif
