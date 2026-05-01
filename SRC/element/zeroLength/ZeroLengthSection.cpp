@@ -716,7 +716,7 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
 {
     Vector q(order);
     Matrix kb(order,order);
-    Vector &theVec = *(eleInfo.theVector);
+    Vector *theVec = eleInfo.theVector;
     
     switch (responseID) {
     case 1:
@@ -736,19 +736,19 @@ ZeroLengthSection::getResponse(int responseID, Information &eleInfo)
       return eleInfo.setMatrix(kb);
 
     case 20:
-      theVec(0) = transformation(0,0);
-      theVec(1) = transformation(0,1);
-      theVec(2) = transformation(0,2);
+      (*theVec)(0) = transformation(0,0);
+      (*theVec)(1) = transformation(0,1);
+      (*theVec)(2) = transformation(0,2);
       return 0;
     case 21:
-      theVec(0) = transformation(1,0);
-      theVec(1) = transformation(1,1);
-      theVec(2) = transformation(1,2);
+      (*theVec)(0) = transformation(1,0);
+      (*theVec)(1) = transformation(1,1);
+      (*theVec)(2) = transformation(1,2);
       return 0;
     case 22:
-      theVec(0) = transformation(2,0);
-      theVec(1) = transformation(2,1);
-      theVec(2) = transformation(2,2);
+      (*theVec)(0) = transformation(2,0);
+      (*theVec)(1) = transformation(2,1);
+      (*theVec)(2) = transformation(2,2);
       return 0;
       
     default:
