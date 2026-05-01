@@ -253,6 +253,9 @@ private:
 
 	void setEnvelope(void);
 
+	void commitEnvelope();
+	void revertEnvelopeToCommit();
+
 	double posEnvlpStress(double strain);
 	double negEnvlpStress(double strain);
 
@@ -276,9 +279,14 @@ private:
 	double rot2n_ref, rot3n_ref, rot4n_ref, rot5n_ref, rot6n_ref, rot7n_ref;
 	double rot1n_ref;
 
-
 	double CrotMaxDuctUsed, CrotMinDuctUsed;
 	double TrotMaxDuctUsed, TrotMinDuctUsed;
+
+	// these are needed, too, Silvia Mazzoni April 2026
+	double Cmom2p, Cmom3p, Cmom4p, Cmom5p, Cmom6p, Cmom7p;
+	double Crot2p, Crot3p, Crot4p, Crot5p, Crot6p, Crot7p;
+	double Cmom2n, Cmom3n, Cmom4n, Cmom5n, Cmom6n, Cmom7n;
+	double Crot2n, Crot3n, Crot4n, Crot5n, Crot6n, Crot7n;
 
 	// committed
 	double CdamfcPeak;
