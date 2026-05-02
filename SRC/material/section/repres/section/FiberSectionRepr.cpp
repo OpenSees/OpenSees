@@ -155,12 +155,21 @@ FiberSectionRepr::~FiberSectionRepr(void)
       delete [] reinfLayer;
    } 
    
-   if (theFibers != 0)
-       delete [] theFibers;  // NOTE: don't delete fiber objects themselves
-                             //       leave this to FiberSection destructor
+   if (theFibers != 0) {
+      for (i = 0; i < numFibers; i++)
+         if (theFibers[i])
+            delete theFibers[i];
 
-      if (theHFibers != 0)
-       delete [] theHFibers;  // NOTE: don't delete fiber objects themselves
+      delete [] theFibers;
+   }
+
+   if (theHFibers != 0) {
+      for (i = 0; i < numHFibers; i++)
+         if (theHFibers[i])
+            delete theHFibers[i];
+
+      delete [] theHFibers;
+   }
 
 }
         
