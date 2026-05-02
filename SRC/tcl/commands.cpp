@@ -95,6 +95,16 @@ OPS_Stream *opserrPtr = &sserr;
 
 #include <elementAPI.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+extern void *OPS_UmfpackGenLinSolver(void);
+extern void *OPS_FullGenLinLapackSolver(void);
+extern void *OPS_ProfileSPDLinDirectSolver(void);
+extern void *OPS_SymSparseLinSolver(void);
+extern void *OPS_BandGenLinLapack(void);
+extern void *OPS_BandSPDLinLapack(void);
+extern void *OPS_SuperLUSolver(void);
+extern void *OPS_DiagonalDirectSolver(void);
+extern void *OPS_MPIDiagonalSolver(void);
+extern void *OPS_MumpsSolver(void);
 
 #include <packages.h>
 
@@ -282,21 +292,20 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <PFEMAnalysis.h>
 
 // system of eqn and solvers
+#include <ConjugateGradientSolver.h>
+
+#ifdef _PARALLEL_PROCESSING
 #include <BandSPDLinSOE.h>
 #include <BandSPDLinLapackSolver.h>
-
 #include <BandGenLinSOE.h>
 #include <BandGenLinLapackSolver.h>
-
-#include <ConjugateGradientSolver.h>
+#endif
 
 #ifdef _ITPACK
 #include <ItpackLinSOE.h>
 #include <ItpackLinSolver.h>
 #endif
 
-#include <FullGenLinSOE.h>
-#include <FullGenLinLapackSolver.h>
 
 #include <ProfileSPDLinSOE.h>
 #include <ProfileSPDLinDirectSolver.h>
@@ -361,10 +370,6 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #endif
 
 #include <SparseGenRowLinSOE.h>
-#include <SymSparseLinSOE.h>
-#include <SymSparseLinSolver.h>
-#include <UmfpackGenLinSOE.h>
-#include <UmfpackGenLinSolver.h>
 #include <EigenSOE.h>
 #include <EigenSolver.h>
 #include <ArpackSOE.h>
@@ -494,7 +499,6 @@ bool setMPIDSOEFlag = false;
 #include <DistributedBandSPDLinSOE.h>
 #include <DistributedSparseGenColLinSOE.h>
 #include <DistributedSparseGenRowLinSOE.h>
-
 
 #include <DistributedBandGenLinSOE.h>
 #include <DistributedDiagonalSOE.h>
@@ -3070,11 +3074,16 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // BAND GENERAL SOE & SOLVER
   if ((strcmp(argv[1],"BandGeneral") == 0) || (strcmp(argv[1],"BandGEN") == 0)
       || (strcmp(argv[1],"BandGen") == 0)){
-    BandGenLinSolver    *theSolver = new BandGenLinLapackSolver();
 #ifdef _PARALLEL_PROCESSING
-    theSOE = new DistributedBandGenLinSOE(*theSolver);      
+    BandGenLinSolver *theSolver = new BandGenLinLapackSolver();
+    theSOE = new DistributedBandGenLinSOE(*theSolver);
 #else
-    theSOE = new BandGenLinSOE(*theSolver);      
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *bandRes = OPS_BandGenLinLapack();
+    if (bandRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(bandRes);
 #endif
   } 
 
@@ -3088,13 +3097,17 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   // BAND SPD SOE & SOLVER
   else if (strcmp(argv[1],"BandSPD") == 0) {
-      BandSPDLinSolver    *theSolver = new BandSPDLinLapackSolver();   
 #ifdef _PARALLEL_PROCESSING
-      theSOE = new DistributedBandSPDLinSOE(*theSolver);        
+    BandSPDLinSolver *theSolver = new BandSPDLinLapackSolver();
+    theSOE = new DistributedBandSPDLinSOE(*theSolver);
 #else
-      theSOE = new BandSPDLinSOE(*theSolver);        
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *bandRes = OPS_BandSPDLinLapack();
+    if (bandRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(bandRes);
 #endif
-
   } 
 
   // Diagonal SOE & SOLVER
@@ -3103,8 +3116,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       DistributedDiagonalSolver    *theSolver = new DistributedDiagonalSolver();   
       theSOE = new DistributedDiagonalSOE(*theSolver);
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *ddRes = OPS_DiagonalDirectSolver();
+    if (ddRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(ddRes);
 #endif
 
 
@@ -3112,12 +3129,20 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // Diagonal SOE & SOLVER
   else if (strcmp(argv[1],"MPIDiagonal") == 0) {
 #ifdef _PARALLEL_INTERPRETERS
-      MPIDiagonalSolver    *theSolver = new MPIDiagonalSolver();   
-      theSOE = new MPIDiagonalSOE(*theSolver);
-      setMPIDSOEFlag = true;
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *mpdRes = OPS_MPIDiagonalSolver();
+    if (mpdRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(mpdRes);
+    setMPIDSOEFlag = true;
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *ddRes = OPS_DiagonalDirectSolver();
+    if (ddRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(ddRes);
 #endif
   } 
 
@@ -3130,64 +3155,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   }
 
   else if (strcmp(argv[1],"ProfileSPD") == 0) {
-    // now must determine the type of solver to create from rest of args
-    ProfileSPDLinSolver *theSolver = new ProfileSPDLinDirectSolver(); 	
-
-    /* *********** Some misc solvers i play with ******************
-    else if (strcmp(argv[2],"Normal") == 0) {
-      theSolver = new ProfileSPDLinDirectSolver(); 	
-    } 
-
-    else if (strcmp(argv[2],"Block") == 0) {  
-      int blockSize = 4;
-      if (argc == 4) {
-	if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-	  return TCL_ERROR;
-      }
-      theSolver = theSolver = new ProfileSPDLinDirectBlockSolver(1.0e-12,blockSize); 
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *prRes = OPS_ProfileSPDLinDirectSolver();
+    if (prRes == nullptr) {
+      return TCL_ERROR;
     }
-
-    
-      int blockSize = 4;
-      int numThreads = 1;
-      if (argc == 5) {
-	if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-	  return TCL_ERROR;
-	if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-	  return TCL_ERROR;
-      }
-      theSolver = new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12); 
-      } else if (strcmp(argv[2],"Thread") == 0) {  
-      int blockSize = 4;
-      int numThreads = 1;
-      if (argc == 5) {
-	if (Tcl_GetInt(interp, argv[3], &blockSize) != TCL_OK)
-	  return TCL_ERROR;
-	if (Tcl_GetInt(interp, argv[4], &numThreads) != TCL_OK)
-	  return TCL_ERROR;
-      }
-      theSolver = new ProfileSPDLinDirectThreadSolver(numThreads,blockSize,1.0e-12); 
-    } 
-    else if (strcmp(argv[2],"Skypack") == 0) {  
-      if (argc == 5) {
-	int mCols, mRows;
-	if (Tcl_GetInt(interp, argv[3], &mCols) != TCL_OK)
-	  return TCL_ERROR;
-	if (Tcl_GetInt(interp, argv[4], &mRows) != TCL_OK)
-	  return TCL_ERROR;
-	theSolver = new ProfileSPDLinDirectSkypackSolver(mCols, mRows); 
-      } else 
-	theSolver = new ProfileSPDLinDirectSkypackSolver(); 	
-    }
-    else 
-      theSolver = new ProfileSPDLinDirectSolver(); 	
-    ***************************************************************  */
-
-#ifdef _PARALLEL_PROCESSING
-    theSOE = new DistributedProfileSPDLinSOE(*theSolver);
-#else
-    theSOE = new ProfileSPDLinSOE(*theSolver);      
-#endif
+    theSOE = static_cast<LinearSOE *>(prRes);
   }
 
 #ifdef _PARALLEL_INTERPRETERS
@@ -3397,7 +3370,8 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // SPARSE GENERAL SOE * SOLVER
   else if ((strcmp(argv[1],"SparseGeneral") == 0) || (strcmp(argv[1],"SuperLU") == 0) ||
 	   (strcmp(argv[1],"SparseGEN") == 0)) {
-    
+#ifdef _PARALLEL_PROCESSING
+
     SparseGenColLinSolver *theSolver =0;    
     int count = 2;
     double thresh = 0.0;
@@ -3443,7 +3417,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theSolver = new ThreadedSuperLU(np, permSpec, panelSize, relax, thresh); 	
 #endif
 
-#ifdef _PARALLEL_PROCESSING
     if (theSolver != 0)
       delete theSolver;
     theSolver = 0;
@@ -3452,73 +3425,36 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theSolver = new DistributedSuperLU(npRow, npCol);
       opserr << "commands.cpp: DistributedSuperLU\n";
     }
-#else
 
-    char symmetric = 'N';
-    double drop_tol = 0.0;
-
-    while (count < argc) {
-      if (strcmp(argv[count],"s") == 0 || strcmp(argv[count],"symmetric") ||
-	  strcmp(argv[count],"-symm")) {
-	symmetric = 'Y';
-      }
-      count++;
-    }
-    
-    theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric); 	
-
-#endif
-
-#ifdef _PARALLEL_PROCESSING
     opserr << "commands.cpp: DistributedSparseGenColLinSOE\n";
 
     theSOE = new DistributedSparseGenColLinSOE(*theSolver);      
 #else
-    theSOE = new SparseGenColLinSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *sluRes = OPS_SuperLUSolver();
+    if (sluRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(sluRes);
 #endif
   }
 
   
   else if ((strcmp(argv[1],"SparseSPD") == 0) || (strcmp(argv[1],"SparseSYM") == 0)) {
-    // now must determine the type of solver to create from rest of args
-
-    // now determine ordering scheme
-    //   1 -- MMD
-    //   2 -- ND
-    //   3 -- RCM
-    int lSparse = 1;
-    if (argc == 3) {
-      if (Tcl_GetInt(interp, argv[2], &lSparse) != TCL_OK)
-	return TCL_ERROR;
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *symRes = OPS_SymSparseLinSolver();
+    if (symRes == nullptr) {
+      return TCL_ERROR;
     }
-
-    SymSparseLinSolver *theSolver = new SymSparseLinSolver();
-    theSOE = new SymSparseLinSOE(*theSolver, lSparse);      
-  }    
+    theSOE = static_cast<LinearSOE *>(symRes);
+  }
   else if ((strcmp(argv[1],"UmfPack") == 0) || (strcmp(argv[1],"Umfpack") == 0)) {
-    
-    // now must determine the type of solver to create from rest of args
-    int factLVALUE = 10;
-    int factorOnce=0;
-    int printTime = 0;
-    int count = 2;
-
-    while (count < argc) {
-      if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0) || (strcmp(argv[count],"-LVALUE") == 0)) {
-	if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
-	  return TCL_ERROR;
-	count++;
-      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-	factorOnce = 1;
-      } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
-	printTime = 1;
-      }
-      count++;
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *umfRes = OPS_UmfpackGenLinSolver();
+    if (umfRes == nullptr) {
+      return TCL_ERROR;
     }
-    
-    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
-    // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
-    theSOE = new UmfpackGenLinSOE(*theSolver);      
+    theSOE = static_cast<LinearSOE *>(umfRes);
   }
 
 #ifdef _ITPACK
@@ -3536,9 +3472,12 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #endif
   
   else if (strcmp(argv[1],"FullGeneral") == 0) {
-    // now must determine the type of solver to create from rest of args
-    FullGenLinLapackSolver *theSolver = new FullGenLinLapackSolver();
-    theSOE = new FullGenLinSOE(*theSolver);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *fgRes = OPS_FullGenLinLapackSolver();
+    if (fgRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(fgRes);
   }
 
 #ifdef _PETSC
@@ -3620,6 +3559,7 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #ifdef _MUMPS
 
   else if (strcmp(argv[1],"Mumps") == 0) {
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
 
     int icntl14 = 20;    
     int icntl7 = 7;
@@ -3652,15 +3592,21 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 #ifdef _PARALLEL_PROCESSING
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
     theSOE = new MumpsParallelSOE(*theSolver);
-#elif _PARALLEL_INTERPRETERS
+#elif defined(_PARALLEL_INTERPRETERS)
     MumpsParallelSolver *theSolver = new MumpsParallelSolver(icntl7, icntl14);
     MumpsParallelSOE *theParallelSOE = new MumpsParallelSOE(*theSolver, matType);
     theParallelSOE->setProcessID(OPS_rank);
     theParallelSOE->setChannels(numChannels, theChannels);
     theSOE = theParallelSOE;
+#endif
+
 #else
-    MumpsSolver *theSolver = new MumpsSolver(icntl7, icntl14);
-    theSOE = new MumpsSOE(*theSolver, matType);
+    OPS_ResetInputNoBuilder(clientData, interp, 2, argc, argv, &theDomain);
+    void *mumpsRes = OPS_MumpsSolver();
+    if (mumpsRes == nullptr) {
+      return TCL_ERROR;
+    }
+    theSOE = static_cast<LinearSOE *>(mumpsRes);
 #endif
 
   }

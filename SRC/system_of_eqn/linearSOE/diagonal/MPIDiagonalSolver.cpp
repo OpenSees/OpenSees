@@ -16,21 +16,19 @@
 #include <MPIDiagonalSOE.h>
 #include <Channel.h>
 #include <elementAPI.h>
+#include <string>
 //#include <essl.h>
-
-
 
 void* OPS_MPIDiagonalSolver()
 {
   bool lumped = false;
-  if (OPS_GetNumRemainingInputArgs() > 0) {
+  while (OPS_GetNumRemainingInputArgs() > 0) {
     std::string arg = OPS_GetString();
-    if (arg == "lumped" || arg == "-lumped")
+    if (arg == "lumped" || arg == "-lumped") {
       lumped = true;
+    }
   }
 
-  opserr << "OPS_MPIDiagonalSolver lumped = " << (lumped ? "true" : "false" ) << endln; 
-  
   MPIDiagonalSolver *theSolver = new MPIDiagonalSolver();   
   return new MPIDiagonalSOE(*theSolver, lumped);
 }
