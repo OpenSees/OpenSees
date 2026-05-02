@@ -669,6 +669,9 @@ int
 stripOpenSeesXML(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 int
+getCriticalTimeStep(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
+
+int
 setParameter(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);
 
 //extern 
@@ -919,6 +922,8 @@ int OpenSeesAppInit(Tcl_Interp *interp) {
     Tcl_CreateCommand(interp, "database", &addDatabase, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);
     Tcl_CreateCommand(interp, "eigen", &eigenAnalysis, 
+		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
+    Tcl_CreateCommand(interp, "getCriticalTimeStep", &getCriticalTimeStep, 
 		      (ClientData)NULL, (Tcl_CmdDeleteProc *)NULL);       
     Tcl_CreateCommand(interp, "modalProperties", &modalProperties,
         (ClientData)NULL, (Tcl_CmdDeleteProc*)NULL);
@@ -5946,6 +5951,222 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
     }
     
     return TCL_OK;
+}
+
+int getCriticalTimeStep(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
+{
+  double safetyFactor = 1.0;
+  int loc = 1;
+
+  while(loc < argc) {
+    if ((strcmp(argv[loc],"-safetyFactor") == 0) || (strcmp(argv[loc],"-safety") == 0)) {
+       if (loc + 1 < argc) {
+         if (Tcl_GetDouble(interp, argv[loc+1], &safetyFactor) != TCL_OK) {
+            return TCL_ERROR;
+         }
+         loc += 2;
+       } else { 
+         opserr << "WARNING: getCriticalTimeStep - missing safety factor value\n";
+         return TCL_ERROR;
+       }
+    } else {
+       // Assume arg is safety factor if number
+       double val;
+       if (Tcl_GetDouble(interp, argv[loc], &val) == TCL_OK) {
+           safetyFactor = val;
+           loc++;
+       } else {
+           loc++;
+       }
+    }
+  }
+
+  if (theAnalysisModel == 0) {
+     opserr << "WARNING: No AnalysisModel built. Run analysis first or build model.\n";
+     char zero[] = "0.0";
+     Tcl_SetResult(interp, zero, TCL_VOLATILE);
+     return TCL_OK;
+  }
+
+  int numEqn = theAnalysisModel->getNumEqn();
+  if (numEqn == 0) {
+      char zero[] = "0.0";
+      Tcl_SetResult(interp, zero, TCL_VOLATILE);
+      return TCL_OK;
+  }
+
+  Vector RowSumK(numEqn);
+  Vector RowSumC(numEqn);
+  Vector DiagM(numEqn);
+  RowSumK.Zero();
+  RowSumC.Zero();
+  DiagM.Zero();
+
+  // 1. Accumulate Stiffness and Damping Row Sums
+  ElementIter &theEles = theDomain.getElements();
+  Element *ele;
+  int eleCount = 0;
+  while ((ele = theEles()) != 0) {
+      eleCount++;
+      const Matrix &K = ele->getTangentStiff();
+      const Matrix &C = ele->getDamp();
+      
+      Node **nodes = ele->getNodePtrs();
+      int numNodes = ele->getNumExternalNodes();
+      
+      // Iterate nodes to map local DOFs to global Equations
+      int localDOF = 0;
+      for (int i=0; i<numNodes; i++) {
+          Node *node = nodes[i];
+          DOF_Group *dofGrp = node->getDOF_GroupPtr();
+          if (dofGrp != 0) {
+              const ID &ids = dofGrp->getID();
+              int numNDOF = ids.Size();
+              
+              for (int j=0; j<numNDOF; j++) {
+                  int eqn = ids(j);
+                  if (eqn >= 0 && eqn < numEqn) {
+                      // Row Sum of K (local row = localDOF + j)
+                      // K is (totalDOF x totalDOF)
+                      // We sum absolute values of K(row, col)
+                      int row = localDOF + j;
+                      
+      // Stiffness
+                      if (row < K.noRows()) {
+                        int colOffset = 0;
+                        for (int n=0; n<numNodes; n++) {
+                            int colNDOF = nodes[n]->getNumberDOF();
+                            for (int d=0; d<colNDOF; d++) {
+                                int k = colOffset + d;
+                                int colEqn = nodes[n]->getDOF_GroupPtr()->getID()(d);
+                                if (colEqn >= 0) {
+                                    RowSumK(eqn) += fabs(K(row,k));
+                                }
+                            }
+                            colOffset += colNDOF;
+                        }
+                      }
+                      
+                      // Damping
+                      if (row < C.noRows()) {
+                        int colOffset = 0;
+                        for (int n=0; n<numNodes; n++) {
+                            int colNDOF = nodes[n]->getNumberDOF();
+                            for (int d=0; d<colNDOF; d++) {
+                                int k = colOffset + d;
+                                int colEqn = nodes[n]->getDOF_GroupPtr()->getID()(d);
+                                if (colEqn >= 0) {
+                                    RowSumC(eqn) += fabs(C(row,k));
+                                }
+                            }
+                            colOffset += colNDOF;
+                        }
+                      }
+                  }
+              }
+              localDOF += numNDOF;
+          }
+      }
+  }
+  
+  // 2. Accumulate Mass (Lumped at Nodes + Element contribution if any)
+  // Note: OpenSees 'DiagonalSOE' usually assembles Mass from Elements and Nodes.
+  // We recreate that here by iterating Nodes.
+  // (Elements usually return mass in getMass, but typically lumped mass is stored at Nodes in OpenSees for efficiency in explicit)
+  // However, consistent mass elements return Mass matrix. 
+  // We will iterate Nodes first for Nodal Mass.
+  
+  NodeIter &theNodes = theDomain.getNodes();
+  Node *node;
+  while ((node = theNodes()) != 0) {
+      const Matrix &M = node->getMass(); // Nodal mass (usually diagonal)
+      DOF_Group *dofGrp = node->getDOF_GroupPtr();
+      if (dofGrp != 0) {
+          const ID &ids = dofGrp->getID();
+          int numNDOF = ids.Size();
+          for (int j=0; j<numNDOF; j++) {
+             int eqn = ids(j);
+             if (eqn >= 0 && eqn < numEqn) {
+                 if (j < M.noRows())
+                    DiagM(eqn) += M(j,j); // Assume diagonal or take diagonal
+             }
+          }
+      }
+  }
+  
+  // Also add Element Mass (if elements provide mass matrix)
+  // This might double count if elements already added mass to nodes.
+  // In OpenSees, Mass is usually either at Node OR Element.
+  // If we assume standard OpenSees assembly:
+  // AnalysisModel::formMass() iterates domains and adds element mass to SOE mass.
+  // So we SHOULD iterate elements and add getMass() diagonal.
+  
+  ElementIter &theEles2 = theDomain.getElements();
+  while ((ele = theEles2()) != 0) {
+      const Matrix &M = ele->getMass();
+      if (M.noRows() > 0) {
+         Node **nodes = ele->getNodePtrs();
+         int numNodes = ele->getNumExternalNodes();
+         int localDOF = 0;
+         for (int i=0; i<numNodes; i++) {
+             Node *node = nodes[i];
+             DOF_Group *dofGrp = node->getDOF_GroupPtr();
+             if (dofGrp != 0) {
+                  const ID &ids = dofGrp->getID();
+                  int numNDOF = ids.Size();
+                  for (int j=0; j<numNDOF; j++) {
+                      int eqn = ids(j);
+                      if (eqn >= 0 && eqn < numEqn) {
+                          int row = localDOF + j;
+                          if (row < M.noRows())
+                             DiagM(eqn) += M(row,row); // Diagonal only
+                      }
+                  }
+                  localDOF += numNDOF;
+             }
+         }
+      }
+  }
+
+  // 3. Local Max Frequency
+  double maxLambda = 0.0;
+  double maxD = 0.0;
+  
+  for (int i=0; i<numEqn; i++) {
+      double m = DiagM(i);
+      if (m > 1e-12) {
+          double lambda = RowSumK(i) / m;
+          double d = RowSumC(i) / m;
+          if (lambda > maxLambda) maxLambda = lambda;
+          if (d > maxD) maxD = d;
+      }
+  }
+  
+  // 4. Distributed Reduction
+  double globalMaxLambda = maxLambda;
+  double globalMaxD = maxD;
+  
+#if defined(_PARALLEL_PROCESSING) || defined(_PARALLEL_INTERPRETERS)
+   MPI_Allreduce(&maxLambda, &globalMaxLambda, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+   MPI_Allreduce(&maxD, &globalMaxD, 1, MPI_DOUBLE, MPI_MAX, MPI_COMM_WORLD);
+#endif
+
+  // 5. Critical Time Step
+  double omegaMax = sqrt(globalMaxLambda);
+  double dt = 0.0;
+  
+  if (omegaMax > 0.0) {
+      double xi = globalMaxD / (2.0 * omegaMax);
+      dt = (2.0 / omegaMax) * (sqrt(1.0 + xi*xi) - xi);
+  }
+  
+  dt *= safetyFactor;
+
+  char buffer[40];
+  sprintf(buffer, "%.10e", dt);
+  Tcl_SetResult(interp, buffer, TCL_VOLATILE);
+
+  return TCL_OK;
 }
 
 int 
