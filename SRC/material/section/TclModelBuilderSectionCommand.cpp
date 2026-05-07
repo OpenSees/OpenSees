@@ -1811,9 +1811,10 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 
 	 //SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
    
-	 // Delete fibers created for patches and layers
-	 for (i = numSectionRepresFibers; i < numFibers; i++)
-	   delete fiber[i];
+   // Delete temporary fibers created from patches/layers. Fibers added
+   // explicitly via the `fiber` command are owned by FiberSectionRepr.
+   for (i = numSectionRepresFibers; i < numFibers; i++)
+     delete fiber[i];
 
          if (section == 0)
          {
@@ -1869,9 +1870,10 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 else
 	   section = new FiberSection3d(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid);
    
-	 // Delete fibers
-	 for (i = numSectionRepresFibers; i < numFibers; i++)
-	   delete fiber[i];
+   // Delete temporary fibers created from patches/layers. Fibers added
+   // explicitly via the `fiber` command are owned by FiberSectionRepr.
+   for (i = numSectionRepresFibers; i < numFibers; i++)
+     delete fiber[i];
 
          if (section == 0)
          {
@@ -2070,11 +2072,11 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 
 	 SectionForceDeformation *section = new FiberSection2dInt(secTag, numFibers, fiber, numHFibers, Hfiber, NStrip1, t1, NStrip2, t2, NStrip3, t3);
 
-	 // Delete fibers
-	 for (i = 0; i < numFibers; i++)
+	 // Delete temporary fibers created from patches/layers only.
+	 for (i = numSectionRepresFibers; i < numFibers; i++)
 	   delete fiber[i];
 
-	 for (i = 0; i < numHFibers; i++)
+	 for (i = numSectionRepresHFibers; i < numHFibers; i++)
 	   delete Hfiber[i];
 
          if (section == 0)
@@ -2120,8 +2122,8 @@ buildSectionInt(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 SectionForceDeformation *section = 0;
 	 section = new FiberSection3d(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid);
    
-	 // Delete fibers
-	 for (i = 0; i < numFibers; i++)
+	 // Delete temporary fibers created from patches/layers only.
+	 for (i = numSectionRepresFibers; i < numFibers; i++)
 	   delete fiber[i];
 
          if (section == 0)
