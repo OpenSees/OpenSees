@@ -118,7 +118,12 @@ FiberSection3d::FiberSection3d(int tag, int num, Fiber **fibers,
   QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
-  if (numFibers != 0) {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection3d::FiberSection3d -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+  
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -188,7 +193,12 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial &torsion, bool
     QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
     sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
-    if(sizeFibers != 0) {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection3d::FiberSection3d -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+ 
+    if(sizeFibers > 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
 
 	if (theMaterials == 0) {
@@ -240,7 +250,12 @@ FiberSection3d::FiberSection3d(int tag, int num, UniaxialMaterial **mats,
   QzBar(0.0), QyBar(0.0), Abar(0.0), yBar(0.0), zBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(4), s(0), ks(0), theTorsion(0)
 {
-  if (numFibers != 0) {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection3d::FiberSection3d -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+ 
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -333,6 +348,11 @@ FiberSection3d::FiberSection3d():
 int
 FiberSection3d::addFiber(Fiber &newFiber)
 {
+  if (numFibers >= 10000) {
+    opserr << "ERROR: FiberSection3d::addFiber -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+  
   // need to create a larger array
   if(numFibers == sizeFibers) {
       int newSize = 2*sizeFibers;
