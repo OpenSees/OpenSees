@@ -120,7 +120,12 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, Fiber **fibers,
   sectionIntegr(0), e(4), eCommit(4), s(0), ks(0), theTorsion(0), sT(3), Fiber_T(0), Fiber_TMax(0),
   parameterID(0), SHVs(0), AverageThermalElong(4)
 {
-  if (numFibers != 0) {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection3d::FiberSection3dThermal -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+  
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -211,6 +216,10 @@ FiberSection3dThermal::FiberSection3dThermal(int tag, int num, UniaxialMaterial 
   sT(3), Fiber_T(0), Fiber_TMax(0),
   parameterID(0), SHVs(0), AverageThermalElong(4)
 {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection3d::FiberSection3dThermal -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
   if(sizeFibers > 0) {
     theMaterials = new UniaxialMaterial *[sizeFibers];
     
@@ -307,6 +316,11 @@ FiberSection3dThermal::FiberSection3dThermal():
 int
 FiberSection3dThermal::addFiber(Fiber &newFiber)
 {
+  if (numFibers >= 10000) {
+    opserr << "ERROR: FiberSection3dThermal::addFiber -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+  
   // need to create a larger array
   if(numFibers == sizeFibers) {
       int newSize = 2*sizeFibers;
@@ -508,7 +522,7 @@ FiberSection3dThermal::setTrialSectionDeformation (const Vector &deforms)
   kData[4] = kData[1];
   kData[8] = kData[2];
   kData[9] = kData[6];
-
+ 
   if (theTorsion != 0) {
     res += theTorsion->setTrial(d3, stress, tangent);
     sData[3] = stress;
@@ -915,12 +929,10 @@ FiberSection3dThermal::sendSelf(int commitTag, Channel &theChannel)
 {
   int res = 0;
 
-  // create an id to send objects tag and numFibers,
-  //     size 3 so no conflict with matData below if just 1 fiber
+  // create an id to send objects tag and numFibers, 
   static ID data(9);
   data(0) = this->getTag();
   data(1) = numFibers;
-  //data(2) = computeCentroid ? 1 : 0; // Now the ID data is really 3
   data(2) = (theTorsion != 0) ? 1 : 0;
   if (theTorsion != 0) {
     data(3) = theTorsion->getClassTag();
