@@ -8724,9 +8724,8 @@ InitialStateAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
     // FMK changes for parallel: 
     // ops_InitialStateAnalysis = true;
 
-    Parameter *theP = new InitialStateParameter(true);
-    theDomain.addParameter(theP);
-    delete theP;
+    InitialStateParameter theP(true);
+    theP.setDomain(&theDomain);
 
     return TCL_OK;
     
@@ -8739,9 +8738,8 @@ InitialStateAnalysis(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Ch
     // set global variable to false
     // FMK changes for parallel
     // ops_InitialStateAnalysis = false;
-    Parameter *theP = new InitialStateParameter(false);
-    theDomain.addParameter(theP);
-    delete theP;
+    InitialStateParameter theP(false);
+    theP.setDomain(&theDomain);
 
     return TCL_OK;
     
