@@ -850,6 +850,51 @@ int OPS_setStrain() {
   return 0;
 }
 
+int OPS_setTrialStrain() {
+    if (OPS_GetNumRemainingInputArgs() < 1) {
+        opserr << "testUniaxialMaterial - You must provide a strain "
+            "value.\n";
+        return -1;
+    }
+
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+
+    if (material == 0) {
+        opserr << "setStrain WARNING no active UniaxialMaterial - "
+            "use testUniaxialMaterial command.\n";
+        return -1;
+    }
+
+    double strain;
+    int numData = 1;
+    if (OPS_GetDoubleInput(&numData, &strain) < 0) {
+        opserr << "invalid double value\n";
+        return -1;
+    }
+
+    double strainRate = 0.0;
+    if (OPS_GetNumRemainingInputArgs() > 0) {
+        if (OPS_GetDoubleInput(&numData, &strainRate) < 0) {
+            opserr << "invalid strain rate\n";
+            return -1;
+        }
+    }
+
+    material->setTrialStrain(strain, strainRate);
+    return 0;
+}
+
+int OPS_commitState() {
+    UniaxialMaterial* material = theTestingUniaxialMaterial;
+
+    if (material == 0) {
+        opserr << "setStrain WARNING no active UniaxialMaterial - "
+            "use testUniaxialMaterial command.\n";
+        return -1;
+    }
+    material->commitState();
+}
+
 int OPS_getStrain() {
   UniaxialMaterial* material = theTestingUniaxialMaterial;
   if (material == 0) {

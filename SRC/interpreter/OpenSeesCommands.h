@@ -202,6 +202,8 @@ private:
 int OPS_UniaxialMaterial();
 int OPS_testUniaxialMaterial();
 int OPS_setStrain();
+int OPS_setTrialStrain();
+int OPS_commitState();
 int OPS_getStrain();
 int OPS_getStress();
 int OPS_getTangent();
