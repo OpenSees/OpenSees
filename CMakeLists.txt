@@ -802,7 +802,7 @@ if(MPI_FOUND)
 
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    if (NOT DEFINED MUMPS_DIR)
+    if (DEFINED MUMPS_DIR)
         add_dependencies(OpenSeesMP mumps)
     endif()
 
