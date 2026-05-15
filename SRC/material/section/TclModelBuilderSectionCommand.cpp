@@ -2488,8 +2488,9 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 
 			SectionForceDeformation *section = new FiberSection2dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
 
-			// Delete fibers
-			for (i = 0; i < numFibers; i++)
+			// Delete temporary fibers created from patches/layers. Fibers added
+			// explicitly via the `fiber` command are owned by FiberSectionRepr.
+			for (i = numSectionRepresFibers; i < numFibers; i++)
 				delete fiber[i];
 
 			if (section == 0)
@@ -2533,11 +2534,12 @@ int buildSectionThermal(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 			//SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 
 			SectionForceDeformation *section = 0;
-            section = new FiberSection3dThermal(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid); // GR
-            // section = new FiberSection3dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
+			section = new FiberSection3dThermal(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid); // GR
+			// section = new FiberSection3dThermal(secTag, numFibers, fiber, currentSectionComputeCentroid);
 
-			// Delete fibers
-			for (i = 0; i < numFibers; i++)
+			// Delete temporary fibers created from patches/layers. Fibers added
+			// explicitly via the `fiber` command are owned by FiberSectionRepr.
+			for (i = numSectionRepresFibers; i < numFibers; i++)
 				delete fiber[i];
 			if (section == 0)
 			{
@@ -2825,8 +2827,9 @@ buildSectionAsym(Tcl_Interp* interp, TclModelBuilder* theTclModelBuilder,
 
 			//SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 
-			// Delete fibers
-			for (i = 0; i < numFibers; i++)
+			// Delete temporary fibers created from patches/layers. Fibers added
+			// explicitly via the `fiber` command are owned by FiberSectionRepr.
+			for (i = numSectionRepresFibers; i < numFibers; i++)
 				delete fiber[i];
 
 			if (section == 0)
@@ -2889,8 +2892,9 @@ buildSectionAsym(Tcl_Interp* interp, TclModelBuilder* theTclModelBuilder,
 			else
 				section = new FiberSectionAsym3d(secTag, numFibers, fiber, 0, Ys, Zs); //Xinlong
 
-			// Delete fibers
-			for (i = 0; i < numFibers; i++)
+			// Delete temporary fibers created from patches/layers. Fibers added
+			// explicitly via the `fiber` command are owned by FiberSectionRepr.
+			for (i = numSectionRepresFibers; i < numFibers; i++)
 				delete fiber[i];
 
 			if (section == 0)
