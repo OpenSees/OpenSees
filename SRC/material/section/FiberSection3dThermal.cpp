@@ -648,7 +648,8 @@ FiberSection3dThermal::getTemperatureStress(const Vector& dataMixed)
     //  double strain = -ThermalElongation;
     //  theMat->setTrialTemperature(strain, FiberTemperature, stress, tangent, ThermalElongation);
     Fiber_T[i] = FiberTemperature;
-	Fiber_TMax[i] = FiberTempMax;
+    if (FiberTemperature > Fiber_TMax[i]) Fiber_TMax[i] = FiberTemperature;
+
     ThermalTangent[i] = tangent;
 	ThermalElong[i] = ThermalElongation;
 
