@@ -413,7 +413,7 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
     
   if (!theCoordTransf) {
     opserr << "ElasticBeam2d::ElasticBeam2d -- failed to get copy of coordinate transformation\n";
-    exit(01);
+    exit(-1);
   }
 
   // Make no release if input not 0, 1, 2, or 3
