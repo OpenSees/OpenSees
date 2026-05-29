@@ -18,21 +18,28 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.1 $
-// $Date: 2008/12/09 20:00:16 $
-// $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/ElasticPPcpp.h,v $
-                                                                        
+/* Modification by: Juan Fernando Velásquez Bedoya (jfvelasq@unal.edu.co)
+** Universidad Nacional de Colombia - Facultad de Minas
+** Date       : May 2026
+** Description: Rate-Dependent Steel Model with Pinching for Cyclic Loading
+*
+* Extension of the SteelDRC model that incorporates:
+*   1. Strain-rate effects via additive Voigt-type viscous overstress
+*   2. Quadrant-dependent pinching formulation for stiffness degradation
+*      due to bond-slip at steel-concrete interface
+*
+* The rate-dependent term captures dynamic strain aging and Portevin-Le
+*   Châtelier (PLC) band activity observed in Grade 60 reinforcing steel
+*   under fully reversed cyclic loading. The overstress scales with
+*   strain-rate excursions, with calibrated parameters kf = 125 and np_visc = 0.75.
+*
+* The pinching formulation is governed by two dimensionless parameters:
+*   lambda  (curvature factor, default = 1.5, range: 0.5-2.5)
+*   np      (sharpness exponent, default = 2.0, range: 0.5-3.5)
+*/
+
 #ifndef SteelDRCV_H_
 #define SteelDRCV_H_
-
-// Written by: Rodrigo Carreno 
-//
-// Description: This file contains the class definition for the steel material originally
-// developed by DOdd and Restrepo, with added corrections for efficiency, stability and 
-// including post fracture behavior.
-//
-// What: "@(#) SteelDRCV.h, revA" 
-// Date: 2017/11/21
 
 #include <UniaxialMaterial.h>
 #include <string>

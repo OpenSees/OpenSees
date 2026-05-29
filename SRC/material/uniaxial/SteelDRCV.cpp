@@ -19,23 +19,35 @@
 ** ****************************************************************** */
 /* ********************************************************************
 ** Code developed at UC San Diego
-**
-** Programmed by: Rodrigo Carreno (rpcarren@ucsd.edu)
 ** Supervisor: Jose Restrepo (jrestrepo@ucsd.edu)
 **
 ** ********************************************************************/
-// Written by: Rodrigo Carreño
+// Written by: Rodrigo Carreño (rpcarren@ucsd.edu)
 // Created	 : February 2017
 
 // Description: Definition of Dodd-Restrepo Steel model including post
 // necking behavior and alternative computations of the Bauschinger curve
 
+** ********************************************************************
 /* Modification by: Juan Fernando Velásquez Bedoya (jfvelasq@unal.edu.co)
-** Date       : April 2026
-** Description: Extension of Dodd-Restrepo-Carreño Steel model (SteelDRC)
-**              to include strain-rate effects (SteelDRCV) using
-**              Voigt-type formulation with parameters kf and n
-**
+** Universidad Nacional de Colombia - Facultad de Minas
+** Date       : May 2026
+** Description: Rate-Dependent Steel Model with Pinching for Cyclic Loading
+*
+* Extension of the SteelDRC model that incorporates:
+*   1. Strain-rate effects via additive Voigt-type viscous overstress
+*   2. Quadrant-dependent pinching formulation for stiffness degradation
+*      due to bond-slip at steel-concrete interface
+*
+* The rate-dependent term captures dynamic strain aging and Portevin-Le
+*   Châtelier (PLC) band activity observed in Grade 60 reinforcing steel
+*   under fully reversed cyclic loading. The overstress scales with
+*   strain-rate excursions, with calibrated parameters kf = 125 and np_visc = 0.75.
+*
+* The pinching formulation is governed by two dimensionless parameters:
+*   lambda  (curvature factor, default = 1.5, range: 0.5-2.5)
+*   np      (sharpness exponent, default = 2.0, range: 0.5-3.5)
+*
 ** ********************************************************************/
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
 
