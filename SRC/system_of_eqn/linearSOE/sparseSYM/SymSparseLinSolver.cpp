@@ -40,10 +40,6 @@ void* OPS_SymSparseLinSolver()
 	    opserr << "WARNING SparseSPD failed to read lSparse\n";
 	    return 0;
 	}
-    } else if (nargs > 1) {
-	while (OPS_GetNumRemainingInputArgs() > 0) {
-	    (void)OPS_GetString();
-	}
     }
 
     SymSparseLinSolver *theSolver = new SymSparseLinSolver();

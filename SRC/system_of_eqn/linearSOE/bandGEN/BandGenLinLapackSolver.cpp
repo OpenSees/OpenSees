@@ -37,15 +37,10 @@
 
 #include <BandGenLinLapackSolver.h>
 #include <BandGenLinSOE.h>
-#include <elementAPI.h>
 #include <math.h>
 
 void* OPS_BandGenLinLapack()
 {
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-        (void)OPS_GetString();
-    }
-
     BandGenLinSolver *theSolver = new BandGenLinLapackSolver();
     return new BandGenLinSOE(*theSolver);
 }

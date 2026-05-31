@@ -32,16 +32,11 @@
 
 #include <BandSPDLinLapackSolver.h>
 #include <BandSPDLinSOE.h>
-#include <elementAPI.h>
 //#include <f2c.h>
 #include <math.h>
 
 void* OPS_BandSPDLinLapack()
 {
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-        (void)OPS_GetString();
-    }
-
     BandSPDLinSolver *theSolver = new BandSPDLinLapackSolver();
     return new BandSPDLinSOE(*theSolver);
 }
