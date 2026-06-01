@@ -22,11 +22,10 @@
 void* OPS_MPIDiagonalSolver()
 {
   bool lumped = false;
-  while (OPS_GetNumRemainingInputArgs() > 0) {
+  if (OPS_GetNumRemainingInputArgs() > 0) {
     std::string arg = OPS_GetString();
-    if (arg == "lumped" || arg == "-lumped") {
+    if (arg == "lumped" || arg == "-lumped")
       lumped = true;
-    }
   }
 
   MPIDiagonalSolver *theSolver = new MPIDiagonalSolver();   
