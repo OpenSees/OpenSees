@@ -156,6 +156,10 @@ protected:
 
     void node_matching_BruteForce(double d_tol, const ID& internal, const Matrix& xyz, const Vector& drmbox_x0, double& d_err, int & n_nodes_found);
 
+    // Allow freezing the computed DRM loads when setLoadConstant() is invoked
+    void setLoadConstant(void) override;
+    void unsetLoadConstant(void) override;
+
 private:
 
     std::string dataset_fname;   // Name of the HDF5 dataset containing the DRM motions  
@@ -204,6 +208,10 @@ private:
     //Coordinate transformation... xyz_new = T xyz_old + x0
     Matrix T;
     Vector x0;
+
+    // When setLoadConstant is called freeze computed DRM loads here
+    bool drmFrozen = false;
+    Vector drmFrozen_F;
 };
 
 #endif // _H5DRMLoadPattern
