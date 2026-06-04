@@ -68,7 +68,7 @@ void *OPS_ElasticBeam2d(const ID &info) {
     int iData[3];
     bool section = false;
     int sectionTag = -1;
-    double data[3];
+    double data[5]; data[3] = -1.0; data[4] = -1.0;
     int transfTag;
     double mass = 0.0, alpha = 0.0, depth = 0.0;
     int dampingTag = 0;
@@ -183,15 +183,24 @@ to get element tag and node tags
 to get element data
     */
     if (info.Size() == 0 || info(0) == 1) {
-        if (numArgs > 3) {
-            // Read A, E, Iz
+        if (numArgs == 4) {
+            // Read A, E, Iz (and transf)
             numData = 3;
             if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
                 opserr << "WARNING failed to read doubles\n";
                 return 0;
             }
-        } else {
-            // Read a section tag
+        }
+	if (numArgs == 6) {
+            // Read A, E, Iz, G, Av (and transf)
+            numData = 5;
+            if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
+                opserr << "WARNING failed to read doubles\n";
+                return 0;
+            }
+        }
+	if (numArgs == 2) {	  
+            // Read a section tag (and transf)
             numData = 1;
             if (OPS_GetIntInput(&numData, &sectionTag) < 0) {
                 opserr << "WARNING sectionTag is not integer\n";
@@ -283,7 +292,7 @@ to get element data
                                  *theSection, *theTransf, alpha,
                                  depth, mass, cMass, release, theDamping);
     } else {
-        return new ElasticBeam2d(iData[0], data[0], data[1], data[2],
+      return new ElasticBeam2d(iData[0], data[0], data[1], data[2], data[3], data[4],
                                  iData[1], iData[2], *theTransf,
                                  alpha, depth, mass, cMass, release, theDamping);
     }
@@ -379,7 +388,7 @@ int OPS_ElasticBeam2d(Domain& theDomain, const ID& elenodes, ID& eletags)
 
 ElasticBeam2d::ElasticBeam2d()
   :Element(0,ELE_TAG_ElasticBeam2d), 
-   A(0.0), E(0.0), I(0.0), alpha(0.0), d(0.0), rho(0.0), cMass(0), release(0),
+   A(0.0), E(0.0), I(0.0), G(0.0), Av(0.0), alpha(0.0), d(0.0), rho(0.0), cMass(0), release(0),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
   theDamping(0)
 {
@@ -402,7 +411,55 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
 			     double Alpha, double depth, double r, int cm,
 			     int rel, Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam2d), 
-   A(a), E(e), I(i), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
+   A(a), E(e), I(i), G(-1), Av(-1), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
+  Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
+  theDamping(0)
+{
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+    
+  theCoordTransf = coordTransf.getCopy2d();
+    
+  if (!theCoordTransf) {
+    opserr << "ElasticBeam2d::ElasticBeam2d -- failed to get copy of coordinate transformation\n";
+    exit(-1);
+  }
+
+  // Make no release if input not 0, 1, 2, or 3
+  if (release < 0 || release > 3)
+    release = 0;
+  
+  if (damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "ElasticBeam2d::ElasticBeam2d -- failed to get copy of damping\n";
+      //exit(-1); // this is not a fatal error...
+      theDamping = 0;
+    }
+  }
+
+  q0[0] = 0.0;
+  q0[1] = 0.0;
+  q0[2] = 0.0;
+
+  p0[0] = 0.0;
+  p0[1] = 0.0;
+  p0[2] = 0.0;
+
+  // set node pointers to NULL
+  theNodes[0] = 0;
+  theNodes[1] = 0;
+}
+
+ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
+			     double g, double av,
+			     int Nd1, int Nd2, CrdTransf &coordTransf,
+			     double Alpha, double depth, double r, int cm,
+			     int rel, Damping *damping)
+  :Element(tag,ELE_TAG_ElasticBeam2d), 
+   A(a), E(e), I(i), G(g), Av(av), alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
   theDamping(0)
 {
@@ -447,7 +504,7 @@ ElasticBeam2d::ElasticBeam2d(int tag, double a, double e, double i,
 ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation &section,  
 			     CrdTransf &coordTransf, double Alpha, double depth, double r, int cm, int rel,
                  Damping *damping)
-  :Element(tag,ELE_TAG_ElasticBeam2d), A(0.0), E(1.0), I(0.0),
+  :Element(tag,ELE_TAG_ElasticBeam2d), A(0.0), E(1.0), I(0.0), G(-1.0), Av(-1.0),
    alpha(Alpha), d(depth), rho(r), cMass(cm), release(rel),
   Q(6), q(3), connectedExternalNodes(2), theCoordTransf(0),
   theDamping(0)
@@ -464,6 +521,18 @@ ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     opserr << "ElasticBeam2d::ElasticBeam2d - E from section is zero, using E = 1" << endln;
     E = 1.0;
   }
+
+  // Try to find G in the section
+  argv[0] = {"G"};
+  argc = 1;
+  ok = section.setParameter(argv, argc, param);
+  if (ok >= 0)
+    G = param.getValue();
+
+  if (G <= 0.0) {
+    opserr << "ElasticBeam2d::ElasticBeam2d - G from section is zero, using G = -1 (no shear)" << endln;
+    G = -1.0;
+  }  
   
   const Matrix &sectTangent = section.getInitialTangent();
   const ID &sectCode = section.getType();
@@ -476,6 +545,9 @@ ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     case SECTION_RESPONSE_MZ:
       I = sectTangent(i,i)/E;
       break;
+    case SECTION_RESPONSE_VY:
+      Av = sectTangent(i,i)/G;
+      break;      
     default:
       break;
     }
@@ -681,6 +753,14 @@ ElasticBeam2d::getTangentStiff(void)
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
     double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
+    if (G > 0 && Av > 0.0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      double b = 1 - 6*E*I/(G*Av*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIoverL4 *= B;
+      EIoverL2 *= C;
+    }
     q(1) = EIoverL4*v(1) + EIoverL2*v(2);
     q(2) = EIoverL2*v(1) + EIoverL4*v(2);
     kb(1,1) = kb(2,2) = EIoverL4;
@@ -689,12 +769,20 @@ ElasticBeam2d::getTangentStiff(void)
   if (release == 1) { // release I
     q(1) = 0.0;
     double EIoverL3 = 3.0*I*EoverL;
+    if (G > 0 && Av > 0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      EIoverL3 /= a;
+    }
     q(2) = EIoverL3*v(2);
     kb(2,2) = EIoverL3;
   }
   if (release == 2) { // release J
     q(2) = 0.0;
     double EIoverL3 = 3.0*I*EoverL;
+    if (G > 0 && Av > 0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      EIoverL3 /= a;
+    }    
     q(1) = EIoverL3*v(1);
     kb(1,1) = EIoverL3;
   }
@@ -724,14 +812,30 @@ ElasticBeam2d::getInitialStiff(void)
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
     double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
+    if (G > 0 && Av > 0.0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      double b = 1 - 6*E*I/(G*Av*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIoverL4 *= B;
+      EIoverL2 *= C;
+    }    
     kb(1,1) = kb(2,2) = EIoverL4;
     kb(2,1) = kb(1,2) = EIoverL2;
   }
   if (release == 1) { // release I
     kb(2,2) = 3.0*I*EoverL;
+    if (G > 0 && Av > 0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      kb(2,2) /= a;
+    }    
   }
   if (release == 2) { // release J
     kb(1,1) = 3.0*I*EoverL;
+    if (G > 0 && Av > 0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      kb(1,1) /= a;
+    }   
   }
   
   if(theDamping) kb *= theDamping->getStiffnessMultiplier();  
@@ -1060,15 +1164,33 @@ ElasticBeam2d::getResistingForce()
   if (release == 0) {
     double EIoverL2 = 2.0*I*EoverL;		// 2EI/L
     double EIoverL4 = 2.0*EIoverL2;		// 4EI/L
+    if (G > 0 && Av > 0.0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      double b = 1 - 6*E*I/(G*Av*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIoverL4 *= B;
+      EIoverL2 *= C;
+    }    
     q(1) = EIoverL4*v(1) + EIoverL2*v(2);
     q(2) = EIoverL2*v(1) + EIoverL4*v(2);
   }
   if (release == 1) {
     q(1) = 0.0;
-    q(2) = 3.0*I*EoverL*v(2);
+    double EIoverL3 = 3.0*I*EoverL;
+    if (G > 0 && Av > 0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      EIoverL3 /= a;
+    }        
+    q(2) = EIoverL3*v(2);
   }
   if (release == 2) {
-    q(1) = 3.0*I*EoverL*v(1);
+    double EIoverL3 = 3.0*I*EoverL;
+    if (G > 0 && Av > 0) {
+      double a = 1 + 3*E*I/(G*Av*L*L);
+      EIoverL3 /= a;
+    }            
+    q(1) = EIoverL3*v(1);
     q(2) = 0.0;
   }
   if (release == 3) {
@@ -1105,11 +1227,13 @@ ElasticBeam2d::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
 
-    static Vector data(19);
+    static Vector data(21);
     
     data(0) = A;
     data(1) = E; 
-    data(2) = I; 
+    data(2) = I;
+    data(19) = G;
+    data(20) = Av;
     data(3) = rho;
     data(4) = cMass;
     data(5) = this->getTag();
@@ -1179,7 +1303,7 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 {
     int res = 0;
 	
-    static Vector data(19);
+    static Vector data(21);
 
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -1189,7 +1313,9 @@ ElasticBeam2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBrok
 
     A = data(0);
     E = data(1); 
-    I = data(2); 
+    I = data(2);
+    G = data(19);
+    Av = data(20);
     alpha = data(10);
     d = data(11);
 
@@ -1642,6 +1768,16 @@ ElasticBeam2d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(I);
     return param.addObject(3, this);
   }
+  // G of the beam interior
+  if (strcmp(argv[0],"G") == 0) {
+    param.setValue(G);
+    return param.addObject(6, this);
+  }
+  // Av of the beam interior
+  if (strcmp(argv[0],"Av") == 0) {
+    param.setValue(Av);
+    return param.addObject(7, this);
+  }  
   // mass per length
   if (strcmp(argv[0],"rho") == 0) {
     param.setValue(rho);
@@ -1680,6 +1816,12 @@ ElasticBeam2d::updateParameter (int parameterID, Information &info)
 	case 3:
 		I = info.theDouble;
 		return 0;
+	case 6:
+		G = info.theDouble;
+		return 0;
+	case 7:
+		Av = info.theDouble;
+		return 0;				
 	case 4:
 		rho = info.theDouble;
 		return 0;
