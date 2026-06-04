@@ -231,7 +231,7 @@ to get element data
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(11);
+        mdata.resize(13);
         mdata(0) = section;
         mdata(1) = sectionTag;
         mdata(2) = data[0];
@@ -243,6 +243,8 @@ to get element data
         mdata(8) = depth;
         mdata(9) = cMass;
         mdata(10) = release;
+	mdata(11) = data[3];
+	mdata(12) = data[4];	
         return &meshdata;
 
     } else if (info.Size() > 0 && info(0) == 2) {
@@ -256,12 +258,14 @@ to get element data
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(11);
+        mdata.resize(13);
         section = (bool) mdata(0);
         sectionTag = (int) mdata(1);
         data[0] = mdata(2);
         data[1] = mdata(3);
         data[2] = mdata(4);
+	data[3] = mdata(11);
+	data[4] = mdata(12);	
         transfTag = (int) mdata(5);
         mass = mdata(6);
         alpha = mdata(7);
