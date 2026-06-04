@@ -3353,6 +3353,10 @@ void VTKHDF_Recorder::setVTKType()
     vtktypes[ELE_TAG_PML2D] = VTK_QUAD;
     vtktypes[ELE_TAG_PML3D] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_PML3DVISCOUS] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_ASDEmbeddedNodeElement] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EmbeddedBeamInterfaceL] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EmbeddedBeamInterfaceP] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EmbeddedEPBeamInterface] = VTK_POLY_VERTEX;
 }
 
 
