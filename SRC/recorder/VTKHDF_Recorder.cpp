@@ -1380,7 +1380,27 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
         }
     }
 
+    // Create nodeTags dataset in PointData (always present, written once)
+    {
+        int res = 0;
+        res = this->createDataset(point_data_group, "nodeTags", 0, 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        res += this->createOffsetDataset(point_data_offsets_group, "nodeTags", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        if (res < 0) {
+            opserr << "Error creating nodeTags datasets\n";
+            return;
+        }
+    }
 
+    // Create eleTags dataset in CellData (always present, written once)
+    {
+        int res = 0;
+        res = this->createDataset(cell_data_group, "eleTags", 0, 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        res += this->createOffsetDataset(cell_data_offsets_group, "eleTags", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        if (res < 0) {
+            opserr << "Error creating eleTags datasets\n";
+            return;
+        }
+    }
 
 
 
@@ -1926,6 +1946,18 @@ int VTKHDF_Recorder::writeMesh() {
     }
     // opserr << "Types done\n";
     H5Gclose(vtkhdfGroup);
+
+    // -------------------------------------------------------------
+    // 10a) Write nodeTags to PointData and eleTags to CellData (written once)
+    // -------------------------------------------------------------
+    if (this->extendDataset(point_data_group, "nodeTags", theNodeTags.data(), H5T_NATIVE_INT, numNode, 0) < 0) {
+        opserr << "Error writing nodeTags to PointData\n";
+        return -1;
+    }
+    if (this->extendDataset(cell_data_group, "eleTags", theEleTags.data(), H5T_NATIVE_INT, numElement, 0) < 0) {
+        opserr << "Error writing eleTags to CellData\n";
+        return -1;
+    }
 
     // -------------------------------------------------------------
     // 10 ) update the current offsets
@@ -2991,6 +3023,19 @@ int VTKHDF_Recorder::writeStep(double timeStamp)
         H5Sclose(mem_space);
         H5Sclose(file_space);
         H5Dclose(dset_id);
+    }
+
+    // nodeTags and eleTags are constant - always point to offset 0
+    {
+        const int zeroOffset = 0;
+        if (this->extendOffsetDataset(point_data_offsets_group, "nodeTags", &zeroOffset, H5T_NATIVE_INT, 1) < 0) {
+            opserr << "Error writing nodeTags offset\n";
+            return -1;
+        }
+        if (this->extendOffsetDataset(cell_data_offsets_group, "eleTags", &zeroOffset, H5T_NATIVE_INT, 1) < 0) {
+            opserr << "Error writing eleTags offset\n";
+            return -1;
+        }
     }
     
     
