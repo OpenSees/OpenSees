@@ -63,6 +63,7 @@ class UmfpackGenLinSolver : public LinearSOESolver
 
     bool useLongIndices;
     void *Symbolic;
+    void *Numeric;
     double Control[UMFPACK_CONTROL], Info[UMFPACK_INFO];
     UmfpackGenLinSOE *theSOE;
     std::vector<SuiteSparse_long> Ap64;
