@@ -104,7 +104,7 @@ extern void *OPS_TriSurfaceLoad(void);
 extern void *OPS_ModElasticBeam2d(void);
 extern void *OPS_ModElasticBeam3d(void);
 extern void *OPS_ElasticBeam2d(const ID &info);
-extern void *OPS_ElasticBeam3d(void);
+extern void *OPS_ElasticBeam3d(const ID &info);
 extern void *OPS_ElasticTimoshenkoBeam2d(void);
 extern void *OPS_ElasticTimoshenkoBeam3d(void);
 extern void *OPS_TPB1D(void);
@@ -552,7 +552,7 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
     if (OPS_GetNDM() == 2)
       theEle = (Element *)OPS_ElasticBeam2d(info);
     else
-      theEle = (Element *)OPS_ElasticBeam3d();
+      theEle = (Element *)OPS_ElasticBeam3d(info);
     if (theEle != 0) 
       theElement = theEle;
     else {
