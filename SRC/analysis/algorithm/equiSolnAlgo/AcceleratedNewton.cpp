@@ -46,12 +46,236 @@
 #include <Vector.h>
 #include <ID.h>
 
+#include <KrylovAccelerator.h>
+#include <RaphsonAccelerator.h>
+#include <SecantAccelerator1.h>
+#include <SecantAccelerator2.h>
+#include <SecantAccelerator3.h>
+#include <PeriodicAccelerator.h>
+
+#include <elementAPI.h>
+#include <string.h>
+#include <stdlib.h>
 #include <fstream>
 
+// OPS_* accelerated-Newton parsers (shared Tcl/Python); test set by caller.
+
+static void
+parseAcceleratorArgs(int &incrementTangent, int &iterateTangent,
+		     int &maxDim, int &factorOnce,
+		     int &numTerms, bool &cutOut, double R[2],
+		     bool wantMaxDim, bool wantNumTerms, bool wantCutOut)
+{
+    bool iterateSeen = false;
+    bool factorOnceExplicit = false;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char *flag = OPS_GetString();
+
+	if (strcmp(flag, "-iterate") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	    const char *flag2 = OPS_GetString();
+	    iterateSeen = true;
+	    if (strcmp(flag2, "current") == 0)
+		iterateTangent = CURRENT_TANGENT;
+	    else if (strcmp(flag2, "initial") == 0)
+		iterateTangent = INITIAL_TANGENT;
+	    else if (strcmp(flag2, "noTangent") == 0)
+		iterateTangent = NO_TANGENT;
+	}
+	else if (strcmp(flag, "-increment") == 0 && OPS_GetNumRemainingInputArgs() > 0) {
+	    const char *flag2 = OPS_GetString();
+	    if (strcmp(flag2, "current") == 0)
+		incrementTangent = CURRENT_TANGENT;
+	    else if (strcmp(flag2, "initial") == 0)
+		incrementTangent = INITIAL_TANGENT;
+	    else if (strcmp(flag2, "noTangent") == 0)
+		incrementTangent = NO_TANGENT;
+	}
+	else if (wantMaxDim && strcmp(flag, "-maxDim") == 0
+		 && OPS_GetNumRemainingInputArgs() > 0) {
+	    int numdata = 1;
+	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
+		opserr << "WARNING accelerated-Newton failed to read maxDim\n";
+		// leave maxDim at its previous value and keep parsing
+	    }
+	}
+	else if (wantNumTerms && strcmp(flag, "-numTerms") == 0
+		 && OPS_GetNumRemainingInputArgs() > 0) {
+	    int numdata = 1;
+	    if (OPS_GetIntInput(&numdata, &numTerms) < 0) {
+		opserr << "WARNING SecantNewton failed to read numTerms\n";
+	    }
+	}
+	else if (wantCutOut
+		 && (strcmp(flag, "-cutOut") == 0 || strcmp(flag, "-cutout") == 0)
+		 && OPS_GetNumRemainingInputArgs() > 1) {
+	    int numdata = 2;
+	    if (OPS_GetDoubleInput(&numdata, R) < 0) {
+		opserr << "WARNING SecantNewton failed to read cutOut values R1 and R2\n";
+	    } else {
+		cutOut = true;
+	    }
+	}
+	else if (strcmp(flag, "-factorIncrementOnce") == 0
+		 || strcmp(flag, "-FactorIncrementOnce") == 0
+		 || strcmp(flag, "-factorOnce") == 0
+		 || strcmp(flag, "-factoronce") == 0
+		 || strcmp(flag, "-FactorOnce") == 0) {
+	    factorOnce = 1;
+	    factorOnceExplicit = true;
+	}
+    }
+
+    if (!iterateSeen && factorOnceExplicit && factorOnce != 0) {
+	iterateTangent = NO_TANGENT;
+	opserr << "WARNING accelerated-Newton: -factorOnce without -iterate: "
+		  "using -iterate noTangent\n";
+    }
+
+    if (factorOnce != 0 && iterateTangent != NO_TANGENT
+	&& !(incrementTangent == INITIAL_TANGENT
+	     && iterateTangent == INITIAL_TANGENT)) {
+	opserr << "WARNING accelerated-Newton: -factorOnce / -increment initial "
+		  "is disabled when -iterate is not noTangent. For a fixed "
+		  "stiffness matrix with factor-once on the increment, use "
+		  "-iterate noTangent.\n";
+	factorOnce = 0;
+    }
+
+    if (incrementTangent == INITIAL_TANGENT
+	&& (iterateTangent == NO_TANGENT || iterateTangent == INITIAL_TANGENT))
+	factorOnce = 1;
+}
+
+void *
+OPS_KrylovNewton()
+{
+    int incrementTangent = CURRENT_TANGENT;
+    int iterateTangent = CURRENT_TANGENT;
+    int maxDim = 3;
+    int factorOnce = 0;
+    int numTerms = 0;
+    bool cutOut = false;
+    double R[2];
+
+    parseAcceleratorArgs(incrementTangent, iterateTangent, maxDim, factorOnce,
+			 numTerms, cutOut, R,
+			 /*wantMaxDim=*/true,
+			 /*wantNumTerms=*/false,
+			 /*wantCutOut=*/false);
+
+    Accelerator *theAccel = new KrylovAccelerator(maxDim, iterateTangent);
+    return new AcceleratedNewton(theAccel, incrementTangent, factorOnce);
+}
+
+void *
+OPS_RaphsonNewton()
+{
+    int incrementTangent = CURRENT_TANGENT;
+    int iterateTangent = CURRENT_TANGENT;
+    int maxDim = 0;
+    int factorOnce = 0;
+    int numTerms = 0;
+    bool cutOut = false;
+    double R[2];
+
+    parseAcceleratorArgs(incrementTangent, iterateTangent, maxDim, factorOnce,
+			 numTerms, cutOut, R,
+			 /*wantMaxDim=*/false,
+			 /*wantNumTerms=*/false,
+			 /*wantCutOut=*/false);
+
+    Accelerator *theAccel = new RaphsonAccelerator(iterateTangent);
+    return new AcceleratedNewton(theAccel, incrementTangent, factorOnce);
+}
+
+void *
+OPS_SecantNewton()
+{
+    int incrementTangent = CURRENT_TANGENT;
+    int iterateTangent = CURRENT_TANGENT;
+    int maxDim = 3;
+    int factorOnce = 0;
+    int numTerms = 2;
+    bool cutOut = false;
+    double R[2];
+
+    parseAcceleratorArgs(incrementTangent, iterateTangent, maxDim, factorOnce,
+			 numTerms, cutOut, R,
+			 /*wantMaxDim=*/true,
+			 /*wantNumTerms=*/true,
+			 /*wantCutOut=*/true);
+
+    Accelerator *theAccel = 0;
+    if (numTerms <= 1) {
+	if (cutOut)
+	    theAccel = new SecantAccelerator1(maxDim, iterateTangent, R[0], R[1]);
+	else
+	    theAccel = new SecantAccelerator1(maxDim, iterateTangent);
+    } else if (numTerms == 2) {
+	if (cutOut)
+	    theAccel = new SecantAccelerator2(maxDim, iterateTangent, R[0], R[1]);
+	else
+	    theAccel = new SecantAccelerator2(maxDim, iterateTangent);
+    } else {
+	if (cutOut)
+	    theAccel = new SecantAccelerator3(maxDim, iterateTangent, R[0], R[1]);
+	else
+	    theAccel = new SecantAccelerator3(maxDim, iterateTangent);
+    }
+
+    return new AcceleratedNewton(theAccel, incrementTangent, factorOnce);
+}
+
+void *
+OPS_PeriodicNewton()
+{
+    int incrementTangent = CURRENT_TANGENT;
+    int iterateTangent = CURRENT_TANGENT;
+    int maxDim = 3;
+    int factorOnce = 0;
+    int numTerms = 0;
+    bool cutOut = false;
+    double R[2];
+
+    parseAcceleratorArgs(incrementTangent, iterateTangent, maxDim, factorOnce,
+			 numTerms, cutOut, R,
+			 /*wantMaxDim=*/true,
+			 /*wantNumTerms=*/false,
+			 /*wantCutOut=*/false);
+
+    Accelerator *theAccel = new PeriodicAccelerator(maxDim, iterateTangent);
+    return new AcceleratedNewton(theAccel, incrementTangent, factorOnce);
+}
+
+void *
+OPS_MillerNewton()
+{
+    int incrementTangent = CURRENT_TANGENT;
+    int iterateTangent = CURRENT_TANGENT;
+    int maxDim = 3;
+    int factorOnce = 0;
+    int numTerms = 0;
+    bool cutOut = false;
+    double R[2];
+
+    parseAcceleratorArgs(incrementTangent, iterateTangent, maxDim, factorOnce,
+			 numTerms, cutOut, R,
+			 /*wantMaxDim=*/true,
+			 /*wantNumTerms=*/false,
+			 /*wantCutOut=*/false);
+
+    opserr << "WARNING MillerNewton: Miller acceleration is deactivated; "
+	   << "using AcceleratedNewton without MillerAccelerator.\n";
+
+    Accelerator *theAccel = 0;
+    return new AcceleratedNewton(theAccel, incrementTangent, factorOnce);
+}
+
 // Constructor
-AcceleratedNewton::AcceleratedNewton(int theTangentToUse)
+AcceleratedNewton::AcceleratedNewton(int theTangentToUse, int factOnce)
   :EquiSolnAlgo(EquiALGORITHM_TAGS_AcceleratedNewton),
-   theTest(0), tangent(theTangentToUse),
+   theTest(0), tangent(theTangentToUse), factorOnce(factOnce),
    theAccelerator(0), vAccel(0), 
    numFactorizations(0), numIterations(0)
 //   totalTimer(), totalTimeReal(0.0), totalTimeCPU(0.0),
@@ -61,11 +285,24 @@ AcceleratedNewton::AcceleratedNewton(int theTangentToUse)
 
 }
 
+// Deferred ConvergenceTest (OPS factories); owns theAccel.
+AcceleratedNewton::AcceleratedNewton(Accelerator *theAccel,
+				     int theTangentToUse,
+				     int factOnce)
+  :EquiSolnAlgo(EquiALGORITHM_TAGS_AcceleratedNewton),
+   theTest(0), tangent(theTangentToUse), factorOnce(factOnce),
+   theAccelerator(theAccel), vAccel(0),
+   numFactorizations(0), numIterations(0)
+{
+
+}
+
 AcceleratedNewton::AcceleratedNewton(ConvergenceTest &theT,
 				     Accelerator *theAccel,
-				     int theTangentToUse)
+				     int theTangentToUse,
+				     int factOnce)
   :EquiSolnAlgo(EquiALGORITHM_TAGS_AcceleratedNewton),
-   theTest(&theT), tangent(theTangentToUse),
+   theTest(&theT), tangent(theTangentToUse), factorOnce(factOnce),
    theAccelerator(theAccel), vAccel(0), 
    numFactorizations(0), numIterations(0)
 //   totalTimer(), totalTimeReal(0.0), totalTimeCPU(0.0),
@@ -91,6 +328,15 @@ int
 AcceleratedNewton::setConvergenceTest(ConvergenceTest *newTest)
 {
   theTest = newTest;
+  return 0;
+}
+
+int
+AcceleratedNewton::domainChanged(void)
+{
+  // Cached factorization invalid after domain change / setSize - reform increment tangent next solve.
+  if (factorOnce == 2)
+    factorOnce = 1;
   return 0;
 }
 
@@ -138,15 +384,19 @@ AcceleratedNewton::solveCurrentStep(void)
     return -2;
   }
 
-  // Evaluate system Jacobian J = R'(y)|y_0
-  if (theIntegrator->formTangent(tangent) < 0){
-    opserr << "WARNING AcceleratedNewton::solveCurrentStep() -";
-    opserr << "the Integrator failed in formTangent()\n";
-    return -1;
+  // Increment-side formTangent only; iterate-side uses accelerator/updateTangent.
+  if (factorOnce != 2) {
+    if (theIntegrator->formTangent(tangent) < 0){
+      opserr << "WARNING AcceleratedNewton::solveCurrentStep() -";
+      opserr << "the Integrator failed in formTangent()\n";
+      return -1;
+    }
+    if (factorOnce == 1)
+      factorOnce = 2;
+
+    // Count factorization of the first tangent
+    numFactorizations++;
   }
-  
-  // Count factorization of the first tangent
-  numFactorizations++;
   
   // set itself as the ConvergenceTest objects EquiSolnAlgo
   theTest->setEquiSolnAlgo(*this);
@@ -252,12 +502,13 @@ AcceleratedNewton::getTest(void)
 int
 AcceleratedNewton::sendSelf(int cTag, Channel &theChannel)
 {
-  static ID data(2);
+  static ID data(3);
   data(0) = tangent;
   if (theAccelerator != 0)
     data(1) = theAccelerator->getClassTag();
   else
     data(1) = -1;
+  data(2) = factorOnce;
 
   int res = theChannel.sendID(0, cTag, data);
   if (res < 0) {
@@ -280,7 +531,7 @@ int
 AcceleratedNewton::recvSelf(int cTag, Channel &theChannel, 
 			    FEM_ObjectBroker &theBroker)
 {
-  static ID data(2);
+  static ID data(3);
   int res = theChannel.recvID(0, cTag, data);
 
   if (res < 0) {
@@ -288,7 +539,8 @@ AcceleratedNewton::recvSelf(int cTag, Channel &theChannel,
     return -1;
   }
 
-  tangent = data(0) = tangent;
+  tangent = data(0);
+  factorOnce = (data.Size() > 2) ? data(2) : 0;
 
   if (data(1) != -1) {
 

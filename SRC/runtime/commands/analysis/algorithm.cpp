@@ -410,9 +410,13 @@ TclCommand_newNewtonLineSearch(ClientData clientData, Tcl_Interp *interp, Tcl_Si
   double minEta = 0.1;
   int pFlag = 1;
   int typeSearch = 0;
+  int factorOnce = 0;
 
   for (int i=2; i<argc; i++) {
-    if (strcmp(argv[i], "-tol") == 0) {
+    if (strcmp(argv[i], "-factorOnce") == 0 || strcmp(argv[i], "-factoronce") == 0
+        || strcmp(argv[i], "-FactorOnce") == 0) {
+      factorOnce = 1;
+    } else if (strcmp(argv[i], "-tol") == 0) {
       if (++i >= argc) {
         opserr << OpenSees::PromptValueError 
                << "Flag -tol requires follow up argument\n";
@@ -569,7 +573,7 @@ TclCommand_newNewtonLineSearch(ClientData clientData, Tcl_Interp *interp, Tcl_Si
     theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
 
 
-  builder->set(new NewtonLineSearch(theLineSearch));
+  builder->set(new NewtonLineSearch(theLineSearch, factorOnce));
   return TCL_OK;
 }
 

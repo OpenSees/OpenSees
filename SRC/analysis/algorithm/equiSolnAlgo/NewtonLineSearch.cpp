@@ -40,23 +40,116 @@
 #include <ConvergenceTest.h>
 #include <ID.h>
 
+#include <InitialInterpolatedLineSearch.h>
+#include <BisectionLineSearch.h>
+#include <SecantLineSearch.h>
+#include <RegulaFalsiLineSearch.h>
+
+#include <elementAPI.h>
+#include <string.h>
+#include <SolutionAlgorithm.h>
+
+// Shared Tcl/Python OPS_NewtonLineSearch; ConvergenceTest attached by interpreter.
+void* OPS_NewtonLineSearch()
+{
+    double tol        = 0.8;
+    int    maxIter    = 10;
+    double maxEta     = 10.0;
+    double minEta     = 0.1;
+    int    pFlag      = 1;
+    int    typeSearch = 0;
+    int    factorOnce = 0;
+
+    int numdata = 1;
+
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char* flag = OPS_GetString();
+
+	if (strcmp(flag, "-factorOnce") == 0 || strcmp(flag, "-factoronce") == 0
+	    || strcmp(flag, "-FactorOnce") == 0) {
+	    factorOnce = 1;
+	} else if (strcmp(flag, "-tol") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetDoubleInput(&numdata, &tol) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read tol\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-maxIter") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetIntInput(&numdata, &maxIter) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read maxIter\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-pFlag") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetIntInput(&numdata, &pFlag) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read pFlag\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-minEta") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetDoubleInput(&numdata, &minEta) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read minEta\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-maxEta") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    if (OPS_GetDoubleInput(&numdata, &maxEta) < 0) {
+		opserr << "WARNING NewtonLineSearch failed to read maxEta\n";
+		return 0;
+	    }
+	} else if (strcmp(flag, "-type") == 0 && OPS_GetNumRemainingInputArgs()>0) {
+	    const char* flag2 = OPS_GetString();
+	    if (strcmp(flag2, "Bisection") == 0)
+		typeSearch = 1;
+	    else if (strcmp(flag2, "Secant") == 0)
+		typeSearch = 2;
+	    else if (strcmp(flag2, "RegulaFalsi") == 0)
+		typeSearch = 3;
+	    else if (strcmp(flag2, "LinearInterpolated") == 0)
+		typeSearch = 3;
+	    else if (strcmp(flag2, "InitialInterpolated") == 0)
+		typeSearch = 0;
+	}
+    }
+
+    LineSearch *theLineSearch = 0;
+    if (typeSearch == 0)
+	theLineSearch = new InitialInterpolatedLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+    else if (typeSearch == 1)
+	theLineSearch = new BisectionLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+    else if (typeSearch == 2)
+	theLineSearch = new SecantLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+    else if (typeSearch == 3)
+	theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
+
+    return new NewtonLineSearch(theLineSearch, factorOnce);
+}
+
 
 //Null Constructor
 NewtonLineSearch::NewtonLineSearch( )
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonLineSearch),
- theTest(0), theOtherTest(0), theLineSearch(0)
+ theTest(0), theOtherTest(0), theLineSearch(0), factorOnce(0)
 {   
 }
 
 
 //Constructor 
 NewtonLineSearch::NewtonLineSearch( ConvergenceTest &theT, 
-				   LineSearch *theSearch) 
+				   LineSearch *theSearch, int factOnce) 
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonLineSearch),
- theTest(&theT), theLineSearch(theSearch)
+ theTest(&theT), theOtherTest(0), theLineSearch(theSearch), factorOnce(factOnce)
 {
   theOtherTest = theTest->getCopy(10);
   theOtherTest->setEquiSolnAlgo(*this);
+}
+
+
+// Constructor with deferred ConvergenceTest assignment.
+// The test is wired in later via setConvergenceTest() (e.g. by the
+// interpreter-level setAlgorithm() / StaticAnalysis bookkeeping). Keeps
+// argument-parsing factories like OPS_NewtonLineSearch() free from any
+// dependency on a specific interpreter's "current test" state.
+NewtonLineSearch::NewtonLineSearch(LineSearch *theSearch, int factOnce)
+:EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonLineSearch),
+ theTest(0), theOtherTest(0), theLineSearch(theSearch), factorOnce(factOnce)
+{
 }
 
 
@@ -77,6 +170,14 @@ NewtonLineSearch::setConvergenceTest(ConvergenceTest *newTest)
       delete theOtherTest;
     theOtherTest = theTest->getCopy(10);
     theOtherTest->setEquiSolnAlgo(*this);
+    return 0;
+}
+
+int
+NewtonLineSearch::domainChanged(void)
+{
+    if (factorOnce == 2)
+	factorOnce = 1;
     return 0;
 }
 
@@ -120,11 +221,16 @@ NewtonLineSearch::solveCurrentStep(void)
 	const Vector &Resid0 = theSOE->getB() ;
 	
 	//form the tangent
-        if (theIntegrator->formTangent() < 0){
-	    opserr << "WARNING NewtonLineSearch::solveCurrentStep() -";
-	    opserr << "the Integrator failed in formTangent()\n";
-	    return -1;
-	}		    
+	if (factorOnce != 2) {
+	    SOLUTION_ALGORITHM_tangentFlag = CURRENT_TANGENT;
+	    if (theIntegrator->formTangent(CURRENT_TANGENT) < 0) {
+		opserr << "WARNING NewtonLineSearch::solveCurrentStep() -";
+		opserr << "the Integrator failed in formTangent()\n";
+		return -1;
+	    }
+	    if (factorOnce == 1)
+		factorOnce = 2;
+	}
 	
 	//solve 
 	if (theSOE->solve() < 0) {
@@ -193,8 +299,9 @@ NewtonLineSearch::getConvergenceTest(void)
 int
 NewtonLineSearch::sendSelf(int cTag, Channel &theChannel)
 {
-  static ID data(1);
+  static ID data(2);
   data(0) = theLineSearch->getClassTag();
+  data(1) = factorOnce;
   if (theChannel.sendID(0, cTag, data) < 0) {
     opserr << "NewtonLineSearch::sendSelf(int cTag, Channel &theChannel)   - failed to send date\n";
     return -1;
@@ -213,13 +320,14 @@ NewtonLineSearch::recvSelf(int cTag,
 			Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-  static ID data(1);
+  static ID data(2);
   if (theChannel.recvID(0, cTag, data) < 0) {
     opserr << "NewtonLineSearch::recvSelf(int cTag, Channel &theChannel) - failed to recv data\n";
     return -1;
   }
 
   int lineSearchClassTag = data(0);
+  factorOnce = (data.Size() > 1) ? data(1) : 0;
 
   if (theLineSearch == 0 || theLineSearch->getClassTag() != lineSearchClassTag) {
     if (theLineSearch != 0)

@@ -56,6 +56,7 @@ void* OPS_NewtonRaphsonAlgorithm()
     int formTangent = CURRENT_TANGENT;
     double iFactor = 0;
     double cFactor = 1;
+    int factorOnce = 0;
 
     while (OPS_GetNumRemainingInputArgs() > 0) {
       const char* type = OPS_GetString();
@@ -67,15 +68,19 @@ void* OPS_NewtonRaphsonAlgorithm()
 	formTangent = INITIAL_TANGENT;
 	iFactor = 1.;
 	cFactor = 0;
+	factorOnce = 1; // -initial implies factor-once
       } else if(strcmp(type,"-intialThenCurrent")==0 || strcmp(type,"-intialCurrent")==0) {
 	formTangent = INITIAL_THEN_CURRENT_TANGENT;
 	iFactor = 0;
 	cFactor = 1.0;
+      } else if(strcmp(type,"-factorOnce")==0 || strcmp(type,"-factoronce")==0
+		|| strcmp(type,"-FactorOnce")==0) {
+	factorOnce = 1;
       } else if(strcmp(type,"-hall")==0 || strcmp(type,"-Hall")==0) {
 	formTangent = HALL_TANGENT;
 	iFactor = 0.1;
 	cFactor = 0.9;
-	if (OPS_GetNumRemainingInputArgs() == 2) {
+	if (OPS_GetNumRemainingInputArgs() >= 2) {
 	  double data[2];
 	  int numData = 2;
 	  if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
@@ -88,29 +93,32 @@ void* OPS_NewtonRaphsonAlgorithm()
       }
     }
 
-    return new NewtonRaphson(formTangent, iFactor, cFactor);
+    return new NewtonRaphson(formTangent, iFactor, cFactor, factorOnce);
 
 }
 
 // Constructor
-NewtonRaphson::NewtonRaphson(int theTangentToUse, double iFact, double cFact)
+NewtonRaphson::NewtonRaphson(int theTangentToUse, double iFact, double cFact, int factOnce)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonRaphson),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
+ tangent(theTangentToUse), numIterations(0), factorOnce(factOnce),
+ iFactor(iFact), cFactor(cFact)
 {
 
 }
 
 NewtonRaphson::NewtonRaphson()
 	:EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonRaphson),
-	tangent(CURRENT_TANGENT), iFactor(0.), cFactor(1.)
+	tangent(CURRENT_TANGENT), numIterations(0), factorOnce(0),
+	iFactor(0.), cFactor(1.)
 {
 
 }
 
 
-NewtonRaphson::NewtonRaphson(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact)
+NewtonRaphson::NewtonRaphson(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact, int factOnce)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_NewtonRaphson),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact)
+ tangent(theTangentToUse), numIterations(0), factorOnce(factOnce),
+ iFactor(iFact), cFactor(cFact)
 {
 
 }
@@ -120,6 +128,15 @@ NewtonRaphson::~NewtonRaphson()
 {
   
 
+}
+
+int
+NewtonRaphson::domainChanged(void)
+{
+  // Domain change: cached factorization invalid after setSize - reform tangent next solve.
+  if (factorOnce == 2)
+    factorOnce = 1;
+  return 0;
 }
 
 
@@ -160,6 +177,7 @@ NewtonRaphson::solveCurrentStep(void)
     do {
 
       if (tangent == INITIAL_THEN_CURRENT_TANGENT) {
+	// Alternating tangents per iteration - factorOnce not used here.
 	if (numIterations == 0) {
 	  SOLUTION_ALGORITHM_tangentFlag = INITIAL_TANGENT;
 	  if (theIntegrator->formTangent(INITIAL_TANGENT) < 0){
@@ -176,13 +194,17 @@ NewtonRaphson::solveCurrentStep(void)
 	  } 
 	}
       }	else {
-	
-	SOLUTION_ALGORITHM_tangentFlag = tangent;
-	if (theIntegrator->formTangent(tangent, iFactor, cFactor) < 0){
+
+	if (factorOnce != 2) {
+	  SOLUTION_ALGORITHM_tangentFlag = tangent;
+	  if (theIntegrator->formTangent(tangent, iFactor, cFactor) < 0){
 	    opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
 	    opserr << "the Integrator failed in formTangent()\n";
 	    return -1;
-	}		    
+	  }
+	  if (factorOnce == 1)
+	    factorOnce = 2;
+	}
       } 
       if (theSOE->solve() < 0) {
 	opserr << "WARNING NewtonRaphson::solveCurrentStep() -";
@@ -222,10 +244,11 @@ NewtonRaphson::solveCurrentStep(void)
 int
 NewtonRaphson::sendSelf(int cTag, Channel &theChannel)
 {
-  static Vector data(3);
+  static Vector data(4);
   data(0) = tangent;
   data(1) = iFactor;
   data(2) = cFactor;
+  data(3) = factorOnce;
   return theChannel.sendVector(this->getDbTag(), cTag, data);
 }
 
@@ -234,11 +257,12 @@ NewtonRaphson::recvSelf(int cTag,
 			Channel &theChannel, 
 			FEM_ObjectBroker &theBroker)
 {
-  static Vector data(3);
+  static Vector data(4);
   theChannel.recvVector(this->getDbTag(), cTag, data);
   tangent = int(data(0));
   iFactor = data(1);
   cFactor = data(2);
+  factorOnce = (data.Size() > 3) ? int(data(3)) : 0;
   return 0;
 }
 

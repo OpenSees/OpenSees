@@ -157,25 +157,7 @@ extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp
 #include <ModifiedNewton.h>
 #include <Broyden.h>
 #include <BFGS.h>
-#include <KrylovNewton.h>
-#include <PeriodicNewton.h>
-#include <AcceleratedNewton.h>
 #include <ExpressNewton.h>
-
-// accelerators
-#include <RaphsonAccelerator.h>
-#include <PeriodicAccelerator.h>
-#include <KrylovAccelerator.h>
-#include <SecantAccelerator1.h>
-#include <SecantAccelerator2.h>
-#include <SecantAccelerator3.h>
-//#include <MillerAccelerator.h>
-
-// line searches
-#include <BisectionLineSearch.h>
-#include <InitialInterpolatedLineSearch.h>
-#include <RegulaFalsiLineSearch.h>
-#include <SecantLineSearch.h>
 
 // constraint handlers
 #include <PlainHandler.h>
@@ -215,6 +197,15 @@ extern void *OPS_NewtonRaphsonAlgorithm(void);
 extern void *OPS_ExpressNewton(void);
 extern void *OPS_ModifiedNewton(void);
 extern void *OPS_NewtonHallM(void);
+extern void *OPS_KrylovNewton(void);
+extern void *OPS_RaphsonNewton(void);
+extern void *OPS_MillerNewton(void);
+extern void *OPS_SecantNewton(void);
+extern void *OPS_PeriodicNewton(void);
+extern void *OPS_LinearAlgorithm(void);
+extern void *OPS_Broyden(void);
+extern void *OPS_BFGS(void);
+extern void *OPS_NewtonLineSearch(void);
 
 extern void *OPS_Newmark(void);
 extern void *OPS_StagedNewmark(void);
@@ -2585,6 +2576,9 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	if (theTest == 0) 
 	  theTest = new CTestNormUnbalance(1.0e-6,25,0);       
+
+	if (theAlgorithm != 0)
+	    theAlgorithm->setConvergenceTest(theTest);
 	
 	if (theAlgorithm == 0) {
 	    opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
@@ -2675,6 +2669,8 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
             //theTest = new CTestNormUnbalance(1e-2,10000,1,2,3);
             theTest = new CTestPFEM(1e-2,1e-2,1e-2,1e-2,1e-4,1e-3,10000,100,1,2);
         }
+        if (theAlgorithm != 0)
+            theAlgorithm->setConvergenceTest(theTest);
         if(theAlgorithm == 0) {
             theAlgorithm = new NewtonRaphson(*theTest);
         }
@@ -2711,6 +2707,9 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	if (theTest == 0) 
 	  theTest = new CTestNormUnbalance(1.0e-6,25,0);       
+
+	if (theAlgorithm != 0)
+	    theAlgorithm->setConvergenceTest(theTest);
 	
 	if (theAlgorithm == 0) {
 	    opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
@@ -2809,6 +2808,9 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 
 	if (theTest == 0) 
 	  theTest = new CTestNormUnbalance(1.0e-6,25,0);       
+
+	if (theAlgorithm != 0)
+	    theAlgorithm->setConvergenceTest(theTest);
 	
 	if (theAlgorithm == 0) {
 	    opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
@@ -3917,20 +3919,12 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
 
   // check argv[1] for type of Algorithm and create the object
   if (strcmp(argv[1],"Linear") == 0) {
-    int formTangent = CURRENT_TANGENT;
-    int factorOnce = 0;
-    int count = 2;
-    while (count < argc) {
-      if ((strcmp(argv[count],"-secant") == 0) || (strcmp(argv[count],"-Secant") == 0)) {
-	formTangent = CURRENT_SECANT;
-      } else if ((strcmp(argv[count],"-initial") == 0) || (strcmp(argv[count],"-Initial") == 0)) {
-	formTangent = INITIAL_TANGENT;
-      } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
-	factorOnce = 1;
-      }
-      count++;
-    }
-    theNewAlgo = new Linear(formTangent, factorOnce);
+    void *theLinearAlgo = OPS_LinearAlgorithm();
+    if (theLinearAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theLinearAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"Newton") == 0) {
@@ -3964,348 +3958,75 @@ specifyAlgorithm(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   else if (strcmp(argv[1],"KrylovNewton") == 0) {
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  iterateTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  iterateTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  iterateTangent = NO_TANGENT;
-      } 
-      else if (strcmp(argv[i],"-increment") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  incrementTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  incrementTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  incrementTangent = NO_TANGENT;
-      }
-      else if (strcmp(argv[i],"-maxDim") == 0 && i+1 < argc) {
-	i++;
-	maxDim = atoi(argv[i]);
-      }
-    }
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-
-    Accelerator *theAccel;
-    theAccel = new KrylovAccelerator(maxDim, iterateTangent);
-
-    theNewAlgo = new AcceleratedNewton(*theTest, theAccel, incrementTangent);
+    void *theAccelAlgo = OPS_KrylovNewton();
+    if (theAccelAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theAccelAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"RaphsonNewton") == 0) {
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  iterateTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  iterateTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  iterateTangent = NO_TANGENT;
-      } 
-      else if (strcmp(argv[i],"-increment") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  incrementTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  incrementTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  incrementTangent = NO_TANGENT;
-      }
-    }
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-
-    Accelerator *theAccel;
-    theAccel = new RaphsonAccelerator(iterateTangent);
-
-    theNewAlgo = new AcceleratedNewton(*theTest, theAccel, incrementTangent);
+    void *theAccelAlgo = OPS_RaphsonNewton();
+    if (theAccelAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theAccelAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"MillerNewton") == 0) {
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  iterateTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  iterateTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  iterateTangent = NO_TANGENT;
-      } 
-      else if (strcmp(argv[i],"-increment") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  incrementTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  incrementTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  incrementTangent = NO_TANGENT;
-      }
-      else if (strcmp(argv[i],"-maxDim") == 0 && i+1 < argc) {
-	i++;
-	maxDim = atoi(argv[i]);
-      }
-    }
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-
-    Accelerator *theAccel = 0;
-    //theAccel = new MillerAccelerator(maxDim, 0.01, iterateTangent);
-
-    theNewAlgo = new AcceleratedNewton(*theTest, theAccel, incrementTangent);
+    void *theAccelAlgo = OPS_MillerNewton();
+    if (theAccelAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theAccelAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"SecantNewton") == 0) {
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    int numTerms = 2;
-    bool cutOut = false;
-    double R[2];
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  iterateTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  iterateTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  iterateTangent = NO_TANGENT;
-      } 
-      else if (strcmp(argv[i],"-increment") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  incrementTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  incrementTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  incrementTangent = NO_TANGENT;
-      }
-      else if (strcmp(argv[i],"-maxDim") == 0 && i+1 < argc) {
-	i++;
-	maxDim = atoi(argv[i]);
-      }
-      else if (strcmp(argv[i],"-numTerms") == 0 && i+1 < argc) {
-	i++;
-	numTerms = atoi(argv[i]);
-      }
-      else if ((strcmp(argv[i],"-cutOut") ==0 || strcmp(argv[i],"-cutout") == 0) && i+2 < argc) {
-	i++;
-	R[0] = atof(argv[i]);
-	i++;
-	R[1] = atof(argv[i]);
-	cutOut = true;
-      }         
-    }
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-
-    Accelerator *theAccel = 0;
-    if (numTerms <= 1)
-      if (cutOut)
-	theAccel = new SecantAccelerator1(maxDim, iterateTangent, R[0], R[1]);
-      else
-	theAccel = new SecantAccelerator1(maxDim, iterateTangent);
-    if (numTerms >= 3)
-      if (cutOut)
-	theAccel = new SecantAccelerator3(maxDim, iterateTangent, R[0], R[1]);
-      else
-	theAccel = new SecantAccelerator3(maxDim, iterateTangent);
-    if (numTerms == 2)
-      if (cutOut)
-	theAccel = new SecantAccelerator2(maxDim, iterateTangent, R[0], R[1]);
-      else
-	theAccel = new SecantAccelerator2(maxDim, iterateTangent);            
-
-    theNewAlgo = new AcceleratedNewton(*theTest, theAccel, incrementTangent);
+    void *theAccelAlgo = OPS_SecantNewton();
+    if (theAccelAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theAccelAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"PeriodicNewton") == 0) {
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-iterate") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  iterateTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  iterateTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  iterateTangent = NO_TANGENT;
-      } 
-      else if (strcmp(argv[i],"-increment") == 0 && i+1 < argc) {
-	i++;
-	if (strcmp(argv[i],"current") == 0)
-	  incrementTangent = CURRENT_TANGENT;
-	if (strcmp(argv[i],"initial") == 0)
-	  incrementTangent = INITIAL_TANGENT;
-	if (strcmp(argv[i],"noTangent") == 0)
-	  incrementTangent = NO_TANGENT;
-      }
-      else if (strcmp(argv[i],"-maxDim") == 0 && i+1 < argc) {
-	i++;
-	maxDim = atoi(argv[i]);
-      }
-    }
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-
-    Accelerator *theAccel;
-    theAccel = new PeriodicAccelerator(maxDim, iterateTangent); 
-
-    theNewAlgo = new AcceleratedNewton(*theTest, theAccel, incrementTangent);
+    void *theAccelAlgo = OPS_PeriodicNewton();
+    if (theAccelAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theAccelAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"Broyden") == 0) {
-    int formTangent = CURRENT_TANGENT;
-    int count = -1;
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-secant") == 0) {
-	formTangent = CURRENT_SECANT;
-      } else if (strcmp(argv[i],"-initial") == 0) {
-	formTangent = INITIAL_TANGENT;
-      } else if (strcmp(argv[i++],"-count") == 0 && i < argc) {
-	count = atoi(argv[i]);
-      }
-    }
-
-    if (count == -1)
-      theNewAlgo = new Broyden(*theTest, formTangent); 
-    else
-      theNewAlgo = new Broyden(*theTest, formTangent, count); 
+    void *theBroydenAlgo = OPS_Broyden();
+    if (theBroydenAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theBroydenAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"BFGS") == 0) {
-    int formTangent = CURRENT_TANGENT;
-    int count = -1;
-    for (int i = 2; i < argc; i++) {
-      if (strcmp(argv[i],"-secant") == 0) {
-	formTangent = CURRENT_SECANT;
-      } else if (strcmp(argv[i],"-initial") == 0) {
-	formTangent = INITIAL_TANGENT;
-      } else if (strcmp(argv[i++],"-count") == 0 && i < argc) {
-	count = atoi(argv[i]);
-      }
-    }
-
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return TCL_ERROR;	  
-    }
-
-    if (count == -1)
-      theNewAlgo = new BFGS(*theTest, formTangent); 
-    else
-      theNewAlgo = new BFGS(*theTest, formTangent, count); 
+    void *theBFGSAlgo = OPS_BFGS();
+    if (theBFGSAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theBFGSAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
-  
+
   else if (strcmp(argv[1],"NewtonLineSearch") == 0) {
-      if (theTest == 0) {
-	  opserr << "ERROR: No ConvergenceTest yet specified\n";
-	  return TCL_ERROR;	  
-      }
-
-      int    count = 2;
-      
-      // set some default variable
-      double tol        = 0.8;
-      int    maxIter    = 10;
-      double maxEta     = 10.0;
-      double minEta     = 0.1;
-      int    pFlag      = 1;
-      int    typeSearch = 0;
-      
-      while (count < argc) {
-	if (strcmp(argv[count], "-tol") == 0) {
-	  count++;
-	  if (Tcl_GetDouble(interp, argv[count], &tol) != TCL_OK)	
-	    return TCL_ERROR;	      	  
-	  count++;
-	} else if (strcmp(argv[count], "-maxIter") == 0) {
-	  count++;
-	  if (Tcl_GetInt(interp, argv[count], &maxIter) != TCL_OK)	
-	    return TCL_ERROR;	      	  
-	  count++;	  
-	} else if (strcmp(argv[count], "-pFlag") == 0) {
-	  count++;
-	  if (Tcl_GetInt(interp, argv[count], &pFlag) != TCL_OK)	
-	    return TCL_ERROR;	      	  
-	  count++;
-	} else if (strcmp(argv[count], "-minEta") == 0) {
-	  count++;
-	  if (Tcl_GetDouble(interp, argv[count], &minEta) != TCL_OK)	
-	    return TCL_ERROR;	      	  
-	  count++;
-	} else if (strcmp(argv[count], "-maxEta") == 0) {
-	  count++;
-	  if (Tcl_GetDouble(interp, argv[count], &maxEta) != TCL_OK)	
-	    return TCL_ERROR;	      	  
-	  count++;
-	} else if (strcmp(argv[count], "-type") == 0) {
-	  count++;
-	  if (strcmp(argv[count], "Bisection") == 0) 
-	    typeSearch = 1;
-	  else if (strcmp(argv[count], "Secant") == 0) 
-	    typeSearch = 2;
-	  else if (strcmp(argv[count], "RegulaFalsi") == 0) 
-	    typeSearch = 3;
-	  else if (strcmp(argv[count], "LinearInterpolated") == 0) 
-	    typeSearch = 3;
-	  else if (strcmp(argv[count], "InitialInterpolated") == 0) 
-	    typeSearch = 0;
-	  count++;
-	} else
-	  count++;
-      }
-      
-      LineSearch *theLineSearch = 0;      
-      if (typeSearch == 0)
-	theLineSearch = new InitialInterpolatedLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-							  
-      else if (typeSearch == 1)
-	theLineSearch = new BisectionLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-      else if (typeSearch == 2)
-	theLineSearch = new SecantLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-      else if (typeSearch == 3)
-	theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-
-      theNewAlgo = new NewtonLineSearch(*theTest, theLineSearch); 
+    void *theNLSAlgo = OPS_NewtonLineSearch();
+    if (theNLSAlgo == 0)
+      return TCL_ERROR;
+    theNewAlgo = (EquiSolnAlgo *)theNLSAlgo;
+    if (theTest != 0)
+      theNewAlgo->setConvergenceTest(theTest);
   }
 
   else if (strcmp(argv[1],"ExpressNewton") == 0) {
@@ -5816,6 +5537,8 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	    theAnalysisModel = new AnalysisModel();
 	if (theTest == 0) 
 	  theTest = new CTestNormUnbalance(1.0e-6,25,0);       
+	if (theAlgorithm != 0)
+	    theAlgorithm->setConvergenceTest(theTest);
 	if (theAlgorithm == 0) {
 	  theAlgorithm = new NewtonRaphson(*theTest); 
 	}
