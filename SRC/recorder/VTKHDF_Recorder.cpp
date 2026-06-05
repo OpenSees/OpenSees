@@ -35,6 +35,8 @@
 #include <classTags.h>
 #include <iostream>
 #include "hdf5.h"
+#include <set>
+#include <MeshRegion.h>
 
 #ifdef _WIN32
 #include <direct.h>
@@ -63,6 +65,8 @@ OutputDataHDF::OutputDataHDF()
     reaction = false; mass     = false; unbalancedLoad = false;
     stress3D6 = false; strain3D6 = false;
     stress2D3 = false; strain2D3 = false;
+    force2D = false; force3D = false;
+    localForce2D = false; localForce3D = false;
 }
 
 OutputDataHDF &OutputDataHDF::operator=(const OutputDataHDF &other) 
@@ -82,8 +86,11 @@ OutputDataHDF &OutputDataHDF::operator=(const OutputDataHDF &other)
     strain3D6 = other.strain3D6;
     stress2D3 = other.stress2D3;
     strain2D3 = other.strain2D3;
+    force2D = other.force2D;
+    force3D = other.force3D;
+    localForce2D = other.localForce2D;
+    localForce3D = other.localForce3D;
 
-    
     return *this;
 }
 
@@ -106,6 +113,7 @@ void* OPS_VTKHDF_Recorder()
     std::vector<VTKHDF_Recorder::EleData> eledata;
     double dT = 0.0;
     double rTolDt = 0.00001;
+    int regionTag = -1;
 
     // Parse remaining arguments
     numdata = OPS_GetNumRemainingInputArgs();
@@ -145,6 +153,15 @@ void* OPS_VTKHDF_Recorder()
         } else if(strcmp(type, "strain2D3") == 0) {
             outputData.strain2D3 = true;
         }
+        else if (strcmp(type, "force2D") == 0) {
+            outputData.force2D = true;
+        } else if (strcmp(type, "force3D") == 0) {
+            outputData.force3D = true;
+        } else if (strcmp(type, "localForce2D") == 0) {
+            outputData.localForce2D = true;
+        } else if (strcmp(type, "localForce3D") == 0) {
+            outputData.localForce3D = true;
+        }
         // Time step options
         else if(strcmp(type, "-dT") == 0) {
             if(OPS_GetNumRemainingInputArgs() < 1) {
@@ -170,6 +187,17 @@ void* OPS_VTKHDF_Recorder()
             }
             rTolDt = (rTolDt < 0) ? 0 : rTolDt;
         }
+        else if (strcmp(type, "-region") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: needs region tag\n";
+                return 0;
+            }
+            numdata = 1;
+            if (OPS_GetIntInput(&numdata, &regionTag) < 0) {
+                opserr << "WARNING: failed to read region tag\n";
+                return 0;
+            }
+        }
 
         numdata = OPS_GetNumRemainingInputArgs();
     }
@@ -187,13 +215,13 @@ void* OPS_VTKHDF_Recorder()
     // opserr << "strain2D3 " << (outputData.strain2D3 ? "true" : "false") << endln;
 
     // Create the recorder
-    return new VTKHDF_Recorder(name, outputData, eledata, dT, rTolDt);
+    return new VTKHDF_Recorder(name, outputData, eledata, dT, rTolDt, regionTag);
 }
 
 VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName, 
                                 const OutputDataHDF& outData,
                                 const std::vector<EleData>& edata, 
-                                double dt, double rTolDt)
+                                double dt, double rTolDt, int rTag)
     :Recorder(RECORDER_TAGS_VTKHDF_Recorder), 
      // Initialize member variables
      name(nullptr),
@@ -203,11 +231,11 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
      deltaT(dt),
      relDeltaTTol(rTolDt),
      counter(0),
+     regionTag(rTag),
      initializationDone(false),
      initDone(false)
 {
 
-   
     name = new char[strlen(inputName) + 1];
     strcpy(name, inputName);
 
@@ -1380,7 +1408,68 @@ VTKHDF_Recorder::VTKHDF_Recorder(const char *inputName,
         }
     }
 
+    if (outputData.force2D) {
+        int res = 0;
+        res = this->createDataset(cell_data_group, "force2D", 6, 500, H5T_NATIVE_DOUBLE, H5S_UNLIMITED);
+        res += this->createOffsetDataset(cell_data_offsets_group, "force2D", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        current_Force2DOffset = 0;
+        if (res < 0) {
+            opserr << "Error creating force2D datasets\n";
+            return;
+        }
+    }
+    if (outputData.force3D) {
+        int res = 0;
+        res = this->createDataset(cell_data_group, "force3D", 12, 500, H5T_NATIVE_DOUBLE, H5S_UNLIMITED);
+        res += this->createOffsetDataset(cell_data_offsets_group, "force3D", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        current_Force3DOffset = 0;
+        if (res < 0) {
+            opserr << "Error creating force3D datasets\n";
+            return;
+        }
+    }
+    if (outputData.localForce2D) {
+        int res = 0;
+        res = this->createDataset(cell_data_group, "localForce2D", 6, 500, H5T_NATIVE_DOUBLE, H5S_UNLIMITED);
+        res += this->createOffsetDataset(cell_data_offsets_group, "localForce2D", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        current_LocalForce2DOffset = 0;
+        if (res < 0) {
+            opserr << "Error creating localForce2D datasets\n";
+            return;
+        }
+    }
+    if (outputData.localForce3D) {
+        int res = 0;
+        res = this->createDataset(cell_data_group, "localForce3D", 12, 500, H5T_NATIVE_DOUBLE, H5S_UNLIMITED);
+        res += this->createOffsetDataset(cell_data_offsets_group, "localForce3D", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        current_LocalForce3DOffset = 0;
+        if (res < 0) {
+            opserr << "Error creating localForce3D datasets\n";
+            return;
+        }
+    }
 
+    // Create nodeTags dataset in PointData (always present, written once)
+    {
+        int res = 0;
+        res = this->createDataset(point_data_group, "nodeTags", 0, 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        res += this->createOffsetDataset(point_data_offsets_group, "nodeTags", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        if (res < 0) {
+            opserr << "Error creating nodeTags datasets\n";
+            return;
+        }
+    }
+
+    // Create eleTags dataset in CellData (always present, written once)
+    {
+        int res = 0;
+        res = this->createDataset(cell_data_group, "eleTags", 0, 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        res += this->createOffsetDataset(cell_data_offsets_group, "eleTags", 500, H5T_NATIVE_INT, H5S_UNLIMITED);
+        if (res < 0) {
+            opserr << "Error creating eleTags datasets\n";
+            return;
+        }
+    }
 
 
 
@@ -1423,6 +1512,7 @@ VTKHDF_Recorder::VTKHDF_Recorder()
    deltaT(0.0),
    relDeltaTTol(0.00001),
    counter(0),
+   regionTag(-1),
    initializationDone(false)
 {
   name = NULL;
@@ -1448,68 +1538,143 @@ int VTKHDF_Recorder::writeMesh() {
     theEleVtkTags.clear();
     theEleVtkOffsets.clear();
 
+    Node *theNode = nullptr;
+    Element *theElement = nullptr;
+
+    MeshRegion *theRegion = nullptr;
+    if (regionTag != -1) {
+        theRegion = theDomain->getRegion(regionTag);
+        if (theRegion == nullptr) {
+            opserr << "WARNING: VTKHDF_Recorder - region tag " << regionTag << " does not exist. Recording entire domain.\n";
+        }
+    }
+
+    std::set<int> requiredNodes;
+    numElement = 0;
+    numConnectivityIds = 0;
+    theEleVtkOffsets.push_back(numConnectivityIds);
+
+    // 3) Gather element info (done first to collect connected nodes in case of region)
+    if (theRegion != nullptr) {
+        const ID &regionEles = theRegion->getElements();
+        int numRegionEles = regionEles.Size();
+        for (int idx = 0; idx < numRegionEles; idx++) {
+            int eleTag = regionEles(idx);
+            theElement = theDomain->getElement(eleTag);
+            if (theElement != nullptr) {
+                int classTag = theElement->getClassTag();
+                auto it = vtktypes.find(classTag);
+                if (it != vtktypes.end()) {
+                    int vtkType = it->second;
+
+                    theEleMapping[eleTag]   = numElement;
+                    theEleTags.push_back(eleTag);
+                    theEleClassTags.push_back(classTag);
+                    theEleVtkTags.push_back(vtkType);
+
+                    const ID &extNodes = theElement->getExternalNodes();
+                    int nN = extNodes.Size();
+                    for (int i = 0; i < nN; i++) {
+                        requiredNodes.insert(extNodes(i));
+                    }
+
+                    // Offsets array is cumulative
+                    numConnectivityIds += nN; 
+                    theEleVtkOffsets.push_back(numConnectivityIds);
+
+                    numElement++;
+                }
+            }
+        }
+
+        // Also add any nodes explicitly defined in the region (even if unconnected)
+        const ID &regionNodes = theRegion->getNodes();
+        int numRegionNodes = regionNodes.Size();
+        for (int idx = 0; idx < numRegionNodes; idx++) {
+            requiredNodes.insert(regionNodes(idx));
+        }
+    } else {
+        ElementIter &theElements = theDomain->getElements();
+        while ((theElement = theElements()) != nullptr) {
+            int eleTag   = theElement->getTag();
+            int classTag = theElement->getClassTag();
+
+            auto it = vtktypes.find(classTag);
+            if (it != vtktypes.end()) {
+                int vtkType = it->second;
+
+                theEleMapping[eleTag]   = numElement;
+                theEleTags.push_back(eleTag);
+                theEleClassTags.push_back(classTag);
+                theEleVtkTags.push_back(vtkType);
+
+                const ID &extNodes = theElement->getExternalNodes();
+                int nN = extNodes.Size();
+
+                // Offsets array is cumulative
+                numConnectivityIds += nN; 
+                theEleVtkOffsets.push_back(numConnectivityIds);
+
+                numElement++;
+            } else {
+                if (classTag != ELE_TAG_Subdomain) {
+                    opserr << "VTKHDF_Recorder::writeMesh - unknown vtk type for element "
+                           << eleTag << " (classTag=" << classTag << ")" << endln;
+                }
+            }
+        }
+    }
+
     // 2) Gather node info
-    NodeIter &theNodes = theDomain->getNodes();
-    Node *theNode;
     numNode = 0;  
     maxNDM = 0;   // max spatial dimension
     maxNDF = 0;   // max degrees of freedom
 
-    while ((theNode = theNodes()) != nullptr) {
-        int nodeTag = theNode->getTag();
+    if (theRegion != nullptr) {
+        for (int nodeTag : requiredNodes) {
+            theNode = theDomain->getNode(nodeTag);
+            if (theNode != nullptr) {
+                const Vector &crd = theNode->getCrds();
+                if (crd.Size() > maxNDM) {
+                    maxNDM = crd.Size();
+                }
 
-        const Vector &crd = theNode->getCrds();
-        if (crd.Size() > maxNDM) {
-            maxNDM = crd.Size();
-        }
+                const Vector &disp = theNode->getTrialDisp();
+                if (disp.Size() > maxNDF) {
+                    maxNDF = disp.Size();
+                }
 
-        const Vector &disp = theNode->getTrialDisp();
-        if (disp.Size() > maxNDF) {
-            maxNDF = disp.Size();
-        }
-
-        // Build mapping (nodeTag -> index)
-        theNodeMapping[nodeTag] = numNode;
-        theNodeTags.push_back(nodeTag);
-        numNode++;
-    }
-
-    // 3) Gather element info
-    ElementIter &theElements = theDomain->getElements();
-    Element *theElement;
-    numElement = 0;
-    numConnectivityIds = 0;
-    
-    theEleVtkOffsets.push_back(numConnectivityIds);
-    while ((theElement = theElements()) != nullptr) {
-        int eleTag   = theElement->getTag();
-        int classTag = theElement->getClassTag();
-
-        // Check if recognized by our VTK type map
-        auto it = vtktypes.find(classTag);
-        if (it != vtktypes.end()) {
-            int vtkType = it->second;
-
-            theEleMapping[eleTag]   = numElement;
-            theEleTags.push_back(eleTag);
-            theEleClassTags.push_back(classTag);
-            theEleVtkTags.push_back(vtkType);
-
-            const ID &extNodes = theElement->getExternalNodes();
-            int nN = extNodes.Size();
-
-            // Offsets array is cumulative
-            numConnectivityIds += nN; 
-            theEleVtkOffsets.push_back(numConnectivityIds);
-
-            numElement++;
-        } else {
-            // Possibly skip subdomains or warn for unrecognized element
-            if (classTag != ELE_TAG_Subdomain) {
-                opserr << "VTKHDF_Recorder::writeMesh - unknown vtk type for element "
-                       << eleTag << " (classTag=" << classTag << ")" << endln;
+                // Build mapping (nodeTag -> index)
+                theNodeMapping[nodeTag] = numNode;
+                theNodeTags.push_back(nodeTag);
+                numNode++;
             }
         }
+    } else {
+        NodeIter &theNodes = theDomain->getNodes();
+        while ((theNode = theNodes()) != nullptr) {
+            int nodeTag = theNode->getTag();
+
+            const Vector &crd = theNode->getCrds();
+            if (crd.Size() > maxNDM) {
+                maxNDM = crd.Size();
+            }
+
+            const Vector &disp = theNode->getTrialDisp();
+            if (disp.Size() > maxNDF) {
+                maxNDF = disp.Size();
+            }
+
+            // Build mapping (nodeTag -> index)
+            theNodeMapping[nodeTag] = numNode;
+            theNodeTags.push_back(nodeTag);
+            numNode++;
+        }
+    }
+
+    if (numNode == 0 && numElement == 0) {
+        initDone = true;
+        return 0;
     }
 
     // -------------------------------------------------------------
@@ -1518,10 +1683,9 @@ int VTKHDF_Recorder::writeMesh() {
 
     // (A) Points => shape (numNode,3)
     std::vector<double> pointsData(numNode * 3, 0.0);
-    {
-        NodeIter &theNodes2 = theDomain->getNodes();
-        while ((theNode = theNodes2()) != nullptr) {
-            int nodeTag         = theNode->getTag();
+    for (int nodeTag : theNodeTags) {
+        theNode = theDomain->getNode(nodeTag);
+        if (theNode != nullptr) {
             int mappedIndex     = theNodeMapping[nodeTag];
             const Vector &crd   = theNode->getCrds();
 
@@ -1534,11 +1698,10 @@ int VTKHDF_Recorder::writeMesh() {
     // (B) Connectivity => shape (numConnectivityIds)
     std::vector<int> connectivity(numConnectivityIds);
     {
-        ElementIter &theElements2 = theDomain->getElements();
         int idx = 0;
-        while ((theElement = theElements2()) != nullptr) {
-            int classTag = theElement->getClassTag();
-            if (vtktypes.find(classTag) != vtktypes.end()) {
+        for (int eleTag : theEleTags) {
+            theElement = theDomain->getElement(eleTag);
+            if (theElement != nullptr) {
                 const ID &extNodes = theElement->getExternalNodes();
                 for (int i = 0; i < extNodes.Size(); i++) {
                     int nodeTag = extNodes(i);
@@ -1928,6 +2091,18 @@ int VTKHDF_Recorder::writeMesh() {
     H5Gclose(vtkhdfGroup);
 
     // -------------------------------------------------------------
+    // 10a) Write nodeTags to PointData and eleTags to CellData (written once)
+    // -------------------------------------------------------------
+    if (this->extendDataset(point_data_group, "nodeTags", theNodeTags.data(), H5T_NATIVE_INT, numNode, 0) < 0) {
+        opserr << "Error writing nodeTags to PointData\n";
+        return -1;
+    }
+    if (this->extendDataset(cell_data_group, "eleTags", theEleTags.data(), H5T_NATIVE_INT, numElement, 0) < 0) {
+        opserr << "Error writing eleTags to CellData\n";
+        return -1;
+    }
+
+    // -------------------------------------------------------------
     // 10 ) update the current offsets
     // -------------------------------------------------------------
     // for having a changing mesh you may need to adjust this ofsset
@@ -2005,6 +2180,62 @@ int VTKHDF_Recorder::writeMesh() {
             const char* args[] = {"strain2D3"};
             Response *theResponse = theElement->setResponse(args, 1, theOutputHandler);
             strain2D3Responses.push_back(theResponse);
+        }
+    }
+
+    // force2D
+    if (outputData.force2D) {
+        opserr << "Setting up force2D responses\n";
+        force2DResponses.clear();
+        force2DResponses.reserve(numElement);
+        for (auto i : theEleTags) {
+            Element *theElement = theDomain->getElement(i);
+            SilentStream theOutputHandler;
+            const char* args[] = {"force"};
+            Response *theResponse = theElement->setResponse(args, 1, theOutputHandler);
+            force2DResponses.push_back(theResponse);
+        }
+    }
+
+    // force3D
+    if (outputData.force3D) {
+        opserr << "Setting up force3D responses\n";
+        force3DResponses.clear();
+        force3DResponses.reserve(numElement);
+        for (auto i : theEleTags) {
+            Element *theElement = theDomain->getElement(i);
+            SilentStream theOutputHandler;
+            const char* args[] = {"force"};
+            Response *theResponse = theElement->setResponse(args, 1, theOutputHandler);
+            force3DResponses.push_back(theResponse);
+        }
+    }
+
+    // localForce2D
+    if (outputData.localForce2D) {
+        opserr << "Setting up localForce2D responses\n";
+        localForce2DResponses.clear();
+        localForce2DResponses.reserve(numElement);
+        for (auto i : theEleTags) {
+            Element *theElement = theDomain->getElement(i);
+            SilentStream theOutputHandler;
+            const char* args[] = {"localForce"};
+            Response *theResponse = theElement->setResponse(args, 1, theOutputHandler);
+            localForce2DResponses.push_back(theResponse);
+        }
+    }
+
+    // localForce3D
+    if (outputData.localForce3D) {
+        opserr << "Setting up localForce3D responses\n";
+        localForce3DResponses.clear();
+        localForce3DResponses.reserve(numElement);
+        for (auto i : theEleTags) {
+            Element *theElement = theDomain->getElement(i);
+            SilentStream theOutputHandler;
+            const char* args[] = {"localForce"};
+            Response *theResponse = theElement->setResponse(args, 1, theOutputHandler);
+            localForce3DResponses.push_back(theResponse);
         }
     }
 
@@ -2092,6 +2323,34 @@ int VTKHDF_Recorder::record(int commitTag, double timeStamp)
             }
         }
 
+        if (outputData.force2D) {
+            if (this->writeForce2D() < 0) {
+                opserr << "VTKHDF_Recorder::record() - writeForce2D() failed\n";
+                return -1;
+            }
+        }
+
+        if (outputData.force3D) {
+            if (this->writeForce3D() < 0) {
+                opserr << "VTKHDF_Recorder::record() - writeForce3D() failed\n";
+                return -1;
+            }
+        }
+
+        if (outputData.localForce2D) {
+            if (this->writeLocalForce2D() < 0) {
+                opserr << "VTKHDF_Recorder::record() - writeLocalForce2D() failed\n";
+                return -1;
+            }
+        }
+
+        if (outputData.localForce3D) {
+            if (this->writeLocalForce3D() < 0) {
+                opserr << "VTKHDF_Recorder::record() - writeLocalForce3D() failed\n";
+                return -1;
+            }
+        }
+
         if (deltaT != 0.0) {
             nextTimeStampToRecord = timeStamp + deltaT;
         }
@@ -2146,6 +2405,178 @@ int VTKHDF_Recorder::writeStrain2D3(void) {
     res += this->extendDataset(cell_data_group, "strain2D3", strainData.data(), H5T_NATIVE_DOUBLE, numElement, 3);
     res += this->extendOffsetDataset(cell_data_offsets_group, "strain2D3", &current_Strain2D3Offset, H5T_NATIVE_INT, 1);
     current_Strain2D3Offset += numElement;
+    return res;
+}
+
+int VTKHDF_Recorder::writeForce2D(void) {
+    std::vector<double> forceData(numElement * 6, 0.0);
+    for (auto i : theEleTags) {
+        int MappedIndex = theEleMapping[i];
+        if (force2DResponses[MappedIndex] == nullptr) {
+            continue;
+        }
+        force2DResponses[MappedIndex]->getResponse();
+        Information &info = force2DResponses[MappedIndex]->getInformation();
+        const Vector &force = info.getData();
+        int size = force.Size();
+        if (size == 6) {
+            for (int j = 0; j < 6; j++) {
+                forceData[6 * MappedIndex + j] = force(j);
+            }
+        } else if (size == 4) {
+            forceData[6 * MappedIndex + 0] = force(0);
+            forceData[6 * MappedIndex + 1] = force(1);
+            forceData[6 * MappedIndex + 2] = 0.0;
+            forceData[6 * MappedIndex + 3] = force(2);
+            forceData[6 * MappedIndex + 4] = force(3);
+            forceData[6 * MappedIndex + 5] = 0.0;
+        } else {
+            for (int j = 0; j < 6; j++) {
+                if (j < size) {
+                    forceData[6 * MappedIndex + j] = force(j);
+                } else {
+                    forceData[6 * MappedIndex + j] = 0.0;
+                }
+            }
+        }
+    }
+
+    int res = 0;
+    res += this->extendDataset(cell_data_group, "force2D", forceData.data(), H5T_NATIVE_DOUBLE, numElement, 6);
+    res += this->extendOffsetDataset(cell_data_offsets_group, "force2D", &current_Force2DOffset, H5T_NATIVE_INT, 1);
+    current_Force2DOffset += numElement;
+    return res;
+}
+
+int VTKHDF_Recorder::writeForce3D(void) {
+    std::vector<double> forceData(numElement * 12, 0.0);
+    for (auto i : theEleTags) {
+        int MappedIndex = theEleMapping[i];
+        if (force3DResponses[MappedIndex] == nullptr) {
+            continue;
+        }
+        force3DResponses[MappedIndex]->getResponse();
+        Information &info = force3DResponses[MappedIndex]->getInformation();
+        const Vector &force = info.getData();
+        int size = force.Size();
+        if (size == 12) {
+            for (int j = 0; j < 12; j++) {
+                forceData[12 * MappedIndex + j] = force(j);
+            }
+        } else if (size == 6) {
+            forceData[12 * MappedIndex + 0] = force(0);
+            forceData[12 * MappedIndex + 1] = force(1);
+            forceData[12 * MappedIndex + 2] = force(2);
+            forceData[12 * MappedIndex + 3] = 0.0;
+            forceData[12 * MappedIndex + 4] = 0.0;
+            forceData[12 * MappedIndex + 5] = 0.0;
+            forceData[12 * MappedIndex + 6] = force(3);
+            forceData[12 * MappedIndex + 7] = force(4);
+            forceData[12 * MappedIndex + 8] = force(5);
+            forceData[12 * MappedIndex + 9] = 0.0;
+            forceData[12 * MappedIndex + 10] = 0.0;
+            forceData[12 * MappedIndex + 11] = 0.0;
+        } else {
+            for (int j = 0; j < 12; j++) {
+                if (j < size) {
+                    forceData[12 * MappedIndex + j] = force(j);
+                } else {
+                    forceData[12 * MappedIndex + j] = 0.0;
+                }
+            }
+        }
+    }
+
+    int res = 0;
+    res += this->extendDataset(cell_data_group, "force3D", forceData.data(), H5T_NATIVE_DOUBLE, numElement, 12);
+    res += this->extendOffsetDataset(cell_data_offsets_group, "force3D", &current_Force3DOffset, H5T_NATIVE_INT, 1);
+    current_Force3DOffset += numElement;
+    return res;
+}
+
+int VTKHDF_Recorder::writeLocalForce2D(void) {
+    std::vector<double> forceData(numElement * 6, 0.0);
+    for (auto i : theEleTags) {
+        int MappedIndex = theEleMapping[i];
+        if (localForce2DResponses[MappedIndex] == nullptr) {
+            continue;
+        }
+        localForce2DResponses[MappedIndex]->getResponse();
+        Information &info = localForce2DResponses[MappedIndex]->getInformation();
+        const Vector &force = info.getData();
+        int size = force.Size();
+        if (size == 6) {
+            for (int j = 0; j < 6; j++) {
+                forceData[6 * MappedIndex + j] = force(j);
+            }
+        } else if (size == 4) {
+            forceData[6 * MappedIndex + 0] = force(0);
+            forceData[6 * MappedIndex + 1] = force(1);
+            forceData[6 * MappedIndex + 2] = 0.0;
+            forceData[6 * MappedIndex + 3] = force(2);
+            forceData[6 * MappedIndex + 4] = force(3);
+            forceData[6 * MappedIndex + 5] = 0.0;
+        } else {
+            for (int j = 0; j < 6; j++) {
+                if (j < size) {
+                    forceData[6 * MappedIndex + j] = force(j);
+                } else {
+                    forceData[6 * MappedIndex + j] = 0.0;
+                }
+            }
+        }
+    }
+
+    int res = 0;
+    res += this->extendDataset(cell_data_group, "localForce2D", forceData.data(), H5T_NATIVE_DOUBLE, numElement, 6);
+    res += this->extendOffsetDataset(cell_data_offsets_group, "localForce2D", &current_LocalForce2DOffset, H5T_NATIVE_INT, 1);
+    current_LocalForce2DOffset += numElement;
+    return res;
+}
+
+int VTKHDF_Recorder::writeLocalForce3D(void) {
+    std::vector<double> forceData(numElement * 12, 0.0);
+    for (auto i : theEleTags) {
+        int MappedIndex = theEleMapping[i];
+        if (localForce3DResponses[MappedIndex] == nullptr) {
+            continue;
+        }
+        localForce3DResponses[MappedIndex]->getResponse();
+        Information &info = localForce3DResponses[MappedIndex]->getInformation();
+        const Vector &force = info.getData();
+        int size = force.Size();
+        if (size == 12) {
+            for (int j = 0; j < 12; j++) {
+                forceData[12 * MappedIndex + j] = force(j);
+            }
+        } else if (size == 6) {
+            forceData[12 * MappedIndex + 0] = force(0);
+            forceData[12 * MappedIndex + 1] = force(1);
+            forceData[12 * MappedIndex + 2] = force(2);
+            forceData[12 * MappedIndex + 3] = 0.0;
+            forceData[12 * MappedIndex + 4] = 0.0;
+            forceData[12 * MappedIndex + 5] = 0.0;
+            forceData[12 * MappedIndex + 6] = force(3);
+            forceData[12 * MappedIndex + 7] = force(4);
+            forceData[12 * MappedIndex + 8] = force(5);
+            forceData[12 * MappedIndex + 9] = 0.0;
+            forceData[12 * MappedIndex + 10] = 0.0;
+            forceData[12 * MappedIndex + 11] = 0.0;
+        } else {
+            for (int j = 0; j < 12; j++) {
+                if (j < size) {
+                    forceData[12 * MappedIndex + j] = force(j);
+                } else {
+                    forceData[12 * MappedIndex + j] = 0.0;
+                }
+            }
+        }
+    }
+
+    int res = 0;
+    res += this->extendDataset(cell_data_group, "localForce3D", forceData.data(), H5T_NATIVE_DOUBLE, numElement, 12);
+    res += this->extendOffsetDataset(cell_data_offsets_group, "localForce3D", &current_LocalForce3DOffset, H5T_NATIVE_INT, 1);
+    current_LocalForce3DOffset += numElement;
     return res;
 }
 
@@ -2992,6 +3423,19 @@ int VTKHDF_Recorder::writeStep(double timeStamp)
         H5Sclose(file_space);
         H5Dclose(dset_id);
     }
+
+    // nodeTags and eleTags are constant - always point to offset 0
+    {
+        const int zeroOffset = 0;
+        if (this->extendOffsetDataset(point_data_offsets_group, "nodeTags", &zeroOffset, H5T_NATIVE_INT, 1) < 0) {
+            opserr << "Error writing nodeTags offset\n";
+            return -1;
+        }
+        if (this->extendOffsetDataset(cell_data_offsets_group, "eleTags", &zeroOffset, H5T_NATIVE_INT, 1) < 0) {
+            opserr << "Error writing eleTags offset\n";
+            return -1;
+        }
+    }
     
     
     return 0;
@@ -3308,6 +3752,10 @@ void VTKHDF_Recorder::setVTKType()
     vtktypes[ELE_TAG_PML2D] = VTK_QUAD;
     vtktypes[ELE_TAG_PML3D] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_PML3DVISCOUS] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_ASDEmbeddedNodeElement] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EmbeddedBeamInterfaceL] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EmbeddedBeamInterfaceP] = VTK_POLY_VERTEX;
+    vtktypes[ELE_TAG_EmbeddedEPBeamInterface] = VTK_POLY_VERTEX;
 }
 
 
@@ -3412,6 +3860,9 @@ int VTKHDF_Recorder::extendDataset(hid_t dataGroup,
                      hid_t datatype,
                      size_t numNewElements,
                      size_t numColumns) {
+    if (numNewElements == 0) {
+        return 0;
+    }
     // Open dataset
     hid_t dset_id = H5Dopen(dataGroup, datasetName, H5P_DEFAULT);
     if (dset_id < 0) {
@@ -3571,6 +4022,9 @@ int VTKHDF_Recorder::extendOffsetDataset(hid_t group_id,
                   const void* new_value, 
                   hid_t datatype,
                   size_t extra_rows) {
+    if (extra_rows == 0) {
+        return 0;
+    }
     // Open dataset
     hid_t dset_id = H5Dopen(group_id, dataset_name, H5P_DEFAULT);
     if (dset_id < 0) {
