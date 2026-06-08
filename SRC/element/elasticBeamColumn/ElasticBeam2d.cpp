@@ -534,7 +534,8 @@ ElasticBeam2d::ElasticBeam2d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     G = param.getValue();
 
   if (G <= 0.0) {
-    opserr << "ElasticBeam2d::ElasticBeam2d - G from section is zero, using G = -1 (no shear)" << endln;
+	// This output gets annoying bc it's always there when you just want E,A,I
+    //opserr << "ElasticBeam2d::ElasticBeam2d - G from section is zero, using G = -1 (no shear)" << endln;
     G = -1.0;
   }  
   
