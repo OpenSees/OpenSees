@@ -332,23 +332,24 @@ CreepShrinkageACI209::setTrialStrain(double strain, double strainRate)
     if (fabs(t-TIME_i[historyPointCount]) <= 0.0001) {
       trialCreepStrain = committedCreepStrain;
       trialShrinkageStrain = committedShrinkageStrain;
+      iterationInStep = 0;
     } else {
       if (iterationInStep < 1) {
         trialCreepStrain = setCreepStrain(t);
         trialShrinkageStrain = setShrink(t);
       }
+      iterationInStep ++;
     }
   } else {
     trialCreepStrain = committedCreepStrain;
     trialShrinkageStrain = committedShrinkageStrain;
   }
-  
+
   trialMechanicalStrain = trialTotalStrain - trialCreepStrain - trialShrinkageStrain;
   wrappedMaterial->setTrialStrain(trialMechanicalStrain, strainRate);
   trialStress = wrappedMaterial->getStress();
-  trialTangent = wrappedMaterial->getTangent();	
+  trialTangent = wrappedMaterial->getTangent();
 
-  iterationInStep ++;
   return 0;
 }
 
@@ -470,7 +471,7 @@ CreepShrinkageACI209::sendSelf(int commitTag, Channel &theChannel)
     return res;
   }
 
-  Vector data(27 + maxSize*2);
+  Vector data(22 + maxSize*2);
   int i = 0;
   data(i++) = tcr;
   data(i++) = Ec;
@@ -534,7 +535,7 @@ CreepShrinkageACI209::recvSelf(int commitTag, Channel &theChannel,
   this->setTag(idata(2));  
   maxSize = idata(3);
   
-  Vector data(27 + maxSize*2);
+  Vector data(22 + maxSize*2);
 
   if (theChannel.recvVector(this->getDbTag(), commitTag, data) < 0) {
     opserr << "CreepShrinkageACI209::recvSelf() - failed to recvSelf\n";

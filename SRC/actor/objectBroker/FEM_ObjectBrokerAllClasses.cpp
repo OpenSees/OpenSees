@@ -92,6 +92,7 @@
 #include "TDConcreteMC10.h"
 #include "TDConcreteMC10NL.h"
 #include "CreepMaterial.h"
+#include "CreepShrinkageACI209.h"
 #include "OriginCentered.h"
 #include "Steel01.h"
 #include "Steel01Thermal.h"
@@ -1800,6 +1801,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
     case MAT_TAG_CreepMaterial:
       return new CreepMaterial();
+
+    case MAT_TAG_CreepShrinkageACI209:
+      return new CreepShrinkageACI209();
 
     case MAT_TAG_TDConcrete:
       return new TDConcrete();
