@@ -318,7 +318,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ConfinedConcrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ContinuumUniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CreepShrinkageACI209.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CubicSpline.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\DamperMaterial.cpp" />
