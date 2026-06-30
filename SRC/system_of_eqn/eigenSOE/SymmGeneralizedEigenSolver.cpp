@@ -22,6 +22,7 @@
 #include <float.h>
 #include <math.h>
 #include <stdio.h>
+#include <memory>
 #include <AnalysisModel.h>
 #include <DOF_GrpIter.h>
 #include <DOF_Group.h>
@@ -119,7 +120,7 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     // stiffness matrix data
     double *Kptr = theSOE->A;
       
-    double *kCopy = new double[n*n];
+    std::unique_ptr<double[]> kCopy(new double[n*n]);
     for (int i = 0; i < n*n; i++)
       kCopy[i] = Kptr[i];
     
@@ -137,7 +138,7 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
       index += n+1;
     }
     
-    double *mCopy = new double[n*n];
+    std::unique_ptr<double[]> mCopy(new double[n*n]);
     for (int i=0; i<n*n; i++)
       mCopy[i] = Mptr[i];
     
@@ -145,9 +146,9 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     int ldM = n;
 
     // allocate memory for eigenvalues
-    double *alphaR = new double [n];
-    double *alphaI = new double [n];
-    double *beta   = new double [n];
+    // std::unique_ptr<double[]> alphaR(new double[n]);
+    // std::unique_ptr<double[]> alphaI(new double[n]);
+    // std::unique_ptr<double[]> beta(new double[n]);
 
     if (eigenvalue != 0)
         delete [] eigenvalue;
@@ -183,11 +184,11 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     int liwork = n*5;
 
     // allocate memory for workspace array
-    double *work = new double [lwork];
-    int *iwork = new int [liwork];
+    std::unique_ptr<double[]> work(new double[lwork]);
+    std::unique_ptr<int[]> iwork(new int[liwork]);
 
     // fail array
-    int *ifail = new int [n];
+    std::unique_ptr<int[]> ifail(new int[n]);
     
     // output information
     int info = 0;
@@ -207,11 +208,11 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     // info=out (0 if success, <0 arg error, >0 failed to converge)
     DSYGVX(&itype, jobz, range, uplo, &n, Kptr, &ldK, Mptr, &ldM, 
 	   &vl, &vu, &il, &iu, &abstol,
-	   &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
+	   &m, w, z, &ldz, work.get(), &lwork, iwork.get(), ifail.get(), &info);
 #else
     dsygvx_(&itype, jobz, range, uplo, &n, Kptr, &ldK, Mptr, &ldM, 
 	    &vl, &vu, &il, &iu, &abstol,
-	    &m, w, z, &ldz, work, &lwork, iwork, ifail, &info);
+	    &m, w, z, &ldz, work.get(), &lwork, iwork.get(), ifail.get(), &info);
 #endif
     
     if (info < 0) {
@@ -253,9 +254,9 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     // mass normalize the eigenvalues
     //
 
-    Kptr = kCopy;
-    Mptr = mCopy;    
-    double *tmpV = new double[n];
+    Kptr = kCopy.get();
+    Mptr = mCopy.get();    
+    std::unique_ptr<double[]> tmpV(new double[n]);
     /*
     // mass normailze all vectors .. NOTE instead of numEigen!
     for (int k=0; k<n; k++) {
@@ -287,9 +288,6 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
       }
     }
     */
-    delete [] kCopy;
-    delete [] mCopy;
-    delete [] tmpV;
     
     // sort eigenvalues based on size
     this->sort(numEigen, eigenvalue, sortingID);
@@ -307,11 +305,6 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
                 << lworkOpt << " is larger than provided workspace size "
                 << lwork << " consider increasing workspace\n";
     }
-
-    // clean up the memory
-    delete [] work;
-    delete [] iwork;
-    delete [] ifail;        
 
     return 0;
 }
