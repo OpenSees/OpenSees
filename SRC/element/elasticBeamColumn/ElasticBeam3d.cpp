@@ -33,6 +33,7 @@
 // connect to a node with 6-dof. 
 
 #include <ElasticBeam3d.h>
+#include <ElasticBeamCommon.h>
 #include <Domain.h>
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
@@ -953,36 +954,20 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    if (releasez == 0) {
-      q0[1] -= Mz;
-      q0[2] += Mz;
-    }
-    if (releasez == 1) {
-      q0[2] += wy*L*L/8;
-    }
-    if (releasez == 2) {
-      q0[1] -= wy*L*L/8;
-    }
-    
-    if (releasey == 0) {
-      q0[3] += My;
-      q0[4] -= My;
-    }
-    if (releasey == 1) {
-      q0[4] -= wz*L*L/8;
-    }
-    if (releasey == 2) {
-      q0[3] += wz*L*L/8;
-    }
-    
+
+    double MI = -Mz;
+    double MJ = Mz;
+    elasticBeamEndMoments(MI, MJ, elasticBeamShearFactor(E, Iz, G, Avy, L), releasez);
+    q0[1] += MI;
+    q0[2] += MJ;
+
+    MI = My;
+    MJ = -My;
+    elasticBeamEndMoments(MI, MJ, elasticBeamShearFactor(E, Iy, G, Avz, L), releasey);
+    q0[3] += MI;
+    q0[4] += MJ;
   }
   else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
-    static bool errorReleasePartialUDL = false;
-    if ((releasey != 0 || releasez != 0) && errorReleasePartialUDL == false) {
-      opserr << "ElasticBeam3d::addLoad, element tag: " << this->getTag()
-	     << " - partial uniform load implementation assumes no releases" << endln;
-      errorReleasePartialUDL = true;
-    }
 	  double wa = data(2) * loadFactor;  // Axial
 	  double wy = data(0) * loadFactor;  // Transverse
 	  double wz = data(1) * loadFactor;  // Transverse
@@ -1010,6 +995,7 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 	  double V1 = Fyt-V2;
 	  double M1 = (0.5*z1*ba2) + (wybma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wybma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
 	  double M2 = (-1.0*z1*ba3/(3.0*L)) - (wybma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
+	  elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iz, G, Avy, L), releasez);
 	  double waa = wa;
 	  double P = waa*ba + 0.5*(wab-waa)*ba;
 	  double PJ = (1.0/L)*(waa*ba*(a+0.5*ba)+0.5*(wab-waa)*ba*(a+(2.0/3.0)*ba));
@@ -1032,6 +1018,7 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 	  V1 = Fzt-V2;
 	  M1 = (0.5*z1*ba2) + (wzbma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wzbma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wzbma*ba5/(5.0*L2*ba));
 	  M2 = (-1.0*z1*ba3/(3.0*L)) - (wzbma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wzbma*ba5/(5.0*L2*ba));
+	  elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iy, G, Avz, L), releasey);
 	  q0[3] += M1;
 	  q0[4] += M2;	  
 
@@ -1069,12 +1056,16 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     // Fixed end forces in basic system
     q0[0] -= N*aOverL;
     double M1, M2;
+    // Bending about z (shear along y)
     M1 = -a * b2 * Py * L2;
     M2 = a2 * b * Py * L2;
+    elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iz, G, Avy, L), releasez);
     q0[1] += M1;
     q0[2] += M2;
+    // Bending about y (shear along z)
     M1 = -a * b2 * Pz * L2;
     M2 = a2 * b * Pz * L2;
+    elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iy, G, Avz, L), releasey);
     q0[3] -= M1;
     q0[4] -= M2;
   }

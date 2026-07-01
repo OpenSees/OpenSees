@@ -33,6 +33,7 @@
 // connect to a node with 6-dof. 
 
 #include <ElasticBeam2d.h>
+#include <ElasticBeamCommon.h>
 #include <ElementalLoad.h>
 
 #include <Domain.h>
@@ -921,20 +922,12 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= 0.5*P;
-    if (release == 0) {
-      double M = V*L/6.0; // wt*L*L/12
-      q0[1] -= M;
-      q0[2] += M;
-    }
-    if (release == 1) {
-      q0[2] += wt*L*L/8;
-    }
-    if (release == 2) {
-      q0[1] -= wt*L*L/8;
-    }
-    if (release == 3) {
-      // Nothing to do
-    }
+    double M = V*L/6.0; // wt*L*L/12
+    double MI = -M;
+    double MJ = M;
+    elasticBeamEndMoments(MI, MJ, elasticBeamShearFactor(E, I, G, Av, L), release);
+    q0[1] += MI;
+    q0[2] += MJ;
   }
   else if (type == LOAD_TAG_BeamUniformMoment) {
     double mz = data(2)*loadFactor;  // About z
@@ -973,6 +966,7 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double V1 = Fyt-V2;
     double M1 = (0.5*z1*ba2) + (wybma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wybma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
     double M2 = (-1.0*z1*ba3/(3.0*L)) - (wybma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
+    elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, I, G, Av, L), release);
     double P = waa*ba + 0.5*(wab-waa)*ba;
     double PJ = (1.0/L)*(waa*ba*(a+0.5*ba)+0.5*(wab-waa)*ba*(a+(2.0/3.0)*ba));
 
@@ -1011,21 +1005,11 @@ ElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     // Fixed end forces in basic system
     q0[0] -= N*aOverL;
-    if (release == 0) {
-      double M1 = -a * b2 * P * L2;
-      double M2 = a2 * b * P * L2;
-      q0[1] += M1;
-      q0[2] += M2;
-    }
-    if (release == 1) {
-      q0[2] += 0.5*P*a*b*L2*(a+L);
-    }
-    if (release == 2) {
-      q0[1] -= 0.5*P*a*b*L2*(b+L);
-    }
-    if (release == 3) {
-      // Nothing to do
-    }    
+    double M1 = -a * b2 * P * L2;
+    double M2 = a2 * b * P * L2;
+    elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, I, G, Av, L), release);
+    q0[1] += M1;
+    q0[2] += M2;
   }
   
   else if (type == LOAD_TAG_Beam2dTempLoad) {
