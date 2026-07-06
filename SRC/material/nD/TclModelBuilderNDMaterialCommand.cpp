@@ -139,6 +139,7 @@ extern void *OPS_NewConcreteMaterial(void);
 #endif
 
 extern  void *OPS_FSAMMaterial(void); // K Kolozvari      
+extern  void *OPS_FAM_CSMaterial(void); // Shaohui Zhang, Xiaodong Ji - Tsinghua University
 extern void *OPS_OrthotropicRotatingAngleConcreteT2DMaterial01(void); // M. J. Nunez - UChile
 extern void *OPS_SmearedSteelDoubleLayerT2DMaterial01(void);		  // M. J. Nunez - UChile
 
@@ -399,6 +400,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	     (strcmp(argv[1], "FSAM") == 0)) {
       
       void *theMat = OPS_FSAMMaterial();
+      if (theMat != 0)
+	theMaterial = (NDMaterial *)theMat;
+      else
+	return TCL_ERROR;
+    }
+
+    else if (strcmp(argv[1], "FAM_CS") == 0) {
+
+      void *theMat = OPS_FAM_CSMaterial();
       if (theMat != 0)
 	theMaterial = (NDMaterial *)theMat;
       else
@@ -1715,5 +1725,3 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
     return TCL_OK;
 }
-
-

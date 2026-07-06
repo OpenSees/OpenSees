@@ -65,6 +65,7 @@ public:
 	double getCommittedStrain(void);
 	double getCommittedStress(void);
 	double getCommittedCyclicCrackingStrain(void);
+	double getCommittedNewOrigin(void);
 
 	UniaxialMaterial *getCopy(void);
 

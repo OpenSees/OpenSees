@@ -4156,6 +4156,11 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 		return Ceunp;
     }
 
+	double ConcreteCM::getCommittedNewOrigin()
+    {
+		return Ce0;
+    }
+
 	int ConcreteCM::revertToLastCommit ()
 	{
 		// Reset trial history variables to last committed state

@@ -68,6 +68,7 @@ class UniaxialMaterial : public Material
     virtual double getInitialTangent (void) = 0;
     virtual double getDampTangent (void);
     virtual double getRho(void);
+    virtual double getCommittedNewOrigin(void);
     
     virtual int commitState (void) = 0;
     virtual int revertToLastCommit (void) = 0;    

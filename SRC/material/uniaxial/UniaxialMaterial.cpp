@@ -199,6 +199,12 @@ UniaxialMaterial::getRho(void)
 	return 0.0;
 }
 
+double
+UniaxialMaterial::getCommittedNewOrigin(void)
+{
+    return 0.0;
+}
+
 UniaxialMaterial*
 UniaxialMaterial::getCopy(SectionForceDeformation *s)
 {
