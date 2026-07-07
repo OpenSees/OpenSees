@@ -139,7 +139,7 @@ extern void *OPS_NewConcreteMaterial(void);
 #endif
 
 extern  void *OPS_FSAMMaterial(void); // K Kolozvari      
-extern  void *OPS_FAM_CSMaterial(void); // Shaohui Zhang, Xiaodong Ji - Tsinghua University
+extern  void *OPS_FAM_CSMaterial(void); // Shaohui Zhang, Xiaodong Ji, Yue Yu - Tsinghua University
 extern void *OPS_OrthotropicRotatingAngleConcreteT2DMaterial01(void); // M. J. Nunez - UChile
 extern void *OPS_SmearedSteelDoubleLayerT2DMaterial01(void);		  // M. J. Nunez - UChile
 

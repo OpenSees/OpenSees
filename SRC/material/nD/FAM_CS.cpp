@@ -423,7 +423,7 @@ FAM_CS::FAM_CS (int tag,
 	}
 
 	// get/set responses
-	theResponses = new Response *[2];  
+	theResponses = new Response *[4];
 	if ( theResponses == 0) {
 		opserr << " FAM_CS::FAM_CS - failed allocate responses array\n";
 		exit(-1);
@@ -451,6 +451,23 @@ FAM_CS::FAM_CS (int tag,
 
 	if (theResponses[1] == 0) {
 			opserr << " FAM_CS::FAM_CS - failed to get input parameters for material with tag: " << tag << "\n";
+			exit(-1);
+	}
+
+	char cc[80] = "getCommittedNewOrigin";
+	argv[0] = cc;
+
+	theResponses[2] = theMaterial[4]->setResponse(argv, 1, theDummyStream);
+
+	if (theResponses[2] == 0) {
+			opserr << " FAM_CS::FAM_CS - failed to get committed new origin for material with tag: " << tag << "\n";
+			exit(-1);
+	}
+
+	theResponses[3] = theMaterial[6]->setResponse(argv, 1, theDummyStream);
+
+	if (theResponses[3] == 0) {
+			opserr << " FAM_CS::FAM_CS - failed to get committed new origin for material with tag: " << tag << "\n";
 			exit(-1);
 	}
 
@@ -530,7 +547,7 @@ FAM_CS::~FAM_CS()
 	}
 
 	if (theResponses != 0) {
-		for (int j=0; j<2; j++)
+		for (int j=0; j<4; j++)
 		{
 			if (theResponses[j] != 0)
 				delete theResponses[j];
@@ -1689,7 +1706,8 @@ void FAM_CS::Stage2(double &ex, double &ey, double &gamma)
 	theMaterial[4]->setTrialStrain( ec1 );
 	fc1 = theMaterial[4]->getStress();
 	Ect1 = theMaterial[4]->getTangent();
-	Ce0_A = theMaterial[4]->getCommittedNewOrigin();
+	theResponses[2]->getResponse();
+	Ce0_A = theResponses[2]->getInformation().theDouble;
 	TStrainStressConc1(0) = ec1;
 	TStrainStressConc1(1) = fc1;
 
@@ -2079,7 +2097,8 @@ void FAM_CS::Stage3(double &ex, double &ey, double &gamma)
 	theMaterial[4]->setTrialStrain( ecA1 );
 	fcA1 = theMaterial[4]->getStress();
 	EctA1 = theMaterial[4]->getTangent();
-	Ce0_A = theMaterial[4]->getCommittedNewOrigin();
+	theResponses[2]->getResponse();
+	Ce0_A = theResponses[2]->getInformation().theDouble;
 
 	TStrainStressConc1(0) = ecA1;
 	TStrainStressConc1(1) = fcA1;
@@ -2117,7 +2136,8 @@ void FAM_CS::Stage3(double &ex, double &ey, double &gamma)
 	theMaterial[6]->setTrialStrain( ecB1 );
 	fcB1 = theMaterial[6]->getStress();
 	EctB1 = theMaterial[6]->getTangent();
-	Ce0_B = theMaterial[6]->getCommittedNewOrigin();
+	theResponses[3]->getResponse();
+	Ce0_B = theResponses[3]->getInformation().theDouble;
 
 	// Get Softened Concrete B1 
 	betaf4(ecB2, epcc, fcB1, CepscmaxB2);
@@ -2933,7 +2953,8 @@ int FAM_CS::getResponse(int responseID, Information &matInfo)
 		return matInfo.setVector(this->getInputParameters());
 
 	} else if (responseID == 113) {
-		return matInfo.setDouble(theMaterial[4]->getCommittedNewOrigin());
+		theResponses[2]->getResponse();
+		return matInfo.setDouble(theResponses[2]->getInformation().theDouble);
 	}
 	else {
 

@@ -4156,11 +4156,6 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 		return Ceunp;
     }
 
-	double ConcreteCM::getCommittedNewOrigin()
-    {
-		return Ce0;
-    }
-
 	int ConcreteCM::revertToLastCommit ()
 	{
 		// Reset trial history variables to last committed state
@@ -4399,6 +4394,9 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 		Vector data3(11);
 		data3.Zero();
 		theResponse = new MaterialResponse(this, 103, data3);
+	} else if (strcmp(argv[0],"getCommittedNewOrigin") == 0) {
+		double data4 = 0.0;
+		theResponse = new MaterialResponse(this, 408, data4);
 	} else
 		return this->UniaxialMaterial::setResponse(argv, argc, theOutput);
 
@@ -4420,6 +4418,9 @@ int ConcreteCM::setTrialStrain (double strain, double strainRate)
 	
 	} else if (responseID == 103){
 		matInfo.setVector(this->getInputParameters()); 
+
+	} else if (responseID == 408){
+		matInfo.setDouble(Ce0);
 
 	} else
 
