@@ -457,14 +457,14 @@ FAM_CS::FAM_CS (int tag,
 	char cc[80] = "getCommittedNewOrigin";
 	argv[0] = cc;
 
-	theResponses[2] = theMaterial[4]->setResponse(argv, 1, theDummyStream);
+	theResponses[2] = theMaterial[4]->setResponse(argv, 1, theDummyStream); // strut A1 Ce0
 
 	if (theResponses[2] == 0) {
 			opserr << " FAM_CS::FAM_CS - failed to get committed new origin for material with tag: " << tag << "\n";
 			exit(-1);
 	}
 
-	theResponses[3] = theMaterial[6]->setResponse(argv, 1, theDummyStream);
+	theResponses[3] = theMaterial[6]->setResponse(argv, 1, theDummyStream); // strut B1 Ce0
 
 	if (theResponses[3] == 0) {
 			opserr << " FAM_CS::FAM_CS - failed to get committed new origin for material with tag: " << tag << "\n";
