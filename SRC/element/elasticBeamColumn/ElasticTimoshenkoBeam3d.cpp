@@ -565,7 +565,49 @@ int ElasticTimoshenkoBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
         ql0(10) -= My;
         ql0(11) += Mz;
     }
-    
+    else if (type == LOAD_TAG_Beam3dPointLoad) {
+    	double Py = data(0)*loadFactor;
+	    double Pz = data(1)*loadFactor;
+	    double N  = data(2)*loadFactor;
+	    double aOverL = data(3);
+	
+	    if (aOverL < 0.0 || aOverL > 1.0)
+	        return 0;
+	
+	    double a = aOverL * L;
+	    double b = L - a;
+	    double L2 = L*L;
+	    double L3 = L2*L;
+	
+	    // 轴向集中力，纯静力平衡，无任何修正
+	    double Ni = -N * b / L;
+	    double Nj = -N * a / L;
+	
+	    // Py 绕Mz 固端剪力、弯矩（纯几何，和剪切无关）
+	    double Vyi = -Py * b * b * (3*a + b) / L3;
+	    double Vyj = -Py * a * a * (3*b + a) / L3;
+	    double Mzi = -Py * a * b * b / L2;
+	    double Mzj =  Py * a * a * b / L2;
+	
+	    // Pz 绕My 固端剪力、弯矩
+	    double Vzi = -Pz * b * b * (3*a + b) / L3;
+	    double Vzj = -Pz * a * a * (3*b + a) / L3;
+	    double Myi =  Pz * a * b * b / L2;
+	    double Myj = -Pz * a * a * b / L2;
+	
+	    // 直接写入12维ql0，完全复用欧拉固端数值，不除以phi
+	    ql0(0)  -= Ni;
+	    ql0(1)  -= Vyi;
+	    ql0(2)  -= Vzi;
+	    ql0(4)  += Myi;
+	    ql0(5)  -= Mzi;
+	
+	    ql0(6)  -= Nj;
+	    ql0(7)  -= Vyj;
+	    ql0(8)  -= Vzj;
+	    ql0(10) -= Myj;
+	    ql0(11) += Mzj;
+	}
     else {
         opserr << "ElasticTimoshenkoBeam3d::addLoad() - "
             << "load type unknown for element: " 
