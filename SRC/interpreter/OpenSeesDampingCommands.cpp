@@ -115,7 +115,6 @@ void* OPS_SecStifDamping()
         }
         numRemainingArgs -= 1;
     }
-    opserr << "dampingTag = " << dampingTag << endln;//test
 
     numData = 1;
     if (OPS_GetDouble(&numData, dData) != 0) {
@@ -123,8 +122,6 @@ void* OPS_SecStifDamping()
         return 0;
     }
     numRemainingArgs -= 1;
-
-    opserr << "numRemainingArgs = " << numRemainingArgs << endln;//test
 
     //options
     while (numRemainingArgs > 1) {
@@ -196,7 +193,6 @@ void* OPS_URDDamping()
         }
         numRemainingArgs -= 1;
     }
-    opserr << "dampingTag = " << dampingTag << endln;//test
 
     numData = 1;
     if (OPS_GetIntInput(&numData, &iData[0]) != 0) {
@@ -206,8 +202,6 @@ void* OPS_URDDamping()
     numRemainingArgs -= 1;
 
     numfreq = iData[0];
-
-    opserr << "numfreq = " << numfreq << endln;//test
     
     if (numfreq < 2) {
         opserr << "WARNING - n needs to be larger than 1\n ";
@@ -229,8 +223,6 @@ void* OPS_URDDamping()
         }
         //(*etaFreq)(i, 1) *= (2.0);
     }
-
-    opserr << "numRemainingArgs = " << numRemainingArgs << endln;//test
 
     //options
     while (numRemainingArgs > 1) {
@@ -317,8 +309,6 @@ void* OPS_URDbetaDamping()
         numRemainingArgs -= 1;
     }
 
-    opserr << "dampingTag = " << dampingTag << endln;//test
-
     numData = 1;
     if (OPS_GetIntInput(&numData, iData) != 0) {
         opserr << "WARNING invalid gamma in URDbetadamping with tag?" << dampingTag << endln;
@@ -332,8 +322,6 @@ void* OPS_URDbetaDamping()
         opserr << "WARNING - n needs to be larger than 1\n ";
         return  0;
     }
-
-    opserr << "numfreq = " << numfreq << endln;//test
 
     Vector* tmpbeta = new Vector(numfreq);
     Vector* tmpomegac = new Vector(numfreq);
@@ -352,7 +340,7 @@ void* OPS_URDbetaDamping()
         }
         numRemainingArgs -= 1;
     }
-    opserr << "numRemainingArgs = " << numRemainingArgs << endln;//test
+    
     //options
     while (numRemainingArgs > 1) {
         const char* argvS = OPS_GetString();
