@@ -58,7 +58,7 @@
 #include <BackgroundMesh.h>
 #ifdef OPS_PARTITION_WITH_METIS
 #include <mpi.h>
-#include <metis.h>
+#include OPS_METIS_HEADER
 #endif
 
 #ifdef _OPENMP
