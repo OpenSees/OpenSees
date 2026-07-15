@@ -15,6 +15,8 @@ command distributes its elements.
 
 ## Results
 
+### macOS / MPICH
+
 | Ranks | Objective | METIS value | Elements per rank | Sum | Maximum imbalance |
 |---:|---|---:|---|---:|---:|
 | 2 | volume | 42 | 832, 828 | 1,660 | 0.24% |
@@ -26,6 +28,21 @@ The four-rank volume run was repeated with seed 42 and produced the same
 objective value and per-rank element counts. An invalid objective was rejected
 on every rank with a Tcl error.
 
+### Ubuntu / Open MPI
+
+A clean Ubuntu 24.04 ARM64 build linked against Open MPI 4.1.6 and system
+METIS 5.1.0 passed the same six pytest cases. Its four-rank volume reference
+run produced objective value 113 and element counts 420, 419, 410, and 411
+(1.20% maximum imbalance).
+
+### Ubuntu / MPICH
+
+An independent Ubuntu build linked against MPICH 4.2.0 also passed all six
+cases. Ubuntu's ARM64 Hydra/PMIx package combination created singleton
+communicators even for a minimal MPI program, so that binary was launched by
+Open MPI's PMIx-aware launcher. The MPI implementation loaded by OpenSeesMP
+remained MPICH.
+
 ## Run
 
 ```sh
@@ -35,4 +52,13 @@ mpiexec -n 4 OpenSeesMP metisPartitionBenchmark.tcl cut 42
 ```
 
 OpenSeesMP now synchronizes ranks before `MPI_Finalize`, and all benchmark runs
-exit cleanly under MPICH after printing their final results.
+exit cleanly after printing their final results.
+
+The pytest launcher and executable can be selected without editing the test:
+
+```sh
+OPENSEESMP=/path/to/OpenSeesMP \
+MPIEXEC=/path/to/mpiexec \
+MPIEXEC_FLAGS="--oversubscribe" \
+python -m pytest -q tests/test_metis_partition_benchmark.py
+```
