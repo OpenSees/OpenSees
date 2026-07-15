@@ -53,25 +53,14 @@ find_package(MPI)
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
  MESSAGE("STATUS" "COMPILER: Clang (macOS Configuration)")
 
- set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0")
+ if(NOT CMAKE_OSX_DEPLOYMENT_TARGET)
+   set(CMAKE_OSX_DEPLOYMENT_TARGET "13.0" CACHE STRING
+       "Minimum macOS version targeted by the build")
+ endif()
  set(BUILD_SHARED_LIBS OFF)
 
- # 1. Ask gfortran for the absolute path to the static (.a) files
- execute_process(COMMAND gfortran --print-file-name=libgfortran.a OUTPUT_VARIABLE GF_STATIC OUTPUT_STRIP_TRAILING_WHITESPACE)
- execute_process(COMMAND gfortran --print-file-name=libquadmath.a OUTPUT_VARIABLE QM_STATIC OUTPUT_STRIP_TRAILING_WHITESPACE)
- execute_process(COMMAND gfortran --print-file-name=libgcc.a OUTPUT_VARIABLE GCC_STATIC OUTPUT_STRIP_TRAILING_WHITESPACE)
-
- # 2. CLEAR THE IMPLICIT DYNAMIC FLAGS
- # This prevents CMake from adding '-lgfortran -lquadmath' to the end of the command
- set(CMAKE_Fortran_IMPLICIT_LINK_LIBRARIES "")
-
- # 3. Force the linker to use these specific archive files
- # link_libraries applies to all targets created after this line
- link_libraries("${GF_STATIC}" "${QM_STATIC}" "${GCC_STATIC}")
-    
- # Optional: ensure we search for static libs first for other dependencies
- set(CMAKE_FIND_LIBRARY_SUFFIXES ".a;.dylib")
- # set(CMAKE_FIND_LIBRARY_SUFFIXES ".a")
+ # Use the Fortran runtime selected by CMake's toolchain. Injecting static GCC
+ # runtimes into every C++ target can conflict with MPI and Tcl on macOS.
  set(BUILD_SHARED_LIBS OFF)
  # set(CMAKE_EXE_LINKER_FLAGS "-static")
 
@@ -429,6 +418,7 @@ endif()
 if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
+  find_package(METIS 5 REQUIRED)
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
   #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
   #if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -540,6 +530,15 @@ add_library(OPS_MaterialFortran    OBJECT)
 add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
 add_library(OPS_INTERPRETER        OBJECT)
+
+# Build the METIS mesh-partitioning command whenever MPI is available.  The
+# interpreter object library is shared by the serial and MPI executables, so
+# this feature cannot depend on a compile definition set only on OpenSeesMP.
+if(MPI_FOUND)
+    target_compile_definitions(OPS_INTERPRETER PRIVATE OPS_PARTITION_WITH_METIS)
+    target_include_directories(OPS_INTERPRETER BEFORE PRIVATE ${METIS_INCLUDES})
+    target_link_libraries(OPS_INTERPRETER PUBLIC MPI::MPI_CXX ${METIS_LIBRARIES})
+endif()
 
 
 
@@ -702,7 +701,7 @@ target_link_libraries(OpenSees
   OPS_Recorder
   ${CMAKE_DL_LIBS}
   HDF5::HDF5
-  tcl::tcl
+  ${TCL_LIBRARIES}
   ZLIB::ZLIB
   Eigen3::Eigen
 )
@@ -726,16 +725,21 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/actor/machineBroker/MPI_MachineBroker.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/sparseGEN/DistributedSuperLU.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenColLinSOE.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/sparseGEN/DistributedSparseGenRowLinSOE.cpp
       ${OPS_SRC_DIR}/domain/subdomain/ActorSubdomain.cpp
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
+
+    if(MUMPS_DIR)
+      target_sources(OpenSeesSP PRIVATE
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSOE.cpp
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSolver.cpp
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.cpp
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.cpp
+      )
+    endif()
 
 
     target_include_directories(OpenSeesSP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
@@ -761,7 +765,7 @@ if(MPI_FOUND)
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS}
        HDF5::HDF5
-       tcl::tcl
+       ${TCL_LIBRARIES}
        ZLIB::ZLIB
        Eigen3::Eigen
        ${MPI_CXX_LIBRARIES}
@@ -790,19 +794,24 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSOE.cpp
       ${OPS_SRC_DIR}/system_of_eqn/linearSOE/diagonal/MPIDiagonalSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSolver.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.cpp
-      ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.cpp
       ${OPS_SRC_DIR}/domain/subdomain/ActorSubdomain.cpp
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
+
+    if(MUMPS_DIR)
+      target_sources(OpenSeesMP PRIVATE
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSOE.cpp
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsSolver.cpp
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSOE.cpp
+        ${OPS_SRC_DIR}/system_of_eqn/linearSOE/mumps/MumpsParallelSolver.cpp
+      )
+    endif()
 
     target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
 
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    if (NOT DEFINED MUMPS_DIR)
+    if (TARGET mumps)
         add_dependencies(OpenSeesMP mumps)
     endif()
 
@@ -820,13 +829,13 @@ if(MPI_FOUND)
        OPS_Reliability
        OPS_ReliabilityTcl
        OPS_Recorder
-       METIS
+       ${METIS_LIBRARIES}
        SUPERLU_DIST
        OPS_Numerics
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS}
        HDF5::HDF5
-       tcl::tcl	
+       ${TCL_LIBRARIES}
        ZLIB::ZLIB		
        Eigen3::Eigen
        ${MPI_CXX_LIBRARIES}
