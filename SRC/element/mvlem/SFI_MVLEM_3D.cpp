@@ -25,7 +25,7 @@
 //    1........2 |-> x
 //
 // Reference:
-// K. Kolozvari, K. Kalbasi, K. Orakcal & J. W. Wallace (2021), "Three-dimensional shear-flexure interaction model for analysis of non-planar reinforced concrete walls", Journal of Building Engineering.
+// K. Kolozvari, K. Kalbasi, K. Orakcal & J. W. Wallace (2021), "Three-dimensional shear-flexure coupling model for analysis of non-planar reinforced concrete walls", Journal of Building Engineering.
 //
 // Source: /usr/local/cvs/OpenSees/SRC/element/mvlem/SFI_MVLEM_3D.cpp
 //
@@ -69,6 +69,7 @@ void* OPS_SFI_MVLEM_3D(void)
 
 	int iData[6];
 	double dData[4];
+	int coupling = 2;// Zakariya Waezi
 
 	// set defaults
 	dData[0] = 0.4;		// c
@@ -174,7 +175,20 @@ void* OPS_SFI_MVLEM_3D(void)
 				opserr << "Invalid Eave parameter for MVLEM   " << iData[0] << endln;
 				return 0;
 			}
-		}		
+		}	
+		else if (strcmp(str, "-Coupling") == 0) {
+			numData = 1;
+				if (OPS_GetIntInput(&numData, &coupling) != 0) {
+					opserr << "WARNING invalid Coupling data for element ZW_SFI_MVLEM" << endln;
+					return 0;
+				}
+				if (coupling < 0 || coupling>2) {
+					opserr << "WARNING invalid int data for element ZW_SFI_MVLEM Coupling (it should be 0,1,or 2)" << endln;
+					return 0;
+				}
+
+			
+		}	
 		numArgs = OPS_GetNumRemainingInputArgs();
 
 	}
@@ -184,7 +198,7 @@ void* OPS_SFI_MVLEM_3D(void)
 		theMaterials,
 		theThickness,
 		theWidth,
-				      iData[5], dData[0], dData[2], dData[1], Eave);
+				      iData[5], dData[0], dData[2], dData[1], Eave,coupling);
 
 	// Cleanup dynamic memory
 	if (theThickness != 0)
@@ -211,7 +225,8 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	double cc,
 	double nn,
 			   double tf,
-			   double Eave_in)
+			   double Eave_in,
+			   int coupling = 0,)
 
 	:Element(tag, ELE_TAG_SFI_MVLEM_3D),
 	density(Dens),
@@ -227,7 +242,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
 	P_24DOF(24), P_24DOF_local(24),
 	 NUelastic(nn), Tfactor(tf), Eave(Eave_in),
 	T(24 + m, 24 + m), Tt(3, 3), T6(6, 6),
-	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
+	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0),Coupling(coupling)
 {
 	
 	TotalMass = 0.0;
@@ -428,7 +443,7 @@ SFI_MVLEM_3D::SFI_MVLEM_3D()
 	P_24DOF(24), P_24DOF_local(24),
 	 c(0.4), NUelastic(0.0), Tfactor(0.0), Eave(0.0),
 	T(24 + m, 24 + m), Tt(3, 3), T6(6, 6),
-	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0)
+	nd1Crds(3), nd2Crds(3), nd3Crds(3), nd4Crds(3), modifiedT(0), t(0), Coupling(0)
 {
 	if (externalNodes.Size() != 4 + m)
 		opserr << "FATAL SFI_MVLEM_3D::SFI_MVLEM_3D() - out of memory, could not create an ID of size 2\n";
@@ -994,7 +1009,9 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal.Zero();	// Local stiffness matrix
 
 	Kh = 0.0;
-
+	double ktauy = 0.0;
+	double etauy = 0.0;
+	double w = 1.0 / (d * d);
 	for (int i = 0; i < m; i++)
 	{
 		// Get material initial tangent
@@ -1007,6 +1024,80 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 		kx[i] = D00 * h*t[i] / b[i];
 		ky[i] = D11 * b[i] * t[i] / h;
 		Kh += D22 * b[i] * t[i] / h;
+		// defining the coupling terms of stress strain relationship by Zakariya Waezi
+		double kxy = D01 * t[i];
+		double ktaux = 0.0;
+		if (Coupling == 2) {
+			ktaux = D02 * t[i];
+		}
+		
+		double exy = kxy * x[i];
+		double etaux = ktaux * x[i];
+		
+		//Considering the coupling between axial stresses sigmax and sigma y is taken care of here: Zakariya Waezi
+  		// if the material is linear elastic, Coupling 1 is enough
+		if (Coupling == 1 || Coupling == 2) {//|| Coupling == 2
+
+			SFI_MVLEM_3DKlocal(0, 24 + i) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 0) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(1, 24 + i) += (-kxy + (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 1) += (-kxy + (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(2, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 2) += 0;
+			//SFI_MVLEM_3DKlocal(3, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 3) += 0;
+			//SFI_MVLEM_3DKlocal(4, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 4) += 0;
+			SFI_MVLEM_3DKlocal(5, 24 + i) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 5) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(6, 24 + i) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 6) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(7, 24 + i) += (-kxy - (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 7) += (-kxy - (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(8, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 8) += 0;
+			//SFI_MVLEM_3DKlocal(9, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 9) += 0;
+			//SFI_MVLEM_3DKlocal(10, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 10) += 0;
+			SFI_MVLEM_3DKlocal(11, 24 + i) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 11) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(12, 24 + i) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 12) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(13, 24 + i) += (kxy - (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 13) += (kxy - (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(14, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 14) += 0;
+			//SFI_MVLEM_3DKlocal(15, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 15) += 0;
+			//SFI_MVLEM_3DKlocal(16, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 16) += 0;
+			SFI_MVLEM_3DKlocal(17, 24 + i) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 17) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(18, 24 + i) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 18) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(19, 24 + i) += (kxy + (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 19) += (kxy + (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(20, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 20) += 0;
+			//SFI_MVLEM_3DKlocal(21, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 21) += 0;
+			//SFI_MVLEM_3DKlocal(22, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 22) += 0;
+			SFI_MVLEM_3DKlocal(23, 24 + i) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 23) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+		}
+		//Considering the coupling between shear stress and axial stresses in addition to axial stresses coupling
+		// is taken care of here: 
+		// if the material is nonlinear, for complete  consideration of coupling, Coupling variable should be  2
+		// Zakariya Waezi
+		if (Coupling == 2) {
+
+			double temp = D12 * b[i] * t[i] / h;
+			ktauy += temp;
+			etauy += temp * x[i];
+		}
+
 
 	}
 
@@ -1021,183 +1112,181 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 
 		SFI_MVLEM_3DKlocal(24 + i, 24 + i) = kx[i]; // Diagonal terms accounting for horizontal stiffness
 	}
-
-	// Assemble element stiffness matrix
-	SFI_MVLEM_3DKlocal(0, 0) = Kh / 4.0 + (Aib*Eib) / Lw;
-	SFI_MVLEM_3DKlocal(0, 1) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 2) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 3) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 4) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 5) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 6) = Kh / 4.0 - (Aib*Eib) / Lw;
-	SFI_MVLEM_3DKlocal(0, 7) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 11) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 12) = -Kh / 4.0;
-	SFI_MVLEM_3DKlocal(0, 13) = -(Kh*d*h*(c - 1)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 17) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 18) = -Kh / 4;
-	SFI_MVLEM_3DKlocal(0, 19) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 23) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(0, 0) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(0, 1) = (ktauy - (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 2) = 0;
+	//SFI_MVLEM_3DKlocal(0, 3) = 0;
+	//SFI_MVLEM_3DKlocal(0, 4) = 0;
+	SFI_MVLEM_3DKlocal(0, 5) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(0, 6) = Kh / 4. - (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(0, 7) = (ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 8) = 0;
+	//SFI_MVLEM_3DKlocal(0, 9) = 0;
+	//SFI_MVLEM_3DKlocal(0, 10) = 0;
+	SFI_MVLEM_3DKlocal(0, 11) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(0, 12) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(0, 13) = (-ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 14) = 0;
+	//SFI_MVLEM_3DKlocal(0, 15) = 0;
+	//SFI_MVLEM_3DKlocal(0, 16) = 0;
+	SFI_MVLEM_3DKlocal(0, 17) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(0, 18) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(0, 19) = (-ktauy - (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 20) = 0;
+	//SFI_MVLEM_3DKlocal(0, 21) = 0;
+	//SFI_MVLEM_3DKlocal(0, 22) = 0;
+	SFI_MVLEM_3DKlocal(0, 23) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(1, 0) = SFI_MVLEM_3DKlocal(0, 1);
-	SFI_MVLEM_3DKlocal(1, 1) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib) / (Lw*Lw*Lw);
-	SFI_MVLEM_3DKlocal(1, 2) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 3) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 4) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 5) = (e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-	SFI_MVLEM_3DKlocal(1, 6) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(1, 7) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (d*(e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) - (12.0 * Eib*Iib) / (Lw*Lw*Lw);
-	SFI_MVLEM_3DKlocal(1, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 11) = (e / 2.0 - (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-	SFI_MVLEM_3DKlocal(1, 12) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(1, 13) = (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - Kv / 4.0 + (d*(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(1, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 17) = -(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(1, 18) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(1, 19) = (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - Kv / 4.0 - (d*(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(1, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 23) = -(e / 2.0 - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
-
+	SFI_MVLEM_3DKlocal(1, 1) = (12. * Eib * Iib) / (Lw * Lw * Lw) + (c * h * (-2 * etauy + c * h * Kh) + Km + d * (1 + w) * (-2 * e + 2 * c * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(1, 2) = 0;
+	//SFI_MVLEM_3DKlocal(1, 3) = 0;
+	//SFI_MVLEM_3DKlocal(1, 4) = 0;
+	SFI_MVLEM_3DKlocal(1, 5) = (6. * Eib * Iib) / (Lw * Lw) - (w * (c * h * (-2 * etauy + c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 6) = (-etauy + c * h * Kh + d * ktauy * (1 + w)) / (4. * d * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 7) = (Kv - (48. * Eib * Iib) / (Lw * Lw * Lw) - (-2 * c * etauy * h + c * c * h * h * Kh + Km) / (d * d * (1 + w) * (1 + w))) / 4.;
+	//SFI_MVLEM_3DKlocal(1, 8) = 0;
+	//SFI_MVLEM_3DKlocal(1, 9) = 0;
+	//SFI_MVLEM_3DKlocal(1, 10) = 0;
+	SFI_MVLEM_3DKlocal(1, 11) = (6. * Eib * Iib) / (Lw * Lw) - (w * (c * h * (-2 * etauy + c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 12) = (-ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	SFI_MVLEM_3DKlocal(1, 13) = -(h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (1 + w) * (-2 * e + (-1 + 2 * c) * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(1, 14) = 0;
+	//SFI_MVLEM_3DKlocal(1, 15) = 0;
+	//SFI_MVLEM_3DKlocal(1, 16) = 0;
+	SFI_MVLEM_3DKlocal(1, 17) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 18) = (-ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	SFI_MVLEM_3DKlocal(1, 19) = (etauy * (h - 2 * c * h) - c * h * h * Kh + c * c * h * h * Kh + Km - d * (1 + w) * (h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(1, 20) = 0;
+	//SFI_MVLEM_3DKlocal(1, 21) = 0;
+	//SFI_MVLEM_3DKlocal(1, 22) = 0;
+	SFI_MVLEM_3DKlocal(1, 23) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(2, 0) = SFI_MVLEM_3DKlocal(0, 2);
 	SFI_MVLEM_3DKlocal(2, 1) = SFI_MVLEM_3DKlocal(1, 2);
 	SFI_MVLEM_3DKlocal(2, 2) = K1;
 	SFI_MVLEM_3DKlocal(2, 3) = -K2;
 	SFI_MVLEM_3DKlocal(2, 4) = K3;
-	SFI_MVLEM_3DKlocal(2, 5) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 6) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 7) = 0.0;
+	//SFI_MVLEM_3DKlocal(2, 5) = 0;
+	//SFI_MVLEM_3DKlocal(2, 6) = 0;
+	//SFI_MVLEM_3DKlocal(2, 7) = 0;
 	SFI_MVLEM_3DKlocal(2, 8) = K4;
 	SFI_MVLEM_3DKlocal(2, 9) = K5;
 	SFI_MVLEM_3DKlocal(2, 10) = K6;
-	SFI_MVLEM_3DKlocal(2, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(2, 11) = 0;
+	//SFI_MVLEM_3DKlocal(2, 12) = 0;
+	//SFI_MVLEM_3DKlocal(2, 13) = 0;
 	SFI_MVLEM_3DKlocal(2, 14) = K7;
 	SFI_MVLEM_3DKlocal(2, 15) = -K8;
 	SFI_MVLEM_3DKlocal(2, 16) = -K9;
-	SFI_MVLEM_3DKlocal(2, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(2, 17) = 0;
+	//SFI_MVLEM_3DKlocal(2, 18) = 0;
+	//SFI_MVLEM_3DKlocal(2, 19) = 0;
 	SFI_MVLEM_3DKlocal(2, 20) = K10;
 	SFI_MVLEM_3DKlocal(2, 21) = -K11;
 	SFI_MVLEM_3DKlocal(2, 22) = K12;
-	SFI_MVLEM_3DKlocal(2, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(2, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(3, 0) = SFI_MVLEM_3DKlocal(0, 3);
 	SFI_MVLEM_3DKlocal(3, 1) = SFI_MVLEM_3DKlocal(1, 3);
 	SFI_MVLEM_3DKlocal(3, 2) = SFI_MVLEM_3DKlocal(2, 3);
 	SFI_MVLEM_3DKlocal(3, 3) = K13;
 	SFI_MVLEM_3DKlocal(3, 4) = K14;
-	SFI_MVLEM_3DKlocal(3, 5) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 6) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 7) = 0.0;
+	//SFI_MVLEM_3DKlocal(3, 5) = 0;
+	//SFI_MVLEM_3DKlocal(3, 6) = 0;
+	//SFI_MVLEM_3DKlocal(3, 7) = 0;
 	SFI_MVLEM_3DKlocal(3, 8) = K5;
 	SFI_MVLEM_3DKlocal(3, 9) = K15;
-	SFI_MVLEM_3DKlocal(3, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(3, 10) = 0;
+	//SFI_MVLEM_3DKlocal(3, 11) = 0;
+	//SFI_MVLEM_3DKlocal(3, 12) = 0;
+	//SFI_MVLEM_3DKlocal(3, 13) = 0;
 	SFI_MVLEM_3DKlocal(3, 14) = K8;
 	SFI_MVLEM_3DKlocal(3, 15) = K16;
-	SFI_MVLEM_3DKlocal(3, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(3, 16) = 0;
+	//SFI_MVLEM_3DKlocal(3, 17) = 0;
+	//SFI_MVLEM_3DKlocal(3, 18) = 0;
+	//SFI_MVLEM_3DKlocal(3, 19) = 0;
 	SFI_MVLEM_3DKlocal(3, 20) = K11;
 	SFI_MVLEM_3DKlocal(3, 21) = K17;
-	SFI_MVLEM_3DKlocal(3, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(3, 22) = 0;
+	//SFI_MVLEM_3DKlocal(3, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(4, 0) = SFI_MVLEM_3DKlocal(0, 4);
 	SFI_MVLEM_3DKlocal(4, 1) = SFI_MVLEM_3DKlocal(1, 4);
 	SFI_MVLEM_3DKlocal(4, 2) = SFI_MVLEM_3DKlocal(2, 4);
 	SFI_MVLEM_3DKlocal(4, 3) = SFI_MVLEM_3DKlocal(3, 4);
 	SFI_MVLEM_3DKlocal(4, 4) = K18;
-	SFI_MVLEM_3DKlocal(4, 5) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 6) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 7) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 5) = 0;
+	//SFI_MVLEM_3DKlocal(4, 6) = 0;
+	//SFI_MVLEM_3DKlocal(4, 7) = 0;
 	SFI_MVLEM_3DKlocal(4, 8) = -K6;
-	SFI_MVLEM_3DKlocal(4, 9) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 9) = 0;
 	SFI_MVLEM_3DKlocal(4, 10) = K19;
-	SFI_MVLEM_3DKlocal(4, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 11) = 0;
+	//SFI_MVLEM_3DKlocal(4, 12) = 0;
+	//SFI_MVLEM_3DKlocal(4, 13) = 0;
 	SFI_MVLEM_3DKlocal(4, 14) = -K9;
-	SFI_MVLEM_3DKlocal(4, 15) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 15) = 0;
 	SFI_MVLEM_3DKlocal(4, 16) = K20;
-	SFI_MVLEM_3DKlocal(4, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 17) = 0;
+	//SFI_MVLEM_3DKlocal(4, 18) = 0;
+	//SFI_MVLEM_3DKlocal(4, 19) = 0;
 	SFI_MVLEM_3DKlocal(4, 20) = -K12;
-	SFI_MVLEM_3DKlocal(4, 21) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 21) = 0;
 	SFI_MVLEM_3DKlocal(4, 22) = K21;
-	SFI_MVLEM_3DKlocal(4, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(4, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(5, 0) = SFI_MVLEM_3DKlocal(0, 5);
 	SFI_MVLEM_3DKlocal(5, 1) = SFI_MVLEM_3DKlocal(1, 5);
 	SFI_MVLEM_3DKlocal(5, 2) = SFI_MVLEM_3DKlocal(2, 5);
 	SFI_MVLEM_3DKlocal(5, 3) = SFI_MVLEM_3DKlocal(3, 5);
 	SFI_MVLEM_3DKlocal(5, 4) = SFI_MVLEM_3DKlocal(4, 5);
-	SFI_MVLEM_3DKlocal(5, 5) = (Km + Kh*(c*c)*(h*h)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-	SFI_MVLEM_3DKlocal(5, 6) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 7) = e / (2.0 * (2.0 * (d*d) + 2.0)) + (d*(Km + Kh*(c*c)*(h*h))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) - (6.0 * Eib*Iib) / (Lw*Lw);
-	SFI_MVLEM_3DKlocal(5, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 11) = (Km + Kh*(c*c)*(h*h)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (2.0 * Eib*Iib) / Lw;
-	SFI_MVLEM_3DKlocal(5, 12) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 13) = (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) - e / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 17) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 18) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 19) = -e / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 23) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(5, 5) = (4. * Eib * Iib) / Lw + ((c * h * (-2 * etauy + c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 6) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 7) = (-6. * Eib * Iib) / (Lw * Lw) + (w * (c * h * (-2 * etauy + c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(5, 8) = 0;
+	//SFI_MVLEM_3DKlocal(5, 9) = 0;
+	//SFI_MVLEM_3DKlocal(5, 10) = 0;
+	SFI_MVLEM_3DKlocal(5, 11) = (2. * Eib * Iib) / Lw + ((c * h * (-2 * etauy + c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 12) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 13) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(5, 14) = 0;
+	//SFI_MVLEM_3DKlocal(5, 15) = 0;
+	//SFI_MVLEM_3DKlocal(5, 16) = 0;
+	SFI_MVLEM_3DKlocal(5, 17) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 18) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 19) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(5, 20) = 0;
+	//SFI_MVLEM_3DKlocal(5, 21) = 0;
+	//SFI_MVLEM_3DKlocal(5, 22) = 0;
+	SFI_MVLEM_3DKlocal(5, 23) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(6, 0) = SFI_MVLEM_3DKlocal(0, 6);
 	SFI_MVLEM_3DKlocal(6, 1) = SFI_MVLEM_3DKlocal(1, 6);
 	SFI_MVLEM_3DKlocal(6, 2) = SFI_MVLEM_3DKlocal(2, 6);
 	SFI_MVLEM_3DKlocal(6, 3) = SFI_MVLEM_3DKlocal(3, 6);
 	SFI_MVLEM_3DKlocal(6, 4) = SFI_MVLEM_3DKlocal(4, 6);
 	SFI_MVLEM_3DKlocal(6, 5) = SFI_MVLEM_3DKlocal(5, 6);
-	SFI_MVLEM_3DKlocal(6, 6) = Kh / 4.0 + (Aib*Eib) / Lw;
-	SFI_MVLEM_3DKlocal(6, 7) = -(Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 11) = -(Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 12) = -Kh / 4;
-	SFI_MVLEM_3DKlocal(6, 13) = -(Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 17) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 18) = -Kh / 4.0;
-	SFI_MVLEM_3DKlocal(6, 19) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 23) = (Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(6, 6) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(6, 7) = (ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(6, 8) = 0;
+	//SFI_MVLEM_3DKlocal(6, 9) = 0;
+	//SFI_MVLEM_3DKlocal(6, 10) = 0;
+	SFI_MVLEM_3DKlocal(6, 11) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(6, 12) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(6, 13) = (-ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(6, 14) = 0;
+	//SFI_MVLEM_3DKlocal(6, 15) = 0;
+	//SFI_MVLEM_3DKlocal(6, 16) = 0;
+	SFI_MVLEM_3DKlocal(6, 17) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(6, 18) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(6, 19) = (-ktauy - (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(6, 20) = 0;
+	//SFI_MVLEM_3DKlocal(6, 21) = 0;
+	//SFI_MVLEM_3DKlocal(6, 22) = 0;
+	SFI_MVLEM_3DKlocal(6, 23) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(7, 0) = SFI_MVLEM_3DKlocal(0, 7);
 	SFI_MVLEM_3DKlocal(7, 1) = SFI_MVLEM_3DKlocal(1, 7);
 	SFI_MVLEM_3DKlocal(7, 2) = SFI_MVLEM_3DKlocal(2, 7);
@@ -1205,24 +1294,24 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(7, 4) = SFI_MVLEM_3DKlocal(4, 7);
 	SFI_MVLEM_3DKlocal(7, 5) = SFI_MVLEM_3DKlocal(5, 7);
 	SFI_MVLEM_3DKlocal(7, 6) = SFI_MVLEM_3DKlocal(6, 7);
-	SFI_MVLEM_3DKlocal(7, 7) = Kv / 4.0 + (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (d*(e / 2.0 + (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib) / (Lw*Lw*Lw);
-	SFI_MVLEM_3DKlocal(7, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 11) = (e / 2.0 + (d*(Km + Kh*(c*c)*(h*h))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) - (6.0 * Eib*Iib) / (Lw*Lw);
-	SFI_MVLEM_3DKlocal(7, 12) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(7, 13) = (d*(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0) - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - Kv / 4.0;
-	SFI_MVLEM_3DKlocal(7, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 17) = -(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(7, 18) = (Kh*c*d*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(7, 19) = -Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(7, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 23) = -(e / 2.0 + (d*(Km + Kh*c*(h*h)*(c - 1.0))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0);
-
+	SFI_MVLEM_3DKlocal(7, 7) = (12. * Eib * Iib) / (Lw * Lw * Lw) + (c * h * (-2 * etauy + c * h * Kh) + Km + d * (1 + w) * (2 * e - 2 * c * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(7, 8) = 0;
+	//SFI_MVLEM_3DKlocal(7, 9) = 0;
+	//SFI_MVLEM_3DKlocal(7, 10) = 0;
+	SFI_MVLEM_3DKlocal(7, 11) = (-6. * Eib * Iib) / (Lw * Lw) + (w * (c * h * (-2 * etauy + c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(7, 12) = -((etauy - c * h * Kh + d * ktauy + d * ktauy * w) / (4 * d + 4 * d * w));
+	SFI_MVLEM_3DKlocal(7, 13) = (etauy * (h - 2 * c * h) - c * h * h * Kh + c * c * h * h * Kh + Km - d * (1 + w) * (-(h * ktauy) + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(7, 14) = 0;
+	//SFI_MVLEM_3DKlocal(7, 15) = 0;
+	//SFI_MVLEM_3DKlocal(7, 16) = 0;
+	SFI_MVLEM_3DKlocal(7, 17) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(7, 18) = -((etauy - c * h * Kh + d * ktauy + d * ktauy * w) / (4 * d + 4 * d * w));
+	SFI_MVLEM_3DKlocal(7, 19) = -(h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (1 + w) * (2 * e + h * (ktauy - 2 * c * ktauy) + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(7, 20) = 0;
+	//SFI_MVLEM_3DKlocal(7, 21) = 0;
+	//SFI_MVLEM_3DKlocal(7, 22) = 0;
+	SFI_MVLEM_3DKlocal(7, 23) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(8, 0) = SFI_MVLEM_3DKlocal(0, 8);
 	SFI_MVLEM_3DKlocal(8, 1) = SFI_MVLEM_3DKlocal(1, 8);
 	SFI_MVLEM_3DKlocal(8, 2) = SFI_MVLEM_3DKlocal(2, 8);
@@ -1234,20 +1323,21 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(8, 8) = K1;
 	SFI_MVLEM_3DKlocal(8, 9) = -K2;
 	SFI_MVLEM_3DKlocal(8, 10) = -K3;
-	SFI_MVLEM_3DKlocal(8, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(8, 11) = 0;
+	//SFI_MVLEM_3DKlocal(8, 12) = 0;
+	//SFI_MVLEM_3DKlocal(8, 13) = 0;
 	SFI_MVLEM_3DKlocal(8, 14) = K10;
 	SFI_MVLEM_3DKlocal(8, 15) = -K11;
 	SFI_MVLEM_3DKlocal(8, 16) = -K12;
-	SFI_MVLEM_3DKlocal(8, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(8, 17) = 0;
+	//SFI_MVLEM_3DKlocal(8, 18) = 0;
+	//SFI_MVLEM_3DKlocal(8, 19) = 0;
 	SFI_MVLEM_3DKlocal(8, 20) = K7;
 	SFI_MVLEM_3DKlocal(8, 21) = -K8;
 	SFI_MVLEM_3DKlocal(8, 22) = K9;
-	SFI_MVLEM_3DKlocal(8, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(8, 23) = 0;
+//----------------------------------   
+	SFI_MVLEM_3DKlocal(9, 0) = SFI_MVLEM_3DKlocal(0, 9);
 	SFI_MVLEM_3DKlocal(9, 1) = SFI_MVLEM_3DKlocal(1, 9);
 	SFI_MVLEM_3DKlocal(9, 2) = SFI_MVLEM_3DKlocal(2, 9);
 	SFI_MVLEM_3DKlocal(9, 3) = SFI_MVLEM_3DKlocal(3, 9);
@@ -1258,20 +1348,20 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(9, 8) = SFI_MVLEM_3DKlocal(8, 9);
 	SFI_MVLEM_3DKlocal(9, 9) = K13;
 	SFI_MVLEM_3DKlocal(9, 10) = -K14;
-	SFI_MVLEM_3DKlocal(9, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(9, 11) = 0;
+	//SFI_MVLEM_3DKlocal(9, 12) = 0;
+	//SFI_MVLEM_3DKlocal(9, 13) = 0;
 	SFI_MVLEM_3DKlocal(9, 14) = K11;
 	SFI_MVLEM_3DKlocal(9, 15) = K17;
-	SFI_MVLEM_3DKlocal(9, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(9, 16) = 0;
+	//SFI_MVLEM_3DKlocal(9, 17) = 0;
+	//SFI_MVLEM_3DKlocal(9, 18) = 0;
+	//SFI_MVLEM_3DKlocal(9, 19) = 0;
 	SFI_MVLEM_3DKlocal(9, 20) = K8;
 	SFI_MVLEM_3DKlocal(9, 21) = K16;
-	SFI_MVLEM_3DKlocal(9, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(9, 22) = 0;
+	//SFI_MVLEM_3DKlocal(9, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(10, 0) = SFI_MVLEM_3DKlocal(0, 10);
 	SFI_MVLEM_3DKlocal(10, 1) = SFI_MVLEM_3DKlocal(1, 10);
 	SFI_MVLEM_3DKlocal(10, 2) = SFI_MVLEM_3DKlocal(2, 10);
@@ -1283,20 +1373,20 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(10, 8) = SFI_MVLEM_3DKlocal(8, 10);
 	SFI_MVLEM_3DKlocal(10, 9) = SFI_MVLEM_3DKlocal(9, 10);
 	SFI_MVLEM_3DKlocal(10, 10) = K22;
-	SFI_MVLEM_3DKlocal(10, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 11) = 0;
+	//SFI_MVLEM_3DKlocal(10, 12) = 0;
+	//SFI_MVLEM_3DKlocal(10, 13) = 0;
 	SFI_MVLEM_3DKlocal(10, 14) = K12;
-	SFI_MVLEM_3DKlocal(10, 15) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 15) = 0;
 	SFI_MVLEM_3DKlocal(10, 16) = K21;
-	SFI_MVLEM_3DKlocal(10, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 17) = 0;
+	//SFI_MVLEM_3DKlocal(10, 18) = 0;
+	//SFI_MVLEM_3DKlocal(10, 19) = 0;
 	SFI_MVLEM_3DKlocal(10, 20) = K9;
-	SFI_MVLEM_3DKlocal(10, 21) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 21) = 0;
 	SFI_MVLEM_3DKlocal(10, 22) = K20;
-	SFI_MVLEM_3DKlocal(10, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(10, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(11, 0) = SFI_MVLEM_3DKlocal(0, 11);
 	SFI_MVLEM_3DKlocal(11, 1) = SFI_MVLEM_3DKlocal(1, 11);
 	SFI_MVLEM_3DKlocal(11, 2) = SFI_MVLEM_3DKlocal(2, 11);
@@ -1308,20 +1398,20 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(11, 8) = SFI_MVLEM_3DKlocal(8, 11);
 	SFI_MVLEM_3DKlocal(11, 9) = SFI_MVLEM_3DKlocal(9, 11);
 	SFI_MVLEM_3DKlocal(11, 10) = SFI_MVLEM_3DKlocal(10, 11);
-	SFI_MVLEM_3DKlocal(11, 11) = (Km + Kh*(c*c)*(h*h)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-	SFI_MVLEM_3DKlocal(11, 12) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 13) = (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) - e / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 17) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 18) = (Kh*c*h) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 19) = -e / (2.0 * (2.0 * (d*d) + 2.0)) - (d*(Km + Kh*c*(h*h)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 23) = -(Km + Kh*c*(h*h)*(c - 1.0)) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(11, 11) = (4. * Eib * Iib) / Lw + ((c * h * (-2 * etauy + c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 12) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 13) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(11, 14) = 0;
+	//SFI_MVLEM_3DKlocal(11, 15) = 0;
+	//SFI_MVLEM_3DKlocal(11, 16) = 0;
+	SFI_MVLEM_3DKlocal(11, 17) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 18) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 19) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(11, 20) = 0;
+	//SFI_MVLEM_3DKlocal(11, 21) = 0;
+	//SFI_MVLEM_3DKlocal(11, 22) = 0;
+	SFI_MVLEM_3DKlocal(11, 23) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(12, 0) = SFI_MVLEM_3DKlocal(0, 12);
 	SFI_MVLEM_3DKlocal(12, 1) = SFI_MVLEM_3DKlocal(1, 12);
 	SFI_MVLEM_3DKlocal(12, 2) = SFI_MVLEM_3DKlocal(2, 12);
@@ -1334,19 +1424,19 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(12, 9) = SFI_MVLEM_3DKlocal(9, 12);
 	SFI_MVLEM_3DKlocal(12, 10) = SFI_MVLEM_3DKlocal(10, 12);
 	SFI_MVLEM_3DKlocal(12, 11) = SFI_MVLEM_3DKlocal(11, 12);
-	SFI_MVLEM_3DKlocal(12, 12) = Kh / 4.0 + (Aib*Eib) / Lw;
-	SFI_MVLEM_3DKlocal(12, 13) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(12, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 17) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(12, 18) = Kh / 4.0 - (Aib*Eib) / Lw;
-	SFI_MVLEM_3DKlocal(12, 19) = -(Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(12, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 23) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(12, 12) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(12, 13) = (ktauy - (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(12, 14) = 0;
+	//SFI_MVLEM_3DKlocal(12, 15) = 0;
+	//SFI_MVLEM_3DKlocal(12, 16) = 0;
+	SFI_MVLEM_3DKlocal(12, 17) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(12, 18) = Kh / 4. - (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(12, 19) = (ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(12, 20) = 0;
+	//SFI_MVLEM_3DKlocal(12, 21) = 0;
+	//SFI_MVLEM_3DKlocal(12, 22) = 0;
+	SFI_MVLEM_3DKlocal(12, 23) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(13, 0) = SFI_MVLEM_3DKlocal(0, 13);
 	SFI_MVLEM_3DKlocal(13, 1) = SFI_MVLEM_3DKlocal(1, 13);
 	SFI_MVLEM_3DKlocal(13, 2) = SFI_MVLEM_3DKlocal(2, 13);
@@ -1360,18 +1450,18 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(13, 10) = SFI_MVLEM_3DKlocal(10, 13);
 	SFI_MVLEM_3DKlocal(13, 11) = SFI_MVLEM_3DKlocal(11, 13);
 	SFI_MVLEM_3DKlocal(13, 12) = SFI_MVLEM_3DKlocal(12, 13);
-	SFI_MVLEM_3DKlocal(13, 13) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (12.0 * Eib*Iib) / (Lw*Lw*Lw) - (d*(e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(13, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 17) = (e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-	SFI_MVLEM_3DKlocal(13, 18) = (Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(13, 19) = Kv / 4.0 - (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) - (12.0 * Eib*Iib) / (Lw*Lw*Lw) + (d*(e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(13, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 23) = (e / 2.0 - (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib) / (Lw*Lw);
-
+	SFI_MVLEM_3DKlocal(13, 13) = (12. * Eib * Iib) / (Lw * Lw * Lw) + ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (1 + w) * (-2 * e + 2 * (-1 + c) * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(13, 14) = 0;
+	//SFI_MVLEM_3DKlocal(13, 15) = 0;
+	//SFI_MVLEM_3DKlocal(13, 16) = 0;
+	SFI_MVLEM_3DKlocal(13, 17) = (6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (2 * etauy - (-1 + c) * h * Kh) - Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(13, 18) = (-etauy + (-1 + c) * h * Kh + d * ktauy * (1 + w)) / (4. * d * (1 + w));
+	SFI_MVLEM_3DKlocal(13, 19) = (-12. * Eib * Iib) / (Lw * Lw * Lw) + ((-1 + c) * h * (2 * etauy - (-1 + c) * h * Kh) - Km + d * d * Kv * (1 + w) * (1 + w)) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(13, 20) = 0;
+	//SFI_MVLEM_3DKlocal(13, 21) = 0;
+	//SFI_MVLEM_3DKlocal(13, 22) = 0;
+	SFI_MVLEM_3DKlocal(13, 23) = (6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (2 * etauy - (-1 + c) * h * Kh) - Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//----------------------------------
 	SFI_MVLEM_3DKlocal(14, 0) = SFI_MVLEM_3DKlocal(0, 14);
 	SFI_MVLEM_3DKlocal(14, 1) = SFI_MVLEM_3DKlocal(1, 14);
 	SFI_MVLEM_3DKlocal(14, 2) = SFI_MVLEM_3DKlocal(2, 14);
@@ -1389,14 +1479,14 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(14, 14) = K1;
 	SFI_MVLEM_3DKlocal(14, 15) = K2;
 	SFI_MVLEM_3DKlocal(14, 16) = K3;
-	SFI_MVLEM_3DKlocal(14, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(14, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(14, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(14, 17) = 0;
+	//SFI_MVLEM_3DKlocal(14, 18) = 0;
+	//SFI_MVLEM_3DKlocal(14, 19) = 0;
 	SFI_MVLEM_3DKlocal(14, 20) = K4;
 	SFI_MVLEM_3DKlocal(14, 21) = -K5;
 	SFI_MVLEM_3DKlocal(14, 22) = K6;
-	SFI_MVLEM_3DKlocal(14, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(14, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(15, 0) = SFI_MVLEM_3DKlocal(0, 15);
 	SFI_MVLEM_3DKlocal(15, 1) = SFI_MVLEM_3DKlocal(1, 15);
 	SFI_MVLEM_3DKlocal(15, 2) = SFI_MVLEM_3DKlocal(2, 15);
@@ -1414,14 +1504,14 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(15, 14) = SFI_MVLEM_3DKlocal(14, 15);
 	SFI_MVLEM_3DKlocal(15, 15) = K13;
 	SFI_MVLEM_3DKlocal(15, 16) = -K14;
-	SFI_MVLEM_3DKlocal(15, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(15, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(15, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(15, 17) = 0;
+	//SFI_MVLEM_3DKlocal(15, 18) = 0;
+	//SFI_MVLEM_3DKlocal(15, 19) = 0;
 	SFI_MVLEM_3DKlocal(15, 20) = -K5;
 	SFI_MVLEM_3DKlocal(15, 21) = K15;
-	SFI_MVLEM_3DKlocal(15, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(15, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(15, 22) = 0;
+	//SFI_MVLEM_3DKlocal(15, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(16, 0) = SFI_MVLEM_3DKlocal(0, 16);
 	SFI_MVLEM_3DKlocal(16, 1) = SFI_MVLEM_3DKlocal(1, 16);
 	SFI_MVLEM_3DKlocal(16, 2) = SFI_MVLEM_3DKlocal(2, 16);
@@ -1439,14 +1529,14 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(16, 14) = SFI_MVLEM_3DKlocal(14, 16);
 	SFI_MVLEM_3DKlocal(16, 15) = SFI_MVLEM_3DKlocal(15, 16);
 	SFI_MVLEM_3DKlocal(16, 16) = K18;
-	SFI_MVLEM_3DKlocal(16, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(16, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(16, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(16, 17) = 0;
+	//SFI_MVLEM_3DKlocal(16, 18) = 0;
+	//SFI_MVLEM_3DKlocal(16, 19) = 0;
 	SFI_MVLEM_3DKlocal(16, 20) = -K6;
-	SFI_MVLEM_3DKlocal(16, 21) = 0.0;
+	//SFI_MVLEM_3DKlocal(16, 21) = 0;
 	SFI_MVLEM_3DKlocal(16, 22) = K19;
-	SFI_MVLEM_3DKlocal(16, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(16, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(17, 0) = SFI_MVLEM_3DKlocal(0, 17);
 	SFI_MVLEM_3DKlocal(17, 1) = SFI_MVLEM_3DKlocal(1, 17);
 	SFI_MVLEM_3DKlocal(17, 2) = SFI_MVLEM_3DKlocal(2, 17);
@@ -1464,14 +1554,14 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(17, 14) = SFI_MVLEM_3DKlocal(14, 17);
 	SFI_MVLEM_3DKlocal(17, 15) = SFI_MVLEM_3DKlocal(15, 17);
 	SFI_MVLEM_3DKlocal(17, 16) = SFI_MVLEM_3DKlocal(16, 17);
-	SFI_MVLEM_3DKlocal(17, 17) = (Km + Kh*(h*h)*((c - 1.0)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-	SFI_MVLEM_3DKlocal(17, 18) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(17, 19) = e / (2.0 * (2.0 * (d*d) + 2.0)) - (6.0 * Eib*Iib) / (Lw*Lw) + (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(17, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(17, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(17, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(17, 23) = (Km + Kh*(h*h)*((c - 1.0)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (2.0 * Eib*Iib) / Lw;
-
+	SFI_MVLEM_3DKlocal(17, 17) = (4. * Eib * Iib) / Lw + (((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(17, 18) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(17, 19) = (-6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(17, 20) = 0;
+	//SFI_MVLEM_3DKlocal(17, 21) = 0;
+	//SFI_MVLEM_3DKlocal(17, 22) = 0;
+	SFI_MVLEM_3DKlocal(17, 23) = (2. * Eib * Iib) / Lw + (((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	//----------------------------------
 	SFI_MVLEM_3DKlocal(18, 0) = SFI_MVLEM_3DKlocal(0, 18);
 	SFI_MVLEM_3DKlocal(18, 1) = SFI_MVLEM_3DKlocal(1, 18);
 	SFI_MVLEM_3DKlocal(18, 2) = SFI_MVLEM_3DKlocal(2, 18);
@@ -1490,13 +1580,13 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(18, 15) = SFI_MVLEM_3DKlocal(15, 18);
 	SFI_MVLEM_3DKlocal(18, 16) = SFI_MVLEM_3DKlocal(16, 18);
 	SFI_MVLEM_3DKlocal(18, 17) = SFI_MVLEM_3DKlocal(17, 18);
-	SFI_MVLEM_3DKlocal(18, 18) = Kh / 4.0 + (Aib*Eib) / Lw;
-	SFI_MVLEM_3DKlocal(18, 19) = -(Kh*d*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-	SFI_MVLEM_3DKlocal(18, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(18, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(18, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(18, 23) = -(Kh*h*(c - 1.0)) / (2.0 * (2.0 * (d*d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(18, 18) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(18, 19) = (ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(18, 20) = 0;
+	//SFI_MVLEM_3DKlocal(18, 21) = 0;
+	//SFI_MVLEM_3DKlocal(18, 22) = 0;
+	SFI_MVLEM_3DKlocal(18, 23) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(19, 0) = SFI_MVLEM_3DKlocal(0, 19);
 	SFI_MVLEM_3DKlocal(19, 1) = SFI_MVLEM_3DKlocal(1, 19);
 	SFI_MVLEM_3DKlocal(19, 2) = SFI_MVLEM_3DKlocal(2, 19);
@@ -1516,12 +1606,12 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(19, 16) = SFI_MVLEM_3DKlocal(16, 19);
 	SFI_MVLEM_3DKlocal(19, 17) = SFI_MVLEM_3DKlocal(17, 19);
 	SFI_MVLEM_3DKlocal(19, 18) = SFI_MVLEM_3DKlocal(18, 19);
-	SFI_MVLEM_3DKlocal(19, 19) = Kv / 4.0 + (d*e) / (2.0 * (2.0 * (d*d) + 2.0)) + (12.0 * Eib*Iib) / (Lw*Lw*Lw) + (d*(e / 2.0 + (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0))) / (2.0 * (d*d) + 2.0);
-	SFI_MVLEM_3DKlocal(19, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(19, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(19, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(19, 23) = (e / 2.0 + (d*(Km + Kh*(h*h)*((c - 1.0)*(c - 1.0)))) / (2.0 * (d*d) + 2.0)) / (2.0 * (d*d) + 2.0) - (6.0 * Eib*Iib) / (Lw*Lw);
-
+	SFI_MVLEM_3DKlocal(19, 19) = (12. * Eib * Iib) / (Lw * Lw * Lw) + ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (1 + w) * (2 * e - 2 * (-1 + c) * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(19, 20) = 0;
+	//SFI_MVLEM_3DKlocal(19, 21) = 0;
+	//SFI_MVLEM_3DKlocal(19, 22) = 0;
+	SFI_MVLEM_3DKlocal(19, 23) = (-6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//----------------------------------
 	SFI_MVLEM_3DKlocal(20, 0) = SFI_MVLEM_3DKlocal(0, 20);
 	SFI_MVLEM_3DKlocal(20, 1) = SFI_MVLEM_3DKlocal(1, 20);
 	SFI_MVLEM_3DKlocal(20, 2) = SFI_MVLEM_3DKlocal(2, 20);
@@ -1545,8 +1635,8 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(20, 20) = K1;
 	SFI_MVLEM_3DKlocal(20, 21) = K2;
 	SFI_MVLEM_3DKlocal(20, 22) = -K3;
-	SFI_MVLEM_3DKlocal(20, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(20, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(21, 0) = SFI_MVLEM_3DKlocal(0, 21);
 	SFI_MVLEM_3DKlocal(21, 1) = SFI_MVLEM_3DKlocal(1, 21);
 	SFI_MVLEM_3DKlocal(21, 2) = SFI_MVLEM_3DKlocal(2, 21);
@@ -1570,8 +1660,8 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(21, 20) = SFI_MVLEM_3DKlocal(20, 21);
 	SFI_MVLEM_3DKlocal(21, 21) = K13;
 	SFI_MVLEM_3DKlocal(21, 22) = K14;
-	SFI_MVLEM_3DKlocal(21, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(21, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(22, 0) = SFI_MVLEM_3DKlocal(0, 22);
 	SFI_MVLEM_3DKlocal(22, 1) = SFI_MVLEM_3DKlocal(1, 22);
 	SFI_MVLEM_3DKlocal(22, 2) = SFI_MVLEM_3DKlocal(2, 22);
@@ -1595,8 +1685,8 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(22, 20) = SFI_MVLEM_3DKlocal(20, 22);
 	SFI_MVLEM_3DKlocal(22, 21) = SFI_MVLEM_3DKlocal(21, 22);
 	SFI_MVLEM_3DKlocal(22, 22) = K18;
-	SFI_MVLEM_3DKlocal(22, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(22, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(23, 0) = SFI_MVLEM_3DKlocal(0, 23);
 	SFI_MVLEM_3DKlocal(23, 1) = SFI_MVLEM_3DKlocal(1, 23);
 	SFI_MVLEM_3DKlocal(23, 2) = SFI_MVLEM_3DKlocal(2, 23);
@@ -1620,8 +1710,8 @@ const Matrix & SFI_MVLEM_3D::getInitialStiff(void)
 	SFI_MVLEM_3DKlocal(23, 20) = SFI_MVLEM_3DKlocal(20, 23);
 	SFI_MVLEM_3DKlocal(23, 21) = SFI_MVLEM_3DKlocal(21, 23);
 	SFI_MVLEM_3DKlocal(23, 22) = SFI_MVLEM_3DKlocal(22, 23);
-	SFI_MVLEM_3DKlocal(23, 23) = (Km + Kh*(h*h)*((c - 1.0)*(c - 1.0))) / ((2.0 * (d*d) + 2.0)*(2.0 * (d*d) + 2.0)) + (4.0 * Eib*Iib) / Lw;
-
+	SFI_MVLEM_3DKlocal(23, 23) = (4. * Eib * Iib) / Lw + (((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	// The stiffness matrix is completely updated acording to stress coupling by Zakariya Waezi
 	SFI_MVLEM_3DK.addMatrixTripleProduct(0.0, T, SFI_MVLEM_3DKlocal, 1.0);  // Convert matrix from local to global cs
 
 	// Return element stiffness matrix
@@ -1637,7 +1727,9 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal.Zero();	// Local stiffness matrix
 
 	Kh = 0.0;
-
+	double ktauy = 0.0;
+	double etauy = 0.0;
+	double w = 1.0 / (d * d);
 	for (int i = 0; i < m; i++)
 	{
 		// Get the material tangent
@@ -1651,9 +1743,83 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 		ky[i] = D11 * b[i] * t[i] / h;
 		Kh += D22 * b[i] * t[i] / h;
 
+		// defining the coupling terms of stress-strain relationship by Zakariya Waezi
+		double kxy = D01 * t[i];
+		double ktaux = 0.0;
+		if (Coupling == 2) {
+			ktaux = D02 * t[i];
+		}
+
+		double exy = kxy * x[i];
+		double etaux = ktaux * x[i];
+
+		//Considering the coupling between axial stresses sigmax and sigma y is taken care of here: Zakariya Waezi
+ 		 // if the material is linear elastic, Coupling 1 is enough: by Zakariya Waezi
+		if (Coupling == 1 || Coupling == 2) {//|| Coupling == 2
+
+			SFI_MVLEM_3DKlocal(0, 24 + i) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 0) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(1, 24 + i) += (-kxy + (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 1) += (-kxy + (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(2, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 2) += 0;
+			//SFI_MVLEM_3DKlocal(3, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 3) += 0;
+			//SFI_MVLEM_3DKlocal(4, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 4) += 0;
+			SFI_MVLEM_3DKlocal(5, 24 + i) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 5) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(6, 24 + i) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 6) += -ktaux / 2.;
+			SFI_MVLEM_3DKlocal(7, 24 + i) += (-kxy - (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 7) += (-kxy - (exy - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(8, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 8) += 0;
+			//SFI_MVLEM_3DKlocal(9, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 9) += 0;
+			//SFI_MVLEM_3DKlocal(10, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 10) += 0;
+			SFI_MVLEM_3DKlocal(11, 24 + i) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 11) += -((exy - c * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(12, 24 + i) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 12) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(13, 24 + i) += (kxy - (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 13) += (kxy - (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(14, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 14) += 0;
+			//SFI_MVLEM_3DKlocal(15, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 15) += 0;
+			//SFI_MVLEM_3DKlocal(16, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 16) += 0;
+			SFI_MVLEM_3DKlocal(17, 24 + i) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 17) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(18, 24 + i) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 18) += ktaux / 2.;
+			SFI_MVLEM_3DKlocal(19, 24 + i) += (kxy + (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			SFI_MVLEM_3DKlocal(24 + i, 19) += (kxy + (exy + h * ktaux - c * h * ktaux) / (d + d * w)) / 2.;
+			//SFI_MVLEM_3DKlocal(20, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 20) += 0;
+			//SFI_MVLEM_3DKlocal(21, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 21) += 0;
+			//SFI_MVLEM_3DKlocal(22, 24+i) += 0;
+			//SFI_MVLEM_3DKlocal(24+i, 22) += 0;
+			SFI_MVLEM_3DKlocal(23, 24 + i) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+			SFI_MVLEM_3DKlocal(24 + i, 23) += ((exy - (-1 + c) * h * ktaux) * w) / (2. * (1 + w));
+		}
+		//Considering the coupling between shear stress and axial stresses in addition to axial stresses coupling
+		// is taken care here: 
+		// if the material is nonlinear, for complete  consideration of coupling Coupling variable should be  2
+		// Zakariya Waezi
+		if (Coupling == 2) {
+			double temp = D12 * b[i] * t[i] / h;
+			ktauy += temp;
+			etauy += temp * x[i];
+		}
+
+
 	}
 
-	// Build the tangent stiffness matrix
+	// Build the initial stiffness matrix
 	double Kv = 0.0; double Km = 0.0; double e = 0.0; // double ex = 0.0;
 
 	for (int i = 0; i<m; ++i)
@@ -1663,184 +1829,182 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 		e += ky[i] * x[i];
 
 		SFI_MVLEM_3DKlocal(24 + i, 24 + i) = kx[i]; // Diagonal terms accounting for horizontal stiffness
-	}
-
-	// Assemble element stiffness matrix
-	SFI_MVLEM_3DKlocal(0, 0) = Kh / 4.0 + (Aib * Eib) / Lw;
-	SFI_MVLEM_3DKlocal(0, 1) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 2) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 3) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 4) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 5) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 6) = Kh / 4.0 - (Aib * Eib) / Lw;
-	SFI_MVLEM_3DKlocal(0, 7) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 11) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 12) = -Kh / 4.0;
-	SFI_MVLEM_3DKlocal(0, 13) = -(Kh * d * h * (c - 1)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 17) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 18) = -Kh / 4;
-	SFI_MVLEM_3DKlocal(0, 19) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(0, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(0, 23) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-
+	}	
+	SFI_MVLEM_3DKlocal(0, 0) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(0, 1) = (ktauy - (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 2) = 0;
+	//SFI_MVLEM_3DKlocal(0, 3) = 0;
+	//SFI_MVLEM_3DKlocal(0, 4) = 0;
+	SFI_MVLEM_3DKlocal(0, 5) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(0, 6) = Kh / 4. - (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(0, 7) = (ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 8) = 0;
+	//SFI_MVLEM_3DKlocal(0, 9) = 0;
+	//SFI_MVLEM_3DKlocal(0, 10) = 0;
+	SFI_MVLEM_3DKlocal(0, 11) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(0, 12) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(0, 13) = (-ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 14) = 0;
+	//SFI_MVLEM_3DKlocal(0, 15) = 0;
+	//SFI_MVLEM_3DKlocal(0, 16) = 0;
+	SFI_MVLEM_3DKlocal(0, 17) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(0, 18) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(0, 19) = (-ktauy - (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(0, 20) = 0;
+	//SFI_MVLEM_3DKlocal(0, 21) = 0;
+	//SFI_MVLEM_3DKlocal(0, 22) = 0;
+	SFI_MVLEM_3DKlocal(0, 23) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(1, 0) = SFI_MVLEM_3DKlocal(0, 1);
-	SFI_MVLEM_3DKlocal(1, 1) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) + (12.0 * Eib * Iib) / (Lw * Lw * Lw);
-	SFI_MVLEM_3DKlocal(1, 2) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 3) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 4) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 5) = (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
-	SFI_MVLEM_3DKlocal(1, 6) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(1, 7) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (d * (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) - (12.0 * Eib * Iib) / (Lw * Lw * Lw);
-	SFI_MVLEM_3DKlocal(1, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 11) = (e / 2.0 - (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
-	SFI_MVLEM_3DKlocal(1, 12) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(1, 13) = (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - Kv / 4.0 + (d * (e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(1, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 17) = -(e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(1, 18) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(1, 19) = (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - Kv / 4.0 - (d * (e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(1, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(1, 23) = -(e / 2.0 - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
-
+	SFI_MVLEM_3DKlocal(1, 1) = (12. * Eib * Iib) / (Lw * Lw * Lw) + (c * h * (-2 * etauy + c * h * Kh) + Km + d * (1 + w) * (-2 * e + 2 * c * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(1, 2) = 0;
+	//SFI_MVLEM_3DKlocal(1, 3) = 0;
+	//SFI_MVLEM_3DKlocal(1, 4) = 0;
+	SFI_MVLEM_3DKlocal(1, 5) = (6. * Eib * Iib) / (Lw * Lw) - (w * (c * h * (-2 * etauy + c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 6) = (-etauy + c * h * Kh + d * ktauy * (1 + w)) / (4. * d * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 7) = (Kv - (48. * Eib * Iib) / (Lw * Lw * Lw) - (-2 * c * etauy * h + c * c * h * h * Kh + Km) / (d * d * (1 + w) * (1 + w))) / 4.;
+	//SFI_MVLEM_3DKlocal(1, 8) = 0;
+	//SFI_MVLEM_3DKlocal(1, 9) = 0;
+	//SFI_MVLEM_3DKlocal(1, 10) = 0;
+	SFI_MVLEM_3DKlocal(1, 11) = (6. * Eib * Iib) / (Lw * Lw) - (w * (c * h * (-2 * etauy + c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 12) = (-ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	SFI_MVLEM_3DKlocal(1, 13) = -(h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (1 + w) * (-2 * e + (-1 + 2 * c) * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(1, 14) = 0;
+	//SFI_MVLEM_3DKlocal(1, 15) = 0;
+	//SFI_MVLEM_3DKlocal(1, 16) = 0;
+	SFI_MVLEM_3DKlocal(1, 17) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(1, 18) = (-ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	SFI_MVLEM_3DKlocal(1, 19) = (etauy * (h - 2 * c * h) - c * h * h * Kh + c * c * h * h * Kh + Km - d * (1 + w) * (h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(1, 20) = 0;
+	//SFI_MVLEM_3DKlocal(1, 21) = 0;
+	//SFI_MVLEM_3DKlocal(1, 22) = 0;
+	SFI_MVLEM_3DKlocal(1, 23) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(2, 0) = SFI_MVLEM_3DKlocal(0, 2);
 	SFI_MVLEM_3DKlocal(2, 1) = SFI_MVLEM_3DKlocal(1, 2);
 	SFI_MVLEM_3DKlocal(2, 2) = K1;
 	SFI_MVLEM_3DKlocal(2, 3) = -K2;
 	SFI_MVLEM_3DKlocal(2, 4) = K3;
-	SFI_MVLEM_3DKlocal(2, 5) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 6) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 7) = 0.0;
+	//SFI_MVLEM_3DKlocal(2, 5) = 0;
+	//SFI_MVLEM_3DKlocal(2, 6) = 0;
+	//SFI_MVLEM_3DKlocal(2, 7) = 0;
 	SFI_MVLEM_3DKlocal(2, 8) = K4;
 	SFI_MVLEM_3DKlocal(2, 9) = K5;
 	SFI_MVLEM_3DKlocal(2, 10) = K6;
-	SFI_MVLEM_3DKlocal(2, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(2, 11) = 0;
+	//SFI_MVLEM_3DKlocal(2, 12) = 0;
+	//SFI_MVLEM_3DKlocal(2, 13) = 0;
 	SFI_MVLEM_3DKlocal(2, 14) = K7;
 	SFI_MVLEM_3DKlocal(2, 15) = -K8;
 	SFI_MVLEM_3DKlocal(2, 16) = -K9;
-	SFI_MVLEM_3DKlocal(2, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(2, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(2, 17) = 0;
+	//SFI_MVLEM_3DKlocal(2, 18) = 0;
+	//SFI_MVLEM_3DKlocal(2, 19) = 0;
 	SFI_MVLEM_3DKlocal(2, 20) = K10;
 	SFI_MVLEM_3DKlocal(2, 21) = -K11;
 	SFI_MVLEM_3DKlocal(2, 22) = K12;
-	SFI_MVLEM_3DKlocal(2, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(2, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(3, 0) = SFI_MVLEM_3DKlocal(0, 3);
 	SFI_MVLEM_3DKlocal(3, 1) = SFI_MVLEM_3DKlocal(1, 3);
 	SFI_MVLEM_3DKlocal(3, 2) = SFI_MVLEM_3DKlocal(2, 3);
 	SFI_MVLEM_3DKlocal(3, 3) = K13;
 	SFI_MVLEM_3DKlocal(3, 4) = K14;
-	SFI_MVLEM_3DKlocal(3, 5) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 6) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 7) = 0.0;
+	//SFI_MVLEM_3DKlocal(3, 5) = 0;
+	//SFI_MVLEM_3DKlocal(3, 6) = 0;
+	//SFI_MVLEM_3DKlocal(3, 7) = 0;
 	SFI_MVLEM_3DKlocal(3, 8) = K5;
 	SFI_MVLEM_3DKlocal(3, 9) = K15;
-	SFI_MVLEM_3DKlocal(3, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(3, 10) = 0;
+	//SFI_MVLEM_3DKlocal(3, 11) = 0;
+	//SFI_MVLEM_3DKlocal(3, 12) = 0;
+	//SFI_MVLEM_3DKlocal(3, 13) = 0;
 	SFI_MVLEM_3DKlocal(3, 14) = K8;
 	SFI_MVLEM_3DKlocal(3, 15) = K16;
-	SFI_MVLEM_3DKlocal(3, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(3, 16) = 0;
+	//SFI_MVLEM_3DKlocal(3, 17) = 0;
+	//SFI_MVLEM_3DKlocal(3, 18) = 0;
+	//SFI_MVLEM_3DKlocal(3, 19) = 0;
 	SFI_MVLEM_3DKlocal(3, 20) = K11;
 	SFI_MVLEM_3DKlocal(3, 21) = K17;
-	SFI_MVLEM_3DKlocal(3, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(3, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(3, 22) = 0;
+	//SFI_MVLEM_3DKlocal(3, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(4, 0) = SFI_MVLEM_3DKlocal(0, 4);
 	SFI_MVLEM_3DKlocal(4, 1) = SFI_MVLEM_3DKlocal(1, 4);
 	SFI_MVLEM_3DKlocal(4, 2) = SFI_MVLEM_3DKlocal(2, 4);
 	SFI_MVLEM_3DKlocal(4, 3) = SFI_MVLEM_3DKlocal(3, 4);
 	SFI_MVLEM_3DKlocal(4, 4) = K18;
-	SFI_MVLEM_3DKlocal(4, 5) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 6) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 7) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 5) = 0;
+	//SFI_MVLEM_3DKlocal(4, 6) = 0;
+	//SFI_MVLEM_3DKlocal(4, 7) = 0;
 	SFI_MVLEM_3DKlocal(4, 8) = -K6;
-	SFI_MVLEM_3DKlocal(4, 9) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 9) = 0;
 	SFI_MVLEM_3DKlocal(4, 10) = K19;
-	SFI_MVLEM_3DKlocal(4, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 11) = 0;
+	//SFI_MVLEM_3DKlocal(4, 12) = 0;
+	//SFI_MVLEM_3DKlocal(4, 13) = 0;
 	SFI_MVLEM_3DKlocal(4, 14) = -K9;
-	SFI_MVLEM_3DKlocal(4, 15) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 15) = 0;
 	SFI_MVLEM_3DKlocal(4, 16) = K20;
-	SFI_MVLEM_3DKlocal(4, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(4, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 17) = 0;
+	//SFI_MVLEM_3DKlocal(4, 18) = 0;
+	//SFI_MVLEM_3DKlocal(4, 19) = 0;
 	SFI_MVLEM_3DKlocal(4, 20) = -K12;
-	SFI_MVLEM_3DKlocal(4, 21) = 0.0;
+	//SFI_MVLEM_3DKlocal(4, 21) = 0;
 	SFI_MVLEM_3DKlocal(4, 22) = K21;
-	SFI_MVLEM_3DKlocal(4, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(4, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(5, 0) = SFI_MVLEM_3DKlocal(0, 5);
 	SFI_MVLEM_3DKlocal(5, 1) = SFI_MVLEM_3DKlocal(1, 5);
 	SFI_MVLEM_3DKlocal(5, 2) = SFI_MVLEM_3DKlocal(2, 5);
 	SFI_MVLEM_3DKlocal(5, 3) = SFI_MVLEM_3DKlocal(3, 5);
 	SFI_MVLEM_3DKlocal(5, 4) = SFI_MVLEM_3DKlocal(4, 5);
-	SFI_MVLEM_3DKlocal(5, 5) = (Km + Kh * (c * c) * (h * h)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
-	SFI_MVLEM_3DKlocal(5, 6) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 7) = e / (2.0 * (2.0 * (d * d) + 2.0)) + (d * (Km + Kh * (c * c) * (h * h))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) - (6.0 * Eib * Iib) / (Lw * Lw);
-	SFI_MVLEM_3DKlocal(5, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 11) = (Km + Kh * (c * c) * (h * h)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (2.0 * Eib * Iib) / Lw;
-	SFI_MVLEM_3DKlocal(5, 12) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 13) = (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) - e / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 17) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 18) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 19) = -e / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(5, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(5, 23) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(5, 5) = (4. * Eib * Iib) / Lw + ((c * h * (-2 * etauy + c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 6) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 7) = (-6. * Eib * Iib) / (Lw * Lw) + (w * (c * h * (-2 * etauy + c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(5, 8) = 0;
+	//SFI_MVLEM_3DKlocal(5, 9) = 0;
+	//SFI_MVLEM_3DKlocal(5, 10) = 0;
+	SFI_MVLEM_3DKlocal(5, 11) = (2. * Eib * Iib) / Lw + ((c * h * (-2 * etauy + c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 12) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 13) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(5, 14) = 0;
+	//SFI_MVLEM_3DKlocal(5, 15) = 0;
+	//SFI_MVLEM_3DKlocal(5, 16) = 0;
+	SFI_MVLEM_3DKlocal(5, 17) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 18) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(5, 19) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(5, 20) = 0;
+	//SFI_MVLEM_3DKlocal(5, 21) = 0;
+	//SFI_MVLEM_3DKlocal(5, 22) = 0;
+	SFI_MVLEM_3DKlocal(5, 23) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(6, 0) = SFI_MVLEM_3DKlocal(0, 6);
 	SFI_MVLEM_3DKlocal(6, 1) = SFI_MVLEM_3DKlocal(1, 6);
 	SFI_MVLEM_3DKlocal(6, 2) = SFI_MVLEM_3DKlocal(2, 6);
 	SFI_MVLEM_3DKlocal(6, 3) = SFI_MVLEM_3DKlocal(3, 6);
 	SFI_MVLEM_3DKlocal(6, 4) = SFI_MVLEM_3DKlocal(4, 6);
 	SFI_MVLEM_3DKlocal(6, 5) = SFI_MVLEM_3DKlocal(5, 6);
-	SFI_MVLEM_3DKlocal(6, 6) = Kh / 4.0 + (Aib * Eib) / Lw;
-	SFI_MVLEM_3DKlocal(6, 7) = -(Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 11) = -(Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 12) = -Kh / 4;
-	SFI_MVLEM_3DKlocal(6, 13) = -(Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 17) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 18) = -Kh / 4.0;
-	SFI_MVLEM_3DKlocal(6, 19) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(6, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(6, 23) = (Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(6, 6) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(6, 7) = (ktauy + (etauy - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(6, 8) = 0;
+	//SFI_MVLEM_3DKlocal(6, 9) = 0;
+	//SFI_MVLEM_3DKlocal(6, 10) = 0;
+	SFI_MVLEM_3DKlocal(6, 11) = ((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(6, 12) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(6, 13) = (-ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(6, 14) = 0;
+	//SFI_MVLEM_3DKlocal(6, 15) = 0;
+	//SFI_MVLEM_3DKlocal(6, 16) = 0;
+	SFI_MVLEM_3DKlocal(6, 17) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(6, 18) = -Kh / 4.;
+	SFI_MVLEM_3DKlocal(6, 19) = (-ktauy - (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(6, 20) = 0;
+	//SFI_MVLEM_3DKlocal(6, 21) = 0;
+	//SFI_MVLEM_3DKlocal(6, 22) = 0;
+	SFI_MVLEM_3DKlocal(6, 23) = -((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(7, 0) = SFI_MVLEM_3DKlocal(0, 7);
 	SFI_MVLEM_3DKlocal(7, 1) = SFI_MVLEM_3DKlocal(1, 7);
 	SFI_MVLEM_3DKlocal(7, 2) = SFI_MVLEM_3DKlocal(2, 7);
@@ -1848,24 +2012,24 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(7, 4) = SFI_MVLEM_3DKlocal(4, 7);
 	SFI_MVLEM_3DKlocal(7, 5) = SFI_MVLEM_3DKlocal(5, 7);
 	SFI_MVLEM_3DKlocal(7, 6) = SFI_MVLEM_3DKlocal(6, 7);
-	SFI_MVLEM_3DKlocal(7, 7) = Kv / 4.0 + (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (d * (e / 2.0 + (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) + (12.0 * Eib * Iib) / (Lw * Lw * Lw);
-	SFI_MVLEM_3DKlocal(7, 8) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 9) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 10) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 11) = (e / 2.0 + (d * (Km + Kh * (c * c) * (h * h))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) - (6.0 * Eib * Iib) / (Lw * Lw);
-	SFI_MVLEM_3DKlocal(7, 12) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(7, 13) = (d * (e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0) - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - Kv / 4.0;
-	SFI_MVLEM_3DKlocal(7, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 17) = -(e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(7, 18) = (Kh * c * d * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(7, 19) = -Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(7, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(7, 23) = -(e / 2.0 + (d * (Km + Kh * c * (h * h) * (c - 1.0))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0);
-
+	SFI_MVLEM_3DKlocal(7, 7) = (12. * Eib * Iib) / (Lw * Lw * Lw) + (c * h * (-2 * etauy + c * h * Kh) + Km + d * (1 + w) * (2 * e - 2 * c * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(7, 8) = 0;
+	//SFI_MVLEM_3DKlocal(7, 9) = 0;
+	//SFI_MVLEM_3DKlocal(7, 10) = 0;
+	SFI_MVLEM_3DKlocal(7, 11) = (-6. * Eib * Iib) / (Lw * Lw) + (w * (c * h * (-2 * etauy + c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(7, 12) = -((etauy - c * h * Kh + d * ktauy + d * ktauy * w) / (4 * d + 4 * d * w));
+	SFI_MVLEM_3DKlocal(7, 13) = (etauy * (h - 2 * c * h) - c * h * h * Kh + c * c * h * h * Kh + Km - d * (1 + w) * (-(h * ktauy) + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(7, 14) = 0;
+	//SFI_MVLEM_3DKlocal(7, 15) = 0;
+	//SFI_MVLEM_3DKlocal(7, 16) = 0;
+	SFI_MVLEM_3DKlocal(7, 17) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(7, 18) = -((etauy - c * h * Kh + d * ktauy + d * ktauy * w) / (4 * d + 4 * d * w));
+	SFI_MVLEM_3DKlocal(7, 19) = -(h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (1 + w) * (2 * e + h * (ktauy - 2 * c * ktauy) + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(7, 20) = 0;
+	//SFI_MVLEM_3DKlocal(7, 21) = 0;
+	//SFI_MVLEM_3DKlocal(7, 22) = 0;
+	SFI_MVLEM_3DKlocal(7, 23) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(8, 0) = SFI_MVLEM_3DKlocal(0, 8);
 	SFI_MVLEM_3DKlocal(8, 1) = SFI_MVLEM_3DKlocal(1, 8);
 	SFI_MVLEM_3DKlocal(8, 2) = SFI_MVLEM_3DKlocal(2, 8);
@@ -1877,20 +2041,21 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(8, 8) = K1;
 	SFI_MVLEM_3DKlocal(8, 9) = -K2;
 	SFI_MVLEM_3DKlocal(8, 10) = -K3;
-	SFI_MVLEM_3DKlocal(8, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(8, 11) = 0;
+	//SFI_MVLEM_3DKlocal(8, 12) = 0;
+	//SFI_MVLEM_3DKlocal(8, 13) = 0;
 	SFI_MVLEM_3DKlocal(8, 14) = K10;
 	SFI_MVLEM_3DKlocal(8, 15) = -K11;
 	SFI_MVLEM_3DKlocal(8, 16) = -K12;
-	SFI_MVLEM_3DKlocal(8, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(8, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(8, 17) = 0;
+	//SFI_MVLEM_3DKlocal(8, 18) = 0;
+	//SFI_MVLEM_3DKlocal(8, 19) = 0;
 	SFI_MVLEM_3DKlocal(8, 20) = K7;
 	SFI_MVLEM_3DKlocal(8, 21) = -K8;
 	SFI_MVLEM_3DKlocal(8, 22) = K9;
-	SFI_MVLEM_3DKlocal(8, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(8, 23) = 0;
+//----------------------------------   
+	SFI_MVLEM_3DKlocal(9, 0) = SFI_MVLEM_3DKlocal(0, 9);
 	SFI_MVLEM_3DKlocal(9, 1) = SFI_MVLEM_3DKlocal(1, 9);
 	SFI_MVLEM_3DKlocal(9, 2) = SFI_MVLEM_3DKlocal(2, 9);
 	SFI_MVLEM_3DKlocal(9, 3) = SFI_MVLEM_3DKlocal(3, 9);
@@ -1901,20 +2066,20 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(9, 8) = SFI_MVLEM_3DKlocal(8, 9);
 	SFI_MVLEM_3DKlocal(9, 9) = K13;
 	SFI_MVLEM_3DKlocal(9, 10) = -K14;
-	SFI_MVLEM_3DKlocal(9, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(9, 11) = 0;
+	//SFI_MVLEM_3DKlocal(9, 12) = 0;
+	//SFI_MVLEM_3DKlocal(9, 13) = 0;
 	SFI_MVLEM_3DKlocal(9, 14) = K11;
 	SFI_MVLEM_3DKlocal(9, 15) = K17;
-	SFI_MVLEM_3DKlocal(9, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(9, 16) = 0;
+	//SFI_MVLEM_3DKlocal(9, 17) = 0;
+	//SFI_MVLEM_3DKlocal(9, 18) = 0;
+	//SFI_MVLEM_3DKlocal(9, 19) = 0;
 	SFI_MVLEM_3DKlocal(9, 20) = K8;
 	SFI_MVLEM_3DKlocal(9, 21) = K16;
-	SFI_MVLEM_3DKlocal(9, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(9, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(9, 22) = 0;
+	//SFI_MVLEM_3DKlocal(9, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(10, 0) = SFI_MVLEM_3DKlocal(0, 10);
 	SFI_MVLEM_3DKlocal(10, 1) = SFI_MVLEM_3DKlocal(1, 10);
 	SFI_MVLEM_3DKlocal(10, 2) = SFI_MVLEM_3DKlocal(2, 10);
@@ -1926,20 +2091,20 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(10, 8) = SFI_MVLEM_3DKlocal(8, 10);
 	SFI_MVLEM_3DKlocal(10, 9) = SFI_MVLEM_3DKlocal(9, 10);
 	SFI_MVLEM_3DKlocal(10, 10) = K22;
-	SFI_MVLEM_3DKlocal(10, 11) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 12) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 13) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 11) = 0;
+	//SFI_MVLEM_3DKlocal(10, 12) = 0;
+	//SFI_MVLEM_3DKlocal(10, 13) = 0;
 	SFI_MVLEM_3DKlocal(10, 14) = K12;
-	SFI_MVLEM_3DKlocal(10, 15) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 15) = 0;
 	SFI_MVLEM_3DKlocal(10, 16) = K21;
-	SFI_MVLEM_3DKlocal(10, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(10, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 17) = 0;
+	//SFI_MVLEM_3DKlocal(10, 18) = 0;
+	//SFI_MVLEM_3DKlocal(10, 19) = 0;
 	SFI_MVLEM_3DKlocal(10, 20) = K9;
-	SFI_MVLEM_3DKlocal(10, 21) = 0.0;
+	//SFI_MVLEM_3DKlocal(10, 21) = 0;
 	SFI_MVLEM_3DKlocal(10, 22) = K20;
-	SFI_MVLEM_3DKlocal(10, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(10, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(11, 0) = SFI_MVLEM_3DKlocal(0, 11);
 	SFI_MVLEM_3DKlocal(11, 1) = SFI_MVLEM_3DKlocal(1, 11);
 	SFI_MVLEM_3DKlocal(11, 2) = SFI_MVLEM_3DKlocal(2, 11);
@@ -1951,20 +2116,20 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(11, 8) = SFI_MVLEM_3DKlocal(8, 11);
 	SFI_MVLEM_3DKlocal(11, 9) = SFI_MVLEM_3DKlocal(9, 11);
 	SFI_MVLEM_3DKlocal(11, 10) = SFI_MVLEM_3DKlocal(10, 11);
-	SFI_MVLEM_3DKlocal(11, 11) = (Km + Kh * (c * c) * (h * h)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
-	SFI_MVLEM_3DKlocal(11, 12) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 13) = (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) - e / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 17) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 18) = (Kh * c * h) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 19) = -e / (2.0 * (2.0 * (d * d) + 2.0)) - (d * (Km + Kh * c * (h * h) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(11, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(11, 23) = -(Km + Kh * c * (h * h) * (c - 1.0)) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(11, 11) = (4. * Eib * Iib) / Lw + ((c * h * (-2 * etauy + c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 12) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 13) = (w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km - d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(11, 14) = 0;
+	//SFI_MVLEM_3DKlocal(11, 15) = 0;
+	//SFI_MVLEM_3DKlocal(11, 16) = 0;
+	SFI_MVLEM_3DKlocal(11, 17) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 18) = -((etauy - c * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(11, 19) = -(w * (h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km + d * (e - c * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(11, 20) = 0;
+	//SFI_MVLEM_3DKlocal(11, 21) = 0;
+	//SFI_MVLEM_3DKlocal(11, 22) = 0;
+	SFI_MVLEM_3DKlocal(11, 23) = -((h * (etauy - 2 * c * etauy + (-1 + c) * c * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(12, 0) = SFI_MVLEM_3DKlocal(0, 12);
 	SFI_MVLEM_3DKlocal(12, 1) = SFI_MVLEM_3DKlocal(1, 12);
 	SFI_MVLEM_3DKlocal(12, 2) = SFI_MVLEM_3DKlocal(2, 12);
@@ -1977,19 +2142,19 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(12, 9) = SFI_MVLEM_3DKlocal(9, 12);
 	SFI_MVLEM_3DKlocal(12, 10) = SFI_MVLEM_3DKlocal(10, 12);
 	SFI_MVLEM_3DKlocal(12, 11) = SFI_MVLEM_3DKlocal(11, 12);
-	SFI_MVLEM_3DKlocal(12, 12) = Kh / 4.0 + (Aib * Eib) / Lw;
-	SFI_MVLEM_3DKlocal(12, 13) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(12, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 17) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(12, 18) = Kh / 4.0 - (Aib * Eib) / Lw;
-	SFI_MVLEM_3DKlocal(12, 19) = -(Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(12, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(12, 23) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(12, 12) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(12, 13) = (ktauy - (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(12, 14) = 0;
+	//SFI_MVLEM_3DKlocal(12, 15) = 0;
+	//SFI_MVLEM_3DKlocal(12, 16) = 0;
+	SFI_MVLEM_3DKlocal(12, 17) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(12, 18) = Kh / 4. - (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(12, 19) = (ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(12, 20) = 0;
+	//SFI_MVLEM_3DKlocal(12, 21) = 0;
+	//SFI_MVLEM_3DKlocal(12, 22) = 0;
+	SFI_MVLEM_3DKlocal(12, 23) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(13, 0) = SFI_MVLEM_3DKlocal(0, 13);
 	SFI_MVLEM_3DKlocal(13, 1) = SFI_MVLEM_3DKlocal(1, 13);
 	SFI_MVLEM_3DKlocal(13, 2) = SFI_MVLEM_3DKlocal(2, 13);
@@ -2003,18 +2168,18 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(13, 10) = SFI_MVLEM_3DKlocal(10, 13);
 	SFI_MVLEM_3DKlocal(13, 11) = SFI_MVLEM_3DKlocal(11, 13);
 	SFI_MVLEM_3DKlocal(13, 12) = SFI_MVLEM_3DKlocal(12, 13);
-	SFI_MVLEM_3DKlocal(13, 13) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (12.0 * Eib * Iib) / (Lw * Lw * Lw) - (d * (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(13, 14) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 15) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 16) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 17) = (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
-	SFI_MVLEM_3DKlocal(13, 18) = (Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(13, 19) = Kv / 4.0 - (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) - (12.0 * Eib * Iib) / (Lw * Lw * Lw) + (d * (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(13, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(13, 23) = (e / 2.0 - (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) + (6.0 * Eib * Iib) / (Lw * Lw);
-
+	SFI_MVLEM_3DKlocal(13, 13) = (12. * Eib * Iib) / (Lw * Lw * Lw) + ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (1 + w) * (-2 * e + 2 * (-1 + c) * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(13, 14) = 0;
+	//SFI_MVLEM_3DKlocal(13, 15) = 0;
+	//SFI_MVLEM_3DKlocal(13, 16) = 0;
+	SFI_MVLEM_3DKlocal(13, 17) = (6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (2 * etauy - (-1 + c) * h * Kh) - Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(13, 18) = (-etauy + (-1 + c) * h * Kh + d * ktauy * (1 + w)) / (4. * d * (1 + w));
+	SFI_MVLEM_3DKlocal(13, 19) = (-12. * Eib * Iib) / (Lw * Lw * Lw) + ((-1 + c) * h * (2 * etauy - (-1 + c) * h * Kh) - Km + d * d * Kv * (1 + w) * (1 + w)) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(13, 20) = 0;
+	//SFI_MVLEM_3DKlocal(13, 21) = 0;
+	//SFI_MVLEM_3DKlocal(13, 22) = 0;
+	SFI_MVLEM_3DKlocal(13, 23) = (6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (2 * etauy - (-1 + c) * h * Kh) - Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//----------------------------------
 	SFI_MVLEM_3DKlocal(14, 0) = SFI_MVLEM_3DKlocal(0, 14);
 	SFI_MVLEM_3DKlocal(14, 1) = SFI_MVLEM_3DKlocal(1, 14);
 	SFI_MVLEM_3DKlocal(14, 2) = SFI_MVLEM_3DKlocal(2, 14);
@@ -2032,14 +2197,14 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(14, 14) = K1;
 	SFI_MVLEM_3DKlocal(14, 15) = K2;
 	SFI_MVLEM_3DKlocal(14, 16) = K3;
-	SFI_MVLEM_3DKlocal(14, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(14, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(14, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(14, 17) = 0;
+	//SFI_MVLEM_3DKlocal(14, 18) = 0;
+	//SFI_MVLEM_3DKlocal(14, 19) = 0;
 	SFI_MVLEM_3DKlocal(14, 20) = K4;
 	SFI_MVLEM_3DKlocal(14, 21) = -K5;
 	SFI_MVLEM_3DKlocal(14, 22) = K6;
-	SFI_MVLEM_3DKlocal(14, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(14, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(15, 0) = SFI_MVLEM_3DKlocal(0, 15);
 	SFI_MVLEM_3DKlocal(15, 1) = SFI_MVLEM_3DKlocal(1, 15);
 	SFI_MVLEM_3DKlocal(15, 2) = SFI_MVLEM_3DKlocal(2, 15);
@@ -2057,14 +2222,14 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(15, 14) = SFI_MVLEM_3DKlocal(14, 15);
 	SFI_MVLEM_3DKlocal(15, 15) = K13;
 	SFI_MVLEM_3DKlocal(15, 16) = -K14;
-	SFI_MVLEM_3DKlocal(15, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(15, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(15, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(15, 17) = 0;
+	//SFI_MVLEM_3DKlocal(15, 18) = 0;
+	//SFI_MVLEM_3DKlocal(15, 19) = 0;
 	SFI_MVLEM_3DKlocal(15, 20) = -K5;
 	SFI_MVLEM_3DKlocal(15, 21) = K15;
-	SFI_MVLEM_3DKlocal(15, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(15, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(15, 22) = 0;
+	//SFI_MVLEM_3DKlocal(15, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(16, 0) = SFI_MVLEM_3DKlocal(0, 16);
 	SFI_MVLEM_3DKlocal(16, 1) = SFI_MVLEM_3DKlocal(1, 16);
 	SFI_MVLEM_3DKlocal(16, 2) = SFI_MVLEM_3DKlocal(2, 16);
@@ -2082,14 +2247,14 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(16, 14) = SFI_MVLEM_3DKlocal(14, 16);
 	SFI_MVLEM_3DKlocal(16, 15) = SFI_MVLEM_3DKlocal(15, 16);
 	SFI_MVLEM_3DKlocal(16, 16) = K18;
-	SFI_MVLEM_3DKlocal(16, 17) = 0.0;
-	SFI_MVLEM_3DKlocal(16, 18) = 0.0;
-	SFI_MVLEM_3DKlocal(16, 19) = 0.0;
+	//SFI_MVLEM_3DKlocal(16, 17) = 0;
+	//SFI_MVLEM_3DKlocal(16, 18) = 0;
+	//SFI_MVLEM_3DKlocal(16, 19) = 0;
 	SFI_MVLEM_3DKlocal(16, 20) = -K6;
-	SFI_MVLEM_3DKlocal(16, 21) = 0.0;
+	//SFI_MVLEM_3DKlocal(16, 21) = 0;
 	SFI_MVLEM_3DKlocal(16, 22) = K19;
-	SFI_MVLEM_3DKlocal(16, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(16, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(17, 0) = SFI_MVLEM_3DKlocal(0, 17);
 	SFI_MVLEM_3DKlocal(17, 1) = SFI_MVLEM_3DKlocal(1, 17);
 	SFI_MVLEM_3DKlocal(17, 2) = SFI_MVLEM_3DKlocal(2, 17);
@@ -2107,14 +2272,14 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(17, 14) = SFI_MVLEM_3DKlocal(14, 17);
 	SFI_MVLEM_3DKlocal(17, 15) = SFI_MVLEM_3DKlocal(15, 17);
 	SFI_MVLEM_3DKlocal(17, 16) = SFI_MVLEM_3DKlocal(16, 17);
-	SFI_MVLEM_3DKlocal(17, 17) = (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
-	SFI_MVLEM_3DKlocal(17, 18) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(17, 19) = e / (2.0 * (2.0 * (d * d) + 2.0)) - (6.0 * Eib * Iib) / (Lw * Lw) + (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(17, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(17, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(17, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(17, 23) = (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (2.0 * Eib * Iib) / Lw;
-
+	SFI_MVLEM_3DKlocal(17, 17) = (4. * Eib * Iib) / Lw + (((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	SFI_MVLEM_3DKlocal(17, 18) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+	SFI_MVLEM_3DKlocal(17, 19) = (-6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(17, 20) = 0;
+	//SFI_MVLEM_3DKlocal(17, 21) = 0;
+	//SFI_MVLEM_3DKlocal(17, 22) = 0;
+	SFI_MVLEM_3DKlocal(17, 23) = (2. * Eib * Iib) / Lw + (((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	//----------------------------------
 	SFI_MVLEM_3DKlocal(18, 0) = SFI_MVLEM_3DKlocal(0, 18);
 	SFI_MVLEM_3DKlocal(18, 1) = SFI_MVLEM_3DKlocal(1, 18);
 	SFI_MVLEM_3DKlocal(18, 2) = SFI_MVLEM_3DKlocal(2, 18);
@@ -2133,13 +2298,13 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(18, 15) = SFI_MVLEM_3DKlocal(15, 18);
 	SFI_MVLEM_3DKlocal(18, 16) = SFI_MVLEM_3DKlocal(16, 18);
 	SFI_MVLEM_3DKlocal(18, 17) = SFI_MVLEM_3DKlocal(17, 18);
-	SFI_MVLEM_3DKlocal(18, 18) = Kh / 4.0 + (Aib * Eib) / Lw;
-	SFI_MVLEM_3DKlocal(18, 19) = -(Kh * d * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-	SFI_MVLEM_3DKlocal(18, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(18, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(18, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(18, 23) = -(Kh * h * (c - 1.0)) / (2.0 * (2.0 * (d * d) + 2.0));
-
+	SFI_MVLEM_3DKlocal(18, 18) = Kh / 4. + (Aib * Eib) / Lw;
+	SFI_MVLEM_3DKlocal(18, 19) = (ktauy + (etauy + h * Kh - c * h * Kh) / (d + d * w)) / 4.;
+	//SFI_MVLEM_3DKlocal(18, 20) = 0;
+	//SFI_MVLEM_3DKlocal(18, 21) = 0;
+	//SFI_MVLEM_3DKlocal(18, 22) = 0;
+	SFI_MVLEM_3DKlocal(18, 23) = ((etauy - (-1 + c) * h * Kh) * w) / (4. * (1 + w));
+//----------------------------------
 	SFI_MVLEM_3DKlocal(19, 0) = SFI_MVLEM_3DKlocal(0, 19);
 	SFI_MVLEM_3DKlocal(19, 1) = SFI_MVLEM_3DKlocal(1, 19);
 	SFI_MVLEM_3DKlocal(19, 2) = SFI_MVLEM_3DKlocal(2, 19);
@@ -2159,12 +2324,12 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(19, 16) = SFI_MVLEM_3DKlocal(16, 19);
 	SFI_MVLEM_3DKlocal(19, 17) = SFI_MVLEM_3DKlocal(17, 19);
 	SFI_MVLEM_3DKlocal(19, 18) = SFI_MVLEM_3DKlocal(18, 19);
-	SFI_MVLEM_3DKlocal(19, 19) = Kv / 4.0 + (d * e) / (2.0 * (2.0 * (d * d) + 2.0)) + (12.0 * Eib * Iib) / (Lw * Lw * Lw) + (d * (e / 2.0 + (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0))) / (2.0 * (d * d) + 2.0);
-	SFI_MVLEM_3DKlocal(19, 20) = 0.0;
-	SFI_MVLEM_3DKlocal(19, 21) = 0.0;
-	SFI_MVLEM_3DKlocal(19, 22) = 0.0;
-	SFI_MVLEM_3DKlocal(19, 23) = (e / 2.0 + (d * (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0)))) / (2.0 * (d * d) + 2.0)) / (2.0 * (d * d) + 2.0) - (6.0 * Eib * Iib) / (Lw * Lw);
-
+	SFI_MVLEM_3DKlocal(19, 19) = (12. * Eib * Iib) / (Lw * Lw * Lw) + ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (1 + w) * (2 * e - 2 * (-1 + c) * h * ktauy + d * Kv * (1 + w))) / (4. * d * d * (1 + w) * (1 + w));
+	//SFI_MVLEM_3DKlocal(19, 20) = 0;
+	//SFI_MVLEM_3DKlocal(19, 21) = 0;
+	//SFI_MVLEM_3DKlocal(19, 22) = 0;
+	SFI_MVLEM_3DKlocal(19, 23) = (-6. * Eib * Iib) / (Lw * Lw) + (w * ((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km + d * (e - (-1 + c) * h * ktauy) * (1 + w))) / (4. * d * (1 + w) * (1 + w));
+	//----------------------------------
 	SFI_MVLEM_3DKlocal(20, 0) = SFI_MVLEM_3DKlocal(0, 20);
 	SFI_MVLEM_3DKlocal(20, 1) = SFI_MVLEM_3DKlocal(1, 20);
 	SFI_MVLEM_3DKlocal(20, 2) = SFI_MVLEM_3DKlocal(2, 20);
@@ -2188,8 +2353,8 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(20, 20) = K1;
 	SFI_MVLEM_3DKlocal(20, 21) = K2;
 	SFI_MVLEM_3DKlocal(20, 22) = -K3;
-	SFI_MVLEM_3DKlocal(20, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(20, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(21, 0) = SFI_MVLEM_3DKlocal(0, 21);
 	SFI_MVLEM_3DKlocal(21, 1) = SFI_MVLEM_3DKlocal(1, 21);
 	SFI_MVLEM_3DKlocal(21, 2) = SFI_MVLEM_3DKlocal(2, 21);
@@ -2213,8 +2378,8 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(21, 20) = SFI_MVLEM_3DKlocal(20, 21);
 	SFI_MVLEM_3DKlocal(21, 21) = K13;
 	SFI_MVLEM_3DKlocal(21, 22) = K14;
-	SFI_MVLEM_3DKlocal(21, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(21, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(22, 0) = SFI_MVLEM_3DKlocal(0, 22);
 	SFI_MVLEM_3DKlocal(22, 1) = SFI_MVLEM_3DKlocal(1, 22);
 	SFI_MVLEM_3DKlocal(22, 2) = SFI_MVLEM_3DKlocal(2, 22);
@@ -2238,8 +2403,8 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(22, 20) = SFI_MVLEM_3DKlocal(20, 22);
 	SFI_MVLEM_3DKlocal(22, 21) = SFI_MVLEM_3DKlocal(21, 22);
 	SFI_MVLEM_3DKlocal(22, 22) = K18;
-	SFI_MVLEM_3DKlocal(22, 23) = 0.0;
-
+	//SFI_MVLEM_3DKlocal(22, 23) = 0;
+//----------------------------------
 	SFI_MVLEM_3DKlocal(23, 0) = SFI_MVLEM_3DKlocal(0, 23);
 	SFI_MVLEM_3DKlocal(23, 1) = SFI_MVLEM_3DKlocal(1, 23);
 	SFI_MVLEM_3DKlocal(23, 2) = SFI_MVLEM_3DKlocal(2, 23);
@@ -2263,8 +2428,8 @@ const Matrix & SFI_MVLEM_3D::getTangentStiff(void)
 	SFI_MVLEM_3DKlocal(23, 20) = SFI_MVLEM_3DKlocal(20, 23);
 	SFI_MVLEM_3DKlocal(23, 21) = SFI_MVLEM_3DKlocal(21, 23);
 	SFI_MVLEM_3DKlocal(23, 22) = SFI_MVLEM_3DKlocal(22, 23);
-	SFI_MVLEM_3DKlocal(23, 23) = (Km + Kh * (h * h) * ((c - 1.0) * (c - 1.0))) / ((2.0 * (d * d) + 2.0) * (2.0 * (d * d) + 2.0)) + (4.0 * Eib * Iib) / Lw;
-
+	SFI_MVLEM_3DKlocal(23, 23) = (4. * Eib * Iib) / Lw + (((-1 + c) * h * (-2 * etauy + (-1 + c) * h * Kh) + Km) * w * w) / (4. * (1 + w) * (1 + w));
+	// The stiffness matrix is completely updated acording to stress coupling by Zakariya Waezi
 	SFI_MVLEM_3DK.addMatrixTripleProduct(0.0, T, SFI_MVLEM_3DKlocal, 1.0); // Convert matrix from local to global cs
 
 	// Return element Global stiffness matrix
@@ -2451,32 +2616,32 @@ const Vector & SFI_MVLEM_3D::getResistingForce()
 		R3 -= Fy[i] * x[i];
 		R6 += +Fy[i] * x[i];
 	}
-
+	double w = 1.0 / (d * d);
 	// Calculate force vector in local cs
 	SFI_MVLEM_3DRlocal(0) = R1 / 2.0 + (Aib*Eib*dispL(0)) / Lw - (Aib*Eib*dispL(6)) / Lw;
-	SFI_MVLEM_3DRlocal(1) = R2 / 2.0 - (R3*d) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib*dispL(1)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(5)) / (Lw*Lw) - (12.0 * Eib*Iib*dispL(7)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(11)) / (Lw*Lw);
+	SFI_MVLEM_3DRlocal(1) = R2 / 2.0 - R3 / (2.0 *d* (1.0+w)) + (12.0 * Eib*Iib*dispL(1)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(5)) / (Lw*Lw) - (12.0 * Eib*Iib*dispL(7)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(11)) / (Lw*Lw);
 	SFI_MVLEM_3DRlocal(2) = (Eave*(Tave*Tave*Tave)*(dispL(9))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(3))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(4))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(10))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(16))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(22))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(3) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(4))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h) - (h*h)*NUelastic + 5 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(4) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(3))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (9.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (45.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(10))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	SFI_MVLEM_3DRlocal(5) = R3 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(1)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(5)) / Lw - (6.0 * Eib*Iib*dispL(7)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(11)) / Lw;
+	SFI_MVLEM_3DRlocal(5) = R3*w / (2.0 + 2.0*w) + (6.0 * Eib*Iib*dispL(1)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(5)) / Lw - (6.0 * Eib*Iib*dispL(7)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(11)) / Lw;
 	SFI_MVLEM_3DRlocal(6) = R1 / 2.0 - (Aib*Eib*dispL(0)) / Lw + (Aib*Eib*dispL(6)) / Lw;
-	SFI_MVLEM_3DRlocal(7) = R2 / 2.0 + (R3*d) / (2.0 * (d*d) + 2.0) - (12.0 * Eib*Iib*dispL(1)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(5)) / (Lw*Lw) + (12.0 * Eib*Iib*dispL(7)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(11)) / (Lw*Lw);
+	SFI_MVLEM_3DRlocal(7) = R2 / 2.0 + R3 / (2.0 * d*(1 + w)) - (12.0 * Eib * Iib * dispL(1)) / (Lw * Lw * Lw) - (6.0 * Eib * Iib * dispL(5)) / (Lw * Lw) + (12.0 * Eib * Iib * dispL(7)) / (Lw * Lw * Lw) - (6.0 * Eib * Iib * dispL(11)) / (Lw * Lw);
 	SFI_MVLEM_3DRlocal(8) = (Eave*(Tave*Tave*Tave)*(dispL(3))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*(4.0 * (h*h)*NUelastic + (h*h) + 10 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(4))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(10))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(22))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(16))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(9) = (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(10))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(3))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(10) = (Eave*(Tave*Tave*Tave)*(dispL(2))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(9))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*(Tave*Tave*Tave)*(dispL(10))*(5.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	SFI_MVLEM_3DRlocal(11) = R3 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(1)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(5)) / Lw - (6.0 * Eib*Iib*dispL(7)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(11)) / Lw;
+	SFI_MVLEM_3DRlocal(11) = R3*w / (2.0 *w+ 2.0) + (6.0 * Eib*Iib*dispL(1)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(5)) / Lw - (6.0 * Eib*Iib*dispL(7)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(11)) / Lw;
 	SFI_MVLEM_3DRlocal(12) = R4 / 2.0 + (Aib*Eib*dispL(12)) / Lw - (Aib*Eib*dispL(18)) / Lw;
-	SFI_MVLEM_3DRlocal(13) = R5 / 2.0 - (R6*d) / (2.0 * (d*d) + 2.0) + (12.0 * Eib*Iib*dispL(13)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(17)) / (Lw*Lw) - (12.0 * Eib*Iib*dispL(19)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(23)) / (Lw*Lw);
+	SFI_MVLEM_3DRlocal(13) = R5 / 2.0 - R6 / (2.0 * d + 2.0*d*w) + (12.0 * Eib*Iib*dispL(13)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(17)) / (Lw*Lw) - (12.0 * Eib*Iib*dispL(19)) / (Lw*Lw*Lw) + (6.0 * Eib*Iib*dispL(23)) / (Lw*Lw);
 	SFI_MVLEM_3DRlocal(14) = (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(15))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(4))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(16))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(22))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(10))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(15) = (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(16))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(16) = (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (9.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (45.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(10))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(15))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(2))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	SFI_MVLEM_3DRlocal(17) = R6 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(13)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(17)) / Lw - (6.0 * Eib*Iib*dispL(19)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(23)) / Lw;
+	SFI_MVLEM_3DRlocal(17) = R6*w / (2.0 * w + 2.0) + (6.0 * Eib*Iib*dispL(13)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(17)) / Lw - (6.0 * Eib*Iib*dispL(19)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(23)) / Lw;
 	SFI_MVLEM_3DRlocal(18) = R4 / 2.0 - (Aib*Eib*dispL(12)) / Lw + (Aib*Eib*dispL(18)) / Lw;
-	SFI_MVLEM_3DRlocal(19) = R5 / 2.0 + (R6*d) / (2.0 * (d*d) + 2.0) - (12.0 * Eib*Iib*dispL(13)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(17)) / (Lw*Lw) + (12.0 * Eib*Iib*dispL(19)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(23)) / (Lw*Lw);
+	SFI_MVLEM_3DRlocal(19) = R5 / 2.0 + R6 / (2.0 * d*w + 2.0*d) - (12.0 * Eib*Iib*dispL(13)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(17)) / (Lw*Lw) + (12.0 * Eib*Iib*dispL(19)) / (Lw*Lw*Lw) - (6.0 * Eib*Iib*dispL(23)) / (Lw*Lw);
 	SFI_MVLEM_3DRlocal(20) = (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(21))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(10))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(16))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(22))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(5.0 * (h*h*h*h) + 5.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*(5.0 * (h*h*h*h) - 10.0 * (Lw*Lw*Lw*Lw) - 7.0 * (h*h)*(Lw*Lw) + 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(10.0 * (h*h*h*h) - 5.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(10.0 * (h*h*h*h) + 10.0 * (Lw*Lw*Lw*Lw) + 7.0 * (h*h)*(Lw*Lw) - 2.0 * (h*h)*NUelastic*(Lw*Lw))) / (30.0 * (h*h*h)*(Lw*Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(4))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(21) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(22))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (Eave*(Tave*Tave*Tave)*(dispL(3))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(8))*((h*h) - (h*h)*NUelastic + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(14))*(4.0 * (h*h)*NUelastic + (h*h) - 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(21))*((h*h) - (h*h)*NUelastic + 5.0 * (Lw*Lw))) / (45.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * (h*h)*NUelastic + (h*h) + 10.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(2))*((h*h)*NUelastic - (h*h) + 5.0 * (Lw*Lw))) / (60.0 * (h*h)*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(9))*((h*h)*NUelastic - (h*h) + 10.0 * (Lw*Lw))) / (180.0 * h*Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(15))*(2.0 * (h*h)*NUelastic - 2.0 * (h*h) + 5.0 * (Lw*Lw))) / (90.0 * h*Lw*((NUelastic*NUelastic) - 1.0));
 	SFI_MVLEM_3DRlocal(22) = (Eave*NUelastic*(Tave*Tave*Tave)*(dispL(21))) / (12.0 * (NUelastic*NUelastic) - 12.0) - (dispL(22))*((Eave*h*(Tave*Tave*Tave)) / (9.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (45.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(16))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(4))*((Eave*h*(Tave*Tave*Tave)) / (36.0 * Lw*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*Lw*(NUelastic - 1.0)) / (180.0 * h*((NUelastic*NUelastic) - 1.0))) - (dispL(10))*((Eave*h*(Tave*Tave*Tave)) / (18.0 * Lw*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*Lw*(2.0 * NUelastic - 2.0)) / (90.0 * h*((NUelastic*NUelastic) - 1.0))) + (Eave*(Tave*Tave*Tave)*(dispL(8))*(4.0 * NUelastic*(Lw*Lw) - 5.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(14))*(10.0 * (h*h) - NUelastic*(Lw*Lw) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) - (Eave*(Tave*Tave*Tave)*(dispL(20))*(4.0 * NUelastic*(Lw*Lw) + 10.0 * (h*h) + (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0)) + (Eave*(Tave*Tave*Tave)*(dispL(2))*(NUelastic*(Lw*Lw) + 5.0 * (h*h) - (Lw*Lw))) / (60.0 * h*(Lw*Lw)*((NUelastic*NUelastic) - 1.0));
-	SFI_MVLEM_3DRlocal(23) = R6 / (2.0 * (d*d) + 2.0) + (6.0 * Eib*Iib*dispL(13)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(17)) / Lw - (6.0 * Eib*Iib*dispL(19)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(23)) / Lw;
+	SFI_MVLEM_3DRlocal(23) = R6*w / (2.0 * w + 2.0) + (6.0 * Eib*Iib*dispL(13)) / (Lw*Lw) + (2.0 * Eib*Iib*dispL(17)) / Lw - (6.0 * Eib*Iib*dispL(19)) / (Lw*Lw) + (4.0 * Eib*Iib*dispL(23)) / Lw;
 	
 	// Convert force vector from local to global cs
 	SFI_MVLEM_3DR.addMatrixTransposeVector(0.0, T, SFI_MVLEM_3DRlocal, 1.0);
