@@ -1992,7 +1992,7 @@ int OPS_partition() {
     int ufactor = 30;
     int seed = -1;
     int objective = METIS_OBJTYPE_VOL;
-    int info = 0;
+    bool printInfo = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int num = 1;
         auto opt = OPS_GetString();
@@ -2044,7 +2044,7 @@ int OPS_partition() {
                 return -1;
             }
         } else if (strcmp(opt, "-info") == 0) {
-            info = METIS_DBG_INFO;
+            printInfo = true;
         } else {
             opserr << "WARNING: unknown partition option " << opt << "\n";
             return -1;
@@ -2154,7 +2154,6 @@ int OPS_partition() {
         options[METIS_OPTION_NUMBERING] = 0;
         options[METIS_OPTION_UFACTOR] = ufactor;
         options[METIS_OPTION_SEED] = seed;
-        options[METIS_OPTION_DBGLVL] = info;
 
         // number of parts to partition
         idx_t nparts = np;
@@ -2180,7 +2179,7 @@ int OPS_partition() {
             return -1;
         }
 
-        if (info != 0) {
+        if (printInfo) {
             opserr << "METIS partition: objective="
                    << (objective == METIS_OBJTYPE_CUT ? "cut" : "volume")
                    << " value=" << objval
