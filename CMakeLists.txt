@@ -535,8 +535,10 @@ add_library(OPS_INTERPRETER        OBJECT)
 # interpreter object library is shared by the serial and MPI executables, so
 # this feature cannot depend on a compile definition set only on OpenSeesMP.
 if(MPI_FOUND)
-    target_compile_definitions(OPS_INTERPRETER PRIVATE OPS_PARTITION_WITH_METIS)
-    target_include_directories(OPS_INTERPRETER BEFORE PRIVATE ${METIS_INCLUDES})
+    target_compile_definitions(OPS_INTERPRETER PRIVATE
+        OPS_PARTITION_WITH_METIS
+        OPS_METIS_HEADER="${METIS_INCLUDES}/metis.h"
+    )
     target_link_libraries(OPS_INTERPRETER PUBLIC MPI::MPI_CXX ${METIS_LIBRARIES})
 endif()
 
@@ -743,7 +745,7 @@ if(MPI_FOUND)
 
 
     target_include_directories(OpenSeesSP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
-    target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    target_compile_options(OpenSeesSP PRIVATE ${MPI_CXX_COMPILE_OPTIONS})
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesSP
@@ -809,7 +811,7 @@ if(MPI_FOUND)
 
     target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
 
-    target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
+    target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_OPTIONS})
 
     if (TARGET mumps)
         add_dependencies(OpenSeesMP mumps)
