@@ -56,7 +56,7 @@
 #include <TetMesh.h>
 #include <Damping.h>
 #include <BackgroundMesh.h>
-#ifdef _PARALLEL_INTERPRETERS
+#ifdef OPS_PARTITION_WITH_METIS
 #include <mpi.h>
 #include <metis.h>
 #endif
@@ -1963,7 +1963,16 @@ int OPS_setStartNodeTag() {
 }
 
 int OPS_partition() {
-#ifdef _PARALLEL_INTERPRETERS
+#ifdef OPS_PARTITION_WITH_METIS
+    int mpiInitialized = 0;
+    int mpiFinalized = 0;
+    MPI_Initialized(&mpiInitialized);
+    MPI_Finalized(&mpiFinalized);
+    if (!mpiInitialized || mpiFinalized) {
+        opserr << "WARNING: partition requires an active MPI runtime\n";
+        return -1;
+    }
+
     // domain
     Domain* domain = OPS_GetDomain();
     if (domain ==0) {
@@ -1981,12 +1990,14 @@ int OPS_partition() {
     int ncuts = 1;
     int niter = 10;
     int ufactor = 30;
+    int seed = -1;
+    int objective = METIS_OBJTYPE_VOL;
     int info = 0;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int num = 1;
         auto opt = OPS_GetString();
         if (strcmp(opt, "-ncuts") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0 &&
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
                 OPS_GetIntInput(&num, &ncuts) < 0) {
                 opserr << "WARNING: failed to get ncuts\n";
                 return -1;
@@ -1995,7 +2006,7 @@ int OPS_partition() {
                 ncuts = 1;
             }
         } else if (strcmp(opt, "-niter") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0 &&
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
                 OPS_GetIntInput(&num, &niter) < 0) {
                 opserr << "WARNING: failed to get niter\n";
                 return -1;
@@ -2004,16 +2015,39 @@ int OPS_partition() {
                 niter = 10;
             }
         } else if (strcmp(opt, "-ufactor") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0 &&
-                OPS_GetIntInput(&num, &ncuts) < 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
+                OPS_GetIntInput(&num, &ufactor) < 0) {
                 opserr << "WARNING: failed to get ufactor\n";
                 return -1;
             }
             if (ufactor < 1) {
                 ufactor = 30;
             }
+        } else if (strcmp(opt, "-seed") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
+                OPS_GetIntInput(&num, &seed) < 0) {
+                opserr << "WARNING: failed to get partition seed\n";
+                return -1;
+            }
+        } else if (strcmp(opt, "-objective") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: partition objective must be cut or volume\n";
+                return -1;
+            }
+            const char *value = OPS_GetString();
+            if (strcmp(value, "cut") == 0) {
+                objective = METIS_OBJTYPE_CUT;
+            } else if (strcmp(value, "volume") == 0) {
+                objective = METIS_OBJTYPE_VOL;
+            } else {
+                opserr << "WARNING: partition objective must be cut or volume\n";
+                return -1;
+            }
         } else if (strcmp(opt, "-info") == 0) {
             info = METIS_DBG_INFO;
+        } else {
+            opserr << "WARNING: unknown partition option " << opt << "\n";
+            return -1;
         }
     }
 
@@ -2114,11 +2148,12 @@ int OPS_partition() {
         idx_t options[METIS_NOPTIONS];
         METIS_SetDefaultOptions(options);
         options[METIS_OPTION_PTYPE] = METIS_PTYPE_KWAY;
-        options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
+        options[METIS_OPTION_OBJTYPE] = objective;
         options[METIS_OPTION_NCUTS] = ncuts;
         options[METIS_OPTION_NITER] = niter;
         options[METIS_OPTION_NUMBERING] = 0;
         options[METIS_OPTION_UFACTOR] = ufactor;
+        options[METIS_OPTION_SEED] = seed;
         options[METIS_OPTION_DBGLVL] = info;
 
         // number of parts to partition
@@ -2143,6 +2178,17 @@ int OPS_partition() {
         } else if (res == METIS_ERROR) {
             opserr << "WARNING: metis error\n";
             return -1;
+        }
+
+        if (info != 0) {
+            opserr << "METIS partition: objective="
+                   << (objective == METIS_OBJTYPE_CUT ? "cut" : "volume")
+                   << " value=" << objval
+                   << " parts=" << nparts
+                   << " ncuts=" << ncuts
+                   << " niter=" << niter
+                   << " ufactor=" << ufactor
+                   << " seed=" << seed << endln;
         }
     }
 
