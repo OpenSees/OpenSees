@@ -25,7 +25,7 @@
 //    1........2 |-> x
 //
 // Reference:
-// K. Kolozvari, K. Kalbasi, K. Orakcal & J. W. Wallace (2021), "Three-dimensional shear-flexure coupling model for analysis of non-planar reinforced concrete walls", Journal of Building Engineering.
+// K. Kolozvari, K. Kalbasi, K. Orakcal & J. W. Wallace (2021), "Three-dimensional shear-flexure interaction model for analysis of non-planar reinforced concrete walls", Journal of Building Engineering.
 //
 // Source: /usr/local/cvs/OpenSees/SRC/element/mvlem/SFI_MVLEM_3D.cpp
 //
