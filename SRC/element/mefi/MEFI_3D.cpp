@@ -189,7 +189,7 @@ MEFI_3D::MEFI_3D(int tag,
 {
 	//check width input
 	if (width == 0) {
-		opserr << "MEFI::MEFI_3D() - Null width array passed.\n";
+		opserr << "MEFI_3D::MEFI_3D() - Null width array passed.\n";
 		exit(-1);
 	}
 
@@ -245,19 +245,19 @@ MEFI_3D::MEFI_3D(int tag,
 	//allocate arrays of pointers to sections
 	theSection = new SectionForceDeformation * [nip];
 	if (theSection == 0) {
-		opserr << "MEFI::MEFI() - failed allocate section model pointer" << endln;
+		opserr << "MEFI_3D::MEFI_3D() - failed allocate section model pointer" << endln;
 		exit(-1);
 	}
 
 	//get copies of the sections
 	for (int i = 0; i < nip; i++) {
 		if (sec[i] == 0) {
-			opserr << "MEFI::MEFI() - null section pointer passed" << endln;
+			opserr << "MEFI_3D::MEFI_3D() - null section pointer passed" << endln;
 			exit(-1);
 		}
 		theSection[i] = sec[i]->getCopy();
 		if (theSection[i] == 0) {
-			opserr << "MEFI::MEFI() - failed to copy section" << endln;
+			opserr << "MEFI_3D::MEFI_3D() - failed to copy section" << endln;
 			exit(-1);
 		}
 	}
@@ -367,7 +367,7 @@ MEFI_3D::setDomain(Domain *theDomain)
 
 	//check the node pointer is not null
 	if (theNodes[0] == 0 || theNodes[1] == 0 || theNodes[2] == 0 || theNodes[3] == 0) {
-		opserr << "MEFI::setDomain(): node not found in domain for element with tag " << this->getTag() << endln;
+		opserr << "MEFI_3D::setDomain(): node not found in domain for element with tag " << this->getTag() << endln;
 		return;
 	}
 
@@ -378,7 +378,7 @@ MEFI_3D::setDomain(Domain *theDomain)
     
     //check dofs compatibility
     if (dofNd1 != 6 || dofNd2 != 6 || dofNd3 != 6 || dofNd4 != 6) {
-		opserr << "MEFI::setDomain(): 6 dofs required at all nodes for element with tag " << this->getTag() << endln;
+		opserr << "MEFI_3D::setDomain(): 6 dofs required at all nodes for element with tag " << this->getTag() << endln;
 		return;
     }
 
@@ -401,13 +401,13 @@ MEFI_3D::setDomain(Domain *theDomain)
 
 	//check if element height is zero
 	if ((h1 == 0.0) || (h2 == 0.0)) {
-		opserr << "MEFI::setDomain(): one of the sides is zero for element with tag " << this->getTag() << endln;
+		opserr << "MEFI_3D::setDomain(): one of the sides is zero for element with tag " << this->getTag() << endln;
 		exit(-1);
 	}
 
 	//check if element has constant height
 	if ((h1 / h2 > 1.01) || (h1 / h2 < 0.99)) {
-		opserr << "MEFI::setDomain(): not constant height for element with tag " << this->getTag() << endln;
+		opserr << "MEFI_3D::setDomain(): not constant height for element with tag " << this->getTag() << endln;
 		exit(-1);
 	}
 
@@ -417,7 +417,7 @@ MEFI_3D::setDomain(Domain *theDomain)
 
 	//check width of element
 	if ((lw / b1 > 1.01) || (lw / b1 < 0.99) || (lw / b2 > 1.01) || (lw / b2 < 0.99)) {
-		opserr << "MEFI::setDomain(): nodes coordinates are not matched with fibers width for element with tag " << this->getTag() << endln;
+		opserr << "MEFI_3D::setDomain(): nodes coordinates are not matched with fibers width for element with tag " << this->getTag() << endln;
 		exit(-1);
 	}
 
@@ -457,7 +457,7 @@ MEFI_3D::commitState()
 	int retVal = 0;
 	//call element commitState to do any base class stuff
 	if ((retVal = this->Element::commitState()) != 0) {
-		opserr << "MEFI::commitState(): failed in base class for element with tag " << this->getTag() << endln;
+		opserr << "MEFI_3D::commitState(): failed in base class for element with tag " << this->getTag() << endln;
 	}
 	//loop over the integration points and commit the material states
 	for (int i = 0; i < nip; i++) {
@@ -525,7 +525,6 @@ MEFI_3D::update()
 	int ret = 0;
 	//loop over the integration points
 	for (int i = 0; i < nip; i++) {
-		//this->membraneFieldInterpolation(qdtLocationsM(i, 0), qdtLocationsM(i, 1));
 		for (int j = 0; j < 3; j++) {
 			for (int k = 0; k < 12; k++) {
 				BSD(j, k) = BM(j, 12 * i + k);
@@ -548,7 +547,6 @@ MEFI_3D::getTangentStiff()
 	// loop over the integration points for membrane behavior
 	for (int i = 0; i < nip; i++) {
 		const Matrix& D = theSection[i]->getSectionTangent();
-		//this->membraneFieldInterpolation(qdtLocationsM(i, 0), qdtLocationsM(i, 1));
 		for (int j = 0; j < 3; j++) {
 			for (int k = 0; k < 12; k++) {
 				BSD(j, k) = BM(j, 12 * i + k);
@@ -580,7 +578,6 @@ MEFI_3D::getInitialStiff()
 	// loop over the integration points for membrane behavior
 	for (int i = 0; i < nip; i++) {
 		const Matrix& D = theSection[i]->getInitialTangent();
-		//this->membraneFieldInterpolation(qdtLocationsM(i, 0), qdtLocationsM(i, 1));
 		for (int j = 0; j < 3; j++) {
 			for (int k = 0; k < 12; k++) {
 				BSD(j, k) = BM(j, 12 * i + k);
@@ -670,7 +667,6 @@ MEFI_3D::getResistingForce()
 	P12.Zero();
 	for (int i = 0; i < nip; i++) {
 		const Vector& Stress = theSection[i]->getStressResultant();
-		//this->membraneFieldInterpolation(qdtLocationsM(i, 0), qdtLocationsM(i, 1));
 		for (int j = 0; j < 3; j++) {
 			for (int k = 0; k < 12; k++) {
 				BSD(j, k) = BM(j, 12 * i + k);
