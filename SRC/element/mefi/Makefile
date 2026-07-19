@@ -1,6 +1,8 @@
 include ../../../Makefile.def
 
-OBJS       = MEFI.o
+OBJS       = MEFI.o \
+	MEFI_3D.o
+
 
 all:         $(OBJS)
 
