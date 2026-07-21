@@ -31,17 +31,25 @@ on every rank with a Tcl error.
 ### Ubuntu / Open MPI
 
 A clean Ubuntu 24.04 ARM64 build linked against Open MPI 4.1.6 and system
-METIS 5.1.0 passed the same six pytest cases. Its four-rank volume reference
+METIS 5.1.0 passed all seven pytest cases. Its four-rank volume reference
 run produced objective value 113 and element counts 420, 419, 410, and 411
 (1.20% maximum imbalance).
 
 ### Ubuntu / MPICH
 
-An independent Ubuntu build linked against MPICH 4.2.0 also passed all six
+An independent Ubuntu build linked against MPICH 4.2.0 also passed all seven
 cases. Ubuntu's ARM64 Hydra/PMIx package combination created singleton
 communicators even for a minimal MPI program, so that binary was launched by
 Open MPI's PMIx-aware launcher. The MPI implementation loaded by OpenSeesMP
 remained MPICH.
+
+## Partition-state regression
+
+`metisPartitionState.tcl` adds a four-rank structural model that verifies
+partitioned state beyond element counts. It checks that element loads follow
+their owning elements, nodal mass remains on exactly one rank, floating fixed
+nodes retain their constraints and nodal loads, and mesh-to-floating plus
+floating-to-floating `equalDOF` constraints remain complete.
 
 ## Run
 
