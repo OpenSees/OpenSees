@@ -2205,6 +2205,16 @@ int OPS_partition() {
         return -1;
     }
 
+    auto indexOf = [](idx_t id) -> idx_t {
+        return (id < 0) ? static_cast<idx_t>(-id - 1) : id;
+    };
+
+    // Nodes that appear in the mesh connectivity (same on every rank).
+    std::vector<char> inMesh(nn, 0);
+    for (idx_t node : eind) {
+        inMesh[node] = 1;
+    }
+
     // get nodes in current processor and remove elements
     for (int i = 0; i < ne; ++i) {
 
@@ -2228,7 +2238,43 @@ int OPS_partition() {
         }
     }
 
-    // get nodes in current processor and remove mp
+    // Give nodes connected by an MP constraint consistent ownership on every
+    // rank. Local element-retention marks cannot be used here because they
+    // differ between ranks.
+    {
+        auto &mps = domain->getMPs();
+        MP_Constraint *mp = 0;
+        while ((mp = mps()) != 0) {
+            const idx_t retained =
+                indexOf(nind[mp->getNodeRetained()]);
+            const idx_t constrained =
+                indexOf(nind[mp->getNodeConstrained()]);
+            if (inMesh[retained] && !inMesh[constrained]) {
+                npart[constrained] = npart[retained];
+            } else if (inMesh[constrained] && !inMesh[retained]) {
+                npart[retained] = npart[constrained];
+            } else if (!inMesh[retained] && !inMesh[constrained]) {
+                const idx_t owner =
+                    (npart[retained] < npart[constrained])
+                        ? npart[retained]
+                        : npart[constrained];
+                npart[retained] = owner;
+                npart[constrained] = owner;
+            }
+        }
+    }
+
+    // Retain nodes without a local element on their METIS owner so their
+    // constraints, mass, and nodal loads are not discarded on every rank.
+    for (auto &item : nind) {
+        auto &id = item.second;
+        if (id >= 0 && npart[id] == pid) {
+            id = -id - 1;
+        }
+    }
+
+    // Keep MP constraints that touch a locally retained node and pull in the
+    // partner node so the constraint is complete on that rank.
     auto &mps = domain->getMPs();
     MP_Constraint *mp = 0;
     while ((mp = mps()) != 0) {
@@ -2249,7 +2295,8 @@ int OPS_partition() {
         }
     }
 
-    // remove nodes
+    // Remove unused nodes. Interface copies retain their geometry but carry
+    // mass only on the npart owner, matching nodal-load ownership.
     for (const auto& item: nind) {
         int ndtag = item.first;
         auto id = item.second;
@@ -2261,6 +2308,21 @@ int OPS_partition() {
             auto pc = domain->removePressure_Constraint(ndtag);
             if (pc != 0) {
                 delete pc;
+            }
+        } else {
+            id = -id - 1;
+            if (npart[id] != pid) {
+                Node *node = domain->getNode(ndtag);
+                if (node != 0) {
+                    Matrix zeroMass(node->getNumberDOF(),
+                                    node->getNumberDOF());
+                    zeroMass.Zero();
+                    if (node->setMass(zeroMass) < 0) {
+                        opserr << "WARNING: failed to zero mass on node "
+                               << ndtag << " for partition ownership\n";
+                        return -1;
+                    }
+                }
             }
         }
     }
@@ -2300,13 +2362,13 @@ int OPS_partition() {
             }
         }
 
-        // remove elemental loads
+        // Element partitions are ordinary nonnegative part IDs, so retain a
+        // load only on the rank that owns its element.
         auto& eloads = lp->getElementalLoads();
         ElementalLoad* eload = 0;
         while ((eload = eloads()) != 0) {
             int e = eload->getElementTag();
-            auto id = epart[eindex[e]];
-            if (id >= 0) {
+            if (epart[eindex[e]] != pid) {
                 lp->removeElementalLoad(eload->getTag());
                 delete eload;
             }
