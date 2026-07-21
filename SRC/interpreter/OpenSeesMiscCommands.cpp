@@ -56,9 +56,9 @@
 #include <TetMesh.h>
 #include <Damping.h>
 #include <BackgroundMesh.h>
-#ifdef _PARALLEL_INTERPRETERS
+#ifdef OPS_PARTITION_WITH_METIS
 #include <mpi.h>
-#include <metis.h>
+#include OPS_METIS_HEADER
 #endif
 
 #ifdef _OPENMP
@@ -1963,7 +1963,16 @@ int OPS_setStartNodeTag() {
 }
 
 int OPS_partition() {
-#ifdef _PARALLEL_INTERPRETERS
+#ifdef OPS_PARTITION_WITH_METIS
+    int mpiInitialized = 0;
+    int mpiFinalized = 0;
+    MPI_Initialized(&mpiInitialized);
+    MPI_Finalized(&mpiFinalized);
+    if (!mpiInitialized || mpiFinalized) {
+        opserr << "WARNING: partition requires an active MPI runtime\n";
+        return -1;
+    }
+
     // domain
     Domain* domain = OPS_GetDomain();
     if (domain ==0) {
@@ -1981,12 +1990,14 @@ int OPS_partition() {
     int ncuts = 1;
     int niter = 10;
     int ufactor = 30;
-    int info = 0;
+    int seed = -1;
+    int objective = METIS_OBJTYPE_VOL;
+    bool printInfo = false;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int num = 1;
         auto opt = OPS_GetString();
         if (strcmp(opt, "-ncuts") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0 &&
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
                 OPS_GetIntInput(&num, &ncuts) < 0) {
                 opserr << "WARNING: failed to get ncuts\n";
                 return -1;
@@ -1995,7 +2006,7 @@ int OPS_partition() {
                 ncuts = 1;
             }
         } else if (strcmp(opt, "-niter") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0 &&
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
                 OPS_GetIntInput(&num, &niter) < 0) {
                 opserr << "WARNING: failed to get niter\n";
                 return -1;
@@ -2004,16 +2015,39 @@ int OPS_partition() {
                 niter = 10;
             }
         } else if (strcmp(opt, "-ufactor") == 0) {
-            if (OPS_GetNumRemainingInputArgs() > 0 &&
-                OPS_GetIntInput(&num, &ncuts) < 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
+                OPS_GetIntInput(&num, &ufactor) < 0) {
                 opserr << "WARNING: failed to get ufactor\n";
                 return -1;
             }
             if (ufactor < 1) {
                 ufactor = 30;
             }
+        } else if (strcmp(opt, "-seed") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
+                OPS_GetIntInput(&num, &seed) < 0) {
+                opserr << "WARNING: failed to get partition seed\n";
+                return -1;
+            }
+        } else if (strcmp(opt, "-objective") == 0) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING: partition objective must be cut or volume\n";
+                return -1;
+            }
+            const char *value = OPS_GetString();
+            if (strcmp(value, "cut") == 0) {
+                objective = METIS_OBJTYPE_CUT;
+            } else if (strcmp(value, "volume") == 0) {
+                objective = METIS_OBJTYPE_VOL;
+            } else {
+                opserr << "WARNING: partition objective must be cut or volume\n";
+                return -1;
+            }
         } else if (strcmp(opt, "-info") == 0) {
-            info = METIS_DBG_INFO;
+            printInfo = true;
+        } else {
+            opserr << "WARNING: unknown partition option " << opt << "\n";
+            return -1;
         }
     }
 
@@ -2114,12 +2148,12 @@ int OPS_partition() {
         idx_t options[METIS_NOPTIONS];
         METIS_SetDefaultOptions(options);
         options[METIS_OPTION_PTYPE] = METIS_PTYPE_KWAY;
-        options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_VOL;
+        options[METIS_OPTION_OBJTYPE] = objective;
         options[METIS_OPTION_NCUTS] = ncuts;
         options[METIS_OPTION_NITER] = niter;
         options[METIS_OPTION_NUMBERING] = 0;
         options[METIS_OPTION_UFACTOR] = ufactor;
-        options[METIS_OPTION_DBGLVL] = info;
+        options[METIS_OPTION_SEED] = seed;
 
         // number of parts to partition
         idx_t nparts = np;
@@ -2144,6 +2178,17 @@ int OPS_partition() {
             opserr << "WARNING: metis error\n";
             return -1;
         }
+
+        if (printInfo) {
+            opserr << "METIS partition: objective="
+                   << (objective == METIS_OBJTYPE_CUT ? "cut" : "volume")
+                   << " value=" << objval
+                   << " parts=" << nparts
+                   << " ncuts=" << ncuts
+                   << " niter=" << niter
+                   << " ufactor=" << ufactor
+                   << " seed=" << seed << endln;
+        }
     }
 
     // broadcast element partitions
@@ -2158,6 +2203,16 @@ int OPS_partition() {
         MPI_SUCCESS) {
         opserr << "WARNING: failed to broadcast npart\n";
         return -1;
+    }
+
+    auto indexOf = [](idx_t id) -> idx_t {
+        return (id < 0) ? static_cast<idx_t>(-id - 1) : id;
+    };
+
+    // Nodes that appear in the mesh connectivity (same on every rank).
+    std::vector<char> inMesh(nn, 0);
+    for (idx_t node : eind) {
+        inMesh[node] = 1;
     }
 
     // get nodes in current processor and remove elements
@@ -2183,7 +2238,43 @@ int OPS_partition() {
         }
     }
 
-    // get nodes in current processor and remove mp
+    // Give nodes connected by an MP constraint consistent ownership on every
+    // rank. Local element-retention marks cannot be used here because they
+    // differ between ranks.
+    {
+        auto &mps = domain->getMPs();
+        MP_Constraint *mp = 0;
+        while ((mp = mps()) != 0) {
+            const idx_t retained =
+                indexOf(nind[mp->getNodeRetained()]);
+            const idx_t constrained =
+                indexOf(nind[mp->getNodeConstrained()]);
+            if (inMesh[retained] && !inMesh[constrained]) {
+                npart[constrained] = npart[retained];
+            } else if (inMesh[constrained] && !inMesh[retained]) {
+                npart[retained] = npart[constrained];
+            } else if (!inMesh[retained] && !inMesh[constrained]) {
+                const idx_t owner =
+                    (npart[retained] < npart[constrained])
+                        ? npart[retained]
+                        : npart[constrained];
+                npart[retained] = owner;
+                npart[constrained] = owner;
+            }
+        }
+    }
+
+    // Retain nodes without a local element on their METIS owner so their
+    // constraints, mass, and nodal loads are not discarded on every rank.
+    for (auto &item : nind) {
+        auto &id = item.second;
+        if (id >= 0 && npart[id] == pid) {
+            id = -id - 1;
+        }
+    }
+
+    // Keep MP constraints that touch a locally retained node and pull in the
+    // partner node so the constraint is complete on that rank.
     auto &mps = domain->getMPs();
     MP_Constraint *mp = 0;
     while ((mp = mps()) != 0) {
@@ -2204,7 +2295,8 @@ int OPS_partition() {
         }
     }
 
-    // remove nodes
+    // Remove unused nodes. Interface copies retain their geometry but carry
+    // mass only on the npart owner, matching nodal-load ownership.
     for (const auto& item: nind) {
         int ndtag = item.first;
         auto id = item.second;
@@ -2216,6 +2308,21 @@ int OPS_partition() {
             auto pc = domain->removePressure_Constraint(ndtag);
             if (pc != 0) {
                 delete pc;
+            }
+        } else {
+            id = -id - 1;
+            if (npart[id] != pid) {
+                Node *node = domain->getNode(ndtag);
+                if (node != 0) {
+                    Matrix zeroMass(node->getNumberDOF(),
+                                    node->getNumberDOF());
+                    zeroMass.Zero();
+                    if (node->setMass(zeroMass) < 0) {
+                        opserr << "WARNING: failed to zero mass on node "
+                               << ndtag << " for partition ownership\n";
+                        return -1;
+                    }
+                }
             }
         }
     }
@@ -2255,13 +2362,13 @@ int OPS_partition() {
             }
         }
 
-        // remove elemental loads
+        // Element partitions are ordinary nonnegative part IDs, so retain a
+        // load only on the rank that owns its element.
         auto& eloads = lp->getElementalLoads();
         ElementalLoad* eload = 0;
         while ((eload = eloads()) != 0) {
             int e = eload->getElementTag();
-            auto id = epart[eindex[e]];
-            if (id >= 0) {
+            if (epart[eindex[e]] != pid) {
                 lp->removeElementalLoad(eload->getTag());
                 delete eload;
             }
