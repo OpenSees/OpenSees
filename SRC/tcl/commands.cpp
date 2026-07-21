@@ -95,6 +95,7 @@ OPS_Stream *opserrPtr = &sserr;
 
 #include <elementAPI.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
+extern int OPS_partition();
 
 #include <packages.h>
 
@@ -1903,7 +1904,14 @@ partitionModel(int eleTag)
 int 
 opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 {
-#ifdef _PARALLEL_PROCESSING
+#ifdef _PARALLEL_INTERPRETERS
+  // METIS mesh partition (same algorithm as OpenSeesPy OPS_partition).
+  // cArg=1 skips argv[0]=="partition" so -ncuts/-niter/-ufactor/-info parse.
+  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+  if (OPS_partition() < 0)
+    return TCL_ERROR;
+  return TCL_OK;
+#elif defined(_PARALLEL_PROCESSING)
   int eleTag;
   if (argc == 2) {
     if (Tcl_GetInt(interp, argv[1], &eleTag) != TCL_OK) {

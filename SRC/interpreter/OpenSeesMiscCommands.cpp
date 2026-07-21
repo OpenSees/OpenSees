@@ -30,6 +30,7 @@
 #include <ElementalLoadIter.h>
 #include <Element.h>
 #include <ElementIter.h>
+#include <algorithm>
 #include <Parameter.h>
 #include <RandomVariable.h>
 #include <Node.h>
@@ -40,6 +41,7 @@
 #include <SP_ConstraintIter.h>
 #include <MP_Constraint.h>
 #include <MP_ConstraintIter.h>
+#include <EQ_Constraint.h>
 #include <NodalLoad.h>
 #include <NodalLoadIter.h>
 #include <Matrix.h>
@@ -1962,6 +1964,7 @@ int OPS_setStartNodeTag() {
     return 0;
 }
 
+
 int OPS_partition() {
 #ifdef _PARALLEL_INTERPRETERS
     // domain
@@ -1977,11 +1980,24 @@ int OPS_partition() {
 
     if (np == 1) return 0;
 
+    // equationConstraint / EQ_Constraint is not cleaned or co-located yet;
+    // nodes involved may be dropped while the EQ remains (or vice versa).
+    if (pid == 0 && domain->getNumEQs() > 0) {
+        opserr << "WARNING: partition detected " << domain->getNumEQs()
+               << " equationConstraint(s); EQ_Constraint handling is not "
+                  "implemented correctly yet — results may be wrong or "
+                  "unstable under MPI\n";
+    }
+
     // parameters
     int ncuts = 1;
     int niter = 10;
     int ufactor = 30;
     int info = 0;
+    bool useCustomPartition = false;
+    std::map<int, idx_t> customElementParts;
+    // Groups of element tags that must share a METIS part (must-link).
+    std::vector<std::vector<int>> samePartGroups;
     while (OPS_GetNumRemainingInputArgs() > 0) {
         int num = 1;
         auto opt = OPS_GetString();
@@ -2005,7 +2021,7 @@ int OPS_partition() {
             }
         } else if (strcmp(opt, "-ufactor") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0 &&
-                OPS_GetIntInput(&num, &ncuts) < 0) {
+                OPS_GetIntInput(&num, &ufactor) < 0) {
                 opserr << "WARNING: failed to get ufactor\n";
                 return -1;
             }
@@ -2014,7 +2030,70 @@ int OPS_partition() {
             }
         } else if (strcmp(opt, "-info") == 0) {
             info = METIS_DBG_INFO;
+        } else if (strcmp(opt, "-customPartition") == 0) {
+            // Tcl:   partition -customPartition $count {*}$tagPartPairs
+            // Python: ops.partition("-customPartition", count, *tagPartPairs)
+            int count = 0;
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
+                OPS_GetIntInput(&num, &count) < 0 || count < 1) {
+                opserr << "WARNING: partition -customPartition requires a "
+                          "positive number of element-tag/part pairs\n";
+                return -1;
+            }
+            if (OPS_GetNumRemainingInputArgs() < 2 * count) {
+                opserr << "WARNING: partition -customPartition expected "
+                       << count << " element-tag/part pairs\n";
+                return -1;
+            }
+
+            std::vector<int> assignments(2 * count);
+            int numAssignments = 2 * count;
+            if (OPS_GetIntInput(&numAssignments, assignments.data()) < 0) {
+                opserr << "WARNING: failed to read custom element partition\n";
+                return -1;
+            }
+
+            useCustomPartition = true;
+            for (int i = 0; i < count; ++i) {
+                int elementTag = assignments[2 * i];
+                idx_t part = assignments[2 * i + 1];
+                if (!customElementParts.emplace(elementTag, part).second) {
+                    opserr << "WARNING: duplicate element tag " << elementTag
+                           << " in custom partition\n";
+                    return -1;
+                }
+            }
+        } else if (strcmp(opt, "-samePart") == 0) {
+            // Tcl: partition -samePart $n $e1 $e2 ...  (repeatable)
+            // Force those elements onto the same METIS part via dual-graph
+            // contraction (must-link). Ignored with -customPartition.
+            int count = 0;
+            if (OPS_GetNumRemainingInputArgs() < 1 ||
+                OPS_GetIntInput(&num, &count) < 0 || count < 2) {
+                opserr << "WARNING: partition -samePart requires a count >= 2 "
+                          "followed by that many element tags\n";
+                return -1;
+            }
+            if (OPS_GetNumRemainingInputArgs() < count) {
+                opserr << "WARNING: partition -samePart expected " << count
+                       << " element tags\n";
+                return -1;
+            }
+            std::vector<int> tags(count);
+            int numTags = count;
+            if (OPS_GetIntInput(&numTags, tags.data()) < 0) {
+                opserr << "WARNING: failed to read -samePart element tags\n";
+                return -1;
+            }
+            samePartGroups.push_back(std::move(tags));
+        } else {
+            opserr << "WARNING: unknown partition option " << opt << endln;
+            return -1;
         }
+    }
+
+    if (useCustomPartition && !samePartGroups.empty() && pid == 0) {
+        opserr << "WARNING: -samePart ignored when -customPartition is used\n";
     }
 
 
@@ -2107,9 +2186,81 @@ int OPS_partition() {
     // partition for nodes
     std::vector<idx_t> npart(nn);
 
-    // do partition on P0
-    if (pid == 0) {
+    // A custom partition supplies element ownership directly on every rank;
+    // node ownership is derived deterministically from adjacent element parts.
+    // METIS partitioning remains a rank-0 operation followed by broadcasts.
+    if (useCustomPartition) {
+        // Catch assignments for tags not present in this domain.
+        for (const auto& assignment : customElementParts) {
+            if (eindex.find(assignment.first) == eindex.end()) {
+                opserr << "WARNING: custom partition references unknown "
+                          "element "
+                       << assignment.first << endln;
+                return -1;
+            }
+        }
 
+        std::vector<int> elementsPerPart(np, 0);
+        std::vector<int> autoAssignedTags;
+        for (idx_t i = 0; i < ne; ++i) {
+            auto assignment = customElementParts.find(etag[i]);
+            if (assignment == customElementParts.end()) {
+                // Missing by accident: park on part 0 and warn below.
+                epart[i] = 0;
+                autoAssignedTags.push_back(etag[i]);
+            } else {
+                if (assignment->second < 0 || assignment->second >= np) {
+                    opserr << "WARNING: custom partition part "
+                           << assignment->second << " for element "
+                           << etag[i] << " is outside [0, " << np - 1
+                           << "]\n";
+                    return -1;
+                }
+                epart[i] = assignment->second;
+            }
+            ++elementsPerPart[epart[i]];
+        }
+
+        if (pid == 0 && !autoAssignedTags.empty()) {
+            const int nAuto = static_cast<int>(autoAssignedTags.size());
+            opserr << "WARNING: custom partition auto-assigned " << nAuto
+                   << " unlisted element(s) to part 0:";
+            const int maxList = 20;
+            const int nList = (nAuto < maxList) ? nAuto : maxList;
+            for (int i = 0; i < nList; ++i) {
+                opserr << " " << autoAssignedTags[i];
+            }
+            if (nAuto > maxList) {
+                opserr << " ...";
+            }
+            opserr << endln;
+        }
+
+        // A shared node is owned by the lowest adjacent element part.
+        // Ownership only controls unique nodal mass/load placement; copies
+        // are retained on every rank with an adjacent local element.
+        std::fill(npart.begin(), npart.end(), static_cast<idx_t>(np));
+        for (idx_t i = 0; i < ne; ++i) {
+            for (idx_t j = eptr[i]; j < eptr[i + 1]; ++j) {
+                idx_t node = eind[j];
+                if (epart[i] < npart[node]) {
+                    npart[node] = epart[i];
+                }
+            }
+        }
+        for (idx_t i = 0; i < nn; ++i) {
+            if (npart[i] == np) {
+                npart[i] = 0;  // isolated node: deterministic owner
+            }
+        }
+        for (int part = 0; pid == 0 && part < np; ++part) {
+            if (elementsPerPart[part] == 0) {
+                opserr << "WARNING: custom partition assigns no elements to "
+                          "part "
+                       << part << endln;
+            }
+        }
+    } else if (pid == 0) {
         // options
         idx_t options[METIS_NOPTIONS];
         METIS_SetDefaultOptions(options);
@@ -2124,16 +2275,182 @@ int OPS_partition() {
         // number of parts to partition
         idx_t nparts = np;
 
-        // total communications volume
-        idx_t objval;
+        // total communications volume / edgecut
+        idx_t objval = 0;
+        int res = METIS_OK;
 
-        // call metis
-        auto res = METIS_PartMeshNodal(
-            &ne, &nn, &eptr[0], &eind[0], NULL, NULL, &nparts,
-            NULL, options, &objval, &epart[0], &npart[0]);
+        if (samePartGroups.empty()) {
+            // Default: nodal-graph mesh partition (no must-link constraints).
+            res = METIS_PartMeshNodal(
+                &ne, &nn, &eptr[0], &eind[0], NULL, NULL, &nparts,
+                NULL, options, &objval, &epart[0], &npart[0]);
+        } else {
+            // Must-link: contract samePart groups on the element dual graph,
+            // partition with PartGraphKway, then expand and derive npart.
+            std::vector<idx_t> parent(static_cast<size_t>(ne));
+            for (idx_t i = 0; i < ne; ++i) {
+                parent[static_cast<size_t>(i)] = i;
+            }
+            auto findRoot = [&parent](idx_t x) -> idx_t {
+                idx_t r = x;
+                while (parent[static_cast<size_t>(r)] != r) {
+                    r = parent[static_cast<size_t>(r)];
+                }
+                while (parent[static_cast<size_t>(x)] != x) {
+                    const idx_t next = parent[static_cast<size_t>(x)];
+                    parent[static_cast<size_t>(x)] = r;
+                    x = next;
+                }
+                return r;
+            };
+            auto unite = [&findRoot, &parent](idx_t a, idx_t b) {
+                a = findRoot(a);
+                b = findRoot(b);
+                if (a != b) {
+                    parent[static_cast<size_t>(b)] = a;
+                }
+            };
 
+            for (const auto& group : samePartGroups) {
+                idx_t first = -1;
+                for (int tag : group) {
+                    auto it = eindex.find(tag);
+                    if (it == eindex.end()) {
+                        opserr << "WARNING: -samePart references unknown "
+                                  "element "
+                               << tag << endln;
+                        return -1;
+                    }
+                    if (first < 0) {
+                        first = it->second;
+                    } else {
+                        unite(first, it->second);
+                    }
+                }
+            }
 
-        // check errors 
+            idx_t ncommon = 1;
+            idx_t numflag = 0;
+            idx_t *xadj = 0;
+            idx_t *adjncy = 0;
+            res = METIS_MeshToDual(&ne, &nn, &eptr[0], &eind[0], &ncommon,
+                                   &numflag, &xadj, &adjncy);
+            if (res != METIS_OK) {
+                opserr << "WARNING: METIS_MeshToDual failed for -samePart\n";
+                return -1;
+            }
+
+            std::map<idx_t, idx_t> rootToSuper;
+            std::vector<idx_t> eleToSuper(static_cast<size_t>(ne));
+            std::vector<idx_t> vwgt;
+            for (idx_t i = 0; i < ne; ++i) {
+                const idx_t root = findRoot(i);
+                auto it = rootToSuper.find(root);
+                if (it == rootToSuper.end()) {
+                    const idx_t sid = static_cast<idx_t>(rootToSuper.size());
+                    rootToSuper[root] = sid;
+                    vwgt.push_back(0);
+                    it = rootToSuper.find(root);
+                }
+                eleToSuper[static_cast<size_t>(i)] = it->second;
+                vwgt[static_cast<size_t>(it->second)] += 1;
+            }
+
+            idx_t nsuper = static_cast<idx_t>(rootToSuper.size());
+            std::vector<std::map<idx_t, idx_t>> superAdj(
+                static_cast<size_t>(nsuper));
+            for (idx_t u = 0; u < ne; ++u) {
+                const idx_t su = eleToSuper[static_cast<size_t>(u)];
+                for (idx_t j = xadj[u]; j < xadj[u + 1]; ++j) {
+                    const idx_t v = adjncy[j];
+                    const idx_t sv = eleToSuper[static_cast<size_t>(v)];
+                    if (su == sv) {
+                        continue;
+                    }
+                    superAdj[static_cast<size_t>(su)][sv] += 1;
+                }
+            }
+
+            std::vector<idx_t> cxadj(static_cast<size_t>(nsuper) + 1);
+            std::vector<idx_t> cadjncy;
+            std::vector<idx_t> cadjwgt;
+            for (idx_t i = 0; i < nsuper; ++i) {
+                cxadj[static_cast<size_t>(i)] =
+                    static_cast<idx_t>(cadjncy.size());
+                for (const auto& edge : superAdj[static_cast<size_t>(i)]) {
+                    cadjncy.push_back(edge.first);
+                    cadjwgt.push_back(edge.second);
+                }
+            }
+            cxadj[static_cast<size_t>(nsuper)] =
+                static_cast<idx_t>(cadjncy.size());
+
+            METIS_Free(xadj);
+            METIS_Free(adjncy);
+            xadj = 0;
+            adjncy = 0;
+
+            if (nsuper < nparts) {
+                opserr << "WARNING: -samePart contraction left only " << nsuper
+                       << " supervertices for " << nparts
+                       << " parts; METIS may fail or imbalance\n";
+            }
+
+            std::vector<idx_t> cpart(static_cast<size_t>(nsuper), 0);
+            idx_t ncon = 1;
+            idx_t *adjwgtPtr = cadjwgt.empty() ? NULL : cadjwgt.data();
+            idx_t *adjncyPtr = cadjncy.empty() ? NULL : cadjncy.data();
+            // OBJTYPE_VOL uses vsize for communication volume; use CUT for
+            // contracted dual with explicit edge weights.
+            options[METIS_OPTION_OBJTYPE] = METIS_OBJTYPE_CUT;
+            res = METIS_PartGraphKway(
+                &nsuper, &ncon, cxadj.data(), adjncyPtr, vwgt.data(), NULL,
+                adjwgtPtr, &nparts, NULL, NULL, options, &objval, cpart.data());
+
+            if (res == METIS_OK) {
+                for (idx_t i = 0; i < ne; ++i) {
+                    epart[static_cast<size_t>(i)] =
+                        cpart[static_cast<size_t>(
+                            eleToSuper[static_cast<size_t>(i)])];
+                }
+                // Node ownership: lowest adjacent element part (same as custom).
+                std::fill(npart.begin(), npart.end(), static_cast<idx_t>(np));
+                for (idx_t i = 0; i < ne; ++i) {
+                    for (idx_t j = eptr[static_cast<size_t>(i)];
+                         j < eptr[static_cast<size_t>(i) + 1]; ++j) {
+                        const idx_t node = eind[static_cast<size_t>(j)];
+                        if (epart[static_cast<size_t>(i)] <
+                            npart[static_cast<size_t>(node)]) {
+                            npart[static_cast<size_t>(node)] =
+                                epart[static_cast<size_t>(i)];
+                        }
+                    }
+                }
+                for (idx_t i = 0; i < nn; ++i) {
+                    if (npart[static_cast<size_t>(i)] == np) {
+                        npart[static_cast<size_t>(i)] = 0;
+                    }
+                }
+
+                // Sanity: each samePart group shares one part.
+                for (const auto& group : samePartGroups) {
+                    idx_t part = -1;
+                    for (int tag : group) {
+                        const idx_t e = eindex[tag];
+                        if (part < 0) {
+                            part = epart[static_cast<size_t>(e)];
+                        } else if (epart[static_cast<size_t>(e)] != part) {
+                            opserr << "WARNING: -samePart failed to co-locate "
+                                      "element "
+                                   << tag << endln;
+                            return -1;
+                        }
+                    }
+                }
+            }
+        }
+
+        // check errors
         if (res == METIS_ERROR_INPUT) {
             opserr << "WARNING: metis input error\n";
             return -1;
@@ -2160,6 +2477,16 @@ int OPS_partition() {
         return -1;
     }
 
+    auto indexOf = [](idx_t id) -> idx_t {
+        return (id < 0) ? static_cast<idx_t>(-id - 1) : id;
+    };
+
+    // Nodes that appear in the mesh connectivity (same on every rank).
+    std::vector<char> inMesh(nn, 0);
+    for (idx_t j = 0; j < static_cast<idx_t>(eind.size()); ++j) {
+        inMesh[eind[j]] = 1;
+    }
+
     // get nodes in current processor and remove elements
     for (int i = 0; i < ne; ++i) {
 
@@ -2183,7 +2510,37 @@ int OPS_partition() {
         }
     }
 
-    // get nodes in current processor and remove mp
+    // Align npart for equalDOF/MP pairs identically on every rank (do not use
+    // local retention marks here — those differ across ranks).
+    {
+        auto &mps = domain->getMPs();
+        MP_Constraint *mp = 0;
+        while ((mp = mps()) != 0) {
+            const idx_t ir = indexOf(nind[mp->getNodeRetained()]);
+            const idx_t ic = indexOf(nind[mp->getNodeConstrained()]);
+            if (inMesh[ir] && !inMesh[ic]) {
+                npart[ic] = npart[ir];
+            } else if (inMesh[ic] && !inMesh[ir]) {
+                npart[ir] = npart[ic];
+            } else if (!inMesh[ir] && !inMesh[ic]) {
+                const idx_t owner =
+                    (npart[ir] < npart[ic]) ? npart[ir] : npart[ic];
+                npart[ir] = owner;
+                npart[ic] = owner;
+            }
+        }
+    }
+
+    // Orphans (no local element yet) stay on their npart owner so fixes /
+    // nodal mass / nodal loads are not dropped.
+    for (auto& item : nind) {
+        auto& id = item.second;
+        if (id >= 0 && npart[id] == pid) {
+            id = -id - 1;
+        }
+    }
+
+    // Keep MPs that touch a locally retained node; pull in the partner.
     auto &mps = domain->getMPs();
     MP_Constraint *mp = 0;
     while ((mp = mps()) != 0) {
@@ -2204,7 +2561,8 @@ int OPS_partition() {
         }
     }
 
-    // remove nodes
+    // remove nodes; for retained interface copies, keep nodal mass only on
+    // the npart owner rank (same ownership rule as nodal loads)
     for (const auto& item: nind) {
         int ndtag = item.first;
         auto id = item.second;
@@ -2216,6 +2574,21 @@ int OPS_partition() {
             auto pc = domain->removePressure_Constraint(ndtag);
             if (pc != 0) {
                 delete pc;
+            }
+        } else {
+            // retained node: decode original index and drop duplicate mass
+            id = -id - 1;
+            if (npart[id] != pid) {
+                Node *node = domain->getNode(ndtag);
+                if (node != 0) {
+                    Matrix zeroMass(node->getNumberDOF(), node->getNumberDOF());
+                    zeroMass.Zero();
+                    if (node->setMass(zeroMass) < 0) {
+                        opserr << "WARNING: failed to zero mass on node "
+                               << ndtag << " for partition ownership\n";
+                        return -1;
+                    }
+                }
             }
         }
     }
@@ -2255,13 +2628,13 @@ int OPS_partition() {
             }
         }
 
-        // remove elemental loads
+        // remove elemental loads for elements assigned to other ranks
+        // (epart holds METIS part ids 0..np-1, unlike the sign-encoded nind)
         auto& eloads = lp->getElementalLoads();
         ElementalLoad* eload = 0;
         while ((eload = eloads()) != 0) {
             int e = eload->getElementTag();
-            auto id = epart[eindex[e]];
-            if (id >= 0) {
+            if (epart[eindex[e]] != pid) {
                 lp->removeElementalLoad(eload->getTag());
                 delete eload;
             }

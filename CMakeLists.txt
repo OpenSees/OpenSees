@@ -121,6 +121,12 @@ else()
     include(OpenSeesFunctions) # Your custom logic
 endif()
 
+# Conan MSVC packages ship Release import libs only; map other optimized configs.
+if(CMAKE_CONFIGURATION_TYPES)
+  set(CMAKE_MAP_IMPORTED_CONFIG_RELWITHDEBINFO Release)
+  set(CMAKE_MAP_IMPORTED_CONFIG_MINSIZEREL Release)
+endif()
+
 find_package(ZLIB REQUIRED)
 find_package(HDF5 REQUIRED)
 find_package(TCL REQUIRED)
@@ -353,6 +359,47 @@ foreach(filepath ${ops_include_files})
 endforeach()
 list(REMOVE_DUPLICATES OPS_INCLUDE_DIRS)
 
+# Makefile.incl does not add OTHER/METIS to FE_INCLUDES; bundled headers belong only to the METIS
+# library target so <metis.h> resolves to system METIS 5 when installed (partition API).
+set(OPS_INCLUDE_DIRS_FILTERED "")
+foreach(_d IN LISTS OPS_INCLUDE_DIRS)
+  if(NOT _d STREQUAL "${PROJECT_SOURCE_DIR}/OTHER/METIS")
+    list(APPEND OPS_INCLUDE_DIRS_FILTERED "${_d}")
+  endif()
+endforeach()
+set(OPS_INCLUDE_DIRS "${OPS_INCLUDE_DIRS_FILTERED}")
+
+# METIS 5 for OPS_partition(). Bundled OTHER/METIS is METIS 4 — do not use it.
+# Pass -DMETIS5_DIR=... (same style as MUMPS_DIR) or set env METIS5_DIR.
+# Defaults: /usr on Linux; ../metis-5.1.0/install on Windows (see README-Windows-METIS5.md).
+set(METIS5_DIR "" CACHE PATH "METIS 5 install prefix (include/metis.h + lib)")
+if(NOT METIS5_DIR AND DEFINED ENV{METIS5_DIR} AND NOT "$ENV{METIS5_DIR}" STREQUAL "")
+  set(METIS5_DIR "$ENV{METIS5_DIR}")
+endif()
+if(NOT METIS5_DIR)
+  if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    set(METIS5_DIR "/usr")
+  elseif(WIN32)
+    set(METIS5_DIR "${PROJECT_SOURCE_DIR}/../metis-5.1.0/install")
+  endif()
+endif()
+
+set(OPENSEES_HAVE_METIS5_HEADER FALSE)
+set(OPENSEES_METIS5_INCLUDE_DIR "")
+if(METIS5_DIR AND EXISTS "${METIS5_DIR}/include/metis.h")
+  # Ubuntu's metis.h puts METIS_VER_* after a long banner; keep enough of the file.
+  file(READ "${METIS5_DIR}/include/metis.h" _opensees_metis_hdr LIMIT 12000)
+  if(_opensees_metis_hdr MATCHES "METIS_VER_MAJOR")
+    set(OPENSEES_HAVE_METIS5_HEADER TRUE)
+    set(OPENSEES_METIS5_INCLUDE_DIR "${METIS5_DIR}/include")
+  endif()
+endif()
+
+message(
+  STATUS
+  "METIS 5 (partition / OpenSeesMP): METIS5_DIR=${METIS5_DIR}, HAVE_METIS5_HEADER=${OPENSEES_HAVE_METIS5_HEADER}"
+)
+
 include_directories(${OPS_INCLUDE_DIRS})
 # end TODO
 
@@ -448,7 +495,11 @@ if(MPI_FOUND)
   else()
      set (MUMPS_FLAG -D_MUMPS)
      if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-       set (MUMPS_LIBRARIES "${MUMPS_DIR}/dmumps;${MUMPS_DIR}/mumps_common;${MUMPS_DIR}/pord")
+       get_filename_component(MUMPS_DIR "${MUMPS_DIR}" ABSOLUTE)
+       set (MUMPS_LIBRARIES
+         "${MUMPS_DIR}/dmumps.lib"
+         "${MUMPS_DIR}/mumps_common.lib"
+         "${MUMPS_DIR}/pord.lib")
      else()
        set (MUMPS_LIBRARIES "${MUMPS_DIR}/libdmumps.a;${MUMPS_DIR}/libmumps_common.a;${MUMPS_DIR}/libpord.a")
      endif()
@@ -457,8 +508,46 @@ if(MPI_FOUND)
 
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/SuperLU_DIST_4.3/SRC")
   add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/METIS")
+
+  # Bundled METIS target is METIS 4. partition() / system <metis.h> use METIS 5.
+  # Link libmetis when METIS 5 headers were detected; otherwise keep bundled METIS.
+  set(OPENSEES_METIS_LINK_LIB "METIS")
+  if(OPENSEES_HAVE_METIS5_HEADER)
+    find_library(
+      OPENSEES_METIS5_LIBRARY
+      NAMES metis
+      HINTS
+        "${METIS5_DIR}/lib"
+        "${METIS5_DIR}/lib64"
+      PATHS
+        /usr/lib/x86_64-linux-gnu
+        /usr/lib/aarch64-linux-gnu
+        /usr/lib64
+        /usr/lib
+      DOC "METIS 5 (libmetis) for partition() and MetisWrapper with system metis.h"
+    )
+    if(OPENSEES_METIS5_LIBRARY)
+      set(OPENSEES_METIS_LINK_LIB "${OPENSEES_METIS5_LIBRARY}")
+      message(STATUS "MPI executables: linking METIS 5 at ${OPENSEES_METIS5_LIBRARY}")
+    else()
+      message(
+        WARNING
+        "METIS 5 headers were found at ${OPENSEES_METIS5_INCLUDE_DIR} but libmetis was not found. "
+        "Falling back to bundled METIS 4; OpenSeesMP partition() will remain a stub. "
+        "Install libmetis (e.g. apt install libmetis-dev) or set METIS5_DIR."
+      )
+      set(OPENSEES_HAVE_METIS5_HEADER FALSE)
+    endif()
+  else()
+    message(
+      WARNING
+      "METIS 5 headers not found; OpenSeesMP partition() will remain a stub. "
+      "Install METIS development files (e.g. libmetis-dev) or set -DMETIS5_DIR=/path."
+    )
+  endif()
 else()
   message(STATUS "MPI was NOT found.")
+  set(OPENSEES_METIS_LINK_LIB "METIS")
 endif()
 
 
@@ -468,15 +557,15 @@ if(MKL_FOUND)
      set (SCALAPACK_LIBRARIES ${MKL_LIBRARIES})
   endif()
   if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
-     if(EXISTS "${MKL_ROOT}/lib/mkl_core.lib")
-      set(MKL_LPATH "${MKL_ROOT}/lib")
-    elseif(EXISTS "${MKL_ROOT}/lib/intel64/mkl_core.lib")
+    if(EXISTS "${MKL_ROOT}/lib/intel64/mkl_scalapack_lp64.lib")
       set(MKL_LPATH "${MKL_ROOT}/lib/intel64")
+    elseif(EXISTS "${MKL_ROOT}/lib/mkl_scalapack_lp64.lib")
+      set(MKL_LPATH "${MKL_ROOT}/lib")
     else()
-      message(FATAL_ERROR "MKL libraries not found in expected locations")
+      message(FATAL_ERROR "MKL lp64 ScaLAPACK libraries not found under ${MKL_ROOT}")
     endif()
 
-    set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_ilp64.lib;${MKL_LPATH}/mkl_intel_ilp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_ilp64.lib")
+    set (SCALAPACK_LIBRARIES "${MKL_LPATH}/mkl_scalapack_lp64.lib;${MKL_LPATH}/mkl_intel_lp64.lib;${MKL_LPATH}/mkl_sequential.lib;${MKL_LPATH}/mkl_core.lib;${MKL_LPATH}/mkl_blacs_intelmpi_lp64.lib")
   endif()
 
 else()
@@ -515,6 +604,10 @@ set(TCL_LIBRARIES ${TCL_LIBRARY})
 #
 # OpenSees OBJECT LIBRARIES
 #
+
+# _PARALLEL_PROCESSING (OpenSeesSP) and _PARALLEL_INTERPRETERS (OpenSeesMP) are
+# mutually exclusive per executable. Do not use a global compile definition here;
+# SP object libraries and OpenSeesSP get _PARALLEL_PROCESSING when PARALLEL_PROCESSING=ON.
 
 add_library(OPS_Matrix             OBJECT)
 add_library(OPS_Actor              OBJECT)
@@ -755,7 +848,7 @@ if(MPI_FOUND)
        OPS_Reliability
        OPS_ReliabilityTcl
        OPS_Recorder
-       METIS
+       ${OPENSEES_METIS_LINK_LIB}
        SUPERLU_DIST
        OPS_Numerics
        ${MUMPS_LIBRARIES}
@@ -798,6 +891,18 @@ if(MPI_FOUND)
       ${OPS_SRC_DIR}/domain/subdomain/ShadowSubdomain.cpp
     )
 
+    # Compile OpenSeesMiscCommands with _PARALLEL_INTERPRETERS so OPS_partition
+    # (and other MPI misc commands) get real bodies. The stub archive member in
+    # OpenSeesLIB is not pulled when this TU is present on the executable.
+    if(OPENSEES_HAVE_METIS5_HEADER)
+      target_sources(OpenSeesMP PRIVATE
+        ${OPS_SRC_DIR}/interpreter/OpenSeesMiscCommands.cpp
+      )
+      target_include_directories(OpenSeesMP BEFORE PRIVATE
+        "${OPENSEES_METIS5_INCLUDE_DIR}"
+      )
+    endif()
+
     target_include_directories(OpenSeesMP PRIVATE ${MUMPS_DIR}/_deps/mumps-src/include ${MPI_CXX_INCLUDE_DIRS})
 
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
@@ -820,7 +925,7 @@ if(MPI_FOUND)
        OPS_Reliability
        OPS_ReliabilityTcl
        OPS_Recorder
-       METIS
+       ${OPENSEES_METIS_LINK_LIB}
        SUPERLU_DIST
        OPS_Numerics
        ${MUMPS_LIBRARIES}
@@ -905,6 +1010,47 @@ add_subdirectory(${OPS_SRC_DIR})
 #                            Apply Options
 #
 #==============================================================================
+#----------------------------
+# PARALLEL_PROCESSING (OpenSeesSP object libraries + OPS_InterpTcl)
+#----------------------------
+if(PARALLEL_PROCESSING)
+  message(STATUS "PARALLEL_PROCESSING: applying _PARALLEL_PROCESSING to object libraries for OpenSeesSP")
+
+  function(ops_apply_parallel_processing_to_object_libs dir)
+    get_property(_ops_targets DIRECTORY "${dir}" PROPERTY BUILDSYSTEM_TARGETS)
+    foreach(_ops_tgt IN LISTS _ops_targets)
+      if(NOT TARGET "${_ops_tgt}")
+        continue()
+      endif()
+      get_target_property(_ops_type "${_ops_tgt}" TYPE)
+      if(_ops_type STREQUAL "OBJECT_LIBRARY")
+        target_compile_definitions("${_ops_tgt}" PRIVATE _PARALLEL_PROCESSING)
+      endif()
+    endforeach()
+    get_property(_ops_subdirs DIRECTORY "${dir}" PROPERTY SUBDIRECTORIES)
+    foreach(_ops_subdir IN LISTS _ops_subdirs)
+      ops_apply_parallel_processing_to_object_libs("${_ops_subdir}")
+    endforeach()
+  endfunction()
+
+  foreach(_ops_tgt
+      OPS_Matrix OPS_Actor OPS_ObjectBroker OPS_Handler OPS_Recorder
+      OPS_Reliability OPS_Tagged OPS_Utilities OPS_ModelBuilder OPS_Domain
+      OPS_SysOfEqn OPS_Analysis OPS_ConvergenceTest OPS_Thermal OPS_Element
+      OPS_ElementFortran OPS_Material OPS_MaterialFortran OPS_Damage
+      OPS_Database OPS_INTERPRETER OPS_Paraview OPS_Renderer OPS_Graphics
+      OPS_Graphics_Default OPS_Graphics_GL OPS_PFEM OpenSeesLIB OPS_InterpTcl)
+    if(TARGET "${_ops_tgt}")
+      get_target_property(_ops_type "${_ops_tgt}" TYPE)
+      if(_ops_type STREQUAL "OBJECT_LIBRARY" OR _ops_tgt STREQUAL "OPS_InterpTcl")
+        target_compile_definitions("${_ops_tgt}" PRIVATE _PARALLEL_PROCESSING)
+      endif()
+    endif()
+  endforeach()
+
+  ops_apply_parallel_processing_to_object_libs("${PROJECT_SOURCE_DIR}/SRC")
+endif()
+
 #----------------------------
 # FMK
 #----------------------------
