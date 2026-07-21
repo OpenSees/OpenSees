@@ -34,7 +34,7 @@ target_sources(OPS_SysOfEqn
 
 if(PARALLEL_INTERPRETERS)
 
-elseif(PARALLEL)
+elseif(PARALLEL_PROCESSING)
 
 endif()
 
