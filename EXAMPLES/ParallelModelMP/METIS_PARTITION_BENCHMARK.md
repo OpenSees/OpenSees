@@ -59,8 +59,8 @@ mpiexec -n 4 OpenSeesMP metisPartitionBenchmark.tcl volume 42
 mpiexec -n 4 OpenSeesMP metisPartitionBenchmark.tcl cut 42
 ```
 
-OpenSeesMP now synchronizes ranks before `MPI_Finalize`, and all benchmark runs
-exit cleanly after printing their final results.
+All benchmark runs exit cleanly through `MPI_Finalize` after printing their
+final results.
 
 The pytest launcher and executable can be selected without editing the test:
 
