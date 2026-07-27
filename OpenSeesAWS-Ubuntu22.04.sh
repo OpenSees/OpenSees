@@ -31,17 +31,6 @@ cmake --build . --config Release --parallel 4
 cd ../..
 
 #
-# hdf5
-#
-
-git clone --depth 1 --branch hdf5-1_12_2 https://github.com/HDFGroup/hdf5.git
-cd hdf5
-./configure --prefix=/usr/local/hdf5
-make -j 4
-sudo make install
-cd ..
-
-#
 # install conan & perform initial setup
 #
 
