@@ -45,12 +45,15 @@ class Accelerator;
 class AcceleratedNewton: public EquiSolnAlgo
 {
  public:
-  AcceleratedNewton(int tangent = CURRENT_TANGENT);
+  AcceleratedNewton(int tangent = CURRENT_TANGENT, int factorOnce = 0);
+  AcceleratedNewton(Accelerator *theAccel, int tangent = CURRENT_TANGENT,
+		    int factorOnce = 0);
   AcceleratedNewton(ConvergenceTest &theTest, Accelerator *theAccel,
-		    int tangent = CURRENT_TANGENT);
+		    int tangent = CURRENT_TANGENT, int factorOnce = 0);
   ~AcceleratedNewton();
   
-  int solveCurrentStep(void);    
+  int solveCurrentStep(void);
+  int domainChanged(void);
   int setConvergenceTest(ConvergenceTest *theNewTest);
   ConvergenceTest *getTest(void);     
   
@@ -73,7 +76,10 @@ class AcceleratedNewton: public EquiSolnAlgo
  private:
   ConvergenceTest *theTest;
   int tangent;
-  
+  // factorOnce: 0=every step; 1->2 after increment formTangent; 2=skip (reuse factor).
+  // domainChanged() resets 2->1.
+  int factorOnce;
+
   Accelerator *theAccelerator;
   
   // Storate for accelerated mod-Newton prediction

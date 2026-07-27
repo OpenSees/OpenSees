@@ -55,133 +55,15 @@ Matrix ElasticBeam3d::K(12,12);
 Vector ElasticBeam3d::P(12);
 Matrix ElasticBeam3d::kb(6,6);
 
-void* OPS_ElasticBeam3d(void)
-{
-    int numArgs = OPS_GetNumRemainingInputArgs();
-
-    // Read the optional arguments first
-    double mass = 0.0;
-    int dampingTag = 0;
-    Damping *theDamping = 0;
-    int cMass = 0;
-    int releasez = 0;
-    int releasey = 0;
-    int numData = 1;
-    int numOptionalArgs = 0;
-    while(OPS_GetNumRemainingInputArgs() > 0) {
-	std::string theType = OPS_GetString();
-	if (theType == "-mass") {
-	  numOptionalArgs++;
-	  if(OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;	    
-	    if(OPS_GetDoubleInput(&numData,&mass) < 0)
-	      return 0;
-	    numOptionalArgs++;	    
-	  }
-	} else if (theType == "-cMass") {
-	  numOptionalArgs++;
-	  cMass = 1;
-	} else if (theType == "-releasez") {
-	  numOptionalArgs++;	  
-	  if (OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;	    
-	    if (OPS_GetIntInput(&numData, &releasez) < 0) {
-	      opserr << "WARNING: failed to get releasez";
-	      return 0;
-	    }
-	    numOptionalArgs++;	    
-	  }
-	} else if (theType == "-releasey") {
-	  numOptionalArgs++;	  
-	  if (OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;
-	    if (OPS_GetIntInput(&numData, &releasey) < 0) {
-	      opserr << "WARNING: failed to get releasey";
-	      return 0;
-	    }
-	    numOptionalArgs++;
-	  }
-	} else if(theType == "-damp"){
-	  numOptionalArgs++;	  
-	  if(OPS_GetNumRemainingInputArgs() > 0) {
-	    numData = 1;
-	    if(OPS_GetIntInput(&numData,&dampingTag) < 0) return 0;
-	    theDamping = OPS_getDamping(dampingTag);
-	    if(theDamping == 0) {
-	      opserr<<"damping not found\n";
-	      return 0;
-	    }
-	  }
-	} 
-    }
-
-    if (numArgs > 0) {
-      OPS_ResetCurrentInputArg(-numArgs);    
-    }
-    numArgs = numArgs - numOptionalArgs;
-      
-    if(numArgs < 10 && numArgs != 5) {
-	opserr<<"insufficient arguments:eleTag,iNode,jNode,<A,E,G,J,Iy,Iz>or<sectionTag>,transfTag\n";
-	return 0;
-    }
-
-    int ndm = OPS_GetNDM();
-    int ndf = OPS_GetNDF();
-    if(ndm != 3 || ndf != 6) {
-	opserr<<"ndm must be 3 and ndf must be 6\n";
-	return 0;
-    }
-
-    // inputs: 
-    int iData[3];
-    numData = 3;
-    if(OPS_GetIntInput(&numData,&iData[0]) < 0) return 0;
-
-    SectionForceDeformation* theSection = 0;
-    CrdTransf* theTrans = 0;
-    double data[6];
-    int transfTag, secTag;
-    
-    if(numArgs == 5) {
-	numData = 1;
-	if(OPS_GetIntInput(&numData,&secTag) < 0) return 0;
-	if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
-
-	theSection = OPS_getSectionForceDeformation(secTag);
-	if(theSection == 0) {
-	    opserr<<"no section is found\n";
-	    return 0;
-	}
-	theTrans = OPS_getCrdTransf(transfTag);
-	if(theTrans == 0) {
-	    opserr<<"no CrdTransf is found\n";
-	    return 0;
-	}
-    } else {
-	numData = 6;
-	if(OPS_GetDoubleInput(&numData,&data[0]) < 0) return 0;
-	numData = 1;
-	if(OPS_GetIntInput(&numData,&transfTag) < 0) return 0;
-	theTrans = OPS_getCrdTransf(transfTag);
-	if(theTrans == 0) {
-	    opserr<<"no CrdTransf is found\n";
-	    return 0;
-	}
-    }
-    
-    if (theSection != 0) {
-      return new ElasticBeam3d(iData[0],iData[1],iData[2],*theSection,*theTrans,mass,cMass,releasez, releasey,theDamping); 
-    } else {
-	return new ElasticBeam3d(iData[0],data[0],data[1],data[2],data[3],data[4],
-				 data[5],iData[1],iData[2],*theTrans, mass,cMass,releasez,releasey,theDamping);
-    }
-}
-
 void *OPS_ElasticBeam3d(const ID &info) {
     // 1. data needed
     int iData[3];
-    double data[6];
+    bool section = false;
+    int sectionTag = -1;
+    double data[8]; data[6] = -1.0; data[7] = -1.0;
     int transfTag;
+    int dampingTag = 0;
+    Damping *theDamping = 0;    
     double mass = 0.0;
     int cMass = 0;
     int releasez = 0;
@@ -195,11 +77,68 @@ void *OPS_ElasticBeam3d(const ID &info) {
         return 0;
     }
 
+    // Read optional arguments first
+    int numOptionalArgs = 0;
+    int numArgs = OPS_GetNumRemainingInputArgs();
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+      std::string theType = OPS_GetString();
+      if (theType == "-mass") {
+	numOptionalArgs++;
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetDoubleInput(&numData, &mass) < 0) {
+	    opserr << "WARNING: failed to read mass\n";
+	    return 0;
+	  }
+	  numOptionalArgs++;	  
+	}
+      } else if (theType == "-cMass") {
+	numOptionalArgs++;	
+	cMass = 1;
+      } else if (theType == "-releasez") {
+	numOptionalArgs++;
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numData, &releasez) < 0) {
+	    opserr << "WARNING: failed to get releasez";
+	    return 0;
+	  }
+	  numOptionalArgs++;	  	  
+	}
+      } else if (theType == "-releasey") {
+	numOptionalArgs++;	
+	if (OPS_GetNumRemainingInputArgs() > 0) {
+	  if (OPS_GetIntInput(&numData, &releasey) < 0) {
+	    opserr << "WARNING: failed to get releasey";
+	    return 0;
+	  }
+	  numOptionalArgs++;	  	  
+	}
+      }
+      else if(theType == "-damp"){
+	numOptionalArgs++;	  
+	if(OPS_GetNumRemainingInputArgs() > 0) {
+	  numData = 1;
+	  if(OPS_GetIntInput(&numData,&dampingTag) < 0)
+	    return 0;
+	  numOptionalArgs++;
+	  theDamping = OPS_getDamping(dampingTag);
+	  if(theDamping == 0) {
+	    opserr<<"ElasticBeam3d - damping not found" << endln;
+	    return 0;
+	  }
+	}       
+      }
+    }
+
+    if (numArgs > 0) {
+      OPS_ResetCurrentInputArg(-numArgs);
+    }
+    numArgs = numArgs - numOptionalArgs;
+    
     // 2. regular elements
     if (info.Size() == 0) {
-        if (OPS_GetNumRemainingInputArgs() < 3) {
+        if (numArgs < 5) {
             opserr << "insufficient "
-                      "arguments:eleTag,iNode,jNode\n";
+                      "arguments:eleTag,iNode,jNode,<A,E,G,J,Iy,Iz,<Avy,Avz>>or<sectionTag>,transfTag\n";
             return 0;
         }
 
@@ -209,58 +148,46 @@ void *OPS_ElasticBeam3d(const ID &info) {
             opserr << "WARNING failed to read integers\n";
             return 0;
         }
+	numArgs -= numData;
     }
 
     // 3. regular elements or save data
     if (info.Size() == 0 || info(0) == 1) {
-        if (OPS_GetNumRemainingInputArgs() < 6) {
-            opserr << "insufficient "
-                      "arguments:A, E, G, J, Iy, Iz\n";
-            return 0;
+        if (numArgs == 7) {
+	  // Read A,E,G,J,Iy,Iz (and transf)
+	  numData = 6;
+	  if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
+	    opserr << "WARNING failed to read doubles\n";
+	    return 0;
+	  }	  
+        }
+        if (numArgs == 9) {
+        // Read A, E, G, J, Iy, Iz, Avy, Avy (and transf)
+	  numData = 8;
+	  if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
+	    opserr << "WARNING failed to read doubles\n";
+	    return 0;
+	  }	  
+        }	
+	if (numArgs == 2) {	  
+            // Read a section tag (and transf)
+            numData = 1;
+            if (OPS_GetIntInput(&numData, &sectionTag) < 0) {
+                opserr << "WARNING sectionTag is not integer\n";
+                return 0;
+            }
+            section = true;
         }
 
-        // Read A, E, G, J, Iy, Iz
-        numData = 6;
-        if (OPS_GetDoubleInput(&numData, &data[0]) < 0) {
-            opserr << "WARNING failed to read doubles\n";
-            return 0;
-        }
+	numArgs -= numData;
 
-        if (OPS_GetNumRemainingInputArgs() < 1) {
+        if (numArgs < 1) {
             opserr << "WARNING: transfTag is needed\n";
         }
         numData = 1;
         if (OPS_GetIntInput(&numData, &transfTag) < 0) {
             opserr << "WARNING transfTag is not integer\n";
             return 0;
-        }
-
-        while (OPS_GetNumRemainingInputArgs() > 0) {
-            std::string theType = OPS_GetString();
-            if (theType == "-mass") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetDoubleInput(&numData, &mass) < 0) {
-                        opserr << "WARNING: failed to read mass\n";
-                        return 0;
-                    }
-                }
-            } else if (theType == "-cMass") {
-                cMass = 1;
-            } else if (theType == "-releasez") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetIntInput(&numData, &releasez) < 0) {
-                        opserr << "WARNING: failed to get releasez";
-                        return 0;
-                    }
-                }
-            } else if (theType == "-releasey") {
-                if (OPS_GetNumRemainingInputArgs() > 0) {
-                    if (OPS_GetIntInput(&numData, &releasey) < 0) {
-                        opserr << "WARNING: failed to get releasey";
-                        return 0;
-                    }
-                }
-            }
         }
     }
 
@@ -272,13 +199,17 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        mdata.resize(11);
+        mdata.resize(15);
+	mdata(13) = section;
+	mdata(14) = sectionTag;
         mdata(0) = data[0];
         mdata(1) = data[1];
         mdata(2) = data[2];
         mdata(3) = data[3];
         mdata(4) = data[4];
         mdata(5) = data[5];
+	mdata(11) = data[6];
+	mdata(12) = data[7];	
         mdata(6) = mass;
         mdata(7) = cMass;
         mdata(8) = releasez;
@@ -296,13 +227,18 @@ void *OPS_ElasticBeam3d(const ID &info) {
         }
 
         Vector &mdata = meshdata[info(1)];
-        if (mdata.Size() < 11) return 0;
+        //if (mdata.Size() < 15) return 0;
+	mdata.resize(15);
+	section = (bool) mdata(13);
+	sectionTag = (int) mdata(14);
         data[0] = mdata(0);
         data[1] = mdata(1);
         data[2] = mdata(2);
         data[3] = mdata(3);
         data[4] = mdata(4);
         data[5] = mdata(5);
+	data[6] = mdata(11);
+	data[7] = mdata(12);	
         mass = mdata(6);
         cMass = (int)mdata(7);
         releasez = (int)mdata(8);
@@ -321,15 +257,27 @@ void *OPS_ElasticBeam3d(const ID &info) {
         return 0;
     }
 
-    return new ElasticBeam3d(iData[0], data[0], data[1], data[2],
-                             data[3], data[4], data[5], iData[1],
-                             iData[2], *theTrans, mass, cMass,
-                             releasez, releasey);
+    if (section) {
+        SectionForceDeformation *theSection =
+            OPS_getSectionForceDeformation(sectionTag);
+        if (theSection == 0) {
+            opserr << "section not found\n";
+            return 0;
+        }
+        return new ElasticBeam3d(iData[0], iData[1], iData[2],
+                                 *theSection, *theTrans,
+                                 mass, cMass, releasez, releasey, theDamping);
+    } else {
+      return new ElasticBeam3d(iData[0], data[0], data[1], data[2], data[3],
+			       data[4], data[5], data[6], data[7],
+			       iData[1], iData[2], *theTrans,
+			       mass, cMass, releasez, releasey, theDamping);
+    }    
 }
 
 ElasticBeam3d::ElasticBeam3d()
   :Element(0,ELE_TAG_ElasticBeam3d), 
-   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), rho(0.0), cMass(0),
+   A(0.0), E(0.0), G(0.0), Jx(0.0), Iy(0.0), Iz(0.0), Avy(0.0), Avz(0.0), rho(0.0), cMass(0),
    releasez(0), releasey(0),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0),
@@ -358,7 +306,62 @@ ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g,
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
 			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), rho(r), cMass(cm),
+   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), Avy(-1.0), Avz(-1.0), rho(r), cMass(cm),
+   releasez(relz), releasey(rely),
+   Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
+   connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
+{
+  connectedExternalNodes(0) = Nd1;
+  connectedExternalNodes(1) = Nd2;
+  
+  theCoordTransf = coordTransf.getCopy3d();
+  
+  if (!theCoordTransf) {
+    opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of coordinate transformation\n";
+    exit(-1);
+  }
+
+  // Make no release if input not 0, 1, 2, or 3
+  if (releasez < 0 || releasez > 3)
+    releasez = 0;
+  if (releasey < 0 || releasey > 3)
+    releasey = 0;  
+  
+  if (damping)
+  {
+    theDamping =(*damping).getCopy();
+    
+    if (!theDamping) {
+      opserr << "ElasticBeam3d::ElasticBeam3d -- failed to get copy of damping\n";
+      //exit(-1); // this is not a fatal error...
+      theDamping = 0;
+    }
+  }
+
+  q0[0] = 0.0;
+  q0[1] = 0.0;
+  q0[2] = 0.0;
+  q0[3] = 0.0;
+  q0[4] = 0.0;
+
+  p0[0] = 0.0;
+  p0[1] = 0.0;
+  p0[2] = 0.0;
+  p0[3] = 0.0;
+  p0[4] = 0.0;
+
+  // set node pointers to NULL
+  for (int i=0; i<2; i++)
+    theNodes[i] = 0;      
+}
+
+ElasticBeam3d::ElasticBeam3d(int tag, double a, double e, double g, 
+			     double jx, double iy, double iz, double avy, double avz,
+			     int Nd1, int Nd2, 
+			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
+			     Damping *damping)
+  :Element(tag,ELE_TAG_ElasticBeam3d), 
+   A(a), E(e), G(g), Jx(jx), Iy(iy), Iz(iz), Avy(avy), Avz(avz), rho(r), cMass(cm),
    releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
@@ -457,6 +460,12 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
     case SECTION_RESPONSE_T:
       Jx = sectTangent(i,i)/G;
       break;
+    case SECTION_RESPONSE_VY:
+      Avy = sectTangent(i,i)/G;
+      break;
+    case SECTION_RESPONSE_VZ:
+      Avz = sectTangent(i,i)/G;
+      break;      
     default:
       break;
     }
@@ -677,6 +686,14 @@ ElasticBeam3d::getTangentStiff(void)
   if (releasez == 0) {
     double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
     double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+    if (G > 0 && Avy > 0.0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      double b = 1 - 6*E*Iz/(G*Avy*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIzoverL4 *= B;
+      EIzoverL2 *= C;
+    }
     q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
     q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
     kb(1,1) = kb(2,2) = EIzoverL4;
@@ -685,12 +702,20 @@ ElasticBeam3d::getTangentStiff(void)
   if (releasez == 1) { // release I
     q(1) = 0.0;
     double EIoverL3 = 3.0*Iz*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      EIoverL3 /= a;
+    }    
     q(2) = EIoverL3*v(2);
     kb(2,2) = EIoverL3;
   }
   if (releasez == 2) { // release J
     q(2) = 0.0;
     double EIoverL3 = 3.0*Iz*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      EIoverL3 /= a;
+    }       
     q(1) = EIoverL3*v(1);
     kb(1,1) = EIoverL3;
   }
@@ -702,6 +727,14 @@ ElasticBeam3d::getTangentStiff(void)
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+    if (G > 0 && Avz > 0.0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      double b = 1 - 6*E*Iy/(G*Avz*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIyoverL4 *= B;
+      EIyoverL2 *= C;
+    }    
     q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
     q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
     kb(3,3) = kb(4,4) = EIyoverL4;
@@ -710,12 +743,20 @@ ElasticBeam3d::getTangentStiff(void)
   if (releasey == 1) { // release I
     q(3) = 0.0;
     double EIoverL3 = 3.0*Iy*EoverL;
+    if (G > 0 && Avz > 0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      EIoverL3 /= a;
+    }        
     q(4) = EIoverL3*v(4);
     kb(4,4) = EIoverL3;
   }
   if (releasey == 2) { // release J
     q(4) = 0.0;
     double EIoverL3 = 3.0*Iy*EoverL;
+    if (G > 0 && Avz > 0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      EIoverL3 /= a;
+    }    
     q(3) = EIoverL3*v(3);
     kb(3,3) = EIoverL3;
   }
@@ -753,6 +794,14 @@ ElasticBeam3d::getInitialStiff(void)
   if (releasez == 0) {
     double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
     double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+    if (G > 0 && Avy > 0.0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      double b = 1 - 6*E*Iz/(G*Avy*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIzoverL4 *= B;
+      EIzoverL2 *= C;
+    }        
     kb(1,1) = kb(2,2) = EIzoverL4;
     kb(2,1) = kb(1,2) = EIzoverL2;
   }
@@ -766,14 +815,30 @@ ElasticBeam3d::getInitialStiff(void)
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+    if (G > 0 && Avz > 0.0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      double b = 1 - 6*E*Iy/(G*Avz*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIyoverL4 *= B;
+      EIyoverL2 *= C;
+    }        
     kb(3,3) = kb(4,4) = EIyoverL4;
     kb(4,3) = kb(3,4) = EIyoverL2;
   }
   if (releasey == 1) { // release I
     kb(4,4) = 3.0*Iy*EoverL;
+    if (G > 0 && Avz > 0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      kb(4,4) /= a;
+    }        
   }
   if (releasey == 2) { // release J
     kb(3,3) = 3.0*Iy*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      kb(3,3) /= a;
+    }            
   }
 
   if(theDamping) kb *= theDamping->getStiffnessMultiplier();  
@@ -912,46 +977,66 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     
   }
   else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
+    static bool errorReleasePartialUDL = false;
+    if ((releasey != 0 || releasez != 0) && errorReleasePartialUDL == false) {
+      opserr << "ElasticBeam3d::addLoad, element tag: " << this->getTag()
+	     << " - partial uniform load implementation assumes no releases" << endln;
+      errorReleasePartialUDL = true;
+    }
 	  double wa = data(2) * loadFactor;  // Axial
 	  double wy = data(0) * loadFactor;  // Transverse
 	  double wz = data(1) * loadFactor;  // Transverse
 	  double a = data(3) * L;
 	  double b = data(4) * L;
-	  double c = 0.5 * (b + a);
-	  double cOverL = c / L;
+	  double wab = data(7) * loadFactor; // at location b
+	  double wyb = data(5) * loadFactor;
+	  double wzb = data(6) * loadFactor;
 
-	  double P = wa * (b - a);
-	  double Fy = wy * (b - a);
-	  double Fz = wz * (b - a);
+	  // auxiliary values
+	  double ba = b-a;
+	  double ba2 = pow(b, 2.0) - pow(a, 2.0);
+	  double ba3 = pow(b, 3.0) - pow(a, 3.0);
+	  double ba4 = pow(b, 4.0) - pow(a, 4.0);
+	  double ba5 = pow(b, 5.0) - pow(a, 5.0);
+	  double wya = wy;
+	  double z1 = wya + (wya*a)/ba - (wyb*a)/ba;
+	  double wybpa = wya+wyb;
+	  double wybma = wyb-wya;
+	  double L2 = L*L;
+	  
+	  // equivalent nodal forces
+	  double Fyt = 0.5*wybpa*ba;
+	  double V2 = (1.0/L)*(wya*ba*(a+0.5*ba)+0.5*wybma*ba*(a+(2.0/3.0)*ba));
+	  double V1 = Fyt-V2;
+	  double M1 = (0.5*z1*ba2) + (wybma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wybma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
+	  double M2 = (-1.0*z1*ba3/(3.0*L)) - (wybma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
+	  double waa = wa;
+	  double P = waa*ba + 0.5*(wab-waa)*ba;
+	  double PJ = (1.0/L)*(waa*ba*(a+0.5*ba)+0.5*(wab-waa)*ba*(a+(2.0/3.0)*ba));
+	  q0[0] -= PJ;
+	  q0[1] -= M1;
+	  q0[2] -= M2;
 
-	  // Reactions in basic system
 	  p0[0] -= P;
-	  double V1, V2;
-	  V1 = Fy * (1.0 - cOverL);
-	  V2 = Fy * cOverL;
 	  p0[1] -= V1;
-	  p0[2] -= V2;
-	  V1 = Fz * (1.0 - cOverL);
-	  V2 = Fz * cOverL;
+	  p0[2] -= V2;	  
+
+	  double wza = wz;
+	  z1 = wza + (wza*a)/ba - (wzb*a)/ba;
+	  double wzbpa = wza+wzb;
+	  double wzbma = wzb-wza;
+	  
+	  // equivalent nodal forces
+	  double Fzt = 0.5*wzbpa*ba;
+	  V2 = (1.0/L)*(wza*ba*(a+0.5*ba)+0.5*wzbma*ba*(a+(2.0/3.0)*ba));
+	  V1 = Fzt-V2;
+	  M1 = (0.5*z1*ba2) + (wzbma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wzbma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wzbma*ba5/(5.0*L2*ba));
+	  M2 = (-1.0*z1*ba3/(3.0*L)) - (wzbma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wzbma*ba5/(5.0*L2*ba));
+	  q0[3] += M1;
+	  q0[4] += M2;	  
+
 	  p0[3] -= V1;
-	  p0[4] -= V2;
-
-	  // Fixed end forces in basic system
-	  q0[0] -= P * cOverL;
-	  double M1, M2;
-	  double beta2 = (1 - cOverL) * (1 - cOverL);
-	  double alfa2 = (cOverL) * (cOverL);
-	  double gamma2 = (b - a) / L;
-	  gamma2 *= gamma2;
-
-	  M1 = -wy * (b - a) * (c * beta2 + gamma2 / 12.0 * (L - 3 * (L - c)));
-	  M2 = wy * (b - a) * ((L - c) * alfa2 + gamma2 / 12.0 * (L - 3 * c));
-	  q0[1] += M1;
-	  q0[2] += M2;
-	  M1 = -wz * (b - a) * (c * beta2 + gamma2 / 12.0 * (L - 3 * (L - c)));
-	  M2 = wz * (b - a) * ((L - c) * alfa2 + gamma2 / 12.0 * (L - 3 * c));
-	  q0[3] -= M1;
-	  q0[4] -= M2;
+	  p0[4] -= V2;	  
   }
   else if (type == LOAD_TAG_Beam3dPointLoad) {
     double Py = data(0)*loadFactor;
@@ -1106,16 +1191,34 @@ ElasticBeam3d::getResistingForce()
   if (releasez == 0) {
     double EIzoverL2 = 2.0*Iz*EoverL;		// 2EIz/L
     double EIzoverL4 = 2.0*EIzoverL2;		// 4EIz/L
+    if (G > 0 && Avy > 0.0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      double b = 1 - 6*E*Iz/(G*Avy*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIzoverL4 *= B;
+      EIzoverL2 *= C;
+    }    
     q(1) = EIzoverL4*v(1) + EIzoverL2*v(2);
     q(2) = EIzoverL2*v(1) + EIzoverL4*v(2);
   }
   if (releasez == 1) {
     q(1) = 0.0;
-    q(2) = 3.0*Iz*EoverL*v(2);
+    double EIoverL3 = 3.0*Iz*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      EIoverL3 /= a;
+    }    
+    q(2) = EIoverL3*v(2);
   }
   if (releasez == 2) {
-    q(1) = 3.0*Iz*EoverL*v(1);
     q(2) = 0.0;
+    double EIoverL3 = 3.0*Iz*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iz/(G*Avy*L*L);
+      EIoverL3 /= a;
+    }       
+    q(1) = EIoverL3*v(1);
   }
   if (releasez == 3) {
     q(1) = 0.0;
@@ -1125,16 +1228,34 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
+    if (G > 0 && Avy > 0.0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      double b = 1 - 6*E*Iy/(G*Avz*L*L);
+      double B = 3*a/(4*a*a-b*b);
+      double C = 3*b/(4*a*a-b*b);
+      EIyoverL4 *= B;
+      EIyoverL2 *= C;
+    }        
     q(3) = EIyoverL4*v(3) + EIyoverL2*v(4);
     q(4) = EIyoverL2*v(3) + EIyoverL4*v(4);    
   }
   if (releasey == 1) {
     q(3) = 0.0;
-    q(4) = 3.0*Iy*EoverL*v(4);
+    double EIoverL3 = 3.0*Iy*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      EIoverL3 /= a;
+    }        
+    q(4) = EIoverL3*v(4);
   }
   if (releasey == 2) {
-    q(3) = 3.0*Iy*EoverL*v(3);
     q(4) = 0.0;
+    double EIoverL3 = 3.0*Iy*EoverL;
+    if (G > 0 && Avy > 0) {
+      double a = 1 + 3*E*Iy/(G*Avz*L*L);
+      EIoverL3 /= a;
+    }        
+    q(3) = EIoverL3*v(3);
   }
   if (releasey == 3) {
     q(3) = 0.0;
@@ -1350,6 +1471,15 @@ void
 ElasticBeam3d::Print(OPS_Stream &s, int flag)
 {
 	this->getResistingForce(); 
+	s << E << ' '
+	  << A << ' '
+	  << Iz << ' '
+	  << Iy << ' '
+	  << G << ' '
+	  << Jx << ' '
+	  << Avy << ' '
+	  << Avz << ' '
+	  << endln;
 	
 	if (flag == -1) {
 		int eleTag = this->getTag();
@@ -1859,6 +1989,16 @@ ElasticBeam3d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(Jx);
     return param.addObject(6, this);
   }
+  // Avy of the beam interior
+  if (strcmp(argv[0],"Avy") == 0) {
+    param.setValue(Avy);
+    return param.addObject(9, this);
+  }
+  // Avz of the beam interior
+  if (strcmp(argv[0],"Avz") == 0) {
+    param.setValue(Avz);
+    return param.addObject(10, this);
+  }    
   // moment release
   if (strcmp(argv[0],"releasez") == 0) {
     param.setValue(releasez);
@@ -1905,6 +2045,12 @@ ElasticBeam3d::updateParameter (int parameterID, Information &info)
 	case 6:
 		Jx = info.theDouble;
 		return 0;
+	case 9:
+		Avy = info.theDouble;
+		return 0;
+	case 10:
+		Avz = info.theDouble;
+		return 0;	       
 	case 7:
 	  releasez = (int)info.theDouble;
 	  if (releasez < 0 || releasez > 3)

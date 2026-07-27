@@ -902,16 +902,37 @@ KikuchiAikenLRB::compABisection(double heq, double u, double min, double max, do
   double aMin, aMax, aTmp ;
   double RHS,LHS ;
 
+  if (u == 0.0 || tol <= 0.0 || max <= min) {
+    opserr << "WARNING KikuchiAikenLRB::compABisection received invalid input; "
+	   << "using limiting value for parameter a\n";
+    return lim;
+  }
+
   RHS = (2*u-M_PI*heq)/(2*u);
+
+  if (!(RHS > 0.0) || RHS != RHS) {
+    opserr << "WARNING KikuchiAikenLRB::compABisection cannot solve for parameter a; "
+	   << "using limiting value\n";
+    return lim;
+  }
 
   aMin = min;
   aMax = max;
 
-  while (true) {
+  const double lhsMin = (aMin <= DBL_EPSILON) ? 2.0 : (1-exp(-2*aMin))/(aMin);
+  const double lhsMax = (aMax <= DBL_EPSILON) ? 2.0 : (1-exp(-2*aMax))/(aMax);
+  if (RHS > lhsMin || RHS < lhsMax) {
+    opserr << "WARNING KikuchiAikenLRB::compABisection target is outside "
+	   << "the bisection range; using limiting value for parameter a\n";
+    return lim;
+  }
+
+  const int maxIterations = 100;
+  for (int iter = 0; iter < maxIterations; iter++) {
     aTmp = (aMin+aMax)/2;
-    LHS = (1-exp(-2*aTmp))/(aTmp);
+    LHS = (aTmp <= DBL_EPSILON) ? 2.0 : (1-exp(-2*aTmp))/(aTmp);
     if (fabs((LHS-RHS)/RHS) < tol) {
-      break;
+      return (aTmp < lim) ? aTmp : lim ; //min(aTmp,lim)
     } else if (LHS < RHS) {
       aMax = aTmp;
     } else {
@@ -919,6 +940,8 @@ KikuchiAikenLRB::compABisection(double heq, double u, double min, double max, do
     }
   }
 
+  opserr << "WARNING KikuchiAikenLRB::compABisection did not converge; "
+	 << "using best bounded estimate for parameter a\n";
   return (aTmp < lim) ? aTmp : lim ; //min(aTmp,lim)
 
 }

@@ -51,6 +51,7 @@ class ExpressNewton: public EquiSolnAlgo
     ~ExpressNewton();
 
     int solveCurrentStep(void);
+    int domainChanged(void);
     int setConvergenceTest(ConvergenceTest *theNewTest);
     
     virtual int sendSelf(int commitTag, Channel &theChannel);
@@ -62,6 +63,8 @@ class ExpressNewton: public EquiSolnAlgo
   protected:
     
   private:
+    // factorOnce: 0=every iter; 1->2 after one formTangent; 2=skip formTangent (reuse factor).
+    // domainChanged() resets 2->1.
     int factorOnce;
     int nIter;
     double kMultiplier1, kMultiplier2;

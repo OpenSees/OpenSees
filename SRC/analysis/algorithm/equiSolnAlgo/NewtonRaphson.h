@@ -49,12 +49,13 @@ class NewtonRaphson: public EquiSolnAlgo
 {
   public:
   NewtonRaphson();
-  NewtonRaphson(int tangent, double iFactor = 0.0, double cFactor = 1.0);    
-  NewtonRaphson(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 1.0);
+  NewtonRaphson(int tangent, double iFactor = 0.0, double cFactor = 1.0, int factorOnce = 0);
+  NewtonRaphson(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 1.0, int factorOnce = 0);
   ~NewtonRaphson();
   
-  int solveCurrentStep(void);    
-    
+  int solveCurrentStep(void);
+  int domainChanged(void);
+
   virtual int sendSelf(int commitTag, Channel &theChannel);
   virtual int recvSelf(int commitTag, Channel &theChannel, 
 		       FEM_ObjectBroker &theBroker);
@@ -68,7 +69,10 @@ class NewtonRaphson: public EquiSolnAlgo
  private:
   int tangent;
   int numIterations;
-  
+  // factorOnce: 0=every iter; 1->2 after one formTangent; 2=skip formTangent (reuse factor).
+  // domainChanged() resets 2->1.
+  int factorOnce;
+
   double iFactor;
   double cFactor;
 };

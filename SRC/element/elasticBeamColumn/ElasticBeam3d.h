@@ -56,6 +56,14 @@ class ElasticBeam3d : public Element
 		  int releasez = 0, int releasey = 0,
 		      Damping *theDamping = 0);
 
+    ElasticBeam3d(int tag, double A, double E, double G, 
+		  double Jx, double Iy, double Iz,
+		  double Avy, double Avz,
+		  int Nd1, int Nd2, CrdTransf &theTransf,
+		  double rho = 0.0, int cMass = 0,
+		  int releasez = 0, int releasey = 0,
+		  Damping *theDamping = 0);  
+
     ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation &section, 
 		  CrdTransf &theTransf, double rho = 0.0, int cMass = 0,
 		  int releasez = 0, int releasey = 0,
@@ -104,6 +112,7 @@ class ElasticBeam3d : public Element
 
   private:
     double A,E,G,Jx,Iy,Iz;
+  double Avy, Avz; // properties for shear
 
     double rho;
     int cMass;

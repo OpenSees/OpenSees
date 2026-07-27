@@ -76,7 +76,8 @@ public:
     friend class UmfpackGenLinSolver;
 
 protected:
-    
+    bool factored;
+
 private:
     Vector X,B;
     std::vector<int> Ap, Ai;

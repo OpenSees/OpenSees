@@ -47,7 +47,7 @@ extern OPS_Routine OPS_CFSSSWP;
 extern OPS_Routine OPS_CFSWSWP;
 extern OPS_Routine OPS_CableMaterial;
 extern OPS_Routine OPS_Cast;
-extern OPS_Routine OPS_CreepMaterial;
+extern OPS_Routine OPS_CreepShrinkageACI209;
 // Concrete
 extern OPS_Routine OPS_Concrete02;
 extern OPS_Routine OPS_Concrete02IS;
@@ -443,7 +443,7 @@ std::unordered_map<std::string, Tcl_CmdProc*> uniaxial_dispatch {
     {"ConcreteL01Material",    dispatch<OPS_ConcreteL01Material>       },
     {"ConcreteL01",            dispatch<OPS_ConcreteL01Material>       },
 
-    {"Creep",                  dispatch<OPS_CreepMaterial>             },
+    {"CreepShrinkageACI209",   dispatch<OPS_CreepShrinkageACI209>      },
 
     {"TendonL01Material",      dispatch<OPS_TendonL01Material>         },
     {"TendonL01",              dispatch<OPS_TendonL01Material>         },
