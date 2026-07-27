@@ -63,7 +63,6 @@ MPI_MachineBroker::~MPI_MachineBroker()
   delete [] theChannels;
   delete usedChannels;
 
-  MPI_Barrier(MPI_COMM_WORLD);
   MPI_Finalize();
 }
 

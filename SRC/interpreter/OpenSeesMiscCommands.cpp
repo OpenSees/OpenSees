@@ -1986,6 +1986,12 @@ int OPS_partition() {
 
     if (np == 1) return 0;
 
+    if (pid == 0 && domain->getNumEQs() > 0) {
+        opserr << "WARNING: partition does not yet support EQ_Constraint ("
+               << domain->getNumEQs()
+               << " found); results may be incorrect\n";
+    }
+
     // parameters
     int ncuts = 1;
     int niter = 10;
