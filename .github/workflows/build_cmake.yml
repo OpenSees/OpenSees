@@ -30,7 +30,7 @@ jobs:
       - name: build OpenSees & OpenSeesPy
         run: |
           conan install . --build=missing
-          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin
+          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin -DOPS_ENABLE_TESTS=ON
           cd build/Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
@@ -40,12 +40,10 @@ jobs:
           export PYTHONPATH="./build/Release"
           python3 -c "import sys; print(sys.path)"
           python3 ./EXAMPLES/ExamplePython/example_variable_analysis.py
-      - name: Run pytest in tests/ folder
+      - name: Run OpenSeesPy regression tests
         run: |
           python3 -m pip install pytest
-          cp build/Release/opensees.so tests/
-          cd tests
-          pytest -v
+          ctest --test-dir build/Release --output-on-failure
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -76,11 +74,16 @@ jobs:
           export FC=/opt/homebrew/bin/gfortran-13
           export LDFLAGS="-L/opt/homebrew/lib/gcc/current -lgfortran"
           conan install . --build=missing
-          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin	
+          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin -DOPS_ENABLE_TESTS=ON
           cd build/Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
-          mv ./OpenSeesPy.dylib ./opensees.so
+      - name: Run OpenSeesPy regression tests
+        run: |
+          python3 -m pip install pytest
+          ctest --test-dir build/Release --output-on-failure
+      - name: Prepare OpenSeesPy artifact
+        run: mv ./build/Release/OpenSeesPy.dylib ./build/Release/opensees.so
       - name: Verification OpenSeesPySP
         run: |
           export PYTHONPATH="./build/Release"
@@ -139,10 +142,15 @@ jobs:
         run: |
           conan install . -s arch=x86_64 -s compiler.runtime=static --build=missing -c tools.cmake.cmaketoolchain:generator=Ninja
           call "C:\Program Files (x86)\Intel\oneAPI\setvars.bat" intel64 mod
-          cmake.exe -S . -B build/Release -G "Ninja"  -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DCMAKE_Fortran_COMPILER="ifx" -DBLA_STATIC=ON  -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64  -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_EXE_LINKER_FLAGS="/FORCE:MULTIPLE" -DCMAKE_SHARED_LINKER_FLAGS="/FORCE:MULTIPLE" -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON
+          cmake.exe -S . -B build/Release -G "Ninja"  -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_MSVC_RUNTIME_LIBRARY="MultiThreaded" -DCMAKE_Fortran_COMPILER="ifx" -DBLA_STATIC=ON  -DMKL_LINK=static -DMKL_INTERFACE_FULL=intel_lp64  -DMUMPS_DIR="..\..\mumps\build" -DCMAKE_EXE_LINKER_FLAGS="/FORCE:MULTIPLE" -DCMAKE_SHARED_LINKER_FLAGS="/FORCE:MULTIPLE" -DCMAKE_NINJA_FORCE_RESPONSE_FILE=ON -DOPS_ENABLE_TESTS=ON
           cd build/Release
           cmake --build . --config Release --target OpenSees -j8
           cmake --build . --config Release --target OpenSeesPy -j8
+      - name: Run OpenSeesPy regression tests
+        shell: pwsh
+        run: |
+          python -m pip install pytest
+          ctest --test-dir build/Release --output-on-failure
       - name: Verification OpenSeesPySP
         shell: pwsh
         run: |
@@ -159,3 +167,32 @@ jobs:
               ./build/Release/OpenSees.exe
               ./build/Release/opensees.pyd
               ./build/Release/libiomp5md.dll
+
+  build-ubuntu-sanitizers:
+    name: Sanitizer regression tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Obtain OpenSees source code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install dependencies
+        run: |
+          python3 -m pip install conan pytest
+          conan profile detect --force
+          conan install . --build=missing
+      - name: Configure sanitizer build
+        run: |
+          cmake -S . -B build/Sanitize -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPS_ENABLE_TESTS=ON -DCMAKE_C_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer" -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined" -DCMAKE_SHARED_LINKER_FLAGS="-fsanitize=address,undefined"
+      - name: Build OpenSees and OpenSeesPy
+        run: cmake --build build/Sanitize --target OpenSees OpenSeesPy -j2
+      - name: Run sanitizer regression tests
+        env:
+          ASAN_OPTIONS: detect_leaks=0:halt_on_error=1
+          UBSAN_OPTIONS: print_stacktrace=1:halt_on_error=1
+        run: ctest --test-dir build/Sanitize --output-on-failure

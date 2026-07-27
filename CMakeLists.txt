@@ -263,6 +263,8 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_FORTRAN_STANDARD 08)
 
+option(OPS_ENABLE_TESTS "Register OpenSees regression tests with CTest" OFF)
+
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 #add_compile_options(-g)
 
@@ -884,6 +886,25 @@ set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
+
+if(OPS_ENABLE_TESTS)
+  include(CTest)
+  find_package(Python COMPONENTS Interpreter REQUIRED)
+
+  if(BUILD_TESTING)
+    add_test(
+      NAME OpenSeesPyRegression
+      COMMAND ${Python_EXECUTABLE}
+              ${PROJECT_SOURCE_DIR}/tests/run_pytest.py
+              --module "$<TARGET_FILE:OpenSeesPy>"
+              --tests-dir ${PROJECT_SOURCE_DIR}/tests
+              --tests-dir ${PROJECT_SOURCE_DIR}/SRC/unittest
+    )
+    set_tests_properties(OpenSeesPyRegression PROPERTIES
+      ENVIRONMENT "PYTHONUNBUFFERED=1"
+    )
+  endif()
+endif()
 
 
 
