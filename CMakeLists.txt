@@ -869,14 +869,28 @@ target_link_libraries(OpenSeesPy
 #
 
 install (TARGETS OpenSees DESTINATION bin)
+
+#if (TCL_INIT_FILE)
+#   install(FILES "${TCL_INIT_FILE}"
+#       DESTINATION lib/tcl8.6 
+#   )
+#endif()
+
+install (TARGETS OpenSees DESTINATION bin)
 if (TCL_INIT_FILE)
    install(FILES "${TCL_INIT_FILE}"
-       DESTINATION lib/tcl8.6 
+       DESTINATION library 
    )
 endif()
-install(PROGRAMS $<TARGET_FILE:OpenSeesPy> 
-        DESTINATION bin 
+
+install(PROGRAMS $<TARGET_FILE:OpenSeesPy>
+        DESTINATION bin
         RENAME opensees.so)
+
+if (MPI_FOUND)
+    install(TARGETS OpenSeesSP DESTINATION bin OPTIONAL)
+    install(TARGETS OpenSeesMP DESTINATION bin OPTIONAL)
+endif()
 
 
 # Set selected executable to be built by default

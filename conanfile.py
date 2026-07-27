@@ -1,6 +1,6 @@
 
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
+from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
 from conan.tools.files import copy
 from conan.errors import ConanInvalidConfiguration
 import os
@@ -20,13 +20,8 @@ class OpenSeesDependencies(ConanFile):
 
     exports_sources = "CMakeLists.txt", "src/*", "applications/*", "LICENSE"
 
-    def layout(self):
-        # 5. Layout: This standardizes where source/build files go. 
-        # It replaces the manual '_source_subfolder' logic.
-        cmake_layout(self)
-
     def requirements(self):
-        self.requires("hdf5/1.14.0")
+        self.requires("hdf5/1.14.6")
         self.requires("tcl/8.6.11")
         self.requires("zlib/1.3.1")
         self.requires("eigen/3.4.0")
