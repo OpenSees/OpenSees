@@ -67,15 +67,27 @@ UmfpackGenLinSolver(bool useLongIndices)
     : LinearSOESolver(SOLVER_TAGS_UmfpackGenLinSolver),
       useLongIndices(useLongIndices),
       Symbolic(0),
+      Numeric(0),
       theSOE(0)
 {
 }
 
 UmfpackGenLinSolver::~UmfpackGenLinSolver()
 {
+    if (Numeric != 0) {
+        if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
+            umfpack_dl_free_numeric(&Numeric);
+#endif
+        } else {
+            umfpack_di_free_numeric(&Numeric);
+        }
+    }
     if (Symbolic != 0) {
         if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
             umfpack_dl_free_symbolic(&Symbolic);
+#endif
         } else {
             umfpack_di_free_symbolic(&Symbolic);
         }
@@ -116,63 +128,58 @@ UmfpackGenLinSolver::solve(void)
         return -1;
     }
 
-    void* Numeric = 0;
-
     if (useLongIndices) {
-        // numeric analysis
+#ifdef _UMFPACK_DLONG
         SuiteSparse_long *Ap = Ap64.data();
         SuiteSparse_long *Ai = Ai64.data();
+
+        if (theSOE->factored == false) {
+            if (Numeric != 0) {
+                umfpack_dl_free_numeric(&Numeric);
+            }
+            SuiteSparse_long status =
+                umfpack_dl_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
+
+            if (status != UMFPACK_OK) {
+                opserr << "WARNING: numeric analysis returns "
+                       << static_cast<int>(status)
+                       << " -- Umfpackgenlinsolver::solve\n";
+                return -1;
+            }
+            theSOE->factored = true;
+        }
+
         SuiteSparse_long status =
-            umfpack_dl_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
-        
-        // check error
-        if (status != UMFPACK_OK) {
-            opserr << "WARNING: numeric analysis returns "
-                   << static_cast<int>(status)
-                   << " -- Umfpackgenlinsolver::solve\n";
-            return -1;
-        }
+            umfpack_dl_solve(UMFPACK_A, Ap, Ai, Ax, X, B, Numeric, Control, Info);
 
-        // solve
-        status = umfpack_dl_solve(UMFPACK_A, Ap, Ai, Ax, X, B, Numeric, Control,
-                                  Info);
-        
-        // delete Numeric
-        if (Numeric != 0) {
-            umfpack_dl_free_numeric(&Numeric);
-        }
-
-        // check error
         if (status != UMFPACK_OK) {
             opserr << "WARNING: solving returns " << static_cast<int>(status)
                    << " -- Umfpackgenlinsolver::solve\n";
             return -1;
         }
+#endif
     } else {
-        // numeric analysis
         int *Ap = theSOE->Ap.data();
         int *Ai = theSOE->Ai.data();
+
+        if (theSOE->factored == false) {
+            if (Numeric != 0) {
+                umfpack_di_free_numeric(&Numeric);
+            }
+            int status =
+                umfpack_di_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
+
+            if (status != UMFPACK_OK) {
+                opserr << "WARNING: numeric analysis returns " << status
+                       << " -- Umfpackgenlinsolver::solve\n";
+                return -1;
+            }
+            theSOE->factored = true;
+        }
+
         int status =
-            umfpack_di_numeric(Ap, Ai, Ax, Symbolic, &Numeric, Control, Info);
-        
-        
-        // check error
-        if (status != UMFPACK_OK) {
-            opserr << "WARNING: numeric analysis returns " << status
-                   << " -- Umfpackgenlinsolver::solve\n";
-            return -1;
-        }
+            umfpack_di_solve(UMFPACK_A, Ap, Ai, Ax, X, B, Numeric, Control, Info);
 
-        // solve
-        status = umfpack_di_solve(UMFPACK_A, Ap, Ai, Ax, X, B, Numeric, Control,
-                                  Info);
-
-        // delete Numeric
-        if (Numeric != 0) {
-            umfpack_di_free_numeric(&Numeric);
-        }
-        
-        // check error
         if (status != UMFPACK_OK) {
             opserr << "WARNING: solving returns " << status
                    << " -- Umfpackgenlinsolver::solve\n";
@@ -191,10 +198,30 @@ UmfpackGenLinSolver::setSize()
     if (n == 0 || nnz == 0) {
         Ap64.clear();
         Ai64.clear();
+        if (Numeric != 0) {
+            if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
+                umfpack_dl_free_numeric(&Numeric);
+#endif
+            } else {
+                umfpack_di_free_numeric(&Numeric);
+            }
+        }
         return 0;
     }
 
+    if (Numeric != 0) {
+        if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
+            umfpack_dl_free_numeric(&Numeric);
+#endif
+        } else {
+            umfpack_di_free_numeric(&Numeric);
+        }
+    }
+
     if (useLongIndices) {
+#ifdef _UMFPACK_DLONG
         // set default control parameters
         umfpack_dl_defaults(Control);
         Control[UMFPACK_PIVOT_TOLERANCE] = 1.0;
@@ -221,6 +248,7 @@ UmfpackGenLinSolver::setSize()
             Symbolic = 0;
             return -1;
         }
+#endif
     } else {
         // set default control parameters
         umfpack_di_defaults(Control);

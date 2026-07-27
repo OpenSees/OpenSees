@@ -275,6 +275,9 @@ OpenSeesCommands::eigen(int typeSolver, double shift,
 	    theAnalysisModel = new AnalysisModel();
 	if (theTest == 0)
 	    theTest = new CTestNormUnbalance(1.0e-6,25,0);
+	if (theAlgorithm != 0) {
+	    theAlgorithm->setConvergenceTest(theTest);
+	}
 	if (theAlgorithm == 0) {
 	    theAlgorithm = new NewtonRaphson(*theTest);
 	}
@@ -598,6 +601,9 @@ OpenSeesCommands::setStaticAnalysis(bool suppress)
     if (theTest == 0) {
 	theTest = new CTestNormUnbalance(1.0e-6,25,0);
     }
+    if (theAlgorithm != 0) {
+	theAlgorithm->setConvergenceTest(theTest);
+    }
     if (theAlgorithm == 0) {
       if (!suppress) {
 	opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
@@ -704,6 +710,9 @@ OpenSeesCommands::setPFEMAnalysis(bool suppress)
 	//theTest = new CTestNormUnbalance(1e-2,10000,1,2,3);
 	theTest = new CTestPFEM(1e-2,1e-2,1e-2,1e-2,1e-4,1e-3,10000,100,1,2);
     }
+    if (theAlgorithm != 0) {
+	theAlgorithm->setConvergenceTest(theTest);
+    }
     if(theAlgorithm == 0) {
 	theAlgorithm = new NewtonRaphson(*theTest);
     }
@@ -766,6 +775,10 @@ OpenSeesCommands::setVariableAnalysis(bool suppress)
 
     if (theTest == 0) {
 	theTest = new CTestNormUnbalance(1.0e-6,25,0);
+    }
+
+    if (theAlgorithm != 0) {
+	theAlgorithm->setConvergenceTest(theTest);
     }
 
     if (theAlgorithm == 0) {
@@ -849,6 +862,9 @@ OpenSeesCommands::setTransientAnalysis(bool suppress)
     }
     if (theTest == 0) {
 	theTest = new CTestNormUnbalance(1.0e-6,25,0);
+    }
+    if (theAlgorithm != 0) {
+	theAlgorithm->setConvergenceTest(theTest);
     }
     if (theAlgorithm == 0) {
       if (!suppress) {
@@ -1889,6 +1905,10 @@ int OPS_Algorithm()
     } else if (strcmp(type, "ModifiedNewton") == 0) {
 	theAlgo = (EquiSolnAlgo*) OPS_ModifiedNewton();
 
+    } else if ((strcmp(type, "NewtonHallM") == 0)
+	       || (strcmp(type, "NewtonHall") == 0)) {
+	theAlgo = (EquiSolnAlgo*) OPS_NewtonHallM();
+
     } else if (strcmp(type, "KrylovNewton") == 0) {
 	theAlgo = (EquiSolnAlgo*) OPS_KrylovNewton();
 
@@ -2654,395 +2674,6 @@ int OPS_printModel()
     // close the output file
     outputFile.close();
     return res;
-}
-
-void* OPS_KrylovNewton()
-{
-    if (cmds == 0) return 0;
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag,"-iterate") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		iterateTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		iterateTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		iterateTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-increment") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		incrementTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		incrementTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		incrementTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-maxDim") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    maxDim = atoi(flag);
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
-		opserr<< "WARNING KrylovNewton failed to read maxDim\n";
-		return 0;
-	    }
-	}
-    }
-
-    ConvergenceTest* theTest = cmds->getCTest();
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return 0;
-    }
-
-    Accelerator *theAccel;
-    theAccel = new KrylovAccelerator(maxDim, iterateTangent);
-
-    return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
-}
-
-void* OPS_RaphsonNewton()
-{
-    if (cmds == 0) return 0;
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag,"-iterate") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		iterateTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		iterateTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		iterateTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-increment") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		incrementTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		incrementTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		incrementTangent = NO_TANGENT;
-	    }
-	}
-    }
-
-    ConvergenceTest* theTest = cmds->getCTest();
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return 0;
-    }
-
-    Accelerator *theAccel;
-    theAccel = new RaphsonAccelerator(iterateTangent);
-
-    return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
-}
-
-void* OPS_MillerNewton()
-{
-    if (cmds == 0) return 0;
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag,"-iterate") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		iterateTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		iterateTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		iterateTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-increment") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		incrementTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		incrementTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		incrementTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-maxDim") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    maxDim = atoi(flag);
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
-		opserr<< "WARNING KrylovNewton failed to read maxDim\n";
-		return 0;
-	    }
-	}
-    }
-
-    ConvergenceTest* theTest = cmds->getCTest();
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return 0;
-    }
-
-    Accelerator *theAccel = 0;
-    return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
-}
-
-void* OPS_SecantNewton()
-{
-    if (cmds == 0) return 0;
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    int numTerms = 2;
-    bool cutOut = false;
-    double R[2];
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag,"-iterate") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		iterateTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		iterateTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		iterateTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-increment") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		incrementTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		incrementTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		incrementTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-maxDim") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
-		opserr<< "WARNING SecantNewton failed to read maxDim\n";
-		return 0;
-	    }
-	} else if (strcmp(flag,"-numTerms") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &numTerms) < 0) {
-		opserr<< "WARNING SecantNewton failed to read maxDim\n";
-		return 0;
-	    }
-	} else if ((strcmp(flag,"-cutOut") == 0 || strcmp(flag,"-cutout") == 0)
-		   && OPS_GetNumRemainingInputArgs() > 1) {
-	  int numdata = 2;
-	  if (OPS_GetDoubleInput(&numdata, R) < 0) {
-	    opserr << "WARNING SecantNewton failed to read cutOut values R1 and R2" << endln;
-	    return 0;
-	  }
-	  cutOut = true;
-	}
-    }
-
-    ConvergenceTest* theTest = cmds->getCTest();
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return 0;
-    }
-
-    Accelerator *theAccel = 0;
-    if (numTerms <= 1)
-      if (cutOut)
-	theAccel = new SecantAccelerator1(maxDim, iterateTangent, R[0], R[1]);
-      else
-	theAccel = new SecantAccelerator1(maxDim, iterateTangent);
-    if (numTerms >= 3)
-      if (cutOut)
-	theAccel = new SecantAccelerator3(maxDim, iterateTangent, R[0], R[1]);
-      else
-	theAccel = new SecantAccelerator3(maxDim, iterateTangent);
-    if (numTerms == 2)
-      if (cutOut)
-	theAccel = new SecantAccelerator2(maxDim, iterateTangent, R[0], R[1]);
-      else
-	theAccel = new SecantAccelerator2(maxDim, iterateTangent);            
-
-    return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
-}
-
-void* OPS_PeriodicNewton()
-{
-    if (cmds == 0) return 0;
-    int incrementTangent = CURRENT_TANGENT;
-    int iterateTangent = CURRENT_TANGENT;
-    int maxDim = 3;
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag,"-iterate") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		iterateTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		iterateTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		iterateTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-increment") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2,"current") == 0) {
-		incrementTangent = CURRENT_TANGENT;
-	    }
-	    if (strcmp(flag2,"initial") == 0) {
-		incrementTangent = INITIAL_TANGENT;
-	    }
-	    if (strcmp(flag2,"noTangent") == 0) {
-		incrementTangent = NO_TANGENT;
-	    }
-	} else if (strcmp(flag,"-maxDim") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    maxDim = atoi(flag);
-	    int numdata = 1;
-	    if (OPS_GetIntInput(&numdata, &maxDim) < 0) {
-		opserr<< "WARNING KrylovNewton failed to read maxDim\n";
-		return 0;
-	    }
-	}
-    }
-
-    ConvergenceTest* theTest = cmds->getCTest();
-    if (theTest == 0) {
-      opserr << "ERROR: No ConvergenceTest yet specified\n";
-      return 0;
-    }
-
-    Accelerator *theAccel;
-    theAccel = new PeriodicAccelerator(maxDim, iterateTangent);
-
-    return new AcceleratedNewton(*theTest, theAccel, incrementTangent);
-}
-
-void* OPS_NewtonLineSearch()
-{
-    if (cmds == 0) return 0;
-    ConvergenceTest* theTest = cmds->getCTest();
-
-    if (theTest == 0) {
-	opserr << "ERROR: No ConvergenceTest yet specified\n";
-	return 0;
-    }
-
-    // set some default variable
-    double tol        = 0.8;
-    int    maxIter    = 10;
-    double maxEta     = 10.0;
-    double minEta     = 0.1;
-    int    pFlag      = 1;
-    int    typeSearch = 0;
-
-    int numdata = 1;
-
-    while (OPS_GetNumRemainingInputArgs() > 0) {
-	const char* flag = OPS_GetString();
-
-	if (strcmp(flag, "-tol") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    if (OPS_GetDoubleInput(&numdata, &tol) < 0) {
-		opserr << "WARNING NewtonLineSearch failed to read tol\n";
-		return 0;
-	    }
-
-	} else if (strcmp(flag, "-maxIter") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    if (OPS_GetIntInput(&numdata, &maxIter) < 0) {
-		opserr << "WARNING NewtonLineSearch failed to read maxIter\n";
-		return 0;
-	    }
-
-	} else if (strcmp(flag, "-pFlag") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    if (OPS_GetIntInput(&numdata, &pFlag) < 0) {
-		opserr << "WARNING NewtonLineSearch failed to read pFlag\n";
-		return 0;
-	    }
-
-	} else if (strcmp(flag, "-minEta") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    if (OPS_GetDoubleInput(&numdata, &minEta) < 0) {
-		opserr << "WARNING NewtonLineSearch failed to read minEta\n";
-		return 0;
-	    }
-
-	} else if (strcmp(flag, "-maxEta") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-
-	    if (OPS_GetDoubleInput(&numdata, &maxEta) < 0) {
-		opserr << "WARNING NewtonLineSearch failed to read maxEta\n";
-		return 0;
-	    }
-
-	} else if (strcmp(flag, "-type") == 0 && OPS_GetNumRemainingInputArgs()>0) {
-	    const char* flag2 = OPS_GetString();
-
-	    if (strcmp(flag2, "Bisection") == 0)
-		typeSearch = 1;
-	    else if (strcmp(flag2, "Secant") == 0)
-		typeSearch = 2;
-	    else if (strcmp(flag2, "RegulaFalsi") == 0)
-		typeSearch = 3;
-	    else if (strcmp(flag2, "LinearInterpolated") == 0)
-		typeSearch = 3;
-	    else if (strcmp(flag2, "InitialInterpolated") == 0)
-		typeSearch = 0;
-	}
-    }
-
-    LineSearch *theLineSearch = 0;
-    if (typeSearch == 0)
-	theLineSearch = new InitialInterpolatedLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-
-    else if (typeSearch == 1)
-	theLineSearch = new BisectionLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-    else if (typeSearch == 2)
-	theLineSearch = new SecantLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-    else if (typeSearch == 3)
-	theLineSearch = new RegulaFalsiLineSearch(tol, maxIter, minEta, maxEta, pFlag);
-
-    return new NewtonLineSearch(*theTest, theLineSearch);
 }
 
 int OPS_getCTestNorms()

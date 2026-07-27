@@ -48,14 +48,16 @@
 #include <ID.h>
 
 UmfpackGenLinSOE::UmfpackGenLinSOE(UmfpackGenLinSolver &the_Solver)
-    :LinearSOE(the_Solver, LinSOE_TAGS_UmfpackGenLinSOE), X(), B(), Ap(), Ai(), Ax()
+    :LinearSOE(the_Solver, LinSOE_TAGS_UmfpackGenLinSOE),
+     factored(false), X(), B(), Ap(), Ai(), Ax()
 {
     the_Solver.setLinearSOE(*this);
 }
 
 
 UmfpackGenLinSOE::UmfpackGenLinSOE()
-    :LinearSOE(LinSOE_TAGS_UmfpackGenLinSOE), X(), B(), Ap(), Ai(), Ax()
+    :LinearSOE(LinSOE_TAGS_UmfpackGenLinSOE),
+     factored(false), X(), B(), Ap(), Ai(), Ax()
 {
 }
 
@@ -133,6 +135,7 @@ UmfpackGenLinSOE::setSize(Graph &theGraph)
     }
 
     // invoke setSize() on the Solver
+    factored = false;
     LinearSOESolver *the_Solver = this->getSolver();
     int solverOK = the_Solver->setSize();
     if (solverOK < 0) {
@@ -280,6 +283,7 @@ void
 UmfpackGenLinSOE::zeroA(void)
 {
     Ax.assign(Ax.size(),0.0);
+    factored = false;
 }
 
 void

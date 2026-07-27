@@ -52,7 +52,8 @@ class ModifiedNewton: public EquiSolnAlgo
   ModifiedNewton(ConvergenceTest &theTest, int tangent = CURRENT_TANGENT, double iFactor = 0.0, double cFactor = 1.0, int factOnce=0);
   ~ModifiedNewton();
 
-    int solveCurrentStep(void);    
+    int solveCurrentStep(void);
+    int domainChanged(void);
     int getNumIterations(void);
 
     virtual int sendSelf(int commitTag, Channel &theChannel);
@@ -66,6 +67,8 @@ class ModifiedNewton: public EquiSolnAlgo
   private:
     int tangent;
     int numIterations;
+    // factorOnce: 0=every iter; 1->2 after one formTangent; 2=skip formTangent (reuse factor).
+    // domainChanged() resets 2->1.
     int factorOnce;
 
     double iFactor;

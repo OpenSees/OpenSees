@@ -18,18 +18,18 @@
 **                                                                    **
 ** ****************************************************************** */
 
-// $Revision: 1.00 $
-// $Date: 2022-Apr-21 12:15:00 $
+// $Revision: 2.00 $
+// $Date: 2026-May-20 12:15:00 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/HystereticSmooth.cpp,v $
 
 // Written: Salvatore Sessa Mail: salvatore.sessa2@unina.it
 // Created: 04-2022
-// Revision: A
+// Revision: B
 //
 // Description: This file contains the class implementation for 
 // HystereticSmooth. 
 //
-// What: "@(#) HystereticSmooth.C, revA"
+// What: "@(#) HystereticSmooth.C, revB"
 
 
 #include <HystereticSmooth.h>
@@ -124,7 +124,7 @@ HystereticSmooth::HystereticSmooth(int tag, double K1, double K2, double A, doub
 	a = (ka - kb) * 0.5 / Fbar;
 	
 
-	InitTangent = kb - 2 * beta + a  * Fbar;
+	InitTangent = 0.5 * (ka + kb);
 
 	// History variables
 
@@ -472,9 +472,9 @@ HystereticSmooth::getStressSensitivity(int gradIndex, bool conditional)
 	// This is the Tstress derivative with respect to Tstrain
 	uj = Cstrain * st + 1.0 / a * log(a * st / kab * (-2 * beta * Cstrain + exp(beta * Cstrain) - exp(-beta * Cstrain) + kb * Cstrain + Fbar * st - Cstress));
 	Da = (2 * Fbar * (Dka - Dkb) - 2 * Dfbar * (ka - kb)) / (4 * Fbar*Fbar);
-	double arg = a * st / (ka - kb) * (2 * beta * Cstrain + exp(beta * Cstrain) - exp(-beta * Cstrain) + kb * Cstrain + Fbar * st - Cstress);
-	double Darg = Da / a * arg - (Dka - Dkb) / (ka - kb) * arg + a * st / (ka - kb) * ((Dbeta * Cstrain + beta * Duc) * (2 + exp(beta * Cstrain) + exp(-beta * Cstrain)) + Dkb * Cstrain + kb * Duc + Dfbar * st - Dfc);
-	double Duj = Duc * st - Darg/arg/a + Da*log(arg)/a/a;
+	double arg = a * st / (ka - kb) * (-2 * beta * Cstrain + exp(beta * Cstrain) - exp(-beta * Cstrain) + kb * Cstrain + Fbar * st - Cstress);
+	double Darg = Da / a * arg - (Dka - Dkb) / (ka - kb) * arg + a * st / (ka - kb) * ((Dbeta * Cstrain + beta * Duc) * (-2 + exp(beta * Cstrain) + exp(-beta * Cstrain)) + Dkb * Cstrain + kb * Duc + Dfbar * st - Dfc);
+	double Duj = Duc * st + Darg/(arg * a) - Da*log(arg)/(a * a);
 	gradient = (Dbeta * Tstrain + beta * Dut) * (exp(beta * Tstrain) + exp(-1.0 * beta * Tstrain) - 2) + Dkb * Tstrain + kb * Dut + (-st * ((Dka - Dkb) * a - (ka - kb) * Da) / a / a + st * (ka - kb) / a * (Da * (Tstrain * st - uj) + a * (Dut * st - Duj))) * exp(-a * (Tstrain * st - uj)) + Dfbar * st;
 
 	
@@ -521,8 +521,7 @@ HystereticSmooth::getInitialTangentSensitivity(int gradIndex)
 	
 
 
-	Da = (2 * Fbar * (Dka - Dkb) - 2 * Dfbar * (ka - kb)) / (4 * Fbar * Fbar);
-	gradient = Dkb - 2 * Dbeta + Da * Fbar + a*Dfbar ;
+	gradient = 0.5 * (Dka + Dkb);
 
 		return gradient;
 }
@@ -575,9 +574,9 @@ HystereticSmooth::commitSensitivity(double TstrainSensitivity, int gradIndex, in
 
 	uj = Cstrain * st + 1.0 / a * log(a * st / kab * (-2 * beta * Cstrain + exp(beta * Cstrain) - exp(-beta * Cstrain) + kb * Cstrain + Fbar * st - Cstress));
 	Da = (2 * Fbar * (Dka - Dkb) - 2 * Dfbar * (ka - kb)) / (4 * Fbar * Fbar);
-	double arg = a * st / (ka - kb) * (2 * beta * Cstrain + exp(beta * Cstrain) - exp(-beta * Cstrain) + kb * Cstrain + Fbar * st - Cstress);
-	double Darg = Da / a * arg - (Dka - Dkb) / (ka - kb) * arg + a * st / (ka - kb) * ((Dbeta * Cstrain + beta * Duc) * (2 + exp(beta * Cstrain) + exp(-beta * Cstrain)) + Dkb * Cstrain + kb * Duc + Dfbar * st - Dfc);
-	double Duj = Duc * st - Darg / arg / a + Da * log(arg) / a / a;
+	double arg = a * st / (ka - kb) * (-2 * beta * Cstrain + exp(beta * Cstrain) - exp(-beta * Cstrain) + kb * Cstrain + Fbar * st - Cstress);
+	double Darg = Da / a * arg - (Dka - Dkb) / (ka - kb) * arg + a * st / (ka - kb) * ((Dbeta * Cstrain + beta * Duc) * (-2 + exp(beta * Cstrain) + exp(-beta * Cstrain)) + Dkb * Cstrain + kb * Duc + Dfbar * st - Dfc);
+	double Duj = Duc * st + Darg / (arg * a) - Da * log(arg) / (a * a);
 	gradient = (Dbeta * Tstrain + beta * Dut) * (exp(beta * Tstrain) + exp(-1.0 * beta * Tstrain) - 2) + Dkb * Tstrain + kb * Dut + (-st * ((Dka - Dkb) * a - (ka - kb) * Da) / a / a + st * (ka - kb) / a * (Da * (Tstrain * st - uj) + a * (Dut * st - Duj))) * exp(-a * (Tstrain * st - uj)) + Dfbar * st;
 
 
