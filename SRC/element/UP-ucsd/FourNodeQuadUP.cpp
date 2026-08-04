@@ -13,6 +13,7 @@
 // $Date: 2008-07-08 00:01:54 $
 // $Source: /usr/local/cvs/OpenSees/SRC/element/UP-ucsd/FourNodeQuadUP.cpp,v $
 
+#include <cmath>
 #include <FourNodeQuadUP.h>
 #include <Node.h>
 #include <NDMaterial.h>
