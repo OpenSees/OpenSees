@@ -30,6 +30,7 @@ jobs:
       - name: build OpenSees & OpenSeesPy
         run: |
           conan install . --build=missing
+          test -f build/Release/generators/conan_toolchain.cmake
           cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin
           cd build/Release
           cmake --build . --target OpenSees -j8
@@ -76,6 +77,7 @@ jobs:
           export FC=/opt/homebrew/bin/gfortran-13
           export LDFLAGS="-L/opt/homebrew/lib/gcc/current -lgfortran"
           conan install . --build=missing
+          test -f build/Release/generators/conan_toolchain.cmake
           cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin	
           cd build/Release
           cmake --build . --target OpenSees -j8

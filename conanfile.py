@@ -1,6 +1,6 @@
 
 from conan import ConanFile
-from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps
+from conan.tools.cmake import CMake, CMakeToolchain, CMakeDeps, cmake_layout
 from conan.tools.files import copy
 from conan.errors import ConanInvalidConfiguration
 import os
@@ -19,6 +19,11 @@ class OpenSeesDependencies(ConanFile):
     default_options = {}
 
     exports_sources = "CMakeLists.txt", "src/*", "applications/*", "LICENSE"
+
+    def layout(self):
+        # Keep Conan generators in build/<configuration>/generators, matching
+        # the CMake and CI entry points used by this repository.
+        cmake_layout(self)
 
     def requirements(self):
         self.requires("hdf5/1.14.6")

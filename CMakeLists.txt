@@ -113,12 +113,24 @@ add_library(OPS_OS_Specific_libs INTERFACE)
 MESSAGE("${CMAKE_BINARY_DIR}")
 
 
-if(CONAN_EXPORTED)
-    message(STATUS "USING CONAN (via Transparent Integration)")
+set(USING_CONAN FALSE)
+set(NOT_USING_CONAN TRUE)
+
+if(CONAN_EXPORTED OR (DEFINED CMAKE_TOOLCHAIN_FILE AND CMAKE_TOOLCHAIN_FILE MATCHES "conan_toolchain\\.cmake$"))
+    message(STATUS "USING CONAN (via CMake toolchain)")
     set(USING_CONAN TRUE)
+    set(NOT_USING_CONAN FALSE)
 else()
     message(STATUS "NOT USING CONAN (System Search)")
     include(OpenSeesFunctions) # Your custom logic
+endif()
+
+if(EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.txt" AND NOT USING_CONAN)
+    message(FATAL_ERROR
+        "This build directory contains Conan 1 metadata (conanbuildinfo.txt), "
+        "but this project uses Conan 2. Run 'conan install . --build=missing' "
+        "and configure with -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake."
+    )
 endif()
 
 find_package(ZLIB REQUIRED)
@@ -561,7 +573,7 @@ add_library(OPS_PFEM               OBJECT EXCLUDE_FROM_ALL)
 add_library(OPS_InterpTcl          STATIC)
 
 target_compile_definitions(OPS_InterpTcl PUBLIC _TCL85)
-if(NOT EXISTS "${CMAKE_BINARY_DIR}/conanbuildinfo.cmake")
+if(NOT USING_CONAN)
   target_include_directories(OPS_InterpTcl PUBLIC ${TCL_INCLUDE_PATH})
   target_link_libraries(OPS_InterpTcl PRIVATE ${TCL_LIBRARIES})
 endif()
@@ -660,25 +672,23 @@ add_executable(OpenSees EXCLUDE_FROM_ALL
   ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
 )
 
-if(TARGET TCL::TCL)
+if(TARGET TCL::TCL OR TARGET tcl::tcl)
     # --- CONAN 2 LOGIC ---
-    message(STATUS "Conan TCL found at: ${tcl_PACKAGE_FOLDER}")
-    
-    # In Conan 2, the library files are typically in the 'lib' subfolder of the package
-    set(CONAN_TCL_LIB_DIR "${tcl_PACKAGE_FOLDER}/lib")
+    message(STATUS "Conan TCL found")
 
     file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6)
-    
-    add_custom_command(
-        TARGET OpenSees POST_BUILD
-        COMMENT "Copying init.tcl from Conan TCL to binary directory"
-        COMMAND ${CMAKE_COMMAND} -E copy
-        "${CONAN_TCL_LIB_DIR}/tcl8.6/init.tcl"
-        "${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6"
-    )
-    
-    # Note: You don't usually need target_include_directories here 
-    # because target_link_libraries(OpenSees PRIVATE TCL::TCL) handles it.
+
+    if(TCL_INIT_FILE)
+        add_custom_command(
+            TARGET OpenSees POST_BUILD
+            COMMENT "Copying init.tcl from Conan TCL to binary directory"
+            COMMAND ${CMAKE_COMMAND} -E copy
+            "${TCL_INIT_FILE}"
+            "${CMAKE_CURRENT_BINARY_DIR}/lib/tcl8.6"
+        )
+    else()
+        message(WARNING "Conan Tcl target found, but init.tcl was not located")
+    endif()
 
 else()
     # --- SYSTEM / NON-CONAN LOGIC ---

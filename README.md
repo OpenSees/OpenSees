@@ -25,6 +25,25 @@ https://OpenSees.github.io/OpenSeesDocumentation
 Steps to build OpenSees on Windows, Linux, and Mac:
 https://opensees.github.io/OpenSeesDocumentation/developer/build.html
 
+### Linux with Conan 2
+
+The current CMake build uses Conan 2's generated toolchain. From the repository
+root, run:
+
+```bash
+python3 -m pip install --upgrade "conan>=2,<3"
+conan profile detect --force
+conan install . --build=missing
+cmake -S . -B build/Release \
+  -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake \
+  -DCMAKE_BUILD_TYPE=Release
+cmake --build build/Release --target OpenSees -j$(nproc)
+```
+
+Do not run `cmake ..` against a directory containing Conan 1's
+`conanbuildinfo.txt`. Conan 1 metadata is not consumed by this Conan 2 CMake
+configuration; use the generated `conan_toolchain.cmake` as shown above.
+
 ## Modeling Questions
 Issues related to modeling questions will be closed. Instead, post your modeling questions on the OpenSees 
 message board or in the OpenSees Facebook group.
