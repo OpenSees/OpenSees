@@ -33,7 +33,7 @@ conan install . --output-folder="${BUILD_DIR}" --build missing -s build_type=Rel
 #
 
 cmake -B "${BUILD_DIR}" -S . \
-    -DCMAKE_TOOLCHAIN_FILE="${BUILD_DIR}/conan_toolchain.cmake" \
+    -DCMAKE_TOOLCHAIN_FILE="${BUILD_DIR}/build/Release/generators/conan_toolchain.cmake" \
     -DCMAKE_BUILD_TYPE=Release || die "FAIL: CMake configure failed."
 
 cmake --build "${BUILD_DIR}" --parallel 4 || die "FAIL: CMake build failed."
