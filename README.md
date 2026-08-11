@@ -1,4 +1,4 @@
-# OpenSees Source Code Repository
+# OpenSees Source Code Repository [![CMake Build](https://github.com/OpenSees/OpenSees/actions/workflows/build_cmake.yml/badge.svg)](https://github.com/OpenSees/OpenSees/actions/workflows/build_cmake.yml)
 
 This git repository contains all revisions to OpenSees source code since Version 2.3.2.
 
