@@ -65,6 +65,22 @@ ArpackSOE::getNumEqn(void) const
 ArpackSOE::~ArpackSOE()
 {
   if (M != 0) delete [] M;
+
+  // Free only what this SOE owns: the per-SOE channel pointer array and the
+  // parallel bookkeeping. The Channel objects themselves are global (owned by
+  // the MachineBroker), so they are not deleted here (same rule as MumpsParallelSOE).
+  if (theChannels != 0)
+    delete [] theChannels;
+
+  if (localCol != 0) {
+    for (int i = 0; i < numChannels; i++)
+      if (localCol[i] != 0)
+	delete localCol[i];
+    delete [] localCol;
+  }
+
+  if (sizeLocal != 0)
+    delete sizeLocal;
 }
 
 int 
@@ -382,6 +398,40 @@ int
 ArpackSOE::setLinearSOE(LinearSOE &theLinearSOE)
 {
   theSOE = &theLinearSOE;
+  return 0;
+}
+
+int
+ArpackSOE::setProcessID(int dTag)
+{
+  processID = dTag;
+  return 0;
+}
+
+int
+ArpackSOE::setChannels(int nChannels, Channel **theC)
+{
+  numChannels = nChannels;
+
+  if (theChannels != 0)
+    delete [] theChannels;
+
+  theChannels = new Channel *[numChannels];
+  for (int i = 0; i < numChannels; i++)
+    theChannels[i] = theC[i];
+
+  if (localCol != 0)
+    delete [] localCol;
+
+  localCol = new ID *[numChannels];
+  for (int i = 0; i < numChannels; i++)
+    localCol[i] = 0;
+
+  if (sizeLocal != 0)
+    delete sizeLocal;
+
+  sizeLocal = new ID(numChannels);
+
   return 0;
 }
 
