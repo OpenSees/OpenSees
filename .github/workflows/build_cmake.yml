@@ -75,10 +75,10 @@ jobs:
       - name: 2.3.2. Building the OpenSees Applications and Python module
         run: |
           export FC=/opt/homebrew/bin/gfortran-13
-          export LDFLAGS="-L/opt/homebrew/lib/gcc/current -lgfortran"
           export CMAKE_POLICY_VERSION_MINIMUM=3.5
           conan install . --build=missing
-          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin	
+          export LDFLAGS="-L/opt/homebrew/lib/gcc/current -lgfortran"
+          cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin
           cd build/Release
           cmake --build . --target OpenSees -j8
           cmake --build . --target OpenSeesPy -j8
