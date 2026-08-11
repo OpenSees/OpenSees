@@ -77,7 +77,8 @@ jobs:
           export FC=/opt/homebrew/bin/gfortran-13
           export CMAKE_POLICY_VERSION_MINIMUM=3.5
           conan install . --build=missing
-          export LDFLAGS="-L/opt/homebrew/lib/gcc/current -lgfortran"
+          GFORTRAN_LIBDIR=$(dirname "$("$FC" -print-file-name=libgfortran.dylib)")
+          export LDFLAGS="-L${GFORTRAN_LIBDIR} -lgfortran"
           cmake -S . -B build/Release -DCMAKE_TOOLCHAIN_FILE=build/Release/generators/conan_toolchain.cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=$HOME/bin
           cd build/Release
           cmake --build . --target OpenSees -j8
