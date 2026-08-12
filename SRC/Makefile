@@ -964,6 +964,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/J2BeamFiber2d.o \
 	$(FE)/material/nD/J2BeamFiber3d.o \
 	$(FE)/material/nD/FSAM.o \
+	$(FE)/material/nD/FAM_CS.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear5.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
 	$(FE)/material/nD/InitStressNDMaterial.o \
@@ -1596,7 +1597,6 @@ wipe: spotless
 	@$(CD) $(FE)/damping; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
 
 
 
