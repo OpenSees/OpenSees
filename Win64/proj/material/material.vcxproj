@@ -576,6 +576,7 @@
     <ClCompile Include="..\..\..\SRC\material\nD\PlaneStressMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\PlateFiberMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\FeapMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\nD\UmatMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\feap\FeapMaterial01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\feap\FeapMaterial02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\nD\feap\FeapMaterial03.cpp" />
@@ -1013,6 +1014,7 @@
     <ClInclude Include="..\..\..\SRC\material\nD\PlaneStressMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\PlateFiberMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\FeapMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\nD\UmatMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\feap\FeapMaterial01.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\feap\FeapMaterial02.h" />
     <ClInclude Include="..\..\..\SRC\material\nD\feap\FeapMaterial03.h" />
