@@ -216,17 +216,17 @@ void* OPS_SFI_MVLEM_3D(void)
 
 // Typical constructor
 SFI_MVLEM_3D::SFI_MVLEM_3D(int tag,
-	double Dens,
-	int Nd1, int Nd2, int Nd3, int Nd4,
-	NDMaterial **materials,
-	double *thickness,
-	double *width,
-	int mm,
-	double cc,
-	double nn,
+			   double Dens,
+			   int Nd1, int Nd2, int Nd3, int Nd4,
+			   NDMaterial **materials,
+			   double *thickness,
+			   double *width,
+			   int mm,
+			   double cc,
+			   double nn,
 			   double tf,
 			   double Eave_in,
-			   int coupling = 0,)
+			   int coupling)
 
 	:Element(tag, ELE_TAG_SFI_MVLEM_3D),
 	density(Dens),
