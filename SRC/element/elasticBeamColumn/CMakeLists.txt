@@ -8,6 +8,7 @@ target_sources(OPS_Element
     PRIVATE
       ElasticBeam2d.cpp
       ElasticBeam3d.cpp
+      ElasticBeamCommon.h
       ElasticBeamWarping3d.cpp      
       ElasticTimoshenkoBeam2d.cpp
       ElasticTimoshenkoBeam3d.cpp
