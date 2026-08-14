@@ -475,6 +475,7 @@
 #include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "mefi/MEFI.h"		// C. N. Lopez
+#include "mefi/MEFI_3D.h"	// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
@@ -1162,7 +1163,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 		return new E_SFI();		// C. N. Lopez	
 		
 	case ELE_TAG_MEFI:			// C. N. Lopez
-		return new MEFI();		// C. N. Lopez		
+		return new MEFI();		// C. N. 
+
+	case ELE_TAG_MEFI_3D:		// C. N. Lopez
+		return new MEFI_3D();	// C. N. Lopez		
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
