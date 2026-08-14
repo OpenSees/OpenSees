@@ -2373,7 +2373,8 @@ void
 ForceBeamColumn2dThermal::setSectionPointers(int numSec, SectionForceDeformation **secPtrs)
 {
   if (numSec > maxNumSections) {
-    opserr << "Error: ForceBeamColumn2dThermal::setSectionPointers -- max number of sections exceeded";
+    opserr << "Error: ForceBeamColumn2dThermal::setSectionPointers -- max number of sections exceeded" << endln;
+    exit(-1);
   }
   
   numSections = numSec;
