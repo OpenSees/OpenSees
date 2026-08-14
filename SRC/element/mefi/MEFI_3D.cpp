@@ -33,6 +33,7 @@
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 #include <DummyStream.h>
+#include <cmath>
 
 void* OPS_MEFI_3D()
 {
@@ -223,10 +224,10 @@ MEFI_3D::MEFI_3D(int tag,
 	}
 
 	// we calculate locations of quadrature points and weights for bending behavior
-	qdtLocationsB[0][0] = -1 / sqrt(3);	qdtLocationsB[0][1] = -1 / sqrt(3);
-	qdtLocationsB[1][0] = +1 / sqrt(3);	qdtLocationsB[1][1] = -1 / sqrt(3);
-	qdtLocationsB[2][0] = +1 / sqrt(3);	qdtLocationsB[2][1] = +1 / sqrt(3);
-	qdtLocationsB[3][0] = -1 / sqrt(3);	qdtLocationsB[3][1] = +1 / sqrt(3);
+	qdtLocationsB[0][0] = -1 / std::sqrt(3);	qdtLocationsB[0][1] = -1 / std::sqrt(3);
+	qdtLocationsB[1][0] = +1 / std::sqrt(3);	qdtLocationsB[1][1] = -1 / std::sqrt(3);
+	qdtLocationsB[2][0] = +1 / std::sqrt(3);	qdtLocationsB[2][1] = +1 / std::sqrt(3);
+	qdtLocationsB[3][0] = -1 / std::sqrt(3);	qdtLocationsB[3][1] = +1 / std::sqrt(3);
 
 	
 	for (int i = 0; i < 4; i++) {
