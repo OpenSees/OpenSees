@@ -33,6 +33,7 @@
 #include <ElementalLoad.h>
 #include <elementAPI.h>
 #include <DummyStream.h>
+#include <math.h>
 
 void* OPS_MEFI_3D()
 {
