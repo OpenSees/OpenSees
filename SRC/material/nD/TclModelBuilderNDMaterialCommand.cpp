@@ -121,6 +121,7 @@ extern void* OPS_OrthotropicMaterial(void);
 extern void* OPS_Series3DMaterial(void);
 extern void* OPS_Parallel3DMaterial(void);
 extern void* OPS_ASDConcrete3DMaterial(void);
+extern void* OPS_UmatMaterial(void);  // generic Abaqus-UMAT wrapper
 #ifdef _EIGEN3
 extern void* OPS_AllASDPlasticMaterial3Ds(void);
 #endif // _EIGEN3
@@ -1266,6 +1267,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 			theMaterial = (NDMaterial *)theMat;
 		}
 		else 
+			return TCL_ERROR;
+	}
+
+	else if(strcmp(argv[1], "UMAT") == 0) {
+		void *theMat = OPS_UmatMaterial();
+		if (theMat != 0)  {
+			theMaterial = (NDMaterial *)theMat;
+		}
+		else
 			return TCL_ERROR;
 	}
 #ifdef _EIGEN3
