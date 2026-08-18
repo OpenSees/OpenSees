@@ -1038,17 +1038,19 @@ Matrix::addMatrixTripleProduct(double thisFact,
 			       const Matrix &C,
 			       double otherFact)
 {
+    // Computes (*this) += thisFact * (*this) + otherFact * (A^T * B * C)
+    // A is (m x n), B is (m x p), C is (p x q), result is (n x q).
     if (thisFact == 1.0 && otherFact == 0.0)
       return 0;
 #ifdef _G3DEBUG
-    if ((numRows != A.numRows) || (A.numCols != B.numRows) || (B.numCols != C.numRows) ||
+    if ((numRows != A.numCols) || (A.numRows != B.numRows) || (B.numCols != C.numRows) ||
 	(C.numCols != numCols)) {
       opserr << "Matrix::addMatrixTripleProduct() - incompatible matrices\n";
       return -1;
     }
 #endif
 
-    // cheack work area can hold the temporary matrix
+    // work holds B*C, size (m x q) = (B.numRows x numCols)
     int sizeWork = B.numRows * numCols;
 
     if (sizeWork > sizeDoubleWork) {
@@ -1063,12 +1065,12 @@ Matrix::addMatrixTripleProduct(double thisFact,
 
     // now form B * C * fact store in matrixWork == A area
     // NOTE: looping as per blas3 dgemm_: j,k,i
-    
     int rowsB = B.numRows;
+    int colsB = B.numCols;
     double *ckjPtr  = &(C.data)[0];
     for (int j=0; j<numCols; j++) {
       double *aijPtrA = &matrixWork[j*rowsB];
-      for (int k=0; k<rowsB; k++) {
+      for (int k=0; k<colsB; k++) {
 	double tmp = *ckjPtr++ * otherFact;
 	double *aijPtr = aijPtrA;
 	double *bikPtr = &(B.data)[k*rowsB];
@@ -1077,7 +1079,7 @@ Matrix::addMatrixTripleProduct(double thisFact,
       }
     }
 
-    // now form A' * matrixWork
+    // form A^T * matrixWork
     // NOTE: looping as per blas3 dgemm_: j,i,k
     int dimB = rowsB;
     if (thisFact == 1.0) {
