@@ -252,9 +252,17 @@ Vector::Normalize(void)
 int
 Vector::addVector(double thisFact, const Vector &other, double otherFact )
 {
-  // check if quick return
-  if (otherFact == 0.0 && thisFact == 1.0)
-    return 0; 
+  if (otherFact == 0.0) {
+    if (thisFact == 1.0)
+      return 0;
+    if (thisFact == 0.0) {
+      this->Zero();
+      return 0;
+    }
+    for (int i=0; i<sz; i++)
+      theData[i] *= thisFact;
+    return 0;
+  }
 
   // if sizes are compatible add
 #ifdef _G3DEBUG
@@ -328,9 +336,17 @@ Vector::addVector(double thisFact, const Vector &other, double otherFact )
 int
 Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, double otherFact )
 {
-  // see if quick return
-  if (thisFact == 1.0 && otherFact == 0.0)
+  if (otherFact == 0.0) {
+    if (thisFact == 1.0)
+      return 0;
+    if (thisFact == 0.0) {
+      this->Zero();
+      return 0;
+    }
+    for (int i=0; i<sz; i++)
+      theData[i] *= thisFact;
     return 0;
+  }
 
   // check the sizes are compatible
 #ifdef _G3DEBUG
@@ -462,9 +478,17 @@ Vector::addMatrixTransposeVector(double thisFact,
 				 const Vector &v, 
 				 double otherFact )
 {
-  // see if quick return
-  if (otherFact == 0.0 && thisFact == 1.0)
+  if (otherFact == 0.0) {
+    if (thisFact == 1.0)
+      return 0;
+    if (thisFact == 0.0) {
+      this->Zero();
+      return 0;
+    }
+    for (int i=0; i<sz; i++)
+      theData[i] *= thisFact;
     return 0;
+  }
 
 #ifdef _G3DEBUG
   // check the sizes are compatible
