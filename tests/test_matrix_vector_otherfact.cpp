@@ -111,6 +111,9 @@ int main()
   actual = A;
   actual.addMatrix(1.0, B, -1.0);
   requireMatrix(actual, add(A, B, -1.0), "addMatrix negative-one factor");
+  actual = A;
+  actual.addMatrix(2.0, B, 2.5);
+  requireMatrix(actual, add(scaled(A, 2.0), B, 2.5), "addMatrix general factors");
 
   actual = A;
   actual.addMatrixTranspose(1.0, B, 0.0);
@@ -118,6 +121,9 @@ int main()
   actual = A;
   actual.addMatrixTranspose(1.0, B, -1.0);
   requireMatrix(actual, add(A, transpose(B), -1.0), "addMatrixTranspose negative-one factor");
+  actual = A;
+  actual.addMatrixTranspose(2.0, B, 2.5);
+  requireMatrix(actual, add(scaled(A, 2.0), transpose(B), 2.5), "addMatrixTranspose general factors");
 
   const Matrix B23 = makeMatrix(2, 3, 1.0);
   const Matrix C32 = makeMatrix(3, 2, 2.0);
@@ -131,6 +137,9 @@ int main()
   actual = A;
   actual.addMatrixProduct(1.0, B23, C32, -1.0);
   requireMatrix(actual, add(A, product, -1.0), "addMatrixProduct negative-one factor");
+  actual = A;
+  actual.addMatrixProduct(2.0, B23, C32, 2.5);
+  requireMatrix(actual, add(scaled(A, 2.0), product, 2.5), "addMatrixProduct general factors");
 
   const Matrix A32 = makeMatrix(3, 2, 3.0);
   const Matrix B32 = makeMatrix(3, 2, 4.0);
@@ -141,6 +150,9 @@ int main()
   actual = A;
   actual.addMatrixTransposeProduct(1.0, A32, B32, -1.0);
   requireMatrix(actual, add(A, transposeProduct, -1.0), "addMatrixTransposeProduct negative-one factor");
+  actual = A;
+  actual.addMatrixTransposeProduct(2.0, A32, B32, 2.5);
+  requireMatrix(actual, add(scaled(A, 2.0), transposeProduct, 2.5), "addMatrixTransposeProduct general factors");
 
   const Matrix T32 = makeMatrix(3, 2, 5.0);
   const Matrix B33 = makeMatrix(3, 3, 6.0);
@@ -151,6 +163,9 @@ int main()
   actual = A;
   actual.addMatrixTripleProduct(1.0, T32, B33, -1.0);
   requireMatrix(actual, add(A, triple, -1.0), "addMatrixTripleProduct negative-one factor");
+  actual = A;
+  actual.addMatrixTripleProduct(2.0, T32, B33, 2.5);
+  requireMatrix(actual, add(scaled(A, 2.0), triple, 2.5), "addMatrixTripleProduct general factors");
 
   const Matrix C32b = makeMatrix(3, 2, 7.0);
   const Matrix tripleGeneral = multiply(transpose(A32), multiply(B33, C32b));
@@ -160,6 +175,9 @@ int main()
   actual = A;
   actual.addMatrixTripleProduct(1.0, A32, B33, C32b, -1.0);
   requireMatrix(actual, add(A, tripleGeneral, -1.0), "general triple product negative-one factor");
+  actual = A;
+  actual.addMatrixTripleProduct(2.0, A32, B33, C32b, 2.5);
+  requireMatrix(actual, add(scaled(A, 2.0), tripleGeneral, 2.5), "general triple product general factors");
 
   const Vector v = makeVector(2, 8.0);
   const Vector w = makeVector(2, 9.0);
@@ -171,6 +189,11 @@ int main()
   Vector expectedVector = w;
   expectedVector *= -1.0;
   requireVector(vector, expectedVector, "addVector negative-one factor");
+  vector = v;
+  vector.addVector(2.0, w, 2.5);
+  for (int i = 0; i < expectedVector.Size(); ++i)
+    expectedVector(i) = 2.0 * v(i) + 2.5 * w(i);
+  requireVector(vector, expectedVector, "addVector general factors");
 
   const Matrix M23 = makeMatrix(2, 3, 11.0);
   const Vector x3 = makeVector(3, 12.0);
@@ -187,6 +210,12 @@ int main()
   matrixVector.addMatrixVector(0.0, M23, x3, -1.0);
   Mx *= -1.0;
   requireVector(matrixVector, Mx, "addMatrixVector negative-one factor");
+  Mx *= -1.0;
+  matrixVector = v;
+  matrixVector.addMatrixVector(2.0, M23, x3, 2.5);
+  for (int i = 0; i < expectedVector.Size(); ++i)
+    expectedVector(i) = 2.0 * v(i) + 2.5 * Mx(i);
+  requireVector(matrixVector, expectedVector, "addMatrixVector general factors");
 
   const Matrix M32 = makeMatrix(3, 2, 13.0);
   const Vector x3b = makeVector(3, 14.0);
@@ -203,6 +232,12 @@ int main()
   transposeVector.addMatrixTransposeVector(0.0, M32, x3b, -1.0);
   Mtx *= -1.0;
   requireVector(transposeVector, Mtx, "addMatrixTransposeVector negative-one factor");
+  Mtx *= -1.0;
+  transposeVector = v;
+  transposeVector.addMatrixTransposeVector(2.0, M32, x3b, 2.5);
+  for (int i = 0; i < expectedVector.Size(); ++i)
+    expectedVector(i) = 2.0 * v(i) + 2.5 * Mtx(i);
+  requireVector(transposeVector, expectedVector, "addMatrixTransposeVector general factors");
 
   std::cout << "matrix/vector otherFact regression tests passed\n";
   return EXIT_SUCCESS;

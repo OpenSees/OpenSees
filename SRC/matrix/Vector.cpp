@@ -41,16 +41,6 @@ using std::nothrow;
 
 double Vector::VECTOR_NOT_VALID_ENTRY =0.0;
 
-static inline double
-scaleWithFact(double value, double fact)
-{
-  if (fact == 1.0)
-    return value;
-  if (fact == -1.0)
-    return -value;
-  return value * fact;
-}
-
 // Vector():
 //	Standard constructor, sets size = 0;
 
@@ -297,7 +287,7 @@ Vector::addVector(double thisFact, const Vector &other, double otherFact )
 	*dataPtr++ -= *otherDataPtr++;
     } else 
       for (int i=0; i<sz; i++) 
-	*dataPtr++ += scaleWithFact(*otherDataPtr++, otherFact);
+	*dataPtr++ += *otherDataPtr++ * otherFact;
   } 
 
   else if (thisFact == 0.0) {
@@ -313,7 +303,7 @@ Vector::addVector(double thisFact, const Vector &other, double otherFact )
 	*dataPtr++ = -(*otherDataPtr++);
     } else 
       for (int i=0; i<sz; i++) 
-	*dataPtr++ = scaleWithFact(*otherDataPtr++, otherFact);
+	*dataPtr++ = *otherDataPtr++ * otherFact;
   }
 
   else {
@@ -333,7 +323,7 @@ Vector::addVector(double thisFact, const Vector &other, double otherFact )
       }
     } else 
       for (int i=0; i<sz; i++) {
-	double value = *dataPtr * thisFact + scaleWithFact(*otherDataPtr++, otherFact);
+	double value = *dataPtr * thisFact + *otherDataPtr++ * otherFact;
 	*dataPtr++ = value;
       }
   } 
@@ -396,7 +386,7 @@ Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, doubl
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
-	double otherData = scaleWithFact(*otherDataPtr++, otherFact);
+	double otherData = *otherDataPtr++ * otherFact;
 	for (int j=0; j<sz; j++)
 	  theData[j] += *matrixDataPtr++ * otherData;
       }
@@ -433,7 +423,7 @@ Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, doubl
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
-	double otherData = scaleWithFact(*otherDataPtr++, otherFact);
+	double otherData = *otherDataPtr++ * otherFact;
 	for (int j=0; j<sz; j++)
 	  theData[j] += *matrixDataPtr++ * otherData;
       }
@@ -469,7 +459,7 @@ Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, doubl
       double *matrixDataPtr = m.data;
       double *otherDataPtr = v.theData;
       for (int i=0; i<otherSize; i++) {
-	double otherData = scaleWithFact(*otherDataPtr++, otherFact);
+	double otherData = *otherDataPtr++ * otherFact;
 	for (int j=0; j<sz; j++)
 	  theData[j] += *matrixDataPtr++ * otherData;
       }
@@ -543,7 +533,7 @@ Vector::addMatrixTransposeVector(double thisFact,
 	double sum = 0.0;
 	for (int j=0; j<otherSize; j++)
 	  sum += *matrixDataPtr++ * *otherDataPtr++;
-	theData[i] += scaleWithFact(sum, otherFact);
+	theData[i] += sum * otherFact;
       }
     }
   }
@@ -582,7 +572,7 @@ Vector::addMatrixTransposeVector(double thisFact,
 	double sum = 0.0;
 	for (int j=0; j<otherSize; j++)
 	  sum += *matrixDataPtr++ * *otherDataPtr++;
-	theData[i] = scaleWithFact(sum, otherFact);
+	theData[i] = sum * otherFact;
       }
     }
   } 
@@ -623,7 +613,7 @@ Vector::addMatrixTransposeVector(double thisFact,
 	double sum = 0.0;
 	for (int j=0; j<otherSize; j++)
 	  sum += *matrixDataPtr++ * *otherDataPtr++;
-	double value = theData[i] * thisFact + scaleWithFact(sum, otherFact);
+	double value = theData[i] * thisFact + sum * otherFact;
 	theData[i] = value;
       }
     }

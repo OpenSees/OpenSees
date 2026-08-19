@@ -44,16 +44,6 @@ using std::nothrow;
 
 #include <math.h>
 
-static inline double
-scaleWithFact(double value, double fact)
-{
-  if (fact == 1.0)
-    return value;
-  if (fact == -1.0)
-    return -value;
-  return value * fact;
-}
-
 int Matrix::sizeDoubleWork = MATRIX_WORK_AREA;
 int Matrix::sizeIntWork = INT_WORK_AREA;
 double Matrix::MATRIX_NOT_VALID_ENTRY =0.0;
@@ -687,11 +677,16 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
 	double *otherDataPtr = other.data;		    
 	for (int i=0; i<dataSize; i++)
 	  *dataPtr++ += *otherDataPtr++;
+      } else if (factOther == -1.0) {
+	double *dataPtr = data;
+	double *otherDataPtr = other.data;
+	for (int i=0; i<dataSize; i++)
+	  *dataPtr++ -= *otherDataPtr++;
       } else {
 	double *dataPtr = data;
 	double *otherDataPtr = other.data;		    
 	for (int i=0; i<dataSize; i++)
-	  *dataPtr++ += scaleWithFact(*otherDataPtr++, factOther);
+	  *dataPtr++ += *otherDataPtr++ * factOther;
       }
     } 
 
@@ -703,11 +698,16 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
 	double *otherDataPtr = other.data;		    
 	for (int i=0; i<dataSize; i++)
 	  *dataPtr++ = *otherDataPtr++;
+      } else if (factOther == -1.0) {
+	double *dataPtr = data;
+	double *otherDataPtr = other.data;
+	for (int i=0; i<dataSize; i++)
+	  *dataPtr++ = -(*otherDataPtr++);
       } else {
 	double *dataPtr = data;
 	double *otherDataPtr = other.data;		    
 	for (int i=0; i<dataSize; i++)
-	  *dataPtr++ = scaleWithFact(*otherDataPtr++, factOther);
+	  *dataPtr++ = *otherDataPtr++ * factOther;
       }
     } 
 
@@ -721,11 +721,18 @@ Matrix::addMatrix(double factThis, const Matrix &other, double factOther)
 	  double value = *dataPtr * factThis + *otherDataPtr++;
 	  *dataPtr++ = value;
 	}
+      } else if (factOther == -1.0) {
+	double *dataPtr = data;
+	double *otherDataPtr = other.data;
+	for (int i=0; i<dataSize; i++) {
+	  double value = *dataPtr * factThis - *otherDataPtr++;
+	  *dataPtr++ = value;
+	}
       } else {
 	double *dataPtr = data;
 	double *otherDataPtr = other.data;		    
 	for (int i=0; i<dataSize; i++) {
-	  double value = *dataPtr * factThis + scaleWithFact(*otherDataPtr++, factOther);
+	  double value = *dataPtr * factThis + *otherDataPtr++ * factOther;
 	  *dataPtr++ = value;
 	}
       }
@@ -762,16 +769,22 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 
       // want: this += other^T * factOther
       if (factOther == 1.0) {
-    double *dataPtr = data;
+	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++)
 	    *dataPtr++ += (other.data)[j+i*numCols];
+    }
+      } else if (factOther == -1.0) {
+	double *dataPtr = data;
+    for (int j=0; j<numCols; j++) {
+      for (int i=0; i<numRows; i++)
+	    *dataPtr++ -= (other.data)[j+i*numCols];
     }
       } else {
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
 	for (int i=0; i<numRows; i++)
-	    *dataPtr++ += scaleWithFact((other.data)[j+i*numCols], factOther);
+	    *dataPtr++ += (other.data)[j+i*numCols] * factOther;
     }
       }
     } 
@@ -785,11 +798,17 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
       for (int i=0; i<numRows; i++)
 	    *dataPtr++ = (other.data)[j+i*numCols];
     }
+      } else if (factOther == -1.0) {
+	double *dataPtr = data;
+    for (int j=0; j<numCols; j++) {
+      for (int i=0; i<numRows; i++)
+	    *dataPtr++ = -(other.data)[j+i*numCols];
+    }
       } else {
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
 	for (int i=0; i<numRows; i++)
-	    *dataPtr++ = scaleWithFact((other.data)[j+i*numCols], factOther);
+	    *dataPtr++ = (other.data)[j+i*numCols] * factOther;
     }
       }
     } 
@@ -805,11 +824,19 @@ Matrix::addMatrixTranspose(double factThis, const Matrix &other, double factOthe
 	    *dataPtr++ = value;
       }
     }
+      } else if (factOther == -1.0) {
+	double *dataPtr = data;
+    for (int j=0; j<numCols; j++) {
+      for (int i=0; i<numRows; i++) {
+        double value = *dataPtr * factThis - (other.data)[j+i*numCols];
+	    *dataPtr++ = value;
+      }
+    }
       } else {
 	double *dataPtr = data;
     for (int j=0; j<numCols; j++) {
 	for (int i=0; i<numRows; i++) {
-	    double value = *dataPtr * factThis + scaleWithFact((other.data)[j+i*numCols], factOther);
+	    double value = *dataPtr * factThis + (other.data)[j+i*numCols] * factOther;
 	    *dataPtr++ = value;
       }
     }
@@ -844,16 +871,43 @@ Matrix::addMatrixProduct(double thisFact,
       return -1;
     }
 #endif
-    // NOTE: looping as per blas3 dgemm_: j,k,i
-    if (thisFact == 1.0) {
+    if (thisFact == 0.0) {
+      this->Zero();
+    } else if (thisFact != 1.0) {
+      for (int i=0; i<dataSize; i++)
+	data[i] *= thisFact;
+    }
 
-      // want: this += B * C  otherFact
-      int numColB = B.numCols;
-      double *ckjPtr  = &(C.data)[0];
+    // NOTE: looping as per blas3 dgemm_: j,k,i
+    int numColB = B.numCols;
+    double *ckjPtr = &(C.data)[0];
+    if (otherFact == 1.0) {
       for (int j=0; j<numCols; j++) {
 	double *aijPtrA = &data[j*numRows];
 	for (int k=0; k<numColB; k++) {
-	  double tmp = scaleWithFact(*ckjPtr++, otherFact);
+	  double tmp = *ckjPtr++;
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*numRows];
+	  for (int i=0; i<numRows; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
+      }
+    } else if (otherFact == -1.0) {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &data[j*numRows];
+	for (int k=0; k<numColB; k++) {
+	  double tmp = -(*ckjPtr++);
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*numRows];
+	  for (int i=0; i<numRows; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
+      }
+    } else {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &data[j*numRows];
+	for (int k=0; k<numColB; k++) {
+	  double tmp = *ckjPtr++ * otherFact;
 	  double *aijPtr = aijPtrA;
 	  double *bikPtr = &(B.data)[k*numRows];
 	  for (int i=0; i<numRows; i++)
@@ -861,45 +915,6 @@ Matrix::addMatrixProduct(double thisFact,
 	}
       }
     }
-
-    else if (thisFact == 0.0) {
-
-      // want: this = B * C  otherFact
-      double *dataPtr = data;
-      for (int i=0; i<dataSize; i++)
-	  *dataPtr++ = 0.0;
-      int numColB = B.numCols;
-      double *ckjPtr  = &(C.data)[0];
-      for (int j=0; j<numCols; j++) {
-	double *aijPtrA = &data[j*numRows];
-	for (int k=0; k<numColB; k++) {
-	  double tmp = scaleWithFact(*ckjPtr++, otherFact);
-	  double *aijPtr = aijPtrA;
-	  double *bikPtr = &(B.data)[k*numRows];
-	  for (int i=0; i<numRows; i++)
-	    *aijPtr++ += *bikPtr++ * tmp;
-	}
-      }
-    } 
-
-    else {
-      // want: this = B * C  otherFact
-      double *dataPtr = data;
-      for (int i=0; i<dataSize; i++)
-	  *dataPtr++ *= thisFact;
-      int numColB = B.numCols;
-      double *ckjPtr  = &(C.data)[0];
-      for (int j=0; j<numCols; j++) {
-	double *aijPtrA = &data[j*numRows];
-	for (int k=0; k<numColB; k++) {
-	  double tmp = scaleWithFact(*ckjPtr++, otherFact);
-	  double *aijPtr = aijPtrA;
-	  double *bikPtr = &(B.data)[k*numRows];
-	  for (int i=0; i<numRows; i++)
-	    *aijPtr++ += *bikPtr++ * tmp;
-	}
-      }
-    } 
 
     return 0;
 }
@@ -929,49 +944,48 @@ Matrix::addMatrixTransposeProduct(double thisFact,
   }
 #endif
 
-  if (thisFact == 1.0) {
-    int numMults = C.numRows;
-    double *aijPtr = data;
+  if (thisFact == 0.0) {
+    this->Zero();
+  } else if (thisFact != 1.0) {
+    for (int i=0; i<dataSize; i++)
+      data[i] *= thisFact;
+  }
+
+  int numMults = C.numRows;
+  double *aijPtr = data;
+  if (otherFact == 1.0) {
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++) {
-	double *bkiPtr  = &(B.data)[i*numMults];
-	double *cjkPtr  = &(C.data)[j*numMults];
+	double *bkiPtr = &(B.data)[i*numMults];
+	double *cjkPtr = &(C.data)[j*numMults];
 	double sum = 0.0;
-	for (int k=0; k<numMults; k++) {
+	for (int k=0; k<numMults; k++)
 	  sum += *bkiPtr++ * *cjkPtr++;
-	}
-	*aijPtr++ += scaleWithFact(sum, otherFact);
+	*aijPtr++ += sum;
       }
-    } 
-  } else if (thisFact == 0.0) {
-    int numMults = C.numRows;
-    double *aijPtr = data;
+    }
+  } else if (otherFact == -1.0) {
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++) {
-	double *bkiPtr  = &(B.data)[i*numMults];
-	double *cjkPtr  = &(C.data)[j*numMults];
+	double *bkiPtr = &(B.data)[i*numMults];
+	double *cjkPtr = &(C.data)[j*numMults];
 	double sum = 0.0;
-	for (int k=0; k<numMults; k++) {
+	for (int k=0; k<numMults; k++)
 	  sum += *bkiPtr++ * *cjkPtr++;
-	}
-	*aijPtr++ = scaleWithFact(sum, otherFact);
+	*aijPtr++ -= sum;
       }
-    } 
+    }
   } else {
-    int numMults = C.numRows;
-    double *aijPtr = data;
     for (int j=0; j<numCols; j++) {
       for (int i=0; i<numRows; i++) {
-	double *bkiPtr  = &(B.data)[i*numMults];
-	double *cjkPtr  = &(C.data)[j*numMults];
+	double *bkiPtr = &(B.data)[i*numMults];
+	double *cjkPtr = &(C.data)[j*numMults];
 	double sum = 0.0;
-	for (int k=0; k<numMults; k++) {
+	for (int k=0; k<numMults; k++)
 	  sum += *bkiPtr++ * *cjkPtr++;
-	}
-	*aijPtr = *aijPtr * thisFact + scaleWithFact(sum, otherFact);
-	aijPtr++;
+	*aijPtr++ += sum * otherFact;
       }
-    } 
+    }
   }
 
   return 0;
@@ -1021,15 +1035,39 @@ Matrix::addMatrixTripleProduct(double thisFact,
     // now form B * T * fact store in matrixWork == A area
     // NOTE: looping as per blas3 dgemm_: j,k,i
 
-    double *tkjPtr  = &(T.data)[0];
-    for (int j=0; j<numCols; j++) {
-      double *aijPtrA = &matrixWork[j*dimB];
-      for (int k=0; k<dimB; k++) {
-	double tmp = scaleWithFact(*tkjPtr++, otherFact);
-	double *aijPtr = aijPtrA;
-	double *bikPtr = &(B.data)[k*dimB];
-	for (int i=0; i<dimB; i++) 
-	  *aijPtr++ += *bikPtr++ * tmp;
+    double *tkjPtr = &(T.data)[0];
+    if (otherFact == 1.0) {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &matrixWork[j*dimB];
+	for (int k=0; k<dimB; k++) {
+	  double tmp = *tkjPtr++;
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*dimB];
+	  for (int i=0; i<dimB; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
+      }
+    } else if (otherFact == -1.0) {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &matrixWork[j*dimB];
+	for (int k=0; k<dimB; k++) {
+	  double tmp = -(*tkjPtr++);
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*dimB];
+	  for (int i=0; i<dimB; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
+      }
+    } else {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &matrixWork[j*dimB];
+	for (int k=0; k<dimB; k++) {
+	  double tmp = *tkjPtr++ * otherFact;
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*dimB];
+	  for (int i=0; i<dimB; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
       }
     }
 
@@ -1129,15 +1167,39 @@ Matrix::addMatrixTripleProduct(double thisFact,
     // NOTE: looping as per blas3 dgemm_: j,k,i
     
     int rowsB = B.numRows;
-    double *ckjPtr  = &(C.data)[0];
-    for (int j=0; j<numCols; j++) {
-      double *aijPtrA = &matrixWork[j*rowsB];
-      for (int k=0; k<rowsB; k++) {
-	double tmp = scaleWithFact(*ckjPtr++, otherFact);
-	double *aijPtr = aijPtrA;
-	double *bikPtr = &(B.data)[k*rowsB];
-	for (int i=0; i<rowsB; i++) 
-	  *aijPtr++ += *bikPtr++ * tmp;
+    double *ckjPtr = &(C.data)[0];
+    if (otherFact == 1.0) {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &matrixWork[j*rowsB];
+	for (int k=0; k<rowsB; k++) {
+	  double tmp = *ckjPtr++;
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*rowsB];
+	  for (int i=0; i<rowsB; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
+      }
+    } else if (otherFact == -1.0) {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &matrixWork[j*rowsB];
+	for (int k=0; k<rowsB; k++) {
+	  double tmp = -(*ckjPtr++);
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*rowsB];
+	  for (int i=0; i<rowsB; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
+      }
+    } else {
+      for (int j=0; j<numCols; j++) {
+	double *aijPtrA = &matrixWork[j*rowsB];
+	for (int k=0; k<rowsB; k++) {
+	  double tmp = *ckjPtr++ * otherFact;
+	  double *aijPtr = aijPtrA;
+	  double *bikPtr = &(B.data)[k*rowsB];
+	  for (int i=0; i<rowsB; i++)
+	    *aijPtr++ += *bikPtr++ * tmp;
+	}
       }
     }
 
