@@ -49,6 +49,8 @@ public:
     bool mass, unbalancedLoad;
     bool stress3D6, strain3D6;
     bool stress2D3, strain2D3;
+    bool force2D, force3D;
+    bool localForce2D, localForce3D;
 };
 
 
@@ -107,7 +109,7 @@ public:
     typedef std::vector<std::string> EleData;
 
     VTKHDF_Recorder(const char *filename, const OutputDataHDF &ndata,
-                    const std::vector<EleData> &edata, double dt = 0, double rTolDt = 0.00001);
+                    const std::vector<EleData> &edata, double dt = 0, double rTolDt = 0.00001, int rTag = -1);
     VTKHDF_Recorder();
     ~VTKHDF_Recorder();
 
@@ -161,6 +163,10 @@ private:
     int writeStrain3D6();
     int writeStress2D3();
     int writeStrain2D3();
+    int writeForce2D();
+    int writeForce3D();
+    int writeLocalForce2D();
+    int writeLocalForce3D();
 
 
 
@@ -175,6 +181,7 @@ private:
 
     int ndm;
     int ndf;
+    int regionTag;
     
     int numNode;
     int numElement;
@@ -223,9 +230,21 @@ private:
     int current_Strain2D3Offset;
     std::vector<Response *> strain2D3Responses; // specific to 2DStrain3 responses
 
+    // force2D
+    int current_Force2DOffset;
+    std::vector<Response *> force2DResponses;
 
+    // force3D
+    int current_Force3DOffset;
+    std::vector<Response *> force3DResponses;
 
+    // localForce2D
+    int current_LocalForce2DOffset;
+    std::vector<Response *> localForce2DResponses;
 
+    // localForce3D
+    int current_LocalForce3DOffset;
+    std::vector<Response *> localForce3DResponses;
 
     unsigned int numSteps;
 

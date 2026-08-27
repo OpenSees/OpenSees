@@ -47,11 +47,11 @@
 void* OPS_BarSlipMaterial()
 {
     int numdata = OPS_GetNumRemainingInputArgs();
-    if (numdata!=15 && numdata!=13) {
+    if (numdata != 16 && numdata != 15 && numdata != 14 && numdata != 13) {
 	opserr << "WARNING insufficient arguments\n";
 	opserr << "Want: uniaxialMaterial BarSlip tag? ";
 	opserr<< "fc? fy? Es? fu? Eh? db? ld? nb? width? ";
-	opserr<<"depth? bsflag? type? <damage? unit?>\n";
+	opserr<<"depth? <ancLratio?> bsflag? type? <damage? unit?>\n";
 	return 0;
     }
 
@@ -65,6 +65,17 @@ void* OPS_BarSlipMaterial()
     numdata = 10;
     if (OPS_GetDoubleInput(&numdata,data)) {
 	return 0;
+    }
+
+    double ancLratio = 1.0;
+    numdata = OPS_GetNumRemainingInputArgs();
+    if (numdata == 3 || numdata == 5) {
+	numdata = 1;
+	if (OPS_GetDoubleInput(&numdata, &ancLratio) < 0) {
+	    opserr << "WARNING invalid ancLratio\n";
+	    opserr << "BarSlip: " << tag << "\n";
+	    return 0;
+	}
     }
 
     const char* bsFlag = OPS_GetString();
@@ -130,12 +141,13 @@ void* OPS_BarSlipMaterial()
     }
 
     UniaxialMaterial* mat = 0;
+    double ld = data[6] * ancLratio;
     if (dmg==-1) {
 	mat = new BarSlipMaterial(tag,data[0],data[1],data[2],data[3],data[4],
-				  data[5],data[6],data[7],data[8],data[9],bsf,typ);
+				  data[5],ld,data[7],data[8],data[9],bsf,typ);
     } else {
 	mat = new BarSlipMaterial(tag,data[0],data[1],data[2],data[3],data[4],
-				  data[5],data[6],data[7],data[8],data[9],bsf,typ,dmg,unt);
+				  data[5],ld,data[7],data[8],data[9],bsf,typ,dmg,unt);
     }
 
     if (mat == 0) {

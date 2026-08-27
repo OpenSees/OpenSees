@@ -54,6 +54,12 @@ class ElasticBeam2d : public Element
 		  double alpha = 0.0, double d = 0.0,
 		  double rho = 0.0, int cMass = 0,
 		  int release = 0, Damping *theDamping = 0);
+    ElasticBeam2d(int tag, double A, double E, double I,
+		  double G, double Av,
+		  int Nd1, int Nd2, CrdTransf &theTransf,
+		  double alpha = 0.0, double d = 0.0,
+		  double rho = 0.0, int cMass = 0,
+		  int release = 0, Damping *theDamping = 0);  
     ElasticBeam2d(int tag, int Nd1, int Nd2, 
 		  SectionForceDeformation& theSection, CrdTransf &theTransf,
 		  double alpha = 0.0, double d = 0.0,
@@ -103,6 +109,7 @@ class ElasticBeam2d : public Element
 
   private:
     double A,E,I;     // area, elastic modulus, moment of inertia
+  double G,Av; // properties for shear
     double alpha, d;  // coeff. of thermal expansion, depth
     double rho;       // mass per unit length
     int cMass;        // consistent mass flag

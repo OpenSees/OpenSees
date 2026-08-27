@@ -600,6 +600,11 @@ target_link_libraries(G3
 
 add_library(OpenSeesLIB  EXCLUDE_FROM_ALL)
 
+#
+# For UMFPACK long int DLONG version -- Gustavo, Michael
+#
+target_compile_definitions(OpenSeesLIB PUBLIC _UMFPACK_DLONG)
+
 target_link_libraries(OpenSeesLIB
     ${OPS_Extension_List}
     OPS_Actor
@@ -864,14 +869,28 @@ target_link_libraries(OpenSeesPy
 #
 
 install (TARGETS OpenSees DESTINATION bin)
+
+#if (TCL_INIT_FILE)
+#   install(FILES "${TCL_INIT_FILE}"
+#       DESTINATION lib/tcl8.6 
+#   )
+#endif()
+
+install (TARGETS OpenSees DESTINATION bin)
 if (TCL_INIT_FILE)
    install(FILES "${TCL_INIT_FILE}"
-       DESTINATION lib/tcl8.6 
+       DESTINATION library 
    )
 endif()
-install(PROGRAMS $<TARGET_FILE:OpenSeesPy> 
-        DESTINATION bin 
+
+install(PROGRAMS $<TARGET_FILE:OpenSeesPy>
+        DESTINATION bin
         RENAME opensees.so)
+
+if (MPI_FOUND)
+    install(TARGETS OpenSeesSP DESTINATION bin OPTIONAL)
+    install(TARGETS OpenSeesMP DESTINATION bin OPTIONAL)
+endif()
 
 
 # Set selected executable to be built by default

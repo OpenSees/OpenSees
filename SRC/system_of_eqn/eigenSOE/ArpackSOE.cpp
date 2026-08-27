@@ -228,7 +228,8 @@ ArpackSOE::addM(const Matrix &m, const ID &id, double fact)
 	int locJ = id(j);
 	if (locJ >= 0 && locJ < Msize) {
 	  if (locI == locJ) {
-	    M[locI] += m(i,i);
+	    // m(i,j) not m(i,i): duplicate IDs (Transformation) must sum the block.
+	    M[locI] += m(i,j);
 	  } else {
 	    if (m(i,j) != 0.0) {
 	      mDiagonal = false;

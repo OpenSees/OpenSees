@@ -1033,6 +1033,14 @@ TransformationDOF_Group::addSP_Constraint(SP_Constraint &theSP)
 int 
 TransformationDOF_Group::enforceSPs(int doMP)
 {
+#ifdef TRANSF_INCREMENTAL_MP
+    // Massimo 2026 - Reset modTotalDisp here (called when starting a new step)
+    // in case the previous step did not converge.
+    // (TransformationDOF_Group does not have a revertToLastCommit)
+    modTotalDisp.resize(modNumDOF);
+    modTotalDisp = getTrialDisp();
+#endif // TRANSF_INCREMENTAL_MP
+
   int numDof = myNode->getNumberDOF();
   
   if (doMP == 1) {

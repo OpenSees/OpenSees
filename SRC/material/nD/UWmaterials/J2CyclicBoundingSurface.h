@@ -15,8 +15,8 @@
 
 // Written: Diego Turello(*), Alborz Ghofrani and Pedro Arduino
 //			Sep 2017, University of Washington
-//          (*) Universidad Nacional de Córdoba, FCEFyN. Depto Estructuras.
-//              Universidad Tecnológica Nacional, GIMNI.
+//          (*) Universidad Nacional de Cï¿½rdoba, FCEFyN. Depto Estructuras.
+//              Universidad Tecnolï¿½gica Nacional, GIMNI.
 //              CONICET
 // 
 // Description: This file contains the implementation for the Borja material class.
@@ -31,7 +31,9 @@
 #include <stdio.h> 
 #include <stdlib.h> 
 #include <math.h> 
-
+#include <algorithm>
+#include <cmath>
+#include <utility>
 #include <Vector.h>
 #include <Matrix.h>
 #include <NDMaterial.h>
@@ -98,12 +100,14 @@ public:
 	virtual int getOrder(void) const;
 
 	double getRho(void) { return m_density; }
+	double getVoidRatio(void) { return 0.0; }
 
 
 
 	virtual int setParameter(const char **argv, int argc, Parameter &param);
 	virtual int updateParameter(int responseID, Information &info);
 	virtual int activateParameter(int paramID);
+	virtual int setStress(const Vector &stress);
 
 	virtual const Matrix& getDampTangent();
 

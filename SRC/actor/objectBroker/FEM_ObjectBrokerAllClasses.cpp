@@ -91,7 +91,7 @@
 #include "TDConcreteEXP.h"
 #include "TDConcreteMC10.h"
 #include "TDConcreteMC10NL.h"
-#include "CreepMaterial.h"
+#include "CreepShrinkageACI209.h"
 #include "OriginCentered.h"
 #include "Steel01.h"
 #include "Steel01Thermal.h"
@@ -475,6 +475,7 @@
 #include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "mefi/MEFI.h"		// C. N. Lopez
+#include "mefi/MEFI_3D.h"	// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
@@ -1162,7 +1163,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 		return new E_SFI();		// C. N. Lopez	
 		
 	case ELE_TAG_MEFI:			// C. N. Lopez
-		return new MEFI();		// C. N. Lopez		
+		return new MEFI();		// C. N. 
+
+	case ELE_TAG_MEFI_3D:		// C. N. Lopez
+		return new MEFI_3D();	// C. N. Lopez		
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
@@ -1798,8 +1802,8 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 	case MAT_TAG_ConcretewBeta:  
 	     return new ConcretewBeta();
 
-    case MAT_TAG_CreepMaterial:
-      return new CreepMaterial();
+    case MAT_TAG_CreepShrinkageACI209:
+      return new CreepShrinkageACI209();
 
     case MAT_TAG_TDConcrete:
       return new TDConcrete();

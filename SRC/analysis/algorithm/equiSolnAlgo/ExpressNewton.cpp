@@ -71,16 +71,19 @@ void *OPS_ExpressNewton()
   }
   while (OPS_GetNumRemainingInputArgs() > 0) {
     const char *type = OPS_GetString();
-    if ((strcmp(type,"-initialTangent") == 0) || (strcmp(type,"-InitialTangent") == 0)) {
+    if ((strcmp(type,"-initialTangent") == 0) || (strcmp(type,"-InitialTangent") == 0)
+	|| (strcmp(type,"-initial") == 0) || (strcmp(type,"-Initial") == 0)) {
       formTangent = INITIAL_TANGENT;
-    } else if ((strcmp(type,"-currentTangent") == 0) || (strcmp(type,"-CurrentTangent") ==0 )) {
+      factorOnce = 1; // fixed initial tangent -> factor-once
+    } else if ((strcmp(type,"-currentTangent") == 0) || (strcmp(type,"-CurrentTangent") == 0)) {
       formTangent = CURRENT_TANGENT;
-    } else if ((strcmp(type,"-factorOnce") == 0) || (strcmp(type,"-FactorOnce") ==0 )) {
+    } else if ((strcmp(type,"-factorOnce") == 0) || (strcmp(type,"-factoronce") == 0)
+	       || (strcmp(type,"-FactorOnce") == 0)) {
       factorOnce = 1;
     }
   }
-    
-    return new ExpressNewton(nIter,kMultiplier,formTangent,factorOnce);
+
+  return new ExpressNewton(nIter, kMultiplier, formTangent, factorOnce);
 }
 
 // Constructor
@@ -101,6 +104,15 @@ ExpressNewton::ExpressNewton(int ni, double km, int tg, int fo)
 ExpressNewton::~ExpressNewton()
 {
 
+}
+
+int
+ExpressNewton::domainChanged(void)
+{
+  // Domain change after setSize: stale A if we skipped formTangent - reform next solve.
+  if (factorOnce == 2)
+    factorOnce = 1;
+  return 0;
 }
 
 int 

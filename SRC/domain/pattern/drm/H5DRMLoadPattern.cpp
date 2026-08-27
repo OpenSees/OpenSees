@@ -728,6 +728,35 @@ H5DRMLoadPattern::~H5DRMLoadPattern()
     cleanup();
 }
 
+// Respect LoadPattern::setLoadConstant by freezing the computed DRM loads
+void H5DRMLoadPattern::setLoadConstant(void)
+{
+    // call base implementation to keep isConstant behavior consistent
+    this->LoadPattern::setLoadConstant();
+
+    if (!flag_initialized)
+        do_intitialization();
+
+    // compute DRM loads at current domain time and freeze them
+    Domain *theDomain = this->getDomain();
+    if (theDomain == 0)
+        return;
+
+    double currentTime = theDomain->getCurrentTime();
+    if (!ComputeDRMMotions(currentTime))
+        return;
+
+    // store frozen copy
+    drmFrozen_F = DRM_F;
+    drmFrozen = true;
+}
+
+void H5DRMLoadPattern::unsetLoadConstant(void)
+{
+    this->LoadPattern::unsetLoadConstant();
+    drmFrozen = false;
+}
+
 void H5DRMLoadPattern::cleanup()
 {
     // Clear mappings
@@ -806,7 +835,18 @@ H5DRMLoadPattern::applyLoad(double time)
     {
         Domain *theDomain = this->getDomain();
 
-        bool computedLoads = CalculateBoundaryForces(time);
+        bool computedLoads = true;
+
+        // If frozen due to setLoadConstant(), use frozen loads instead of recomputing
+        if (!drmFrozen)
+        {
+            computedLoads = CalculateBoundaryForces(time);
+        }
+        else
+        {
+            // use frozen copy
+            DRM_F = drmFrozen_F;
+        }
 
         if (theDomain == 0 || DRM_Elements.Size() == 0 || !computedLoads)
         {

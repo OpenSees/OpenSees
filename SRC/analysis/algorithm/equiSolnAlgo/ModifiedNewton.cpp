@@ -56,19 +56,21 @@ void* OPS_ModifiedNewton()
   double iFactor = 0;
   double cFactor = 1;
 
-  if (OPS_GetNumRemainingInputArgs() > 0) {
+  while (OPS_GetNumRemainingInputArgs() > 0) {
     const char* type = OPS_GetString();
-    if (strcmp(type,"-secant") == 0) {
+    if (strcmp(type,"-secant") == 0 || strcmp(type,"-Secant") == 0) {
       formTangent = CURRENT_SECANT;
-    } else if (strcmp(type,"-factoronce")==0 || strcmp(type,"-FactorOnce")==0)  {
+    } else if (strcmp(type,"-factorOnce") == 0 || strcmp(type,"-factoronce") == 0
+	       || strcmp(type,"-FactorOnce") == 0) {
       factoronce = 1;
-    } else if (strcmp(type,"-initial") == 0) {
+    } else if (strcmp(type,"-initial") == 0 || strcmp(type,"-Initial") == 0) {
       formTangent = INITIAL_TANGENT;
+      factoronce = 1; // -initial implies factor-once
     } else if(strcmp(type,"-hall")==0 || strcmp(type,"-Hall")==0) {
       formTangent = HALL_TANGENT;
       iFactor = 0.1;
       cFactor = 0.9;
-      if (OPS_GetNumRemainingInputArgs() == 2) {
+      if (OPS_GetNumRemainingInputArgs() >= 2) {
         double data[2];
         int numData = 2;
         if(OPS_GetDoubleInput(&numData,&data[0]) < 0) {
@@ -80,14 +82,15 @@ void* OPS_ModifiedNewton()
       }
     }
   }
-  
-  return new ModifiedNewton(formTangent, iFactor, cFactor,factoronce);
+
+  return new ModifiedNewton(formTangent, iFactor, cFactor, factoronce);
 }
 
 // Constructor
 ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact, int factOnce)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact), factorOnce(factOnce)
+ tangent(theTangentToUse), numIterations(0), factorOnce(factOnce),
+ iFactor(iFact), cFactor(cFact)
 {
   
 }
@@ -95,7 +98,8 @@ ModifiedNewton::ModifiedNewton(int theTangentToUse, double iFact, double cFact, 
 
 ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, double iFact, double cFact, int factOnce)
 :EquiSolnAlgo(EquiALGORITHM_TAGS_ModifiedNewton),
- tangent(theTangentToUse), iFactor(iFact), cFactor(cFact), factorOnce(factOnce)
+ tangent(theTangentToUse), numIterations(0), factorOnce(factOnce),
+ iFactor(iFact), cFactor(cFact)
 {
 
 }
@@ -104,6 +108,15 @@ ModifiedNewton::ModifiedNewton(ConvergenceTest &theT, int theTangentToUse, doubl
 ModifiedNewton::~ModifiedNewton()
 {
 
+}
+
+int
+ModifiedNewton::domainChanged(void)
+{
+  // Domain change: cached factorization invalid after setSize - reform tangent next solve.
+  if (factorOnce == 2)
+    factorOnce = 1;
+  return 0;
 }
 
 

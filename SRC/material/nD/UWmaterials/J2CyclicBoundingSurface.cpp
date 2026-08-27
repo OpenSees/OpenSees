@@ -15,8 +15,8 @@
 
 // Written: Diego Turello(*), Alborz Ghofrani and Pedro Arduino
 //			Sep 2017, University of Washington
-//          (*) Universidad Nacional de Córdoba, FCEFyN. Depto Estructuras.
-//              Universidad Tecnológica Nacional, GIMNI.
+//          (*) Universidad Nacional de Cï¿½rdoba, FCEFyN. Depto Estructuras.
+//              Universidad Tecnolï¿½gica Nacional, GIMNI.
 //              CONICET
 // 
 // Description: This file contains the implementation for the Borja material class.
@@ -34,6 +34,7 @@
 #include <Channel.h>
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
+#include <algorithm>
 
 //parameters
 
@@ -81,9 +82,28 @@ void* OPS_J2CyclicBoundingSurfaceMaterial()
 
 //null constructor
 J2CyclicBoundingSurface::J2CyclicBoundingSurface() :
-	NDMaterial()
+	NDMaterial(),
+	m_sigma0_n(6), m_sigma0_np1(6), m_stress_n(6), m_stress_np1(6), m_strain_np1(6), 
+	m_strain_n(6), m_strainRate_n(6), m_strainRate_n1(6), m_Cep(6, 6), m_Ce(6, 6), 
+	m_D(6, 6), m_stress_vis_n(6), m_stress_vis_n1(6), m_stress_t_n1(6)
 {
-
+	m_su = 0.0;
+	m_bulk = 0.0;
+	m_shear = 0.0;
+	m_density = 0.0;
+	m_h_par = 0.0;
+	m_m_par = 0.0;
+	m_h0_par = 0.0;
+	m_beta = 0.0;
+	m_kappa_n = 0.0;
+	m_kappa_np1 = 0.0;
+	m_psi_n = 0.0;
+	m_psi_np1 = 0.0;
+	m_kappa_inf = 0.0;
+	m_chi = 0.0;
+	m_isElast2Plast = false;
+	debugFlag = false;
+	small = 1.0e-10;
 }
 
 
@@ -341,7 +361,68 @@ void J2CyclicBoundingSurface::plastic_integrator()
 			Ktan(1, 1) = (inner_product(temp, m_psi_np1 * convert_to_stressLike(dStrain_dev), 1)) / m_R;
 
 			// Solve the system
-			Ktan.Solve(res, incVar);
+			//Ktan.Solve(res, incVar);
+
+						// ADDED TONY: 040925
+			double a, b, c, d, e, f;
+			a = Ktan(0, 0);
+			b = Ktan(0, 1);
+			c = Ktan(1, 0);
+			d = Ktan(1, 1);
+			e = res(0);
+			f = res(1);
+			f = res(1);
+			// 
+			a = std::isfinite(a) ? a : 0.0;
+			d = std::isfinite(d) ? d : 0.0;
+
+			double det_m = a * d - b * c;
+			bool ok_cramer = std::isfinite(det_m) && std::abs(det_m) > 1e-10;
+
+			double dx0, dx1;
+			if (ok_cramer) {
+				// Solve the system
+				Ktan.Solve(res, incVar);
+			}
+
+			else		// REMOVED TONY: 040925 
+			// Solve the system
+			// Ktan.Solve(res, incVar);
+
+			// If Cramer method does not work, fallback 
+			{
+				// Creating local copies
+				double aa = a, bb = b, cc = c, dd = d, ee = e, ff = f;
+
+
+				const double tiny = 1e-10 * std::max({ std::abs(aa), std::abs(bb), std::abs(cc), std::abs(dd), 1.0 });
+				if (std::abs(aa) < tiny && std::abs(dd) < tiny) { aa += tiny; dd += tiny; }
+
+				// Pivoting
+				if (std::abs(aa) >= std::abs(cc)) {
+					double m = (aa != 0.0) ? (cc / aa) : 0.0;
+					double d2 = dd - m * bb;
+					double f2 = ff - m * ee;
+					if (std::abs(d2) < tiny) d2 = (d2 >= 0 ? 1 : -1) * tiny;
+					dx1 = f2 / d2;
+					dx0 = (ee - bb * dx1) / aa;
+					incVar(0) = dx0;
+					incVar(1) = dx1;
+				}
+				else {
+					// Swapping rows
+					std::swap(aa, cc); std::swap(bb, dd); std::swap(ee, ff);
+					double m = (aa != 0.0) ? (cc / aa) : 0.0;
+					double d2 = dd - m * bb;
+					double f2 = ff - m * ee;
+					if (std::abs(d2) < tiny) d2 = (d2 >= 0 ? 1 : -1) * tiny;
+					dx1 = f2 / d2;
+					dx0 = (ee - bb * dx1) / aa;
+					incVar(0) = dx0;
+					incVar(1) = dx1;
+				}
+
+			}
 
 			m_psi_np1 = m_psi_np1 - incVar(0);
 			m_kappa_np1 = m_kappa_np1 - incVar(1);
@@ -403,8 +484,68 @@ void J2CyclicBoundingSurface::plastic_integrator()
 			Ktan(1, 1) = (inner_product(temp, dev_stress_n + m_psi_np1 * convert_to_stressLike(dStrain_dev) - dev_sigma0_np1, 1)) / m_R;
 
 			// Solve the system
-			Ktan.Solve(res, incVar);
+			//Ktan.Solve(res, incVar);
 
+						// ADDED TONY: 040925
+			double a, b, c, d, e, f;
+			a = Ktan(0, 0);
+			b = Ktan(0, 1);
+			c = Ktan(1, 0);
+			d = Ktan(1, 1);
+			e = res(0);
+			f = res(1);
+			f = res(1);
+			// 
+			a = std::isfinite(a) ? a : 0.0;
+			d = std::isfinite(d) ? d : 0.0;
+
+			double det_m = a * d - b * c;
+			bool ok_cramer = std::isfinite(det_m) && std::abs(det_m) > 1e-10;
+
+			double dx0, dx1;
+			if (ok_cramer) {
+				// Solve the system
+				Ktan.Solve(res, incVar);
+			}
+
+			else		// REMOVED TONY: 040925 
+			// Solve the system
+			// Ktan.Solve(res, incVar);
+
+			// If Cramer method does not work, fallback 
+			{
+				// Creating local copies
+				double aa = a, bb = b, cc = c, dd = d, ee = e, ff = f;
+
+
+				const double tiny = 1e-10 * std::max({ std::abs(aa), std::abs(bb), std::abs(cc), std::abs(dd), 1.0 });
+				if (std::abs(aa) < tiny && std::abs(dd) < tiny) { aa += tiny; dd += tiny; }
+
+				// Pivoting
+				if (std::abs(aa) >= std::abs(cc)) {
+					double m = (aa != 0.0) ? (cc / aa) : 0.0;
+					double d2 = dd - m * bb;
+					double f2 = ff - m * ee;
+					if (std::abs(d2) < tiny) d2 = (d2 >= 0 ? 1 : -1) * tiny;
+					dx1 = f2 / d2;
+					dx0 = (ee - bb * dx1) / aa;
+					incVar(0) = dx0;
+					incVar(1) = dx1;
+				}
+				else {
+					// Swapping rows
+					std::swap(aa, cc); std::swap(bb, dd); std::swap(ee, ff);
+					double m = (aa != 0.0) ? (cc / aa) : 0.0;
+					double d2 = dd - m * bb;
+					double f2 = ff - m * ee;
+					if (std::abs(d2) < tiny) d2 = (d2 >= 0 ? 1 : -1) * tiny;
+					dx1 = f2 / d2;
+					dx0 = (ee - bb * dx1) / aa;
+					incVar(0) = dx0;
+					incVar(1) = dx1;
+				}
+
+			}
 			m_psi_np1 = m_psi_np1 - incVar(0);
 			m_kappa_np1 = m_kappa_np1 - incVar(1);
 
@@ -523,7 +664,7 @@ J2CyclicBoundingSurface::calcInitialTangent()
 	eye(4, 4) = 1.0;
 	eye(5, 5) = 1.0;
 
-	I4dev = eye - 1 / 3 * I2xI2;
+	I4dev = eye - (1.0/3.0) * I2xI2;
 
 	//m_Ce = m_bulk * I2xI2 + 2 * m_shear*I4dev;
 	m_Ce = m_bulk * I2xI2 + m_shear * I4dev;
@@ -671,6 +812,49 @@ J2CyclicBoundingSurface::activateParameter(int paramID)
 }
 
 int
+J2CyclicBoundingSurface::setStress(const Vector &stress)
+{
+	if (stress.Size() != 6) {
+		opserr << "J2CyclicBoundingSurface::setStress -- expected stress vector size 6" << endln;
+		return -1;
+	}
+
+	// Map stress to a consistent elastic strain state to avoid a startup residual.
+	if (m_Ce.noRows() != 6 || m_Ce.noCols() != 6) {
+		opserr << "WARNING: J2CyclicBoundingSurface::setStress - elastic stiffness is uninitialized" << endln;
+		m_strain_n.Zero();
+	}
+	else {
+		Matrix CeInv;
+		if (CeInv.Invert(m_Ce) == 0) {
+			m_strain_n = CeInv * stress;
+		}
+		else {
+			m_strain_n.Zero();
+		}
+	}
+	m_strain_np1 = m_strain_n;
+	m_strainRate_n.Zero();
+	m_strainRate_n1.Zero();
+
+	m_stress_n = stress;
+	m_stress_np1 = stress;
+	m_stress_t_n1 = stress;
+	m_stress_vis_n.Zero();
+	m_stress_vis_n1.Zero();
+
+	// Place the bounding-surface center on the current stress so the state starts elastic.
+	m_sigma0_n = stress;
+	m_sigma0_np1 = stress;
+	m_kappa_n = m_kappa_inf;
+	m_kappa_np1 = m_kappa_inf;
+	m_psi_n = 2.0 * m_shear;
+	m_psi_np1 = m_psi_n;
+
+	return 0;
+}
+
+int
 J2CyclicBoundingSurface::sendSelf(int commitTag, Channel &theChannel)
 {
 	// TODO : implement this
@@ -685,41 +869,6 @@ J2CyclicBoundingSurface::recvSelf(int commitTag, Channel &theChannel,
 	return 0;
 }
 
-//// get the strain and integrate plasticity equations
-//int
-//J2CyclicBoundingSurface::setTrialStrain(const Vector &strain_from_element)
-//{
-//	m_strain_np1 = strain_from_element;
-//	this->integrate();
-//
-//	return 0;
-//}
-//
-//// unused trial strain functions
-//int
-//J2CyclicBoundingSurface::setTrialStrain(const Vector &v, const Vector &r)
-//{
-//	m_strainRate_n1 = r;
-//	m_strain_np1 = v;
-//	this->integrate();
-//
-//	return 0;
-//}
-//
-//// send back the strain
-//const Vector&
-//J2CyclicBoundingSurface::getStrain()
-//{
-//	return m_strain_np1;
-//}
-//
-//// send back the stress 
-//const Vector&
-//J2CyclicBoundingSurface::getStress()
-//{
-//	//return m_stress_np1;
-//	return m_stress_t_n1;
-//}
 
 // send back the tangent 
 const Matrix&
@@ -766,9 +915,4 @@ J2CyclicBoundingSurface::calcTangent()
 
 }
 
-// send back the tangent 
-//const Matrix&
-//J2CyclicBoundingSurface::calcInitialTangent()
-//{
-//	return m_Ce;
-//}
+

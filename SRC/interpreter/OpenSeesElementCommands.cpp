@@ -107,6 +107,7 @@ void* OPS_SFI_MVLEM_3D();
 void* OPS_E_SFI_MVLEM_3D();
 void* OPS_E_SFI();
 void* OPS_MEFI();
+void* OPS_MEFI_3D();
 void* OPS_MultiFP2d();
 void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
@@ -148,7 +149,7 @@ void* OPS_PFEMElement2DCompressible(const ID& info);
 void* OPS_PFEMElement2Dmini(const ID& info);
 void* OPS_fElmt02();
 void* OPS_ElasticBeam2d(const ID& info);
-void* OPS_ElasticBeam3d();
+void* OPS_ElasticBeam3d(const ID& info);
 void* OPS_ElasticBeamWarping3d();
 void* OPS_DispBeamColumn2dInt();
 void* OPS_ForceBeamColumn2d(const ID& info);
@@ -347,11 +348,11 @@ namespace {
     static void* OPS_ElasticBeam()
     {
 	int ndm = OPS_GetNDM();
+	ID info;
 	if(ndm == 2) {
-	    ID info;
 	    return OPS_ElasticBeam2d(info);
 	} else {
-	    return OPS_ElasticBeam3d();
+	    return OPS_ElasticBeam3d(info);
 	}
     }
 
@@ -750,6 +751,7 @@ namespace {
 	functionMap.insert(std::make_pair("E_SFI_MVLEM", &OPS_E_SFI_MVLEM2d3d));  
 	functionMap.insert(std::make_pair("E_SFI_MVLEM_3D", &OPS_E_SFI_MVLEM2d3d));
 	functionMap.insert(std::make_pair("MEFI", &OPS_MEFI));	
+	functionMap.insert(std::make_pair("MEFI_3D", &OPS_MEFI));
 	functionMap.insert(std::make_pair("MasonPan12", &OPS_MasonPan12));
 	functionMap.insert(std::make_pair("MasonPan3D", &OPS_MasonPan3D));
 	functionMap.insert(std::make_pair("BeamGT", &OPS_BeamGT));		

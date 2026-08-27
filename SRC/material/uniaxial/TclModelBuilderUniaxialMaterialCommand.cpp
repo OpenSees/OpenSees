@@ -1497,16 +1497,16 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 		}
    }
   if (strcmp(argv[1],"BarSlip") == 0) {
-     if (argc != 17 && argc != 15)
+     if (argc != 18 && argc != 17 && argc != 16 && argc != 15)
        {
 	 opserr << "WARNING insufficient arguments\n";
 	 printCommand(argc,argv);
-	 opserr << "Want: uniaxialMaterial BarSlip tag? fc? fy? Es? fu? Eh? db? ld? nb? width? depth? bsflag? type? <damage? unit?>"  << endln;
+	 opserr << "Want: uniaxialMaterial BarSlip tag? fc? fy? Es? fu? Eh? db? ld? nb? width? depth? <ancLratio?> bsflag? type? <damage? unit?>"  << endln;
 	 return TCL_ERROR;
        }
      
      int tag, nb, bsf, typ, dmg, unt;
-     double fc, fy, Es, fu, Eh, ld, width, depth, db;
+     double fc, fy, Es, fu, Eh, ld, width, depth, db, ancLratio = 1.0;
      
      int argStart = 2;
      
@@ -1580,6 +1580,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
      int y;
      y = argStart;
      
+     if (argc == 16 || argc == 18) {
+       if (Tcl_GetDouble(interp, argv[y++], &ancLratio) != TCL_OK)
+	 {
+	   opserr << "WARNING invalid ancLratio\n";
+	   opserr << "BarSlip: " << tag << endln;
+	   return TCL_ERROR;
+	 }
+     }
      
      if ((strcmp(argv[y],"strong") == 0) || (strcmp(argv[y],"Strong") == 0) || (strcmp(argv[y],"weak") == 0) || (strcmp(argv[y],"Weak") == 0))
        {
@@ -1626,7 +1634,7 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	 opserr << "BarSlip: " << tag << endln;
 	 return TCL_ERROR;
        }
-     if (argc == 17) {
+     if (argc == 17 || argc == 18) {
        y ++;
        
        if ((strcmp(argv[y],"damage1") == 0) || (strcmp(argv[y],"Damage1") == 0) || (strcmp(argv[y],"damage2") == 0) || (strcmp(argv[y],"Damage2") == 0) || 
@@ -1695,11 +1703,12 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
      }
      
      // allocate the material
-     if (argc == 15 ) {
+     ld *= ancLratio;
+     if (argc == 15 || argc == 16) {
        theMaterial = new BarSlipMaterial (tag, fc, fy, Es, fu, Eh, db, ld, nb, width, depth, bsf, typ);
      }
      
-     if (argc == 17) {
+     if (argc == 17 || argc == 18) {
        theMaterial = new BarSlipMaterial (tag, fc, fy, Es, fu, Eh, db, ld, nb, width, depth, bsf, typ, dmg, unt);
      }
      

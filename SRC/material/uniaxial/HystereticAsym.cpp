@@ -18,13 +18,13 @@
 **                                                                    **
 ** ****************************************************************** */
                                                                         
-// $Revision: 1.00 $
-// $Date: 2022-Apr-21 12:15:00 $
+// $Revision: 2.00 $
+// $Date: 2026-May-20 12:15:00 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/HystereticAsym.cpp,v $
                                                                         
 // Written: Salvatore Sessa Mail: salvatore.sessa2@unina.it
 // Created: 04-2022
-// Revision: A
+// Revision: B
 //
 // Description: This file contains the class implementation for 
 // HystereticAsym. 
@@ -132,7 +132,7 @@ HystereticAsym::HystereticAsym(int tag, double K1, double K2, double FBAR, doubl
    st = 1.0;
 
    
-   Ttangent = 0.5*(ka-kb);
+   Ttangent = 0.5*(ka+kb);
    InitTangent = Ttangent;
 
    Ctangent = Ttangent;
@@ -200,7 +200,7 @@ double HystereticAsym::getTangent ()
 
 double HystereticAsym::getInitialTangent()
 {
-	InitTangent = 0.5 * (ka - kb);
+	InitTangent = 0.5 * (ka + kb);
 	return InitTangent;
 }
 
@@ -535,8 +535,8 @@ HystereticAsym::getStressSensitivity(int gradIndex, bool conditional)
 	delta3 = kb * Tstrain - st * (ka - kb) / a * exp(-a * (Tstrain * st - uj)) + fo * st;
 
 	double Da = 0.25/fo/fo*(2*fo*(Dka-Dkb)-2*Dfo*(ka-kb));
-	double Dfe = -Cstrain * (Db1 + Db2) - (b1 + b2) * Duc + (Cstrain * Db1 + b1 * Duc) * exp(b1 * Cstrain) + (Cstrain * b2 + b2 * Duc) * exp(-b2 * Cstrain);
-	double Dd2 = (Dfe - Dfc - Dg * Cstrain - g * Duc) * exp(-g * Cstrain) + Dkb * Cstrain + kb * Duc + Dfo * st;
+	double Dfe = -Cstrain * (Db1 + Db2) - (b1 + b2) * Duc + (Cstrain * Db1 + b1 * Duc) * exp(b1 * Cstrain) + (Cstrain * Db2 + b2 * Duc) * exp(-b2 * Cstrain);
+	double Dd2 = (Dfe - Dfc) * exp(-g * Cstrain) + (fe - Cstress) * (-Dg * Cstrain - g * Duc) * exp(-g * Cstrain) + Dkb * Cstrain + kb * Duc + Dfo * st;
 	double Duj = Duc * st + (ka - kb) / delta2 / a / a * ((Da * delta2 + a * Dd2) / (ka - kb) - a * delta2 * (Dka - Dkb) / (ka - kb) / (ka - kb)) - Da / a / a * log(st * a * delta2 / (ka - kb));
 	double Dd3 = Dkb * Tstrain + kb * Dut - st / a * (Dka - Dkb - (ka - kb) * (Da * (1 / a + Tstrain * st - uj) + a * (Dut * st - Duj))) * exp(-a * (Tstrain * st - uj)) + Dfo * st;
 
@@ -658,8 +658,8 @@ HystereticAsym::commitSensitivity(double TstrainSensitivity, int gradIndex, int 
 	delta3 = kb * Tstrain - st * (ka - kb) / a * exp(-a * (Tstrain * st - uj)) + fo * st;
 
 	double Da = 0.25 / fo / fo * (2 * fo * (Dka - Dkb) - 2 * Dfo * (ka - kb));
-	double Dfe = -Cstrain * (Db1 + Db2) - (b1 + b2) * Duc + (Cstrain * Db1 + b1 * Duc) * exp(b1 * Cstrain) + (Cstrain * b2 + b2 * Duc) * exp(-b2 * Cstrain);
-	double Dd2 = (Dfe - Dfc - Dg * Cstrain - g * Duc) * exp(-g * Cstrain) + Dkb * Cstrain + kb * Duc + Dfo * st;
+	double Dfe = -Cstrain * (Db1 + Db2) - (b1 + b2) * Duc + (Cstrain * Db1 + b1 * Duc) * exp(b1 * Cstrain) + (Cstrain * Db2 + b2 * Duc) * exp(-b2 * Cstrain);
+	double Dd2 = (Dfe - Dfc) * exp(-g * Cstrain) + (fe - Cstress) * (-Dg * Cstrain - g * Duc) * exp(-g * Cstrain) + Dkb * Cstrain + kb * Duc + Dfo * st;
 	double Duj = Duc * st + (ka - kb) / delta2 / a / a * ((Da * delta2 + a * Dd2) / (ka - kb) - a * delta2 * (Dka - Dkb) / (ka - kb) / (ka - kb)) - Da / a / a * log(st * a * delta2 / (ka - kb));
 	double Dd3 = Dkb * Tstrain + kb * Dut - st / a * (Dka - Dkb - (ka - kb) * (Da * (1 / a + Tstrain * st - uj) + a * (Dut * st - Duj))) * exp(-a * (Tstrain * st - uj)) + Dfo * st;
 

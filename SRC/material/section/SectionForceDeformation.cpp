@@ -593,7 +593,11 @@ SectionForceDeformation::getSectionFlexibility ()
       (*fDefault)(0,0) = 1.0/k(0,0);
     break;
   default:
-    k.Invert(*fDefault);
+    int ok = k.Invert(*fDefault);
+    if (ok < 0) {
+      opserr << "SectionForceDeformation::getSectionFlexibility -- failed to invert section stiffness matrix, error code = "
+	     << ok << ", section tag = " << this->getTag() << endln;
+    }
     break;
   }
 
@@ -621,7 +625,11 @@ SectionForceDeformation::getInitialFlexibility ()
       (*fDefault)(0,0) = 1.0/k(0,0);
     break;
   default:
-    k.Invert(*fDefault);
+    int ok = k.Invert(*fDefault);
+    if (ok < 0) {
+      opserr << "SectionForceDeformation::getInitialFlexibility -- failed to invert section stiffness matrix, error code = "
+	     << ok << ", section tag = " << this->getTag() << endln;
+    }    
     break;
   }
   

@@ -77,8 +77,12 @@ FiberSection2d::FiberSection2d(int tag, int num, Fiber **fibers, bool compCentro
   numFibers(num), sizeFibers(num), theMaterials(0), matData(0),
   QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
-
 {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection2d::FiberSection2d -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+  
   if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
@@ -138,6 +142,11 @@ FiberSection2d::FiberSection2d(int tag, int num, bool compCentroid):
   QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
 {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection2d::FiberSection2d -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+  
     if(sizeFibers > 0) {
 	theMaterials = new UniaxialMaterial *[sizeFibers];
 
@@ -182,7 +191,12 @@ FiberSection2d::FiberSection2d(int tag, int num, UniaxialMaterial **mats,
   QzBar(0.0), ABar(0.0), yBar(0.0), computeCentroid(compCentroid),
   sectionIntegr(0), e(2), s(0), ks(0), dedh(2)
 {
-  if (numFibers != 0) {
+  if (numFibers > 10000) {
+    opserr << "ERROR: FiberSection2d::FiberSection2d -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+
+  if (numFibers > 0) {
     theMaterials = new UniaxialMaterial *[numFibers];
 
     if (theMaterials == 0) {
@@ -265,6 +279,11 @@ FiberSection2d::FiberSection2d():
 int
 FiberSection2d::addFiber(Fiber &newFiber)
 {
+  if (numFibers >= 10000) {
+    opserr << "ERROR: FiberSection2d::addFiber -- section has more than 10,000 fibers. You can surely use fewer fibers." << endln;
+    exit(-1);
+  }
+
   // need to create larger arrays
   if(numFibers == sizeFibers) {
       int newsize = 2*sizeFibers;
