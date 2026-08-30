@@ -636,6 +636,9 @@ void
 CatenaryCable::zeroLoad(void)
 {
   load->Zero();
+  w1 = 0;
+  w2 = 0;
+  w3 = weight;
 }
 
 int 
@@ -647,9 +650,9 @@ CatenaryCable::addLoad(ElementalLoad *theLoad, double loadFactor)
   if (type == LOAD_TAG_Beam3dUniformLoad) 
   {
       // opserr <<"CatenaryCable::addLoad - Uniform Load - loadFactor = " << loadFactor << endln; 
-      w1 = loadFactor*data(0);
-      w2 = loadFactor*data(1);
-      w3 = loadFactor*data(2);
+      w1 += loadFactor*data(0);
+      w2 += loadFactor*data(1);
+      w3 += loadFactor*data(2);
       // opserr <<  "   w = ("  <<  w1 <<  ", " <<  w2 << ", " <<  w3 << ")" << endln; 
       
       return 0;
