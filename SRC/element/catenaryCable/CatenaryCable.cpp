@@ -81,6 +81,10 @@ Matrix CatenaryCable::Stiffness(6,6);
 Matrix CatenaryCable::Mass(6,6);
 Matrix CatenaryCable::ZeroMatrix(6,6);
 Vector CatenaryCable::Forces(6);
+Matrix CatenaryCable::Stiffness12(12,12);
+Matrix CatenaryCable::Mass12(12,12);
+Matrix CatenaryCable::ZeroMatrix12(12,12);
+Vector CatenaryCable::Forces12(12);
 
 // constructor:
 //  responsible for allocating the necessary space needed by each object
@@ -175,7 +179,8 @@ CatenaryCable::CatenaryCable(int tag, int node1, int node2, double weight_, doub
   error_tol(error_tol_),
   Nsubsteps(Nsubsteps_),
   first_step(true),
-  massType(massType_)
+  massType(massType_),
+  numDOF(6)
 {
     
     // ensure the connectedExternalNode ID is of correct size & set values
@@ -212,7 +217,8 @@ CatenaryCable::CatenaryCable()
   error_tol(0),
   Nsubsteps(0),
   first_step(true),
-  massType(0)
+  massType(0),
+  numDOF(6)
 {
     // ensure the connectedExternalNode ID is of correct size 
   if (connectedExternalNodes.Size() != 2) {
@@ -259,7 +265,7 @@ CatenaryCable::getNodePtrs(void)
 int
 CatenaryCable::getNumDOF(void) 
 {
-    return 6;
+    return numDOF;
 }
 
 
@@ -316,6 +322,19 @@ CatenaryCable::setDomain(Domain *theDomain)
       return;
     }	
 
+    // Set numDOF and theMatrix pointer based on node DOF count
+    if (dofNd1 == 3) {
+        numDOF = 6;
+        theMatrix = &Stiffness;
+    } else if (dofNd1 == 6) {
+        numDOF = 12;
+        theMatrix = &Stiffness12;
+    } else {
+        opserr << "WARNING CatenaryCable::setDomain(): nodes " << Nd1 << " and " << Nd2 
+               << " have unsupported DOF count " << dofNd1 << " for CatenaryCable " << this->getTag() << endln;
+        return;
+    }
+
     // call the base class method
     this->DomainComponent::setDomain(theDomain);
 
@@ -324,12 +343,12 @@ CatenaryCable::setDomain(Domain *theDomain)
     // create the load vector
     if (load == 0)
     {
-      load = new Vector(6);
-      load_incl_inertia = new Vector(6);
+      load = new Vector(numDOF);
+      load_incl_inertia = new Vector(numDOF);
     }
     if (load_lastcommit == 0)
     {
-      load_lastcommit = new Vector(6);
+      load_lastcommit = new Vector(numDOF);
     }
 
     Flexibility.Zero();
@@ -337,9 +356,13 @@ CatenaryCable::setDomain(Domain *theDomain)
     Mass.Zero();
     ZeroMatrix.Zero();
     Forces.Zero();
+    Stiffness12.Zero();
+    Mass12.Zero();
+    ZeroMatrix12.Zero();
+    Forces12.Zero();
 
     if (load == 0) {
-      opserr << "CatenaryCable::setDomain - CatenaryCable " << this->getTag() <<  "out of memory creating vector of size" << 6 << endln;
+      opserr << "CatenaryCable::setDomain - CatenaryCable " << this->getTag() <<  "out of memory creating vector of size" << numDOF << endln;
       exit(-1);
       return;
     }          
@@ -466,8 +489,7 @@ CatenaryCable::update(void)
 
   // opserr <<"   l1 = " <<  l1 << endln; 
   // opserr <<"   l2 = " <<  l2 << endln; 
-  // opserr <<"   l3 = " <<  l3 << endln; 
-
+  // opserr <<"   l3 = " <<  l3 << endln;
   //Misclosure vector   dl = sp.matrix([[lx0-lxi],[ly0-lyi],[lz0-lzi]], dtype = sp.double())
   static Vector dl(3);
   dl.Zero();
@@ -530,14 +552,12 @@ CatenaryCable::update(void)
         // f6 = -f3 - w3*L0
 
         compute_flexibility_matrix();
-    
+
         // static Matrix K(3,3);
         static Vector dF(3);
-        
         Flexibility.Solve(dl, dF);
     
         dF  = dF / Nsubsteps;
-          
         Fi0 = Fi0 + dF;
     }
 
@@ -588,40 +608,43 @@ CatenaryCable::getTangentStiff(void)
 {
   static Matrix K(3,3);
   K.Zero();
-  Stiffness.Zero();
+  theMatrix->Zero();
   
   compute_flexibility_matrix();
 
   Flexibility.Invert(K);
 
+  int numDOF2 = numDOF/2;
   for(int i = 0; i < 3; i++)
   {
     for(int j = 0; j < 3; j++)
     {
-      Stiffness(i,j) = -K(i,j);
-      Stiffness(i+3,j+3) = -K(i,j);
-      Stiffness(i,j+3) = K(i,j);
-      Stiffness(i+3,j) = K(i,j);
+      (*theMatrix)(i,j) = -K(i,j);
+      (*theMatrix)(i+numDOF2,j+numDOF2) = -K(i,j);
+      (*theMatrix)(i,j+numDOF2) = K(i,j);
+      (*theMatrix)(i+numDOF2,j) = K(i,j);
     }
   }
 
+  // opserr << "Stiffness = " << *theMatrix << endln;
 
-  // opserr << "Stiffness = " << Stiffness << endln;
-
-  return Stiffness;
+  return *theMatrix;
 }
 
 
 const Matrix &
 CatenaryCable::getInitialStiff(void)
 {
-    return Stiffness;
+    return *theMatrix;
 }
 
 const Matrix &
 CatenaryCable::getDamp(void)
 {
-  return ZeroMatrix;
+  if (numDOF == 6)
+    return ZeroMatrix;
+  else
+    return ZeroMatrix12;
 }
 
 
@@ -629,7 +652,10 @@ const Matrix &
 CatenaryCable::getMass(void)
 {
   computeMass();
-  return Mass;
+  if (numDOF == 6)
+    return Mass;
+  else
+    return Mass12;
 }
 
 void 
@@ -707,27 +733,31 @@ const Vector &
 CatenaryCable::getResistingForce()
 {	
 
+  int numDOF2 = numDOF/2;
 
   double f4 = -f1 - w1*L0;
   double f5 = -f2 - w2*L0;
   double f6 = -f3 - w3*L0;
+
+  load->Zero();
     
   (*load)(0) = f1;
   (*load)(1) = f2;
   (*load)(2) = f3;
-  (*load)(3) = f4;
-  (*load)(4) = f5;
-  (*load)(5) = f6;
+  (*load)(numDOF2)     = f4;
+  (*load)(numDOF2 + 1) = f5;
+  (*load)(numDOF2 + 2) = f6;
 
-  static Vector disp(6);
+  Vector disp(numDOF);
   const Vector &end1Disp = theNodes[0]->getIncrDisp();
   const Vector &end2Disp = theNodes[1]->getIncrDisp();
+  disp.Zero();
   disp(0) = end1Disp(0);
   disp(1) = end1Disp(1);
   disp(2) = end1Disp(2);
-  disp(3) = end2Disp(0);
-  disp(4) = end2Disp(1);
-  disp(5) = end2Disp(2);
+  disp(numDOF2)     = end2Disp(0);
+  disp(numDOF2 + 1) = end2Disp(1);
+  disp(numDOF2 + 2) = end2Disp(2);
 
   PE = PE_n + 0.5*((*load_lastcommit + *load)^(disp));
 
@@ -738,7 +768,7 @@ CatenaryCable::getResistingForce()
 const Vector &
 CatenaryCable::getResistingForceIncInertia()
 {	
-  
+
   // // subtract external load
   // (*theVector) -= *theLoad;
   
@@ -748,7 +778,7 @@ CatenaryCable::getResistingForceIncInertia()
   //   // add inertia forces from element mass
   //   const Vector &accel1 = theNodes[0]->getTrialAccel();
   //   const Vector &accel2 = theNodes[1]->getTrialAccel();	
-    
+
   //   int numDOF2 = numDOF/2;
     
   //   if (cMass == 0)  {
@@ -781,21 +811,16 @@ CatenaryCable::getResistingForceIncInertia()
 
   this->getResistingForce();
 
-
-
   computeMass();
-
-
-
-  static Vector accel(6);
-  static Vector veloc(6);
-  accel.Zero();
-  veloc.Zero();
-
 
   // check for a quick return
   if ( rho == 0.0) 
     return *load;
+
+  Vector accel(numDOF);
+  Vector veloc(numDOF);
+  accel.Zero();
+  veloc.Zero();
 
   int count = 0;
   for (int i = 0; i < 2; i++) 
@@ -804,14 +829,16 @@ CatenaryCable::getResistingForceIncInertia()
     const Vector &Rveloc = theNodes[i]->getTrialVel();
     for (int j = 0; j < 3; j++)
     {      
-      accel(count) = Raccel(j);
-      veloc(count) = Rveloc(j);
-      count++;
+      accel(count + j) = Raccel(j);
+      veloc(count + j) = Rveloc(j);
     }
+    count += numDOF/2;
   }
 
+  const Matrix &massMat = (numDOF == 6) ? Mass : Mass12;
+
   *load_incl_inertia = *load;
-  load_incl_inertia->addMatrixVector(1.0, Mass, accel, 1.0);
+  load_incl_inertia->addMatrixVector(1.0, massMat, accel, 1.0);
 
   // add the damping forces if rayleigh damping
   if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
@@ -820,17 +847,14 @@ CatenaryCable::getResistingForceIncInertia()
 
   KE = 0;
 
-  for(int i = 0; i < 6; i++)
+  for(int i = 0; i < numDOF; i++)
   {    
-    for(int j = 0; j < 6; j++)
+    for(int j = 0; j < numDOF; j++)
     {
-      KE += veloc(i)*Mass(i,j)*veloc(j)*0.5;
+      KE += veloc(i)*massMat(i,j)*veloc(j)*0.5;
     }
   }
   return *load_incl_inertia;
-
-
-  
 }
 
 int
@@ -1076,7 +1100,7 @@ CatenaryCable::setResponse(const char **argv, int argc, OPS_Stream &output)
             output.tag("ResponseType", "f4");
             output.tag("ResponseType", "f5");
             output.tag("ResponseType", "f6");
-            theResponse =  new ElementResponse(this, 1, Vector(6));
+            theResponse =  new ElementResponse(this, 1, Vector(numDOF));
 
     } 
     else if (strcmp(argv[0],"energy") == 0)
@@ -1272,23 +1296,29 @@ void CatenaryCable::computeMass()
 void CatenaryCable::computeMassLumped()
 {
   double nodal_mass = rho*L0/2;
-  Mass(0,0) = nodal_mass;
-  Mass(1,1) = nodal_mass;
-  Mass(2,2) = nodal_mass;
-  Mass(3,3) = nodal_mass;
-  Mass(4,4) = nodal_mass;
-  Mass(5,5) = nodal_mass;
+  int numDOF2 = numDOF/2;
+  Matrix &mass = (numDOF == 6) ? Mass : Mass12;
+  mass.Zero();
+  mass(0,0) = nodal_mass;
+  mass(1,1) = nodal_mass;
+  mass(2,2) = nodal_mass;
+  mass(numDOF2, numDOF2) = nodal_mass;
+  mass(numDOF2+1, numDOF2+1) = nodal_mass;
+  mass(numDOF2+2, numDOF2+2) = nodal_mass;
 }
 
 void CatenaryCable::computeMassEquivalentTruss()
 {
 
   double m = rho*L0/6.0;
+  int numDOF2 = numDOF/2;
+  Matrix &mass = (numDOF == 6) ? Mass : Mass12;
+  mass.Zero();
   for (int i = 0; i < 3; i++) {
-    Mass(i,i) = 2.0*m;
-    Mass(i,i+3) = m;
-    Mass(i+3,i) = m;
-    Mass(i+3,i+3) = 2.0*m;
+    mass(i,i) = 2.0*m;
+    mass(i,i+numDOF2) = m;
+    mass(i+numDOF2,i) = m;
+    mass(i+numDOF2,i+numDOF2) = 2.0*m;
   }
 }
 
@@ -1301,21 +1331,24 @@ void CatenaryCable::computeMassByIntegration()
 void CatenaryCable::computeMassCloughStyle()
 {
   double total_mass = rho*L0;
+  int numDOF2 = numDOF/2;
   double f1x = fabs((*load)(0));
-  double f2x = fabs((*load)(3));
+  double f2x = fabs((*load)(numDOF2));
   double f1y = fabs((*load)(1));
-  double f2y = fabs((*load)(4));
+  double f2y = fabs((*load)(numDOF2+1));
   double f1z = fabs((*load)(2));
-  double f2z = fabs((*load)(5));
+  double f2z = fabs((*load)(numDOF2+2));
   double f1 = sqrt(f1x*f1x + f1y*f1y + f1z*f1z);
   double f2 = sqrt(f2x*f2x + f2y*f2y + f2z*f2z);
   double m1 = total_mass*f1/(f1+f2);
   double m2 = total_mass*f1/(f1+f2);
-  Mass(0,0) = m1;
-  Mass(1,1) = m1;
-  Mass(2,2) = m1;
-  Mass(3,3) = m2;
-  Mass(4,4) = m2;
-  Mass(5,5) = m2;
+  Matrix &mass = (numDOF == 6) ? Mass : Mass12;
+  mass.Zero();
+  mass(0,0) = m1;
+  mass(1,1) = m1;
+  mass(2,2) = m1;
+  mass(numDOF2, numDOF2) = m2;
+  mass(numDOF2+1, numDOF2+1) = m2;
+  mass(numDOF2+2, numDOF2+2) = m2;
 }
 
