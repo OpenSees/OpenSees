@@ -431,7 +431,7 @@ jobs:
       #   pdpotrf_
       #   pdgetrf_
       #   ...
-      # ============================================================
+      # ==========================================================
 
       - name: Configure OpenSees
         shell: bash
@@ -442,7 +442,7 @@ jobs:
           set -u
 
           echo "============================================================"
-          echo "OpenSees configuration"
+          echo "OpenSees configuration (Profile / RelWithDebInfo)"
           echo "============================================================"
 
           echo "MKLROOT=${MKLROOT}"
@@ -457,13 +457,13 @@ jobs:
             -S . \
             -B "${OPENSEES_BUILD}" \
             -G Ninja \
-            -DCMAKE_BUILD_TYPE=Release \
+            -DCMAKE_BUILD_TYPE=RelWithDebInfo \
             -DCMAKE_C_COMPILER=gcc \
             -DCMAKE_CXX_COMPILER=g++ \
             -DCMAKE_Fortran_COMPILER=ifx \
-            -DCMAKE_C_FLAGS="-O3 -march=native -mavx2" \
-            -DCMAKE_CXX_FLAGS="-O3 -march=native -mavx2" \
-            -DCMAKE_Fortran_FLAGS="-O3 -march=native -mavx2" \
+            -DCMAKE_C_FLAGS="-O2 -g -fno-omit-frame-pointer -march=native" \
+            -DCMAKE_CXX_FLAGS="-O2 -g -fno-omit-frame-pointer -march=native" \
+            -DCMAKE_Fortran_FLAGS="-O2 -g -march=native" \
             -DBLA_VENDOR=Intel10_64lp \
             -DBLA_STATIC=ON \
             -DMKL_LINK=static \
@@ -472,6 +472,7 @@ jobs:
             -DMUMPS_DIR="${MUMPS_LIBDIR}" \
             -DPARALLEL=1 \
             -DSCALAPACK_LIBRARIES="${SCALAPACK_LIB};${BLACS_LIB}"
+
 
       # ============================================================
       # 16. HARD GATE:
