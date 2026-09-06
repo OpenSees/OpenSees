@@ -1549,6 +1549,7 @@ HystereticSMMaterial::commitState(void)
 
     Cstress = Tstress;
     Cstrain = Tstrain;
+    Ctangent = Ttangent;
 
 
     CrotMinDuctUsed = TrotMinDuctUsed;
@@ -1573,6 +1574,7 @@ HystereticSMMaterial::revertToLastCommit(void)
 
     Tstress = Cstress;
     Tstrain = Cstrain;
+    Ttangent = Ctangent;
 
 
     TrotMinDuctUsed = CrotMinDuctUsed;
@@ -1601,6 +1603,7 @@ HystereticSMMaterial::revertToStart(void)
     Tstrain = 0;
     Tstress = 0;
     Ttangent = E1p;
+    Ctangent = E1p;
 
     // two committed state variables for ductility gating (plastic peaks)
     CrotMaxDuctUsed = rot1p;   // or 0.0; but rot1p is a cleaner “yield baseline”
@@ -1647,6 +1650,7 @@ HystereticSMMaterial::getCopy(void)
     theCopy->Cstress = Cstress;
     theCopy->Cstrain = Cstrain;
     theCopy->Ttangent = Ttangent;
+    theCopy->Ctangent = Ctangent;
 
     theCopy->CrotMaxDuctUsed = CrotMaxDuctUsed;
     theCopy->CrotMinDuctUsed = CrotMinDuctUsed;
@@ -1746,7 +1750,7 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
     data(44) = CloadIndicator;
     data(45) = Cstress;
     data(46) = Cstrain;
-    data(47) = Ttangent;
+    data(47) = Ctangent;
 
     data(48) = CrotMaxDuctUsed;
     data(49) = CrotMinDuctUsed;
@@ -1854,7 +1858,8 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
         CloadIndicator = (int)data(44);
         Cstress = data(45);
         Cstrain = data(46);
-        Ttangent = data(47);
+        Ctangent = data(47);
+        Ttangent = Ctangent;
 
         CrotMaxDuctUsed = data(48);
         CrotMinDuctUsed = data(49);
