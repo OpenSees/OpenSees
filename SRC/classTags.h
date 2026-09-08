@@ -265,6 +265,7 @@
 #define MAT_TAG_QbSandCPT 234
 #define MAT_TAG_ASDSteel1DMaterial 235
 #define MAT_TAG_CreepShrinkageACI209 236
+#define MAT_TAG_FrictionSpringDamper 237
 
 #define MAT_TAG_FedeasMaterial    1000
 #define MAT_TAG_FedeasBond1       1001
