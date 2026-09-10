@@ -3,6 +3,7 @@ try:
 except ModuleNotFoundError:
    import openseespy.opensees as ops
 from math import isclose, pi, sin, exp
+import pytest
 
 # SSPquadUP with a massless solid (rho = 0), as in a quasi-static
 # consolidation analysis. The pore fluid of bulk modulus Kf fills the
@@ -98,3 +99,49 @@ def test_consolidation():
    for j in range(ny):
       assert abs(ops.nodeVel(2*j + 1,3) - pressure(H - j*H/ny)) < 1.0e-2*u0
    assert abs(-ops.nodeDisp(2*ny + 1,2) - settlement) < 5.0e-3*q*H/M
+
+# (Pup, Plow, Pleft, Pright), the nodes of the loaded side, its outward normal
+SIDES = {
+   'lower': ((0.0,10.0,0.0,0.0),(1,2),(0.0,-1.0)),
+   'upper': ((10.0,0.0,0.0,0.0),(3,4),(0.0,1.0)),
+   'left': ((0.0,0.0,10.0,0.0),(4,1),(-1.0,0.0)),
+   'right': ((0.0,0.0,0.0,10.0),(2,3),(1.0,0.0)),
+}
+
+@pytest.mark.parametrize('side',SIDES)
+def test_side_pressure(side):
+   # A pressure P on one side of a unit square acts along the outward normal
+   # and loads each node of that side with P/2, on its displacement DOFs only.
+   # Every DOF but one, off the loaded side, is fixed, so the reactions
+   # return that load with the opposite sign.
+   P,loaded,normal = SIDES[side]
+
+   ops.wipe()
+   ops.model('basic','-ndm',2,'-ndf',3)
+   for node,(x,y) in enumerate(((0,0),(1,0),(1,1),(0,1)),1):
+      ops.node(node,float(x),float(y))
+      ops.fix(node,1,1,1)
+   free = next(node for node in (1,2,3,4) if node not in loaded)
+   ops.remove('sp',free,1)
+
+   ops.nDMaterial('ElasticIsotropic',1,E,nu,0.0)
+   ops.element('SSPquadUP',1,1,2,3,4,1,1.0,Kf,1.0,perm,perm,e,0.0,0.0,0.0,*P)
+
+   ops.timeSeries('Constant',1)
+   ops.pattern('Plain',1,1)
+
+   ops.constraints('Plain')
+   ops.numberer('Plain')
+   ops.system('FullGeneral')
+   ops.test('NormDispIncr',1.0e-12,10,0)
+   ops.algorithm('Linear')
+   ops.integrator('LoadControl',1.0)
+   ops.analysis('Static')
+   assert ops.analyze(1) == 0
+   ops.reactions()
+
+   for node in (1,2,3,4):
+      share = 5.0 if node in loaded else 0.0
+      expected = (-share*normal[0],-share*normal[1],0.0)
+      for dof in (1,2,3):
+         assert isclose(ops.nodeReaction(node,dof),expected[dof - 1],abs_tol=1e-12)

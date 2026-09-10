@@ -1309,7 +1309,7 @@ SSPquadUP::setPressureLoadAtNodes(void)
     pressureLoad(0)  += pressureOver12*dy12;  // horizontal node 1 load
     pressureLoad(3)  += pressureOver12*dy12;  // horizontal node 2 load
     pressureLoad(1)  += pressureOver12*-dx12; // vertical node 1 load
-    pressureLoad(2)  += pressureOver12*-dx12; // vertical node 2 load
+    pressureLoad(4)  += pressureOver12*-dx12; // vertical node 2 load
 
     // Contribution from side 12
     pressureLoad(3)  += pressureOver23*dy23;  // horizontal node 2 load
