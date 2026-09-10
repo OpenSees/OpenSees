@@ -101,6 +101,21 @@ void* OPS_BrickUP()
     double opt[3] = {0,0,0};
     int bCount = 0;
     while (OPS_GetNumRemainingInputArgs() > 0) {
+        // Try a body force component as a number first: OPS_GetString gives
+        // "Invalid String Input!" for a Python float, which atof reads as 0.
+        // An interpreter that consumed the argument on the failed read gets
+        // it back for the string read.
+        int numArgs = OPS_GetNumRemainingInputArgs();
+        num = 1;
+        double b;
+        if (OPS_GetDoubleInput(&num, &b) == 0) {
+            if (bCount < 3)
+                opt[bCount++] = b;
+            continue;
+        }
+        if (OPS_GetNumRemainingInputArgs() < numArgs)
+            OPS_ResetCurrentInputArg(-1);
+
         const char* flag = OPS_GetString();
         if (strcmp(flag, "-lumped") == 0) {
             massType = 1;
