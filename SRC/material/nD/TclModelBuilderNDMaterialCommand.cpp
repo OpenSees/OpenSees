@@ -120,6 +120,7 @@ extern  void *OPS_SAniSandMSMaterial(void);
 extern void* OPS_OrthotropicMaterial(void);
 extern void* OPS_Series3DMaterial(void);
 extern void* OPS_Parallel3DMaterial(void);
+extern void* OPS_TimberHoffman3D(void);
 extern void* OPS_ASDConcrete3DMaterial(void);
 #ifdef _EIGEN3
 extern void* OPS_AllASDPlasticMaterial3Ds(void);
@@ -1260,6 +1261,15 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 			return TCL_ERROR;
 	}
 
+	else if(strcmp(argv[1], "TimberHoffman3D") == 0) {
+		void *theMat = OPS_TimberHoffman3D();
+		if (theMat != 0)  {
+			theMaterial = (NDMaterial *)theMat;
+		}
+		else
+			return TCL_ERROR;
+	}
+
 	else if(strcmp(argv[1], "ASDConcrete3D") == 0) {
 		void *theMat = OPS_ASDConcrete3DMaterial();
 		if (theMat != 0)  {
@@ -1715,5 +1725,3 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 
     return TCL_OK;
 }
-
-

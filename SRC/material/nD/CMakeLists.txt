@@ -6,6 +6,7 @@
 #==============================================================================
 target_sources(OPS_Material
   PRIVATE
+    TimberHoffman3D.cpp
     NDMaterial.cpp
     BeamFiberMaterial.cpp
     PlasticDamageConcretePlaneStress.cpp
