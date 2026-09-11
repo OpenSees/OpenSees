@@ -459,6 +459,7 @@ HystereticMaterial::commitState(void)
 
 	Cstress = Tstress;
 	Cstrain = Tstrain;
+	Ctangent = Ttangent;
 	return 0;
 }
 
@@ -474,6 +475,7 @@ HystereticMaterial::revertToLastCommit(void)
 
 	Tstress = Cstress;
 	Tstrain = Cstrain;
+	Ttangent = Ctangent;
 
 	return 0;
 }
@@ -494,6 +496,7 @@ HystereticMaterial::revertToStart(void)
 	Tstrain = 0;
 	Tstress = 0;
 	Ttangent = E1p;
+	Ctangent = E1p;
 
 	return 0;
 }
@@ -515,6 +518,7 @@ HystereticMaterial::getCopy(void)
 	theCopy->Cstress = Cstress;
 	theCopy->Cstrain = Cstrain;
 	theCopy->Ttangent = Ttangent;
+	theCopy->Ctangent = Ctangent;
 
 	return theCopy;
 }
@@ -552,7 +556,7 @@ HystereticMaterial::sendSelf(int commitTag, Channel &theChannel)
   data(23) = CloadIndicator;
   data(24) = Cstress;
   data(25) = Cstrain;
-  data(26) = Ttangent;
+  data(26) = Ctangent;
 
   res = theChannel.sendVector(this->getDbTag(), commitTag, data);
   if (res < 0) 
@@ -603,7 +607,8 @@ HystereticMaterial::recvSelf(int commitTag, Channel &theChannel,
     CloadIndicator = int(data(23));
     Cstress = data(24);
     Cstrain = data(25);
-    Ttangent = data(26);
+    Ctangent = data(26);
+    Ttangent = Ctangent;
 
     // set the trial values
     TrotMax = CrotMax;
