@@ -41,6 +41,7 @@
 #include <iostream>
 #include <elementAPI.h>
 #include <string>
+#include <string.h>
 using std::nothrow;
 
 void* OPS_SuperLUSolver()
@@ -97,7 +98,7 @@ SuperLU::SuperLU(int perm,
 :SparseGenColLinSolver(SOLVER_TAGS_SuperLU),
  perm_r(0),perm_c(0), etree(0), sizePerm(0),
  relax(relx), permSpec(perm), panelSize(panel), 
- drop_tol(drop_tolerance), symmetric(symm)
+ drop_tol(drop_tolerance), symmetric(symm), statInitialized(false)
 {
   // set_default_options(&options);
   options.Fact = DOFACT;
@@ -119,6 +120,9 @@ SuperLU::SuperLU(int perm,
   A.ncol = 0;
   B.ncol = 0;
   AC.ncol = 0;
+
+  // dgstrf() reads Glu when Fact == SamePattern_SameRowPerm
+  memset(&Glu, 0, sizeof(Glu));
 }
 
 
@@ -128,26 +132,40 @@ SuperLU::~SuperLU()
     delete [] perm_r;
   if (perm_c != 0)
     delete [] perm_c;
-  if (etree != 0) {
+  if (etree != 0)
     delete [] etree;
+  if (statInitialized)
     StatFree(&stat);
-  }
 
-  if (L.ncol != 0)
+  this->freeFactorsAndMatrices();
+}
+
+// free L, U, AC, A and B of the current system
+void
+SuperLU::freeFactorsAndMatrices(void)
+{
+  if (L.ncol != 0) {
     Destroy_SuperNode_Matrix(&L);
-  if (U.ncol != 0)
+    L.ncol = 0;
+  }
+  if (U.ncol != 0) {
     Destroy_CompCol_Matrix(&U);
+    U.ncol = 0;
+  }
   if (AC.ncol != 0) {
     NCPformat *ACstore = (NCPformat *)AC.Store;
     SUPERLU_FREE(ACstore->colbeg);
     SUPERLU_FREE(ACstore->colend);
     SUPERLU_FREE(ACstore);
+    AC.ncol = 0;
   }
   if (A.ncol != 0) {
     SUPERLU_FREE(A.Store);
+    A.ncol = 0;
   }
   if (B.ncol != 0) {
     SUPERLU_FREE(B.Store);
+    B.ncol = 0;
   }
 }
 
@@ -231,8 +249,6 @@ SuperLU::solve(void)
     for (int i=0; i<n; i++)
 	*(Xptr++) = *(Bptr++);
 
-    GlobalLU_t Glu; /* Not needed on return. */
-
     if (theSOE->factored == false) {
 	// factor the matrix
 	int info;
@@ -240,6 +256,8 @@ SuperLU::solve(void)
 	if (L.ncol != 0 && symmetric == 'N') {
 	  Destroy_SuperNode_Matrix(&L);
 	  Destroy_CompCol_Matrix(&U);	  
+	  L.ncol = 0;
+	  U.ncol = 0;
 	}
 
 	dgstrf(&options, &AC, relax, panelSize,
@@ -308,8 +326,20 @@ SuperLU::setSize()
 	sizePerm = n;
       }
 
+      // free the factors and matrices of the previous system
+      this->freeFactorsAndMatrices();
+
       // initialisation
+      if (statInitialized)
+	StatFree(&stat);
       StatInit(&stat);
+      statInitialized = true;
+
+      // Fact must be DOFACT before sp_preorder(), which computes the etree only for DOFACT
+      options.Fact = DOFACT;
+
+      if (symmetric == 'Y')
+	options.SymmetricMode=YES;
 
       // create the SuperMatrix A	
       dCreate_CompCol_Matrix(&A, n, n, theSOE->nnz, theSOE->A, 
@@ -323,13 +353,6 @@ SuperLU::setSize()
 
       // create the rhs SuperMatrix B 
       dCreate_Dense_Matrix(&B, n, 1, theSOE->X, n, SLU_DN, SLU_D, SLU_GE);
-	
-      // set the refact variable to 'N' after first factorization with new size 
-      // can set to 'Y'.
-      options.Fact = DOFACT;
-
-      if (symmetric == 'Y')
-	options.SymmetricMode=YES;
 
     } else if (n == 0)
 	return 0;
