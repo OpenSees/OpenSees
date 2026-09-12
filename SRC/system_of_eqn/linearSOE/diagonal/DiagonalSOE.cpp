@@ -137,7 +137,7 @@ DiagonalSOE::setSize(Graph &theGraph)
     }
   }
 
-  if (size != oldSize && size != 0) {
+  if (size != oldSize || size == 0) {
     if (vectX != 0) delete vectX; vectX = 0;
     if (vectB != 0) delete vectB; vectB = 0;
     if (matA  != 0) delete matA;  matA = 0;

@@ -1,0 +1,51 @@
+{
+  "description": "Reference results for CatenaryCable element verification. Model: 3-node, 2-element catenary from Salehi Ahmad Abad (2013) / OpenSeesWiki example (x=30). Generated with old OpenSeesPy (3-DOF per node).",
+  "parameters": {
+    "x_span": 30.0,
+    "L0_total": 100.0,
+    "weight_per_unit_length": -1e-05,
+    "E": 30000000.0,
+    "A": 1.0,
+    "alpha": 6.5e-06,
+    "temperature_change": 100.0,
+    "rho": -1.0193679918450562e-06,
+    "error_tol": 1e-06,
+    "N_substeps": 20,
+    "mass_type": 0
+  },
+  "node_displacements": {
+    "1": [
+      0.0,
+      0.0,
+      0.0
+    ],
+    "2": [
+      8.586934399687914,
+      0.0,
+      2.825784475610929
+    ],
+    "3": [
+      0.0,
+      0.0,
+      0.0
+    ]
+  },
+  "element_forces": {
+    "1": [
+      -727111.0484903589,
+      0.0,
+      1454257.7854975897,
+      727111.0484903589,
+      -0.0,
+      -1454207.7854975897
+    ],
+    "2": [
+      -727111.0484663064,
+      -6802778.207329627,
+      1454207.7854009245,
+      727111.0484663064,
+      6802778.207329627,
+      -1454157.7854009245
+    ]
+  }
+}
