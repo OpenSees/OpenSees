@@ -174,6 +174,8 @@ CatenaryCable::CatenaryCable(int tag, int node1, int node2, double weight_, doub
   rho(rho_),
   error_tol(error_tol_),
   Nsubsteps(Nsubsteps_),
+  w1(0.0), w2(0.0), w3(weight_),
+  f1(0.0), f2(0.0), f3(0.0),
   first_step(true),
   massType(massType_)
 {
@@ -211,6 +213,8 @@ CatenaryCable::CatenaryCable()
   rho(0),
   error_tol(0),
   Nsubsteps(0),
+  w1(0.0), w2(0.0), w3(0.0),
+  f1(0.0), f2(0.0), f3(0.0),
   first_step(true),
   massType(0)
 {
@@ -1303,17 +1307,19 @@ void CatenaryCable::computeMassByIntegration()
 
 void CatenaryCable::computeMassCloughStyle()
 {
-  double total_mass = rho*L0;
-  double f1x = fabs((*load)(0));
-  double f2x = fabs((*load)(3));
-  double f1y = fabs((*load)(1));
-  double f2y = fabs((*load)(4));
-  double f1z = fabs((*load)(2));
-  double f2z = fabs((*load)(5));
-  double f1 = sqrt(f1x*f1x + f1y*f1y + f1z*f1z);
-  double f2 = sqrt(f2x*f2x + f2y*f2y + f2z*f2z);
-  double m1 = total_mass*f1/(f1+f2);
-  double m2 = total_mass*f1/(f1+f2);
+  Mass.Zero();
+  // Use current end forces, not the cached vector from the last force query.
+  const double tension1 = hypot(hypot(f1, f2), f3);
+  const double tension2 = hypot(hypot(-f1-w1*L0, -f2-w2*L0), -f3-w3*L0);
+  const double total_tension = tension1 + tension2;
+  if (total_tension == 0.0 || rho == 0.0) {
+    // With no tension there is no preferred end for mass allocation.
+    computeMassLumped();
+    return;
+  }
+  const double total_mass = rho*L0;
+  const double m1 = total_mass*(tension1/total_tension);
+  const double m2 = total_mass*(tension2/total_tension);
   Mass(0,0) = m1;
   Mass(1,1) = m1;
   Mass(2,2) = m1;
@@ -1321,4 +1327,3 @@ void CatenaryCable::computeMassCloughStyle()
   Mass(4,4) = m2;
   Mass(5,5) = m2;
 }
-
