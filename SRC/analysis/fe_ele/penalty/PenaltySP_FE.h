@@ -48,25 +48,37 @@ class Domain;
 class SP_Constraint;
 class Node;
 
-class PenaltySP_FE: public FE_Element
+class PenaltySP_FE final : public FE_Element
 {
   public:
     PenaltySP_FE(int tag, Domain &theDomain, SP_Constraint &theSP, double alpha=1.0e8);    
-    virtual ~PenaltySP_FE();    
+    ~PenaltySP_FE() override;
 
     // public methods
-    virtual int  setID(void);
-    virtual const Matrix &getTangent(Integrator *theIntegrator);
-    virtual const Vector &getResidual(Integrator *theIntegrator);
-    virtual const Vector &getTangForce(const Vector &x, double fact = 1.0);
+    int  setID(void) override;
+    const Matrix &getTangent(Integrator *theIntegrator) override;
+    const Vector &getResidual(Integrator *theIntegrator) override;
+    const Vector &getTangForce(const Vector &x, double fact = 1.0) override;
 
-    virtual const Vector &getK_Force(const Vector &x, double fact = 1.0);
-    virtual const Vector &getKi_Force(const Vector &x, double fact = 1.0);
-    virtual const Vector &getC_Force(const Vector &x, double fact = 1.0);
-    virtual const Vector &getM_Force(const Vector &x, double fact = 1.0);    
+    const Vector &getK_Force(const Vector &x, double fact = 1.0) override;
+    const Vector &getKi_Force(const Vector &x, double fact = 1.0) override;
+    const Vector &getC_Force(const Vector &x, double fact = 1.0) override;
+    const Vector &getM_Force(const Vector &x, double fact = 1.0) override;
 
-  protected:
-    
+    // methods to allow integrator to build tangent
+    void  zeroTangent(void) override;
+    void  addKtToTang(double fact = 1.0) override;
+    void  addKiToTang(double fact = 1.0) override;
+    void  addCtoTang(double fact = 1.0) override;
+    void  addMtoTang(double fact = 1.0) override;
+
+    // methods to allow integrator to build residual
+    void  zeroResidual(void) override;
+    void  addRtoResidual(double fact = 1.0) override;
+    void  addRIncInertiaToResidual(double fact = 1.0) override;
+    void  addM_Force(const Vector &accel, double fact = 1.0) override;
+    void  addD_Force(const Vector &vel, double fact = 1.0) override;
+
   private:
     double alpha;
     SP_Constraint *theSP;
@@ -76,5 +88,3 @@ class PenaltySP_FE: public FE_Element
 };
 
 #endif
-
-
