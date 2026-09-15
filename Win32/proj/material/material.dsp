@@ -577,6 +577,10 @@ SOURCE=..\..\..\SRC\material\uniaxial\Steel02.cpp
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\..\SRC\material\uniaxial\Steel02M.cpp
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\..\SRC\material\uniaxial\Steel03.cpp
 # End Source File
 # Begin Source File
