@@ -80,6 +80,20 @@ InterpolatedGroundMotion::~InterpolatedGroundMotion()
   delete [] theMotions;
   delete factors;
 }
+int
+InterpolatedGroundMotion::deriveAccelSeries()
+{
+  int result = 0;
+  int numMotions = factors->Size();
+  for (int i = 0; i < numMotions; i++) {
+    if (theMotions[i]->deriveAccelSeries() != 0)
+      result = -1;
+  }
+
+  return result;
+}
+
+
 
 double 
 InterpolatedGroundMotion::getDuration(void)
