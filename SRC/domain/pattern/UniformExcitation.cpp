@@ -208,6 +208,11 @@ UniformExcitation::UniformExcitation(GroundMotion &_theMotion,
 :EarthquakePattern(tag, PATTERN_TAG_UniformExcitation), 
  theMotion(&_theMotion), theDof(dof), vel0(velZero), fact(theFactor)
 {
+  // Uniform excitation forms its load from acceleration. Unlike other
+  // GroundMotion consumers, it therefore needs missing acceleration data to
+  // be derived from a supplied velocity or displacement series.
+  theMotion->deriveAccelSeries();
+
   // add the motion to the list of ground motions
   this->addMotion(*theMotion);
 }
