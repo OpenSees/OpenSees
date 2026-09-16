@@ -52,25 +52,25 @@ class Steel02M : public UniaxialMaterial
     static std::tuple<double, double> Steel02M_Intersection(double E0, double epsr, double Esh, double fy, double sigr);
 
 
-    static std::tuple<double, double, double> Steel02M_IntersectionBasic(double alpha, double epsb0, double epsbr, 
+    static std::tuple<double, double, double> Steel02M_IntersectionL1(double alpha, double epsb0, double epsbr, 
                                                                   double epsr, double R, double sigb0, 
                                                                   double sigbr, double sigr, double eps_m, double sig_m);
   
-    static std::tuple<double, double, double> Steel02M_IntersectionMCL1(double alphaL[3][2], double E0, double eps0L[3][2], 
+    static std::tuple<double, double, double> Steel02M_IntersectionL2(double alphaL[3][2], double E0, double eps0L[3][2], 
                                                                  double epsrL[3][2], double epsr, 
                                                                  double RL[3][2], double sig0L[3][2], double sigrL[3][2], 
                                                                  double sigr, int idx, double eps_n, double sig_n, double sig_nb, double Et);
 
-    static std::tuple<double, double> Steel02M_GMP_Stress(double alpha, double eps, double eps0, double epsr, 
+    static std::tuple<double, double> Steel02M_L1_Stress(double alpha, double eps, double eps0, double epsr, 
                                                    double R, double sig0, double sigr);
 												   
 
-    static std::tuple<double, double> Steel02M_MCL1_Stress(double aL[3][2], double e, double e0L[3][2], 
+    static std::tuple<double, double> Steel02M_L2_Stress(double aL[3][2], double e, double e0L[3][2], 
                                                     double erL[3][2], double rL[3][2], double s0L[3][2], 
                                                     double srL[3][2], int idx);
 												
 
-    static std::tuple<double, double> Steel02M_MCL2_Stress(double aL[3][2], double e, double e0L[3][2], 
+    static std::tuple<double, double> Steel02M_L3_Stress(double aL[3][2], double e, double e0L[3][2], 
                                                     double erL[3][2], double rL[3][2], double s0L[3][2], 
                                                     double srL[3][2], int idx);
 																			
@@ -94,7 +94,7 @@ class Steel02M : public UniaxialMaterial
     double sig0;
     int    Flag[3];     // [0]: Direction, [1]: Curve Level, [2]: Yield trigger
     
-    // 3x2 History Matrices (Rows: 0=Basic, 1=MCL1, 2=MCL2 | Columns: 0=Pos, 1=Neg)
+    // 3x2 History Matrices (Rows: 0=L1, 1=L2, 2=L3 | Columns: 0=Pos, 1=Neg)
     double alphaL[3][2];
     double epsPL[3][2];
 

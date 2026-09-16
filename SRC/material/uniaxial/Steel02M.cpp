@@ -21,14 +21,16 @@
 // $Revision: 1.5 $
 // $Date: 2010-09-16 00:04:05 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Steel02M.cpp,v $
-// Kolay, C., Karmakar, S., Kumar, B., and Kakoty, H. (2026). An Improved 
+
+// Reference: Kolay, C., Karmakar, S., Kumar, B., and Kakoty, H. (2026). An Improved 
 // Giuffré–Menegotto–Pinto Model: Implementation in OpenSees and Verification 
 // With Experimental Results. Earthquake Engineering & Structural Dynamics. 
 // DOI: https://doi.org/10.1002/eqe.70266
-// Written: SK
+
+// Written: Sukanya Karmakar, IIT Kanpur, India
 // Updated: 1/5/26
 // Pushed to repository 14/09/2026
-// Description: 
+
 #include <math.h>
 
 #include <stdlib.h>
@@ -477,7 +479,7 @@ Steel02M::setTrialStrain(double trialStrain, double strainRate)
 					
 
 					if (Flag[1] == 1) { 
-						std::tie(alpha_2t, eps02t, sig02t) = Steel02M::Steel02M_IntersectionBasic(
+						std::tie(alpha_2t, eps02t, sig02t) = Steel02M::Steel02M_IntersectionL1(
 						alphaL[0][idx], eps0L[0][idx], epsrL[0][idx], epsr,
 						RL[0][idx], sig0L[0][idx], sigrL[0][idx], sigr, eps01t, sig01t);
 
@@ -497,7 +499,7 @@ Steel02M::setTrialStrain(double trialStrain, double strainRate)
 						    double sigbar_r_2 = (sigr - sigrL[1][idx]) / (sig0L[1][idx] - sigrL[1][idx]);
 
 						    double sig_rL2;
-						    std::tie(std::ignore, sig_rL2) = Steel02M::Steel02M_MCL1_Stress(
+						    std::tie(std::ignore, sig_rL2) = Steel02M::Steel02M_L2_Stress(
 						    alphaL, epsr, eps0L, epsrL, RL, sig0L, sigrL, idx);
 
             
@@ -506,7 +508,7 @@ Steel02M::setTrialStrain(double trialStrain, double strainRate)
 						    if (sigbar_L2_2_at_epsr > sigbar_r_2) {
 
 							    double Et_at_eps02t, sig_L2_at_eps02t;
-							    std::tie(Et_at_eps02t, sig_L2_at_eps02t) = Steel02M::Steel02M_MCL1_Stress(alphaL, eps02t, eps0L, epsrL, RL, sig0L, sigrL, idx);
+							    std::tie(Et_at_eps02t, sig_L2_at_eps02t) = Steel02M::Steel02M_L2_Stress(alphaL, eps02t, eps0L, epsrL, RL, sig0L, sigrL, idx);
 							    double sigbar_L2_2_at_eps02t = (sig_L2_at_eps02t - sigr) / (sig02t - sigr);
 
 
@@ -518,7 +520,7 @@ Steel02M::setTrialStrain(double trialStrain, double strainRate)
 							    if (sigbar_L2t_2t_at_eps02t > sigbar_L2_2_at_eps02t || 
                                     fabs(epsrL[1][idx] - epsrL[1][idy]) * E0 / fabs(fy_diff) < 1.0) {
 
-								    std::tie(alpha_3t, eps03t, sig03t) = Steel02M::Steel02M_IntersectionMCL1(
+								    std::tie(alpha_3t, eps03t, sig03t) = Steel02M::Steel02M_IntersectionL2(
                                     alphaL, E0, eps0L, epsrL, epsr, RL, sig0L, sigrL, sigr, idx, eps02t, sig02t, sig_L2_at_eps02t, Et_at_eps02t);
 
 								    Flag[1] = 2;
@@ -571,14 +573,17 @@ Steel02M::setTrialStrain(double trialStrain, double strainRate)
 	int idx = Flag[0] - 1; 
     
 	if (Flag[1] == 0) {
-		std::tie(Et, sig) = Steel02M::Steel02M_GMP_Stress(alphaL[0][idx], eps, eps0L[0][idx], epsr, RL[0][idx], 
+        //Select L1 curve
+		std::tie(Et, sig) = Steel02M::Steel02M_L1_Stress(alphaL[0][idx], eps, eps0L[0][idx], epsr, RL[0][idx], 
         sig0L[0][idx], sigr);
 		} 
 	else if (Flag[1] == 1) {
-		std::tie(Et, sig) = Steel02M::Steel02M_MCL1_Stress(alphaL, eps, eps0L, epsrL, RL, sig0L, sigrL, idx);
+        //Select L2 curve
+		std::tie(Et, sig) = Steel02M::Steel02M_L2_Stress(alphaL, eps, eps0L, epsrL, RL, sig0L, sigrL, idx);
 		} 
 	else {
-		std::tie(Et, sig) = Steel02M::Steel02M_MCL2_Stress(alphaL, eps, eps0L, epsrL, RL, sig0L, sigrL, idx);
+        //Select L3 curve
+		std::tie(Et, sig) = Steel02M::Steel02M_L3_Stress(alphaL, eps, eps0L, epsrL, RL, sig0L, sigrL, idx);
 		}
 
     return 0;
@@ -597,7 +602,7 @@ std::tuple<double, double> Steel02M::Steel02M_Intersection(double E0, double eps
 
 
 std::tuple<double, double, double> 
-Steel02M::Steel02M_IntersectionBasic(double alpha, double epsb0, double epsbr, 
+Steel02M::Steel02M_IntersectionL1(double alpha, double epsb0, double epsbr, 
                                      double epsr, double R, double sigb0, 
                                      double sigbr, double sigr, double eps_m, double sig_m)
 {
@@ -619,7 +624,7 @@ Steel02M::Steel02M_IntersectionBasic(double alpha, double epsb0, double epsbr,
     while (fabs(dsig_m_dbar) > 1.0e-5 && iter <= maxIter) {
 
         if (iter >= 10) {
-            opserr << "WARNING: Steel02M_IntersectionBasic - Slow convergence at iter: " << iter 
+            opserr << "WARNING: Steel02M_IntersectionL1 - Slow convergence at iter: " << iter 
                    << " dsig: " << fabs(dsig_m_dbar) << " eps_m_dbar: " << eps_m_dbar << endln;
         }
         
@@ -645,7 +650,7 @@ Steel02M::Steel02M_IntersectionBasic(double alpha, double epsb0, double epsbr,
 
 
 std::tuple<double, double>
-Steel02M::Steel02M_MCL1_Stress(double aL[3][2], double e, double e0L[3][2], 
+Steel02M::Steel02M_L2_Stress(double aL[3][2], double e, double e0L[3][2], 
                                double erL[3][2], double rL[3][2], double s0L[3][2], 
                                double srL[3][2], int idx)
 {
@@ -694,7 +699,7 @@ Steel02M::Steel02M_MCL1_Stress(double aL[3][2], double e, double e0L[3][2],
 
 
 std::tuple<double, double, double> 
-Steel02M::Steel02M_IntersectionMCL1(double alphaL[3][2], double E0, double eps0L[3][2], 
+Steel02M::Steel02M_IntersectionL2(double alphaL[3][2], double E0, double eps0L[3][2], 
                                     double epsrL[3][2], double epsr, 
                                     double RL[3][2], double sig0L[3][2], double sigrL[3][2], 
                                     double sigr, int idx,  double eps_n,
@@ -724,7 +729,7 @@ Steel02M::Steel02M_IntersectionMCL1(double alphaL[3][2], double E0, double eps0L
         eps_n = epsrL[0][idx] + eps_n_bbar * dEps1;
         sig_n = sigrL[0][idx] + sig_n_bbar * dSig1;
 
-        std::tie(Et, sig_nb) = Steel02M::Steel02M_MCL1_Stress(alphaL, eps_n, eps0L, epsrL, RL, sig0L, sigrL, idx);
+        std::tie(Et, sig_nb) = Steel02M::Steel02M_L2_Stress(alphaL, eps_n, eps0L, epsrL, RL, sig0L, sigrL, idx);
 
         sig_nb_dbar = (sig_nb - sigrL[0][idx]) / dSig1;
         alpha_mn = Et / E0;
@@ -741,7 +746,7 @@ Steel02M::Steel02M_IntersectionMCL1(double alphaL[3][2], double E0, double eps0L
 
 
 std::tuple<double, double>
-Steel02M::Steel02M_GMP_Stress(double alpha, double eps, double eps0, double epsr, 
+Steel02M::Steel02M_L1_Stress(double alpha, double eps, double eps0, double epsr, 
                               double R, double sig0, double sigr)
 {
     double Et, sig;
@@ -768,7 +773,7 @@ Steel02M::Steel02M_GMP_Stress(double alpha, double eps, double eps0, double epsr
 
 
 std::tuple<double, double>
-Steel02M::Steel02M_MCL2_Stress(double aL[3][2], double e, double e0L[3][2], 
+Steel02M::Steel02M_L3_Stress(double aL[3][2], double e, double e0L[3][2], 
                                double erL[3][2], double rL[3][2], double s0L[3][2], 
                                double srL[3][2], int idx)
 {
@@ -789,7 +794,7 @@ Steel02M::Steel02M_MCL2_Stress(double aL[3][2], double e, double e0L[3][2],
     else {
         double Et1, sigb;
         
-        std::tie(Et1, sigb) = Steel02M::Steel02M_MCL1_Stress(aL, e, e0L, erL, rL, s0L, srL, idx);
+        std::tie(Et1, sigb) = Steel02M::Steel02M_L2_Stress(aL, e, e0L, erL, rL, s0L, srL, idx);
 
         double alpha_t1 = Et1 * (dEps3 / dSig3);
         double sigb_hat = (sigb - srL[2][idx]) / dSig3;
