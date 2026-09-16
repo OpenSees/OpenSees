@@ -21,7 +21,10 @@
 // $Revision: 1.5 $
 // $Date: 2010-09-16 00:04:05 $
 // $Source: /usr/local/cvs/OpenSees/SRC/material/uniaxial/Steel02M.cpp,v $
-
+// Kolay, C., Karmakar, S., Kumar, B., and Kakoty, H. (2026). An Improved 
+// Giuffré–Menegotto–Pinto Model: Implementation in OpenSees and Verification 
+// With Experimental Results. Earthquake Engineering & Structural Dynamics. 
+// DOI: https://doi.org/10.1002/eqe.70266
 // Written: SK
 // Updated: 1/5/26
 // Pushed to repository 14/09/2026
