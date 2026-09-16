@@ -1268,6 +1268,15 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
     double rotlim = negEnvlpRotlim(CrotMin);
     double rotrel = (rotlim > TrotNu) ? rotlim : TrotNu;
 
+    // The beta-reduced reload stiffness must still be large enough for the
+    // zero-force reload line to meet the retained envelope continuously.
+    double reloadSpan = TrotMax - TrotNu;
+    if (reloadSpan > tiny && Eup > tiny) {
+        double connectingSlope = maxmom / reloadSpan;
+        if (connectingSlope > Eup * kp)
+            kp = connectingSlope / Eup;
+    }
+
 
     double rotmp2 = TrotMax - (1.0 - pinchY) * maxmom / (Eup * kp);
     double rotch = rotrel + (rotmp2 - rotrel) * pinchX;                   // changed on 7/11/2006
@@ -1295,7 +1304,7 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
         }
         else {
             Ttangent = maxmom * pinchY / (rotch - rotrel);
-            tmpmo1 = Cstress + Eup * kp * dStrain;
+            tmpmo1 = Eup * kp * (Tstrain - TrotNu);
             tmpmo2 = (Tstrain - rotrel) * Ttangent;
             if (tmpmo1 < tmpmo2) {
                 Tstress = tmpmo1;
@@ -1308,7 +1317,7 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
 
     else {
         Ttangent = (1.0 - pinchY) * maxmom / (TrotMax - rotch);
-        tmpmo1 = Cstress + Eup * kp * dStrain;
+        tmpmo1 = Eup * kp * (Tstrain - TrotNu);
         tmpmo2 = pinchY * maxmom + (Tstrain - rotch) * Ttangent;
         if (tmpmo1 < tmpmo2) {
             Tstress = tmpmo1;
@@ -1447,6 +1456,15 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
     double rotlim = posEnvlpRotlim(CrotMax);
     double rotrel = (rotlim < TrotPu) ? rotlim : TrotPu;
 
+    // The beta-reduced reload stiffness must still be large enough for the
+    // zero-force reload line to meet the retained envelope continuously.
+    double reloadSpan = TrotPu - TrotMin;
+    if (reloadSpan > tiny && Eun > tiny) {
+        double connectingSlope = -minmom / reloadSpan;
+        if (connectingSlope > Eun * kn)
+            kn = connectingSlope / Eun;
+    }
+
     //rotrel = TrotPu;
     //if (posEnvlpStress(CrotMax) <= 0.0)
     //  rotrel = rotlim;
@@ -1476,7 +1494,7 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
         }
         else {
             Ttangent = minmom * pinchY / (rotch - rotrel);
-            tmpmo1 = Cstress + Eun * kn * dStrain;
+            tmpmo1 = Eun * kn * (Tstrain - TrotPu);
             tmpmo2 = (Tstrain - rotrel) * Ttangent;
             if (tmpmo1 > tmpmo2) {
                 Tstress = tmpmo1;
@@ -1489,7 +1507,7 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
 
     else {
         Ttangent = (1.0 - pinchY) * minmom / (TrotMin - rotch);
-        tmpmo1 = Cstress + Eun * kn * dStrain;
+        tmpmo1 = Eun * kn * (Tstrain - TrotPu);
         tmpmo2 = pinchY * minmom + (Tstrain - rotch) * Ttangent;
         if (tmpmo1 > tmpmo2) {
             Tstress = tmpmo1;
