@@ -899,6 +899,11 @@ set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
 
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
+endif()
+
 
 
 
