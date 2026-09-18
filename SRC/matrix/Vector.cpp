@@ -334,9 +334,8 @@ Vector::addMatrixVector(double thisFact, const Matrix &m, const Vector &v, doubl
 
   // check the sizes are compatible
 #ifdef _G3DEBUG
-  // check the sizes are compatible
-  if ((sz != m.noRows()) && (m.noCols() != v.sz)) {
-    // otherwise incompatible sizes
+  // this = m * v  =>  size(this)==m.rows, size(v)==m.cols
+  if ((sz != m.noRows()) || (m.noCols() != v.sz)) {
     opserr << "Vector::addMatrixVector() - incompatible sizes\n";
     return -1;    
   }
@@ -467,9 +466,8 @@ Vector::addMatrixTransposeVector(double thisFact,
     return 0;
 
 #ifdef _G3DEBUG
-  // check the sizes are compatible
-  if ((sz != m.noRows()) && (m.noRows() != v.sz)) {
-    // otherwise incompatible sizes
+  // this = m^T * v  =>  size(this)==m.cols, size(v)==m.rows
+  if ((sz != m.noCols()) || (m.noRows() != v.sz)) {
     opserr << "Vector::addMatrixTransposeVector() - incompatible sizes\n";
     return -1;    
   }
@@ -1029,20 +1027,34 @@ Vector::operator^(const Vector &V) const
 
 
 // Vector operator/(const Matrix &M) const;    
-//	Method to return inv(M)*this
+//	Method to return solution of M x = *this (least squares if M is rectangular)
 
 Vector
 Vector::operator/(const Matrix &M) const
 {
-  Vector res(M.noRows());
-    
-  if (M.noRows() != M.noCols()) { // if not square do least squares solution
+  if (M.noRows() != M.noCols()) {
+    // Normal equations: (M^T M) x = M^T b, with x sized to M.noCols()
+    if (sz != M.noRows()) {
+      opserr << "WARNING Vector::operator/(const Matrix &M): Vector size "
+	     << sz << " incompatible with Matrix rows " << M.noRows() << endln;
+      return Vector(M.noCols());
+    }
     Matrix A(M^M);
-    A.Solve(*this, res);    
+    Vector Atb(M.noCols());
+    Atb.addMatrixTransposeVector(0.0, M, *this, 1.0);
+    Vector res(M.noCols());
+    A.Solve(Atb, res);
+    return res;
   }
-  else {
-    M.Solve(*this, res);
+
+  Vector res(M.noRows());
+  if (sz != M.noRows()) {
+    opserr << "WARNING Vector::operator/(const Matrix &M): Vector size "
+	   << sz << " incompatible with square Matrix size " << M.noRows()
+	   << endln;
+    return res;
   }
+  M.Solve(*this, res);
   return res;
 }
     
