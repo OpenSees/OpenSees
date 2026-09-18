@@ -94,6 +94,7 @@ OPS_Stream *opserrPtr = &sserr;
 #include <vector>
 
 #include <elementAPI.h>
+#include <OpenSeesCommands.h>
 extern "C" int         OPS_ResetInputNoBuilder(ClientData clientData, Tcl_Interp * interp, int cArg, int mArg, TCL_Char * *argv, Domain * domain);
 
 #include <packages.h>
@@ -1911,6 +1912,11 @@ opsPartition(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **arg
     }
   }
   partitionModel(eleTag);
+#elif defined(_PARALLEL_INTERPRETERS)
+  OPS_ResetInputNoBuilder(clientData, interp, 1, argc, argv, &theDomain);
+  if (OPS_partition() < 0) {
+    return TCL_ERROR;
+  }
 #endif
   return TCL_OK;
 }
