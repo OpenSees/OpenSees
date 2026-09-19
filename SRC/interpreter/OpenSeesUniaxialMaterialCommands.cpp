@@ -91,6 +91,7 @@ void* OPS_EPPGapMaterial();
 void* OPS_ENTMaterial();
 void* OPS_Steel01();
 void* OPS_Steel02();
+void* OPS_Steel02M();
 void* OPS_SteelFractureDI();
 void* OPS_Steel02Fatigue();
 void* OPS_Steel03();
@@ -321,6 +322,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("Steel01", &OPS_Steel01));
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel02", &OPS_Steel02));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("Steel02M", &OPS_Steel02M));
   uniaxialMaterialsMap.insert(
       std::make_pair("Steel02Fatigue", &OPS_Steel02Fatigue));
   uniaxialMaterialsMap.insert(

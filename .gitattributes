@@ -3721,6 +3721,8 @@ SRC/material/uniaxial/Steel01Thermal.cpp -text
 SRC/material/uniaxial/Steel01Thermal.h -text
 SRC/material/uniaxial/Steel02.cpp -text
 SRC/material/uniaxial/Steel02.h -text
+SRC/material/uniaxial/Steel02M.cpp -text
+SRC/material/uniaxial/Steel02M.h -text
 SRC/material/uniaxial/Steel02Thermal.cpp -text
 SRC/material/uniaxial/Steel02Thermal.h -text
 SRC/material/uniaxial/Steel03.cpp -text
