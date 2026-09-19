@@ -17,10 +17,23 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-
-// $Revision: 1.1 $
-// $Date: 2008/12/09 20:00:16 $
-// $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/ElasticPPcpp.h,v $
+//                                                                        
+// Revision: 2.0
+// Date: 09/2026
+// Source: /OpenSees/SRC/material/uniaxial/ConcreteZBH_smoothed.h
+//
+// Written: Zignago, D., and Barbato, M. University of California - Davis
+// Edited: Badal, Prakash S. IIT Madras; and Barbato, M. University of California - Davis
+// Created: 09/2026
+//
+// Description: This file contains the class implementation for the
+// ConcreteZBH_smoothed.
+//
+// References:
+// Zignago, D., Barbato, M., and Hu, Dan (2018). "Constitutive Model of Concrete Simultaneously Confined by FRP and Steel for Finite-Element Analysis of FRP-Confined RC Columns." 
+//   Journal of Composites for Construction. 22(6), 04018064.
+// Spoelstra, M. R., and Giorgio Monti. (1999). "FRP-confined concrete model." 
+//   Journal of Composites for Construction. 3(3), 143-150.
 
 #ifndef ConcreteZBH_smoothed_h
 #define ConcreteZBH_smoothed_h
@@ -30,6 +43,12 @@
 class ConcreteZBH_smoothed : public UniaxialMaterial
 {
   public:
+    ConcreteZBH_smoothed(int tag, double _fc0, double _ec0, double _Ec,
+		       double _Es, double _fy, double _eults, double _s, double _As_t,
+		       double _Ef, double _eultf, double _tf, double _D, double _Ds,
+		       double _As_l, double _kg_f, double _ks_s, double _ks_f, double _type_reinf, 
+           double _beta_input);
+
     ConcreteZBH_smoothed(int tag, double _fc0, double _ec0, double _Ec,
 		       double _Es, double _fy, double _eults, double _s, double _As_t,
 		       double _Ef, double _eultf, double _tf, double _D, double _Ds,
@@ -83,13 +102,13 @@ class ConcreteZBH_smoothed : public UniaxialMaterial
     double kg_f;
     double ks_s;
     double ks_f;
-	double type_reinf;
+    double type_reinf;
+    double beta;
 
 	double roj_f;
 	double roj_s;
 	double roj_sl;
 	double kg_s;
-	double beta;
 	double eccu;
 	double eps_ccuf;
 	double eps_ccufp;
