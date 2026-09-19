@@ -1021,6 +1021,10 @@ TransformationDOF_Group::addSP_Constraint(SP_Constraint &theSP)
 	this->setID(dof,-1);
     else {
 	const ID &constrainedDOF = theMP->getConstrainedDOFs();
+	// SP on an MP-eliminated DOF: nothing to mark in modID
+	if (constrainedDOF.getLocation(dof) >= 0)
+	    return 0;
+
 	int loc = 0;
 	for (int i=0; i<dof; i++) 
 	    if (constrainedDOF.getLocation(i) < 0)
@@ -1062,11 +1066,10 @@ TransformationDOF_Group::enforceSPs(int doMP)
 
   else {
 
+    // needRetainedData==0: fill all retained slots (not only SP-fixed ones)
     if (needRetainedData == 0) {
       
       if (theMP != 0) {
-	
-	const ID &theID = this->getID();
 	
 	int retainedNode = theMP->getNodeRetained();
 	Domain *theDomain = myNode->getDomain();
@@ -1076,9 +1079,7 @@ TransformationDOF_Group::enforceSPs(int doMP)
 	
 	modUnbalance->Zero();    
 	for (int i=numConstrainedNodeRetainedDOF, j=0; i<modNumDOF; i++, j++) {
-	  int loc = theID(i);
-	  if (loc < 0)
-	    (*modUnbalance)(i) = responseR(retainedDOF(j));
+	  (*modUnbalance)(i) = responseR(retainedDOF(j));
 	}
 	
 	Matrix *T = this->getT();
