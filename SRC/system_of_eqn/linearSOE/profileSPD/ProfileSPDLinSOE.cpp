@@ -270,7 +270,7 @@ ProfileSPDLinSOE::setSize(Graph &theGraph)
 	X[l] = 0;
     }
     
-    if (size != oldSize) {
+    if (size != oldSize || size == 0) {
 	
 	if (vectX != 0)
 	    delete vectX;
