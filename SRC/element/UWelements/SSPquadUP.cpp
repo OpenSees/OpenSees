@@ -495,9 +495,6 @@ SSPquadUP::getMass(void)
     // compute compressibility matrix term
     double oneOverQ = -0.25*J0*mThickness*mPorosity/fBulk;
 
-    // get mass density from the material
-    double density = theMaterial->getRho();
-
     // transpose the shape function derivative array
     Matrix dNp(2,4);
     dNp(0,0) = dN(0,0); dNp(0,1) = dN(1,0); dNp(0,2) = dN(2,0); dNp(0,3) = dN(3,0);
@@ -507,13 +504,10 @@ SSPquadUP::getMass(void)
     Matrix Kp(4,4);
     Kp = -4.0*mAlpha*J0*mThickness*dN*dNp;
 
-    // return zero matrix if density is zero
-    if (density == 0.0) {
-        return mMass;
-    }
-
     // full mass matrix for the element [ M  0 ]
     //  includes M and S submatrices    [ 0 -S ]
+    // S is needed even when the solid has no mass, as in a quasi-static
+    // consolidation analysis, so a zero density only leaves M at zero
     for (int i = 0; i < 4; i++) {
 
         int I    = 2*i;
@@ -1315,7 +1309,7 @@ SSPquadUP::setPressureLoadAtNodes(void)
     pressureLoad(0)  += pressureOver12*dy12;  // horizontal node 1 load
     pressureLoad(3)  += pressureOver12*dy12;  // horizontal node 2 load
     pressureLoad(1)  += pressureOver12*-dx12; // vertical node 1 load
-    pressureLoad(2)  += pressureOver12*-dx12; // vertical node 2 load
+    pressureLoad(4)  += pressureOver12*-dx12; // vertical node 2 load
 
     // Contribution from side 12
     pressureLoad(3)  += pressureOver23*dy23;  // horizontal node 2 load
