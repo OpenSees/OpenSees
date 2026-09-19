@@ -154,18 +154,20 @@ class CatenaryCable : public Element
     bool first_step;
 
     int massType;
+    int numDOF;
 
     Node *theNodes[2];
     Vector *load;
     Vector *load_incl_inertia;
     Vector *load_lastcommit;
     
-    // static data - single copy for all objects of the class   
-    static Matrix Flexibility;       // class wide flexibility matrix for iterations
-    static Matrix Stiffness;
-    static Matrix Mass;
-    static Matrix ZeroMatrix;
-    static Vector Forces;
+    // Flexibility is independent of the node DOF count. The remaining
+    // matrices and vectors match the element's 6- or 12-DOF interface.
+    static Matrix Flexibility;
+    Matrix Stiffness;
+    Matrix Mass;
+    Matrix ZeroMatrix;
+    Vector Forces;
 };
 
 #endif
