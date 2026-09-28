@@ -1304,9 +1304,10 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
     // Its slope is raised where needed so that the line still meets the retained envelope at the retained
     // extreme (continuous reconnection).
     //
-    // Steepening and minor loops. The plain slope Eup*kp does not reach the retained peak when
-    //     Eup*kp*(TrotMax - TrotNu) < maxmom
-    // which is the condition under which the kp floor above and the secant below act. In that regime the
+    // Steepening and minor loops. The plain slope Eup*kp does not reach the retained peak from the anchor when
+    //     Eup*kp*(TrotMax - TanchorRotP) < maxmom - TanchorStressP
+    // which is the condition under which the secant below acts (for a full reversal the anchor stress is zero
+    // and the anchor rotation is TrotNu, the case of the kp floor above). In that regime the
     // reload slope is steeper than the unloading slope Eup*kp, so a small load reversal inside a reload
     // segment does not close: each minor loop ends slightly above where it started, and repeated minor loops
     // drift toward the pinching curve, which bounds them. Outside that regime the two slopes are equal and
@@ -1527,8 +1528,9 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
 
     // The reload line starts at the anchor of the segment; its slope is raised where needed so that
     // the line still meets the retained envelope at the retained extreme. The steepening acts when
-    //     Eun*kn*(TrotPu - TrotMin) < -minmom
-    // and minor loops inside the segment then drift toward the pinching curve (see positiveIncrement).
+    //     Eun*kn*(TanchorRotN - TrotMin) < TanchorStressN - minmom
+    // (for a full reversal: Eun*kn*(TrotPu - TrotMin) < -minmom), and minor loops inside the segment then
+    // drift toward the pinching curve (see positiveIncrement).
     double Ereload = Eun * kn;
     if (TanchorRotN - TrotMin > tiny && minmom < TanchorStressN) {
         double connecting = (TanchorStressN - minmom) / (TanchorRotN - TrotMin);
