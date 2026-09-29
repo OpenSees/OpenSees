@@ -267,7 +267,7 @@ double TimberHoffman3D::sigmaEk(double eqp) const
 double TimberHoffman3D::yieldFunction(const Vector &s, double eqp) const
 {
     const double sek = sigmaEk(eqp);
-    return 0.5*quadForm(s,P) + (s ^ Q0) - sek*sek;
+    return 0.5*quadForm(s,P) + (sek/sigmaE0)*(s ^ Q0) - sek*sek;
 }
 
 void TimberHoffman3D::flowDirection(
@@ -275,7 +275,7 @@ void TimberHoffman3D::flowDirection(
 {
     g.Zero();
     g.addMatrixVector(0.0, P, s, 1.0);
-    g += Q0; // fixed-Q interpretation
+    g.addVector(1.0, Q0, sigmaEk(eqp)/sigmaE0); // evolving Q(k)
 }
 
 double TimberHoffman3D::equivalentPlasticIncrement(
@@ -307,25 +307,36 @@ int TimberHoffman3D::stateForLambda(
     CP.addMatrixProduct(0.0, C0, P, 1.0);
     A.addMatrix(1.0, CP, dLambda);
 
-    Vector CQ(6);
-    CQ.addMatrixVector(0.0, C0, Q0, 1.0);
-
-    Vector rhs(sigmaTrial);
+    // Uniform scaling gives Q(k) = (1+h*k/sigmaE0)*Q0.
+    // For d=k-k_n, solve stress=s0+sd*d, depsP=u+v*d, d=||depsP||_Z.
+    Vector qn(Q0), qp(Q0), CQ(6), rhs(sigmaTrial), s0(6), sd(6);
+    qn *= sigmaEk(eqpCommit)/sigmaE0;
+    qp *= hardeningModulus/sigmaE0;
+    CQ.addMatrixVector(0.0, C0, qn, 1.0);
     rhs.addVector(1.0, CQ, -dLambda);
-
-    Matrix Ainv(6,6);
-    if (A.Invert(Ainv) < 0)
-        return -1;
-
-    sigma.addMatrixVector(0.0, Ainv, rhs, 1.0);
-
-    Vector g(6);
-    flowDirection(sigma, eqpCommit, g);
-
-    depsP = g;
-    depsP *= dLambda;
-
-    eqp = eqpCommit + equivalentPlasticIncrement(depsP);
+    if (A.Solve(rhs, s0) < 0) return -1;
+    rhs.addMatrixVector(0.0, C0, qp, -dLambda);
+    if (A.Solve(rhs, sd) < 0) return -1;
+    Vector u(6), v(6), Zv(6);
+    u.addMatrixVector(0.0, P, s0, 1.0);
+    u += qn;
+    u *= dLambda;
+    v.addMatrixVector(0.0, P, sd, 1.0);
+    v += qp;
+    v *= dLambda;
+    Zv.addMatrixVector(0.0, Z, v, 1.0);
+    const double aa = 1.0-(2.0/3.0)*(v ^ Zv);
+    const double bb = (2.0/3.0)*(u ^ Zv);
+    const double cc = (2.0/3.0)*quadForm(u,Z);
+    if (aa <= 0.0) return -1;
+    const double root = std::sqrt(std::max(0.0,bb*bb+aa*cc));
+    const double dk = (bb >= 0.0) ? (bb+root)/aa : cc/(root-bb);
+    eqp = eqpCommit+dk;
+    if (!std::isfinite(eqp) || sigmaEk(eqp) <= 0.0) return -1;
+    sigma = s0;
+    sigma.addVector(1.0,sd,dk);
+    depsP = u;
+    depsP.addVector(1.0,v,dk);
     return 0;
 }
 
@@ -337,17 +348,17 @@ int TimberHoffman3D::returnMapHardening(
     double &dLambda
 )
 {
-    bool anyCompression = false;
-    for (int i=0;i<3;++i)
-        if (sigmaTrial(i) < 0.0) anyCompression = true;
+    const bool longitudinalCompression = (sigmaTrial(0) <= 0.0);
 
-    if (!anyCompression || yieldFunction(sigmaTrial,eqpCommit) <= tol) {
-        sigmaNew = sigmaTrial;
-        eqpNew = eqpCommit;
-        depsP.Zero();
-        dLambda = 0.0;
-        return 0;
-    }
+if (!longitudinalCompression ||
+    yieldFunction(sigmaTrial, eqpCommit) <= tol) {
+
+    sigmaNew = sigmaTrial;
+    eqpNew = eqpCommit;
+    depsP.Zero();
+    dLambda = 0.0;
+    return 0;
+}
 
     double lo = 0.0;
     double hi = 1.0e-12;
@@ -356,15 +367,18 @@ int TimberHoffman3D::returnMapHardening(
     double kHi = eqpCommit;
 
     bool bracketed = false;
+    double invalid = -1.0;
     for (int i=0;i<140;++i) {
-        if (stateForLambda(sigmaTrial,hi,sHi,kHi,dpHi) < 0)
-            return -1;
-
-        if (yieldFunction(sHi,kHi) <= 0.0) {
-            bracketed = true;
-            break;
+        if (stateForLambda(sigmaTrial,hi,sHi,kHi,dpHi) < 0) {
+            invalid = hi;
+        } else {
+            if (yieldFunction(sHi,kHi) <= 0.0) {
+                bracketed = true;
+                break;
+            }
+            lo = hi;
         }
-        hi *= 10.0;
+        hi = (invalid < 0.0) ? 2.0*hi : 0.5*(lo+invalid);
     }
 
     if (!bracketed) return -2;
@@ -380,7 +394,7 @@ int TimberHoffman3D::returnMapHardening(
 
         const double f = yieldFunction(sMid,kMid);
 
-        if (std::fabs(f) <= tol) {
+        if (std::fabs(f) <= std::max(tol,1e-12*sigmaEk(kMid)*sigmaEk(kMid))) {
             sigmaNew = sMid;
             eqpNew = kMid;
             depsP = dpMid;
@@ -396,7 +410,8 @@ int TimberHoffman3D::returnMapHardening(
     if (stateForLambda(sigmaTrial,dLambda,sigmaNew,eqpNew,depsP) < 0)
         return -4;
 
-    return 0;
+    return (std::fabs(yieldFunction(sigmaNew,eqpNew)) <=
+        std::max(tol,1e-12*sigmaEk(eqpNew)*sigmaEk(eqpNew))) ? 0 : -5;
 }
 
 void TimberHoffman3D::failureIndices(

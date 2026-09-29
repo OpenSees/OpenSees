@@ -530,6 +530,7 @@
 #define ND_TAG_J2CyclicBoundingSurfacePlaneStrain 14025
 // LinearElasticGGmax material - P. Arduino
 #define ND_TAG_LinearElasticGGmax             14026
+#define ND_TAG_TimberHoffman3D                14027
 // MultiaxialCyclicPlasticity, add by Gang Wang
 #define ND_TAG_MultiaxialCyclicPlasticity             10031
 #define ND_TAG_MultiaxialCyclicPlasticity3D           10032

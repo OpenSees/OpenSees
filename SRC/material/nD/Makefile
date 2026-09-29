@@ -44,6 +44,7 @@ OBJS       = NDMaterial.o \
 	IncrementalElasticIsotropicThreeDimensional.o \
 	ElasticOrthotropicMaterial.o \
 	ElasticOrthotropicThreeDimensional.o \
+        TimberHoffman3D.o \
 	PressureDependentElastic3D.o \
 	FeapMaterial.o \
 	J2AxiSymm.o \
