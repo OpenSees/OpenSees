@@ -36,6 +36,7 @@
 #include <NodeIter.h>
 #include <Message.h>
 #include <Channel.h>
+#include <vector>
 
 
 #ifdef _PARALLEL_PROCESSING
@@ -933,7 +934,7 @@ GmshRecorder::write_element_graph()
         theFile.precision(precision);
         theFile << std::scientific;
 
-        int numvertex_proc[nproc];
+        std::vector<int> numvertex_proc(nproc);
 
 
         int start_tag = maxvertextag;
@@ -954,7 +955,7 @@ GmshRecorder::write_element_graph()
             &numvertex,
             1,
             MPI_INT,
-            numvertex_proc,
+            numvertex_proc.data(),
             1,
             MPI_INT,
             MPI_COMM_WORLD);
