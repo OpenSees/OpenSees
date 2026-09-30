@@ -66,7 +66,7 @@
 
 #endif
 
-SuperLUStat_t stat;
+static SuperLUStat_t superLUStat;
 SuperMatrix A;
 gridinfo_t grid;
 MPI_Comm comm_SuperLU;
@@ -188,7 +188,7 @@ DistributedSuperLU::solve(void)
     //
 
     pdgssvx_ABglobal(&options, &A, &ScalePermstruct, Xptr, ldb, nrhs, &grid,
-		     &LUstruct, berr, &stat, &info);
+		     &LUstruct, berr, &superLUStat, &info);
 
     if (theSOE->factored == false) {
       options.Fact = FACTORED;      
@@ -254,7 +254,7 @@ DistributedSuperLU::setSize()
   //
   // Initialize the statistics variables.
   //
-  PStatInit(&stat);
+  PStatInit(&superLUStat);
   
   //
   // Create compressed column matrix for A. 
@@ -294,7 +294,7 @@ DistributedSuperLU::setSize()
   //
   // Initialize the statistics variables. 
   //
-  PStatInit(&stat);
+  PStatInit(&superLUStat);
 
   return 0;
 }
@@ -413,7 +413,6 @@ DistributedSuperLU::recvSelf(int cTag,
   opserr << "DistributedSuperLU::recvSelf(int cTag, Channel &theChannel) - END\n";
   return 0;
 }
-
 
 
 
