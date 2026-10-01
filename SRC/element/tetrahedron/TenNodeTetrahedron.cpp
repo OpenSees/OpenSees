@@ -1867,7 +1867,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 int
 TenNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 {
-    static Vector stresses(6);
+    static Vector stresses(6*NumGaussPoints);
 
     if (responseID == 1)
         return eleInfo.setVector(this->getResistingForce());
