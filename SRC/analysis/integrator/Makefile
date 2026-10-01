@@ -9,6 +9,7 @@ OBJS       = AlphaOS.o \
     ExplicitDifference.o \
     ExplicitDifferenceStatic.o \
 	ExplicitBathe.o \
+	ExplicitBatheLNVD.o \
 	AlphaOSGeneralized_TP.o \
 	ArcLength.o \
 	ArcLength1.o \

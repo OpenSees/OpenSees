@@ -86,6 +86,7 @@ target_sources(OPS_Analysis
        StagedNewmark.cpp
        GimmeMCK.cpp                     # MHS
        ExplicitBathe.cpp                # JAA
+       ExplicitBatheLNVD.cpp            # JAA
        ExplicitDifferenceStatic.cpp     # JAA
     PUBLIC
        AlphaOS.h
@@ -132,6 +133,7 @@ target_sources(OPS_Analysis
        StagedNewmark.h
        GimmeMCK.h
        ExplicitBathe.h
+       ExplicitBatheLNVD.h
        ExplicitDifferenceStatic.h
 )
 

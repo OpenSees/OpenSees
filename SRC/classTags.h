@@ -1113,6 +1113,7 @@
 #define INTEGRATOR_TAGS_HarmonicSteadyState             60
 #define INTEGRATOR_TAGS_ExplicitBathe                   61
 #define INTEGRATOR_TAGS_ExplicitDifferenceStatic        62
+#define INTEGRATOR_TAGS_ExplicitBatheLNVD               63
 
 
 #define LinSOE_TAGS_FullGenLinSOE		1
