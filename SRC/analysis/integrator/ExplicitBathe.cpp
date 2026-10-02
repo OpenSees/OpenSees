@@ -632,33 +632,27 @@ int ExplicitBathe::commit() {
 // Get current velocity (for modal damping interface)
 // Local non-viscous damping (Cundall 1987; FLAC):
 //   F_d = -alpha * |F_unbal| * sign(v)
-// added to the nodal unbalance at both Bathe sub-steps. Intended for pseudo-static
-// (dynamic relaxation) analyses; it does not represent physical damping.
-int ExplicitBathe::formNodalUnbalance(void) {
-    if (alpha_lnvd <= 0.0)
-        return this->IncrementalIntegrator::formNodalUnbalance();
+// applied equation by equation to the fully assembled unbalance F_unbal = P - R(u)
+// (nodal and element contributions) at both Bathe sub-steps, with v the predicted
+// velocity used to form that unbalance. Intended for pseudo-static (dynamic
+// relaxation) analyses; it does not represent physical damping.
+int ExplicitBathe::formUnbalance(void) {
+    int res = this->TransientIntegrator::formUnbalance();
+    if (res < 0 || alpha_lnvd <= 0.0 || V_fake == 0)
+        return res;
 
-    DOF_GrpIter &theDOFs = (this->getAnalysisModel())->getDOFs();
-    DOF_Group *dofPtr;
     LinearSOE *theLinSOE = this->getLinearSOE();
-    static Vector F(6);
-    int res = 0;
-
-    while ((dofPtr = theDOFs()) != 0) {
-        const Vector &F_unbal = dofPtr->getUnbalance(this);
-        const Vector &v = dofPtr->getTrialVel();
-        F = F_unbal;
-        for (int i = 0; i < F.Size(); ++i) {
-            const double sign_v = (v(i) > 0.0) ? 1.0 : ((v(i) < 0.0) ? -1.0 : 0.0);
-            F(i) -= alpha_lnvd * std::fabs(F_unbal(i)) * sign_v;
-        }
-        if (theLinSOE->addB(F, dofPtr->getID()) < 0) {
-            opserr << "WARNING ExplicitBathe::formNodalUnbalance -"
-                   << " failed in addB for ID " << dofPtr->getID();
-            res = -2;
-        }
+    static Vector B;
+    B = theLinSOE->getB();
+    const int n = B.Size();
+    if (V_fake->Size() != n)
+        return res;
+    for (int i = 0; i < n; ++i) {
+        const double v = (*V_fake)(i);
+        const double sign_v = (v > 0.0) ? 1.0 : ((v < 0.0) ? -1.0 : 0.0);
+        B(i) -= alpha_lnvd * std::fabs(B(i)) * sign_v;
     }
-    return res;
+    return theLinSOE->setB(B);
 }
 
 const Vector &ExplicitBathe::getVel() {

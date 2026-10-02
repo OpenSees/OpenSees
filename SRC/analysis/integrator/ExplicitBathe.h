@@ -80,8 +80,8 @@ public:
     int update(const Vector &U);
     int commit(void);
 
-    // Adds local non-viscous damping to the nodal unbalance when alpha_lnvd > 0
-    int formNodalUnbalance(void);
+    // Adds local non-viscous damping to the assembled unbalance when alpha_lnvd > 0
+    int formUnbalance(void);
 
     // Method to obtain current velocity
     const Vector &getVel(void);
