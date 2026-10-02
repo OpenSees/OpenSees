@@ -80,8 +80,6 @@ public:
     int update(const Vector &U);
     int commit(void);
 
-    // Adds local non-viscous damping to the assembled unbalance when alpha_lnvd > 0
-    int formUnbalance(void);
 
     // Method to obtain current velocity
     const Vector &getVel(void);
@@ -96,6 +94,9 @@ public:
 protected:
 
 private:
+    // Applies local non-viscous damping (alpha_lnvd > 0) to a solved acceleration
+    void applyLocalDamping(Vector &accel, const Vector &vel);
+
     // Time step
     double deltaT;
 
