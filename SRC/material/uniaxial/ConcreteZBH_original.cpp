@@ -1,3 +1,40 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+//                                                                        
+// Revision: 2.0
+// Date: 09/2026
+// Source: /OpenSees/SRC/material/uniaxial/ConcreteZBH_original.cpp
+//
+// Written: Zignago, D., and Barbato, M. University of California - Davis
+// Edited: Badal, Prakash S. IIT Madras; and Barbato, M. University of California - Davis
+// Created: 09/2026
+//
+// Description: This file contains the class implementation for the
+// ConcreteZBH_original.
+//
+// References:
+// Zignago, D., Barbato, M., and Hu, Dan (2018). "Constitutive Model of Concrete Simultaneously Confined by FRP and Steel for Finite-Element Analysis of FRP-Confined RC Columns." 
+//   Journal of Composites for Construction. 22(6), 04018064.
+// Spoelstra, M. R., and Giorgio Monti. (1999). "FRP-confined concrete model." 
+//   Journal of Composites for Construction. 3(3), 143-150.
+
 #include <elementAPI.h>
 #include "ConcreteZBH_original.h"
 
@@ -13,7 +50,7 @@ OPS_ConcreteZBH_original()
 {
   // print out some KUDO's
   if (numConcreteZBH_original == 0) {
-    opserr << "ConcreteZBH_original uniaxial material - Use at your Own Peril\n";
+    opserr << "ConcreteZBH_original uniaxial material - Use at your Own Peril (beta included)\n";
     numConcreteZBH_original =1;
   }
 
@@ -22,7 +59,7 @@ OPS_ConcreteZBH_original()
 
   // parse the input line for the material parameters
   int    iData[1];
-  double dData[18];
+  double dData[20];
   int numData;
   numData = 1;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -30,19 +67,34 @@ OPS_ConcreteZBH_original()
     return 0;
   }
 
-  numData = 18;
+  numData = OPS_GetNumRemainingInputArgs();
+  
+  if (numData == 18) {
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "WARNING invalid ...\n";
+    opserr << "Invalid double: ConcreteZBH_original " << iData[0] << endln;
     return 0;
   }
 
-  //
-  // create a new material
-  //
-
+  // Parsing was successful, allocate the material
   theMaterial = new ConcreteZBH_original(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7],
                                 dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15],
                                 dData[16], dData[17]);
+
+  } else if (numData == 19) {
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "Invalid double: ConcreteZBH_original " << iData[0] << endln;
+    return 0;
+  } 
+  // Parsing was successful, allocate the material
+  theMaterial = new ConcreteZBH_original(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7],
+                                dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15],
+                                dData[16], dData[17], dData[18]);
+
+  }  else {
+    opserr << "WARNING invalid number of args for ConcreteZBH_original " << iData[0]
+           << " (expected 18 or 19, got " << numData << ")\n";
+    return 0;
+  }                          
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type ConcreteZBH_original\n";
@@ -53,6 +105,67 @@ OPS_ConcreteZBH_original()
   return theMaterial;
 }
 
+// 19-inputs definition (beta given)
+ConcreteZBH_original::ConcreteZBH_original(int tag, double _fc0, double _ec0, double _Ec,
+		       double _Es, double _fy, double _eults, double _s, double _As_t,
+		       double _Ef, double _eultf, double _tf, double _D, double _Ds,
+		       double _As_l, double _kg_f, double _ks_s, double _ks_f, double _type_reinf, double _beta_input)
+:UniaxialMaterial(tag, 0),
+ fc0(_fc0), ec0(_ec0), Ec(_Ec), Es(_Es), fy(_fy), eults(_eults),
+  s(_s), As_t(_As_t), Ef(_Ef), eultf(_eultf), tf(_tf),
+  D(_D), Ds(_Ds), As_l(_As_l), kg_f(_kg_f), ks_s(_ks_s),
+  ks_f(_ks_f), type_reinf(_type_reinf), beta(_beta_input)
+{
+  sigp   = 0.0;
+  Ep     = Ec;
+  elp    = 0.0;
+  epsp   = 0.0;
+  eminp  = 0.0;
+  eunl1p = 0.0;
+  eunl2p = 0.0;
+  eunl3p = 0.0;
+  Eunlp  = fc0/ec0;
+  Eunl2p = fc0/ec0;
+  Et3p   = fc0/ec0;
+  sunlp  = 0.0;
+  flp    = 0.0;
+  flunlp = 0.0;
+  elunlp = 0.0;
+  muunlp = 0.0;
+  flaggp = 4;
+
+  sig    = 0.0;
+  Et     = Ec;
+  eps    = 0.0;
+  el     = 0.0;
+  emin   = 0.0;
+  eunl1  = 0.0;
+  eunl2  = 0.0;
+  eunl3  = 0.0;
+  Eunl   = fc0/ec0;
+  Eunl2  = fc0/ec0;
+  Et3    = fc0/ec0;
+  sunl   = 0.0;
+  fl     = 0.0;
+  flunl  = 0.0;
+  elunl  = 0.0;
+  muunl  = 0.0;
+  flagg  = 4;
+
+  roj_f  = 4 * tf / D;   //reinforcement ratio
+  roj_s  = 4 * As_t / (s*Ds);
+  roj_sl = As_l / (0.25*3.1416*pow(Ds, 2));
+  kg_s = (1 - 0.5*(s - 2 * pow((As_t / 3.1416), 0.5)) / Ds);
+  kg_s = (kg_s > 0) ? (pow((1 - 0.5*(s - 2 * pow((As_t / 3.1416), 0.5)) / Ds), type_reinf) / (1 - roj_sl)) : 0;
+  kg_s = fmin(kg_s, 1.0);   //effectiveness coefficient by Mander et al. (1988)
+  
+  double fls = 0.5 * ks_s * kg_s * roj_s * fy;
+  double fccs = (2.254 * pow((1 + 7.94 * fls / fabs(fc0)), 0.5) - 2 * fls / fabs(fc0) - 1.254) * fc0;
+  eccus = -0.004 - 1.4 * roj_s * fy * eults / fabs(fccs);
+
+}
+
+// 18-inputs definition (beta calculated)
 ConcreteZBH_original::ConcreteZBH_original(int tag, double _fc0, double _ec0, double _Ec,
 		       double _Es, double _fy, double _eults, double _s, double _As_t,
 		       double _Ef, double _eultf, double _tf, double _D, double _Ds,
@@ -99,6 +212,10 @@ ConcreteZBH_original::ConcreteZBH_original(int tag, double _fc0, double _ec0, do
   muunl  = 0.0;
   flagg  = 4;
 
+  // default value from Spoelstra-Monti (1999) when beta not given as input: psb
+  double beta_sm = Ec/fabs(fc0)-1/fabs(ec0);
+  beta = beta_sm;
+
   roj_f  = 4 * tf / D;   //reinforcement ratio
   roj_s  = 4 * As_t / (s*Ds);
   roj_sl = As_l / (0.25*3.1416*pow(Ds, 2));
@@ -106,20 +223,19 @@ ConcreteZBH_original::ConcreteZBH_original(int tag, double _fc0, double _ec0, do
   kg_s = (kg_s > 0) ? (pow((1 - 0.5*(s - 2 * pow((As_t / 3.1416), 0.5)) / Ds), type_reinf) / (1 - roj_sl)) : 0;
   kg_s = fmin(kg_s, 1.0);   //effectiveness coefficient by Mander et al. (1988)
   
-  beta = Ec/fabs(fc0)-1/fabs(ec0);
-
   double fls = 0.5 * ks_s * kg_s * roj_s * fy;
   double fccs = (2.254 * pow((1 + 7.94 * fls / fabs(fc0)), 0.5) - 2 * fls / fabs(fc0) - 1.254) * fc0;
   eccus = -0.004 - 1.4 * roj_s * fy * eults / fabs(fccs);
 
 }
 
+
 ConcreteZBH_original::ConcreteZBH_original()
 :UniaxialMaterial(0, 0),
  fc0(0.0), ec0(0.0), Ec(0.0), Es(0.0), fy(0.0), eults(0.0),
   s(0.0), As_t(0.0), Ef(0.0), eultf(0.0), tf(0.0),
   D(0.0), Ds(0.0), As_l(0.0), kg_f(0.0), ks_s(0.0),
-  ks_f(0.0), type_reinf(0.0)
+  ks_f(0.0), type_reinf(0.0), beta(0.0)
 {
 sigp   = 0.0;
   Ep     = Ec;
@@ -465,7 +581,7 @@ ConcreteZBH_original::getCopy(void)
 {
   ConcreteZBH_original *theCopy =
     new ConcreteZBH_original(this->getTag(), fc0, ec0, Ec, Es, fy, eults,
-									s, As_t, Ef, eultf, tf, D, Ds, As_l, kg_f, ks_s, ks_f, type_reinf);
+									s, As_t, Ef, eultf, tf, D, Ds, As_l, kg_f, ks_s, ks_f, type_reinf, beta);
 
   return theCopy;
 }
@@ -475,7 +591,7 @@ int
 ConcreteZBH_original::sendSelf(int cTag, Channel &theChannel)
 {
   int res = 0;
-  static Vector data(37);
+  static Vector data(38);
 
 data(0) =fc0;
 data(1) =ec0;
@@ -513,7 +629,8 @@ data(32) =elunlp;
 data(33) =muunlp;
 data(34) =flaggp;
 data(35) = eccus;
-  data(36) = this->getTag();
+data(36) = this->getTag();
+data(37) = beta;
 
   res = theChannel.sendVector(this->getDbTag(), cTag, data);
   if (res < 0)
@@ -527,7 +644,7 @@ ConcreteZBH_original::recvSelf(int cTag, Channel &theChannel,
 				 FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(37);
+  static Vector data(38);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0)
     opserr << "ConcreteZBH_original::recvSelf() - failed to recv data\n";
@@ -569,6 +686,7 @@ ConcreteZBH_original::recvSelf(int cTag, Channel &theChannel,
 	  flaggp=	  int(data(34));
 	  eccus = data(35);
 	  this->setTag(int(data(36)));
+    beta = data(37);
   }
 
   eps = epsp;
