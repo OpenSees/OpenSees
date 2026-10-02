@@ -343,6 +343,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02M.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Steel02Thermal.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1790,6 +1793,9 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02M.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Steel02Thermal.h">
