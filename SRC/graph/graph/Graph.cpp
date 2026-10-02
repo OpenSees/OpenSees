@@ -184,6 +184,12 @@ Graph::addVertex(Vertex *vertexPtr, bool checkAdjacency)
 int 
 Graph::addEdge(int vertexTag, int otherVertexTag)
 {
+    // Self-loops are not stored in adjacency (Vertex::addEdge rejects them)
+    // but historically returned 0 ("added"), which inflated numEdge without
+    // growing either adjacency list. That broke nnz = V + 2E. Skip them.
+    if (vertexTag == otherVertexTag)
+	return 0;
+
     // get pointers to the vertices, if one does not exist return
 
     Vertex *vertex1 = this->getVertexPtr(vertexTag);
@@ -236,6 +242,10 @@ Graph::startAddEdge() {
 int 
 Graph::addEdgeFast(int vertexTag, int otherVertexTag)
 {
+    // See Graph::addEdge: self-loops must not inflate numEdge.
+    if (vertexTag == otherVertexTag)
+	return 0;
+
     // get pointers to the vertices, if one does not exist return
     if (vertices.size()<=vertexTag ||
     vertices.size()<=otherVertexTag) {
