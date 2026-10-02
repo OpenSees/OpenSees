@@ -17,17 +17,23 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-
-// $Revision: 1.7 $
-// $Date: 2009/03/23 23:17:04 $
-// $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/ElasticPPcpp.cpp,v $
-
-// Written: fmk
+//                                                                        
+// Revision: 2.0
+// Date: 09/2026
+// Source: /OpenSees/SRC/material/uniaxial/ConcreteZBH_fitted.cpp
 //
-// Description: This file contains the class implementation for
-// ElasticMaterial.
+// Written: Zignago, D., and Barbato, M. University of California - Davis
+// Edited: Badal, Prakash S. IIT Madras; and Barbato, M. University of California - Davis
+// Created: 09/2026
 //
-// What: "@(#) ElasticPPcpp.C, revA"
+// Description: This file contains the class implementation for the
+// ConcreteZBH_fitted.
+//
+// References:
+// Zignago, D., Barbato, M., and Hu, Dan (2018). "Constitutive Model of Concrete Simultaneously Confined by FRP and Steel for Finite-Element Analysis of FRP-Confined RC Columns." 
+//   Journal of Composites for Construction. 22(6), 04018064.
+// Spoelstra, M. R., and Giorgio Monti. (1999). "FRP-confined concrete model." 
+//   Journal of Composites for Construction. 3(3), 143-150.
 
 #include <elementAPI.h>
 #include "ConcreteZBH_fitted.h"
@@ -37,7 +43,6 @@
 #include <math.h>
 #include <float.h>
 
-
 static int numConcreteZBH_fitted = 0;
 
 void *
@@ -45,7 +50,7 @@ OPS_ConcreteZBH_fitted()
 {
   // print out some KUDO's
   if (numConcreteZBH_fitted == 0) {
-    opserr << "ConcreteZBH_fitted uniaxial material - Use at your Own Peril\n";
+    opserr << "ConcreteZBH_fitted uniaxial material - Use at your Own Peril  (beta included)\n";
     numConcreteZBH_fitted =1;
   }
 
@@ -56,7 +61,7 @@ OPS_ConcreteZBH_fitted()
   // parse the input line for the material parameters
   //
   int    iData[1];
-  double dData[20];
+  double dData[22];
   int numData;
   numData = 1;
   if (OPS_GetIntInput(&numData, iData) != 0) {
@@ -64,18 +69,31 @@ OPS_ConcreteZBH_fitted()
     return 0;
   }
 
-  numData = 20;
+  numData = OPS_GetNumRemainingInputArgs();
+  
+  if (numData == 20) {
   if (OPS_GetDoubleInput(&numData, dData) != 0) {
-    opserr << "WARNING invalid ...\n";
+    opserr << "Invalid double: ConcreteZBH_fitted " << iData[0] << endln;
     return 0;
   }
 
-  //
-  // create a new material
-  //
-
+  // Parsing was successful, allocate the material
   theMaterial = new ConcreteZBH_fitted(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7],
                                 dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19]);
+  } else if (numData == 21) {
+  if (OPS_GetDoubleInput(&numData, dData) != 0) {
+    opserr << "Invalid double: ConcreteZBH_fitted " << iData[0] << endln;
+    return 0;
+  } 
+
+  // Parsing was successful, allocate the material
+  theMaterial = new ConcreteZBH_fitted(iData[0], dData[0], dData[1], dData[2], dData[3], dData[4], dData[5], dData[6], dData[7],
+                                dData[8], dData[9], dData[10], dData[11], dData[12], dData[13], dData[14], dData[15], dData[16], dData[17], dData[18], dData[19], dData[20]);
+  } else {
+    opserr << "WARNING invalid number of args for ConcreteZBH_fitted " << iData[0]
+           << " (expected 20 or 21, got " << numData << ")\n";
+    return 0;
+  }
 
   if (theMaterial == 0) {
     opserr << "WARNING could not create uniaxialMaterial of type ConcreteZBH_fitted\n";
@@ -86,6 +104,53 @@ OPS_ConcreteZBH_fitted()
   return theMaterial;
 }
 
+// 21-inputs definition (beta given)
+ConcreteZBH_fitted::ConcreteZBH_fitted(int tag, double _fc0, double _ec0, double _Ec, double _fccs, double _eccs, double _rs,
+		       double _e1, double _e2, double _e3, double _e4, double _e5, double _e6, double _e7, double _e8, double _e9,
+	           double _eps_cy, double _eps_ccuf, double _sig_ccuf, double _eps_ccus, double _sig_ccus, double _beta_input)
+:UniaxialMaterial(tag, 0), 
+  fc0(_fc0), ec0(_ec0), Ec(_Ec), fccs(_fccs), eccs(_eccs), rs(_rs),
+  e1(_e1), e2(_e2), e3(_e3), e4(_e4), e5(_e5), e6(_e6), e7(_e7), e8(_e8), e9(_e9),
+	eps_cy(_eps_cy), eps_ccuf(_eps_ccuf), sig_ccuf(_sig_ccuf), eps_ccus(_eps_ccus), sig_ccus(_sig_ccus), beta(_beta_input)
+  
+{
+  sigp   = 0.0;
+  Ep     = Ec;
+  elp    = 0.0;
+  epsp   = 0.0;
+  eminp  = 0.0;
+  eunl1p = 0.0;
+  eunl2p = 0.0;
+  eunl3p = 0.0;
+  Eunlp  = fc0/ec0;
+  Eunl2p = fc0/ec0;
+  Et3p   = fc0/ec0;
+  sunlp  = 0.0;
+  elunlp = 0.0;
+  muunlp = 0.0;
+  flaggp = 4;
+
+  sig    = 0.0;
+  Et     = Ec;
+  eps    = 0.0;
+  el     = 0.0;
+  emin   = 0.0;
+  eunl1  = 0.0;
+  eunl2  = 0.0;
+  eunl3  = 0.0;
+  Eunl   = fc0/ec0;
+  Eunl2  = fc0/ec0;
+  Et3    = fc0/ec0;
+  sunl   = 0.0;
+  elunl  = 0.0;
+  muunl  = 0.0;
+  flagg  = 4; 
+
+  r0 = Ec / (Ec - fc0/ ec0);
+}
+
+
+// 20-inputs definition (beta calculated)
 ConcreteZBH_fitted::ConcreteZBH_fitted(int tag, double _fc0, double _ec0, double _Ec, double _fccs, double _eccs, double _rs,
 		       double _e1, double _e2, double _e3, double _e4, double _e5, double _e6, double _e7, double _e8, double _e9,
 	           double _eps_cy, double _eps_ccuf, double _sig_ccuf, double _eps_ccus, double _sig_ccus)
@@ -127,16 +192,22 @@ ConcreteZBH_fitted::ConcreteZBH_fitted(int tag, double _fc0, double _ec0, double
   muunl  = 0.0;
   flagg  = 4; 
 
-  beta = (Ec / fabs(fc0) - 1 / fabs(ec0));
-  r0 = Ec / (Ec - fc0/ ec0);
+  // default value from Spoelstra-Monti (1999) when beta not given as input: psb
+  double beta_sm = Ec/fabs(fc0)-1/fabs(ec0);
+  beta = beta_sm;
 
+  r0 = Ec / (Ec - fc0/ ec0);
 }
+
+
+  
+
 
 ConcreteZBH_fitted::ConcreteZBH_fitted()
 :UniaxialMaterial(0, 0),
 fc0(0.0), ec0(0.0), Ec(0.0), fccs(0.0), eccs(0.0), rs(0.0),
 e1(0.0), e2(0.0), e3(0.0), e4(0.0), e5(0.0), e6(0.0), e7(0.0), e8(0.0), e9(0.0),
-eps_cy(0.0), eps_ccuf(0.0), sig_ccuf(0.0), eps_ccus(0.0), sig_ccus(0.0)
+eps_cy(0.0), eps_ccuf(0.0), sig_ccuf(0.0), eps_ccus(0.0), sig_ccus(0.0), beta(0.0)
 {
 sigp   = 0.0;
   Ep     = Ec;
@@ -486,7 +557,7 @@ ConcreteZBH_fitted::getCopy(void)
   ConcreteZBH_fitted *theCopy =
     new ConcreteZBH_fitted(this->getTag(), fc0, ec0, Ec, fccs, eccs, rs,
                     e1, e2, e3, e4, e5, e6, e7, e8, e9,
-		           eps_cy, eps_ccuf, sig_ccuf, eps_ccus, sig_ccus);
+		           eps_cy, eps_ccuf, sig_ccuf, eps_ccus, sig_ccus, beta);
 
   return theCopy;
 }
@@ -496,7 +567,7 @@ int
 ConcreteZBH_fitted::sendSelf(int cTag, Channel &theChannel)
 {
 	int	res = 0;
-	static	Vector	data(36);
+	static	Vector	data(37);
 	data(0) = fc0;
 	data(1) = ec0;
 	data(2) = Ec;
@@ -533,6 +604,7 @@ ConcreteZBH_fitted::sendSelf(int cTag, Channel &theChannel)
 	data(33) = muunlp;
 	data(34) = flaggp;
 	data(35) = this->getTag();
+  data(36) = beta;
 
 
 
@@ -548,7 +620,7 @@ ConcreteZBH_fitted::recvSelf(int cTag, Channel &theChannel,
 				 FEM_ObjectBroker &theBroker)
 {
   int res = 0;
-  static Vector data(36);
+  static Vector data(37);
   res = theChannel.recvVector(this->getDbTag(), cTag, data);
   if (res < 0)
     opserr << "ConcreteZBH_fitted::recvSelf() - failed to recv data\n";
@@ -589,6 +661,7 @@ ConcreteZBH_fitted::recvSelf(int cTag, Channel &theChannel,
 	  muunlp = data(33);
 	  flaggp = int(data(34));
 	  this->setTag(int(data(35)));
+    beta = data(36);
 
   }
 
