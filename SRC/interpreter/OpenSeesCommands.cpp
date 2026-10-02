@@ -947,6 +947,7 @@ void
 OpenSeesCommands::wipeAnalysis()
 {
     if (theStaticAnalysis==0 && theTransientAnalysis==0) {
+	if (theAnalysisModel != 0) delete theAnalysisModel;
 	if (theSOE != 0) delete theSOE;
 	if (theEigenSOE != 0) delete theEigenSOE;
 	if (theNumberer != 0) delete theNumberer;
