@@ -28,14 +28,37 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 #include <cmath>
+#include <cstring>
 
 #define OPS_Export 
 
 // OPS interface function for creating ExplicitDifferenceStatic integrator
 void* OPS_ExplicitDifferenceStatic(void)
 {
-    TransientIntegrator *theIntegrator = 0;
-    theIntegrator = new ExplicitDifferenceStatic();
+    ExplicitDifferenceStatic *theIntegrator = new ExplicitDifferenceStatic();
+
+    // integrator ExplicitDifferenceStatic <-alpha $alpha> <-simple>
+    double alpha = 0.59;
+    bool combined = true;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char *opt = OPS_GetString();
+        if (strcmp(opt, "-alpha") == 0) {
+            int numData = 1;
+            if (OPS_GetNumRemainingInputArgs() < 1 || OPS_GetDoubleInput(&numData, &alpha) < 0 ||
+                alpha < 0.0 || alpha >= 1.0) {
+                opserr << "WARNING ExplicitDifferenceStatic -alpha needs a value in [0, 1)\n";
+                delete theIntegrator;
+                return 0;
+            }
+        } else if (strcmp(opt, "-simple") == 0) {
+            combined = false;
+        } else {
+            opserr << "WARNING ExplicitDifferenceStatic - unknown option " << opt << "\n";
+            delete theIntegrator;
+            return 0;
+        }
+    }
+    theIntegrator->setLocalDamping(alpha, combined);
 
     if (theIntegrator == 0)
         opserr << "WARNING - out of memory creating ExplicitDifferenceStatic integrator\n";
@@ -51,7 +74,7 @@ ExplicitDifferenceStatic::ExplicitDifferenceStatic()
     updateCount(0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0),
     Udot(0), Utdotdot1(0), U(0), Utdot1(0), 
-    velSignMem(0), prevUnbal(0), vSignEps(ED_VSIGN_EPS)
+    velSignMem(0), prevUnbal(0), vSignEps(ED_VSIGN_EPS), alphaLNVD(0.59), useCombined(true)
 {
 }
 
@@ -64,7 +87,7 @@ ExplicitDifferenceStatic::ExplicitDifferenceStatic(
     updateCount(0), c2(0.0), c3(0.0),
     Ut(0), Utdot(0), Utdotdot(0),
     Udot(0), Utdotdot1(0), U(0), Utdot1(0), 
-    velSignMem(0), prevUnbal(0), vSignEps(ED_VSIGN_EPS)
+    velSignMem(0), prevUnbal(0), vSignEps(ED_VSIGN_EPS), alphaLNVD(0.59), useCombined(true)
 {
 }
 
@@ -295,91 +318,53 @@ int ExplicitDifferenceStatic::domainChanged()
 // 
 // The combined form provides better energy dissipation and stability.
 // Velocity sign memory with deadband prevents sign chatter near zero velocity.
-int ExplicitDifferenceStatic::formNodalUnbalance(void)
+void ExplicitDifferenceStatic::setLocalDamping(double alpha, bool combined)
 {
-    const double alpha_flac = 0.59;     // Damping coefficient (typically 0.5-0.8)
-    const bool useCombined = true;       // Use combined damping formulation
-    
-    DOF_GrpIter &theDOFs = (this->getAnalysisModel())->getDOFs();
-    DOF_Group *dofPtr;
-    int res = 0;
+    alphaLNVD = alpha;
+    useCombined = combined;
+}
 
-    static Vector Fdamping(10);
+// Local non-viscous damping (Cundall 1987; FLAC), applied equation by equation to
+// the fully assembled unbalance B = P - R(u). (DOF_Group::getUnbalance only holds
+// applied nodal loads, so damping must act on the assembled vector.)
+//   simple:   F_d = -alpha |F| sign(v)
+//   combined: F_d = 0.5 alpha |F| (sign(dF) - sign(v))
+// v is the leap-frog velocity at t + dt/2; sign(v) is held inside a small deadband.
+int ExplicitDifferenceStatic::formUnbalance(void)
+{
+    int res = this->TransientIntegrator::formUnbalance();
+    if (res < 0 || alphaLNVD <= 0.0 || Utdot == 0 || velSignMem == 0 || prevUnbal == 0)
+        return res;
 
-    while ((dofPtr = theDOFs()) != 0) {
-        const Vector &F_unbalanced = dofPtr->getUnbalance(this);
-        const Vector &Vtrial       = dofPtr->getTrialVel();
-        const ID     &id           = dofPtr->getID();
+    LinearSOE *theLinSOE = this->getLinearSOE();
+    static Vector B;
+    B = theLinSOE->getB();
+    const int n = B.Size();
+    if (Utdot->Size() != n || velSignMem->Size() != n || prevUnbal->Size() != n)
+        return res;
 
-        Fdamping.resize(F_unbalanced.Size());
-        Fdamping.Zero();
+    for (int eq = 0; eq < n; ++eq) {
+        const double v = (*Utdot)(eq);
+        const double F = B(eq);
 
-        for (int i = 0; i < F_unbalanced.Size(); ++i) {
-
-            // const double f_unbal_i = F_unbalanced(i);
-            // const double v_i       = Vtrial(i);
-
-            // // --- velocity sign memory (per global equation) ------------------ // NEW
-            // double s = 0.0;
-            // const int eq = (i < id.Size()) ? id(i) : -1;  // global equation index
-            // if (eq >= 0 && eq < velSignMem->Size()) {
-            //     s = (*velSignMem)(eq);                       // last stored sign (-1,0,+1)
-            //     if (std::abs(v_i) > vSignEps) {
-            //         s = (v_i > 0.0) ? 1.0 : -1.0;        // update sign if outside deadband
-            //         (*velSignMem)(eq) = s;                   // persist it
-            //     }
-            // } else {
-            //     // constrained or out-of-range DOF → no damping (s = 0)
-            // }
-
-            // // Local non-viscous damping:  Fd = -alpha * |Funbal| * sign(v_mem)
-            // const double Fd_i = -alpha_flac * std::abs(f_unbal_i) * s;
-
-            // // Accumulate RHS contribution for this DOF_Group entry:
-            // Fdamping(i) = f_unbal_i + Fd_i;              // i.e., Funbal - alpha*|Funbal|*sign(v)
-
-            const int eq = id(i);
-            if (eq < 0) continue;  // Skip constrained DOFs
-            
-            double v = Vtrial(i);
-            double F = F_unbalanced(i);
-
-            // Velocity sign with memory and deadband to prevent chatter
-            double s_v = (*velSignMem)(eq);
-            if (std::abs(v) > vSignEps) {
-                s_v = (v > 0.0) ? 1.0 : -1.0;
-                (*velSignMem)(eq) = s_v;
-            }
-
-            // Damping force calculation
-            double Fd;
-            if (useCombined) {
-                // Combined damping: uses both velocity sign and force rate
-                double dF = F - (*prevUnbal)(eq);
-                double s_fdot = (dF > 0.0) ? 1.0 : ((dF < 0.0) ? -1.0 : 0.0);
-                Fd = 0.5 * alpha_flac * std::abs(F) * (s_fdot - s_v);
-            } else {
-                // Simple damping: proportional to |F| and opposes velocity
-                Fd = -alpha_flac * std::abs(F) * s_v;
-            }
-            
-            // Store current force for next step
-            (*prevUnbal)(eq) = F;
-
-            // Add damped force to RHS
-            Fdamping(i) = F + Fd;
+        double s_v = (*velSignMem)(eq);
+        if (std::abs(v) > vSignEps) {
+            s_v = (v > 0.0) ? 1.0 : -1.0;
+            (*velSignMem)(eq) = s_v;
         }
 
-        // Add to system RHS
-        LinearSOE *theLinSOE = this->getLinearSOE();
-        if (theLinSOE->addB(Fdamping, id) < 0) {
-            opserr << "WARNING ExplicitDifferenceStatic::formNodalUnbalance -"
-                   << " failed in addB for ID " << id << endln;
-            res = -2;
+        double Fd;
+        if (useCombined) {
+            const double dF = F - (*prevUnbal)(eq);
+            const double s_fdot = (dF > 0.0) ? 1.0 : ((dF < 0.0) ? -1.0 : 0.0);
+            Fd = 0.5 * alphaLNVD * std::abs(F) * (s_fdot - s_v);
+        } else {
+            Fd = -alphaLNVD * std::abs(F) * s_v;
         }
+        (*prevUnbal)(eq) = F;
+        B(eq) = F + Fd;
     }
-
-    return res;
+    return theLinSOE->setB(B);
 }
 
 // Update the response quantities
@@ -450,11 +435,13 @@ int ExplicitDifferenceStatic::commit(void)
 // Send object state for parallel processing
 int ExplicitDifferenceStatic::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(4);
+    Vector data(6);
     data(0) = alphaM;
     data(1) = betaK;
     data(2) = betaKi;
     data(3) = betaKc;
+    data(4) = alphaLNVD;
+    data(5) = useCombined ? 1.0 : 0.0;
 
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING ExplicitDifferenceStatic::sendSelf() - could not send data\n";
@@ -467,7 +454,7 @@ int ExplicitDifferenceStatic::sendSelf(int cTag, Channel &theChannel)
 // Receive object state for parallel processing
 int ExplicitDifferenceStatic::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(4);
+    Vector data(6);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0)  {
         opserr << "WARNING ExplicitDifferenceStatic::recvSelf() - could not receive data\n";
         return -1;
@@ -477,6 +464,8 @@ int ExplicitDifferenceStatic::recvSelf(int cTag, Channel &theChannel, FEM_Object
     betaK = data(1);
     betaKi = data(2);
     betaKc = data(3);
+    alphaLNVD = data(4);
+    useCombined = (data(5) != 0.0);
 
     return 0;
 }

@@ -67,8 +67,10 @@ public:
     int update(const Vector &U);
     int commit(void);
     
-    // Method to form nodal unbalance with local non-viscous damping
-    int formNodalUnbalance(void);
+    // Forms the unbalance and applies local non-viscous damping to it
+    int formUnbalance(void);
+
+    void setLocalDamping(double alpha, bool combined);
     
     // Methods for parallel processing
     virtual int sendSelf(int commitTag, Channel &theChannel);
@@ -107,6 +109,8 @@ private:
     Vector *velSignMem;             // Velocity sign memory per DOF: {-1, 0, +1}
     Vector *prevUnbal;              // Previous step unbalanced force per DOF
     double vSignEps;                // Deadband threshold for velocity sign change
+    double alphaLNVD;               // Local non-viscous damping coefficient
+    bool useCombined;               // Combined (velocity + force-rate) formulation
 };
 
 #endif
