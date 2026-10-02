@@ -340,6 +340,8 @@ void ExplicitDifferenceStatic::setLocalDamping(double alpha, bool combined, doub
 //   simple   (Cundall 1987):        a_d = a - alpha |a| sign(v)
 //   combined (Itasca FLAC manual):  a_d = a + 0.5 alpha |a| (sign(da) - sign(v))
 // v is the leap-frog velocity at t + dt/2; sign(v) is held while |v| <= vSignEps.
+// Assumes a lumped (diagonal) mass: with a consistent mass and a full solver the
+// damping is applied per equation to M^-1 F and dissipation is not guaranteed.
 // References: Cundall, P.A. (1987). Distinct element models of rock and soil
 // structure. In: Analytical and Computational Methods in Engineering Rock Mechanics,
 // ch. 4. Itasca Consulting Group, FLAC / FLAC3D manuals, "local damping" and
