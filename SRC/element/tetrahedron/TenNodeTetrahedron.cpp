@@ -75,39 +75,39 @@ void* OPS_TenNodeTetrahedron()
         opserr << "\nTenNodeTetrahedron element: " << idata[0] << endln;
     }
 
+    // optional body forces b1 b2 b3 (any leading subset), then <-doInitDisp $flag>
     double data[3] = {0, 0, 0};
-    num = OPS_GetNumRemainingInputArgs();
-
-    if (num > 3)
+    int numOpt = 0;
+    while (numOpt < 3 && OPS_GetNumRemainingInputArgs() > 0)
     {
-        num = 3;
-    }
-    if (num > 0)
-    {
-        if (OPS_GetDoubleInput(&num, data) < 0)
+        const char* tok = OPS_GetString();
+        OPS_ResetCurrentInputArg(-1);
+        if (strcmp(tok, "-doInitDisp") == 0)
+            break;
+        num = 1;
+        if (OPS_GetDoubleInput(&num, &data[numOpt]) < 0)
         {
             opserr << "WARNING: invalid double data\n";
             return 0;
         }
+        numOpt++;
     }
 
-    num = OPS_GetNumRemainingInputArgs();
-    
     int do_init_disp_int = 0;
-    bool do_init_disp = false;
-
-
-    while (OPS_GetNumRemainingInputArgs() > 0) 
+    while (OPS_GetNumRemainingInputArgs() > 0)
     {
-        const char* type = OPS_GetString(); // Fetch the next string from input
-        if (strcmp(type, "-doInitDisp") == 0) 
+        const char* type = OPS_GetString();
+        if (strcmp(type, "-doInitDisp") == 0)
         {
             num = 1;
-            OPS_GetIntInput(&num, &do_init_disp_int); 
+            if (OPS_GetNumRemainingInputArgs() < 1 || OPS_GetIntInput(&num, &do_init_disp_int) < 0)
+            {
+                opserr << "WARNING: invalid -doInitDisp value\n";
+                return 0;
+            }
         }
     }
-
-    do_init_disp = (bool) do_init_disp_int; 
+    bool do_init_disp = (do_init_disp_int != 0);
 
     Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp);
 
