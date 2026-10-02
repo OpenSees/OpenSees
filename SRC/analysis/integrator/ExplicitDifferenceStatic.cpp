@@ -479,7 +479,8 @@ void ExplicitDifferenceStatic::Print(OPS_Stream &s, int flag)
         s << "ExplicitDifferenceStatic - currentTime: " << currentTime << endln;
         s << "  Rayleigh Damping - alphaM: " << alphaM << "  betaK: " << betaK;
         s << "  betaKi: " << betaKi << "  betaKc: " << betaKc << endln;
-        s << "  Local non-viscous damping coefficient: 0.59" << endln;
+        s << "  Local non-viscous damping coefficient: " << alphaLNVD
+          << (useCombined ? " (combined)" : " (simple)") << endln;
     }
     else
         s << "ExplicitDifferenceStatic - no associated AnalysisModel\n";
