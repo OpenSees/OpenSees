@@ -11,7 +11,9 @@
 target_sources(OPS_Element
    PRIVATE
     ASDEmbeddedNodeElement.cpp
+    EmbeddedNodeContact.cpp
    PUBLIC    
     ASDEmbeddedNodeElement.h
+    EmbeddedNodeContact.h
 )
 
