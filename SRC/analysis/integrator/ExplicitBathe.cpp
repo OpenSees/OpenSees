@@ -655,8 +655,10 @@ int ExplicitBathe::commit() {
 // mass an explicit scheme uses, this equals F_d = -alpha |F_unbal| sign(v) on the
 // unbalanced force, but the solved acceleration is fully assembled (also across
 // processes for the parallel diagonal SOEs) and re-forming the unbalance (e.g. printB)
-// does not change it. Intended for pseudo-static (dynamic relaxation) analyses; it
-// does not represent physical damping.
+// does not change it. Assumes a lumped (diagonal) mass: with a consistent mass and a
+// full solver it is applied per equation to M^-1 F and dissipation is not guaranteed.
+// Intended for pseudo-static (dynamic relaxation) analyses; it does not represent
+// physical damping.
 void ExplicitBathe::applyLocalDamping(Vector &accel, const Vector &vel) {
     if (alpha_lnvd <= 0.0 || vel.Size() != accel.Size())
         return;

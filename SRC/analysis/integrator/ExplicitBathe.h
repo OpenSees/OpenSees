@@ -80,7 +80,6 @@ public:
     int update(const Vector &U);
     int commit(void);
 
-
     // Method to obtain current velocity
     const Vector &getVel(void);
     
