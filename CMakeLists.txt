@@ -537,6 +537,28 @@ add_library(OPS_ElementFortran     OBJECT)
 #add_library(OPS_ElementSP         OBJECT)
 add_library(OPS_Material           OBJECT)
 add_library(OPS_MaterialFortran    OBJECT)
+
+#
+# External Abaqus-UMAT Fortran sources (driven by the generic
+# 'nDMaterial UMAT' wrapper, SRC/material/nD/UmatMaterial.cpp).
+# Pass a semicolon-separated list of Fortran files; they are compiled with
+# gfortran legacy flags into an OBJECT library whose objects are linked
+# directly into the OpenSeesPy module so every entry symbol stays in the
+# module's dynamic symbol table (nothing references them at link time, so
+# a static archive would drop them).  Default: empty (no external UMATs).
+#
+set(OPS_UMAT_SOURCES "" CACHE STRING
+    "Semicolon-separated list of external Abaqus UMAT Fortran source files to compile into the build")
+if(OPS_UMAT_SOURCES)
+    enable_language(Fortran)
+    add_library(OPS_UmatFortran OBJECT ${OPS_UMAT_SOURCES})
+    set_target_properties(OPS_UmatFortran PROPERTIES POSITION_INDEPENDENT_CODE ON)
+    if(CMAKE_Fortran_COMPILER_ID MATCHES "GNU")
+        target_compile_options(OPS_UmatFortran PRIVATE
+            -std=legacy -fallow-argument-mismatch -ffree-line-length-none)
+    endif()
+    message(STATUS "OPS_UMAT_SOURCES: ${OPS_UMAT_SOURCES}")
+endif()
 add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
 add_library(OPS_INTERPRETER        OBJECT)
@@ -846,6 +868,13 @@ add_library(OpenSeesPy SHARED EXCLUDE_FROM_ALL
     ${OPS_SRC_DIR}/interpreter/PythonModule.cpp
     ${OPS_SRC_DIR}/actor/objectBroker/FEM_ObjectBrokerAllClasses.cpp
 )
+
+if(OPS_UMAT_SOURCES)
+    # object files linked directly: unreferenced UMAT entry points survive
+    # and are exported from the module (verify with: nm -D opensees.so)
+    target_sources(OpenSeesPy PRIVATE $<TARGET_OBJECTS:OPS_UmatFortran>)
+endif()
+target_link_libraries(OpenSeesPy ${CMAKE_DL_LIBS})
 
 set_target_properties(OpenSeesPy PROPERTIES PREFIX "")
 
