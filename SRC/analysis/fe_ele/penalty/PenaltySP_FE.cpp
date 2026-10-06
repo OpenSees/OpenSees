@@ -113,65 +113,157 @@ PenaltySP_FE::setID(void)
 const Matrix &
 PenaltySP_FE::getTangent(Integrator *theNewIntegrator)
 {
-  tang(0,0) = alpha;
+  if (theNewIntegrator != 0)
+    theNewIntegrator->formEleTangent(this);
+
   return tang;
+}
+
+
+void
+PenaltySP_FE::zeroTangent(void)
+{
+  tang.Zero();
+}
+
+
+void
+PenaltySP_FE::addKtToTang(double fact)
+{
+  if (fact == 0.0)
+    return;
+  tang(0,0) += alpha * fact;
+}
+
+
+void
+PenaltySP_FE::addKiToTang(double fact)
+{
+  this->addKtToTang(fact);
+}
+
+
+void
+PenaltySP_FE::addCtoTang(double fact)
+{
+  // no damping contribution from penalty constraint
+}
+
+
+void
+PenaltySP_FE::addMtoTang(double fact)
+{
+  // no mass contribution from penalty constraint
 }
 
 
 const Vector &
 PenaltySP_FE::getResidual(Integrator *theNewIntegrator)
 {
+    if (theNewIntegrator != 0)
+        theNewIntegrator->formEleResidual(this);
+    return resid;
+}
+
+
+void
+PenaltySP_FE::zeroResidual(void)
+{
+    resid.Zero();
+}
+
+
+void
+PenaltySP_FE::addRtoResidual(double fact)
+{
+    if (fact == 0.0)
+        return;
+
     double constraint = theSP->getValue();
     double initialValue = theSP->getInitialValue();
     int constrainedDOF = theSP->getDOF_Number();
     const Vector &nodeDisp = theNode->getTrialDisp();
-	
+
     if (constrainedDOF < 0 || constrainedDOF >= nodeDisp.Size()) {
-	opserr << "WARNING PenaltySP_FE::getTangForce() - ";	
-	opserr << " constrained DOF " << constrainedDOF << " outside disp\n";
-	resid(0) = 0;
+        opserr << "WARNING PenaltySP_FE::addRtoResidual() - ";
+        opserr << " constrained DOF " << constrainedDOF << " outside disp\n";
+        return;
     }
 
-    //    (*resid)(0) = alpha * (constraint - nodeDisp(constrainedDOF));    
-    // is replace with the following to remove possible problems with
-    // subtracting very small numbers
+    // residual contribution = -R with R = alpha*((u-u0) - g), same sign as before
+    resid(0) += fact * alpha * (constraint - (nodeDisp(constrainedDOF) - initialValue));
+}
 
-    resid(0) = alpha * (constraint - (nodeDisp(constrainedDOF) - initialValue));    
 
-    return resid;
+void
+PenaltySP_FE::addRIncInertiaToResidual(double fact)
+{
+    // no mass/damping on the constraint
+    this->addRtoResidual(fact);
+}
+
+
+void
+PenaltySP_FE::addM_Force(const Vector &accel, double fact)
+{
+    // no-op
+}
+
+
+void
+PenaltySP_FE::addD_Force(const Vector &vel, double fact)
+{
+    // no-op
 }
 
 
 const Vector &
 PenaltySP_FE::getTangForce(const Vector &disp, double fact)
 {
-    double constraint = theSP->getValue();
-    int constrainedID = myID(0);
-    if (constrainedID < 0 || constrainedID >= disp.Size()) {
-	opserr << "WARNING PenaltySP_FE::getTangForce() - ";	
-	opserr << " constrained DOF " << constrainedID << " outside disp\n";
-	resid(0) = 0.0;
-	return resid;
-    }
-    resid(0) = alpha * disp(constrainedID);
+    resid.Zero();
 
+    if (fact == 0.0)
+        return resid;
+
+    // use last integrator's system tangent (includes c1)
+    const Matrix &Kt = this->getTangent(this->getLastIntegrator());
+
+    const int constrainedID = myID(0);
+    const int dispSize = disp.Size();
+    if (constrainedID < 0 || constrainedID >= dispSize) {
+        opserr << "WARNING PenaltySP_FE::getTangForce() - ";
+        opserr << " constrained DOF " << constrainedID << " outside disp\n";
+        return resid;
+    }
+
+    resid(0) = Kt(0, 0) * disp(constrainedID) * fact;
     return resid;
 }
 
 const Vector &
 PenaltySP_FE::getK_Force(const Vector &disp, double fact)
 {
-  opserr << "WARNING PenaltySP_FE::getK_Force() - not yet implemented\n";
-  resid(0) = 0.0;
-  return resid;
+    resid(0) = 0.0;
+
+    if (fact == 0.0)
+        return resid;
+
+    const int constrainedID = myID(0);
+    const int dispSize = disp.Size();
+    if (constrainedID < 0 || constrainedID >= dispSize) {
+        opserr << "WARNING PenaltySP_FE::getK_Force() - ";
+        opserr << " constrained DOF " << constrainedID << " outside disp\n";
+        return resid;
+    }
+
+    resid(0) = alpha * disp(constrainedID) * fact;
+    return resid;
 }
 
 const Vector &
 PenaltySP_FE::getKi_Force(const Vector &disp, double fact)
 {
-  opserr << "WARNING PenaltySP_FE::getKi_Force() - not yet implemented\n";
-  resid(0) = 0.0;
-  return resid;
+  return this->getK_Force(disp, fact);
 }
 
 
@@ -190,7 +282,3 @@ PenaltySP_FE::getM_Force(const Vector &disp, double fact)
   resid(0) = 0.0;
   return resid;
 }
-
-
-
-

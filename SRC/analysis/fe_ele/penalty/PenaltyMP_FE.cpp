@@ -53,7 +53,8 @@ PenaltyMP_FE::PenaltyMP_FE(int tag, Domain &theDomain,
 :FE_Element(tag, 2,(TheMP.getConstrainedDOFs()).Size()+
  (TheMP.getRetainedDOFs()).Size()),
  theMP(&TheMP), theConstrainedNode(0) , theRetainedNode(0),
- tang(0), resid(0), C(0), alpha(Alpha)
+ tang(0), sysTang(0), resid(0), C(0),
+ timeVarying(TheMP.isTimeVarying()), alpha(Alpha)
 {
     
     int size;
@@ -63,12 +64,13 @@ PenaltyMP_FE::PenaltyMP_FE(int tag, Domain &theDomain,
     size += id2.Size();
 
     tang = new Matrix(size,size);
+    sysTang = new Matrix(size,size);
     resid = new Vector(size);
     C = new Matrix(id1.Size(),size);
 
-    if (tang == 0 || resid == 0 || C == 0 ||
-	tang->noCols() != size || C->noCols() != size || 
-	resid->Size() != size) {
+    if (tang == 0 || sysTang == 0 || resid == 0 || C == 0 ||
+	tang->noCols() != size || sysTang->noCols() != size ||
+	C->noCols() != size || resid->Size() != size) {
 	opserr << "FATAL PenaltyMP_FE::PenaltyMP_FE() - out of memory\n";
 	exit(-1);
     }
@@ -98,7 +100,7 @@ PenaltyMP_FE::PenaltyMP_FE(int tag, Domain &theDomain,
 	opserr << "WARNING PenaltyMP_FE::PenaltyMP_FE() - node no Group yet?\n"; 
     
     
-    if (theMP->isTimeVarying() == false) {
+    if (!timeVarying) {
 	this->determineTangent();
 	// we can free up the space taken by C as it is no longer needed
 	if (C != 0)
@@ -111,6 +113,8 @@ PenaltyMP_FE::~PenaltyMP_FE()
 {
     if (tang != 0)
 	delete tang;
+    if (sysTang != 0)
+	delete sysTang;
     if (resid != 0)
 	delete resid;
     if (C != 0)
@@ -201,15 +205,74 @@ PenaltyMP_FE::setID(void)
 const Matrix &
 PenaltyMP_FE::getTangent(Integrator *theNewIntegrator)
 {
-    if (theMP->isTimeVarying() == true)
-	this->determineTangent();    
-    return *tang;
+    if (theNewIntegrator != 0)
+	theNewIntegrator->formEleTangent(this);
+    return *sysTang;
 }
+
+
+void
+PenaltyMP_FE::zeroTangent(void)
+{
+    sysTang->Zero();
+}
+
+
+void
+PenaltyMP_FE::addKtToTang(double fact)
+{
+    // Always accumulate: HALL_TANGENT calls both addKtToTang and
+    // addKiToTang, so fact==1.0 must not replace sysTang.
+    if (fact == 0.0)
+        return;
+
+    const Matrix &Ks = this->getStaticTangent();
+    sysTang->addMatrix(1.0, Ks, fact);
+}
+
+
+void
+PenaltyMP_FE::addKiToTang(double fact)
+{
+    this->addKtToTang(fact);
+}
+
+
+void
+PenaltyMP_FE::addCtoTang(double fact)
+{
+    // no damping contribution from penalty constraint
+}
+
+
+void
+PenaltyMP_FE::addMtoTang(double fact)
+{
+    // no mass contribution from penalty constraint
+}
+
 
 const Vector &
 PenaltyMP_FE::getResidual(Integrator *theNewIntegrator)
 {
-    // zero residual, CD = 0
+    if (theNewIntegrator != 0)
+        theNewIntegrator->formEleResidual(this);
+    return *resid;
+}
+
+
+void
+PenaltyMP_FE::zeroResidual(void)
+{
+    resid->Zero();
+}
+
+
+void
+PenaltyMP_FE::addRtoResidual(double fact)
+{
+    if (fact == 0.0)
+        return;
 
     // get the solution vector [Uc Ur]
     static Vector UU;
@@ -224,7 +287,7 @@ PenaltyMP_FE::getResidual(Integrator *theNewIntegrator)
     for (int i = 0; i < id1.Size(); ++i) {
         int cdof = id1(i);
         if (cdof < 0 || cdof >= Uc.Size()) {
-            opserr << "PenaltyMP_FE::getResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
+            opserr << "PenaltyMP_FE::addRtoResidual FATAL Error: Constrained DOF " << cdof << " out of bounds [0-" << Uc.Size() << "]\n";
             exit(-1);
         }
         UU(i) = Uc(cdof) - Uc0(i);
@@ -232,55 +295,110 @@ PenaltyMP_FE::getResidual(Integrator *theNewIntegrator)
     for (int i = 0; i < id2.Size(); ++i) {
         int rdof = id2(i);
         if (rdof < 0 || rdof >= Ur.Size()) {
-            opserr << "PenaltyMP_FE::getResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
+            opserr << "PenaltyMP_FE::addRtoResidual FATAL Error: Retained DOF " << rdof << " out of bounds [0-" << Ur.Size() << "]\n";
             exit(-1);
         }
         UU(i+id1.Size()) = Ur(rdof) - Ur0(i);
     }
 
-    // compute residual
-    const Matrix& KK = getTangent(theNewIntegrator);
-    resid->addMatrixVector(0.0, KK, UU, -1.0);
-
-    // done
-    return *resid;
+    // residual contribution = -R with R = K_static*U, same sign as before
+    resid->addMatrixVector(1.0, this->getStaticTangent(), UU, -fact);
 }
 
+
+void
+PenaltyMP_FE::addRIncInertiaToResidual(double fact)
+{
+    // no mass/damping on the constraint
+    this->addRtoResidual(fact);
+}
+
+
+void
+PenaltyMP_FE::addM_Force(const Vector &accel, double fact)
+{
+    // no-op
+}
+
+
+void
+PenaltyMP_FE::addD_Force(const Vector &vel, double fact)
+{
+    // no-op
+}
 
 
 const Vector &
 PenaltyMP_FE::getTangForce(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltyMP_FE::getTangForce() - not yet implemented\n";
- return *resid;
+    resid->Zero();
+
+    if (fact == 0.0)
+        return *resid;
+
+    // use last integrator's system tangent (includes c1)
+    const Matrix &Kt = this->getTangent(this->getLastIntegrator());
+
+    const int size = resid->Size();
+    const int dispSize = disp.Size();
+    Vector tmp(size);
+    for (int i = 0; i < size; i++) {
+        int dof = myID(i);
+        if (dof >= 0 && dof < dispSize)
+            tmp(i) = disp(dof);
+    }
+
+    if (resid->addMatrixVector(0.0, Kt, tmp, fact) < 0) {
+        opserr << "WARNING PenaltyMP_FE::getTangForce() - ";
+        opserr << "- addMatrixVector returned error\n";
+    }
+
+    return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getK_Force(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltyMP_FE::getK_Force() - not yet implemented\n";
- return *resid;
+    resid->Zero();
+
+    if (fact == 0.0)
+        return *resid;
+
+    const int size = resid->Size();
+    const int dispSize = disp.Size();
+    Vector tmp(size);  // Vector(int) zeros on construction
+    for (int i = 0; i < size; i++) {
+        int dof = myID(i);
+        if (dof >= 0 && dof < dispSize)
+            tmp(i) = disp(dof);
+    }
+
+    if (resid->addMatrixVector(0.0, this->getStaticTangent(), tmp, fact) < 0) {
+        opserr << "WARNING PenaltyMP_FE::getK_Force() - ";
+        opserr << "- addMatrixVector returned error\n";
+    }
+
+    return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getKi_Force(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltyMP_FE::getK_Force() - not yet implemented\n";
- return *resid;
+    return this->getK_Force(disp, fact);
 }
 
 const Vector &
 PenaltyMP_FE::getC_Force(const Vector &disp, double fact)
 {
- opserr << "WARNING PenaltyMP_FE::getC_Force() - not yet implemented\n";
- return *resid;
+    resid->Zero();
+    return *resid;
 }
 
 const Vector &
 PenaltyMP_FE::getM_Force(const Vector &disp, double fact)
 {
-  // opserr << "WARNING PenaltyMP_FE::getM_Force() - not yet implemented\n";
- return *resid;
+    resid->Zero();
+    return *resid;
 }
 
 void  
@@ -301,25 +419,6 @@ PenaltyMP_FE::determineTangent(void)
     
 
     // now form the tangent: [K] = alpha * [C]^t[C]
-    // *(tang) = (*C)^(*C);
-    // *(tang) *= alpha;
-    /*
-	// THIS IS A WORKAROUND UNTIL WE GET addMatrixTransposeProduct() IN
-	// THE Matrix CLASS OR UNROLL THIS COMPUTATION
-	int rows = C->noRows();
-	int cols = C->noCols();
-	Matrix CT(cols,rows);
-	const Matrix &Cref = *C;
-	// Fill in the transpose of C
-	for (int k = 0; k < cols; k++)
-		for (int l = 0; l < rows; l++)
-			CT(k,l) = Cref(l,k);
-	// Compute alpha*(C^*C)
-	tang->addMatrixProduct(0.0, CT, Cref, alpha);
-    */
-    // workaround no longer required
     const Matrix &Cref = *C;
     tang->addMatrixTransposeProduct(0.0, Cref, Cref, alpha);
 }
-
-
