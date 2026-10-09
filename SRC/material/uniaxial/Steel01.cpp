@@ -539,7 +539,7 @@ int Steel01::recvSelf (int commitTag, Channel& theChannel,
    if (noCols > 0) {
      if (SHVs != 0)
        delete SHVs;
-     SHVs = new Matrix(2, noCols);
+     SHVs = new Matrix(6, noCols);
      if (SHVs == 0) {
        opserr << "Steel01::recvSelf() - failed to allocate SHVs matrix" << endln;
        return -2;
@@ -672,163 +672,211 @@ Steel01::activateParameter(int passedParameterID)
 }
 
 
+double
+Steel01::computeStressGradient(double strainSensitivity, int gradIndex)
+{
+  // Retrieve committed sensitivity-history variables
+  double CstrainSensitivity = 0.0;
+  double CstressSensitivity = 0.0;
+  double CshiftPSensitivity = 0.0;
+  double CshiftNSensitivity = 0.0;
+
+  if (SHVs != 0) {
+    CstrainSensitivity = (*SHVs)(0, gradIndex);
+    CstressSensitivity = (*SHVs)(1, gradIndex);
+    CshiftPSensitivity = (*SHVs)(4, gradIndex);
+    CshiftNSensitivity = (*SHVs)(5, gradIndex);
+  }
+
+  // Direct derivatives of the active material parameter
+  double fySensitivity = 0.0;
+  double E0Sensitivity = 0.0;
+  double bSensitivity = 0.0;
+
+  if (parameterID == 1) {
+    fySensitivity = 1.0;
+  }
+  else if (parameterID == 2) {
+    E0Sensitivity = 1.0;
+  }
+  else if (parameterID == 3) {
+    bSensitivity = 1.0;
+  }
+
+  double dStrain = Tstrain - Cstrain;
+  double fyOneMinusB = fy * (1.0 - b);
+  double fyOneMinusBSensitivity =
+      fySensitivity * (1.0 - b) - fy * bSensitivity;
+
+  double Esh = b * E0;
+  double EshSensitivity =
+      bSensitivity * E0 + b * E0Sensitivity;
+
+  // determineTrialState evaluates stress with the committed shifts
+  // before updating the shift at a load reversal.
+  double sigmaElastic = Cstress + E0 * dStrain;
+  double sigmaMax = Esh * Tstrain + CshiftP * fyOneMinusB;
+  double sigmaMin = Esh * Tstrain - CshiftN * fyOneMinusB;
+
+  double sigmaElasticSensitivity =
+      CstressSensitivity
+      + E0Sensitivity * dStrain
+      + E0 * (strainSensitivity - CstrainSensitivity);
+
+  double sigmaMaxSensitivity =
+      EshSensitivity * Tstrain
+      + Esh * strainSensitivity
+      + CshiftPSensitivity * fyOneMinusB
+      + CshiftP * fyOneMinusBSensitivity;
+
+  double sigmaMinSensitivity =
+      EshSensitivity * Tstrain
+      + Esh * strainSensitivity
+      - CshiftNSensitivity * fyOneMinusB
+      - CshiftN * fyOneMinusBSensitivity;
+
+  // Use the same active branch as determineTrialState.
+  double trialStress = sigmaElastic;
+  double gradient = sigmaElasticSensitivity;
+
+  if (sigmaMax < sigmaElastic) {
+    trialStress = sigmaMax;
+    gradient = sigmaMaxSensitivity;
+  }
+
+  if (sigmaMin > trialStress) {
+    gradient = sigmaMinSensitivity;
+  }
+
+  return gradient;
+}
+
 
 double
 Steel01::getStressSensitivity(int gradIndex, bool conditional)
 {
-	// Initialize return value
-	double gradient = 0.0;
-
-
-	// Pick up sensitivity history variables
-	double CstrainSensitivity = 0.0;
-	double CstressSensitivity = 0.0;
-	if (SHVs != 0) {
-		CstrainSensitivity = (*SHVs)(0,gradIndex);
-		CstressSensitivity = (*SHVs)(1,gradIndex);
-	}
-
-
-	// Assign values to parameter derivatives (depending on what's random)
-	double fySensitivity = 0.0;
-	double E0Sensitivity = 0.0;
-	double bSensitivity = 0.0;
-	if (parameterID == 1) {
-		fySensitivity = 1.0;
-	}
-	else if (parameterID == 2) {
-		E0Sensitivity = 1.0;
-	}
-	else if (parameterID == 3) {
-		bSensitivity = 1.0;
-	}
-
-
-	// Compute min and max stress
-	double Tstress;
-	double dStrain = Tstrain-Cstrain;
-	double sigmaElastic = Cstress + E0*dStrain;
-	double fyOneMinusB = fy * (1.0 - b);
-	double Esh = b*E0;
-	double c1 = Esh*Tstrain;
-	double c2 = TshiftN*fyOneMinusB;
-	double c3 = TshiftP*fyOneMinusB;
-	double sigmaMax = c1+c3;
-	double sigmaMin = c1-c2;
-
-
-	// Evaluate stress sensitivity 
-	if ( (sigmaMax < sigmaElastic) && (fabs(sigmaMax-sigmaElastic)>1e-5) ) {
-		Tstress = sigmaMax;
-		gradient = E0Sensitivity*b*Tstrain 
-				 + E0*bSensitivity*Tstrain
-				 + TshiftP*(fySensitivity*(1-b)-fy*bSensitivity);
-	}
-	else {
-		Tstress = sigmaElastic;
-		gradient = CstressSensitivity 
-			     + E0Sensitivity*(Tstrain-Cstrain)
-				 - E0*CstrainSensitivity;
-	}
-	if (sigmaMin > Tstress) {
-		gradient = E0Sensitivity*b*Tstrain
-			     + E0*bSensitivity*Tstrain
-				 - TshiftN*(fySensitivity*(1-b)-fy*bSensitivity);
-	}
-
-	return gradient;
+  (void)conditional;
+  return computeStressGradient(0.0, gradIndex);
 }
-
-
 
 
 double
 Steel01::getInitialTangentSensitivity(int gradIndex)
 {
-	// For now, assume that this is only called for initial stiffness 
-	if (parameterID == 2) {
-		return 1.0; 
-	}
-	else {
-		return 0.0;
-	}
+  if (parameterID == 2) {
+    return 1.0;
+  }
+  else {
+    return 0.0;
+  }
 }
 
 
 int
 Steel01::commitSensitivity(double TstrainSensitivity, int gradIndex, int numGrads)
 {
-	if (SHVs == 0) {
-		SHVs = new Matrix(2,numGrads);
-	}
+  if (SHVs == 0) {
+    SHVs = new Matrix(6, numGrads);
+    SHVs->Zero();
+  }
+
+  double gradient =
+      computeStressGradient(TstrainSensitivity, gradIndex);
+
+  // Initialize trial history sensitivities from committed values.
+  double CstrainSensitivity = (*SHVs)(0, gradIndex);
+  double TminStrainSensitivity = (*SHVs)(2, gradIndex);
+  double TmaxStrainSensitivity = (*SHVs)(3, gradIndex);
+  double TshiftPSensitivity = (*SHVs)(4, gradIndex);
+  double TshiftNSensitivity = (*SHVs)(5, gradIndex);
+
+  // Direct derivatives of all Steel01 parameters.
+  double fySensitivity = (parameterID == 1) ? 1.0 : 0.0;
+  double E0Sensitivity = (parameterID == 2) ? 1.0 : 0.0;
+  double a1Sensitivity = (parameterID == 4) ? 1.0 : 0.0;
+  double a2Sensitivity = (parameterID == 5) ? 1.0 : 0.0;
+  double a3Sensitivity = (parameterID == 6) ? 1.0 : 0.0;
+  double a4Sensitivity = (parameterID == 7) ? 1.0 : 0.0;
+
+  double epsy = fy / E0;
+  double epsySensitivity =
+      fySensitivity / E0
+      - fy * E0Sensitivity / (E0 * E0);
+
+  double dStrain = Tstrain - Cstrain;
+  // Update sensitivity when loading reverses from positive to negative.
+  if (Cloading == 1 && dStrain < 0.0) {
+    if (Cstrain > CmaxStrain) {
+      TmaxStrainSensitivity = CstrainSensitivity;
+    }
+
+    double strainRange = TmaxStrain - TminStrain;
+    double strainRangeSensitivity =
+        TmaxStrainSensitivity - TminStrainSensitivity;
+
+    double denominator = 2.0 * a2 * epsy;
+    double denominatorSensitivity =
+        2.0 * (a2Sensitivity * epsy
+               + a2 * epsySensitivity);
+
+    TshiftNSensitivity = 0.0;
+
+    if (denominator != 0.0) {
+      double ratio = strainRange / denominator;
+      double ratioSensitivity =
+          (strainRangeSensitivity * denominator
+           - strainRange * denominatorSensitivity)
+          / (denominator * denominator);
+
+      if (ratio > 0.0) {
+        TshiftNSensitivity =
+            a1Sensitivity * pow(ratio, 0.8)
+            + 0.8 * a1 * pow(ratio, -0.2)
+                * ratioSensitivity;
+      }
+    }
+  }
+  // Update sensitivity when loading reverses from negative to positive.
+  if (Cloading == -1 && dStrain > 0.0) {
+    if (Cstrain < CminStrain) {
+      TminStrainSensitivity = CstrainSensitivity;
+    }
+
+    double strainRange = TmaxStrain - TminStrain;
+    double strainRangeSensitivity =
+        TmaxStrainSensitivity - TminStrainSensitivity;
+
+    double denominator = 2.0 * a4 * epsy;
+    double denominatorSensitivity =
+        2.0 * (a4Sensitivity * epsy
+               + a4 * epsySensitivity);
+
+    TshiftPSensitivity = 0.0;
+
+    if (denominator != 0.0) {
+      double ratio = strainRange / denominator;
+      double ratioSensitivity =
+          (strainRangeSensitivity * denominator
+           - strainRange * denominatorSensitivity)
+          / (denominator * denominator);
+
+      if (ratio > 0.0) {
+        TshiftPSensitivity =
+            a3Sensitivity * pow(ratio, 0.8)
+            + 0.8 * a3 * pow(ratio, -0.2)
+                * ratioSensitivity;
+      }
+    }
+  }
 
 
-	// Initialize unconditaional stress sensitivity
-	double gradient = 0.0;
-
-
-	// Pick up sensitivity history variables
-	double CstrainSensitivity = 0.0;
-	double CstressSensitivity	 = 0.0;
-	if (SHVs != 0) {
-		CstrainSensitivity = (*SHVs)(0,gradIndex);
-		CstressSensitivity = (*SHVs)(1,gradIndex);
-	}
-
-
-	// Assign values to parameter derivatives (depending on what's random)
-	double fySensitivity = 0.0;
-	double E0Sensitivity = 0.0;
-	double bSensitivity = 0.0;
-	if (parameterID == 1) {
-		fySensitivity = 1.0;
-	}
-	else if (parameterID == 2) {
-		E0Sensitivity = 1.0;
-	}
-	else if (parameterID == 3) {
-		bSensitivity = 1.0;
-	}
-
-
-	// Compute min and max stress
-	double Tstress;
-	double dStrain = Tstrain-Cstrain;
-	double sigmaElastic = Cstress + E0*dStrain;
-	double fyOneMinusB = fy * (1.0 - b);
-	double Esh = b*E0;
-	double c1 = Esh*Tstrain;
-	double c2 = TshiftN*fyOneMinusB;
-	double c3 = TshiftP*fyOneMinusB;
-	double sigmaMax = c1+c3;
-	double sigmaMin = c1-c2;
-
-
-	// Evaluate stress sensitivity ('gradient')
-	if ( (sigmaMax < sigmaElastic) && (fabs(sigmaMax-sigmaElastic)>1e-5) ) {
-		Tstress = sigmaMax;
-		gradient = E0Sensitivity*b*Tstrain 
-				 + E0*bSensitivity*Tstrain
-				 + E0*b*TstrainSensitivity
-				 + TshiftP*(fySensitivity*(1-b)-fy*bSensitivity);
-	}
-	else {
-		Tstress = sigmaElastic;
-		gradient = CstressSensitivity 
-			     + E0Sensitivity*(Tstrain-Cstrain)
-				 + E0*(TstrainSensitivity-CstrainSensitivity);
-	}
-	if (sigmaMin > Tstress) {
-		gradient = E0Sensitivity*b*Tstrain
-			     + E0*bSensitivity*Tstrain
-			     + E0*b*TstrainSensitivity
-				 - TshiftN*(fySensitivity*(1-b)-fy*bSensitivity);
-	}
-
-
-	// Commit history variables
-	(*SHVs)(0,gradIndex) = TstrainSensitivity;
-	(*SHVs)(1,gradIndex) = gradient;
+  // Commit sensitivity-history variables.
+  (*SHVs)(0, gradIndex) = TstrainSensitivity;
+  (*SHVs)(1, gradIndex) = gradient;
+  (*SHVs)(2, gradIndex) = TminStrainSensitivity;
+  (*SHVs)(3, gradIndex) = TmaxStrainSensitivity;
+  (*SHVs)(4, gradIndex) = TshiftPSensitivity;
+  (*SHVs)(5, gradIndex) = TshiftNSensitivity;
 
 	return 0;
 }
