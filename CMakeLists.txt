@@ -703,7 +703,7 @@ target_link_libraries(OpenSees
   OPS_Recorder
   ${CMAKE_DL_LIBS}
   HDF5::HDF5
-  ${TCL_LIBRARIES}
+  tcl::tcl
   ZLIB::ZLIB
   Eigen3::Eigen
 )
@@ -767,7 +767,7 @@ if(MPI_FOUND)
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS}
        HDF5::HDF5
-       ${TCL_LIBRARIES}
+       tcl::tcl
        ZLIB::ZLIB
        Eigen3::Eigen
        ${MPI_CXX_LIBRARIES}
@@ -837,7 +837,7 @@ if(MPI_FOUND)
        ${MUMPS_LIBRARIES}
        ${CMAKE_DL_LIBS}
        HDF5::HDF5
-       ${TCL_LIBRARIES}
+       tcl::tcl
        ZLIB::ZLIB		
        Eigen3::Eigen
        ${MPI_CXX_LIBRARIES}
