@@ -131,11 +131,12 @@ def test_invalid_objective_is_rejected_on_every_rank():
     assert result.stdout.count("partition objective must be cut or volume") == 2
 
 
-def test_partition_preserves_load_mass_and_constraint_ownership():
-    result = run_model(4, STATE_MODEL)
-    rows = state_rows(result.stdout)
-
+def test_partition_preserves_load_mass_and_constraint_ownership(tmp_path):
+    result = run_model(4, STATE_MODEL, tmp_path)
     assert result.returncode == 0, result.stdout
+    reports = sorted(tmp_path.glob("metis-state-*.txt"))
+    assert len(reports) == 4, result.stdout
+    rows = state_rows("\n".join(report.read_text() for report in reports))
     assert len(rows) == 4, result.stdout
     assert {row["rank"] for row in rows} == set(range(4))
     rows_by_rank = {row["rank"]: row for row in rows}

@@ -48,4 +48,13 @@ foreach tag $localNodes {
     lappend masses "$tag:[format %.1f [nodeMass $tag 1]]"
 }
 
-puts "METIS_STATE rank=[getPID] ranks=[getNP] nodes=[csv $localNodes] elements=[csv [getEleTags]] eleloads=[csv [getEleLoadTags 1]] nodeloads=[csv [getNodeLoadTags 1]] fixed=[csv [getFixedNodes]] constrained=[csv [getConstrainedNodes]] mp100=[csv [getRetainedNodes 100]] mp102=[csv [getRetainedNodes 102]] masses=[join $masses ,]"
+set report "METIS_STATE rank=[getPID] ranks=[getNP] nodes=[csv $localNodes] elements=[csv [getEleTags]] eleloads=[csv [getEleLoadTags 1]] nodeloads=[csv [getNodeLoadTags 1]] fixed=[csv [getFixedNodes]] constrained=[csv [getConstrainedNodes]] mp100=[csv [getRetainedNodes 100]] mp102=[csv [getRetainedNodes 102]] masses=[join $masses ,]"
+puts $report
+
+# MPI launchers may interleave stdout from different ranks. Tests can request
+# separate files without changing the human-readable console output.
+if {$argc > 0} {
+    set output [open [file join [lindex $argv 0] "metis-state-[getPID].txt"] w]
+    puts $output $report
+    close $output
+}
