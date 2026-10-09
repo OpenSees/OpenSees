@@ -800,6 +800,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/ConcreteCM.o \
 	$(FE)/material/uniaxial/RambergOsgoodSteel.o \
 	$(FE)/material/uniaxial/Steel02.o \
+	$(FE)/material/uniaxial/Steel02M.o \
 	$(FE)/material/uniaxial/Steel02Fatigue.o \
 	$(FE)/material/uniaxial/Steel4.o \
 	$(FE)/material/uniaxial/Steel2.o \
