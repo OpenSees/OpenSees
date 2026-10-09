@@ -1275,6 +1275,27 @@ Tri31::setResponse(const char **argv, int argc, OPS_Stream &output)
     theResponse =  new ElementResponse(this, 11, Vector(3*numnodes));
   }
 
+  else if ((strcmp(argv[0],"strain") ==0) || (strcmp(argv[0],"strains") ==0)) {
+    for (int i=0; i<numgp; i++) {
+      output.tag("GaussPoint");
+      output.attr("number",i+1);
+      output.attr("eta",pts[i][0]);
+      output.attr("neta",pts[i][1]);
+
+      output.tag("NdMaterialOutput");
+      output.attr("classType", theMaterial[i]->getClassTag());
+      output.attr("tag", theMaterial[i]->getTag());
+
+      output.tag("ResponseType","eta11");
+      output.tag("ResponseType","eta22");
+      output.tag("ResponseType","eta12");
+
+      output.endTag(); // GaussPoint
+      output.endTag(); // NdMaterialOutput
+      }
+    theResponse =  new ElementResponse(this, 4, Vector(3*numgp));
+  }
+
 
    output.endTag(); // ElementOutput
 
@@ -1335,6 +1356,23 @@ Tri31::getResponse(int responseID, Information &eleInfo)
 	}
 
     return eleInfo.setVector(stressAtNodes);
+
+  } else if (responseID == 4) {
+
+    // Loop over the integration points
+    static Vector strains(3*numgp);
+    int cnt = 0;
+    for (int i = 0; i < numgp; i++) {
+
+      // Get material strain response
+      const Vector &epsilon = theMaterial[i]->getStrain();
+      strains(cnt) = epsilon(0);
+      strains(cnt+1) = epsilon(1);
+      strains(cnt+2) = epsilon(2);
+      cnt += 3;
+    }
+
+    return eleInfo.setVector(strains);
 
   } else
 

@@ -478,46 +478,35 @@ int ModElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor) {
     q0[4] -= My;
 
   } else if (type == LOAD_TAG_Beam3dPartialUniformLoad) {
-    double wa = data(2) * loadFactor; // Axial
-    double wy = data(0) * loadFactor; // Transverse
-    double wz = data(1) * loadFactor; // Transverse
-    double a = data(3) * L;
-    double b = data(4) * L;
-    double c = 0.5 * (b + a);
-    double cOverL = c / L;
+    const double a = data(3);
+    const double b = data(4);
+    const double length = (b - a) * L;
+    // Three-point Gauss integration is exact for a linear load times the
+    // existing cubic beam interpolation, including a zero-length interval.
+    const double points[3] = {-sqrt(3.0 / 5.0), 0.0, sqrt(3.0 / 5.0)};
+    const double weights[3] = {5.0 / 9.0, 8.0 / 9.0, 5.0 / 9.0};
+    for (int i = 0; i < 3; ++i) {
+      const double t = 0.5 * (1.0 + points[i]);
+      const double x = a + (b - a) * t;
+      const double weight = 0.5 * length * weights[i] * loadFactor;
+      const double wy = ((1.0 - t) * data(0) + t * data(5)) * weight;
+      const double wz = ((1.0 - t) * data(1) + t * data(6)) * weight;
+      const double wx = ((1.0 - t) * data(2) + t * data(7)) * weight;
 
-    double P = wa * (b - a);
-    double Fy = wy * (b - a);
-    double Fz = wz * (b - a);
+      p0[0] -= wx;
+      p0[1] -= (1.0 - x) * wy;
+      p0[2] -= x * wy;
+      p0[3] -= (1.0 - x) * wz;
+      p0[4] -= x * wz;
 
-    // Reactions in basic system
-    p0[0] -= P;
-    double V1, V2;
-    V1 = Fy * (1.0 - cOverL);
-    V2 = Fy * cOverL;
-    p0[1] -= V1;
-    p0[2] -= V2;
-    V1 = Fz * (1.0 - cOverL);
-    V2 = Fz * cOverL;
-    p0[3] -= V1;
-    p0[4] -= V2;
-
-    // Fixed end forces in basic system
-    q0[0] -= P * cOverL;
-    double M1, M2;
-    double beta2 = (1 - cOverL) * (1 - cOverL);
-    double alfa2 = (cOverL) * (cOverL);
-    double gamma2 = (b - a) / L;
-    gamma2 *= gamma2;
-
-    M1 = -wy * (b - a) * (c * beta2 + gamma2 / 12.0 * (L - 3 * (L - c)));
-    M2 = wy * (b - a) * ((L - c) * alfa2 + gamma2 / 12.0 * (L - 3 * c));
-    q0[1] += M1;
-    q0[2] += M2;
-    M1 = -wz * (b - a) * (c * beta2 + gamma2 / 12.0 * (L - 3 * (L - c)));
-    M2 = wz * (b - a) * ((L - c) * alfa2 + gamma2 / 12.0 * (L - 3 * c));
-    q0[3] -= M1;
-    q0[4] -= M2;
+      const double m1 = L * x * (1.0 - x) * (1.0 - x);
+      const double m2 = -L * x * x * (1.0 - x);
+      q0[0] -= x * wx;
+      q0[1] -= m1 * wy;
+      q0[2] -= m2 * wy;
+      q0[3] += m1 * wz;
+      q0[4] += m2 * wz;
+    }
   } else if (type == LOAD_TAG_Beam3dPointLoad) {
     double Py = data(0) * loadFactor;
     double Pz = data(1) * loadFactor;

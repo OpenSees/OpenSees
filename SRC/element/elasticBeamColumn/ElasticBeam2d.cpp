@@ -134,9 +134,13 @@ void *OPS_ElasticBeam2d(const ID &info) {
 	  numOptionalArgs++;	  	  
 	}
       }
-      else if (type == "-cMass") {
+      else if (type == "-cMass" || type == "cMass") {
 	numOptionalArgs++;	
 	cMass = 1;
+      }
+      else if (type == "-lMass" || type == "lMass") {
+	numOptionalArgs++;	
+	cMass = 0;
       }
       else if (type == "-damp") {
 	numOptionalArgs++;	

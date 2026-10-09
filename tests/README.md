@@ -18,9 +18,13 @@ For a source build, configure and run the CTest entry point:
 ```console
 python3 -m pip install pytest
 cmake -S . -B build/Release -DOPS_ENABLE_TESTS=ON
-cmake --build build/Release --target OpenSeesPy
+cmake --build build/Release --target OpenSeesPy matrix-vector-otherfact-test
 ctest --test-dir build/Release --output-on-failure
 ```
+
+CTest also runs the native Matrix/Vector regression when `BUILD_TESTING=ON`,
+independently of `OPS_ENABLE_TESTS`. Build both targets above before running
+the combined suite. Set `BUILD_TESTING=OFF` to disable all CTest registration.
 
 Sanitizer builds can be tested the same way by adding the compiler sanitizer
 flags to the CMake configure command. When a GNU AddressSanitizer-instrumented

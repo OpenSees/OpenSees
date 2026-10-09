@@ -32,6 +32,7 @@ OBJS       = NDMaterial.o \
 	Faria1998PlaneStress2d.o \
 	Faria1998ThreeDimensional.o \
 	FSAM.o \
+	FAM_CS.o \
 	AcousticMedium.o \
 	ElasticIsotropicAxiSymm.o\
 	ElasticIsotropicBeamFiber2d.o \
@@ -148,6 +149,5 @@ spotless: clean
 wipe: spotless
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
 
 

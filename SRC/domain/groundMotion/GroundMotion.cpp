@@ -97,11 +97,6 @@ GroundMotion::GroundMotion(TimeSeries *dispSeries,
   if (theVelSeries != 0 && theDispSeries == 0 ) 
     theDispSeries = this->integrate(theVelSeries, delta);
 
-  if (theDispSeries != 0 && theVelSeries == 0 ) 
-    theVelSeries = this->differentiate(theDispSeries, delta);
-
-  if (theVelSeries != 0 && theAccelSeries == 0 ) 
-    theAccelSeries = this->differentiate(theVelSeries, delta);
 }
 
 
@@ -194,6 +189,21 @@ GroundMotion::differentiate(TimeSeries *theSeries, double delta)
   return theNewSeries;
 }
 
+int
+GroundMotion::deriveAccelSeries()
+{
+  if (theAccelSeries != 0)
+    return 0;
+
+  if (theVelSeries == 0 && theDispSeries != 0)
+    theVelSeries = this->differentiate(theDispSeries, delta);
+
+  if (theVelSeries != 0)
+    theAccelSeries = this->differentiate(theVelSeries, delta);
+
+  return theAccelSeries == 0 ? -1 : 0;
+}
+
 double 
 GroundMotion::getDuration(void)
 {
@@ -208,30 +218,8 @@ GroundMotion::getPeakAccel(void)
 {
   if (theAccelSeries != 0)
     return fact*(theAccelSeries->getPeakFactor());
-
-  // if theVel is not 0, differentiate vel series to get accel series
-  else if (theVelSeries != 0) {
-    theAccelSeries = this->differentiate(theVelSeries, delta);
-    if (theAccelSeries != 0)
-      return fact*(theAccelSeries->getPeakFactor());
-    else
-      return 0.0;
-  }
-
-  // if theDisp is not 0, differentiate vel series to get accel series
-  else if (theDispSeries != 0) {
-    theVelSeries = this->differentiate(theDispSeries, delta);
-    if (theVelSeries != 0) {
-      theAccelSeries = this->differentiate(theVelSeries, delta);
-      if (theAccelSeries != 0)
-        return fact*(theAccelSeries->getPeakFactor());
-      else
-        return 0.0;
-    } else
-      return 0.0;
-  }
-
-  return 0.0;
+  else
+    return 0.0;
 }
 
 double 
@@ -249,14 +237,6 @@ GroundMotion::getPeakVel(void)
       return 0.0;
   }
 
-  // if theDisp is not 0, differentiate disp series to get vel series
-  else if (theDispSeries != 0) {
-    theVelSeries = this->differentiate(theDispSeries, delta);
-    if (theVelSeries != 0)
-      return fact*(theVelSeries->getPeakFactor());
-    else
-      return 0.0;
-  }
 
   return 0.0;
 }
@@ -300,30 +280,8 @@ GroundMotion::getAccel(double time)
   
   if (theAccelSeries != 0)
     return fact*(theAccelSeries->getFactor(time));
-
-  // if theVel is not 0, differentiate vel series to get accel series
-  else if (theVelSeries != 0) {
-    theAccelSeries = this->differentiate(theVelSeries, delta);
-    if (theAccelSeries != 0)
-      return fact*(theAccelSeries->getFactor(time));
-    else
-      return 0.0;
-  }
-
-  // if theDisp is not 0, differentiate vel series to get accel series
-  else if (theDispSeries != 0) {
-    theVelSeries = this->differentiate(theDispSeries, delta);
-    if (theVelSeries != 0) {
-      theAccelSeries = this->differentiate(theVelSeries, delta);
-      if (theAccelSeries != 0)
-        return fact*(theAccelSeries->getFactor(time));
-      else
-        return 0.0;
-    } else
-      return 0.0;
-  }
-
-  return 0.0;
+  else
+    return 0.0;
 }     
 
 double 
@@ -334,30 +292,8 @@ GroundMotion::getAccelSensitivity(double time)
   
   if (theAccelSeries != 0)
     return fact*(theAccelSeries->getFactorSensitivity(time));
-
-  // if theVel is not 0, differentiate vel series to get accel series
-  else if (theVelSeries != 0) {
-    theAccelSeries = this->differentiate(theVelSeries, delta);
-    if (theAccelSeries != 0)
-      return fact*(theAccelSeries->getFactorSensitivity(time));
-    else
-      return 0.0;
-  }
-
-  // if theDisp is not 0, differentiate vel series to get accel series
-  else if (theDispSeries != 0) {
-    theVelSeries = this->differentiate(theDispSeries, delta);
-    if (theVelSeries != 0) {
-      theAccelSeries = this->differentiate(theVelSeries, delta);
-      if (theAccelSeries != 0)
-        return fact*(theAccelSeries->getFactorSensitivity(time));
-      else
-        return 0.0;
-    } else
-      return 0.0;
-  }
-
-  return 0.0;
+  else
+    return 0.0;
 }     
 
 double 
@@ -378,14 +314,6 @@ GroundMotion::getVel(double time)
       return 0.0;
   }
 
-  // if theDisp is not 0, differentiate disp series to get vel series
-  else if (theDispSeries != 0) {
-    theVelSeries = this->differentiate(theDispSeries, delta);
-    if (theVelSeries != 0)
-      return fact*(theVelSeries->getFactor(time));
-    else
-      return 0.0;
-  }
 
   return 0.0;
 }

@@ -37,7 +37,7 @@
 
 #include <BandGenLinLapackSolver.h>
 #include <BandGenLinSOE.h>
-#include <math.h>
+#include <cmath>
 
 void* OPS_BandGenLinLapack()
 {
@@ -103,7 +103,23 @@ BandGenLinLapackSolver::solve(void)
 
     int kl = theSOE->numSubD;
     int ku = theSOE->numSuperD;
-    int ldA = 2*kl + ku +1;
+
+    // LAPACK requires non-negative bandwidths no larger than n - 1 and
+    // enough leading storage for the band matrix. Reject malformed state
+    // before it reaches the Fortran routine, which otherwise may crash the
+    // host process on some platforms.
+    if (kl < 0 || ku < 0 || kl >= n || ku >= n) {
+	opserr << "WARNING BandGenLinLapackSolver::solve() - invalid band dimensions" << endln;
+	return -1;
+    }
+
+    const long long ldAValue = 2LL * kl + ku + 1;
+    if (ldAValue <= 0 || ldAValue * n > theSOE->Asize) {
+	opserr << "WARNING BandGenLinLapackSolver::solve() - invalid leading dimension" << endln;
+	return -1;
+    }
+
+    int ldA = static_cast<int>(ldAValue);
     int nrhs = 1;
     int ldB = n;
     int info;
@@ -111,10 +127,26 @@ BandGenLinLapackSolver::solve(void)
     double *Xptr = theSOE->X;
     double *Bptr = theSOE->B;
     int    *iPIV = iPiv;
+
+    if (Aptr == 0 || Xptr == 0 || Bptr == 0 || iPIV == 0) {
+	opserr << "WARNING BandGenLinLapackSolver::solve() - incomplete solver storage" << endln;
+	return -1;
+    }
+
+    for (long long i = 0; i < static_cast<long long>(ldA) * n; ++i) {
+	if (!std::isfinite(Aptr[i])) {
+	    opserr << "WARNING BandGenLinLapackSolver::solve() - non-finite value in matrix A" << endln;
+	    return -1;
+	}
+    }
     
     // first copy B into X
     for (int i=0; i<n; i++) {
 	*(Xptr++) = *(Bptr++);
+	if (!std::isfinite(*(Xptr - 1))) {
+	    opserr << "WARNING BandGenLinLapackSolver::solve() - non-finite value in right-hand side" << endln;
+	    return -1;
+	}
     }
     Xptr = theSOE->X;
 

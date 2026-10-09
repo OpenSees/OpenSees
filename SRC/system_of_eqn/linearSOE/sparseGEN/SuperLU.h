@@ -67,6 +67,8 @@ class SuperLU : public SparseGenColLinSolver
   protected:
 
   private:
+    void freeFactorsAndMatrices(void);
+
     SuperMatrix A,L,U,B,AC;
     int *perm_r;
     int *perm_c;
@@ -77,6 +79,8 @@ class SuperLU : public SparseGenColLinSolver
     char symmetric;
     superlu_options_t options;
     SuperLUStat_t stat;
+    bool statInitialized;
+    GlobalLU_t Glu;
 };
 
 #endif

@@ -901,11 +901,12 @@ set_target_properties(${OPS_FINAL_TARGET} PROPERTIES EXCLUDE_FROM_ALL OFF)
 # Add sources to targets
 add_subdirectory(${OPS_SRC_DIR})
 
-if(OPS_ENABLE_TESTS)
-  include(CTest)
-  find_package(Python COMPONENTS Interpreter REQUIRED)
+include(CTest)
+if(BUILD_TESTING)
+  add_subdirectory(${PROJECT_SOURCE_DIR}/tests)
 
-  if(BUILD_TESTING)
+  if(OPS_ENABLE_TESTS)
+    find_package(Python COMPONENTS Interpreter REQUIRED)
     add_test(
       NAME OpenSeesPyRegression
       COMMAND ${Python_EXECUTABLE}

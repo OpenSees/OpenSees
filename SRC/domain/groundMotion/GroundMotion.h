@@ -70,6 +70,8 @@ class GroundMotion : public MovableObject
     void setIntegrator(TimeSeriesIntegrator *integrator);
     TimeSeries *integrate(TimeSeries *theSeries, double delta = 0.01); 
     TimeSeries *differentiate(TimeSeries *theSeries, double delta = 0.01); 
+    // Explicit opt-in for consumers that form loads from acceleration.
+    virtual int deriveAccelSeries();
 
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, 

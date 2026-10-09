@@ -1030,6 +1030,10 @@ HystereticSMMaterial::setTrialStrain(double strain, double strainRate)
     TenergyD = CenergyD;
     TrotPu = CrotPu;
     TrotNu = CrotNu;
+    TanchorRotP = CanchorRotP;
+    TanchorStressP = CanchorStressP;
+    TanchorRotN = CanchorRotN;
+    TanchorStressN = CanchorStressN;
 
     TrotMaxDuctUsed = CrotMaxDuctUsed;
     TrotMinDuctUsed = CrotMinDuctUsed;
@@ -1038,7 +1042,7 @@ HystereticSMMaterial::setTrialStrain(double strain, double strainRate)
     double dStrain = Tstrain - Cstrain;
 
     if (fabs(dStrain) < DBL_EPSILON)
-        return 0;
+        return this->revertToLastCommit();
 
     TloadIndicator = CloadIndicator;
 
@@ -1254,6 +1258,18 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
             TdamfcPeak = damfc;
 
             //TrotMax = CrotMax * (1.0 + damfc);
+
+            // A full reversal establishes the positive reload segment at the
+            // zero-force point on the unloading line.
+            TanchorRotP = TrotNu;
+            TanchorStressP = 0.0;
+        }
+        else {
+            // A partial unload has not reached zero force. Its next positive
+            // reload begins at the actual reversal state, not at a stale
+            // zero-force point from an earlier excursion.
+            TanchorRotP = Cstrain;
+            TanchorStressP = Cstress;
         }
     }
 
@@ -1267,6 +1283,17 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
 
     double rotlim = negEnvlpRotlim(CrotMin);
     double rotrel = (rotlim > TrotNu) ? rotlim : TrotNu;
+
+    // Define the reload line from the reversal anchor. The secant floor makes
+    // it reach the retained positive envelope point; the pinching branch also
+    // reaches maxmom there, so their minimum reconnects continuously.
+    double Ereload = Eup * kp;
+    double reloadSpan = TrotMax - TanchorRotP;
+    if (reloadSpan > tiny && maxmom > TanchorStressP) {
+        double connectingSlope = (maxmom - TanchorStressP) / reloadSpan;
+        if (connectingSlope > Ereload)
+            Ereload = connectingSlope;
+    }
 
 
     double rotmp2 = TrotMax - (1.0 - pinchY) * maxmom / (Eup * kp);
@@ -1295,11 +1322,11 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
         }
         else {
             Ttangent = maxmom * pinchY / (rotch - rotrel);
-            tmpmo1 = Cstress + Eup * kp * dStrain;
+            tmpmo1 = TanchorStressP + Ereload * (Tstrain - TanchorRotP);
             tmpmo2 = (Tstrain - rotrel) * Ttangent;
             if (tmpmo1 < tmpmo2) {
                 Tstress = tmpmo1;
-                Ttangent = Eup * kp;
+                Ttangent = Ereload;
             }
             else
                 Tstress = tmpmo2;
@@ -1308,11 +1335,11 @@ HystereticSMMaterial::positiveIncrement(double dStrain)
 
     else {
         Ttangent = (1.0 - pinchY) * maxmom / (TrotMax - rotch);
-        tmpmo1 = Cstress + Eup * kp * dStrain;
+        tmpmo1 = TanchorStressP + Ereload * (Tstrain - TanchorRotP);
         tmpmo2 = pinchY * maxmom + (Tstrain - rotch) * Ttangent;
         if (tmpmo1 < tmpmo2) {
             Tstress = tmpmo1;
-            Ttangent = Eup * kp;
+            Ttangent = Ereload;
         }
         else
             Tstress = tmpmo2;
@@ -1432,6 +1459,16 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
             TdamfcPeak = damfc;
 
             //TrotMin = CrotMin * (1.0 + damfc);
+
+            // A full reversal establishes the negative reload segment at the
+            // zero-force point on the unloading line.
+            TanchorRotN = TrotPu;
+            TanchorStressN = 0.0;
+        }
+        else {
+            // Symmetric partial-reversal rule for a negative reload.
+            TanchorRotN = Cstrain;
+            TanchorStressN = Cstress;
         }
     }
 
@@ -1446,6 +1483,17 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
     double minmom = negEnvlpStress(TrotMin);
     double rotlim = posEnvlpRotlim(CrotMax);
     double rotrel = (rotlim < TrotPu) ? rotlim : TrotPu;
+
+    // Symmetric fixed negative reload line. Its secant floor reaches the
+    // retained negative envelope point without redefining the line at later
+    // commits on the same segment.
+    double Ereload = Eun * kn;
+    double reloadSpan = TanchorRotN - TrotMin;
+    if (reloadSpan > tiny && TanchorStressN > minmom) {
+        double connectingSlope = (TanchorStressN - minmom) / reloadSpan;
+        if (connectingSlope > Ereload)
+            Ereload = connectingSlope;
+    }
 
     //rotrel = TrotPu;
     //if (posEnvlpStress(CrotMax) <= 0.0)
@@ -1476,11 +1524,11 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
         }
         else {
             Ttangent = minmom * pinchY / (rotch - rotrel);
-            tmpmo1 = Cstress + Eun * kn * dStrain;
+            tmpmo1 = TanchorStressN + Ereload * (Tstrain - TanchorRotN);
             tmpmo2 = (Tstrain - rotrel) * Ttangent;
             if (tmpmo1 > tmpmo2) {
                 Tstress = tmpmo1;
-                Ttangent = Eun * kn;
+                Ttangent = Ereload;
             }
             else
                 Tstress = tmpmo2;
@@ -1489,11 +1537,11 @@ HystereticSMMaterial::negativeIncrement(double dStrain)
 
     else {
         Ttangent = (1.0 - pinchY) * minmom / (TrotMin - rotch);
-        tmpmo1 = Cstress + Eun * kn * dStrain;
+        tmpmo1 = TanchorStressN + Ereload * (Tstrain - TanchorRotN);
         tmpmo2 = pinchY * minmom + (Tstrain - rotch) * Ttangent;
         if (tmpmo1 > tmpmo2) {
             Tstress = tmpmo1;
-            Ttangent = Eun * kn;
+            Ttangent = Ereload;
         }
         else
             Tstress = tmpmo2;
@@ -1544,11 +1592,16 @@ HystereticSMMaterial::commitState(void)
     CrotMin = TrotMin;
     CrotPu = TrotPu;
     CrotNu = TrotNu;
+    CanchorRotP = TanchorRotP;
+    CanchorStressP = TanchorStressP;
+    CanchorRotN = TanchorRotN;
+    CanchorStressN = TanchorStressN;
     CenergyD = TenergyD;
     CloadIndicator = TloadIndicator;
 
     Cstress = Tstress;
     Cstrain = Tstrain;
+    Ctangent = Ttangent;
 
 
     CrotMinDuctUsed = TrotMinDuctUsed;
@@ -1568,11 +1621,16 @@ HystereticSMMaterial::revertToLastCommit(void)
     TrotMin = CrotMin;
     TrotPu = CrotPu;
     TrotNu = CrotNu;
+    TanchorRotP = CanchorRotP;
+    TanchorStressP = CanchorStressP;
+    TanchorRotN = CanchorRotN;
+    TanchorStressN = CanchorStressN;
     TenergyD = CenergyD;
     TloadIndicator = CloadIndicator;
 
     Tstress = Cstress;
     Tstrain = Cstrain;
+    Ttangent = Ctangent;
 
 
     TrotMinDuctUsed = CrotMinDuctUsed;
@@ -1592,6 +1650,14 @@ HystereticSMMaterial::revertToStart(void)
     CrotMin = 0.0;
     CrotPu = 0.0;
     CrotNu = 0.0;
+    CanchorRotP = 0.0;
+    CanchorStressP = 0.0;
+    CanchorRotN = 0.0;
+    CanchorStressN = 0.0;
+    TanchorRotP = 0.0;
+    TanchorStressP = 0.0;
+    TanchorRotN = 0.0;
+    TanchorStressN = 0.0;
     CenergyD = 0.0;
     CloadIndicator = 0;
 
@@ -1601,6 +1667,7 @@ HystereticSMMaterial::revertToStart(void)
     Tstrain = 0;
     Tstress = 0;
     Ttangent = E1p;
+    Ctangent = E1p;
 
     // two committed state variables for ductility gating (plastic peaks)
     CrotMaxDuctUsed = rot1p;   // or 0.0; but rot1p is a cleaner “yield baseline”
@@ -1642,11 +1709,20 @@ HystereticSMMaterial::getCopy(void)
     theCopy->CrotMin = CrotMin;
     theCopy->CrotPu = CrotPu;
     theCopy->CrotNu = CrotNu;
+    theCopy->CanchorRotP = CanchorRotP;
+    theCopy->CanchorStressP = CanchorStressP;
+    theCopy->CanchorRotN = CanchorRotN;
+    theCopy->CanchorStressN = CanchorStressN;
+    theCopy->TanchorRotP = TanchorRotP;
+    theCopy->TanchorStressP = TanchorStressP;
+    theCopy->TanchorRotN = TanchorRotN;
+    theCopy->TanchorStressN = TanchorStressN;
     theCopy->CenergyD = CenergyD;
     theCopy->CloadIndicator = CloadIndicator;
     theCopy->Cstress = Cstress;
     theCopy->Cstrain = Cstrain;
     theCopy->Ttangent = Ttangent;
+    theCopy->Ctangent = Ctangent;
 
     theCopy->CrotMaxDuctUsed = CrotMaxDuctUsed;
     theCopy->CrotMinDuctUsed = CrotMinDuctUsed;
@@ -1697,7 +1773,7 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
 {
     int res = 0;
 
-    static Vector data(106);
+    static Vector data(110);
 
     data(0) = this->getTag();
     data(1) = mom1p;
@@ -1746,7 +1822,7 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
     data(44) = CloadIndicator;
     data(45) = Cstress;
     data(46) = Cstrain;
-    data(47) = Ttangent;
+    data(47) = Ctangent;
 
     data(48) = CrotMaxDuctUsed;
     data(49) = CrotMinDuctUsed;
@@ -1784,6 +1860,11 @@ HystereticSMMaterial::sendSelf(int commitTag, Channel& theChannel)
     data(100) = Crot2n; data(101) = Crot3n; data(102) = Crot4n;
     data(103) = Crot5n; data(104) = Crot6n; data(105) = Crot7n;
 
+    data(106) = CanchorRotP;
+    data(107) = CanchorStressP;
+    data(108) = CanchorRotN;
+    data(109) = CanchorStressN;
+
 
     res = theChannel.sendVector(this->getDbTag(), commitTag, data);
     if (res < 0)
@@ -1799,7 +1880,7 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
 {
     int res = 0;
 
-    static Vector data(106);
+    static Vector data(110);
     res = theChannel.recvVector(this->getDbTag(), commitTag, data);
 
     if (res < 0) {
@@ -1854,7 +1935,8 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
         CloadIndicator = (int)data(44);
         Cstress = data(45);
         Cstrain = data(46);
-        Ttangent = data(47);
+        Ctangent = data(47);
+        Ttangent = Ctangent;
 
         CrotMaxDuctUsed = data(48);
         CrotMinDuctUsed = data(49);
@@ -1892,11 +1974,20 @@ HystereticSMMaterial::recvSelf(int commitTag, Channel& theChannel,
         Crot2n = data(100); Crot3n = data(101); Crot4n = data(102);
         Crot5n = data(103); Crot6n = data(104); Crot7n = data(105);
 
+        CanchorRotP = data(106);
+        CanchorStressP = data(107);
+        CanchorRotN = data(108);
+        CanchorStressN = data(109);
+
         // set the trial values
         TrotMax = CrotMax;
         TrotMin = CrotMin;
         TrotPu = CrotPu;
         TrotNu = CrotNu;
+        TanchorRotP = CanchorRotP;
+        TanchorStressP = CanchorStressP;
+        TanchorRotN = CanchorRotN;
+        TanchorStressN = CanchorStressN;
         TenergyD = CenergyD;
         TloadIndicator = CloadIndicator;
         Tstress = Cstress;

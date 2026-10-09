@@ -92,9 +92,12 @@ void *OPS_ElasticBeam3d(const ID &info) {
 	  }
 	  numOptionalArgs++;	  
 	}
-      } else if (theType == "-cMass") {
+      } else if (theType == "-cMass" || theType == "cMass") {
 	numOptionalArgs++;	
 	cMass = 1;
+      } else if (theType == "-lMass" || theType == "lMass") {
+	numOptionalArgs++;	
+	cMass = 0;
       } else if (theType == "-releasez") {
 	numOptionalArgs++;
 	if (OPS_GetNumRemainingInputArgs() > 0) {

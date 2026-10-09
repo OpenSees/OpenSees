@@ -150,6 +150,7 @@
 #include "FRPConfinedConcrete.h"
 #include "ConcreteCM.h"
 #include "BarSlipMaterial.h"
+#include "FrictionSpringDamper.h"
 
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 #include <HystereticSmooth.h>					// Salvatore Sessa Apr-19-2022
@@ -1879,6 +1880,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
+
+	case MAT_TAG_FrictionSpringDamper:
+		return new FrictionSpringDamper();		
 
 	case MAT_TAG_AxialSp:
 	    return new AxialSp();

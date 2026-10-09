@@ -170,6 +170,10 @@ private:
 	double TrotMin;
 	double TrotPu;
 	double TrotNu;
+	double TanchorRotP;
+	double TanchorStressP;
+	double TanchorRotN;
+	double TanchorStressN;
 	double TenergyD;
 	int TloadIndicator;
 
@@ -183,12 +187,17 @@ private:
 	double CrotMin;
 	double CrotPu;
 	double CrotNu;
+	double CanchorRotP;
+	double CanchorStressP;
+	double CanchorRotN;
+	double CanchorStressN;
 	double CenergyD;
 	int CloadIndicator;
 
 	// Converged state variables
 	double Cstress;
 	double Cstrain;
+	double Ctangent;
 
 	// Backbone parameters
 	double mom1p, rot1p;

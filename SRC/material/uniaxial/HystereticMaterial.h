@@ -121,6 +121,7 @@ class HystereticMaterial : public UniaxialMaterial
   // Converged state variables
   double Cstress;
   double Cstrain;
+  double Ctangent;
   
   // Backbone parameters
   double mom1p, rot1p;
