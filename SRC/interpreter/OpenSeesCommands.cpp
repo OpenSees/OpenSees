@@ -1868,6 +1868,9 @@ int OPS_Integrator()
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
     ti = (TransientIntegrator*)OPS_ExplicitDifference();
 
+	} else if (strcmp(type, "ExplicitDifferenceStatic") == 0) {
+    ti = (TransientIntegrator*)OPS_ExplicitDifferenceStatic();
+
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";
     }
