@@ -66,7 +66,7 @@
 
 #endif
 
-SuperLUStat_t superlu_stat;
+static SuperLUStat_t superlu_stat;
 SuperMatrix A;
 gridinfo_t grid;
 MPI_Comm comm_SuperLU;
@@ -413,7 +413,6 @@ DistributedSuperLU::recvSelf(int cTag,
   opserr << "DistributedSuperLU::recvSelf(int cTag, Channel &theChannel) - END\n";
   return 0;
 }
-
 
 
 
