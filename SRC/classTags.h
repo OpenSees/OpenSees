@@ -302,6 +302,9 @@
 #define MAT_TAG_ECC01 3010
 #define MAT_TAG_Concrete01WithSITC 3011
 
+#define MAT_TAG_GPCConcreteUnconfined01   9001
+#define MAT_TAG_GPCConcreteConfined01     9002
+
 #define MAT_TAG_KikuchiAikenHDR 6102
 #define MAT_TAG_KikuchiAikenLRB 6105
 #define MAT_TAG_AxialSp   6111
