@@ -418,7 +418,13 @@ endif()
 if(MPI_FOUND)
   message(STATUS "MPI was found.")
   message(STATUS "MPI was found .. path added ${MPI_C_INCLUDE_DIRS} ${MPI_FOUND}")
-  find_package(METIS 5 REQUIRED)
+  find_package(METIS 5 QUIET)
+  if(METIS_FOUND)
+    set(OPENSEES_METIS_LIBRARIES ${METIS_LIBRARIES})
+  else()
+    message(STATUS "METIS 5 was not found; MPI mesh partition controls are disabled.")
+    set(OPENSEES_METIS_LIBRARIES METIS)
+  endif()
   include_directories(SYSTEM ${MPI_C_INCLUDE_DIRS})
   #add_subdirectory("${PROJECT_SOURCE_DIR}/OTHER/MUMPS_5.4.1")
   #if(NOT CMAKE_SYSTEM_NAME STREQUAL "Windows")
@@ -531,10 +537,10 @@ add_library(OPS_Damage             OBJECT)
 add_library(OPS_Database           OBJECT)
 add_library(OPS_INTERPRETER        OBJECT)
 
-# Build the METIS mesh-partitioning command whenever MPI is available.  The
-# interpreter object library is shared by the serial and MPI executables, so
-# this feature cannot depend on a compile definition set only on OpenSeesMP.
-if(MPI_FOUND)
+# Build the mesh-partitioning command only when MPI and METIS 5 are available.
+# The interpreter object library is shared by the serial and MPI executables,
+# so this feature cannot depend on a definition set only on OpenSeesMP.
+if(MPI_FOUND AND METIS_FOUND)
     target_compile_definitions(OPS_INTERPRETER PRIVATE
         OPS_PARTITION_WITH_METIS
         OPS_METIS_HEADER="${METIS_INCLUDES}/metis.h"
@@ -831,7 +837,7 @@ if(MPI_FOUND)
        OPS_Reliability
        OPS_ReliabilityTcl
        OPS_Recorder
-       ${METIS_LIBRARIES}
+       ${OPENSEES_METIS_LIBRARIES}
        SUPERLU_DIST
        OPS_Numerics
        ${MUMPS_LIBRARIES}
