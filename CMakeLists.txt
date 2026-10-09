@@ -266,6 +266,33 @@ set(CMAKE_FORTRAN_STANDARD 08)
 set(CMAKE_CXX_ARCHIVE_CREATE "<CMAKE_AR> cqls <TARGET> <LINK_FLAGS> <OBJECTS>")
 #add_compile_options(-g)
 
+option(OPS_ENABLE_ASAN "Build C/C++ targets with AddressSanitizer instrumentation" OFF)
+option(OPS_ENABLE_UBSAN "Build C/C++ targets with UndefinedBehaviorSanitizer instrumentation" OFF)
+
+if(OPS_ENABLE_ASAN OR OPS_ENABLE_UBSAN)
+  if(NOT CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
+    message(FATAL_ERROR "OPS_ENABLE_ASAN and OPS_ENABLE_UBSAN are supported only with GNU or Clang compilers.")
+  endif()
+endif()
+
+if(OPS_ENABLE_ASAN)
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:-fsanitize=address>
+    $<$<COMPILE_LANGUAGE:CXX>:-fsanitize=address>
+    $<$<COMPILE_LANGUAGE:C>:-fno-omit-frame-pointer>
+    $<$<COMPILE_LANGUAGE:CXX>:-fno-omit-frame-pointer>
+  )
+  add_link_options(-fsanitize=address)
+endif()
+
+if(OPS_ENABLE_UBSAN)
+  add_compile_options(
+    $<$<COMPILE_LANGUAGE:C>:-fsanitize=undefined>
+    $<$<COMPILE_LANGUAGE:CXX>:-fsanitize=undefined>
+  )
+  add_link_options(-fsanitize=undefined)
+endif()
+
 # Warnings
 #opensees_add_cxx_flag(
 #    GNU  -Wall
