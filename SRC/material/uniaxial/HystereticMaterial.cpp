@@ -218,7 +218,7 @@ HystereticMaterial::setTrialStrain(double strain, double strainRate)
   double dStrain = Tstrain - Cstrain;
 
   if (fabs(dStrain) < DBL_EPSILON)
-    return 0;
+    return this->revertToLastCommit();
   
   TloadIndicator = CloadIndicator;
   
