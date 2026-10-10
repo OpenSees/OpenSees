@@ -48,6 +48,8 @@
 #include <elementAPI.h>
 #include <map>
 
+
+
 void* OPS_TenNodeTetrahedron()
 {
     if (OPS_GetNumRemainingInputArgs() < 12)
@@ -73,39 +75,39 @@ void* OPS_TenNodeTetrahedron()
         opserr << "\nTenNodeTetrahedron element: " << idata[0] << endln;
     }
 
+    // optional body forces b1 b2 b3 (any leading subset), then <-doInitDisp $flag>
     double data[3] = {0, 0, 0};
-    num = OPS_GetNumRemainingInputArgs();
-
-    if (num > 3)
+    int numOpt = 0;
+    while (numOpt < 3 && OPS_GetNumRemainingInputArgs() > 0)
     {
-        num = 3;
-    }
-    if (num > 0)
-    {
-        if (OPS_GetDoubleInput(&num, data) < 0)
+        const char* tok = OPS_GetString();
+        OPS_ResetCurrentInputArg(-1);
+        if (strcmp(tok, "-doInitDisp") == 0)
+            break;
+        num = 1;
+        if (OPS_GetDoubleInput(&num, &data[numOpt]) < 0)
         {
             opserr << "WARNING: invalid double data\n";
             return 0;
         }
+        numOpt++;
     }
 
-    num = OPS_GetNumRemainingInputArgs();
-    
     int do_init_disp_int = 0;
-    bool do_init_disp = false;
-
-
-    while (OPS_GetNumRemainingInputArgs() > 0) 
+    while (OPS_GetNumRemainingInputArgs() > 0)
     {
-        const char* type = OPS_GetString(); // Fetch the next string from input
-        if (strcmp(type, "-doInitDisp") == 0) 
+        const char* type = OPS_GetString();
+        if (strcmp(type, "-doInitDisp") == 0)
         {
             num = 1;
-            OPS_GetIntInput(&num, &do_init_disp_int); 
+            if (OPS_GetNumRemainingInputArgs() < 1 || OPS_GetIntInput(&num, &do_init_disp_int) < 0)
+            {
+                opserr << "WARNING: invalid -doInitDisp value\n";
+                return 0;
+            }
         }
     }
-
-    do_init_disp = (bool) do_init_disp_int; 
+    bool do_init_disp = (do_init_disp_int != 0);
 
     Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp);
 
@@ -223,9 +225,17 @@ const double  TenNodeTetrahedron::one_over_root3 = 1.0 / root3 ;
 const double  TenNodeTetrahedron::alpha = (5.0 + 3.0*sqrt(5.0))/20. ;
 const double  TenNodeTetrahedron::beta = (5.0 - sqrt(5.0))/20. ;
 
-const double  TenNodeTetrahedron::sg[] = { alpha, beta, beta, beta} ;
+// const double  TenNodeTetrahedron::sg[] = { alpha, beta, beta, beta} ;
 
 const double  TenNodeTetrahedron::wg[] = { 1.0 / 24.0 } ;
+
+
+const double TenNodeTetrahedron::tet_coords[4][3] = {
+    {TenNodeTetrahedron::alpha, TenNodeTetrahedron::beta,  TenNodeTetrahedron::beta },  // Point 1
+    {TenNodeTetrahedron::beta,  TenNodeTetrahedron::alpha, TenNodeTetrahedron::beta },  // Point 2  
+    {TenNodeTetrahedron::beta,  TenNodeTetrahedron::beta,  TenNodeTetrahedron::alpha},  // Point 3
+    {TenNodeTetrahedron::beta,  TenNodeTetrahedron::beta,  TenNodeTetrahedron::beta }   // Point 4 (fourth coord = 1-sum)
+};
 
 
 Matrix TenNodeTetrahedron::B(NumStressComponents, NumDOFsPerNode) ;
@@ -590,9 +600,13 @@ const Matrix&  TenNodeTetrahedron::getInitialStiff( )
 
                 // i = j = k = 0; // Just one Gauss point in a tet
 
-                gaussPoint[0] = sg[k] ;
-                gaussPoint[1] = sg[abs(1-k)] ;
-                gaussPoint[2] = sg[abs(2-k)] ;
+                // gaussPoint[0] = sg[k] ;
+                // gaussPoint[1] = sg[abs(1-k)] ;
+                // gaussPoint[2] = sg[abs(2-k)] ;
+
+                gaussPoint[0] = tet_coords[k][0];
+                gaussPoint[1] = tet_coords[k][1]; 
+                gaussPoint[2] = tet_coords[k][2];
 
                 // sg = [alpha, beta, beta, beta]
                 // k = 0: alpha beta beta
@@ -896,9 +910,13 @@ void   TenNodeTetrahedron::formInertiaTerms( int tangFlag )
             for ( k = 0; k < numberGauss; k++ )
             {
                 
-                gaussPoint[0] = sg[k] ;
-                gaussPoint[1] = sg[abs(1-k)] ;
-                gaussPoint[2] = sg[abs(2-k)] ;
+                // gaussPoint[0] = sg[k] ;
+                // gaussPoint[1] = sg[abs(1-k)] ;
+                // gaussPoint[2] = sg[abs(2-k)] ;
+
+                gaussPoint[0] = tet_coords[k][0];
+                gaussPoint[1] = tet_coords[k][1]; 
+                gaussPoint[2] = tet_coords[k][2];
 
                 //get shape functions
                 shp3d( gaussPoint, xsj, shp, xl ) ;
@@ -1068,9 +1086,13 @@ TenNodeTetrahedron::update(void)
             for ( k = 0; k < numberGauss; k++ )
             {
                 
-                gaussPoint[0] = sg[k] ;
-                gaussPoint[1] = sg[abs(1-k)] ;
-                gaussPoint[2] = sg[abs(2-k)] ;
+                // gaussPoint[0] = sg[k] ;
+                // gaussPoint[1] = sg[abs(1-k)] ;
+                // gaussPoint[2] = sg[abs(2-k)] ;
+
+                gaussPoint[0] = tet_coords[k][0];
+                gaussPoint[1] = tet_coords[k][1]; 
+                gaussPoint[2] = tet_coords[k][2];
 
                 //get shape functions
                 shp3d( gaussPoint, xsj, shp, xl ) ;
@@ -1265,9 +1287,12 @@ void  TenNodeTetrahedron::formResidAndTangent( int tang_flag )
             for ( k = 0; k < numberGauss; k++ )
             {
                 
-                gaussPoint[0] = sg[k] ;
-                gaussPoint[1] = sg[abs(1-k)] ;
-                gaussPoint[2] = sg[abs(2-k)] ;
+                // gaussPoint[0] = sg[k] ;
+                // gaussPoint[1] = sg[abs(1-k)] ;
+                // gaussPoint[2] = sg[abs(2-k)] ;
+                gaussPoint[0] = tet_coords[k][0];
+                gaussPoint[1] = tet_coords[k][1]; 
+                gaussPoint[2] = tet_coords[k][2];
 
                 //get shape functions
                 shp3d( gaussPoint, xsj, shp, xl ) ;
@@ -1842,7 +1867,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 int
 TenNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 {
-    static Vector stresses(6);
+    static Vector stresses(6*NumGaussPoints);
 
     if (responseID == 1)
         return eleInfo.setVector(this->getResistingForce());
@@ -1905,7 +1930,7 @@ TenNodeTetrahedron::setParameter(const char **argv, int argc, Parameter &param)
         }
 
         int pointNum = atoi(argv[1]);
-        if (pointNum > 0 && pointNum <= 1)
+        if (pointNum > 0 && pointNum <= NumGaussPoints)
         {
             return materialPointers[pointNum - 1]->setParameter(&argv[2], argc - 2, param);
         }
@@ -1925,7 +1950,7 @@ TenNodeTetrahedron::setParameter(const char **argv, int argc, Parameter &param)
     else // otherwise it could be just a forall material parameter
     {
         int matRes = res;
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < NumGaussPoints; i++)
         {
             matRes =  materialPointers[i]->setParameter(argv, argc, param);
             if (matRes != -1)
@@ -2143,46 +2168,46 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     double t7 = Jz2-Jz1; double t8 = Jz3-Jz1; double t9 = Jz4-Jz1;
 
     // Assembling the Jacobians Determinant
-    double Jdet = (t1*(t5*t9-t6*t8) - t2*(t4*t9-t6*t7) + t3*(t4*t8-t5*t7))/6.0;
+    double Jdet = (t1*(t5*t9-t6*t8) - t2*(t4*t9-t6*t7) + t3*(t4*t8-t5*t7));//6.0;
 
     // Saving the Jacobians Determinant
     xsj = Jdet;
 
     // qx1 - qx10 (17.24)
-    shp[0][0] = 1/(6.0*Jdet)*(dN1_dzeta1*a1  + dN1_dzeta2*a2  + dN1_dzeta3*a3  + dN1_dzeta4*a4);
-    shp[0][1] = 1/(6.0*Jdet)*(dN2_dzeta1*a1  + dN2_dzeta2*a2  + dN2_dzeta3*a3  + dN2_dzeta4*a4);
-    shp[0][2] = 1/(6.0*Jdet)*(dN3_dzeta1*a1  + dN3_dzeta2*a2  + dN3_dzeta3*a3  + dN3_dzeta4*a4);
-    shp[0][3] = 1/(6.0*Jdet)*(dN4_dzeta1*a1  + dN4_dzeta2*a2  + dN4_dzeta3*a3  + dN4_dzeta4*a4);
-    shp[0][4] = 1/(6.0*Jdet)*(dN5_dzeta1*a1  + dN5_dzeta2*a2  + dN5_dzeta3*a3  + dN5_dzeta4*a4);
-    shp[0][5] = 1/(6.0*Jdet)*(dN6_dzeta1*a1  + dN6_dzeta2*a2  + dN6_dzeta3*a3  + dN6_dzeta4*a4);
-    shp[0][6] = 1/(6.0*Jdet)*(dN7_dzeta1*a1  + dN7_dzeta2*a2  + dN7_dzeta3*a3  + dN7_dzeta4*a4);
-    shp[0][7] = 1/(6.0*Jdet)*(dN8_dzeta1*a1  + dN8_dzeta2*a2  + dN8_dzeta3*a3  + dN8_dzeta4*a4);
-    shp[0][8] = 1/(6.0*Jdet)*(dN9_dzeta1*a1  + dN9_dzeta2*a2  + dN9_dzeta3*a3  + dN9_dzeta4*a4);
-    shp[0][9] = 1/(6.0*Jdet)*(dN10_dzeta1*a1 + dN10_dzeta2*a2 + dN10_dzeta3*a3 + dN10_dzeta4*a4);
+    shp[0][0] = 1/(Jdet)*(dN1_dzeta1*a1  + dN1_dzeta2*a2  + dN1_dzeta3*a3  + dN1_dzeta4*a4);
+    shp[0][1] = 1/(Jdet)*(dN2_dzeta1*a1  + dN2_dzeta2*a2  + dN2_dzeta3*a3  + dN2_dzeta4*a4);
+    shp[0][2] = 1/(Jdet)*(dN3_dzeta1*a1  + dN3_dzeta2*a2  + dN3_dzeta3*a3  + dN3_dzeta4*a4);
+    shp[0][3] = 1/(Jdet)*(dN4_dzeta1*a1  + dN4_dzeta2*a2  + dN4_dzeta3*a3  + dN4_dzeta4*a4);
+    shp[0][4] = 1/(Jdet)*(dN5_dzeta1*a1  + dN5_dzeta2*a2  + dN5_dzeta3*a3  + dN5_dzeta4*a4);
+    shp[0][5] = 1/(Jdet)*(dN6_dzeta1*a1  + dN6_dzeta2*a2  + dN6_dzeta3*a3  + dN6_dzeta4*a4);
+    shp[0][6] = 1/(Jdet)*(dN7_dzeta1*a1  + dN7_dzeta2*a2  + dN7_dzeta3*a3  + dN7_dzeta4*a4);
+    shp[0][7] = 1/(Jdet)*(dN8_dzeta1*a1  + dN8_dzeta2*a2  + dN8_dzeta3*a3  + dN8_dzeta4*a4);
+    shp[0][8] = 1/(Jdet)*(dN9_dzeta1*a1  + dN9_dzeta2*a2  + dN9_dzeta3*a3  + dN9_dzeta4*a4);
+    shp[0][9] = 1/(Jdet)*(dN10_dzeta1*a1 + dN10_dzeta2*a2 + dN10_dzeta3*a3 + dN10_dzeta4*a4);
 
     // qy1 - qy10 (17.24)
-    shp[1][0] = 1/(6.0*Jdet)*(dN1_dzeta1*b1  + dN1_dzeta2*b2  + dN1_dzeta3*b3  + dN1_dzeta4*b4);
-    shp[1][1] = 1/(6.0*Jdet)*(dN2_dzeta1*b1  + dN2_dzeta2*b2  + dN2_dzeta3*b3  + dN2_dzeta4*b4);
-    shp[1][2] = 1/(6.0*Jdet)*(dN3_dzeta1*b1  + dN3_dzeta2*b2  + dN3_dzeta3*b3  + dN3_dzeta4*b4);
-    shp[1][3] = 1/(6.0*Jdet)*(dN4_dzeta1*b1  + dN4_dzeta2*b2  + dN4_dzeta3*b3  + dN4_dzeta4*b4);
-    shp[1][4] = 1/(6.0*Jdet)*(dN5_dzeta1*b1  + dN5_dzeta2*b2  + dN5_dzeta3*b3  + dN5_dzeta4*b4);
-    shp[1][5] = 1/(6.0*Jdet)*(dN6_dzeta1*b1  + dN6_dzeta2*b2  + dN6_dzeta3*b3  + dN6_dzeta4*b4);
-    shp[1][6] = 1/(6.0*Jdet)*(dN7_dzeta1*b1  + dN7_dzeta2*b2  + dN7_dzeta3*b3  + dN7_dzeta4*b4);
-    shp[1][7] = 1/(6.0*Jdet)*(dN8_dzeta1*b1  + dN8_dzeta2*b2  + dN8_dzeta3*b3  + dN8_dzeta4*b4);
-    shp[1][8] = 1/(6.0*Jdet)*(dN9_dzeta1*b1  + dN9_dzeta2*b2  + dN9_dzeta3*b3  + dN9_dzeta4*b4);
-    shp[1][9] = 1/(6.0*Jdet)*(dN10_dzeta1*b1 + dN10_dzeta2*b2 + dN10_dzeta3*b3 + dN10_dzeta4*b4);
+    shp[1][0] = 1/(Jdet)*(dN1_dzeta1*b1  + dN1_dzeta2*b2  + dN1_dzeta3*b3  + dN1_dzeta4*b4);
+    shp[1][1] = 1/(Jdet)*(dN2_dzeta1*b1  + dN2_dzeta2*b2  + dN2_dzeta3*b3  + dN2_dzeta4*b4);
+    shp[1][2] = 1/(Jdet)*(dN3_dzeta1*b1  + dN3_dzeta2*b2  + dN3_dzeta3*b3  + dN3_dzeta4*b4);
+    shp[1][3] = 1/(Jdet)*(dN4_dzeta1*b1  + dN4_dzeta2*b2  + dN4_dzeta3*b3  + dN4_dzeta4*b4);
+    shp[1][4] = 1/(Jdet)*(dN5_dzeta1*b1  + dN5_dzeta2*b2  + dN5_dzeta3*b3  + dN5_dzeta4*b4);
+    shp[1][5] = 1/(Jdet)*(dN6_dzeta1*b1  + dN6_dzeta2*b2  + dN6_dzeta3*b3  + dN6_dzeta4*b4);
+    shp[1][6] = 1/(Jdet)*(dN7_dzeta1*b1  + dN7_dzeta2*b2  + dN7_dzeta3*b3  + dN7_dzeta4*b4);
+    shp[1][7] = 1/(Jdet)*(dN8_dzeta1*b1  + dN8_dzeta2*b2  + dN8_dzeta3*b3  + dN8_dzeta4*b4);
+    shp[1][8] = 1/(Jdet)*(dN9_dzeta1*b1  + dN9_dzeta2*b2  + dN9_dzeta3*b3  + dN9_dzeta4*b4);
+    shp[1][9] = 1/(Jdet)*(dN10_dzeta1*b1 + dN10_dzeta2*b2 + dN10_dzeta3*b3 + dN10_dzeta4*b4);
 
     // qz1 - qz10 (17.24)
-    shp[2][0] = 1/(6.0*Jdet)*(dN1_dzeta1*c1  + dN1_dzeta2*c2  + dN1_dzeta3*c3  + dN1_dzeta4*c4);
-    shp[2][1] = 1/(6.0*Jdet)*(dN2_dzeta1*c1  + dN2_dzeta2*c2  + dN2_dzeta3*c3  + dN2_dzeta4*c4);
-    shp[2][2] = 1/(6.0*Jdet)*(dN3_dzeta1*c1  + dN3_dzeta2*c2  + dN3_dzeta3*c3  + dN3_dzeta4*c4);
-    shp[2][3] = 1/(6.0*Jdet)*(dN4_dzeta1*c1  + dN4_dzeta2*c2  + dN4_dzeta3*c3  + dN4_dzeta4*c4);
-    shp[2][4] = 1/(6.0*Jdet)*(dN5_dzeta1*c1  + dN5_dzeta2*c2  + dN5_dzeta3*c3  + dN5_dzeta4*c4);
-    shp[2][5] = 1/(6.0*Jdet)*(dN6_dzeta1*c1  + dN6_dzeta2*c2  + dN6_dzeta3*c3  + dN6_dzeta4*c4);
-    shp[2][6] = 1/(6.0*Jdet)*(dN7_dzeta1*c1  + dN7_dzeta2*c2  + dN7_dzeta3*c3  + dN7_dzeta4*c4);
-    shp[2][7] = 1/(6.0*Jdet)*(dN8_dzeta1*c1  + dN8_dzeta2*c2  + dN8_dzeta3*c3  + dN8_dzeta4*c4);
-    shp[2][8] = 1/(6.0*Jdet)*(dN9_dzeta1*c1  + dN9_dzeta2*c2  + dN9_dzeta3*c3  + dN9_dzeta4*c4);
-    shp[2][9] = 1/(6.0*Jdet)*(dN10_dzeta1*c1 + dN10_dzeta2*c2 + dN10_dzeta3*c3 + dN10_dzeta4*c4);
+    shp[2][0] = 1/(Jdet)*(dN1_dzeta1*c1  + dN1_dzeta2*c2  + dN1_dzeta3*c3  + dN1_dzeta4*c4);
+    shp[2][1] = 1/(Jdet)*(dN2_dzeta1*c1  + dN2_dzeta2*c2  + dN2_dzeta3*c3  + dN2_dzeta4*c4);
+    shp[2][2] = 1/(Jdet)*(dN3_dzeta1*c1  + dN3_dzeta2*c2  + dN3_dzeta3*c3  + dN3_dzeta4*c4);
+    shp[2][3] = 1/(Jdet)*(dN4_dzeta1*c1  + dN4_dzeta2*c2  + dN4_dzeta3*c3  + dN4_dzeta4*c4);
+    shp[2][4] = 1/(Jdet)*(dN5_dzeta1*c1  + dN5_dzeta2*c2  + dN5_dzeta3*c3  + dN5_dzeta4*c4);
+    shp[2][5] = 1/(Jdet)*(dN6_dzeta1*c1  + dN6_dzeta2*c2  + dN6_dzeta3*c3  + dN6_dzeta4*c4);
+    shp[2][6] = 1/(Jdet)*(dN7_dzeta1*c1  + dN7_dzeta2*c2  + dN7_dzeta3*c3  + dN7_dzeta4*c4);
+    shp[2][7] = 1/(Jdet)*(dN8_dzeta1*c1  + dN8_dzeta2*c2  + dN8_dzeta3*c3  + dN8_dzeta4*c4);
+    shp[2][8] = 1/(Jdet)*(dN9_dzeta1*c1  + dN9_dzeta2*c2  + dN9_dzeta3*c3  + dN9_dzeta4*c4);
+    shp[2][9] = 1/(Jdet)*(dN10_dzeta1*c1 + dN10_dzeta2*c2 + dN10_dzeta3*c3 + dN10_dzeta4*c4);
 
     // N1 - N10 (notice N9 and N10 are switched up)
     shp[3][0] = zeta[0]*(2*zeta[0]-1);
