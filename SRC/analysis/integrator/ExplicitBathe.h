@@ -64,7 +64,7 @@ public:
     // Constructors
     ExplicitBathe();
     
-    ExplicitBathe(double p, int compute_critical_timestep_ = 0);
+    ExplicitBathe(double p, int compute_critical_timestep_ = 0, double alpha_lnvd_ = 0.0);
     
     // Destructor
     ~ExplicitBathe();
@@ -93,6 +93,9 @@ public:
 protected:
 
 private:
+    // Applies local non-viscous damping (alpha_lnvd > 0) to a solved acceleration
+    void applyLocalDamping(Vector &accel, const Vector &vel);
+
     // Time step
     double deltaT;
 
@@ -140,6 +143,8 @@ private:
     double undamped_minimum_critical_timestep;  // Minimum critical dt (undamped)
     int damped_critical_element_tag;            // Element with minimum damped dt
     int undamped_critical_element_tag;          // Element with minimum undamped dt
+
+    double alpha_lnvd;  // Local non-viscous damping coefficient (0 = off)
 };
 
 #endif
