@@ -104,6 +104,7 @@ void* OPS_Dodd_Restrepo();
 void* OPS_RambergOsgoodSteel();
 void* OPS_SteelMPF();
 void* OPS_SteelDRC();
+void* OPS_SteelDRCV();
 void* OPS_Concrete02();
 void* OPS_Concrete02IS();
 void* OPS_Concrete04();
@@ -352,6 +353,8 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("SteelMPF", &OPS_SteelMPF));
   uniaxialMaterialsMap.insert(
       std::make_pair("SteelDRC", &OPS_SteelDRC));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("SteelDRCV", &OPS_SteelDRCV));
   uniaxialMaterialsMap.insert(
       std::make_pair("Concrete02", &OPS_Concrete02));
   uniaxialMaterialsMap.insert(
