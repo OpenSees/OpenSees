@@ -42,11 +42,11 @@
 * The rate-dependent term captures dynamic strain aging and Portevin-Le
 *   Châtelier (PLC) band activity observed in Grade 60 reinforcing steel
 *   under fully reversed cyclic loading. The overstress scales with
-*   strain-rate excursions, with calibrated parameters kf = 125 and np_visc = 0.75.
+*   strain-rate excursions, with calibrated parameters krate = 125 and np_visc = 0.75.
 *
 * The pinching formulation is governed by two dimensionless parameters:
 *   lambda  (curvature factor, default = 1.5, range: 0.5-2.5)
-*   np      (sharpness exponent, default = 2.0, range: 0.5-3.5)
+*   np      (sharpness exponent, default = 1.0, range: 0.5-3.5)
 *
 ** ********************************************************************/
 //xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
@@ -108,7 +108,9 @@ OPS_SteelDRCV()
 	double temp[2] = { 0.0,0.0 };				// Temporary array to store the (esh1,fsh1) point if given as input
 	double temp1[2] = { 0.0,1.0 };				// Temporary array to store properties of viscous damper if given as input
 	double Dfu = 1.0;							// Length of unloading branch in terms of the yield strength fy
-	
+	double lambdaP = 1.5;						// Pinching curvature factor (default = 1.5, range: 0.5-2.5)
+	double npP = 1.0;							// Pinching sharpness exponent (default = 1.0, range: 0.5-3.5)
+
 	while (OPS_GetNumRemainingInputArgs() > 0) {
 		const char * type = OPS_GetString();
 		if (strcmp(type, "-Psh") == 0 || strcmp(type, "-psh") == 0 || strcmp(type, "-PSh") == 0 || strcmp(type, "-PSH") == 0) {
@@ -167,10 +169,24 @@ OPS_SteelDRCV()
 				return 0;
 			}
 		}
+		else if (strcmp(type, "-lambda") == 0 || strcmp(type, "-Lambda") == 0) {
+			numdata = 1;
+			if (OPS_GetDoubleInput(&numdata, &lambdaP) < 0) {
+				opserr << "WARNING invalid double data for -lambda\n";
+				return 0;
+			}
+		}
+		else if (strcmp(type, "-np") == 0 || strcmp(type, "-Np") == 0 || strcmp(type, "-NP") == 0) {
+			numdata = 1;
+			if (OPS_GetDoubleInput(&numdata, &npP) < 0) {
+				opserr << "WARNING invalid double data for -np\n";
+				return 0;
+			}
+		}
 		else {
 			opserr << "WARNING SteelDRCV: invalid material property \n";
 			opserr << "Possible Optional Flags : ";
-			opserr << "<-Psh?> <-shPoint> <-omegaFac?> <-fractStrain?> <-bausch?> <-stiffOutput?> <-ViscousDamper?> <-Dfu?> <-rateCoef?> <-rateExp?>\n";
+			opserr << "<-Psh?> <-shPoint> <-omegaFac?> <-fractStrain?> <-bausch?> <-stiffOutput?> <-viscousDamper?> <-Dfu?> <-lambda?> <-np?>\n";
 			return 0;
 		}
 	}
@@ -179,12 +195,12 @@ OPS_SteelDRCV()
 	if (temp[0] != 0 && temp[1] != 0) {
 		theMaterial = new SteelDRCV(tag, data[0], data[1], data[2], data[3], data[4],
 			temp[0], temp[1], efract, omegaFac, bauschType, stiffopt,
-			temp1[0], temp1[1], Dfu);
+			temp1[0], temp1[1], Dfu, lambdaP, npP);
 	}
 	else {
 		theMaterial = new SteelDRCV(tag, data[0], data[1], data[2], data[3], data[4],
 			Psh, efract, omegaFac, bauschType, stiffopt,
-			temp1[0], temp1[1], Dfu);
+			temp1[0], temp1[1], Dfu, lambdaP, npP);
 	}
 	if (theMaterial == 0) {
 		opserr << "WARNING could not create uniaxialMaterial of type SteelDRCV\n";
@@ -218,15 +234,22 @@ SteelDRCV::SteelDRCV(int tag)
 // Constructor for the case when all the model parameters are given and strain hardening is defined from (esh1, fsh1)
 SteelDRCV::SteelDRCV(int tag, double Es, double fy, double eu, double fu, double esh,
     double esh1, double fsh1, double eft, double omegaFac, int bauschType,
-    int stiffoption, double kf0, double np_visc0, double Dfu)
+    int stiffoption, double kf0, double np_visc0, double Dfu,
+    double lambda0, double np0)
     : UniaxialMaterial(tag, MAT_TAG_SteelDRCV),
       E(Es), fyEng(fy), eshEng(esh), fuEng(fu), omegaF(omegaFac),
       bauschFlag(bauschType), Etflag(stiffoption), kf(kf0),
       np_visc(np_visc0), Dfu(Dfu)
 {
-	// Pinching parameters (no pinching by default)
-	lambda = 0.0;
-	np     = 2.0;
+	// Pinching parameters
+	lambda = lambda0;
+	if (lambda != 0.0) {
+		if (lambda < 0.5) lambda = 0.5;
+		else if (lambda > 2.5) lambda = 2.5;
+	}
+	np     = np0;
+	if (np < 0.5) np = 0.5;
+	else if (np > 3.5) np = 3.5;
 	p      = 0;
 
 	fQ = 10;
@@ -301,15 +324,16 @@ SteelDRCV::SteelDRCV(int tag, double Es, double fy, double eu, double fu, double
 // Constructor for the case when all the model parameters are given and strain hardening is defined from input Psh
 SteelDRCV::SteelDRCV(int tag, double Es, double fy, double eu, double fu, double esh,
     double Psh0, double eft, double omegaFac, int bauschType, int stiffoption,
-    double kf0, double np_visc0, double Dfu)
+    double kf0, double np_visc0, double Dfu,
+    double lambda0, double np0)
     : UniaxialMaterial(tag, MAT_TAG_SteelDRCV), E(Es), fyEng(fy), eshEng(esh), fuEng(fu),
       Psh(Psh0), omegaF(omegaFac), bauschFlag(bauschType), Etflag(stiffoption),
       kf(kf0), np_visc(np_visc0), Dfu(Dfu)
 {
 	// Pinching parameters
-	lambda = 1.5;
-	np     = 2.0;
-	
+	lambda = lambda0;
+	np     = np0;
+
 	if (lambda < 0.5)
 		lambda = 0.5;
 	else if (lambda > 2.5)

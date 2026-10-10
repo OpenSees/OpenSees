@@ -35,7 +35,7 @@
 *
 * The pinching formulation is governed by two dimensionless parameters:
 *   lambda  (curvature factor, default = 1.5, range: 0.5-2.5)
-*   np      (sharpness exponent, default = 2.0, range: 0.5-3.5)
+*   np      (sharpness exponent, default = 1.0, range: 0.5-3.5)
 */
 
 #ifndef SteelDRCV_H_
@@ -51,10 +51,12 @@ class SteelDRCV : public UniaxialMaterial
 	//double Psh, double eft,double omegaFac = 1.0, int bauschType= 0, int stiffoption = 0);    
 	SteelDRCV(int tag, double Es, double fy, double eu, double fu, double esh,
 		double Psh, double eft, double omegaFac, int bauschType, int stiffoption,
-		double kf, double np_visc, double Dfu);
+		double kf, double np_visc, double Dfu,
+		double lambda0 = 1.5, double np0 = 1.0);
 	SteelDRCV(int tag, double Es, double fy, double eu, double fu, double esh,
 		double esh1, double fsh1, double eft, double omegaFac, int bauschType,
-		int stiffoption, double kf, double np_visc, double Dfu);
+		int stiffoption, double kf, double np_visc, double Dfu,
+		double lambda0 = 1.5, double np0 = 1.0);
     SteelDRCV(int tag);
 	SteelDRCV();
     ~SteelDRCV();
