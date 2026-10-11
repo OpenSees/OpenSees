@@ -545,7 +545,7 @@ InertiaTruss::addInertiaLoadToUnbalance(const Vector &accel)
   // want to add ( - fact * M R * accel ) to unbalance
   
     double m = mass;
-	opserr << m;
+	// opserr << m;
 	Matrix &addinertiamass = *theMatrix;
 	double temp;
 	for (int i = 0; i < dimension; i++) {
