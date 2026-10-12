@@ -218,8 +218,10 @@ PyLiq1::setTrialStrain (double newy, double yRate)
 			meanStress = getEffectiveStress(theSeries);
 		else
 			meanStress = getEffectiveStress();
-		if(meanStress>meanConsolStress)
-			meanStress=meanConsolStress;
+		// Clamp removed: stresses are compression-negative, so meanStress > meanConsolStress whenever
+		// the soil softens, and the clamp reset ru to 0. Tru < 0 is still clamped below.
+		// if(meanStress>meanConsolStress)
+		//	meanStress=meanConsolStress;
 		Tru = 1.0 - meanStress/meanConsolStress;
 		if(Tru > 1.0-pRes/PySimple1::pult) Tru = 1.0-pRes/PySimple1::pult;
 		if(Tru < 0) Tru = 0;
