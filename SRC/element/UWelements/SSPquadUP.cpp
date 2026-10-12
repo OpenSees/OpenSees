@@ -423,7 +423,23 @@ const Matrix &
 SSPquadUP::getInitialStiff(void)
 // this function computes the initial tangent stiffness matrix for the element
 {
-    return getTangentStiff();
+    // return getTangentStiff();  // not the true initial stiffness
+    // compute the initial stiffness like the tangent stiffness, with the initial material tangent
+    const Matrix &CmatI = theMaterial->getInitialTangent();
+    mSolidK = Kstab;
+    mSolidK.addMatrixTripleProduct(1.0, Mmem, CmatI, 4.0*J0*mThickness);
+    mTangentStiffness.Zero();
+    for (int i = 0; i < 4; i++) {
+        int I = 2*i, Ip1 = 2*i+1, II = 3*i, IIp1 = 3*i+1;
+        for (int j = 0; j < 4; j++) {
+            int J = 2*j, Jp1 = 2*j+1, JJ = 3*j, JJp1 = 3*j+1;
+            mTangentStiffness(II,JJ)     = mSolidK(I,J);
+            mTangentStiffness(IIp1,JJ)   = mSolidK(Ip1,J);
+            mTangentStiffness(IIp1,JJp1) = mSolidK(Ip1,Jp1);
+            mTangentStiffness(II,JJp1)   = mSolidK(I,Jp1);
+        }
+    }
+    return mTangentStiffness;
 }
 
 const Matrix &
