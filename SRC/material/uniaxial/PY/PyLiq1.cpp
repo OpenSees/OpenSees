@@ -373,6 +373,8 @@ PyLiq1::revertToStart(void)
 	Ty = 0.0;
 	Tp = 0.0;
 	maxTangent = (PySimple1::pult/PySimple1::y50);
+	// initialize Tangent; the constructor copies it into initialTangent
+	Tangent = PySimple1::getInitialTangent();
 	
 	// Excess pore pressure ratio and pointers
 	//

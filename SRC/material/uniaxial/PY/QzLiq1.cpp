@@ -338,6 +338,8 @@ QzLiq1::revertToStart(void)
 	Tz = 0.0;
 	Tt = 0.0;
 	maxTangent = (QzSimple1::Qult/QzSimple1::z50);
+	// initialize Tangent; the constructor copies it into initialTangent
+	Tangent = QzSimple1::getInitialTangent();
 
 	// Excess pore pressure ratio and pointers
 	//
