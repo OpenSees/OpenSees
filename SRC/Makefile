@@ -666,6 +666,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/mvlem/E_SFI_MVLEM_3D.o \
 	$(FE)/element/mvlem/E_SFI.o \
 	$(FE)/element/mefi/MEFI.o \
+	$(FE)/element/mefi/MEFI_3D.o \
 	$(FE)/element/UWelements/Quad4FiberOverlay.o \
 	$(FE)/element/UWelements/Brick8FiberOverlay.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
@@ -943,6 +944,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/DuctileFracture.o \
 	$(FE)/material/uniaxial/QbSandCPT.o \
 	$(FE)/material/uniaxial/TzSandCPT.o \
+	$(FE)/material/uniaxial/FrictionSpringDamper.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
@@ -964,6 +966,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/nD/J2BeamFiber2d.o \
 	$(FE)/material/nD/J2BeamFiber3d.o \
 	$(FE)/material/nD/FSAM.o \
+	$(FE)/material/nD/FAM_CS.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear5.o \
 	$(FE)/material/nD/ConcreteMcftNonLinear7.o \
 	$(FE)/material/nD/InitStressNDMaterial.o \
@@ -1596,7 +1599,6 @@ wipe: spotless
 	@$(CD) $(FE)/damping; $(MAKE) wipe;
 
 # DO NOT DELETE THIS LINE -- make depend depends on it.
-
 
 
 

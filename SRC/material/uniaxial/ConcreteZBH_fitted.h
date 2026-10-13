@@ -17,21 +17,26 @@
 **   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
 **                                                                    **
 ** ****************************************************************** */
-
-// $Revision: 1.1 $
-// $Date: 2008/12/09 20:00:16 $
-// $Source: /usr/local/cvs/OpenSees/PACKAGES/NewMaterial/cpp/ElasticPPcpp.h,v $
+//                                                                        
+// Revision: 2.0
+// Date: 09/2026
+// Source: /OpenSees/SRC/material/uniaxial/ConcreteZBH_fitted.h
+//
+// Written: Zignago, D., and Barbato, M. University of California - Davis
+// Edited: Badal, Prakash S. IIT Madras; and Barbato, M. University of California - Davis
+// Created: 09/2026
+//
+// Description: This file contains the class implementation for the
+// ConcreteZBH_fitted.
+//
+// References:
+// Zignago, D., Barbato, M., and Hu, Dan (2018). "Constitutive Model of Concrete Simultaneously Confined by FRP and Steel for Finite-Element Analysis of FRP-Confined RC Columns." 
+//   Journal of Composites for Construction. 22(6), 04018064.
+// Spoelstra, M. R., and Giorgio Monti. (1999). "FRP-confined concrete model." 
+//   Journal of Composites for Construction. 3(3), 143-150.
 
 #ifndef ConcreteZBH_fitted_h
 #define ConcreteZBH_fitted_h
-
-// Written: fmk
-//
-// Description: This file contains the class definition for
-// ElasticPPcpp. ElasticPPcpp provides the abstraction
-// of an elastic perfectly plastic uniaxial material,
-//
-// What: "@(#) ElasticPPcpp.h, revA"
 
 #include <UniaxialMaterial.h>
 
@@ -40,7 +45,12 @@ class ConcreteZBH_fitted : public UniaxialMaterial
   public:
     ConcreteZBH_fitted(int tag, double _fc0, double _ec0, double _Ec, double _fccs, double _eccs, double _rs,
 		double _e1, double _e2, double _e3, double _e4, double _e5, double _e6, double _e7, double _e8, double _e9,
+		double _eps_cy, double _eps_ccuf, double _sig_ccuf, double _eps_ccus, double _sig_ccus, double _beta_input);
+
+    ConcreteZBH_fitted(int tag, double _fc0, double _ec0, double _Ec, double _fccs, double _eccs, double _rs,
+		double _e1, double _e2, double _e3, double _e4, double _e5, double _e6, double _e7, double _e8, double _e9,
 		double _eps_cy, double _eps_ccuf, double _sig_ccuf, double _eps_ccus, double _sig_ccus);
+
     ConcreteZBH_fitted();
 
     ~ConcreteZBH_fitted();

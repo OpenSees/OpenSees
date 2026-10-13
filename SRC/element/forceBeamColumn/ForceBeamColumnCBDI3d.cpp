@@ -3288,7 +3288,8 @@ void
 ForceBeamColumnCBDI3d::setSectionPointers(int numSec, SectionForceDeformation **secPtrs)
 {
   if (numSec > maxNumSections) {
-    opserr << "Error: ForceBeamColumnCBDI3d::setSectionPointers -- max number of sections exceeded";
+    opserr << "Error: ForceBeamColumnCBDI3d::setSectionPointers -- max number of sections exceeded" << endln;
+    exit(-1);
   }
   
   numSections = numSec;

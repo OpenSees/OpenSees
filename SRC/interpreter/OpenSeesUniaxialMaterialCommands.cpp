@@ -217,6 +217,7 @@ void* OPS_FRCC();
 void* OPS_ConcreteZBH_original();
 void* OPS_ConcreteZBH_fitted();
 void* OPS_ConcreteZBH_smoothed();
+void* OPS_FrictionSpringDamper();
 
 void *OPS_ArctangentBackbone(void);
 void *OPS_ManderBackbone(void);
@@ -652,6 +653,10 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("JankowskiImpact", &OPS_JankowskiImpact));
   uniaxialMaterialsMap.insert(
       std::make_pair("ViscoelasticGap", &OPS_ViscoelasticGap));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("FrictionSpringDamper", &OPS_FrictionSpringDamper));
+  uniaxialMaterialsMap.insert(
+      std::make_pair("frictionSpringDamper", &OPS_FrictionSpringDamper));    
   uniaxialMaterialsMap.insert(std::make_pair("Masonry", &OPS_Masonry));
   uniaxialMaterialsMap.insert(std::make_pair("Masonryt", &OPS_Masonryt));
   uniaxialMaterialsMap.insert(std::make_pair("Trilinwp", &OPS_Trilinwp));

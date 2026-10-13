@@ -121,7 +121,7 @@ private:
   double committedTotalStrain;       // Last committed total strain
 
   int    historyPointCount;          // Number of points in stress-time history
-  int    iterationInStep;            // Iteration counter to avoid recomputing within same step 
+  double creepComputedTime;          // Time at which creep/shrinkage were last computed
 
   enum{startSize=500, growSize=200};
   int maxSize;                       // Current allocated size of history arrays
