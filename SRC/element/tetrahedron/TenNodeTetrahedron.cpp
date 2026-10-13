@@ -1054,7 +1054,7 @@ TenNodeTetrahedron::update(void)
     static const int nShape = 4 ;
 
     int i, j, k, p, q ;
-    int success ;
+    int success = 0 ;
 
     static double volume ;
 
@@ -1208,14 +1208,14 @@ TenNodeTetrahedron::update(void)
         // opserr << "TenNodeTetrahedron::update -- 4.3 i = " << i << endln;
 
         //send the strain to the material
-        success = materialPointers[i]->setTrialStrain( strain ) ;
+        success += materialPointers[i]->setTrialStrain( strain ) ;
 
         // opserr << "TenNodeTetrahedron::update -- 4.4 i = " << i << "strain = " << strain << endln;
 
     } //end for i gauss loop
     // opserr << "TenNodeTetrahedron::update -- 5" << endln;
     // opserr << "TenNodeTetrahedron::update -- END" << endln;
-    return 0;
+    return success;
 }
 
 
