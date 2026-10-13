@@ -86,6 +86,7 @@ void* OPS_ConcreteMcftNonlinear7();
 void* OPS_ASDConcrete3DMaterial();
 void* OPS_OrthotropicRotatingAngleConcreteT2DMaterial01();	// M. J. Nunez - UChile
 void* OPS_SmearedSteelDoubleLayerT2DMaterial01();			// M. J. Nunez - UChile
+void* OPS_TimberHoffman3D();
 #ifdef _EIGEN3
 void* OPS_AllASDPlasticMaterial3Ds();
 #endif // _EIGEN3
@@ -213,6 +214,7 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("ASDConcrete3D", &OPS_ASDConcrete3DMaterial));
 	nDMaterialsMap.insert(std::make_pair("OrthotropicRAConcrete", &OPS_OrthotropicRotatingAngleConcreteT2DMaterial01));
 	nDMaterialsMap.insert(std::make_pair("SmearedSteelDoubleLayer", &OPS_SmearedSteelDoubleLayerT2DMaterial01));
+	nDMaterialsMap.insert(std::make_pair("TimberHoffman3D", &OPS_TimberHoffman3D));
 #ifdef _EIGEN3
 	nDMaterialsMap.insert(std::make_pair("ASDPlasticMaterial", &OPS_AllASDPlasticMaterial3Ds));
 	nDMaterialsMap.insert(std::make_pair("ASDPlasticMaterial3D", &OPS_AllASDPlasticMaterial3Ds));
