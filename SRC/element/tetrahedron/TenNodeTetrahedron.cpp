@@ -55,7 +55,7 @@ void* OPS_TenNodeTetrahedron()
     if (OPS_GetNumRemainingInputArgs() < 12)
     {
         opserr << "WARNING insufficient arguments\n";
-        opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? <doInitDisp?>\n";
+        opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? <b1? b2? b3?> <-doInitDisp flag?> <-numbering gmsh|abaqus>\n";
         return 0;
     }
 
@@ -82,7 +82,7 @@ void* OPS_TenNodeTetrahedron()
     {
         const char* tok = OPS_GetString();
         OPS_ResetCurrentInputArg(-1);
-        if (strcmp(tok, "-doInitDisp") == 0)
+        if (strcmp(tok, "-doInitDisp") == 0 || strcmp(tok, "-numbering") == 0)
             break;
         num = 1;
         if (OPS_GetDoubleInput(&num, &data[numOpt]) < 0)
@@ -94,6 +94,7 @@ void* OPS_TenNodeTetrahedron()
     }
 
     int do_init_disp_int = 0;
+    bool abaqus_numbering = false;
     while (OPS_GetNumRemainingInputArgs() > 0)
     {
         const char* type = OPS_GetString();
@@ -106,10 +107,25 @@ void* OPS_TenNodeTetrahedron()
                 return 0;
             }
         }
+        else if (strcmp(type, "-numbering") == 0)
+        {
+            // gmsh (default): node 9 on edge 3-4, node 10 on edge 2-4
+            // abaqus (C3D10, also VTK): node 9 on edge 2-4, node 10 on edge 3-4
+            const char* order = OPS_GetNumRemainingInputArgs() > 0 ? OPS_GetString() : "";
+            if (strcmp(order, "abaqus") == 0 || strcmp(order, "Abaqus") == 0)
+                abaqus_numbering = true;
+            else if (strcmp(order, "gmsh") == 0 || strcmp(order, "Gmsh") == 0)
+                abaqus_numbering = false;
+            else
+            {
+                opserr << "WARNING: -numbering must be gmsh or abaqus -- TenNodeTetrahedron " << idata[0] << "\n";
+                return 0;
+            }
+        }
     }
     bool do_init_disp = (do_init_disp_int != 0);
 
-    Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp);
+    Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp, abaqus_numbering);
 
     if (the_new_element_ptr == NULL)
     {
@@ -243,7 +259,7 @@ Matrix TenNodeTetrahedron::B(NumStressComponents, NumDOFsPerNode) ;
 //null constructor
 TenNodeTetrahedron::TenNodeTetrahedron( )
     : Element( 0, ELE_TAG_TenNodeTetrahedron ),
-      connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false)
+      connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false), abaqus_numbering(false)
 {
     B.Zero();
 
@@ -280,9 +296,10 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
                                        int node9,
                                        int node10,
                                        NDMaterial &theMaterial,
-                                       double b1, double b2, double b3, bool do_init_disp_)
+                                       double b1, double b2, double b3, bool do_init_disp_, bool abaqus_numbering_)
     : Element(tag, ELE_TAG_TenNodeTetrahedron),
-      connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(do_init_disp_)
+      connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(do_init_disp_),
+      abaqus_numbering(abaqus_numbering_)
 {
     // opserr << "TenNodeTetrahedron::constructor - START\n";
     B.Zero();
@@ -1541,7 +1558,7 @@ int  TenNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
     // Now quad sends the ids of its materials
     int matDbTag;
 
-    static ID idData(27);
+    static ID idData(28);
 
     idData(24) = this->getTag();
     if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0)
@@ -1572,6 +1589,7 @@ int  TenNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
     idData(18) = connectedExternalNodes(2);
     idData(19) = connectedExternalNodes(3);
     idData(26) = (int) do_update;
+    idData(27) = (int) abaqus_numbering;
     // idData(20) = connectedExternalNodes(4);
     // idData(21) = connectedExternalNodes(5);
     // idData(22) = connectedExternalNodes(6);
@@ -1619,7 +1637,7 @@ int  TenNodeTetrahedron::recvSelf (int commitTag,
 
     int dataTag = this->getDbTag();
 
-    static ID idData(27);
+    static ID idData(28);
     res += theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING TenNodeTetrahedron::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1647,6 +1665,7 @@ int  TenNodeTetrahedron::recvSelf (int commitTag,
     connectedExternalNodes(2) = idData(18);
     connectedExternalNodes(3) = idData(19);
     do_update = (bool) idData(26);
+    abaqus_numbering = (idData(27) != 0);
     // connectedExternalNodes(4) = idData(20);
     // connectedExternalNodes(5) = idData(21);
     // connectedExternalNodes(6) = idData(22);
@@ -2036,6 +2055,11 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
 
     double zeta4 = 1 - zeta[0] - zeta[1] - zeta[2];
 
+    // Below, N9 is the node on edge 3-4 and N10 the node on edge 2-4 (gmsh order).
+    // With abaqus_numbering these two sit in the other slot of xl and shp.
+    const int i9  = abaqus_numbering ? 9 : 8;
+    const int i10 = abaqus_numbering ? 8 : 9;
+
     // double x12 = xl[0][0] - xl[0][1];
     // double x13 = xl[0][0] - xl[0][2];
     // double x14 = xl[0][0] - xl[0][3];
@@ -2087,8 +2111,8 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     double x6  = xl[0][5]; double y6  = xl[1][5] ; double z6  = xl[2][5]; // *
     double x7  = xl[0][6]; double y7  = xl[1][6] ; double z7  = xl[2][6]; // *
     double x8  = xl[0][7]; double y8  = xl[1][7] ; double z8  = xl[2][7]; // *
-    double x9  = xl[0][8]; double y9  = xl[1][8] ; double z9  = xl[2][8]; // *
-    double x10 = xl[0][9]; double y10 = xl[1][9] ; double z10 = xl[2][9]; // *
+    double x9  = xl[0][i9];  double y9  = xl[1][i9] ;  double z9  = xl[2][i9]; // *
+    double x10 = xl[0][i10]; double y10 = xl[1][i10] ; double z10 = xl[2][i10]; // *
 
     // * 
     double a1 = y2*(z4-z3)-y3*(z4-z2)+y4*(z3-z2) ; double b1 = -x2*(z4-z3)+x3*(z4-z2)-x4*(z3-z2); double c1 = x2*(y4-y3)-x3*(y4-y2)+x4*(y3-y2);
@@ -2182,8 +2206,8 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     shp[0][5] = 1/(Jdet)*(dN6_dzeta1*a1  + dN6_dzeta2*a2  + dN6_dzeta3*a3  + dN6_dzeta4*a4);
     shp[0][6] = 1/(Jdet)*(dN7_dzeta1*a1  + dN7_dzeta2*a2  + dN7_dzeta3*a3  + dN7_dzeta4*a4);
     shp[0][7] = 1/(Jdet)*(dN8_dzeta1*a1  + dN8_dzeta2*a2  + dN8_dzeta3*a3  + dN8_dzeta4*a4);
-    shp[0][8] = 1/(Jdet)*(dN9_dzeta1*a1  + dN9_dzeta2*a2  + dN9_dzeta3*a3  + dN9_dzeta4*a4);
-    shp[0][9] = 1/(Jdet)*(dN10_dzeta1*a1 + dN10_dzeta2*a2 + dN10_dzeta3*a3 + dN10_dzeta4*a4);
+    shp[0][i9] = 1/(Jdet)*(dN9_dzeta1*a1  + dN9_dzeta2*a2  + dN9_dzeta3*a3  + dN9_dzeta4*a4);
+    shp[0][i10] = 1/(Jdet)*(dN10_dzeta1*a1 + dN10_dzeta2*a2 + dN10_dzeta3*a3 + dN10_dzeta4*a4);
 
     // qy1 - qy10 (17.24)
     shp[1][0] = 1/(Jdet)*(dN1_dzeta1*b1  + dN1_dzeta2*b2  + dN1_dzeta3*b3  + dN1_dzeta4*b4);
@@ -2194,8 +2218,8 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     shp[1][5] = 1/(Jdet)*(dN6_dzeta1*b1  + dN6_dzeta2*b2  + dN6_dzeta3*b3  + dN6_dzeta4*b4);
     shp[1][6] = 1/(Jdet)*(dN7_dzeta1*b1  + dN7_dzeta2*b2  + dN7_dzeta3*b3  + dN7_dzeta4*b4);
     shp[1][7] = 1/(Jdet)*(dN8_dzeta1*b1  + dN8_dzeta2*b2  + dN8_dzeta3*b3  + dN8_dzeta4*b4);
-    shp[1][8] = 1/(Jdet)*(dN9_dzeta1*b1  + dN9_dzeta2*b2  + dN9_dzeta3*b3  + dN9_dzeta4*b4);
-    shp[1][9] = 1/(Jdet)*(dN10_dzeta1*b1 + dN10_dzeta2*b2 + dN10_dzeta3*b3 + dN10_dzeta4*b4);
+    shp[1][i9] = 1/(Jdet)*(dN9_dzeta1*b1  + dN9_dzeta2*b2  + dN9_dzeta3*b3  + dN9_dzeta4*b4);
+    shp[1][i10] = 1/(Jdet)*(dN10_dzeta1*b1 + dN10_dzeta2*b2 + dN10_dzeta3*b3 + dN10_dzeta4*b4);
 
     // qz1 - qz10 (17.24)
     shp[2][0] = 1/(Jdet)*(dN1_dzeta1*c1  + dN1_dzeta2*c2  + dN1_dzeta3*c3  + dN1_dzeta4*c4);
@@ -2206,8 +2230,8 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     shp[2][5] = 1/(Jdet)*(dN6_dzeta1*c1  + dN6_dzeta2*c2  + dN6_dzeta3*c3  + dN6_dzeta4*c4);
     shp[2][6] = 1/(Jdet)*(dN7_dzeta1*c1  + dN7_dzeta2*c2  + dN7_dzeta3*c3  + dN7_dzeta4*c4);
     shp[2][7] = 1/(Jdet)*(dN8_dzeta1*c1  + dN8_dzeta2*c2  + dN8_dzeta3*c3  + dN8_dzeta4*c4);
-    shp[2][8] = 1/(Jdet)*(dN9_dzeta1*c1  + dN9_dzeta2*c2  + dN9_dzeta3*c3  + dN9_dzeta4*c4);
-    shp[2][9] = 1/(Jdet)*(dN10_dzeta1*c1 + dN10_dzeta2*c2 + dN10_dzeta3*c3 + dN10_dzeta4*c4);
+    shp[2][i9] = 1/(Jdet)*(dN9_dzeta1*c1  + dN9_dzeta2*c2  + dN9_dzeta3*c3  + dN9_dzeta4*c4);
+    shp[2][i10] = 1/(Jdet)*(dN10_dzeta1*c1 + dN10_dzeta2*c2 + dN10_dzeta3*c3 + dN10_dzeta4*c4);
 
     // N1 - N10 (notice N9 and N10 are switched up)
     shp[3][0] = zeta[0]*(2*zeta[0]-1);
@@ -2218,9 +2242,9 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     shp[3][5] = 4*zeta[1]*zeta[2];
     shp[3][6] = 4*zeta[2]*zeta[0];
     shp[3][7] = 4*zeta[0]*zeta4;
-    shp[3][9] = 4*zeta[1]*zeta4; // *
+    shp[3][i10] = 4*zeta[1]*zeta4; // *
     // shp[3][8] = 4*zeta[1]*zeta4;
-    shp[3][8] = 4*zeta[2]*zeta4; // *
+    shp[3][i9] = 4*zeta[2]*zeta4; // *
     // shp[3][9] = 4*zeta[2]*zeta4;
 
     return ;

@@ -65,7 +65,8 @@ public :
                        int node9,
                        int node10,
                        NDMaterial &theMaterial,
-                       double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, bool do_init_disp_=false);
+                       double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, bool do_init_disp_=false,
+                       bool abaqus_numbering_=false);
 
     //destructor
     virtual ~TenNodeTetrahedron( ) ;
@@ -214,6 +215,7 @@ private :
 
     bool do_update;
     bool do_init_disp;
+    bool abaqus_numbering;  // nodes 9/10 on edges 2-4/3-4 (Abaqus C3D10) instead of 3-4/2-4 (gmsh)
 } ;
 
 #endif
