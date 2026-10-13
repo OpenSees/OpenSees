@@ -964,6 +964,7 @@ void
 OpenSeesCommands::wipeAnalysis()
 {
     if (theStaticAnalysis==0 && theTransientAnalysis==0) {
+	if (theAnalysisModel != 0) delete theAnalysisModel;
 	if (theSOE != 0) delete theSOE;
 	if (theEigenSOE != 0) delete theEigenSOE;
 	if (theNumberer != 0) delete theNumberer;
@@ -1883,6 +1884,9 @@ int OPS_Integrator()
 
 	} else if (strcmp(type, "ExplicitDifference") == 0) {
     ti = (TransientIntegrator*)OPS_ExplicitDifference();
+
+	} else if (strcmp(type, "ExplicitDifferenceStatic") == 0) {
+    ti = (TransientIntegrator*)OPS_ExplicitDifferenceStatic();
 
     } else {
 	opserr<<"WARNING unknown integrator type "<<type<<"\n";

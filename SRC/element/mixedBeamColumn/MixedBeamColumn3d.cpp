@@ -281,7 +281,8 @@ MixedBeamColumn3d::MixedBeamColumn3d (int tag, int nodeI, int nodeJ, int numSec,
 
   //this->setSectionPointers(numSec,sec);
   if (numSec > MAX_NUM_SECTIONS) {
-    opserr << "Error: MixedBeamColumn3d::setSectionPointers -- max number of sections exceeded";
+    opserr << "Error: MixedBeamColumn3d::setSectionPointers -- max number of sections exceeded" << endln;
+    exit(-1);
   }
 
   numSections = numSec;

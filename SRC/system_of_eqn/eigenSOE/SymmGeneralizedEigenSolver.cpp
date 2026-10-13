@@ -144,11 +144,6 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     // leading dimension of M
     int ldM = n;
 
-    // allocate memory for eigenvalues
-    double *alphaR = new double [n];
-    double *alphaI = new double [n];
-    double *beta   = new double [n];
-
     if (eigenvalue != 0)
         delete [] eigenvalue;
 
@@ -217,12 +212,22 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
     if (info < 0) {
         opserr << "SymmGeneralizedEigenSolver::solve() - invalid argument number "
             << -info << " passed to LAPACK dsygvx routine\n";
+        delete [] kCopy;
+        delete [] mCopy;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
         return info;
     }
 
     if (info > 0) {
         opserr << "SymmGeneralizedEigenSolver::solve() - the LAPACK dsygvx routine "
             << "returned error code " << info << endln;
+        delete [] kCopy;
+        delete [] mCopy;
+        delete [] work;
+        delete [] iwork;
+        delete [] ifail;
         return -info;
     }
 
@@ -287,6 +292,7 @@ int SymmGeneralizedEigenSolver::solve(int nEigen, bool generalized, bool findSma
       }
     }
     */
+    
     delete [] kCopy;
     delete [] mCopy;
     delete [] tmpV;

@@ -577,6 +577,7 @@ void* OPS_CentralDifference();
 void* OPS_CentralDifferenceAlternative();
 void* OPS_CentralDifferenceNoDamping();
 void* OPS_ExplicitDifference();
+void* OPS_ExplicitDifferenceStatic();
 
 void* OPS_LinearAlgorithm();
 void* OPS_NewtonRaphsonAlgorithm();
