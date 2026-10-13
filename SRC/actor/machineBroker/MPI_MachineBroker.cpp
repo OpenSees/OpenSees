@@ -124,4 +124,3 @@ MPI_MachineBroker::freeProcess
   // channel not found!
   return -1;
 }
-
