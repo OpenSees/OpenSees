@@ -150,6 +150,7 @@
 #include "FRPConfinedConcrete.h"
 #include "ConcreteCM.h"
 #include "BarSlipMaterial.h"
+#include "FrictionSpringDamper.h"
 
 #include <HystereticPoly.h>					// Salvatore Sessa 14-Jan-2021
 #include <HystereticSmooth.h>					// Salvatore Sessa Apr-19-2022
@@ -475,6 +476,7 @@
 #include "mvlem/E_SFI.h"		// C. N. Lopez
 
 #include "mefi/MEFI.h"		// C. N. Lopez
+#include "mefi/MEFI_3D.h"	// C. N. Lopez
 
 #include "elastomericBearing/ElastomericBearingBoucWen2d.h"
 #include "elastomericBearing/ElastomericBearingBoucWen3d.h"
@@ -1162,7 +1164,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 		return new E_SFI();		// C. N. Lopez	
 		
 	case ELE_TAG_MEFI:			// C. N. Lopez
-		return new MEFI();		// C. N. Lopez		
+		return new MEFI();		// C. N. 
+
+	case ELE_TAG_MEFI_3D:		// C. N. Lopez
+		return new MEFI_3D();	// C. N. Lopez		
 
     case ELE_TAG_BBarFourNodeQuadUP:
       return new BBarFourNodeQuadUP();			
@@ -1875,6 +1880,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
+
+	case MAT_TAG_FrictionSpringDamper:
+		return new FrictionSpringDamper();		
 
 	case MAT_TAG_AxialSp:
 	    return new AxialSp();
