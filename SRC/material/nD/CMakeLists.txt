@@ -15,6 +15,7 @@ target_sources(OPS_Material
     LinearCap.cpp
     eig3.cpp
     FSAM.cpp
+    FAM_CS.cpp
     AcousticMedium.cpp
     ElasticIsotropicAxiSymm.cpp
     ElasticIsotropicBeamFiber2d.cpp
@@ -92,6 +93,7 @@ target_sources(OPS_Material
     LinearCap.h
     eig3.h
     FSAM.h
+    FAM_CS.h
     AcousticMedium.h
     ElasticIsotropicAxiSymm.h
     ElasticIsotropicBeamFiber2d.h

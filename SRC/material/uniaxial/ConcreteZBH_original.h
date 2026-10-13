@@ -1,3 +1,40 @@
+/* ****************************************************************** **
+**    OpenSees - Open System for Earthquake Engineering Simulation    **
+**          Pacific Earthquake Engineering Research Center            **
+**                                                                    **
+**                                                                    **
+** (C) Copyright 1999, The Regents of the University of California    **
+** All Rights Reserved.                                               **
+**                                                                    **
+** Commercial use of this program without express permission of the   **
+** University of California, Berkeley, is strictly prohibited.  See   **
+** file 'COPYRIGHT'  in main directory for information on usage and   **
+** redistribution,  and for a DISCLAIMER OF ALL WARRANTIES.           **
+**                                                                    **
+** Developed by:                                                      **
+**   Frank McKenna (fmckenna@ce.berkeley.edu)                         **
+**   Gregory L. Fenves (fenves@ce.berkeley.edu)                       **
+**   Filip C. Filippou (filippou@ce.berkeley.edu)                     **
+**                                                                    **
+** ****************************************************************** */
+//                                                                        
+// Revision: 2.0
+// Date: 09/2026
+// Source: /OpenSees/SRC/material/uniaxial/ConcreteZBH_original.h
+//
+// Written: Zignago, D., and Barbato, M. University of California - Davis
+// Edited: Badal, Prakash S. IIT Madras; and Barbato, M. University of California - Davis
+// Created: 09/2026
+//
+// Description: This file contains the class implementation for the
+// ConcreteZBH_original.
+//
+// References:
+// Zignago, D., Barbato, M., and Hu, Dan (2018). "Constitutive Model of Concrete Simultaneously Confined by FRP and Steel for Finite-Element Analysis of FRP-Confined RC Columns." 
+//   Journal of Composites for Construction. 22(6), 04018064.
+// Spoelstra, M. R., and Giorgio Monti. (1999). "FRP-confined concrete model." 
+//   Journal of Composites for Construction. 3(3), 143-150.
+
 #ifndef ConcreteZBH_original_h
 #define ConcreteZBH_original_h
 
@@ -9,7 +46,13 @@ class ConcreteZBH_original : public UniaxialMaterial
     ConcreteZBH_original(int tag, double _fc0, double _ec0, double _Ec,
 		       double _Es, double _fy, double _eults, double _s, double _As_t,
 		       double _Ef, double _eultf, double _tf, double _D, double _Ds,
+		       double _As_l, double _kg_f, double _ks_s, double _ks_f, double _type_reinf, double _beta_input);
+    
+    ConcreteZBH_original(int tag, double _fc0, double _ec0, double _Ec,
+		       double _Es, double _fy, double _eults, double _s, double _As_t,
+		       double _Ef, double _eultf, double _tf, double _D, double _Ds,
 		       double _As_l, double _kg_f, double _ks_s, double _ks_f, double _type_reinf);
+    
     ConcreteZBH_original();
 
     ~ConcreteZBH_original();

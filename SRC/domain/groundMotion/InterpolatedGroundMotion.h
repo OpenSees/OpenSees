@@ -44,6 +44,7 @@
 class InterpolatedGroundMotion : public GroundMotion
 {
   public:
+    virtual int deriveAccelSeries();
     InterpolatedGroundMotion();
     InterpolatedGroundMotion(GroundMotion **groundMotions, 
 			     const Vector &fact,
