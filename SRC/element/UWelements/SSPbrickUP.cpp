@@ -102,6 +102,21 @@ OPS_SSPbrickUP(void)
 	int massType = 0;
     int currentParam = 7;
     while (OPS_GetNumRemainingInputArgs() > 0) {
+        // Try a body force component as a number first: OPS_GetString gives
+        // "Invalid String Input!" for a Python float, which atof reads as 0.
+        // An interpreter that consumed the argument on the failed read gets
+        // it back for the string read.
+        int numArgs = OPS_GetNumRemainingInputArgs();
+        numData = 1;
+        double b;
+        if (OPS_GetDoubleInput(&numData, &b) == 0) {
+            if (currentParam < 10)
+                dData[currentParam++] = b;
+            continue;
+        }
+        if (OPS_GetNumRemainingInputArgs() < numArgs)
+            OPS_ResetCurrentInputArg(-1);
+
         const char *arg = OPS_GetString();
         if (strcmp(arg, "-lumped") == 0) {
             massType = 1;
