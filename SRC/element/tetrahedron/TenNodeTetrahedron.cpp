@@ -50,12 +50,14 @@
 
 
 
-void* OPS_TenNodeTetrahedron()
+// TenNodeTetrahedron:    node 9 on edge 3-4, node 10 on edge 2-4 (gmsh order)
+// TenNodeTetrahedronStd: node 9 on edge 2-4, node 10 on edge 3-4 (standard order, also VTK)
+static void* parseTenNodeTetrahedron(const char* eleName, bool std_numbering)
 {
     if (OPS_GetNumRemainingInputArgs() < 12)
     {
         opserr << "WARNING insufficient arguments\n";
-        opserr << "Want: element TenNodeTetrahedron eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? <b1? b2? b3?> <-doInitDisp flag?> <-numbering gmsh|abaqus>\n";
+        opserr << "Want: element " << eleName << " eleTag? Node1? Node2? Node3? Node4? Node5? Node6? Node7? Node8? Node9? Node10? matTag? <b1? b2? b3?> <-doInitDisp flag?>\n";
         return 0;
     }
 
@@ -73,6 +75,7 @@ void* OPS_TenNodeTetrahedron()
         opserr << "WARNING material not found\n";
         opserr << "material tag: " << idata[11];
         opserr << "\nTenNodeTetrahedron element: " << idata[0] << endln;
+        return 0;
     }
 
     // optional body forces b1 b2 b3 (any leading subset), then <-doInitDisp $flag>
@@ -82,7 +85,7 @@ void* OPS_TenNodeTetrahedron()
     {
         const char* tok = OPS_GetString();
         OPS_ResetCurrentInputArg(-1);
-        if (strcmp(tok, "-doInitDisp") == 0 || strcmp(tok, "-numbering") == 0)
+        if (strcmp(tok, "-doInitDisp") == 0)
             break;
         num = 1;
         if (OPS_GetDoubleInput(&num, &data[numOpt]) < 0)
@@ -94,7 +97,6 @@ void* OPS_TenNodeTetrahedron()
     }
 
     int do_init_disp_int = 0;
-    bool abaqus_numbering = false;
     while (OPS_GetNumRemainingInputArgs() > 0)
     {
         const char* type = OPS_GetString();
@@ -107,25 +109,10 @@ void* OPS_TenNodeTetrahedron()
                 return 0;
             }
         }
-        else if (strcmp(type, "-numbering") == 0)
-        {
-            // gmsh (default): node 9 on edge 3-4, node 10 on edge 2-4
-            // abaqus (C3D10, also VTK): node 9 on edge 2-4, node 10 on edge 3-4
-            const char* order = OPS_GetNumRemainingInputArgs() > 0 ? OPS_GetString() : "";
-            if (strcmp(order, "abaqus") == 0 || strcmp(order, "Abaqus") == 0)
-                abaqus_numbering = true;
-            else if (strcmp(order, "gmsh") == 0 || strcmp(order, "Gmsh") == 0)
-                abaqus_numbering = false;
-            else
-            {
-                opserr << "WARNING: -numbering must be gmsh or abaqus -- TenNodeTetrahedron " << idata[0] << "\n";
-                return 0;
-            }
-        }
     }
     bool do_init_disp = (do_init_disp_int != 0);
 
-    Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp, abaqus_numbering);
+    Element* the_new_element_ptr = new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2], do_init_disp, std_numbering);
 
     if (the_new_element_ptr == NULL)
     {
@@ -134,6 +121,16 @@ void* OPS_TenNodeTetrahedron()
     }
 
     return the_new_element_ptr;
+}
+
+void* OPS_TenNodeTetrahedron()
+{
+    return parseTenNodeTetrahedron("TenNodeTetrahedron", false);
+}
+
+void* OPS_TenNodeTetrahedronStd()
+{
+    return parseTenNodeTetrahedron("TenNodeTetrahedronStd", true);
 }
 
 void* OPS_TenNodeTetrahedron(const ID& info)
@@ -145,7 +142,7 @@ void* OPS_TenNodeTetrahedron(const ID& info)
 
     // save data
     static std::map<int, Vector> meshdata;
-    int idata[6];
+    int idata[12];  // eleTag, 10 nodes, matTag
     double data[3] = {0, 0, 0};
     if (info(0) == 1) {
 
@@ -162,7 +159,7 @@ void* OPS_TenNodeTetrahedron(const ID& info)
 
         // get tag
         int numdata = 1;
-        if (OPS_GetIntInput(&numdata, &idata[5]) < 0) {
+        if (OPS_GetIntInput(&numdata, &idata[11]) < 0) {
             opserr << "WARNING: failed to get material tag -- TenNodeTetrahedron\n";
             return 0;
         }
@@ -182,7 +179,7 @@ void* OPS_TenNodeTetrahedron(const ID& info)
         // save data for a mesh
         Vector& mdata = meshdata[info(1)];
         mdata.resize(4);
-        mdata(0) = (double)idata[5];
+        mdata(0) = (double)idata[11];
         for (int i = 0; i < 3; ++i) {
             mdata(i + 1) = data[i];
         }
@@ -191,8 +188,8 @@ void* OPS_TenNodeTetrahedron(const ID& info)
 
     // load data
     if (info(0) == 2) {
-        if (info.Size() < 7) {
-            opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, nd2, nd3, nd4\n";
+        if (info.Size() < 13) {
+            opserr << "WARNING: need info -- inmesh, meshtag, eleTag, nd1, ..., nd10\n";
             return 0;
         }
 
@@ -202,21 +199,22 @@ void* OPS_TenNodeTetrahedron(const ID& info)
             return 0;
         }
 
-        idata[5] = (int)mdata(0);
+        idata[11] = (int)mdata(0);
         for (int i = 0; i < 3; ++i) {
             data[i] = mdata(i + 1);
         }
 
-        for (int i = 2; i < 7; ++i) {
+        for (int i = 2; i < 13; ++i) {
             idata[i - 2] = info(i);
         }
 
         // check material
-        NDMaterial* mat = OPS_getNDMaterial(idata[5]);
+        NDMaterial* mat = OPS_getNDMaterial(idata[11]);
         if (mat == 0) {
             opserr << "WARNING material not found\n";
-            opserr << "material tag: " << idata[5];
+            opserr << "material tag: " << idata[11];
             opserr << "\nTenNodeTetrahedron element: " << idata[0] << endln;
+            return 0;
         }
 
         return new TenNodeTetrahedron(idata[0], idata[1], idata[2], idata[3], idata[4], idata[5], idata[6], idata[7], idata[8], idata[9], idata[10], *mat, data[0], data[1], data[2]);
@@ -259,7 +257,7 @@ Matrix TenNodeTetrahedron::B(NumStressComponents, NumDOFsPerNode) ;
 //null constructor
 TenNodeTetrahedron::TenNodeTetrahedron( )
     : Element( 0, ELE_TAG_TenNodeTetrahedron ),
-      connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false), abaqus_numbering(false)
+      connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(false), std_numbering(false)
 {
     B.Zero();
 
@@ -296,10 +294,10 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
                                        int node9,
                                        int node10,
                                        NDMaterial &theMaterial,
-                                       double b1, double b2, double b3, bool do_init_disp_, bool abaqus_numbering_)
+                                       double b1, double b2, double b3, bool do_init_disp_, bool std_numbering_)
     : Element(tag, ELE_TAG_TenNodeTetrahedron),
       connectedExternalNodes(NumNodes), applyLoad(0), load(0), Ki(0), do_init_disp(do_init_disp_),
-      abaqus_numbering(abaqus_numbering_)
+      std_numbering(std_numbering_)
 {
     // opserr << "TenNodeTetrahedron::constructor - START\n";
     B.Zero();
@@ -640,7 +638,6 @@ const Matrix&  TenNodeTetrahedron::getInitialStiff( )
                     for ( q = 0; q < numberNodes; q++ )
                     {
                         Shape[p][q][count] = shp[p][q] ;
-                        std::cout << shp[p][q] << std::endl;
                     }
                 } // end for p
 
@@ -1558,7 +1555,7 @@ int  TenNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
     // Now quad sends the ids of its materials
     int matDbTag;
 
-    static ID idData(28);
+    static ID idData(31);
 
     idData(24) = this->getTag();
     if (alphaM != 0 || betaK != 0 || betaK0 != 0 || betaKc != 0)
@@ -1584,16 +1581,14 @@ int  TenNodeTetrahedron::sendSelf (int commitTag, Channel &theChannel)
         idData(i + 8) = matDbTag;
     }
 
-    idData(16) = connectedExternalNodes(0);
-    idData(17) = connectedExternalNodes(1);
-    idData(18) = connectedExternalNodes(2);
-    idData(19) = connectedExternalNodes(3);
+    // nodes 1-8 in 16-23, nodes 9-10 in 28-29
+    for (i = 0; i < 8; i++)
+        idData(16 + i) = connectedExternalNodes(i);
+    idData(28) = connectedExternalNodes(8);
+    idData(29) = connectedExternalNodes(9);
     idData(26) = (int) do_update;
-    idData(27) = (int) abaqus_numbering;
-    // idData(20) = connectedExternalNodes(4);
-    // idData(21) = connectedExternalNodes(5);
-    // idData(22) = connectedExternalNodes(6);
-    // idData(23) = connectedExternalNodes(7);
+    idData(27) = (int) std_numbering;
+    idData(30) = (int) do_init_disp;
 
     res += theChannel.sendID(dataTag, commitTag, idData);
     if (res < 0) {
@@ -1637,7 +1632,7 @@ int  TenNodeTetrahedron::recvSelf (int commitTag,
 
     int dataTag = this->getDbTag();
 
-    static ID idData(28);
+    static ID idData(31);
     res += theChannel.recvID(dataTag, commitTag, idData);
     if (res < 0) {
         opserr << "WARNING TenNodeTetrahedron::recvSelf() - " << this->getTag() << " failed to receive ID\n";
@@ -1660,16 +1655,13 @@ int  TenNodeTetrahedron::recvSelf (int commitTag,
     b[2] = dData(6);
 
 
-    connectedExternalNodes(0) = idData(16);
-    connectedExternalNodes(1) = idData(17);
-    connectedExternalNodes(2) = idData(18);
-    connectedExternalNodes(3) = idData(19);
+    for (int i = 0; i < 8; i++)
+        connectedExternalNodes(i) = idData(16 + i);
+    connectedExternalNodes(8) = idData(28);
+    connectedExternalNodes(9) = idData(29);
     do_update = (bool) idData(26);
-    abaqus_numbering = (idData(27) != 0);
-    // connectedExternalNodes(4) = idData(20);
-    // connectedExternalNodes(5) = idData(21);
-    // connectedExternalNodes(6) = idData(22);
-    // connectedExternalNodes(7) = idData(23);
+    std_numbering = (idData(27) != 0);
+    do_init_disp = (idData(30) != 0);
 
 
     if (materialPointers[0] == 0)
@@ -2056,9 +2048,9 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     double zeta4 = 1 - zeta[0] - zeta[1] - zeta[2];
 
     // Below, N9 is the node on edge 3-4 and N10 the node on edge 2-4 (gmsh order).
-    // With abaqus_numbering these two sit in the other slot of xl and shp.
-    const int i9  = abaqus_numbering ? 9 : 8;
-    const int i10 = abaqus_numbering ? 8 : 9;
+    // With std_numbering (TenNodeTetrahedronStd) these two sit in the other slot of xl and shp.
+    const int i9  = std_numbering ? 9 : 8;
+    const int i10 = std_numbering ? 8 : 9;
 
     // double x12 = xl[0][0] - xl[0][1];
     // double x13 = xl[0][0] - xl[0][2];
