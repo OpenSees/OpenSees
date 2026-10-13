@@ -125,7 +125,7 @@ DOF_Graph::DOF_Graph(AnalysisModel &theModel)
       if (eqn1 >=START_EQN_NUM) {
 	for (int j=i+1; j<size; j++) {
 	  int eqn2 = id(j);
-	  if (eqn2 >=START_EQN_NUM)
+	  if (eqn2 >=START_EQN_NUM && eqn1 != eqn2)
 	    this->addEdge(eqn1-START_EQN_NUM+START_VERTEX_NUM,
 			  eqn2-START_EQN_NUM+START_VERTEX_NUM);
 	}
