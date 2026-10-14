@@ -502,8 +502,8 @@ void  TenNodeTetrahedron::Print(OPS_Stream &s, int flag)
               << " " << nodeDisp(0) << " " << nodeDisp(1) << " " << nodeDisp(2) << endln;
         }
 
-        // spit out the section location & invoke print on the scetion
-        const int numMaterials = 1;
+        // average over the Gauss points
+        const int numMaterials = NumGaussPoints;
 
         static Vector avgStress(nstress);
         static Vector avgStrain(nstress);
@@ -559,10 +559,10 @@ void  TenNodeTetrahedron::Print(OPS_Stream &s, int flag)
         s << "\t\t\t{";
         s << "\"name\": " << this->getTag() << ", ";
         s << "\"type\": \"TenNodeTetrahedron\", ";
-        s << "\"nodes\": [" << connectedExternalNodes(0) << ", ";
-        for (int i = 1; i < 2; i++)
-            s << connectedExternalNodes(i) << ", ";
-        s << connectedExternalNodes(3) << "], ";
+        s << "\"nodes\": [" << connectedExternalNodes(0);
+        for (int i = 1; i < NumNodes; i++)
+            s << ", " << connectedExternalNodes(i);
+        s << "], ";
         s << "\"bodyForces\": [" << b[0] << ", " << b[1] << ", " << b[2] << "], ";
         s << "\"material\": \"" << materialPointers[0]->getTag() << "\"}";
     }
