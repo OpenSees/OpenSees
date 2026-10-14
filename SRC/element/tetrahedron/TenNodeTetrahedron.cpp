@@ -1237,11 +1237,14 @@ TenNodeTetrahedron::update(void)
             double b50 = shp[2][j];
             double b52 = shp[0][j];
 
-            const Vector &ul = nodePointers[j]->getTrialDisp() - initDisp[j];
+            // displacement relative to initDisp (zero unless -doInitDisp / setDispInit),
+            // without building a temporary Vector for every node and Gauss point
+            const Vector &uTrial = nodePointers[j]->getTrialDisp();
+            const Vector &uInit = initDisp[j];
 
-            double ul0 = ul(0);
-            double ul1 = ul(1);
-            double ul2 = ul(2);
+            double ul0 = uTrial(0) - uInit(0);
+            double ul1 = uTrial(1) - uInit(1);
+            double ul2 = uTrial(2) - uInit(2);
 
             strain(0) += b00 * ul0;
             strain(1) += b11 * ul1;
