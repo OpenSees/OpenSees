@@ -1980,7 +1980,7 @@ TenNodeTetrahedron::setParameter(const char **argv, int argc, Parameter &param)
             return -1;
         }
     }
-    else if ((strstr(argv[0], "setDispInit") != 0) && (strcmp(argv[0], "setdispinit") == 0))
+    else if ((strcmp(argv[0], "setDispInit") == 0) || (strcmp(argv[0], "setdispinit") == 0))
     {
         return param.addObject(1313, this);
     }
