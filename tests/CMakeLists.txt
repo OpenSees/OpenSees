@@ -24,3 +24,5 @@ add_test(
   NAME matrix-vector-otherfact
   COMMAND matrix-vector-otherfact-test
 )
+
+add_subdirectory(native_material)

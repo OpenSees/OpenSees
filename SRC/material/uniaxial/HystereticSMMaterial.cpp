@@ -1022,8 +1022,10 @@ HystereticSMMaterial::~HystereticSMMaterial()
 int
 HystereticSMMaterial::setTrialStrain(double strain, double strainRate)
 {
-    if (TloadIndicator == 0 && strain == 0.0)
-        return 0;
+    double dStrain = strain - Cstrain;
+
+    if (fabs(dStrain) < DBL_EPSILON)
+        return this->revertToLastCommit();
 
     TrotMax = CrotMax;
     TrotMin = CrotMin;
@@ -1038,11 +1040,21 @@ HystereticSMMaterial::setTrialStrain(double strain, double strainRate)
     TrotMaxDuctUsed = CrotMaxDuctUsed;
     TrotMinDuctUsed = CrotMinDuctUsed;
 
-    Tstrain = strain;
-    double dStrain = Tstrain - Cstrain;
+    TdamfcPeak = CdamfcPeak;
 
-    if (fabs(dStrain) < DBL_EPSILON)
-        return this->revertToLastCommit();
+    // Restore trial-only degradation; retain the committed backbone.
+    if ((degEnvp != 0.0 || degEnvn != 0.0) &&
+        (mom2p != Cmom2p || mom3p != Cmom3p || mom4p != Cmom4p ||
+         mom5p != Cmom5p || mom6p != Cmom6p || mom7p != Cmom7p ||
+         rot2p != Crot2p || rot3p != Crot3p || rot4p != Crot4p ||
+         rot5p != Crot5p || rot6p != Crot6p || rot7p != Crot7p ||
+         mom2n != Cmom2n || mom3n != Cmom3n || mom4n != Cmom4n ||
+         mom5n != Cmom5n || mom6n != Cmom6n || mom7n != Cmom7n ||
+         rot2n != Crot2n || rot3n != Crot3n || rot4n != Crot4n ||
+         rot5n != Crot5n || rot6n != Crot6n || rot7n != Crot7n))
+        revertEnvelopeToCommit();
+
+    Tstrain = strain;
 
     TloadIndicator = CloadIndicator;
 
