@@ -218,7 +218,7 @@ BandSPDLinSOE::setSize(Graph &theGraph)
 	X[j] = 0;
     }
 
-    if (size != oldSize) {
+    if (size != oldSize || size == 0) {
 
 	if (vectX != 0)
 	    delete vectX;

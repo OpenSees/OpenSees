@@ -154,6 +154,7 @@ class CatenaryCable : public Element
     bool first_step;
 
     int massType;
+    int numDOF;
 
     Node *theNodes[2];
     Vector *load;
@@ -166,6 +167,12 @@ class CatenaryCable : public Element
     static Matrix Mass;
     static Matrix ZeroMatrix;
     static Vector Forces;
+    
+    // 12-dof variants for 6-dof-per-node models (rotational dofs remain zero)
+    static Matrix Stiffness12;
+    static Matrix Mass12;
+    static Matrix ZeroMatrix12;
+    static Vector Forces12;
 };
 
 #endif
