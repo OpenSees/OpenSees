@@ -365,13 +365,27 @@ TenNodeTetrahedron::~TenNodeTetrahedron( )
 //set domain
 void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 {
-    // opserr << "TenNodeTetrahedron::setDomain( Domain *theDomain ) tag = " << this->getTag() << endln;
     int i ;
+
+    if (theDomain == 0)
+    {
+        for ( i = 0; i < NumNodes; i++ )
+            nodePointers[i] = 0;
+        this->DomainComponent::setDomain(theDomain);
+        return;
+    }
 
     //node pointers
     for ( i = 0; i < NumNodes; i++ )
     {
         nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
+
+        if (nodePointers[i] == 0)
+        {
+            opserr << "WARNING TenNodeTetrahedron::setDomain() - element " << this->getTag()
+                   << ": node " << connectedExternalNodes(i) << " does not exist in the domain\n";
+            return;
+        }
 
         if(do_init_disp)
         {
@@ -381,7 +395,23 @@ void  TenNodeTetrahedron::setDomain( Domain *theDomain )
 
     this->DomainComponent::setDomain(theDomain);
 
-    // opserr << "TenNodeTetrahedron::setDomain - END\n";
+    // A non-positive Jacobian means the corner nodes are ordered left-handed (or the
+    // element is badly distorted): its volume, stiffness and mass would come out negative.
+    computeBasis( ) ;
+    double xsj ;
+    double shpCheck[4][NumNodes] ;
+    for ( i = 0; i < NumGaussPoints; i++ )
+    {
+        shp3d( tet_coords[i], xsj, shpCheck, xl ) ;
+        if (xsj <= 0.0)
+        {
+            opserr << "WARNING TenNodeTetrahedron::setDomain() - element " << this->getTag()
+                   << " has a non-positive Jacobian (" << xsj << ") at Gauss point " << i + 1
+                   << ": corner nodes 1-4 must be ordered so that 4 lies on the side of face 1-2-3"
+                   << " given by the right-hand rule; volume, stiffness and mass are negative\n";
+            break;
+        }
+    }
 }
 
 
