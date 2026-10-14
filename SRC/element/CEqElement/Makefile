@@ -1,6 +1,7 @@
 include ../../../Makefile.def
 
-OBJS       = ASDEmbeddedNodeElement.o
+OBJS       = ASDEmbeddedNodeElement.o \
+	EmbeddedNodeContact.o
 
 all:         $(OBJS)
 

@@ -909,6 +909,7 @@
 #define ELE_TAG_CurvedPipe                      270
 #define ELE_TAG_PML3DVISCOUS               271 // Amin Pakzad
 #define ELE_TAG_MEFI_3D        			  272 // C. N. Lopez
+#define ELE_TAG_EmbeddedNodeContact        273 // Amin Pakzad (based on ASDEmbeddedNodeElement + ZeroLengthContactASDimplex, ASDEA)
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2
