@@ -1822,7 +1822,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
     output.tag("ElementOutput");
     output.attr("eleType", "TenNodeTetrahedron");
     output.attr("eleTag", this->getTag());
-    for (int i = 1; i <= 10; i++)
+    for (int i = 1; i <= NumNodes; i++)
     {
         sprintf(outputData, "node%d", i);
         output.attr(outputData, nodePointers[i - 1]->getTag());
@@ -1831,7 +1831,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 
     if (strcmp(argv[0], "force") == 0 || strcmp(argv[0], "forces") == 0)
     {
-        for (int i = 1; i <= 10; i++)
+        for (int i = 1; i <= NumNodes; i++)
         {
             sprintf(outputData, "P1_%d", i);
             output.tag("ResponseType", outputData);
@@ -1843,10 +1843,10 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
 
         theResponse = new ElementResponse(this, 1, resid);
     }
-    else if (strcmp(argv[0], "material") == 0 || strcmp(argv[0], "integrPoint") == 0)
+    else if ((strcmp(argv[0], "material") == 0 || strcmp(argv[0], "integrPoint") == 0) && argc > 1)
     {
         int pointNum = atoi(argv[1]);
-        if (pointNum > 0 && pointNum <= 4)
+        if (pointNum > 0 && pointNum <= NumGaussPoints)
         {
             output.tag("GaussPoint");
             output.attr("number", pointNum);
@@ -1858,7 +1858,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
     }
     else if (strcmp(argv[0], "stresses") == 0)
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < NumGaussPoints; i++)
         {
             output.tag("GaussPoint");
             output.attr("number", i + 1);
@@ -1876,12 +1876,12 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
             output.endTag(); // NdMaterialOutput
             output.endTag(); // GaussPoint
         }
-        theResponse =  new ElementResponse(this, 3, Vector(6*4));
+        theResponse =  new ElementResponse(this, 3, Vector(NumStressComponents*NumGaussPoints));
 
     }
     else if (strcmp(argv[0], "strains") == 0)
     {
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < NumGaussPoints; i++)
         {
             output.tag("GaussPoint");
             output.attr("number", i + 1);
@@ -1899,7 +1899,7 @@ TenNodeTetrahedron::setResponse(const char **argv, int argc, OPS_Stream &output)
             output.endTag(); // NdMaterialOutput
             output.endTag(); // GaussPoint
         }
-        theResponse =  new ElementResponse(this, 4, Vector(6*4));
+        theResponse =  new ElementResponse(this, 4, Vector(NumStressComponents*NumGaussPoints));
     }
     output.endTag(); // ElementOutput
     return theResponse;
@@ -1920,7 +1920,7 @@ TenNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 
         // Loop over the integration points
         int cnt = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < NumGaussPoints; i++) {
 
             // Get material stress response
             const Vector &sigma = materialPointers[i]->getStress();
@@ -1937,9 +1937,9 @@ TenNodeTetrahedron::getResponse(int responseID, Information &eleInfo)
 
         // Loop over the integration points
         int cnt = 0;
-        for (int i = 0; i < 4; i++) {
+        for (int i = 0; i < NumGaussPoints; i++) {
 
-            // Get material stress response
+            // Get material strain response
             const Vector &sigma = materialPointers[i]->getStrain();
             stresses(cnt++) = sigma(0);
             stresses(cnt++) = sigma(1);
