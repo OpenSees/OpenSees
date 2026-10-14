@@ -2106,16 +2106,6 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     double x9  = xl[0][i9];  double y9  = xl[1][i9] ;  double z9  = xl[2][i9]; // *
     double x10 = xl[0][i10]; double y10 = xl[1][i10] ; double z10 = xl[2][i10]; // *
 
-    // * 
-    double a1 = y2*(z4-z3)-y3*(z4-z2)+y4*(z3-z2) ; double b1 = -x2*(z4-z3)+x3*(z4-z2)-x4*(z3-z2); double c1 = x2*(y4-y3)-x3*(y4-y2)+x4*(y3-y2);
-    // double a1 = y42 * z32 - y32 * z42; double b1 = x32 * z42 - x42 * z32; double c1 = x42 * y32 - x32 * y42;
-    double a2 = -y1*(z4-z3)+y3*(z4-z1)-y4*(z3-z1); double b2 = x1*(z4-z3)-x3*(z4-z1)+x4*(z3-z1) ; double c2 = -x1*(y4-y3)+x3*(y4-y1)-x4*(y3-y1);
-    // double a2 = y31 * z43 - y34 * z13; double b2 = x43 * z31 - x13 * z34; double c2 = x31 * y43 - x34 * y13;
-    double a3 = y1*(z4-z2)-y2*(z4-z1)+y4*(z2-z1) ; double b3 = -x1*(z4-z2)+x2*(z4-z1)-x4*(z2-z1); double c3 = x1*(y4-y2)-x2*(y4-y1)+x4*(y2-y1);
-    // double a3 = y24 * z14 - y14 * z24; double b3 = x14 * z24 - x24 * z14; double c3 = x24 * y14 - x14 * y24;
-    double a4 = -y1*(z3-z2)+y2*(z3-z1)-y3*(z2-z1); double b4 = x1*(z3-z2)-x2*(z3-z1)+x3*(z2-z1) ; double c4 = -x1*(y3-y2)+x2*(y3-y1)-x3*(y2-y1);
-    // double a4 = y13 * z21 - y12 * z31; double b4 = x21 * z13 - x31 * z12; double c4 = x13 * y21 - x12 * y31;
-
     // dNi/dzeta1
     double dN1_dzeta1  = 4*zeta[0]-1; double dN2_dzeta1 = 0;
     double dN3_dzeta1  = 0          ; double dN4_dzeta1 = 0;
@@ -2177,6 +2167,15 @@ TenNodeTetrahedron::shp3d( const double zeta[4], double &xsj, double shp[4][NumN
     // double Jx4 = xl[0][3]*(4*zeta4-1) + 4*xl[0][7]*zeta[0] + 4*xl[0][8]*zeta[1] + 4*xl[0][9]*zeta[2];
     // double Jy4 = xl[1][3]*(4*zeta4-1) + 4*xl[1][7]*zeta[0] + 4*xl[1][8]*zeta[1] + 4*xl[1][9]*zeta[2];
     // double Jz4 = xl[2][3]*(4*zeta4-1) + 4*xl[2][7]*zeta[0] + 4*xl[2][8]*zeta[1] + 4*xl[2][9]*zeta[2];
+
+    // Cofactors of the 4x4 Jacobian [1 1 1 1; Jx; Jy; Jz] (Felippa, AFEM ch. 17, eq. 17.24).
+    // They must be built from the Jacobian entries Jx_i, Jy_i, Jz_i, not from the corner
+    // coordinates: the two agree only for straight-edged elements, and a curved element
+    // (mid-edge nodes off the edge midpoints) would otherwise fail the patch test.
+    double a1 = Jy2*(Jz4-Jz3)-Jy3*(Jz4-Jz2)+Jy4*(Jz3-Jz2) ; double b1 = -Jx2*(Jz4-Jz3)+Jx3*(Jz4-Jz2)-Jx4*(Jz3-Jz2); double c1 = Jx2*(Jy4-Jy3)-Jx3*(Jy4-Jy2)+Jx4*(Jy3-Jy2);
+    double a2 = -Jy1*(Jz4-Jz3)+Jy3*(Jz4-Jz1)-Jy4*(Jz3-Jz1); double b2 = Jx1*(Jz4-Jz3)-Jx3*(Jz4-Jz1)+Jx4*(Jz3-Jz1) ; double c2 = -Jx1*(Jy4-Jy3)+Jx3*(Jy4-Jy1)-Jx4*(Jy3-Jy1);
+    double a3 = Jy1*(Jz4-Jz2)-Jy2*(Jz4-Jz1)+Jy4*(Jz2-Jz1) ; double b3 = -Jx1*(Jz4-Jz2)+Jx2*(Jz4-Jz1)-Jx4*(Jz2-Jz1); double c3 = Jx1*(Jy4-Jy2)-Jx2*(Jy4-Jy1)+Jx4*(Jy2-Jy1);
+    double a4 = -Jy1*(Jz3-Jz2)+Jy2*(Jz3-Jz1)-Jy3*(Jz2-Jz1); double b4 = Jx1*(Jz3-Jz2)-Jx2*(Jz3-Jz1)+Jx3*(Jz2-Jz1) ; double c4 = -Jx1*(Jy3-Jy2)+Jx2*(Jy3-Jy1)-Jx3*(Jy2-Jy1);
 
     // Terms in simplified Jacobian Matrix (3x3)
     double t1 = Jx2-Jx1; double t2 = Jx3-Jx1; double t3 = Jx4-Jx1;
