@@ -108,6 +108,7 @@
 #include "SelfCenteringMaterial.h"
 #include "SteelFractureDI.h"
 #include "FatigueMaterial.h"
+#include "FatigueMemberMaterial.h"
 #include "ReinforcingSteel.h"
 #include "HardeningMaterial.h"
 #include "HystereticMaterial.h"
@@ -1880,6 +1881,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
 	case MAT_TAG_Fatigue:
 		return new FatigueMaterial();
+
+	case MAT_TAG_FatigueMember:
+		return new FatigueMemberMaterial();
 
 	case MAT_TAG_FrictionSpringDamper:
 		return new FrictionSpringDamper();		

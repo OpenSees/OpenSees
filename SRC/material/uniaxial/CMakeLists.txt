@@ -118,6 +118,7 @@ target_sources(OPS_Material
       FRPConfinedConcrete.cpp
       FRPConfinedConcrete02.cpp
       FatigueMaterial.cpp
+      FatigueMemberMaterial.cpp
       #FedeasMaterial.cpp
       FlagShapeMaterial.cpp
       FrictionSpringDamper.cpp
@@ -247,6 +248,7 @@ target_sources(OPS_Material
       FRPConfinedConcrete.h
       FRPConfinedConcrete02.h
       FatigueMaterial.h
+      FatigueMemberMaterial.h
       #FedeasMaterial.h
       FlagShapeMaterial.h
       FrictionSpringDamper.h
