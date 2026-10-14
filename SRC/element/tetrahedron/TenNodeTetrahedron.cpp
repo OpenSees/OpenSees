@@ -586,6 +586,13 @@ const Matrix&  TenNodeTetrahedron::getTangentStiff( )
 const Matrix&  TenNodeTetrahedron::getInitialStiff( )
 
 {
+    // a deactivated element contributes no stiffness, as in formResidAndTangent()
+    if (!do_update)
+    {
+        stiff.Zero();
+        return stiff;
+    }
+
     if (Ki != 0)
         return *Ki;
 
@@ -2046,6 +2053,11 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
             }
             // opserr << endln;
         }
+        if (Ki != 0 && new_do_update != do_update)
+        {
+            delete Ki;
+            Ki = 0;
+        }
         if (!new_do_update)
         {
             opserr << "4Ntet::updateParameter - ele tag = " << this->getTag()  << " - will not update\n";
@@ -2277,6 +2289,11 @@ TenNodeTetrahedron::onActivate()
 {
 
     Domain* theDomain = this->getDomain();
+    if (Ki != 0)
+    {
+        delete Ki;
+        Ki = 0;
+    }
     this->setDomain(theDomain);
     this->update();
 }
