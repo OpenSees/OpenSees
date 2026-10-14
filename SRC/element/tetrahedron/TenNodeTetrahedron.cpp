@@ -786,8 +786,8 @@ TenNodeTetrahedron::addLoad(ElementalLoad *theLoad, double loadFactor)
 int
 TenNodeTetrahedron::addInertiaLoadToUnbalance(const Vector &accel)
 {
-    static const int numberNodes = 4 ;
-    static const int numberGauss = 1 ;
+    static const int numberNodes = NumNodes ;
+    static const int numberGauss = NumGaussPoints ;
     static const int ndf = 3 ;
 
     int i;
@@ -843,7 +843,7 @@ const Vector&  TenNodeTetrahedron::getResistingForce( )
 //get residual with inertia terms
 const Vector&  TenNodeTetrahedron::getResistingForceIncInertia( )
 {
-    static Vector res(12); res.Zero();
+    static Vector res(NumDOFsTotal); res.Zero();
 
     int tang_flag = 0 ; //don't get the tangent
 
