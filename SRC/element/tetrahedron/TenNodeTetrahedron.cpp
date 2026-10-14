@@ -268,8 +268,12 @@ TenNodeTetrahedron::TenNodeTetrahedron( )
     b[0] = 0.0;
     b[1] = 0.0;
     b[2] = 0.0;
+    appliedB[0] = 0.0;
+    appliedB[1] = 0.0;
+    appliedB[2] = 0.0;
 
-    materialPointers[0] = 0;
+    for (int i = 0; i < NumGaussPoints; i++)
+        materialPointers[i] = 0;
 
     for (int i = 0; i < NumNodes; ++i)
     {
@@ -323,13 +327,18 @@ TenNodeTetrahedron::TenNodeTetrahedron(int tag,
             opserr << "TenNodeTetrahedron::constructor - failed to get a material of type: ThreeDimensional\n";
             exit(-1);
         } //end if
-        nodePointers[i] = 0;
     } //end for i
+
+    for (int i = 0; i < NumNodes; i++ )
+        nodePointers[i] = 0;
 
     // Body forces
     b[0] = b1;
     b[1] = b2;
     b[2] = b3;
+    appliedB[0] = 0.0;
+    appliedB[1] = 0.0;
+    appliedB[2] = 0.0;
 
     // opserr << "TenNodeTetrahedron::constructor - init disp\n";
 
@@ -2067,12 +2076,11 @@ TenNodeTetrahedron::updateParameter(int parameterID, Information &info)
     }
     else
     {
-        for (int i = 0; i < 1; i++)
+        for (int i = 0; i < NumGaussPoints; i++)
         {
             matRes = materialPointers[i]->updateParameter(parameterID, info);
-        }
-        if (matRes != -1) {
-            res = matRes;
+            if (matRes != -1)
+                res = matRes;
         }
         return res;
     }
