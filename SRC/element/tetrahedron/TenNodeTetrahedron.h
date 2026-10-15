@@ -158,11 +158,11 @@ private :
     // private attributes
     //
 
-    ID connectedExternalNodes ;  //four node numbers
-    Node *nodePointers[NumNodes] ;      //pointers to eight nodes
+    ID connectedExternalNodes ;  //the ten node numbers
+    Node *nodePointers[NumNodes] ;      //pointers to the ten nodes
 
     //material information
-    NDMaterial *materialPointers[NumGaussPoints]; //pointers to eight materials
+    NDMaterial *materialPointers[NumGaussPoints]; //one material copy per Gauss point
 
     double b[3];        // Body forces
     double appliedB[3];     // Body forces applied with load
@@ -186,11 +186,10 @@ private :
     static const double one_over_root3 ;
     static const double alpha ;
     static const double beta ;
-    // static const double sg[4] ;
     static const double wg[1] ;
     static const double tet_coords[4][3] ;
 
-    //local nodal coordinates, three coordinates for each of four nodes
+    //nodal coordinates, three for each of the ten nodes
     static double xl[3][NumNodes] ;
 
     //
