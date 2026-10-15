@@ -86,8 +86,7 @@ target_sources(OPS_Material
       CableMaterial.cpp
       Cast.cpp
       Concrete01.cpp
-      GPCConcreteUnconfined01.cpp
-      GPCConcreteConfined01.cpp
+      GPCConcrete01.cpp
       Concrete01WithSITC.cpp
       Concrete02.cpp
       Concrete02IS.cpp
@@ -217,8 +216,7 @@ target_sources(OPS_Material
       CableMaterial.h
       Cast.h
       Concrete01.h
-      GPCConcreteUnconfined01.h
-      GPCConcreteConfined01.h
+      GPCConcrete01.h
       Concrete01WithSITC.h
       Concrete02.h
       Concrete02IS.h
