@@ -179,6 +179,7 @@ extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_TenNodeTetrahedron(void);
+extern void *OPS_TenNodeTetrahedronUP(void);
 extern void *OPS_LysmerTriangle(void);
 extern void *OPS_ASDAbsorbingBoundary2D(void); // Massimo Petracca (ASDEA)
 extern void *OPS_ASDAbsorbingBoundary3D(void); // Massimo Petracca (ASDEA)
@@ -1516,6 +1517,20 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
         theElement = (Element*)theEle;
       } 
       else 
+      {
+        opserr<<"tclelementcommand -- unable to create element of type : "
+            <<argv[1]<<endln;
+        return TCL_ERROR;
+      }
+
+  }
+  else if (strcmp(argv[1], "TenNodeTetrahedronUP") == 0) {
+      void *theEle = OPS_TenNodeTetrahedronUP();
+      if (theEle != 0)
+      {
+        theElement = (Element*)theEle;
+      }
+      else
       {
         opserr<<"tclelementcommand -- unable to create element of type : "
             <<argv[1]<<endln;

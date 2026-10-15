@@ -8,9 +8,11 @@ target_sources(OPS_Element
     PRIVATE
     FourNodeTetrahedron.cpp
     TenNodeTetrahedron.cpp
+    TenNodeTetrahedronUP.cpp
     PUBLIC
     FourNodeTetrahedron.h
     TenNodeTetrahedron.h
+    TenNodeTetrahedronUP.h
 )
 
 target_include_directories(OPS_Element PUBLIC ${CMAKE_CURRENT_LIST_DIR})
