@@ -31,8 +31,10 @@ AG, E, G, A, I, J, RHO = 2.0, 2.0e5, 8.0e4, 0.02, 1.5e-4, 3.0e-4, 0.8
 AV = 0.8 * A
 NEL, L_BEAM = 2, 3.0
 
-ELEMENTS = [("elasticBeamColumn", 2), ("elasticBeamColumn", 3)]
-IDS = ["ElasticBeam2d", "ElasticBeam3d(control)"]
+ELEMENTS = [("elasticBeamColumn", 2), ("elasticBeamColumn", 3),
+            ("ElasticTimoshenkoBeam", 2), ("ElasticTimoshenkoBeam", 3)]
+IDS = ["ElasticBeam2d", "ElasticBeam3d(control)",
+       "ElasticTimoshenkoBeam2d", "ElasticTimoshenkoBeam3d"]
 
 
 @pytest.fixture(autouse=True)

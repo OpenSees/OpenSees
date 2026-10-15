@@ -641,8 +641,10 @@ const Vector& ElasticTimoshenkoBeam3d::getResistingForceIncInertia()
     // first get the resisting forces
     theVector = this->getResistingForce();
     
-    // subtract external load
-    theVector.addVector(1.0, theLoad, -1.0);
+    // theLoad is not subtracted here: getResistingForce() above already
+    // subtracts it whenever rho != 0, and it holds only the ground-motion
+    // inertia load -M*R*ag (non-zero only when rho != 0). A second
+    // subtraction drives the element mass with 2*ag under UniformExcitation.
     
     // add the damping forces from rayleigh damping
     if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
