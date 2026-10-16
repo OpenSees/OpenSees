@@ -127,6 +127,7 @@ void* OPS_SSPquad();
 void* OPS_SSPquadUP();
 void* OPS_SSPbrick();
 void* OPS_SSPbrickUP();
+void* OPS_SSPTethraUP();
 void* OPS_SurfaceLoad();
 void* OPS_TriSurfaceLoad();
 void* OPS_TPB1D();
@@ -793,6 +794,7 @@ namespace {
 	functionMap.insert(std::make_pair("SSPbrick", &OPS_SSPbrick));
 	functionMap.insert(std::make_pair("SSPBrick", &OPS_SSPbrick));
 	functionMap.insert(std::make_pair("SSPbrickUP", &OPS_SSPbrickUP));
+	functionMap.insert(std::make_pair("SSPTethraUP", &OPS_SSPTethraUP));
 	functionMap.insert(std::make_pair("SSPBrickUP", &OPS_SSPbrickUP));
 	functionMap.insert(std::make_pair("SurfaceLoad", &OPS_SurfaceLoad));
 	functionMap.insert(std::make_pair("TriSurfaceLoad", &OPS_TriSurfaceLoad));

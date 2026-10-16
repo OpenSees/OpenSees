@@ -992,9 +992,16 @@ endif()
 if(HDF5_FOUND)
    include_directories(${HDF5_INCLUDE_DIR})
    set(_hdf5_libs hdf5 hdf5_cpp)
+
    if (HDF5_VERSION VERSION_GREATER_EQUAL 1.12.0)
          add_compile_definitions(_H5DRM)
          add_compile_definitions(_HDF5)
+
+         # Windows: HDF5 shared DLL support
+         if(WIN32)
+             add_compile_definitions(H5_BUILT_AS_DYNAMIC_LIB)
+         endif()
+
          message(STATUS "OPS >>> Have HDF5 and VERSION >= 1.12.0")
    endif()
 else()
