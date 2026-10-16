@@ -411,6 +411,7 @@
 #include "UWelements/SSPquadUP.h"
 #include "UWelements/SSPbrick.h"
 #include "UWelements/SSPbrickUP.h"
+#include "UWelements/SSPTethraUP.h"
 #include "UWelements/BeamContact2D.h"
 #include "UWelements/BeamContact2Dp.h"
 #include "UWelements/BeamContact3D.h"
@@ -1039,6 +1040,8 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
       
     case ELE_TAG_SSPbrickUP:
       return new SSPbrickUP();
+    case ELE_TAG_SSPTethraUP:
+        return new SSPTethraUP();
 
     case ELE_TAG_SurfaceLoad:
       return new SurfaceLoad();

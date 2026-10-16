@@ -120,6 +120,7 @@ extern void *OPS_SSPquad(void);
 extern void *OPS_SSPquadUP(void);
 extern void *OPS_SSPbrick(void);
 extern void *OPS_SSPbrickUP(void);
+extern void* OPS_SSPTethraUP(void);
 extern void *OPS_ShellMITC4(void);
 extern void *OPS_ShellMITC9(void);
 extern void *OPS_ShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
@@ -1221,6 +1222,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  }
+  else if ((strcmp(argv[1],"SSPTethraUP") == 0)) {
+      void* theEle = OPS_SSPTethraUP();
+      if (theEle != 0)
+          theElement = (Element*)theEle;
+      else {
+          opserr << "TclElementCommand -- unable to create element of type: "
+                 << argv[1] << endln;
+          return TCL_ERROR;
+      }
   } else if ((strcmp(argv[1],"SurfaceLoad") == 0)) {
     
     void *theEle = OPS_SurfaceLoad();
