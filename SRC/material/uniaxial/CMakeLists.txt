@@ -170,6 +170,7 @@ target_sources(OPS_Material
       Steel01.cpp
       Steel01Thermal.cpp
       Steel02.cpp
+      Steel02M.cpp
       Steel02Fatigue.cpp
       Steel02Thermal.cpp
       Steel03.cpp
@@ -299,6 +300,7 @@ target_sources(OPS_Material
       Steel01.h
       Steel01Thermal.h
       Steel02.h
+      Steel02M.h
       Steel02Fatigue.h
       Steel02Thermal.h
       Steel03.h
