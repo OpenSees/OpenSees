@@ -27,6 +27,8 @@
 #include <FEM_ObjectBroker.h>
 #include <elementAPI.h>
 #include <cmath>
+#include <cstring>
+#include <cstdlib>
 #include <limits>
 
 #include <Domain.h>
@@ -55,9 +57,10 @@ void *OPS_ExplicitBathe(void) {
     int numArgs = OPS_GetNumRemainingInputArgs();
     if (numArgs < 1) {
         opserr << "WARNING: Insufficient arguments for ExplicitBathe integrator.\n";
-        opserr << "Usage: integrator ExplicitBathe p <compute_critical_timestep>\n";
+        opserr << "Usage: integrator ExplicitBathe p <compute_critical_timestep> <-lnvd alpha>\n";
         opserr << "  p = damping parameter (0 < p < 1, typically 0.5-0.95)\n";
         opserr << "  compute_critical_timestep = optional flag (0 or 1)\n";
+        opserr << "  -lnvd alpha = local non-viscous damping for pseudo-static analysis (0 <= alpha < 1)\n";
         return nullptr;
     }
 
@@ -76,17 +79,48 @@ void *OPS_ExplicitBathe(void) {
         return nullptr;
     }
 
-    // Read optional critical timestep computation flag
+    // Read optional critical timestep computation flag and -lnvd option
     int compute_critical_timestep = 0;
-    if (OPS_GetNumRemainingInputArgs() > 0) {
-        if (OPS_GetIntInput(&numArgs, &compute_critical_timestep) < 0) {
-            opserr << "WARNING: Invalid compute_critical_timestep parameter\n";
-            return nullptr;
+    double alpha_lnvd = 0.0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        const char* opt = OPS_GetString();
+        if (opt == 0) {
+            // numeric argument from Python: the critical-timestep flag
+            OPS_ResetCurrentInputArg(-1);
+            int flag = 0;
+            numArgs = 1;
+            if (OPS_GetIntInput(&numArgs, &flag) < 0) {
+                opserr << "WARNING: Invalid compute_critical_timestep parameter\n";
+                return nullptr;
+            }
+            compute_critical_timestep = (flag > 0) ? 1 : 0;
+            continue;
+        }
+        char *endp = 0;
+        long flagValue = strtol(opt, &endp, 10);
+        if (endp != opt && *endp == '\0') {
+            // any integer is accepted for the critical-timestep flag (> 0 enables it)
+            compute_critical_timestep = (flagValue > 0) ? 1 : 0;
+        }
+        else if (strcmp(opt, "-lnvd") == 0) {
+            // invalid values are reported and ignored (damping stays off) rather than
+            // returning a null integrator
+            double value = 0.0;
+            numArgs = 1;
+            if (OPS_GetNumRemainingInputArgs() < 1 || OPS_GetDoubleInput(&numArgs, &value) < 0)
+                opserr << "WARNING: ExplicitBathe -lnvd needs a value for alpha; local damping off\n";
+            else if (value < 0.0 || value >= 1.0)
+                opserr << "WARNING: ExplicitBathe -lnvd alpha must be in range [0, 1); local damping off\n";
+            else
+                alpha_lnvd = value;
+        }
+        else {
+            opserr << "WARNING: ExplicitBathe - unknown option " << opt << " ignored\n";
         }
     }
 
     // Create integrator
-    theIntegrator = new ExplicitBathe(p, compute_critical_timestep);
+    theIntegrator = new ExplicitBathe(p, compute_critical_timestep, alpha_lnvd);
 
     if (theIntegrator == nullptr) {
         opserr << "WARNING - out of memory creating ExplicitBathe integrator\n";
@@ -108,7 +142,8 @@ ExplicitBathe::ExplicitBathe()
       damped_minimum_critical_timestep(0.0),
       undamped_minimum_critical_timestep(0.0),
       damped_critical_element_tag(0),
-      undamped_critical_element_tag(0)
+      undamped_critical_element_tag(0),
+      alpha_lnvd(0.0)
 {}
 
 // Main constructor with parameters
@@ -117,7 +152,7 @@ ExplicitBathe::ExplicitBathe()
 // q1 = (1 - 2p) / (2p(1-p))
 // q2 = 0.5 - p*q1
 // q0 = -q1 - q2 + 0.5
-ExplicitBathe::ExplicitBathe(double _p, int compute_critical_timestep_)
+ExplicitBathe::ExplicitBathe(double _p, int compute_critical_timestep_, double alpha_lnvd_)
     : TransientIntegrator(INTEGRATOR_TAGS_ExplicitBathe),
       deltaT(0.0), p(_p), q0(0.0), q1(0.0), q2(0.0), 
       U_t(0), V_t(0), A_t(0),
@@ -129,7 +164,8 @@ ExplicitBathe::ExplicitBathe(double _p, int compute_critical_timestep_)
       damped_minimum_critical_timestep(0.0),
       undamped_minimum_critical_timestep(0.0),
       damped_critical_element_tag(0),
-      undamped_critical_element_tag(0)
+      undamped_critical_element_tag(0),
+      alpha_lnvd(alpha_lnvd_)
 {
     // Calculate integration coefficients from p parameter
     q1 = (1.0 - 2.0*p) / (2.0*p*(1.0 - p));
@@ -137,7 +173,10 @@ ExplicitBathe::ExplicitBathe(double _p, int compute_critical_timestep_)
     q0 = -q1 - q2 + 0.5;
 
     opserr << "ExplicitBathe: p = " << p 
-           << ", compute_critical_timestep = " << compute_critical_timestep << endln;
+           << ", compute_critical_timestep = " << compute_critical_timestep;
+    if (alpha_lnvd > 0.0)
+        opserr << ", local non-viscous damping alpha = " << alpha_lnvd;
+    opserr << endln;
 }
 
 // Destructor - clean up allocated memory
@@ -512,6 +551,7 @@ int ExplicitBathe::update(const Vector &U) {
     
     // Store acceleration at t + p*dt
     *A_tpdt = U;
+    this->applyLocalDamping(*A_tpdt, *V_fake);   // V_fake: predicted velocity of sub-step 1
 
     // Update velocity at t + p*dt (corrected)
     // v_{t+p*dt} = v_t + (a_t + a_{t+p*dt}) * p*dt/2
@@ -547,6 +587,7 @@ int ExplicitBathe::update(const Vector &U) {
     this->formUnbalance();
     theLinSOE->solve();
     *A_tdt = theLinSOE->getX();
+    this->applyLocalDamping(*A_tdt, *V_fake);    // V_fake: predicted velocity of sub-step 2
 
     // Report maximum acceleration for monitoring
     double A_max = A_tdt->pNorm(0);
@@ -605,6 +646,30 @@ int ExplicitBathe::commit() {
     return theModel->commitDomain();
 }
 
+// Local non-viscous damping (Cundall, P.A. (1987). "Distinct element models of rock and
+// soil structure". In: Analytical and Computational Methods in Engineering Rock
+// Mechanics, ch. 4; see also the Itasca FLAC manual, local damping):
+//   a_d = a - alpha * |a| * sign(v)
+// applied per equation to the solved acceleration of each Bathe sub-step, with v the
+// predicted velocity used to form that sub-step's unbalance. With the lumped (diagonal)
+// mass an explicit scheme uses, this equals F_d = -alpha |F_unbal| sign(v) on the
+// unbalanced force, but the solved acceleration is fully assembled (also across
+// processes for the parallel diagonal SOEs) and re-forming the unbalance (e.g. printB)
+// does not change it. Assumes a lumped (diagonal) mass: with a consistent mass and a
+// full solver it is applied per equation to M^-1 F and dissipation is not guaranteed.
+// Intended for pseudo-static (dynamic relaxation) analyses; it does not represent
+// physical damping.
+void ExplicitBathe::applyLocalDamping(Vector &accel, const Vector &vel) {
+    if (alpha_lnvd <= 0.0 || vel.Size() != accel.Size())
+        return;
+    for (int i = 0; i < accel.Size(); ++i) {
+        const double v = vel(i);
+        const double sign_v = (v > 0.0) ? 1.0 : ((v < 0.0) ? -1.0 : 0.0);
+        accel(i) -= alpha_lnvd * std::fabs(accel(i)) * sign_v;
+    }
+}
+
+
 // Get current velocity (for modal damping interface)
 const Vector &ExplicitBathe::getVel() {
     return *V_t;
@@ -612,8 +677,9 @@ const Vector &ExplicitBathe::getVel() {
 
 // Send object state for parallel processing
 int ExplicitBathe::sendSelf(int cTag, Channel &theChannel) {
-    Vector data(1);
+    Vector data(2);
     data(0) = p;
+    data(1) = alpha_lnvd;
 
     if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
         opserr << "ExplicitBathe::sendSelf() - could not send data\n";
@@ -625,13 +691,14 @@ int ExplicitBathe::sendSelf(int cTag, Channel &theChannel) {
 
 // Receive object state for parallel processing
 int ExplicitBathe::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker) {
-    Vector data(1);
+    Vector data(2);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
         opserr << "ExplicitBathe::recvSelf() - could not receive data\n";
         return -1;
     }
 
     p = data(0);
+    alpha_lnvd = data(1);
 
     // Recalculate integration coefficients from received p
     q1 = (1.0 - 2.0*p) / (2.0*p*(1.0 - p));
@@ -646,6 +713,8 @@ void ExplicitBathe::Print(OPS_Stream &stream, int flag) {
     stream << "Explicit Bathe Method\n";
     stream << "  Time Step: " << deltaT << "\n";
     stream << "  Damping parameter p: " << p << "\n";
+    if (alpha_lnvd > 0.0)
+        stream << "  Local non-viscous damping alpha: " << alpha_lnvd << "\n";
     stream << "  Integration coefficients: q0 = " << q0 
            << ", q1 = " << q1 << ", q2 = " << q2 << "\n";
     if (compute_critical_timestep > 0) {
