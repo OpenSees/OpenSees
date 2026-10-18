@@ -181,7 +181,7 @@ Concrete02::setTrialStrain(double trialStrain, double strainRate)
   double deps = eps - epsP;
 
   if (fabs(deps) < DBL_EPSILON)
-    return 0;
+    return this->revertToLastCommit();
 
   // if the current strain is less than the smallest previous strain 
   // call the monotonic envelope in compression and reset minimum strain 

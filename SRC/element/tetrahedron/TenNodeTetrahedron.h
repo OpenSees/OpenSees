@@ -65,7 +65,8 @@ public :
                        int node9,
                        int node10,
                        NDMaterial &theMaterial,
-                       double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, bool do_init_disp_=false);
+                       double b1 = 0.0, double b2 = 0.0, double b3 = 0.0, bool do_init_disp_=false,
+                       bool std_numbering_=false);
 
     //destructor
     virtual ~TenNodeTetrahedron( ) ;
@@ -157,11 +158,11 @@ private :
     // private attributes
     //
 
-    ID connectedExternalNodes ;  //four node numbers
-    Node *nodePointers[NumNodes] ;      //pointers to eight nodes
+    ID connectedExternalNodes ;  //the ten node numbers
+    Node *nodePointers[NumNodes] ;      //pointers to the ten nodes
 
     //material information
-    NDMaterial *materialPointers[NumGaussPoints]; //pointers to eight materials
+    NDMaterial *materialPointers[NumGaussPoints]; //one material copy per Gauss point
 
     double b[3];        // Body forces
     double appliedB[3];     // Body forces applied with load
@@ -185,10 +186,10 @@ private :
     static const double one_over_root3 ;
     static const double alpha ;
     static const double beta ;
-    static const double sg[4] ;
     static const double wg[1] ;
+    static const double tet_coords[4][3] ;
 
-    //local nodal coordinates, three coordinates for each of four nodes
+    //nodal coordinates, three for each of the ten nodes
     static double xl[3][NumNodes] ;
 
     //
@@ -213,6 +214,7 @@ private :
 
     bool do_update;
     bool do_init_disp;
+    bool std_numbering;  // nodes 9/10 on edges 2-4/3-4 (TenNodeTetrahedronStd) instead of 3-4/2-4 (gmsh)
 } ;
 
 #endif

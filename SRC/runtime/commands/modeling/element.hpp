@@ -50,6 +50,7 @@ extern OPS_Routine OPS_BeamGT;
 
 extern OPS_Routine OPS_FourNodeTetrahedron;
 extern OPS_Routine OPS_TenNodeTetrahedron;
+extern OPS_Routine OPS_TenNodeTetrahedronStd;
 
 extern OPS_Routine OPS_TPB1D;
 extern OPS_Routine OPS_TFP_Bearing;
@@ -335,6 +336,7 @@ element_dispatch = {
 
   {"FourNodeTetrahedron",          OPS_FourNodeTetrahedron},
   {"TenNodeTetrahedron",           OPS_TenNodeTetrahedron},
+  {"TenNodeTetrahedronStd",        OPS_TenNodeTetrahedronStd},
 
   {"LinearElasticSpring",          OPS_LinearElasticSpring},
   {"Inerter",                      OPS_Inerter},
