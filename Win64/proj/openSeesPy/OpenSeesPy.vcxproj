@@ -111,7 +111,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;PML.lib;python312.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;PML.lib;python312.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;systemPython.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)opensees.pyd</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\users\mhscott\anaconda312\libs;C:\Program Files\Tcl\lib;..\..\lib;C:\Users\silvi\AppData\Local\Programs\Python\Python312\libs;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -155,7 +155,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE  %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;python36.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;python36.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;systemPython.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin\opensees.pyd</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\Program Files\Python36\libs;..\..\lib;..\..\lib\release;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -198,7 +198,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;PML.lib;python312.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;PML.lib;python312.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;systemPython.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>$(OutDir)opensees.pyd</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>C:\Program Files\Tcl\lib;C:\Users\silvi\AppData\Local\Programs\Python\Python312\libs;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -243,7 +243,7 @@
     </ResourceCompile>
     <Link>
       <AdditionalOptions>/FORCE:MULTIPLE %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;python36.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>actor.lib;analysis.lib;arpack.lib;blas.lib;cblas.lib;convergence.lib;cssparse.lib;damage.lib;database.lib;DoddRestrepo.lib;domain.lib;drain.lib;element.lib;feap.lib;fedeas.lib;glu32.lib;graph.lib;handler.lib;ifconsol.lib;lapack.lib;libifcoremt.lib;libmmt.lib;material.lib;matrix.lib;modelbuilder.lib;opengl32.lib;optimization.lib;python36.lib;recorder.lib;reliability.lib;renderer.lib;sdmuc.lib;superLU.lib;system.lib;systemPython.lib;tagged.lib;tcl.lib;tcl86t.lib;tk86t.lib;umfpackC.lib;utility.lib;wsock32.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>.\..\..\bin\opensees.pyd</OutputFile>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalLibraryDirectories>c:\Program Files\tcl\lib;c:\Program Files\Python36\libs;..\..\lib;..\..\lib\debug;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
@@ -333,6 +333,9 @@
     </ProjectReference>
     <ProjectReference Include="..\system\system.vcxproj">
       <Project>{e68180c9-479c-a9c1-3832-cef06b7f9d8c}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\systemPython\systemPython.vcxproj">
+      <Project>{0070ada2-cb07-4c57-8781-b97ebedb3dd6}</Project>
     </ProjectReference>
     <ProjectReference Include="..\tagged\tagged.vcxproj">
       <Project>{3285d0ef-7169-f5be-c3ac-3752aaebb765}</Project>

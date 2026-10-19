@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="linearSOE">
+      <UniqueIdentifier>{4d866ba9-64d7-47d8-ab6d-0fbbacf45ca9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="eigenSOE">
+      <UniqueIdentifier>{d0bab5ad-5229-4d8d-9ed7-47d585775acb}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSOE.cpp">
+      <Filter>eigenSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSolver.cpp">
+      <Filter>eigenSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSOE.cpp">
+      <Filter>eigenSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSolver.cpp">
+      <Filter>eigenSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenCommon.cpp">
+      <Filter>eigenSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenFactory.cpp">
+      <Filter>eigenSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCommon.cpp">
+      <Filter>linearSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSOE.cpp">
+      <Filter>linearSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSolver.cpp">
+      <Filter>linearSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSOE.cpp">
+      <Filter>linearSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSolver.cpp">
+      <Filter>linearSOE</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonFactory.cpp">
+      <Filter>linearSOE</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSOE.h">
+      <Filter>eigenSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSolver.h">
+      <Filter>eigenSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSOE.h">
+      <Filter>eigenSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSolver.h">
+      <Filter>eigenSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenCommon.h">
+      <Filter>eigenSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenFactory.h">
+      <Filter>eigenSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCommon.h">
+      <Filter>linearSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSOE.h">
+      <Filter>linearSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSolver.h">
+      <Filter>linearSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSOE.h">
+      <Filter>linearSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSolver.h">
+      <Filter>linearSOE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonFactory.h">
+      <Filter>linearSOE</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

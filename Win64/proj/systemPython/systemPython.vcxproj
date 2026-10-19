@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug.DLL|x64">
+      <Configuration>Debug.DLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release.DLL|x64">
+      <Configuration>Release.DLL</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{0070ADA2-CB07-4C57-8781-B97EBEDB3DD6}</ProjectGuid>
+    <SccProjectName />
+    <SccLocalPath />
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v142</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\lib\debug\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">.\..\..\lib\debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.\..\..\obj\systemPython\debug\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">.\..\..\obj\systemPython\debug\</IntDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\lib\release\</OutDir>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">.\..\..\lib\release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">.\..\..\obj\systemPython\release\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">.\..\..\obj\systemPython\release\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Users\silvi\AppData\Local\Programs\Python\Python312\include;..\..\..\src\system_of_eqn\linearSOE\sparsePython;..\..\..\src\system_of_eqn\eigenSOE\sparsePython;..\..\..\src\recorder;..\..\..\src\element\PFEMElement;..\..\..\src\api;..\..\..\src\element;..\..\..\src\element\PFEMElement;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\other\AMGCL;..\..\..\other\CSPARSE;..\..\..\src\utility;..\..\..\other\SuperLU_5.1.1\SRC;..\..\..\src\system_of_eqn\linearSOE\diagonal;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\analysis\integrator;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\symSparse;..\..\..\src\analysis\model\simple;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src\recorder;..\..\..\src;..\..\..\src\matrix;..\..\..\src\actor\actor;..\..\..\src\system_of_eqn;..\..\..\src\nDarray;..\..\..\src\system_of_eqn\linearSOE\itpack;..\..\..\src\system_of_eqn\linearSOE\cg;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\systemPython\debug/systemPython.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\systemPython\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\systemPython\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\systemPython\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\systemPython.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <BuildLog>
+      <Path>.\..\..\obj\systemPython\debug\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug.DLL|x64'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <AdditionalIncludeDirectories>C:\Users\silvi\AppData\Local\Programs\Python\Python312\include;..\..\..\src\system_of_eqn\linearSOE\sparsePython;..\..\..\src\system_of_eqn\eigenSOE\sparsePython;..\..\..\src\recorder;..\..\..\src\element\PFEMElement;..\..\..\src\api;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\other\CSPARSE;..\..\..\src\utility;..\..\..\other\MUMPS_4.7.3\libseq;..\..\..\other\SuperLU_5.1.1\SRC;..\..\..\src\system_of_eqn\linearSOE\mumps;..\..\..\src\system_of_eqn\linearSOE\diagonal;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\analysis\integrator;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\symSparse;..\..\..\src\analysis\model\simple;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src;..\..\..\src\matrix;..\..\..\src\actor\actor;..\..\..\src\system_of_eqn;..\..\..\src\nDarray;..\..\..\src\system_of_eqn\linearSOE\itpack;..\..\..\src\system_of_eqn\linearSOE\cg;c:\Program Files\tcl;c:\Program Files\tcl\include;..\..\..\src\system_of_eqn\linearSOE\pardiso;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;_WIN32;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\systemPython\debug/systemPython.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\systemPython\debug/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\systemPython\debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\systemPython\debug/</ProgramDataBaseFileName>
+      <BrowseInformation>true</BrowseInformation>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\debug\systemPython.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <BuildLog>
+      <Path>.\..\..\obj\systemPython\debug\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>C:\Users\silvi\AppData\Local\Programs\Python\Python312\include;..\..\..\src\system_of_eqn\linearSOE\sparsePython;..\..\..\src\system_of_eqn\eigenSOE\sparsePython;..\..\..\src\recorder;..\..\..\src\element\PFEMElement;..\..\..\src\api;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\other\AMGCL;..\..\..\other\CSPARSE;..\..\..\src\utility;..\..\..\other\SuperLU_5.1.1\SRC;..\..\..\src\system_of_eqn\linearSOE\diagonal;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\analysis\integrator;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\symSparse;..\..\..\src\analysis\model\simple;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\system_of_eqn\linearSOE\sparsePython;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src;..\..\..\src\matrix;..\..\..\src\actor\actor;..\..\..\src\system_of_eqn;..\..\..\src\nDarray;..\..\..\src\system_of_eqn\linearSOE\itpack;..\..\..\src\system_of_eqn\linearSOE\cg;c:\Program Files\tcl;c:\Program Files\tcl\include;c:\users\mhscott\anaconda312\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;AMGCL_NO_BOOST;_AMGCL;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\systemPython\release/systemPython.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\systemPython\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\systemPython\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\systemPython\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\systemPython.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <BuildLog>
+      <Path>.\..\..\obj\systemPython\release\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release.DLL|x64'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <AdditionalIncludeDirectories>C:\Users\silvi\AppData\Local\Programs\Python\Python312\include;..\..\..\src\system_of_eqn\linearSOE\sparsePython;..\..\..\src\system_of_eqn\eigenSOE\sparsePython;..\..\..\src\recorder;..\..\..\src\element\PFEMElement;..\..\..\src\api;..\..\..\src\element;..\..\..\src\domain\node;..\..\..\src\domain\component;..\..\..\src\domain\constraints;..\..\..\other\CSPARSE;..\..\..\src\utility;..\..\..\other\SuperLU_5.1.1\SRC;..\..\..\src\system_of_eqn\linearSOE\diagonal;..\..\..\src\system_of_eqn\linearSOE;..\..\..\src\system_of_eqn\linearSOE\sparseSYM;..\..\..\src\analysis\integrator;..\..\..\src\analysis\fe_ele;..\..\..\src\analysis\dof_grp;..\..\..\src\system_of_eqn\eigenSOE;..\..\..\src\handler;..\..\..\symSparse;..\..\..\src\analysis\model\simple;..\..\..\src\system_of_eqn\linearSOE\umfGEN;..\..\..\src\system_of_eqn\linearSOE\fullGEN;..\..\..\src\system_of_eqn\linearSOE\sparseGEN;..\..\..\src\system_of_eqn\linearSOE\bandSPD;..\..\..\src\system_of_eqn\linearSOE\bandGEN;..\..\..\src\domain\domain;..\..\..\src\analysis\model;..\..\..\src\actor\objectBroker;..\..\..\src\actor\channel;..\..\..\src\tagged;..\..\..\src\graph\graph;..\..\..\src\system_of_eqn\linearSOE\profileSPD;..\..\..\src;..\..\..\src\matrix;..\..\..\src\actor\actor;..\..\..\src\system_of_eqn;..\..\..\src\nDarray;..\..\..\src\system_of_eqn\linearSOE\itpack;..\..\..\src\system_of_eqn\linearSOE\cg;c:\Program Files\tcl;c:\Program Files\tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeaderOutputFile>.\..\..\obj\systemPython\release/systemPython.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\..\..\obj\systemPython\release/</AssemblerListingLocation>
+      <ObjectFileName>.\..\..\obj\systemPython\release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\..\..\obj\systemPython\release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <CompileAs>Default</CompileAs>
+      <LanguageStandard>stdcpp17</LanguageStandard>
+    </ClCompile>
+    <Lib>
+      <OutputFile>.\..\..\lib\release\systemPython.lib</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+    </Lib>
+    <ResourceCompile>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0409</Culture>
+    </ResourceCompile>
+    <BuildLog>
+      <Path>.\..\..\obj\systemPython\release\$(MSBuildProjectName).log</Path>
+    </BuildLog>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenCommon.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenFactory.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCommon.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSOE.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSolver.cpp" />
+    <ClCompile Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonFactory.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCompressedEigenSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonCOOEigenSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenCommon.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\eigenSOE\sparsePython\SparsePythonEigenFactory.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCommon.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCompressedLinSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSOE.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonCOOLinSolver.h" />
+    <ClInclude Include="..\..\..\SRC\system_of_eqn\linearSOE\sparsePython\SparsePythonFactory.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
