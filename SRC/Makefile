@@ -618,6 +618,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/twoNodeLink/Inerter.o \
 	$(FE)/element/pyMacro/PY_Macro2D.o \
 	$(FE)/element/triangle/Tri31.o \
+	$(FE)/element/triangle/Tri31UP.o \
 	$(FE)/element/PFEMElement/PFEMElement2D.o \
 	$(FE)/element/PFEMElement/PFEMElement3D.o \
 	$(FE)/element/PFEMElement/PFEMElement2DCompressible.o \
@@ -672,6 +673,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/QuadBeamEmbedContact.o \
 	$(FE)/element/catenaryCable/CatenaryCable.o \
 	$(FE)/element/tetrahedron/FourNodeTetrahedron.o \
+	$(FE)/element/tetrahedron/SSPtetUP.o \
 	$(FE)/element/tetrahedron/TenNodeTetrahedron.o \
 	$(FE)/element/absorbentBoundaries/LysmerTriangle.o \
 	$(FE)/element/absorbentBoundaries/ASDAbsorbingBoundary2D.o \

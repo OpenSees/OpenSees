@@ -405,6 +405,7 @@
 #include "gradientInelasticBeamColumn/GradientInelasticBeamColumn2d.h"
 #include "gradientInelasticBeamColumn/GradientInelasticBeamColumn3d.h"
 #include "triangle/Tri31.h"
+#include "triangle/Tri31UP.h"
 #include "fourNodeQuad/SixNodeTri.h"
 
 #include "UWelements/SSPquad.h"
@@ -467,6 +468,7 @@
 #include "twoNodeLink/LinearElasticSpring.h"
 #include "twoNodeLink/Inerter.h"
 #include "tetrahedron/FourNodeTetrahedron.h"
+#include "tetrahedron/SSPtetUP.h"
 #include "tetrahedron/TenNodeTetrahedronUP.h"
 
 #include "mvlem/MVLEM.h"		// Kristijan Kolozvari
@@ -1058,6 +1060,10 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
 
     case ELE_TAG_FourNodeTetrahedron:
       return new FourNodeTetrahedron();
+    case ELE_TAG_SSPtetUP:
+      return new SSPtetUP();
+    case ELE_TAG_Tri31UP:
+      return new Tri31UP();
 
     case ELE_TAG_TenNodeTetrahedronUP:
       return new TenNodeTetrahedronUP();

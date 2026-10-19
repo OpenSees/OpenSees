@@ -28,8 +28,12 @@
 // strain field in the whole element. This is a constant stress/strain element
 // because the displacement interpolation is linear. 
 //
-// This element is very succeptible to locking, so use with fine discretizations
-// requires care. 
+// One-point integration is exact for the small-strain stiffness of an affine
+// tetrahedron. There are no solid hourglass modes to stabilize. The SSPtet
+// command is an alias for this formulation, not an additional anti-locking
+// method. Element-wise B-bar averaging also leaves this constant B unchanged.
+// This element remains susceptible to volumetric and bending locking.
+// See SSPtetUP for an experimental pressure-stabilized saturated-soil element.
 //
 // ============================================================================
 
@@ -146,10 +150,10 @@ class FourNodeTetrahedron : public Element {
     //
 
     ID connectedExternalNodes ;  //four node numbers
-    Node *nodePointers[4] ;      //pointers to eight nodes
+    Node *nodePointers[4] ;      //pointers to four nodes
 
     //material information
-    NDMaterial *materialPointers[1]; //pointers to eight materials
+    NDMaterial *materialPointers[1]; //one integration-point material
 
     double b[3];		// Body forces
     double appliedB[3];		// Body forces applied with load

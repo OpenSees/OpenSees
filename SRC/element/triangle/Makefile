@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = Tri31.o 
+OBJS       = Tri31.o Tri31UP.o
 
 all:         $(OBJS)
 

@@ -71,50 +71,39 @@ void* OPS_FourNodeTetrahedron()
       opserr << "WARNING material not found\n";
       opserr << "material tag: " << idata[5];
       opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
+      return 0;
     }
 
-    // Get the body forces
+    // Read optional body components and the initial-displacement option without
+    // trying to parse -doInitDisp as a floating-point body force.
     double data[3] = {0,0,0};
-    num = OPS_GetNumRemainingInputArgs();
-
-    if (num > 3) 
-    {
-      num = 3;
-    }
-    if (num > 0) 
-    {
-      if (OPS_GetDoubleInput(&num,data) < 0) 
-      {
-        opserr<<"WARNING: invalid double data\n";
-        return 0;
-      }     
-    }
-
-    //Get init disp flag
-
-    num = OPS_GetNumRemainingInputArgs();
-    
     int do_init_disp_int = 0;
-    bool do_init_disp = false;
-
-
-    while (OPS_GetNumRemainingInputArgs() > 0) 
-    {
-        const char* type = OPS_GetString(); // Fetch the next string from input
-        if (strcmp(type, "-doInitDisp") == 0) 
-        {
+    int bodyCount = 0;
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+        int before = OPS_GetNumRemainingInputArgs();
+        double value;
+        num = 1;
+        if (OPS_GetDoubleInput(&num, &value) == 0) {
+            if (bodyCount == 3) return 0;
+            data[bodyCount++] = value;
+        } else {
+            if (OPS_GetNumRemainingInputArgs() < before) OPS_ResetCurrentInputArg(-1);
+            const char *type = OPS_GetString();
             num = 1;
-            OPS_GetIntInput(&num, &do_init_disp_int); 
+            if (strcmp(type, "-doInitDisp") != 0 ||
+                OPS_GetIntInput(&num, &do_init_disp_int) < 0) {
+                opserr << "FourNodeTetrahedron: expected <b1 b2 b3> <-doInitDisp 0|1>\n";
+                return 0;
+            }
         }
     }
-
-    do_init_disp = (bool) do_init_disp_int; 
+    bool do_init_disp = (bool) do_init_disp_int;
 
     Element* the_new_element_ptr = new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2], do_init_disp);
 
     if (the_new_element_ptr == NULL)
     {
-      opserr << "OPS_TenNodeTetrahedron() - Could not create pointer to new TenNodeTetrahedron object" << endln;
+      opserr << "OPS_FourNodeTetrahedron() - Could not create element" << endln;
       return 0;
     }
 
@@ -202,6 +191,7 @@ void* OPS_FourNodeTetrahedron(const ID& info)
 	    opserr << "WARNING material not found\n";
 	    opserr << "material tag: " << idata[5];
 	    opserr << "\nFourNodeTetrahedron element: " << idata[0] << endln;
+	    return 0;
 	}
 
 	return new FourNodeTetrahedron(idata[0],idata[1],idata[2],idata[3],idata[4],*mat,data[0],data[1],data[2]);
@@ -274,7 +264,7 @@ FourNodeTetrahedron::FourNodeTetrahedron(int tag,
   connectedExternalNodes(1) = node2 ;
   connectedExternalNodes(2) = node3 ;
   connectedExternalNodes(3) = node4 ;
-
+  for (int i=0; i<NumNodes; ++i) nodePointers[i] = 0;
 
   for (int i=0; i<NumGaussPoints; i++ ) 
   {
@@ -321,6 +311,11 @@ FourNodeTetrahedron::~FourNodeTetrahedron( )
 //set domain
 void  FourNodeTetrahedron::setDomain( Domain *theDomain ) 
 {  
+  if (theDomain == 0) {
+    for (int i=0; i<NumNodes; ++i) nodePointers[i] = 0;
+    this->DomainComponent::setDomain(0);
+    return;
+  }
 
   int i ;
 
@@ -328,7 +323,13 @@ void  FourNodeTetrahedron::setDomain( Domain *theDomain )
   for ( i=0; i<NumNodes; i++ ) 
   {
       nodePointers[i] = theDomain->getNode( connectedExternalNodes(i) ) ;
-
+      if (nodePointers[i] == 0 || nodePointers[i]->getNumberDOF() != NumDOFsPerNode ||
+          nodePointers[i]->getCrds().Size() != 3) {
+        opserr << "FourNodeTetrahedron " << getTag() << ": invalid node or node DOFs\n";
+        do_update = false;
+        this->DomainComponent::setDomain(0);
+        return;
+      }
 
       if(do_init_disp)
       {

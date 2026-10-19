@@ -178,6 +178,8 @@ extern void* OPS_ShellNLDKGTThermal(void);// Giovanni Rinaldin
 extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
 extern void *OPS_FourNodeTetrahedron(void);
+extern void *OPS_SSPtetUP(void);
+extern void *OPS_Tri31UP(void);
 extern void *OPS_TenNodeTetrahedron(void);
 extern void *OPS_TenNodeTetrahedronUP(void);
 extern void *OPS_LysmerTriangle(void);
@@ -1171,6 +1173,9 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       return TCL_ERROR;
     }
 
+  } else if (strcmp(argv[1],"Tri31UP") == 0) {
+    theElement = (Element *)OPS_Tri31UP();
+    if (theElement == 0) return TCL_ERROR;
   } else if ((strcmp(argv[1],"Tri31") == 0) || (strcmp(argv[1],"tri31") == 0)) {
     
     ID info;
@@ -1496,7 +1501,11 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       }
   }
 
-  else if (strcmp(argv[1], "FourNodeTetrahedron") == 0) {
+  else if (strcmp(argv[1], "SSPtetUP") == 0) {
+      theElement = (Element *)OPS_SSPtetUP();
+      if (theElement == 0) return TCL_ERROR;
+  }
+  else if (strcmp(argv[1], "FourNodeTetrahedron") == 0 || strcmp(argv[1], "SSPtet") == 0) {
       void *theEle = OPS_FourNodeTetrahedron();
       if (theEle != 0) 
       {

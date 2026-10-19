@@ -239,6 +239,8 @@ void* OPS_MultipleNormalSpring();
 void* OPS_KikuchiBearing();
 void* OPS_YamamotoBiaxialHDR();
 void* OPS_FourNodeTetrahedron();
+void* OPS_SSPtetUP();
+void* OPS_Tri31UP();
 void* OPS_TenNodeTetrahedron();
 void* OPS_TenNodeTetrahedronUP();
 void* OPS_CatenaryCableElement();
@@ -788,6 +790,7 @@ namespace {
 	functionMap.insert(std::make_pair("BeamEndContact3Dp", &OPS_BeamEndContact3Dp));
 	functionMap.insert(std::make_pair("Tri31", &OPS_Tri31NoInfo));
 	functionMap.insert(std::make_pair("tri31", &OPS_Tri31NoInfo));
+	functionMap.insert(std::make_pair("Tri31UP", &OPS_Tri31UP));
 	functionMap.insert(std::make_pair("SSPquad", &OPS_SSPquad));
 	functionMap.insert(std::make_pair("SSPQuad", &OPS_SSPquad));
 	functionMap.insert(std::make_pair("SSPquadUP", &OPS_SSPquadUP));
@@ -817,6 +820,9 @@ namespace {
 	functionMap.insert(std::make_pair("zeroLengthSection", &OPS_ZeroLengthSection));
 	functionMap.insert(std::make_pair("zeroLengthND", &OPS_ZeroLengthND));
 	functionMap.insert(std::make_pair("FourNodeTetrahedron", &OPS_FourNodeTetrahedron));
+	// SSPtet is the existing exactly integrated constant-strain tetrahedron.
+	functionMap.insert(std::make_pair("SSPtet", &OPS_FourNodeTetrahedron));
+	functionMap.insert(std::make_pair("SSPtetUP", &OPS_SSPtetUP));
 	functionMap.insert(std::make_pair("TenNodeTetrahedron", &OPS_TenNodeTetrahedron));
 	functionMap.insert(std::make_pair("TenNodeTetrahedronUP", &OPS_TenNodeTetrahedronUP));
 	functionMap.insert(std::make_pair("CatenaryCable", &OPS_CatenaryCableElement));

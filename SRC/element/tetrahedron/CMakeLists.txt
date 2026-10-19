@@ -7,10 +7,12 @@
 target_sources(OPS_Element
     PRIVATE
     FourNodeTetrahedron.cpp
+    SSPtetUP.cpp
     TenNodeTetrahedron.cpp
     TenNodeTetrahedronUP.cpp
     PUBLIC
     FourNodeTetrahedron.h
+    SSPtetUP.h
     TenNodeTetrahedron.h
     TenNodeTetrahedronUP.h
 )

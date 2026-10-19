@@ -910,6 +910,8 @@
 #define ELE_TAG_PML3DVISCOUS               271 // Amin Pakzad
 #define ELE_TAG_MEFI_3D        			  272 // C. N. Lopez
 #define ELE_TAG_TenNodeTetrahedronUP       273
+#define ELE_TAG_SSPtetUP                   274
+#define ELE_TAG_Tri31UP                    275
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

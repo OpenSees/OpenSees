@@ -241,6 +241,8 @@ using namespace OpenSees::Hash::literals;
 #include "UWelements/SSPquadUP.h"
 #include "UWelements/SSPbrick.h"
 #include "UWelements/SSPbrickUP.h"
+#include "tetrahedron/SSPtetUP.h"
+#include "triangle/Tri31UP.h"
 #include "UWelements/BeamContact2D.h"
 #include "UWelements/BeamContact2Dp.h"
 #include "UWelements/BeamContact3D.h"
@@ -645,6 +647,8 @@ TclPackageClassBroker::getNewElement(int classTag)
     DISPATCH(SSPbrick);
     DISPATCH(SSPbrickUP);
 #endif
+    DISPATCH(SSPtetUP);
+    DISPATCH(Tri31UP);
     DISPATCH(PML2D);
     DISPATCH(PML3D);
 

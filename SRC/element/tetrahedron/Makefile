@@ -1,6 +1,6 @@
 include ../../../Makefile.def
 
-OBJS       = FourNodeTetrahedron.o TenNodeTetrahedron.o TenNodeTetrahedronUP.o
+OBJS       = FourNodeTetrahedron.o SSPtetUP.o TenNodeTetrahedron.o TenNodeTetrahedronUP.o
 
 
 all:         $(OBJS)
