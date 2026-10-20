@@ -206,6 +206,7 @@ void* OPS_SteelMP();
 void* OPS_SmoothPSConcrete();
 void* OPS_UniaxialJ2Plasticity();
 void* OPS_OOHystereticMaterial();
+void* OPS_CFSTsteel();
 void* OPS_UVCuniaxial();
 void* OPS_GNGMaterial();
 void* OPS_IMKBilin();
@@ -591,6 +592,7 @@ static int setUpUniaxialMaterials(void) {
       std::make_pair("OOHysteretic", &OPS_OOHystereticMaterial));
   uniaxialMaterialsMap.insert(
       std::make_pair("UVCuniaxial", &OPS_UVCuniaxial));
+    uniaxialMaterialsMap.insert(std::make_pair("CFSTsteel", &OPS_CFSTsteel));
   uniaxialMaterialsMap.insert(
       std::make_pair("GNG", &OPS_GNGMaterial));
   uniaxialMaterialsMap.insert(			      
