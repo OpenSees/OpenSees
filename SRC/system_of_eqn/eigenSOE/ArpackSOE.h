@@ -62,6 +62,10 @@ class ArpackSOE : public EigenSOE
     int sendSelf(int commitTag, Channel &theChannel);
     int recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker &theBroker);
 
+    // OpenSeesMP: same pattern as MumpsParallelSOE
+    int setProcessID(int processTag);
+    int setChannels(int nChannels, Channel **theChannels);
+
     friend class ArpackSolver;
 
 	int checkSameInt(int);
