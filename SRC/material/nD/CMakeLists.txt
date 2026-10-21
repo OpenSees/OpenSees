@@ -29,6 +29,7 @@ target_sources(OPS_Material
     ElasticOrthotropicThreeDimensional.cpp
     PressureDependentElastic3D.cpp
     FeapMaterial.cpp
+    UmatMaterial.cpp
     J2AxiSymm.cpp
     J2PlaneStrain.cpp
     J2PlaneStress.cpp
@@ -107,6 +108,7 @@ target_sources(OPS_Material
     ElasticOrthotropicThreeDimensional.h
     PressureDependentElastic3D.h
     FeapMaterial.h
+    UmatMaterial.h
     J2AxiSymm.h
     J2PlaneStrain.h
     J2PlaneStress.h
