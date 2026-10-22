@@ -121,49 +121,28 @@ void
 ConcentratedCurvatureBeamIntegration::getSectionWeights(int numSections, double L,
 					     double *wt)
 {
-	double oneOverL = 1.0/L;
-	int N = 5 ;
-    
-    // start with the two end nodes at the first two indices, then put them back
-    Vector pt(N);
-    
-    pt[0] = 0.0; // node I
-    pt[1] = 1.0; // node J
-    pt[2] = 0.0 + lpI*oneOverL;
-    pt[3] = 0.5*((0.0 + lpI*oneOverL) + (1.0 - lpJ*oneOverL)); // middle is average
-    pt[4] = 1.0 - lpJ*oneOverL;
-    
-    int nc = 2;
-    Vector wc(nc);
-    wc[0] = lpI*oneOverL; // node I  ## curvature has a weight of Lp
-    wc[1] = lpJ*oneOverL; // node J  ## curvature has a weight of Lp
+    const double a = lpI / L;
+    const double b = lpJ / L;
+    const double t = 1.0 - a - b;
 
-    // fill in the rest using low-order integration:
-	int nf = N-nc;
-    Vector R(nf);
-    for (int i = 0; i < nf; i++) {
-    	double sum = 0.0;
-    	for (int j = 0; j < nc; j++)
-		sum += pow(pt(j),i)*wc(j);
-	  	R(i) = 1.0/(i+1) - sum;
-    }
-    
-    Matrix J(nf,nf);
-    for (int i = 0; i < nf; i++)
-      for (int j = 0; j < nf; j++)
-	J(i,j) = pow(pt(nc+j),i);
-    
-    Vector wf(nf);
-    
-    J.Solve(R, wf);
-    
-     
-    wt[0] = wc(0); // node I
-    wt[1] = wf(0); // elastic
-    wt[2] = wf(1); // elastic
-    wt[3] = wf(2); // elastic
-    wt[4] = wc(1); // node J
-    
+    // Residual integration moments after assigning
+    // the concentrated-curvature end contributions.
+    const double R0 = t;
+    const double R1 = 0.5 - b;
+    const double R2 = 1.0 / 3.0 - b;
+
+    // Shift moments to the first elastic location.
+    const double S1 = R1 - a * R0;
+    const double S2 = R2 - 2.0 * a * R1 + a * a * R0;
+
+    // End curvature sections.
+    wt[0] = a;
+    wt[4] = b;
+
+    // Elastic sections: exact low-order moment fitting.
+    wt[3] = 2.0 * S2 / (t * t) - S1 / t;
+    wt[2] = 4.0 * (t * S1 - S2) / (t * t);
+    wt[1] = R0 - wt[2] - wt[3];
 }
 
 BeamIntegration*
