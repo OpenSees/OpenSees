@@ -109,49 +109,23 @@ void
 ConcentratedPlasticityBeamIntegration::getSectionWeights(int numSections, double L,
 					     double *wt)
 {
-	double oneOverL = 1.0/L;
-	int N = 5 ;
-    
-    // start with the two end nodes at the first two indices, then put them back
-    Vector pt(N);
-    
-    pt[0] = 0.0; // node I
-    pt[1] = 1.0; // node J    
-    pt[2] = 0.0; // elastic
-    pt[3] = 0.5; // elastic
-    pt[4] = 1.0; // elastic
-    
-    int nc = 2;
-    Vector wc(nc);
-    wc[0] = 1.0*oneOverL; // node I
-    wc[1] = 1.0*oneOverL; // node J
+    // Corrected October 21, 2026, by Silvia Mazzoni.
+    // The original residual moment fit included the concentrated hinge weights
+    // when fitting the elastic quadrature. Subtracting these 1/L weights from
+    // the elastic endpoint weights reduced the full-length elastic member's
+    // flexibility and made the result depend on the chosen length units.
+    // The intended model superposes full-length elastic curvature integration
+    // and concentrated end plastic rotations; the hinge weights must therefore
+    // be independent of the full-length elastic Simpson rule.
 
-    // fill in the rest using low-order integration:
-	int nf = N-nc;
-    Vector R(nf);
-    for (int i = 0; i < nf; i++) {
-    	double sum = 0.0;
-    	for (int j = 0; j < nc; j++)
-		sum += pow(pt(j),i)*wc(j);
-	  	R(i) = 1.0/(i+1) - sum;
-    }
-    
-    Matrix J(nf,nf);
-    for (int i = 0; i < nf; i++)
-      for (int j = 0; j < nf; j++)
-	J(i,j) = pow(pt(nc+j),i);
-    
-    Vector wf(nf);
-    
-    J.Solve(R, wf);
-    
-     
-    wt[0] = wc(0); // node I
-    wt[1] = wf(0); // elastic
-    wt[2] = wf(1); // elastic
-    wt[3] = wf(2); // elastic
-    wt[4] = wc(1); // node J
-    
+    // Concentrated moment-plastic-rotation hinges
+    wt[0] = 1.0 / L;
+    wt[4] = 1.0 / L;
+
+    // Full-length elastic member: Simpson integration
+    wt[1] = 1.0 / 6.0;
+    wt[2] = 2.0 / 3.0;
+    wt[3] = 1.0 / 6.0;
 }
 
 BeamIntegration*
