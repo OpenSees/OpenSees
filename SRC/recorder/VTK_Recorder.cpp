@@ -1192,6 +1192,7 @@ VTK_Recorder::setVTKType()
     vtktypes[ELE_TAG_PFEMElement3DBubble] = VTK_TETRA;
     vtktypes[ELE_TAG_TriSurfaceLoad] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellDKGT] = VTK_TRIANGLE;
+    vtktypes[ELE_TAG_ShellDKMT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_ShellNLDKGT] = VTK_TRIANGLE;
     vtktypes[ELE_TAG_InertiaTruss] = VTK_LINE;
     vtktypes[ELE_TAG_ASDAbsorbingBoundary2D] = VTK_QUAD;
