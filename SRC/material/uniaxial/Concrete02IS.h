@@ -44,6 +44,8 @@
 
 #include <UniaxialMaterial.h>
 
+class Matrix;
+
 class Concrete02IS : public UniaxialMaterial
 {
   public:
@@ -76,6 +78,15 @@ class Concrete02IS : public UniaxialMaterial
     void Print(OPS_Stream &s, int flag =0);
 
     int getVariable(const char *variable, Information &);
+
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int setParameter(const char **argv, int argc, Parameter &param);
+    int updateParameter(int parameterID, Information &info);
+    int activateParameter(int parameterID);
+    double getStressSensitivity(int gradIndex, bool conditional);
+    double getInitialTangentSensitivity(int gradIndex);
+    int commitSensitivity(double strainGradient, int gradIndex, int numGrads);
+    // AddingSensitivity:END ///////////////////////////////////////////
     
  protected:
     
@@ -106,6 +117,33 @@ class Concrete02IS : public UniaxialMaterial
     double sig;   
     double e;     
     double eps;   
+
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    // Derivatives of the monotonic envelopes with respect to the active
+    // parameter; depsc is the derivative of the strain argument
+    void Tens_EnvlpSensitivity(double epsc, double depsc,
+			       double dft, double dEts, double dE0,
+			       double &sigc, double &dsigc);
+    void Compr_EnvlpSensitivity(double epsc, double depsc,
+				double dfc, double depsc0,
+				double dfcu, double depscu, double dE0,
+				double &sigc, double &dsigc);
+
+    // Stress derivative for the current trial state.  Follows the same
+    // branches as setTrialStrain and also returns the updated derivatives
+    // of the history variables ecmin and dept
+    double computeStressSensitivity(double depsdh, int gradIndex,
+				    double &decmindh, double &ddeptdh);
+
+    int parameterID;
+
+    // Sensitivity history variables, one column per gradient
+    // Row 0: committed strain sensitivity
+    // Row 1: committed stress sensitivity
+    // Row 2: committed sensitivity of ecmin (minimum strain)
+    // Row 3: committed sensitivity of dept (tensile strain offset)
+    Matrix *SHVs;
+    // AddingSensitivity:END ///////////////////////////////////////////
 };
 
 
