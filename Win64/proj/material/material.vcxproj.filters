@@ -1499,6 +1499,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRCC.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FrictionSpringDamper.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\CoulombDamperMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -2604,6 +2607,9 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\FrictionSpringDamper.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\ExternalNDMaterial.h">

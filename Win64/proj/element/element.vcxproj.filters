@@ -62,6 +62,7 @@
     <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan12.cpp" />
     <ClCompile Include="..\..\..\SRC\element\masonry\MasonPan3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mefi\MEFI.cpp" />
+    <ClCompile Include="..\..\..\SRC\element\mefi\MEFI_3D.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.cpp" />
     <ClCompile Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.cpp" />
@@ -371,6 +372,7 @@
     <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan12.h" />
     <ClInclude Include="..\..\..\SRC\element\masonry\MasonPan3D.h" />
     <ClInclude Include="..\..\..\SRC\element\mefi\MEFI.h" />
+    <ClInclude Include="..\..\..\SRC\element\mefi\MEFI_3D.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn2d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumn3d.h" />
     <ClInclude Include="..\..\..\SRC\element\mixedBeamColumn\MixedBeamColumnAsym3d.h" />

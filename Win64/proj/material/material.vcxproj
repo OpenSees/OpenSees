@@ -343,6 +343,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FlagShapeMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRCC.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FrictionSpringDamper.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.cpp" />
@@ -806,6 +807,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticMultiLinear.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ElasticPPMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ExternalUniaxialMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\FrictionSpringDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.h" />
