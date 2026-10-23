@@ -1370,6 +1370,9 @@
     <ClCompile Include="..\..\..\SRC\material\nD\UVCplanestress.cpp">
       <Filter>nD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CFSTsteel.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -2755,6 +2758,9 @@
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\nD\UVCplanestress.h">
       <Filter>nD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\CFSTsteel.h">
+      <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.h">
       <Filter>uniaxial</Filter>
