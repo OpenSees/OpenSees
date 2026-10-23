@@ -171,6 +171,7 @@ OBJS       = UniaxialMaterial.o \
 	QbSandCPT.o \
 	TzSandCPT.o \
 	FrictionSpringDamper.o \
+	GPCConcrete01.o \
     TclModelBuilderUniaxialMaterialCommand.o
 
 all:         $(OBJS)
