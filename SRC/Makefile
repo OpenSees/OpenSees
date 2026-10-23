@@ -945,6 +945,7 @@ MATERIAL_LIBS   =  $(FE)/material/Material.o \
 	$(FE)/material/uniaxial/QbSandCPT.o \
 	$(FE)/material/uniaxial/TzSandCPT.o \
 	$(FE)/material/uniaxial/FrictionSpringDamper.o \
+	$(FE)/material/uniaxial/GPCConcrete01.o \
 	$(FE)/material/nD/NDMaterial.o \
 	$(FE)/material/nD/PlaneStressLayeredMaterial.o \
 	$(FE)/material/nD/PlaneStressRebarMaterial.o \
