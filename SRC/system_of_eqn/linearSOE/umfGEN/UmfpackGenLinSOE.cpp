@@ -91,7 +91,9 @@ UmfpackGenLinSOE::setSize(Graph &theGraph)
 	nnz += theAdjacency.Size() +1; // the +1 is for the diag entry
     }
 
-    // resize A, B, X
+    // resize A, B, X (clear the pattern first: setSize is called again after a domain change)
+    Ap.clear();
+    Ai.clear();
     Ap.reserve(size+1);
     Ai.reserve(nnz);
     Ax.resize(nnz,0.0);
