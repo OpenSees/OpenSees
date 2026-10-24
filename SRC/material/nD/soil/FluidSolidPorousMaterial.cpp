@@ -67,20 +67,26 @@ void* OPS_FluidSolidPorousMaterial()
     }
 
     param[3] = 101.;
-    if (argc == 7) {
-	if (OPS_GetDoubleInput(&numdata, &param[3]) < 0) {
-	    opserr << "WARNING invalid " << " double" << "\n";
+    int fluidInitialTangent = 0;
+    char buffer[64];
+    while (OPS_GetNumRemainingInputArgs() > 0) {
+	const char *opt = OPS_GetStringFromAll(buffer, 64);
+	if (opt != 0 && strcmp(opt, "-fluidInitialTangent") == 0)
+	    fluidInitialTangent = 1;
+	else if (opt == 0 || sscanf(opt, "%lf", &param[3]) != 1) {
+	    opserr << "WARNING invalid Atmospheric pressure\n";
 	    opserr << "nDMaterial FluidSolidPorous: " << tag << endln;
 	    return 0;
 	}
     }
 
     return new FluidSolidPorousMaterial (tag, param[0], *soil,
-					 param[2],param[3]);
+					 param[2],param[3],fluidInitialTangent);
 }
 
 FluidSolidPorousMaterial::FluidSolidPorousMaterial (int tag, int nd, NDMaterial &soilMat,
-						    double combinedBulkModul, double atm)
+						    double combinedBulkModul, double atm,
+						    int fluidInitialTangent)
  : NDMaterial(tag, ND_TAG_FluidSolidPorousMaterial)
 {
   if (combinedBulkModul < 0) {
@@ -121,6 +127,7 @@ FluidSolidPorousMaterial::FluidSolidPorousMaterial (int tag, int nd, NDMaterial 
   trialVolumeStrain = currentVolumeStrain = 0.;
   initMaxPress = 0.;
   e2p = 0;
+  this->fluidInitialTangent = fluidInitialTangent;
 }
    
 
@@ -131,6 +138,7 @@ FluidSolidPorousMaterial::FluidSolidPorousMaterial ()
   trialVolumeStrain = currentVolumeStrain = 0.;
   initMaxPress = 0.;
   e2p = 0;
+  fluidInitialTangent = 0;
 }
 
 
@@ -145,6 +153,7 @@ FluidSolidPorousMaterial::FluidSolidPorousMaterial (const FluidSolidPorousMateri
   currentVolumeStrain = a.currentVolumeStrain;
   initMaxPress = a.initMaxPress;
   e2p = a.e2p;
+  fluidInitialTangent = a.fluidInitialTangent;
 }
 
 
@@ -253,6 +262,15 @@ const Matrix & FluidSolidPorousMaterial::getInitialTangent (void)
 	Matrix *workM = (ndm == 2) ? &workM3 : &workM6;
   
 	*workM = theSoilMaterial->getInitialTangent();
+
+	// with -fluidInitialTangent, include the pore-fluid bulk modulus once the material is in a
+	// fluid-solid stage, as getTangent and getStress do (default: soil material tangent only)
+	if (loadStagex[matN] != 0 && fluidInitialTangent) {
+		double combinedBulkModulus = combinedBulkModulusx[matN];
+		for (int i=0; i<ndm; i++)
+			for (int j=0; j<ndm; j++)
+				(*workM)(i,j) = (*workM)(i,j) + combinedBulkModulus;
+	}
 
 	return *workM;
 }
@@ -428,7 +446,7 @@ int FluidSolidPorousMaterial::sendSelf(int commitTag, Channel &theChannel)
 
 	int res = 0;
 
-	static Vector data(7);
+	static Vector data(8);
 	data(0) = this->getTag();
 	data(1) = ndm;
 	data(2) = loadStage;
@@ -436,6 +454,7 @@ int FluidSolidPorousMaterial::sendSelf(int commitTag, Channel &theChannel)
 	data(4) = currentExcessPressure;
     data(5) = currentVolumeStrain;
 	data(6) = matN;
+	data(7) = fluidInitialTangent;
 
     res += theChannel.sendVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
@@ -482,7 +501,7 @@ int FluidSolidPorousMaterial::recvSelf(int commitTag, Channel &theChannel,
 {
 	int res = 0;
 
-	static Vector data(7);
+	static Vector data(8);
 
 	res += theChannel.recvVector(this->getDbTag(), commitTag, data);
 	if (res < 0) {
@@ -501,6 +520,7 @@ int FluidSolidPorousMaterial::recvSelf(int commitTag, Channel &theChannel,
 	ndmx[matN] = ndm;
 	loadStagex[matN] = loadStage;
 	combinedBulkModulusx[matN] = combinedBulkModulus;
+	fluidInitialTangent = (int)data(7);
 
 	// now receives the ids of its material
 	ID classTags(2);
