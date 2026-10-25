@@ -166,6 +166,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GPCConcrete01.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1622,6 +1625,9 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\GPCConcrete01.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h">
