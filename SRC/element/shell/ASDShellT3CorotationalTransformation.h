@@ -341,7 +341,9 @@ public:
         FnmT.addMatrixTranspose(0.0, Fnm, 1.0);
 
         temp.addMatrixTransposeProduct(0.0, G, FnmT, 1.0);
-        LHS.addMatrixProduct(1.0, temp, P, 1.0); // note: '+' not '-' because the RHS already has the negative sign
+        // the element accumulates the internal force with a positive sign (+B'*S*dA),
+        // so the geometric terms are subtracted
+        LHS.addMatrixProduct(1.0, temp, P, -1.0);
 
         // Step 3: ( K.GR: Rotational Geometric Stiffness Matrix )
         // Add the Spins of the nodal moments to 'Fnm'.
@@ -352,7 +354,7 @@ public:
         EICR::Spin_AtRow(projectedLocalForces, Fnm, 9);
         EICR::Spin_AtRow(projectedLocalForces, Fnm, 15);
 
-        LHS.addMatrixProduct(1.0, Fnm, G, 1.0); // note: '+' not '-' because the RHS already has the negative sign
+        LHS.addMatrixProduct(1.0, Fnm, G, -1.0);
 
         // Step 4: (Global Stiffness Matrix)
         // Transform the LHS to the Global coordinate system.
@@ -455,71 +457,148 @@ public:
 private:
 
     /**
-    * Computes the Spin Fitter Matrix.
+    * Computes the Spin Fitter Matrix, i.e. the rotation gradient G in dw = G * dv,
+    * where dw is the spin of the corotational frame in local components.
     * This is the only matrix not included in the EICR, because it depends on how
     * the corotational frame follows the element.
-    * This implementation works for the fitting based on polar decomposition.
-    * For the moment the gradient is calculated numerically (perturbation).
-    * TODO: Find a closed form of the derivative.
+    * With the polar decomposition fitting, the frame is built in three steps,
+    * and G follows them:
+    * - e3 normal to the plane of the three nodes (rows 0 and 1);
+    * - e1 along side 1-2 (row 2, part 1);
+    * - the in-plane polar angle alpha = atan2(f21 - f12, f11 + f22) (row 2, part 2).
+    * Since alpha is a rotation about the e3 shared by both frames, row 2 is the
+    * sum of the drilling spin of the side-aligned frame and dalpha.
+    * The frame depends on the nodal translations only, so the rotational
+    * columns of G are zero.
     * @return the Spin Fitter Matrix
     */
     inline void RotationGradient(
         const ASDShellT3LocalCoordinateSystem& LCS,
-        const VectorType& globalDisplacements, 
+        const VectorType& globalDisplacements,
         MatrixType& G)
     {
         G.Zero();
 
 #ifdef USE_POLAR_DECOMP_ALLIGN
 
-        /**
-        Note: when attaching the local system using the polar decomposition, it turns out
-        that the G matrix should be exactly 0!
-        */
+        // deformed nodal positions, as in createLocalCoordinateSystem
+        std::array<Vector3Type, 3> p = {
+            Vector3Type(m_nodes[0]->getCrds()),
+            Vector3Type(m_nodes[1]->getCrds()),
+            Vector3Type(m_nodes[2]->getCrds())
+        };
+        for (int i = 0; i < 3; i++) {
+            int index = i * 6;
+            for (int k = 0; k < 3; k++)
+                p[i](k) += globalDisplacements(index + k) - m_U0(index + k);
+        }
 
-        //// perturbation relative to initial area
-        //double pert = std::sqrt(createReferenceCoordinateSystem().Area()) * 1.0e-8;
+        // side-aligned current frame (b in createLocalCoordinateSystem).
+        // alpha is defined from its local coordinates.
+        ASDShellT3LocalCoordinateSystem b(p[0], p[1], p[2]);
+        const MatrixType& Ob = b.Orientation();
+        const auto& xb = b.Nodes();
 
-        //// un-perturbed coordinate system
-        //auto CS0 = createLocalCoordinateSystem(globalDisplacements);
-        //Vector3Type e30 = CS0.Vz();
-        //Vector3Type e10 = CS0.Vx();
-        //QuaternionType Q0 = QuaternionType::FromRotationMatrix(CS0.Orientation());
+        // final frame (rotated by alpha): rows are e1, e2, e3
+        const MatrixType& Of = LCS.Orientation();
+        Vector3Type e1(Of(0, 0), Of(0, 1), Of(0, 2));
+        Vector3Type e2(Of(1, 0), Of(1, 1), Of(1, 2));
+        // in-plane y axis of the side-aligned frame (e3 is the same)
+        Vector3Type e2t(Ob(1, 0), Ob(1, 1), Ob(1, 2));
 
-        //// perturbed displacement vector
-        //static Vector UGP(24);
-        //UGP = globalDisplacements;
+        // geometry
+        Vector3Type r12 = p[1] - p[0];
+        Vector3Type r13 = p[2] - p[0];
+        double nn = 2.0 * b.Area(); // ||r12 x r13||
+        double l12 = r12.norm();
+        if (nn < 1.0e-300 || l12 < 1.0e-300)
+            return; // degenerate element
+        double inn = 1.0 / nn;
 
-        //// for each node...
-        //for (int i = 0; i < 3; i++)
-        //{
-        //    int index = i * 6;
+        // constants of the polar angle from the reference local coordinates
+        ASDShellT3LocalCoordinateSystem a = createReferenceCoordinateSystem();
+        double aX1 = a.X1(); double aY1 = a.Y1();
+        double aX2 = a.X2(); double aY2 = a.Y2();
+        double aX3 = a.X3(); double aY3 = a.Y3();
+        double C1 = 1.0 / (aX1 * aY2 - aX1 * aY3 - aX2 * aY1
+            + aX2 * aY3 + aX3 * aY1 - aX3 * aY2);
+        double k1 = -(aY1 - aY2);
+        double k2 = (aY1 - aY3);
+        double m1 = (aX1 - aX2);
+        double m2 = -(aX1 - aX3);
 
-        //    // for each component in [x, y, z] ...
-        //    for (int j = 0; j < 3; j++)
-        //    {
-        //        // apply perturbation
-        //        UGP(index + j) += pert;
+        // current s = f21 - f12 and c = f11 + f22. Both are linear in the
+        // local coordinates of the side-aligned frame, so their variations
+        // are linear in the nodal increments.
+        double bX1 = xb[0][0], bX2 = xb[1][0], bX3 = xb[2][0];
+        double bY1 = xb[0][1], bY2 = xb[1][1], bY3 = xb[2][1];
+        double ss = C1 * (k1 * (bY1 - bY3) + k2 * (bY1 - bY2)
+            - m1 * (bX1 - bX3) - m2 * (bX1 - bX2));
+        double cc = C1 * (k1 * (bX1 - bX3) + k2 * (bX1 - bX2)
+            + m1 * (bY1 - bY3) + m2 * (bY1 - bY2));
+        double den = ss * ss + cc * cc;
+        if (den < 1.0e-300)
+            return;
+        double iden = 1.0 / den;
 
-        //        // current coordinate system (perturbed at node i component j)
-        //        auto CSi = createLocalCoordinateSystem(UGP);
+        // one column for each node i and local direction j
+        for (int i = 0; i < 3; i++) {
+            for (int j = 0; j < 3; j++) {
 
-        //        // save the (numerical) rotation gradient
+                // local axis j in global components
+                Vector3Type du(Of(j, 0), Of(j, 1), Of(j, 2));
 
-        //        Vector3Type e3 = CSi.Vz();// - e30;
-        //        Vector3Type e1 = CSi.Vx();// - e10;
-        //        Q0.rotateVector(e3);
-        //        Q0.rotateVector(e1);
+                // variation of n = r12 x r13 due to du at node i
+                Vector3Type dn;
+                switch (i) {
+                case 0:  dn = r13.cross(du) - r12.cross(du); break;
+                case 1:  dn = du.cross(r13); break;
+                default: dn = r12.cross(du); break;
+                }
 
-        //        G(0, index + j) = e3(1) / pert; // - d(e3.y)/dxj , where xj is x,y,z for j=0,1,2
-        //        G(1, index + j) = -e3(0) / pert; // + d(e3.x)/dxj , where xj is x,y,z for j=0,1,2
-        //        G(2, index + j) = -e1(1) / pert; // + d(e1.y)/dxj , where xj is x,y,z for j=0,1,2
+                // tilt of e3: dw0 = -de3.e2, dw1 = de3.e1
+                double dw0 = -e2.dot(dn) * inn;
+                double dw1 = e1.dot(dn) * inn;
 
-        //        UGP(index + j) = globalDisplacements(index + j); // restore the current coordinate
-        //    }
-        //}
+                // drilling spin of the side-aligned frame.
+                // Side 1-2 lies in the plane, so it needs no projection.
+                double dvterm = 0.0;
+                if (i == 0)      dvterm = -e2t.dot(du);
+                else if (i == 1) dvterm = e2t.dot(du);
+                double dw2t = dvterm / l12;
+
+                // variation of the local coordinates in the side-aligned frame.
+                // The local z of the three nodes is zero, so the tilt of the
+                // frame does not contribute.
+                double dbX[3], dbY[3];
+                for (int k = 0; k < 3; k++) {
+                    double f = (k == i) ? (2.0 / 3.0) : (-1.0 / 3.0);
+                    Vector3Type dk = f * du;
+                    double ax = Ob(0, 0) * dk(0) + Ob(0, 1) * dk(1) + Ob(0, 2) * dk(2);
+                    double ay = Ob(1, 0) * dk(0) + Ob(1, 1) * dk(1) + Ob(1, 2) * dk(2);
+                    dbX[k] = ax + dw2t * xb[k][1];
+                    dbY[k] = ay - dw2t * xb[k][0];
+                }
+                double ds = C1 * (k1 * (dbY[0] - dbY[2]) + k2 * (dbY[0] - dbY[1])
+                    - m1 * (dbX[0] - dbX[2]) - m2 * (dbX[0] - dbX[1]));
+                double dc = C1 * (k1 * (dbX[0] - dbX[2]) + k2 * (dbX[0] - dbX[1])
+                    + m1 * (dbY[0] - dbY[2]) + m2 * (dbY[0] - dbY[1]));
+
+                // variation of the polar angle
+                double dalpha = (cc * ds - ss * dc) * iden;
+
+                int col = i * 6 + j;
+                G(0, col) = dw0;
+                G(1, col) = dw1;
+                G(2, col) = dw2t + dalpha;
+            }
+        }
 
 #else // !USE_POLAR_DECOMP_ALLIGN
+
+        // e1 runs along side 1-2. Rows 0 and 1 are the derivatives of the
+        // linear interpolation of the local z displacements (N_a,y and -N_a,x),
+        // row 2 is the drilling rate e2.(du2 - du1)/L12.
 
         const auto& P1 = LCS.P1();
         const auto& P2 = LCS.P2();
@@ -532,26 +611,30 @@ private:
         double y13 = P1(1) - P3(1);
         double x32 = P3(0) - P2(0);
         double y32 = P3(1) - P2(1);
+        double x21 = P2(0) - P1(0);
+        double y21 = P2(1) - P1(1);
 
         double L3 = (P2 - P1).norm();
-        double h3 = Ap/L3;
+        if (L3 < 1.0e-300 || Ap < 1.0e-300)
+            return;
+        double iL3 = 1.0 / L3;
 
         // G1
 
         G(0, 2) = x32 * m;
         G(1, 2) = y32 * m;
-        G(2, 1) = -h3;
+        G(2, 1) = -iL3;
 
         // G2
 
         G(0, 8) = x13 * m;
         G(1, 8) = y13 * m;
-        G(2, 7) = h3;
+        G(2, 7) = iL3;
 
         // G3
 
-        G(0, 14) = x32 * m;
-        G(1, 14) = y32 * m;
+        G(0, 14) = x21 * m;
+        G(1, 14) = y21 * m;
 
 #endif // USE_POLAR_DECOMP_ALLIGN
 
