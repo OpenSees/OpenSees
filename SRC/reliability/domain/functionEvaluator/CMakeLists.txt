@@ -7,6 +7,14 @@ target_sources(OPS_Reliability
         # MatlabEvaluator.h
 )
 
+# Linked into OpenSeesPy only
+target_sources(OpenSeesPy
+    PRIVATE
+        PythonEvaluator.cpp
+    PUBLIC
+        PythonEvaluator.h
+)
+
 target_sources(OPS_ReliabilityTcl
     PRIVATE
         TclEvaluator.cpp

@@ -398,6 +398,12 @@ else()
    set (PYTHON_FOUND TRUE CACHE BOOL "providing own python lib")
 endif()
 
+# OpenSeesPy reliability: functionEvaluator Python, PythonRV 
+if(Python_FOUND)
+  add_compile_definitions(_PYTHON3)
+  include_directories(${Python_INCLUDE_DIRS})
+endif()
+
 
 find_package(MPI)
 find_package(MKL)
@@ -706,6 +712,12 @@ target_link_libraries(OpenSees
   ZLIB::ZLIB
   Eigen3::Eigen
 )
+
+# OPS_INTERPRETER may reference PythonEvaluator when _PYTHON3 is set; that object
+# is only linked into OpenSeesPy (macOS extension modules resolve at load time).
+if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND Python_FOUND)
+  set_target_properties(OpenSees PROPERTIES LINK_FLAGS "-undefined dynamic_lookup")
+endif()
 
 
 #
