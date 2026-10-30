@@ -33,7 +33,8 @@ target_sources(OPS_Material
       ResilienceLow.cpp
       Steel2.cpp
       SteelMPF.cpp
-      SteelDRC.cpp      
+      SteelDRC.cpp
+      SteelDRCV.cpp
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
     PUBLIC
@@ -63,7 +64,8 @@ target_sources(OPS_Material
       ResilienceLow.h
       Steel2.h
       SteelMPF.h
-      SteelDRC.h      
+      SteelDRC.h
+      SteelDRCV.h
       UVCuniaxial.h
       UniaxialMaterial.h
 )
