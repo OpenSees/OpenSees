@@ -137,7 +137,15 @@ class Steel01 : public UniaxialMaterial
 
 // AddingSensitivity:BEGIN //////////////////////////////////////////
     int parameterID;
-	Matrix *SHVs;
+    Matrix *SHVs;
+    // Row 0: committed strain sensitivity
+    // Row 1: committed stress sensitivity
+    // Row 2: committed minimum-strain sensitivity
+    // Row 3: committed maximum-strain sensitivity
+    // Row 4: committed positive-shift sensitivity
+    // Row 5: committed negative-shift sensitivity
+
+    double computeStressGradient(double strainSensitivity, int gradIndex);
 // AddingSensitivity:END ///////////////////////////////////////////
 };
 
