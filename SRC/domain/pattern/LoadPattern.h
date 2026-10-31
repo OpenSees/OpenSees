@@ -116,6 +116,8 @@ class LoadPattern : public DomainComponent
   private:
     double loadFactor;     // current load factor
     double scaleFactor;    // factor to scale load factor from time series
+    double lastPseudoTime;     // pseudo time of the last factor taken from the series
+    double constantPseudoTime; // pseudo time at which the pattern was made constant
 
     TimeSeries *theSeries; // pointer to associated TimeSeries
 

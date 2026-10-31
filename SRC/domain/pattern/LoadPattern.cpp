@@ -109,6 +109,7 @@ void* OPS_LoadPattern()
 LoadPattern::LoadPattern(int tag, int clasTag, double fact)
 :DomainComponent(tag,clasTag),
  isConstant(1), loadFactor(0), scaleFactor(fact),
+ lastPseudoTime(0.0), constantPseudoTime(0.0),
  theSeries(0), 
  currentGeoTag(0), lastGeoSendTag(-1),
  theNodalLoads(0), theElementalLoads(0), theSPs(0),
@@ -142,6 +143,7 @@ LoadPattern::LoadPattern(int tag, int clasTag, double fact)
 LoadPattern::LoadPattern()
 :DomainComponent(0,PATTERN_TAG_LoadPattern),
  isConstant(1), loadFactor(0), scaleFactor(1.0),
+ lastPseudoTime(0.0), constantPseudoTime(0.0),
  theSeries(0), 
  currentGeoTag(0), lastGeoSendTag(-1),
  dbSPs(0), dbNod(0), dbEle(0), 
@@ -175,6 +177,7 @@ LoadPattern::LoadPattern()
 LoadPattern::LoadPattern(int tag, double fact)
 :DomainComponent(tag,PATTERN_TAG_LoadPattern),
  isConstant(1), loadFactor(0.), scaleFactor(fact),
+ lastPseudoTime(0.0), constantPseudoTime(0.0),
  theSeries(0), 
  currentGeoTag(0), lastGeoSendTag(-1),
  dbSPs(0), dbNod(0), dbEle(0), 
@@ -408,6 +411,7 @@ LoadPattern::applyLoad(double pseudoTime)
   if (theSeries != 0 && isConstant != 0) {
     loadFactor = theSeries->getFactor(pseudoTime);
     loadFactor *= scaleFactor;
+    lastPseudoTime = pseudoTime;
   }
 
   NodalLoad *nodLoad;
@@ -430,6 +434,8 @@ LoadPattern::applyLoad(double pseudoTime)
 void
 LoadPattern::setLoadConstant(void) 
 {
+  // the load factor is frozen at its value at the last applied pseudo time
+  constantPseudoTime = lastPseudoTime;
   isConstant = 0;
 }
 
@@ -504,9 +510,11 @@ LoadPattern::sendSelf(int cTag, Channel &theChannel)
   }    
   
  
-    Vector data(2);
+    Vector data(4);
     data(0) = loadFactor;
     data(1) = scaleFactor;
+    data(2) = lastPseudoTime;
+    data(3) = constantPseudoTime;
     if (theChannel.sendVector(myDbTag, cTag, data) < 0) {
       opserr << "LoadPattern::sendSelf - channel failed to send the Vector\n";
       return -2;
@@ -698,13 +706,15 @@ LoadPattern::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker
   this->setTag(lpData(10));
 
  
-    Vector data(2);
+    Vector data(4);
     if (theChannel.recvVector(myDbTag, cTag, data) < 0) {
       opserr << "LoadPattern::recvSelf - channel failed to recv the Vector\n";
       return -2;
     }
     loadFactor = data(0);
     scaleFactor = data(1);
+    lastPseudoTime = data(2);
+    constantPseudoTime = data(3);
   
   
   // read data about the time series
@@ -946,6 +956,8 @@ LoadPattern::getCopy(void)
   }
   theCopy->loadFactor = loadFactor;
   theCopy->scaleFactor = scaleFactor;
+  theCopy->lastPseudoTime = lastPseudoTime;
+  theCopy->constantPseudoTime = constantPseudoTime;
   theCopy->isConstant = isConstant;
   theCopy->theSeries = theSeries;
   return theCopy;
@@ -969,12 +981,22 @@ LoadPattern::getMotion(int tag)
 void
 LoadPattern::applyLoadSensitivity(double pseudoTime)
 {
+    // A pattern made constant (loadConst) keeps the load factor it had at
+    // the time it was frozen. Its derivative is the factor sensitivity of
+    // the time series at that time: zero for any parameter that is not a
+    // parameter of the time series.
+    const double constantFactor = loadFactor;
+
     // P*dfactor/dh
     if (theSeries != 0 && isConstant != 0) {
 	loadFactor = theSeries->getFactorSensitivity(pseudoTime);
 	loadFactor *= scaleFactor;
-    }
-  
+    } else if (theSeries != 0) {
+	loadFactor = theSeries->getFactorSensitivity(constantPseudoTime);
+	loadFactor *= scaleFactor;
+    } else
+	loadFactor = 0.0;
+
     NodalLoad *nodLoad;
     NodalLoadIter &theNodalIter = this->getNodalLoads();
     while ((nodLoad = theNodalIter()) != 0)
@@ -984,7 +1006,8 @@ LoadPattern::applyLoadSensitivity(double pseudoTime)
     if (theSeries != 0 && isConstant != 0) {
 	loadFactor = theSeries->getFactor(pseudoTime);
 	loadFactor *= scaleFactor;
-    }
+    } else
+	loadFactor = constantFactor;
 
     NodalLoadIter &theNodalIter2 = this->getNodalLoads();
     while ((nodLoad = theNodalIter2()) != 0)

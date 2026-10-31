@@ -351,6 +351,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\GMG_CyclicReinforcedConcrete.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\GNGMaterial.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\GPCConcrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Hertzdamp.cpp" />
@@ -815,6 +816,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FRPConfinedConcrete02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\GNGMaterial.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\GPCConcrete01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HardeningMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HardeningMaterial2.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\HookGap.h" />

@@ -1104,7 +1104,7 @@ ElasticBeam2d::getResistingForceIncInertia()
   if (theDamping) P += this->getDampingForce();
   
   // subtract external load P = P - Q
-  P.addVector(1.0, Q, -1.0);
+  //P.addVector(1.0, Q, -1.0);
   
   // add the damping forces if rayleigh damping
   if (alphaM != 0.0 || betaK != 0.0 || betaK0 != 0.0 || betaKc != 0.0)
