@@ -1939,6 +1939,7 @@ PVDRecorder::setVTKType()
     vtktypes[ELE_TAG_SSPquadUP] = VTK_QUAD;
     vtktypes[ELE_TAG_SSPbrick] = VTK_HEXAHEDRON;
     vtktypes[ELE_TAG_SSPbrickUP] = VTK_HEXAHEDRON;
+    vtktypes[ELE_TAG_SSPTethraUP] = VTK_TETRA;
     vtktypes[ELE_TAG_BeamContact2Dp] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_BeamContact3Dp] = VTK_POLY_VERTEX;
     vtktypes[ELE_TAG_BeamEndContact3Dp] = VTK_POLY_VERTEX;
