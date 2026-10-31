@@ -59,4 +59,43 @@ elasticBeamEndMoments(double &MI, double &MJ, double phi, int release)
   }
 }
 
+// Fixed-end forces, in the basic system, of the temperature change of a
+// Beam2dTempLoad, which is linear through the depth d and linear along the
+// length between its node I and node J values.
+//
+// Taking the centroid at mid-depth, the free thermal strain is an axial part
+// alpha*Tc(x), Tc = (Ttop + Tbot)/2, plus a curvature
+// k0(x) = -alpha*(Ttop - Tbot)/d, a hotter top bending the member concave
+// down.  With no transverse load the moment is linear in x, and so is k0, so
+// M(x) = -EI*k0(x) cancels the curvature everywhere and the clamped member
+// stays straight, meeting its end conditions.  The solution being unique,
+// this is exact.  With M(x) = MI*(x/L - 1) + MJ*x/L it gives MI = EI*k0(0)
+// and MJ = -EI*k0(L), so each end moment depends on the gradient at that end
+// only.  The axial force that cancels the mean free strain is
+// N = -EA*alpha*(TcI + TcJ)/2.
+//
+// These moments ignore shear flexibility, which elasticBeamEndMoments then
+// adds exactly: the primary system carries no moment under this load, hence
+// no shear.  Nor does the load apply any external force, so it adds no
+// reactions in the primary system; the shear (MI + MJ)/L of the clamped
+// member is derived from the end moments by the coordinate transformation.
+//
+// Without a depth the gradient cannot be resolved, and the member takes the
+// axial force only.
+inline void
+elasticBeamTemperatureForces(double EA, double EI, double alpha, double d,
+                             double TtopI, double TbotI,
+                             double TtopJ, double TbotJ,
+                             double &N, double &MI, double &MJ)
+{
+  N = -0.25*EA*alpha*(TtopI + TbotI + TtopJ + TbotJ);
+
+  MI = 0.0;
+  MJ = 0.0;
+  if (d > 0.0) {
+    MI = -EI*alpha*(TtopI - TbotI)/d;
+    MJ = EI*alpha*(TtopJ - TbotJ)/d;
+  }
+}
+
 #endif

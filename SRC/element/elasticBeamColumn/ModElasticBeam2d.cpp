@@ -32,6 +32,7 @@
 // based on Zareian and Medina (2010), Computers and Structures, Vol. 88(1-2)
 
 #include "ModElasticBeam2d.h"
+#include <ElasticBeamCommon.h>
 #include <elementAPI.h>
 
 #include <ElementalLoad.h>
@@ -498,22 +499,12 @@ ModElasticBeam2d::addLoad(ElementalLoad *theLoad, double loadFactor)
     double Tbot2 = data(3)* loadFactor;
         
     // fixed end forces due to a linear thermal load
-    double dT1 = Ttop1-Tbot1;
-    double dT = (Ttop2-Tbot2)-(Ttop1-Tbot1);
-    double a = alpha/d;  // constant based on temp difference at top and bottom, 
-    // coefficient of thermal expansion and beam depth
-    double M1 = a*E*I*(-dT1+(4.0/3.0)*dT); //Fixed End Moment end 1
-    double M2 = a*E*I*(dT1+(5.0/3.0)*dT); //Fixed End Moment end 2
-    double F = alpha*(((Ttop2+Ttop1)/2+(Tbot2+Tbot1)/2)/2)*E*A; // Fixed End Axial Force
-    double M1M2divL =(M1+M2)/L; // Fixed End Shear
-    
-    // Reactions in basic system
-    p0[0] += 0;
-    p0[1] += M1M2divL;
-    p0[2] -= M1M2divL;
+    double N, M1, M2;
+    elasticBeamTemperatureForces(E*A, E*I, alpha, d,
+                                 Ttop1, Tbot1, Ttop2, Tbot2, N, M1, M2);
 
-    // Fixed end forces in basic system
-    q0[0] -= F;
+    // Fixed end forces in basic system; no reactions, as no load is applied
+    q0[0] += N;
     q0[1] += M1;
     q0[2] += M2;
   }
