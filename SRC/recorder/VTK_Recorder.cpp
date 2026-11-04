@@ -250,7 +250,7 @@ VTK_Recorder::VTK_Recorder(const char *inputName,
 {
   outputData = outData;
 
-  name = new char[strlen(inputName+1)];
+  name = new char[strlen(inputName)+1];
   strcpy(name, inputName);
 
   //
@@ -353,7 +353,7 @@ VTK_Recorder::record(int ctag, double timeStamp)
     // add a line to pvd file
     //
 
-    char *filename = new char[2*strlen(name)+26];
+    char *filename = new char[2*strlen(name)+37]; // "/" + %d (<=11) + %020d + ".vtu" + NUL
 
     // process p0 writes the pvd file, part for each process including itself 0
     if (sendSelfCount >= 0) {
@@ -404,7 +404,7 @@ VTK_Recorder::vtu()
     return -1;
   }
   
-  char *filename = new char[2*strlen(name)+26];
+  char *filename = new char[2*strlen(name)+37]; // "/" + %d (<=11) + %020d + ".vtu" + NUL
   if (sendSelfCount < 0) {
     sprintf(filename, "%s/%s%d%020d.vtu",name, name, -sendSelfCount, counter);    
   } else {
