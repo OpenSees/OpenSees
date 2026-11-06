@@ -100,6 +100,7 @@ extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
 extern void *OPS_SteelDRC(void); // R. Carreno
+extern void *OPS_SteelDRCV(void); // J.F. Velasquez, R. Carreno
 extern void *OPS_Concrete01(void);
 extern void *OPS_Concrete01WithSITC(void);
 extern void *OPS_Concrete02(void);
@@ -641,6 +642,13 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
     }
     if (strcmp(argv[1], "SteelDRC") == 0) {
 		void *theMat = OPS_SteelDRC();
+		if (theMat != 0)
+			theMaterial = (UniaxialMaterial *)theMat;
+		else
+			return TCL_ERROR;
+    }
+    if (strcmp(argv[1], "SteelDRCV") == 0) {
+		void *theMat = OPS_SteelDRCV();
 		if (theMat != 0)
 			theMaterial = (UniaxialMaterial *)theMat;
 		else
