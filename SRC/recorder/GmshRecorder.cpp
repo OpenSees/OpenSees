@@ -1382,6 +1382,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_SSPquadUP] = GMSH_QUAD;
     gmshtypes[ELE_TAG_SSPbrick] = GMSH_HEXAHEDRON;
     gmshtypes[ELE_TAG_SSPbrickUP] = GMSH_HEXAHEDRON;
+    gmshtypes[ELE_TAG_SSPTethraUP] = GMSH_TETRA;
     gmshtypes[ELE_TAG_BeamContact2Dp] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_BeamContact3Dp] = GMSH_POLY_VERTEX;
     gmshtypes[ELE_TAG_BeamEndContact3Dp] = GMSH_POLY_VERTEX;

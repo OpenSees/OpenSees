@@ -19,6 +19,7 @@ target_sources(OPS_Element
     SSPquadUP.cpp
     SSPbrick.cpp
     SSPbrickUP.cpp
+    SSPTethraUP.cpp
     Quad4FiberOverlay.cpp
     Brick8FiberOverlay.cpp
     QuadBeamEmbedContact.cpp
@@ -40,6 +41,7 @@ target_sources(OPS_Element
     SSPquadUP.h
     SSPbrick.h
     SSPbrickUP.h
+    SSPTethraUP.h
     Quad4FiberOverlay.h
     Brick8FiberOverlay.h
     QuadBeamEmbedContact.h
