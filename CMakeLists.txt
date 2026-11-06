@@ -467,6 +467,14 @@ else()
   message(STATUS "MPI was NOT found.")
 endif()
 
+# OpenSeesSP & OpenSeesMP need MPI and a MUMPS install (-DMUMPS_DIR=)
+if(MPI_FOUND AND DEFINED MUMPS_DIR)
+  set(OPS_BUILD_PARALLEL TRUE)
+else()
+  set(OPS_BUILD_PARALLEL FALSE)
+  message(STATUS "MPI or MUMPS_DIR missing .. OpenSeesSP and OpenSeesMP will not be built")
+endif()
+
 
 if(MKL_FOUND)
   message(STATUS "MKL was found.")
@@ -725,7 +733,7 @@ endif()
 #
 
 
-if(MPI_FOUND)
+if(OPS_BUILD_PARALLEL)
 
     add_executable(OpenSeesSP EXCLUDE_FROM_ALL
       ${OPS_SRC_DIR}/tcl/mpiMain.cpp
@@ -789,7 +797,7 @@ endif()
 # OpenSeesMP Tcl MPI Interpreter
 #
 
-if(MPI_FOUND)
+if(OPS_BUILD_PARALLEL)
 
     add_executable(OpenSeesMP EXCLUDE_FROM_ALL
       ${OPS_SRC_DIR}/tcl/mpiParameterMain.cpp
@@ -814,9 +822,6 @@ if(MPI_FOUND)
 
     target_compile_options(OpenSeesMP PRIVATE ${MPI_CXX_COMPILE_FLAGS})
 
-    if (NOT DEFINED MUMPS_DIR)
-        add_dependencies(OpenSeesMP mumps)
-    endif()
 
     if (DEFINED OPENMPI)
         target_compile_definitions(OpenSeesMP
@@ -899,7 +904,7 @@ install(PROGRAMS $<TARGET_FILE:OpenSeesPy>
         DESTINATION bin
         RENAME opensees.so)
 
-if (MPI_FOUND)
+if (OPS_BUILD_PARALLEL)
     install(TARGETS OpenSeesSP DESTINATION bin OPTIONAL)
     install(TARGETS OpenSeesMP DESTINATION bin OPTIONAL)
 endif()
