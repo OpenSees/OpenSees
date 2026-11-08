@@ -107,7 +107,29 @@ class ElasticBeam2d : public Element
     int setParameter (const char **argv, int argc, Parameter &param);
     int updateParameter (int parameterID, Information &info);
 
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int activateParameter(int parameterID);
+    const Vector &getResistingForceSensitivity(int gradNumber);
+    const Matrix &getTangentStiffSensitivity(int gradNumber);
+    const Matrix &getInitialStiffSensitivity(int gradNumber);
+    const Matrix &getCommittedStiffSensitivity(int gradNumber);
+    const Matrix &getMassSensitivity(int gradNumber);
+    int commitSensitivity(int gradNumber, int numGrads);
+    // AddingSensitivity:END ///////////////////////////////////////////
+
   private:
+    // Derivative of the basic stiffness kb with respect to the active
+    // parameter (E, A, I, G or Av); returns false if kb does not depend on it
+    bool getBasicStiffSensitivity(Matrix &dkb);
+    // Derivatives of the fixed-end forces q0 and reactions p0
+    void getFixedEndForceSensitivity(Vector &dq0, Vector &dp0);
+
+    int parameterID = 0;  // active DDM parameter (0 = none)
+    // Load terms kept for the sensitivity of q0 and p0:
+    double mEB[2] = {0.0, 0.0}; // Euler-Bernoulli end moments of transverse
+                                // loads, before the shear/release map
+    double mT[2] = {0.0, 0.0};  // temperature end moments divided by E*I
+    double nT = 0.0;            // temperature axial force divided by E*A
     double A,E,I;     // area, elastic modulus, moment of inertia
   double G,Av; // properties for shear
     double alpha, d;  // coeff. of thermal expansion, depth
