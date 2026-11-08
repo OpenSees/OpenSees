@@ -110,7 +110,31 @@ class ElasticBeam3d : public Element
     int setParameter (const char **argv, int argc, Parameter &param);
     int updateParameter (int parameterID, Information &info);
 
+    // AddingSensitivity:BEGIN //////////////////////////////////////////
+    int activateParameter(int parameterID);
+    const Vector &getResistingForceSensitivity(int gradNumber);
+    const Matrix &getTangentStiffSensitivity(int gradNumber);
+    const Matrix &getInitialStiffSensitivity(int gradNumber);
+    const Matrix &getCommittedStiffSensitivity(int gradNumber);
+    const Matrix &getMassSensitivity(int gradNumber);
+    int commitSensitivity(int gradNumber, int numGrads);
+    // AddingSensitivity:END ///////////////////////////////////////////
+
   private:
+    // Derivative of the basic stiffness kb with respect to the active
+    // parameter, as formed by getResistingForce() (mode 0),
+    // getTangentStiff() (1) or getInitialStiff() (2); returns false if kb
+    // does not depend on the parameter
+    bool getBasicStiffSensitivity(Matrix &dkb, int mode);
+    // Derivative of the fixed-end forces q0 (p0 does not depend on the
+    // parameters)
+    void getFixedEndForceSensitivity(Vector &dq0);
+
+    int parameterID = 0;  // active DDM parameter (0 = none)
+    // Euler-Bernoulli end moments of transverse loads, before the
+    // shear/release map, kept for the DDM sensitivity of q0
+    double mEBz[2] = {0.0, 0.0};  // bending about z (q0[1], q0[2])
+    double mEBy[2] = {0.0, 0.0};  // bending about y (q0[3], q0[4])
     double A,E,G,Jx,Iy,Iz;
   double Avy, Avz; // properties for shear
 
