@@ -35,6 +35,10 @@
 #include<Matrix.h>
 #include<Vector.h>
 #include<ID.h>
+#include<OPS_Globals.h>
+#include<fstream>
+#include<stdint.h>
+#include<stdio.h>
 
 LinearSOE::LinearSOE(LinearSOESolver &theLinearSOESolver, int classtag)
     :MovableObject(classtag), theModel(0), theSolver(&theLinearSOESolver)
@@ -199,5 +203,49 @@ int LinearSOE::getSparseA(std::vector<int>& rowIndices, std::vector<int>& colInd
     }
   }
   
+  return 0;
+}
+
+// Writes the entries of A that getSparseA() returns to a binary file, in the byte order of
+// the machine:
+//   int64   number of rows, number of columns, number of entries (nnz), baseIndex
+//   int32   row index of each entry     (nnz of them)
+//   int32   column index of each entry  (nnz of them)
+//   double  value of each entry         (nnz of them)
+// The values are written exactly, and each array is written in one piece, so a large matrix
+// is written in about the time the disk takes, where saveSparseA() formats every entry as text.
+int LinearSOE::saveSparseABinary(const char *fileName, int baseIndex) {
+  static_assert(sizeof(int) == 4, "printA -binary writes the indices as 32-bit integers");
+
+  std::vector<int> rowIndices, colIndices;
+  std::vector<double> values;
+  if (this->getSparseA(rowIndices, colIndices, values, baseIndex) != 0)
+    return -1;
+
+  const size_t nnz = values.size();
+  if (rowIndices.size() != nnz || colIndices.size() != nnz)
+    return -1;
+
+  std::ofstream file(fileName, std::ios::out | std::ios::binary | std::ios::trunc);
+  if (!file.is_open()) {
+    opserr << "WARNING: LinearSOE::saveSparseABinary() - failed to open file: " << fileName << endln;
+    return -1;
+  }
+
+  const int64_t size = this->getNumEqn();
+  const int64_t header[4] = {size, size, (int64_t)nnz, baseIndex};
+  file.write((const char *)header, sizeof(header));
+  if (nnz > 0) {
+    file.write((const char *)rowIndices.data(), nnz * sizeof(int));
+    file.write((const char *)colIndices.data(), nnz * sizeof(int));
+    file.write((const char *)values.data(), nnz * sizeof(double));
+  }
+  file.close();
+  if (file.fail()) {
+    opserr << "WARNING: LinearSOE::saveSparseABinary() - failed to write file: " << fileName << endln;
+    remove(fileName);  // not leave a file shorter than its header says
+    return -1;
+  }
+
   return 0;
 }
