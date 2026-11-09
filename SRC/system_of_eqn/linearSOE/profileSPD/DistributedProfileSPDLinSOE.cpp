@@ -322,7 +322,7 @@ DistributedProfileSPDLinSOE::setSize(Graph &theGraph)
 
   }
   
-  if (size != oldSize) {
+  if (size != oldSize || size == 0) {
     
     if (vectX != 0)
       delete vectX;

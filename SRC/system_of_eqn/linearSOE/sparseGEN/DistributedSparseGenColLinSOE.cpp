@@ -340,7 +340,7 @@ DistributedSparseGenColLinSOE::setSize(Graph &theGraph)
   }
 
   // create new Vectors objects
-  if (size != oldSize) {
+  if (size != oldSize || size == 0) {
     if (vectX != 0)
       delete vectX;
     
