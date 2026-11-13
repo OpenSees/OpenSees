@@ -72,6 +72,7 @@ using namespace OpenSees::Hash::literals;
 #include "OriginCentered.h"
 #include "Steel01.h"
 #include "Steel02.h"
+#include "Steel02M.h"
 #include "Steel2.h"
 #include "Steel4.h"
 #include "FatigueMaterial.h"
@@ -973,6 +974,9 @@ TclPackageClassBroker::getNewUniaxialMaterial(int classTag)
 
   case MAT_TAG_Steel02:
     return new Steel02();
+
+  case MAT_TAG_Steel02M:
+    return new Steel02M();
 
   case MAT_TAG_Steel2:
     return new Steel2();
