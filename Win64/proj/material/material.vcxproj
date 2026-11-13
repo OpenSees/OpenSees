@@ -304,7 +304,6 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ASDSteel1DMaterial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01.cpp" />
-    <ClCompile Include="..\..\..\SRC\material\uniaxial\GPCConcrete01.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\Concrete02IS.cpp" />
@@ -777,7 +776,6 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDConcrete1DMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ASDSteel1DMaterial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01.h" />
-    <ClInclude Include="..\..\..\SRC\material\uniaxial\GPCConcrete01.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete01WithSITC.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\Concrete02IS.h" />
