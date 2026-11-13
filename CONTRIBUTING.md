@@ -82,7 +82,7 @@ building the code and checking that it gives correct results.
 ### Required:
 
 Most new code in OpenSees is a new class. Please make sure it:
-- has a [BSD-2](https://opensource.org/license/bsd-2-clause) or [BSD-3](https://opensource.org/license/bsd-3-clause) Copyright notice (you do not need to copy the existing OpenSees copyright notice .. ity just must be BSD-2 or BSD-3)
+- has a [BSD-2](https://opensource.org/license/bsd-2-clause) or [BSD-3](https://opensource.org/license/bsd-3-clause) Copyright notice. You do not need to copy the existing OpenSees copyright notice.
 - has a unique class tag in `SRC/classTags.h`
 - implements `getCopy()`, `commitState()`, `revertToLastCommit()` and `revertToStart()`
 - implements `sendSelf()` / `recvSelf()`, and is added to
