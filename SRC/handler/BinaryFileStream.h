@@ -28,6 +28,7 @@
 #include <OPS_Stream.h>
 
 #include <fstream>
+#include <vector>
 using std::ofstream;
 class Matrix;
 class Message;
@@ -40,7 +41,7 @@ class BinaryFileStream : public OPS_Stream
 {
  public:
   BinaryFileStream();
-  BinaryFileStream(const char *fileName, openMode mode = OVERWRITE);
+  BinaryFileStream(const char *fileName, openMode mode = OVERWRITE, bool float32 = false);
   ~BinaryFileStream();
 
   int setFile(const char *fileName, openMode mode = OVERWRITE);
@@ -94,6 +95,10 @@ class BinaryFileStream : public OPS_Stream
 	       FEM_ObjectBroker &theBroker);
 
  private:
+  int writeValues(const double *values, int count);
+  bool float32Values;
+  std::vector<float> floatBuffer;
+
   ofstream theFile;
   int fileOpen;
   openMode theOpenMode;
