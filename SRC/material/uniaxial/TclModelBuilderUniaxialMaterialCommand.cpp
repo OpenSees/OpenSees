@@ -82,6 +82,7 @@ extern void *OPS_PathIndependentMaterial(void);
 extern void *OPS_ContinuumUniaxialMaterial(void);
 extern void *OPS_BackboneMaterial(void);
 extern void *OPS_FatigueMaterial(void);
+extern void *OPS_FatigueMemberMaterial(void);
 extern void *OPS_HardeningMaterial(void);
 extern void *OPS_FlagShapeMaterial(void);
 extern void *OPS_UniaxialJ2Plasticity(void);
@@ -1141,6 +1142,15 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
 	theMaterial = (UniaxialMaterial *)theMat;
       else 
 	return TCL_ERROR;      
+    }
+
+    if (strcmp(argv[1],"FatigueMember") == 0) {
+
+      void *theMat = OPS_FatigueMemberMaterial();
+      if (theMat != 0)
+	theMaterial = (UniaxialMaterial *)theMat;
+      else
+	return TCL_ERROR;
     }
 
     if ((strcmp(argv[1],"SAWSMaterial") == 0) || (strcmp(argv[1],"SAWS") == 0)) {
