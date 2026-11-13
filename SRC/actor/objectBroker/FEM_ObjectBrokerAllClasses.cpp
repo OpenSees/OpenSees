@@ -135,6 +135,7 @@
 #include "IMKBilin.h"
 #include "IMKPeakOriented.h"
 #include "IMKPinching.h"
+#include "CFSTsteel.h"
 #include "UVCuniaxial.h"
 #include "SLModel.h"
 #include "SteelDRC.h"
@@ -1935,6 +1936,9 @@ FEM_ObjectBrokerAllClasses::getNewUniaxialMaterial(int classTag)
 
     case MAT_TAG_IMKPinching:
       return new IMKPinching();
+
+	case MAT_TAG_CFSTsteel:
+	    return new CFSTsteel();
 
 	case MAT_TAG_UVCuniaxial:
 	    return new UVCuniaxial();

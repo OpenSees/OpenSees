@@ -4,6 +4,7 @@ OBJS       = UniaxialMaterial.o \
 	ElasticMaterial.o \
 	Elastic2Material.o \
 	ElasticPowerFunc.o \
+	CFSTsteel.o \
 	UVCuniaxial.o \
 	Bilin.o \
 	Bilin02.o \

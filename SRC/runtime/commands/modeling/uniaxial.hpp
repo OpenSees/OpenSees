@@ -125,6 +125,7 @@ extern OPS_Routine OPS_TDConcreteMC10NL; // ntosic
 extern OPS_Routine OPS_TendonL01Material;
 extern OPS_Routine OPS_Trilinwp2;
 extern OPS_Routine OPS_Trilinwp;
+extern OPS_Routine OPS_CFSTsteel;
 extern OPS_Routine OPS_UVCuniaxial;
 extern OPS_Routine OPS_pyUCLA;
 extern void *OPS_ConcretewBeta();
@@ -228,6 +229,7 @@ std::unordered_map<std::string, Tcl_CmdProc*> uniaxial_dispatch {
 //
     {"ElasticPP",                dispatch<OPS_ElasticPPMaterial>              },
     {"UniaxialJ2Plasticity",     dispatch<TclCommand_newUniaxialJ2Plasticity> },
+    {"CFSTsteel",                dispatch<OPS_CFSTsteel>                     },
     {"UVCuniaxial",              dispatch<OPS_UVCuniaxial>                    },
     {"Hardening",                dispatch<TclCommand_newPlasticMaterial>      },
     {"Hardening2",               dispatch<TclCommand_newPlasticMaterial>      },
