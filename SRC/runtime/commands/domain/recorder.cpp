@@ -105,6 +105,8 @@ struct OutputOptions {
   const char *inetAddr  = nullptr;
   int         inetPort  = 0;
   int  precision        = 6;
+  bool binaryFloat32    = false;
+  bool binaryStorageSpecified = false;
   int writeBufferSize   = 0;
   bool doScientific     = false;
   bool closeOnWrite     = false;
@@ -133,6 +135,11 @@ static OPS_Stream *
 createOutputStream(OutputOptions &options)
 {
   OPS_Stream *theOutputStream = nullptr;
+
+  if (options.binaryStorageSpecified && options.eMode != OutputOptions::BINARY_STREAM) {
+    opserr << "recorder: -float32/-float64 requires -binary" << endln;
+    return nullptr;
+  }
 
   // construct the DataHandler
   if (options.filename != nullptr) {
@@ -164,7 +171,7 @@ createOutputStream(OutputOptions &options)
       theOutputStream = new XmlFileStream(options.filename);
 
     } else if (options.eMode == OutputOptions::BINARY_STREAM) {
-      theOutputStream = new BinaryFileStream(options.filename);
+      theOutputStream = new BinaryFileStream(options.filename, OVERWRITE, options.binaryFloat32);
     }
 
   } else if (options.eMode == OutputOptions::TCP_STREAM && options.inetAddr != 0) {
@@ -295,6 +302,12 @@ parseOutputOption(OutputOptions *options, Tcl_Interp* interp, int argc, TCL_Char
       loc++;
     }
  
+    else if (strcmp(argv[loc], "-float32") == 0 || strcmp(argv[loc], "-float64") == 0) {
+      options->binaryFloat32 = strcmp(argv[loc], "-float32") == 0;
+      options->binaryStorageSpecified = true;
+      loc++;
+    }
+
     else if (strcmp(argv[loc], "-scientific") == 0) {
       options->doScientific = true;
       loc++;
@@ -592,6 +605,8 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
 
     // construct the DataHandler
     theOutputStream = createOutputStream(options);
+    if (theOutputStream == nullptr)
+      return TCL_ERROR;
 
     if (strcmp(argv[1], "Element") == 0)
       (*theRecorder) = new ElementRecorder(eleIDs, data, unused.size(), echoTime, *domain,
@@ -1280,6 +1295,8 @@ TclCreateRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
 
     // construct the DataHandler
     theOutputStream = createOutputStream(options);
+    if (theOutputStream == nullptr)
+      return TCL_ERROR;
 
 
     // Subtract one from dof and perpDirn for C indexing
@@ -1705,6 +1722,8 @@ createNodeRecorder(ClientData clientData, Tcl_Interp *interp, int argc,
   }
 
   theOutputStream = createOutputStream(options);
+  if (theOutputStream == nullptr)
+    return TCL_ERROR;
 
   if (theTimeSeries != nullptr && theTimeSeriesID.Size() < theDofs.Size()) {
     opserr << OpenSees::PromptValueError << "recorder Node/EnvelopNode # TimeSeries must equal # "

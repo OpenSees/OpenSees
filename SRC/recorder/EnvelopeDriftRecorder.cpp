@@ -65,6 +65,8 @@ void *OPS_EnvelopeDriftRecorder() {
   double dT = 0.0;
   double rTolDt = 0.00001;
   int precision = 6;
+  bool binaryFloat32 = false;
+  bool binaryStorageSpecified = false;
   bool doScientific = false;
   bool closeOnWrite = false;
   const char *filename = 0;
@@ -92,6 +94,9 @@ void *OPS_EnvelopeDriftRecorder() {
       if (OPS_GetNumRemainingInputArgs() > 0) {
         filename = OPS_GetString();
       }
+    } else if (strcmp(opt, "-float32") == 0 || strcmp(opt, "-float64") == 0) {
+      binaryFloat32 = strcmp(opt, "-float32") == 0;
+      binaryStorageSpecified = true;
     } else if (strcmp(opt, "-binary") == 0) {
       eMode = BINARY_STREAM;
       if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -173,6 +178,11 @@ void *OPS_EnvelopeDriftRecorder() {
     return 0;
   }
 
+  if (binaryStorageSpecified && eMode != BINARY_STREAM) {
+    opserr << "recorder EnvelopeDrift: -float32/-float64 requires -binary" << endln;
+    return 0;
+  }
+
   if (eMode == DATA_STREAM && filename != 0) {
     theOutputStream =
         new DataFileStream(filename, OVERWRITE, 2, 0, closeOnWrite,
@@ -184,7 +194,7 @@ void *OPS_EnvelopeDriftRecorder() {
   } else if (eMode == XML_STREAM && filename != 0) {
     theOutputStream = new XmlFileStream(filename);
   } else if (eMode == BINARY_STREAM) {
-    theOutputStream = new BinaryFileStream(filename);
+    theOutputStream = new BinaryFileStream(filename, OVERWRITE, binaryFloat32);
   } else {
     theOutputStream = new StandardStream();
   }
