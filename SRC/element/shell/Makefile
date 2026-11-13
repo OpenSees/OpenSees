@@ -5,6 +5,7 @@ OBJS       = ShellMITC4.o \
 	ShellDKGQ.o \
 	ShellNLDKGQ.o \
 	ShellDKGT.o \
+	ShellDKMT.o \
 	ShellNLDKGT.o \
 	ShellMITC4Thermal.o \
 	ShellNLDKGQThermal.o \

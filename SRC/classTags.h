@@ -911,6 +911,7 @@
 #define ELE_TAG_CurvedPipe                      270
 #define ELE_TAG_PML3DVISCOUS               271 // Amin Pakzad
 #define ELE_TAG_MEFI_3D        			  272 // C. N. Lopez
+#define ELE_TAG_ShellDKMT                 273 // N. Takimoto
 
 #define FRN_TAG_Coulomb            1
 #define FRN_TAG_VelDependent       2

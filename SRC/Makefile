@@ -567,6 +567,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/shell/ShellDKGQ.o \
 	$(FE)/element/shell/ShellNLDKGQ.o \
 	$(FE)/element/shell/ShellDKGT.o \
+	$(FE)/element/shell/ShellDKMT.o \
 	$(FE)/element/shell/ShellNLDKGT.o \
 	$(FE)/element/shell/ShellNLDKGQThermal.o \
 	$(FE)/element/shell/ShellNLDKGTThermal.o \

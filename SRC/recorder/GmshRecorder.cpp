@@ -1435,6 +1435,7 @@ GmshRecorder::setGMSHType()
     gmshtypes[ELE_TAG_FourNodeTetrahedron] = GMSH_TETRA;
     gmshtypes[ELE_TAG_TriSurfaceLoad] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellDKGT] = GMSH_TRIANGLE;
+    gmshtypes[ELE_TAG_ShellDKMT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_ShellNLDKGT] = GMSH_TRIANGLE;
     gmshtypes[ELE_TAG_InertiaTruss] = GMSH_LINE;
     gmshtypes[ELE_TAG_ASDAbsorbingBoundary2D] = GMSH_QUAD;

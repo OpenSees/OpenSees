@@ -113,6 +113,7 @@ void* OPS_ShellMITC4();
 void* OPS_ShellMITC9();
 void* OPS_ShellDKGQ();
 void* OPS_ShellDKGT();
+void* OPS_ShellDKMT();
 void* OPS_ShellNLDKGQ();
 void* OPS_ShellNLDKGT();
 void* OPS_ASDShellQ4();
@@ -769,6 +770,8 @@ namespace {
 	functionMap.insert(std::make_pair("ShellDKGQ", &OPS_ShellDKGQ));
 	functionMap.insert(std::make_pair("shellDKGT", &OPS_ShellDKGT));
 	functionMap.insert(std::make_pair("ShellDKGT", &OPS_ShellDKGT));
+	functionMap.insert(std::make_pair("shellDKMT", &OPS_ShellDKMT));
+	functionMap.insert(std::make_pair("ShellDKMT", &OPS_ShellDKMT));
 	functionMap.insert(std::make_pair("ShellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("shellNLDKGQ", &OPS_ShellNLDKGQ));
 	functionMap.insert(std::make_pair("ShellNLDKGT", &OPS_ShellNLDKGT));
