@@ -27,7 +27,7 @@ See [CONTRIBUTING.md](https://github.com/OpenSees/OpenSees/blob/master/CONTRIBUT
 - [ ] Existing examples/tests that touch this code still give the same results (or the differences are explained above)
 
 **If adding a new class (element, material, section, ...):**
-- [ ] I have added a BSD-2 or BSD-3 Copyright notice to the code
+- [ ] I have added a [BSD-2]((https://opensource.org/license/bsd-2-clause) or [BSD-3]((https://opensource.org/license/bsd-3-clause) Copyright notice to the code
 - [ ] A test or example script is included (e.g. in `tests/` or `EXAMPLES/`)
 - [ ] The class has a unique class tag in `SRC/classTags.h`
 - [ ] The command is registered for both Tcl and Python interpreters
