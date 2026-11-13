@@ -41,6 +41,7 @@ UPDATES, ENHANCEMENTS, OR MODIFICATIONS.
 //
 
 #include "OpenSeesCommands.h"
+#include <string>
 #include <OPS_Globals.h>
 #include <elementAPI.h>
 #include <UniaxialMaterial.h>
@@ -2289,9 +2290,12 @@ int OPS_printA()
     if (cmds == 0) return 0;
     FileStream outputFile;
     OPS_Stream *output = &opserr;
+    bool toFile = false;
+    std::string fileName;
 
     bool ret = false;
     bool fileSparse = false;
+    bool binary = false;
     int baseIndex = 0;
     int precision = 6;
     while (OPS_GetNumRemainingInputArgs() > 0) {
@@ -2302,13 +2306,12 @@ int OPS_printA()
                 opserr << "WARNING: printA - filename is not a valid string\n";
                 return -1;
             }
-            if (outputFile.setFile(filename) != 0) {
-                opserr << "printA <filename> .. - failed to open file: " << filename << endln;
-                return -1;
-            }
-            output = &outputFile;
+            toFile = true;
+            fileName = filename;
         } else if((strcmp(flag,"ret") == 0) || (strcmp(flag,"-ret") == 0)) {
             ret = true;
+        } else if ((strcmp(flag,"binary") == 0) || (strcmp(flag,"-binary") == 0)) {
+            binary = true;
         } else if ((strcmp(flag,"sparse") == 0) || (strcmp(flag,"-sparse") == 0)) {
             fileSparse = true;
             if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -2332,9 +2335,45 @@ int OPS_printA()
         }
     }
 
+    if (binary && (!toFile || !fileSparse || ret)) {
+        opserr << "WARNING: printA -binary writes the sparse matrix to a file: use it with -file <fileName> and -sparse <baseIndex>, and without -ret\n";
+        return -1;
+    }
+    if (toFile && !binary) {
+        if (outputFile.setFile(fileName.c_str()) != 0) {
+            opserr << "printA <filename> .. - failed to open file: " << fileName.c_str() << endln;
+            return -1;
+        }
+        output = &outputFile;
+    }
+
     LinearSOE* theSOE = cmds->getSOE();
     StaticIntegrator* theStaticIntegrator = cmds->getStaticIntegrator();
     TransientIntegrator* theTransientIntegrator = cmds->getTransientIntegrator();
+
+    if (binary) {
+        if (theSOE == 0) {
+            opserr << "WARNING: printA -binary - there is no system of equations to print: define the analysis first\n";
+            return -1;
+        }
+        if (theStaticIntegrator != 0) {
+            theStaticIntegrator->formTangent();
+        } else if (theTransientIntegrator != 0) {
+            theTransientIntegrator->formTangent(0);
+        }
+        int result = theSOE->saveSparseABinary(fileName.c_str(), baseIndex);
+        if (result != 0) {
+            opserr << "WARNING: printA -sparse -binary failed to save sparse matrix" << endln;
+            opserr << "The selected system type may not support sparse matrix output" << endln;
+            return -1;
+        }
+        int numdata = 1;
+        if (OPS_SetIntOutput(&numdata, &result, true) < 0) {
+            opserr << "WARNING: printA - failed to set output\n";
+            return -1;
+        }
+        return 0;
+    }
 
     if (theSOE != 0) {
         output->setPrecision(precision);

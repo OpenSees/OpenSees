@@ -2330,9 +2330,11 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
 
   FileStream outputFile;
   OPS_Stream *output = &opserr;
+  const char *fileName = 0;
 
   bool ret = false;
   bool fileSparse = false;
+  bool binary = false;
   int baseIndex = 0;
   int precision = 6;
 
@@ -2341,16 +2343,19 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       if ((strcmp(argv[currentArg], "file") == 0) ||
           (strcmp(argv[currentArg], "-file") == 0)) {
           currentArg++;
-
-          if (outputFile.setFile(argv[currentArg]) != 0) {
-              opserr << "print <filename> .. - failed to open file: " << argv[currentArg] << endln;
+          if (currentArg >= argc) {
+              opserr << "WARNING: printA - no file name after -file\n";
               return TCL_ERROR;
           }
-          output = &outputFile;
+          fileName = argv[currentArg];
       }
       else if ((strcmp(argv[currentArg], "ret") == 0) ||
           (strcmp(argv[currentArg], "-ret") == 0)) {
           ret = true;
+      }
+      else if ((strcmp(argv[currentArg], "binary") == 0) ||
+          (strcmp(argv[currentArg], "-binary") == 0)) {
+          binary = true;
       }
       else if ((strcmp(argv[currentArg], "sparse") == 0) ||
           (strcmp(argv[currentArg], "-sparse") == 0)) {
@@ -2379,12 +2384,37 @@ printA(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       }
       currentArg++;
   }
+  if (binary && (fileName == 0 || !fileSparse || ret)) {
+      opserr << "WARNING: printA -binary writes the sparse matrix to a file: use it with -file <fileName> and -sparse <baseIndex>, and without -ret\n";
+      return TCL_ERROR;
+  }
+  if (binary && theSOE == 0) {
+      opserr << "WARNING: printA -binary - there is no system of equations to print: define the analysis first\n";
+      return TCL_ERROR;
+  }
+  if (fileName != 0 && !binary) {
+      if (outputFile.setFile(fileName) != 0) {
+          opserr << "print <filename> .. - failed to open file: " << fileName << endln;
+          return TCL_ERROR;
+      }
+      output = &outputFile;
+  }
   if (theSOE != 0) {
     if (theStaticIntegrator != 0)
       theStaticIntegrator->formTangent();
     else if (theTransientIntegrator != 0)
       theTransientIntegrator->formTangent(0);
     
+    if (binary) {
+        res = theSOE->saveSparseABinary(fileName, baseIndex);
+        if (res != 0) {
+          opserr << "WARNING: printA -sparse -binary failed to save sparse matrix" << endln;
+          opserr << "The selected system type may not support sparse matrix output" << endln;
+          return TCL_ERROR;
+        }
+        Tcl_SetResult(interp, (char *)"0", TCL_STATIC);
+        return TCL_OK;
+    }
     output->setPrecision(precision);
     if (fileSparse) {
         if (!ret) {
