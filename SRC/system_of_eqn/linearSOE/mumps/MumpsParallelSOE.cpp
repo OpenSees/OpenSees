@@ -210,7 +210,7 @@ MumpsParallelSOE::setSize(Graph &theGraph)
   }
 
   // create new Vectors objects
-  if (size != oldSize) {
+  if (size != oldSize || size == 0) {
     if (vectX != 0) delete vectX;
     if (vectB != 0) delete vectB;
     if (myVectB != 0) delete myVectB;
