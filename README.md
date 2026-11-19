@@ -25,6 +25,17 @@ https://OpenSees.github.io/OpenSeesDocumentation
 Steps to build OpenSees on Windows, Linux, and Mac:
 https://opensees.github.io/OpenSeesDocumentation/developer/build.html
 
+### Optional Sanitizer Builds
+
+Developers using GNU or Clang compilers can enable runtime instrumentation while configuring CMake:
+
+```console
+cmake -S . -B build/asan -DOPS_ENABLE_ASAN=ON
+cmake -S . -B build/ubsan -DOPS_ENABLE_UBSAN=ON
+```
+
+These options are disabled by default and are intended for debugging memory and undefined-behavior issues.
+
 ## Modeling Questions
 Issues related to modeling questions will be closed. Instead, post your modeling questions on the OpenSees 
 message board or in the OpenSees Facebook group.
