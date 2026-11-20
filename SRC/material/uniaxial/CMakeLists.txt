@@ -34,6 +34,7 @@ target_sources(OPS_Material
       Steel2.cpp
       SteelMPF.cpp
       SteelDRC.cpp      
+      CFSTsteel.cpp
       UVCuniaxial.cpp
       UniaxialMaterial.cpp
     PUBLIC
@@ -64,6 +65,7 @@ target_sources(OPS_Material
       Steel2.h
       SteelMPF.h
       SteelDRC.h      
+      CFSTsteel.h
       UVCuniaxial.h
       UniaxialMaterial.h
 )
