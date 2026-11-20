@@ -839,7 +839,7 @@ ElasticBeam3d::getInitialStiff(void)
   }
   if (releasey == 2) { // release J
     kb(3,3) = 3.0*Iy*EoverL;
-    if (G > 0 && Avy > 0) {
+    if (G > 0 && Avz > 0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       kb(3,3) /= a;
     }            
@@ -1236,7 +1236,7 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 1) {
     q(3) = 0.0;
     double EIoverL3 = 3.0*Iy*EoverL;
-    if (G > 0 && Avy > 0) {
+    if (G > 0 && Avz > 0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       EIoverL3 /= a;
     }        
@@ -1245,7 +1245,7 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 2) {
     q(4) = 0.0;
     double EIoverL3 = 3.0*Iy*EoverL;
-    if (G > 0 && Avy > 0) {
+    if (G > 0 && Avz > 0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       EIoverL3 /= a;
     }        
