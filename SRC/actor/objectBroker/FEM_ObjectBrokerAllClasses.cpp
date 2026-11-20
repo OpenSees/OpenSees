@@ -455,6 +455,7 @@
 #include "shell/ShellDKGQ.h"   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ShellNLDKGQ.h" //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 #include "shell/ShellDKGT.h"
+#include "shell/ShellDKMT.h"
 #include "shell/ShellNLDKGT.h"
 #include "shell/ASDShellQ4.h" // Massimo Petracca
 #include "shell/ASDShellT3.h" // Massimo Petracca
@@ -1118,6 +1119,9 @@ FEM_ObjectBrokerAllClasses::getNewElement(int classTag)
     
     case ELE_TAG_ShellDKGT:
       return new ShellDKGT();
+
+    case ELE_TAG_ShellDKMT:
+      return new ShellDKMT();
       
     case ELE_TAG_ShellNLDKGT:
       return new ShellNLDKGT();

@@ -12,6 +12,7 @@ target_sources(OPS_Element
         R3vectors.cpp
         ShellDKGQ.cpp
         ShellDKGT.cpp
+        ShellDKMT.cpp
         ShellMITC4.cpp
         ShellMITC4Thermal.cpp
         ShellMITC9.cpp
@@ -33,6 +34,7 @@ target_sources(OPS_Element
         R3vectors.h
         ShellDKGQ.h
         ShellDKGT.h
+        ShellDKMT.h
         ShellMITC4.h
         ShellMITC4Thermal.h
         ShellMITC9.h

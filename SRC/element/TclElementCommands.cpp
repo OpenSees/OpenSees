@@ -125,6 +125,7 @@ extern void *OPS_ShellMITC9(void);
 extern void *OPS_ShellDKGQ(void);     //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_ShellNLDKGQ(void);   //Added by Lisha Wang, Xinzheng Lu, Linlin Xie, Song Cen & Quan Gu
 extern void *OPS_ShellDKGT(void);     //Added by Shuhao Zhang and  Xinzheng Lu 
+extern void *OPS_ShellDKMT(void);
 extern void *OPS_ShellNLDKGT(void);   //Added by Shuhao Zhang and  Xinzheng Lu 
 extern void *OPS_ASDShellQ4(void);   // Massimo Petracca (ASDEA)
 extern void *OPS_ASDShellT3(void);   // Massimo Petracca (ASDEA)
@@ -1090,6 +1091,16 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
       opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
       return TCL_ERROR;
     }    
+
+  } else if ((strcmp(argv[1],"shellDKMT") == 0) || (strcmp(argv[1],"ShellDKMT") == 0)) {
+
+    void *theEle = OPS_ShellDKMT();
+    if (theEle != 0)
+      theElement = (Element *)theEle;
+    else {
+      opserr << "TclElementCommand -- unable to create element of type : " << argv[1] << endln;
+      return TCL_ERROR;
+    }
 
   } else if ((strcmp(argv[1],"shellNLDKGT") == 0) || (strcmp(argv[1],"ShellNLDKGT") == 0)) {    
     
