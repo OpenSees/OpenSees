@@ -839,7 +839,7 @@ ElasticBeam3d::getInitialStiff(void)
   }
   if (releasey == 2) { // release J
     kb(3,3) = 3.0*Iy*EoverL;
-    if (G > 0 && Avy > 0) {
+    if (G > 0 && Avz > 0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       kb(3,3) /= a;
     }            
@@ -922,6 +922,9 @@ ElasticBeam3d::zeroLoad(void)
   wx = 0.0;
   wy = 0.0;
   wz = 0.0;
+
+  mEBz[0] = mEBz[1] = 0.0;
+  mEBy[0] = mEBy[1] = 0.0;
     
   return;
 }
@@ -960,12 +963,16 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 
     double MI = -Mz;
     double MJ = Mz;
+    mEBz[0] += MI;  // for the DDM sensitivity of q0
+    mEBz[1] += MJ;
     elasticBeamEndMoments(MI, MJ, elasticBeamShearFactor(E, Iz, G, Avy, L), releasez);
     q0[1] += MI;
     q0[2] += MJ;
 
     MI = My;
     MJ = -My;
+    mEBy[0] += MI;  // for the DDM sensitivity of q0
+    mEBy[1] += MJ;
     elasticBeamEndMoments(MI, MJ, elasticBeamShearFactor(E, Iy, G, Avz, L), releasey);
     q0[3] += MI;
     q0[4] += MJ;
@@ -998,6 +1005,8 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 	  double V1 = Fyt-V2;
 	  double M1 = (0.5*z1*ba2) + (wybma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wybma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
 	  double M2 = (-1.0*z1*ba3/(3.0*L)) - (wybma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wybma*ba5/(5.0*L2*ba));
+	  mEBz[0] -= M1;  // for the DDM sensitivity of q0 (q0 -= M below)
+	  mEBz[1] -= M2;
 	  elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iz, G, Avy, L), releasez);
 	  double waa = wa;
 	  double P = waa*ba + 0.5*(wab-waa)*ba;
@@ -1021,6 +1030,8 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
 	  V1 = Fzt-V2;
 	  M1 = (0.5*z1*ba2) + (wzbma*ba3/(3.0*ba)) - (z1*ba3*2.0/(3.0*L)) - (wzbma*ba4/(2.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wzbma*ba5/(5.0*L2*ba));
 	  M2 = (-1.0*z1*ba3/(3.0*L)) - (wzbma*ba4/(4.0*L*ba)) + (z1*ba4/(4.0*L2)) + (wzbma*ba5/(5.0*L2*ba));
+	  mEBy[0] += M1;  // for the DDM sensitivity of q0
+	  mEBy[1] += M2;
 	  elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iy, G, Avz, L), releasey);
 	  q0[3] += M1;
 	  q0[4] += M2;	  
@@ -1062,12 +1073,16 @@ ElasticBeam3d::addLoad(ElementalLoad *theLoad, double loadFactor)
     // Bending about z (shear along y)
     M1 = -a * b2 * Py * L2;
     M2 = a2 * b * Py * L2;
+    mEBz[0] += M1;  // for the DDM sensitivity of q0
+    mEBz[1] += M2;
     elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iz, G, Avy, L), releasez);
     q0[1] += M1;
     q0[2] += M2;
     // Bending about y (shear along z)
     M1 = -a * b2 * Pz * L2;
     M2 = a2 * b * Pz * L2;
+    mEBy[0] -= M1;  // for the DDM sensitivity of q0 (q0 -= M below)
+    mEBy[1] -= M2;
     elasticBeamEndMoments(M1, M2, elasticBeamShearFactor(E, Iy, G, Avz, L), releasey);
     q0[3] -= M1;
     q0[4] -= M2;
@@ -1236,7 +1251,7 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 1) {
     q(3) = 0.0;
     double EIoverL3 = 3.0*Iy*EoverL;
-    if (G > 0 && Avy > 0) {
+    if (G > 0 && Avz > 0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       EIoverL3 /= a;
     }        
@@ -1245,7 +1260,7 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 2) {
     q(4) = 0.0;
     double EIoverL3 = 3.0*Iy*EoverL;
-    if (G > 0 && Avy > 0) {
+    if (G > 0 && Avz > 0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       EIoverL3 /= a;
     }        
@@ -2002,6 +2017,11 @@ ElasticBeam3d::setParameter(const char **argv, int argc, Parameter &param)
     param.setValue(releasey);
     return param.addObject(8, this);
   }  
+  // mass per length
+  if (strcmp(argv[0],"rho") == 0) {
+    param.setValue(rho);
+    return param.addObject(11, this);
+  }
 
   // damping
   if (strstr(argv[0], "damp") != 0) {
@@ -2045,6 +2065,9 @@ ElasticBeam3d::updateParameter (int parameterID, Information &info)
 	case 10:
 		Avz = info.theDouble;
 		return 0;	       
+	case 11:
+		rho = info.theDouble;
+		return 0;
 	case 7:
 	  releasez = (int)info.theDouble;
 	  if (releasez < 0 || releasez > 3)
@@ -2060,3 +2083,300 @@ ElasticBeam3d::updateParameter (int parameterID, Information &info)
 	}
 }
 
+
+// AddingSensitivity:BEGIN /////////////////////////////////////////////
+//
+// DDM sensitivity with respect to the element parameters set by
+// setParameter(): E (id 1), A (2), Iz (3), Iy (4), G (5), J (6), Avy (9),
+// Avz (10) and rho (11).  The element is linear elastic, so the conditional
+// derivative of the basic forces is dq = dkb*v + dq0 and there is no history
+// to commit.  The derivatives follow getResistingForce(), getTangentStiff()
+// and getInitialStiff() exactly as they are written, including the cases in
+// which they treat shear deformation differently.  Not included: sensitivity
+// of inertia loads from rho (addInertiaLoadToUnbalance) and of node
+// coordinates (shape sensitivity).
+
+int
+ElasticBeam3d::activateParameter(int passedParameterID)
+{
+  parameterID = passedParameterID;
+
+  return 0;
+}
+
+// Derivative of the bending block (i,i), (i,j), (j,j) of kb for one plane.
+// shear0: shear factor used without release; shearRel: used with a release.
+static void
+elasticBeam3dBendingSensitivity(double E, double I, double G, double Av,
+                                double dE, double dI, double dG, double dAv,
+                                double L, int release, bool shear0,
+                                bool shearRel, Matrix &dkb, int i, int j)
+{
+  double EI = E*I;
+  double dEI = dE*I + E*dI;
+
+  // psi = 3EI/(G Av L^2) and its derivative
+  double psi = 0.0, dpsi = 0.0;
+  bool shear = (release == 0) ? shear0 : shearRel;
+  if (shear) {
+    double GAvL2 = G*Av*L*L;
+    psi = 3.0*EI/GAvL2;
+    dpsi = 3.0*(dEI*GAvL2 - EI*(dG*Av + G*dAv)*L*L)/(GAvL2*GAvL2);
+  }
+
+  if (release == 0) {
+    // k11 = 4EI/L*B, k12 = 2EI/L*C, B = 3a/(4a^2-b^2), C = 3b/(4a^2-b^2),
+    // a = 1 + psi, b = 1 - 2psi (B = C = 1 without shear)
+    double B = 1.0, C = 1.0, dB = 0.0, dC = 0.0;
+    if (shear) {
+      double a = 1.0 + psi;
+      double b = 1.0 - 2.0*psi;
+      double D = 4.0*a*a - b*b;
+      double dD = 8.0*a + 4.0*b;  // d/dpsi, with da = 1, db = -2
+      B = 3.0*a/D;
+      C = 3.0*b/D;
+      dB = (3.0*D - 3.0*a*dD)/(D*D)*dpsi;
+      dC = (-6.0*D - 3.0*b*dD)/(D*D)*dpsi;
+    }
+    dkb(i,i) = dkb(j,j) = 4.0/L*(dEI*B + EI*dB);
+    dkb(i,j) = dkb(j,i) = 2.0/L*(dEI*C + EI*dC);
+  }
+  else if (release == 1 || release == 2) {
+    // k = 3EI/L/a
+    double a = 1.0 + psi;
+    double dk = 3.0/L*(dEI/a - EI*dpsi/(a*a));
+    if (release == 1)
+      dkb(j,j) = dk;
+    else
+      dkb(i,i) = dk;
+  }
+}
+
+bool
+ElasticBeam3d::getBasicStiffSensitivity(Matrix &dkb, int mode)
+{
+  dkb.Zero();
+
+  double dE = 0.0, dA = 0.0, dIz = 0.0, dIy = 0.0, dG = 0.0, dJ = 0.0;
+  double dAvy = 0.0, dAvz = 0.0;
+  switch (parameterID) {
+  case 1: dE = 1.0; break;
+  case 2: dA = 1.0; break;
+  case 3: dIz = 1.0; break;
+  case 4: dIy = 1.0; break;
+  case 5: dG = 1.0; break;
+  case 6: dJ = 1.0; break;
+  case 9: dAvy = 1.0; break;
+  case 10: dAvz = 1.0; break;
+  default: return false;
+  }
+
+  double L = theCoordTransf->getInitialLength();
+
+  dkb(0,0) = (dE*A + E*dA)/L;     // EA/L
+  dkb(5,5) = (dG*Jx + G*dJ)/L;    // GJ/L
+
+  // bending about z: shear factor with Avy, except no shear factor for a
+  // release in getInitialStiff()
+  bool shearZ = (G > 0 && Avy > 0.0);
+  elasticBeam3dBendingSensitivity(E, Iz, G, Avy, dE, dIz, dG, dAvy, L, releasez,
+                                  shearZ, (mode == 2) ? false : shearZ, dkb, 1, 2);
+
+  // bending about y: the shear factor always uses Avz, but the condition for
+  // applying it differs between the three methods
+  bool condAvy = (G > 0 && Avy > 0.0);
+  bool condAvz = (G > 0 && Avz > 0.0);
+  bool shearY0, shearYRel;
+  if (mode == 0) {         // getResistingForce()
+    shearY0 = condAvy;
+    shearYRel = condAvy;
+  }
+  else if (mode == 1) {    // getTangentStiff()
+    shearY0 = condAvz;
+    shearYRel = condAvz;
+  }
+  else {                   // getInitialStiff()
+    shearY0 = condAvz;
+    shearYRel = (releasey == 1) ? condAvz : condAvy;
+  }
+  elasticBeam3dBendingSensitivity(E, Iy, G, Avz, dE, dIy, dG, dAvz, L, releasey,
+                                  shearY0, shearYRel, dkb, 3, 4);
+
+  return true;
+}
+
+// Derivative with respect to phi of the map of elasticBeamEndMoments()
+static void
+elasticBeam3dEndMomentSensitivity(double MIe, double MJe, double phi,
+                                  int release, double &dMI, double &dMJ)
+{
+  double MI = (MIe + 0.5*phi*(MIe - MJe))/(1.0 + phi);
+  double MJ = (MJe + 0.5*phi*(MJe - MIe))/(1.0 + phi);
+  dMI = -0.5*(MIe + MJe)/((1.0 + phi)*(1.0 + phi));
+  dMJ = dMI;
+  double c = (2.0 - phi)/(4.0 + phi);      // carry-over factor
+  double dc = -6.0/((4.0 + phi)*(4.0 + phi));
+  switch (release) {
+  case 1:
+    dMJ = dMJ - dc*MI - c*dMI;
+    dMI = 0.0;
+    break;
+  case 2:
+    dMI = dMI - dc*MJ - c*dMJ;
+    dMJ = 0.0;
+    break;
+  case 3:
+    dMI = dMJ = 0.0;
+    break;
+  default:
+    break;
+  }
+}
+
+void
+ElasticBeam3d::getFixedEndForceSensitivity(Vector &dq0)
+{
+  dq0.Zero();
+
+  double dE = 0.0, dIz = 0.0, dIy = 0.0, dG = 0.0, dAvy = 0.0, dAvz = 0.0;
+  switch (parameterID) {
+  case 1: dE = 1.0; break;
+  case 3: dIz = 1.0; break;
+  case 4: dIy = 1.0; break;
+  case 5: dG = 1.0; break;
+  case 9: dAvy = 1.0; break;
+  case 10: dAvz = 1.0; break;
+  default: return;
+  }
+
+  double L = theCoordTransf->getInitialLength();
+  double dMI, dMJ;
+
+  // phi = 12EI/(G Av L^2), see elasticBeamShearFactor()
+  double phiZ = elasticBeamShearFactor(E, Iz, G, Avy, L);
+  if (phiZ != 0.0 && (mEBz[0] != 0.0 || mEBz[1] != 0.0)) {
+    double GAvL2 = G*Avy*L*L;
+    double dEI = dE*Iz + E*dIz;
+    double dphi = 12.0*(dEI*GAvL2 - E*Iz*(dG*Avy + G*dAvy)*L*L)/(GAvL2*GAvL2);
+    elasticBeam3dEndMomentSensitivity(mEBz[0], mEBz[1], phiZ, releasez, dMI, dMJ);
+    dq0(1) += dMI*dphi;
+    dq0(2) += dMJ*dphi;
+  }
+
+  double phiY = elasticBeamShearFactor(E, Iy, G, Avz, L);
+  if (phiY != 0.0 && (mEBy[0] != 0.0 || mEBy[1] != 0.0)) {
+    double GAvL2 = G*Avz*L*L;
+    double dEI = dE*Iy + E*dIy;
+    double dphi = 12.0*(dEI*GAvL2 - E*Iy*(dG*Avz + G*dAvz)*L*L)/(GAvL2*GAvL2);
+    elasticBeam3dEndMomentSensitivity(mEBy[0], mEBy[1], phiY, releasey, dMI, dMJ);
+    dq0(3) += dMI*dphi;
+    dq0(4) += dMJ*dphi;
+  }
+}
+
+const Vector &
+ElasticBeam3d::getResistingForceSensitivity(int gradNumber)
+{
+  static Matrix dkb(6,6);
+  static Vector dq(6);
+  static Vector dp0(5);
+
+  P.Zero();
+  if (!this->getBasicStiffSensitivity(dkb, 0))
+    return P;
+
+  theCoordTransf->update();
+  const Vector &v = theCoordTransf->getBasicTrialDisp();
+  this->getFixedEndForceSensitivity(dq);
+  dq.addMatrixVector(1.0, dkb, v, 1.0);
+  dp0.Zero();
+
+  P = theCoordTransf->getGlobalResistingForce(dq, dp0);
+
+  return P;
+}
+
+const Matrix &
+ElasticBeam3d::getTangentStiffSensitivity(int gradNumber)
+{
+  static Matrix dkb(6,6);
+  static Vector dq(6);
+
+  if (!this->getBasicStiffSensitivity(dkb, 1)) {
+    K.Zero();
+    return K;
+  }
+
+  // the global stiffness is linear in (kb, q), so its derivative follows
+  // from the derivatives of both
+  const Vector &v = theCoordTransf->getBasicTrialDisp();
+  this->getFixedEndForceSensitivity(dq);
+  dq.addMatrixVector(1.0, dkb, v, 1.0);
+
+  // as in getTangentStiff(), the damping multiplier scales kb but not q
+  if (theDamping)
+    dkb *= theDamping->getStiffnessMultiplier();
+
+  return theCoordTransf->getGlobalStiffMatrix(dkb, dq);
+}
+
+const Matrix &
+ElasticBeam3d::getInitialStiffSensitivity(int gradNumber)
+{
+  static Matrix dkb(6,6);
+
+  if (!this->getBasicStiffSensitivity(dkb, 2)) {
+    K.Zero();
+    return K;
+  }
+
+  if (theDamping)
+    dkb *= theDamping->getStiffnessMultiplier();
+
+  return theCoordTransf->getInitialGlobalStiffMatrix(dkb);
+}
+
+const Matrix &
+ElasticBeam3d::getCommittedStiffSensitivity(int gradNumber)
+{
+  // sensitivities are computed for a converged (committed) state
+  return this->getTangentStiffSensitivity(gradNumber);
+}
+
+const Matrix &
+ElasticBeam3d::getMassSensitivity(int gradNumber)
+{
+  if (parameterID == 11) {
+    // the mass matrix is linear in rho: dM/drho = M(rho = 1)
+    double rhoCommitted = rho;
+    rho = 1.0;
+    const Matrix &dM = this->getMass();
+    rho = rhoCommitted;
+    return dM;
+  }
+
+  K.Zero();
+
+  // the consistent mass matrix depends on A and J through the torsional
+  // inertia rho*Jx/A
+  if ((parameterID == 2 || parameterID == 6) && rho > 0.0 && cMass != 0) {
+    double L = theCoordTransf->getInitialLength();
+    double m = rho*L/420.0;
+    double dc = (parameterID == 6) ? 1.0/A : -Jx/(A*A);  // d(Jx/A)
+    static Matrix ml(12,12);
+    ml.Zero();
+    ml(3,3) = ml(9,9) = m*dc*140.0;
+    ml(3,9) = ml(9,3) = m*dc*70.0;
+    K = theCoordTransf->getGlobalMatrixFromLocal(ml);
+  }
+
+  return K;
+}
+
+int
+ElasticBeam3d::commitSensitivity(int gradNumber, int numGrads)
+{
+  // linear elastic element: no history variables
+  return 0;
+}
+// AddingSensitivity:END ///////////////////////////////////////////////

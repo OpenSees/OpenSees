@@ -82,6 +82,7 @@ class LinearSOE : public MovableObject
     virtual int saveSparseA(OPS_Stream& output, int baseIndex = 0); 
     virtual int getSparseA(ID& rowIndices, ID& colIndices, Vector& values, int baseIndex = 0);
     virtual int getSparseA(std::vector<int>& rowIndices, std::vector<int>& colIndices, std::vector<double>& values, int baseIndex = 0);
+    int saveSparseABinary(const char *fileName, int baseIndex = 0);
     virtual double getDeterminant(void);
     virtual double normRHS(void) = 0;
 

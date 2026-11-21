@@ -84,6 +84,8 @@ OPS_EnvelopeElementRecorder()
     bool doScientific = false;
 
     int precision = 6;
+    bool binaryFloat32 = false;
+    bool binaryStorageSpecified = false;
 
     bool closeOnWrite = false;
 
@@ -145,6 +147,10 @@ OPS_EnvelopeElementRecorder()
                 filename = OPS_GetString();
             }
             eMode = XML_STREAM;
+        }
+        else if (strcmp(option, "-float32") == 0 || strcmp(option, "-float64") == 0) {
+            binaryFloat32 = strcmp(option, "-float32") == 0;
+            binaryStorageSpecified = true;
         }
         else if (strcmp(option, "-binary") == 0) {
             if (OPS_GetNumRemainingInputArgs() > 0) {
@@ -265,6 +271,11 @@ OPS_EnvelopeElementRecorder()
     }
 
     
+    if (binaryStorageSpecified && eMode != BINARY_STREAM) {
+        opserr << "recorder EnvelopeElement: -float32/-float64 requires -binary" << endln;
+        return 0;
+    }
+
     // data handler
     if (eMode == DATA_STREAM && filename != 0)
         theOutputStream = new DataFileStream(filename, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
@@ -277,7 +288,7 @@ OPS_EnvelopeElementRecorder()
     //else if (eMode == DATABASE_STREAM && tableName != 0)
     //    theOutputStream = new DatabaseStream(theDatabase, tableName);
     else if (eMode == BINARY_STREAM && filename != 0)
-        theOutputStream = new BinaryFileStream(filename);
+        theOutputStream = new BinaryFileStream(filename, OVERWRITE, binaryFloat32);
     else if (eMode == TCP_STREAM && inetAddr != 0)
         theOutputStream = new TCP_Stream(inetPort, inetAddr);
     else

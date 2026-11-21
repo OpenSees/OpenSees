@@ -32,6 +32,8 @@
 #include <Message.h>
 #include <Matrix.h>
 #include <string.h>
+#include <cmath>
+#include <limits>
 
 using std::cerr;
 using std::ios;
@@ -42,16 +44,16 @@ using std::getline;
 
 BinaryFileStream::BinaryFileStream()
   :OPS_Stream(OPS_STREAM_TAGS_BinaryFileStream), 
-   fileOpen(0), fileName(0), sendSelfCount(0),
+   float32Values(false), fileOpen(0), fileName(0), sendSelfCount(0),
    theChannels(0), numDataRows(0),
    mapping(0), maxCount(0), sizeColumns(0), theColumns(0), theData(0), theRemoteData(0)
 {
 
 }
 
-BinaryFileStream::BinaryFileStream(const char *file, openMode mode)
+BinaryFileStream::BinaryFileStream(const char *file, openMode mode, bool float32)
   :OPS_Stream(OPS_STREAM_TAGS_BinaryFileStream), 
-   fileOpen(0), fileName(0), sendSelfCount(0),
+   float32Values(float32), fileOpen(0), fileName(0), sendSelfCount(0),
    theChannels(0), numDataRows(0),
    mapping(0), maxCount(0), sizeColumns(0), theColumns(0), theData(0), theRemoteData(0)
 {
@@ -179,6 +181,26 @@ BinaryFileStream::close(void)
 }
 
 
+int
+BinaryFileStream::writeValues(const double *values, int count)
+{
+  if (float32Values) {
+    floatBuffer.resize(count);
+    for (int i=0; i<count; ++i) {
+      if (std::isfinite(values[i]) && std::fabs(values[i]) > std::numeric_limits<float>::max()) {
+        opserr << "BinaryFileStream: value exceeds float32 output range" << endln;
+        theFile.setstate(std::ios::badbit);
+        return -1;
+      }
+      floatBuffer[i] = static_cast<float>(values[i]);
+    }
+    theFile.write(reinterpret_cast<const char*>(floatBuffer.data()), sizeof(float)*count);
+  } else {
+    theFile.write(reinterpret_cast<const char*>(values), sizeof(double)*count);
+  }
+  return theFile ? 0 : -1;
+}
+
 int 
 BinaryFileStream::setPrecision(int prec)
 {
@@ -283,7 +305,7 @@ BinaryFileStream::write(Vector &data)
     int numData = (int)printMapping(2,i);
     double *data = theData[fileID];
     //    for (int j=0; j<numData; j++)
-    theFile.write((char *)(&data[startLoc]), 8*numData);
+    if (writeValues(&data[startLoc], numData) < 0) return -1;
   }
   theFile << "\n";
 
@@ -327,7 +349,7 @@ BinaryFileStream::write(const double *s, int n)
 
   if (fileOpen != 0) {
     //    for (int i=0; i<n; i++)
-    theFile.write((char *)(&s[0]), 8*n);
+    if (writeValues(s, n) < 0) return *this;
 
     theFile << '\n';
     theFile.flush();
@@ -477,7 +499,7 @@ BinaryFileStream::operator<<(double n)
     this->open();
 
   if (fileOpen != 0)
-    theFile.write((char *)&n, 8);
+    writeValues(&n, 1);
 
   return *this;
 }
@@ -516,6 +538,8 @@ BinaryFileStream::sendSelf(int commitTag, Channel &theChannel)
   else
     idData(1) = 1;
 
+  // Keep the historical header size; bit 1 selects float32 storage.
+  if (float32Values) idData(1) |= 2;
   idData(2) = sendSelfCount;
 
   if (theChannel.sendID(0, commitTag, idData) < 0) {
@@ -549,7 +573,8 @@ BinaryFileStream::recvSelf(int commitTag, Channel &theChannel, FEM_ObjectBroker 
   }
 
   int fileNameLength = idData(0);
-  if (idData(1) == 0)
+  float32Values = (idData(1) & 2) != 0;
+  if ((idData(1) & 1) == 0)
     theOpenMode = OVERWRITE;
   else
     theOpenMode = APPEND;

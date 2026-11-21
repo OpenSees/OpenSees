@@ -174,6 +174,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        outputMode eMode = STANDARD_STREAM; 
        ID *eleIDs = 0;
        int precision = 6;
+       bool binaryFloat32 = false;
+       bool binaryStorageSpecified = false;
        const char *inetAddr = 0;
        int inetPort;
        bool closeOnWrite = false;
@@ -422,6 +424,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   loc += 3;
 	 }	    
 
+	 else if (strcmp(argv[loc], "-float32") == 0 || strcmp(argv[loc], "-float64") == 0) {
+           binaryFloat32 = strcmp(argv[loc], "-float32") == 0;
+           binaryStorageSpecified = true;
+           loc++;
+         }
+
 	 else if ((strcmp(argv[loc],"-binary") == 0)) {
 	   // allow user to specify load pattern other than current
 	   fileName = argv[loc+1];
@@ -437,6 +445,11 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   eleData = loc;
 	   flags = 1;
 	 }
+       }
+
+       if (binaryStorageSpecified && eMode != BINARY_STREAM) {
+         Tcl_SetResult(interp, (char*)"-float32/-float64 requires -binary", TCL_STATIC);
+         return TCL_ERROR;
        }
 
        if (eleData >= argc) {
@@ -467,7 +480,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
 	 theOutputStream = new DatabaseStream(theDatabase, tableName);
        } else if (eMode == BINARY_STREAM && fileName != 0) {
-	 theOutputStream = new BinaryFileStream(fileName);
+	 theOutputStream = new BinaryFileStream(fileName, OVERWRITE, binaryFloat32);
        } else if (eMode == TCP_STREAM && inetAddr != 0) {
 	 theOutputStream = new TCP_Stream(inetPort, inetAddr);
        } else 
@@ -1118,6 +1131,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        ID theTimeSeriesID(0, 6);
 
        int precision = 6;
+       bool binaryFloat32 = false;
+       bool binaryStorageSpecified = false;
        TimeSeries **theTimeSeries = 0;
 
        const char *inetAddr = 0;
@@ -1213,6 +1228,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   eMode = XML_STREAM;
 	   pos += 2;
 	 }	    
+
+	 else if (strcmp(argv[pos], "-float32") == 0 || strcmp(argv[pos], "-float64") == 0) {
+           binaryFloat32 = strcmp(argv[pos], "-float32") == 0;
+           binaryStorageSpecified = true;
+           pos++;
+         }
 
 	 else if ((strcmp(argv[pos],"-binary") == 0)) {
 	   // allow user to specify load pattern other than current
@@ -1388,6 +1409,11 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 	   flags = 1;
 	 }
 
+       if (binaryStorageSpecified && eMode != BINARY_STREAM) {
+         Tcl_SetResult(interp, (char*)"-float32/-float64 requires -binary", TCL_STATIC);
+         return TCL_ERROR;
+       }
+
        if (pos >= argc) {
 	 opserr << "WARNING: No response type specified for node recorder, will assume you meant -disp\n" << endln;
        }
@@ -1410,7 +1436,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
 	 theOutputStream = new DatabaseStream(theDatabase, tableName);
        } else if (eMode == BINARY_STREAM && fileName != 0) {
-	 theOutputStream = new BinaryFileStream(fileName);
+	 theOutputStream = new BinaryFileStream(fileName, OVERWRITE, binaryFloat32);
        } else if (eMode == TCP_STREAM && inetAddr != 0) {
 	 theOutputStream = new TCP_Stream(inetPort, inetAddr);
        } else {
@@ -1497,6 +1523,8 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        double dT = 0.0;
        double rTolDt = 0.00001;
        int precision = 6;
+       bool binaryFloat32 = false;
+       bool binaryStorageSpecified = false;
        bool doScientific = false;
        bool closeOnWrite = false;
 
@@ -1537,6 +1565,12 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
 
 	   pos += 2;
 	 }
+
+	 else if (strcmp(argv[pos], "-float32") == 0 || strcmp(argv[pos], "-float64") == 0) {
+           binaryFloat32 = strcmp(argv[pos], "-float32") == 0;
+           binaryStorageSpecified = true;
+           pos++;
+         }
 
 	 else if ((strcmp(argv[pos],"-binary") == 0)) {
 	   // allow user to specify load pattern other than current
@@ -1649,6 +1683,11 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        }
 
 
+       if (binaryStorageSpecified && eMode != BINARY_STREAM) {
+         Tcl_SetResult(interp, (char*)"-float32/-float64 requires -binary", TCL_STATIC);
+         return TCL_ERROR;
+       }
+
        // construct the DataHandler
        if (eMode == DATA_STREAM && fileName != 0) {
 	 theOutputStream = new DataFileStream(fileName, OVERWRITE, 2, 0, closeOnWrite, precision, doScientific);
@@ -1659,7 +1698,7 @@ enum outputMode  {STANDARD_STREAM, DATA_STREAM, XML_STREAM, DATABASE_STREAM, BIN
        } else if (eMode == DATABASE_STREAM && tableName != 0) {
 	 theOutputStream = new DatabaseStream(theDatabase, tableName);
        } else if (eMode == BINARY_STREAM) {
-	 theOutputStream = new BinaryFileStream(fileName);
+	 theOutputStream = new BinaryFileStream(fileName, OVERWRITE, binaryFloat32);
        } else
 	 theOutputStream = new StandardStream();
 
