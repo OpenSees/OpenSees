@@ -1231,8 +1231,11 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	}
 
 	param[3] = 101.;
-	if (argc == 7) {
-	  if (Tcl_GetDouble(interp, argv[6], &param[3] ) != TCL_OK) {
+	int fluidInitialTangent = 0;
+	for (int i = 6; i < argc; i++) {
+	  if (strcmp(argv[i], "-fluidInitialTangent") == 0)
+	      fluidInitialTangent = 1;
+	  else if (Tcl_GetDouble(interp, argv[i], &param[3] ) != TCL_OK) {
 	      opserr << "WARNING invalid " << arg[3] << "\n";
 	      opserr << "nDMaterial FluidSolidPorous: " << tag << endln;
 	      return TCL_ERROR;
@@ -1240,7 +1243,7 @@ TclModelBuilderNDMaterialCommand (ClientData clientData, Tcl_Interp *interp, int
 	}
 
 	theMaterial = new FluidSolidPorousMaterial (tag, param[0], *soil,
-						    param[2],param[3]);
+						    param[2],param[3],fluidInitialTangent);
     }
 
 	else if(strcmp(argv[1], "Orthotropic") == 0) {
