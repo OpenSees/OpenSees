@@ -208,6 +208,10 @@ ArrayGraph::getVertexPtr(int vertexTag)
 int 
 ArrayGraph::addEdge(int vertexTag, int otherVertexTag)
 {
+    // Self-loops are not stored in adjacency; do not inflate numEdge.
+    if (vertexTag == otherVertexTag)
+	return 0;
+
     // get pointers to the vertices, if one does not exist return
 
     Vertex *vertex1 = this->getVertexPtr(vertexTag);
