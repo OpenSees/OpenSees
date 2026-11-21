@@ -3,7 +3,8 @@
 The finite differences perturb the same element parameters with updateParameter: static cases rerun the analysis
 from the initial state, transient cases rebuild the model and set the parameter before rayleigh, because the
 committed stiffness used by betaKcomm is stored by the element at commit and is not reset by ops.reset(). Covered: static frames with nodal, point,
-uniform, partial uniform and (2D) temperature loads, all moment releases, with and without shear deformation;
+uniform, partial uniform and (2D) temperature loads, all moment releases, with and without shear deformation
+(3D: also with a shear area in one bending plane only, and a cantilever checked against the closed form);
 transient analyses with consistent mass and the Rayleigh damping variants (betaK, betaKinit, betaKcomm),
 including the mass density rho."""
 
@@ -185,6 +186,7 @@ def test_transient_2d(rayleigh):
 # ---------------------------------------------------------------- 3D
 
 def _frame3d(releasez=0, releasey=0, shear=False):
+    """shear: False (no shear deformation), True (Avy and Avz), "y" (only Avy, Avz = 0) or "z" (only Avz)."""
     ops.model("basic", "-ndm", 3, "-ndf", 6)
     for n, xyz in enumerate([(0., 0., 0.), (0., 0., 3.), (4., 1., 3.5), (4., 1., 0.)], 1):
         ops.node(n, *xyz)
@@ -197,6 +199,10 @@ def _frame3d(releasez=0, releasey=0, shear=False):
            (0.011, 1.8e-5, 0.9e-4, 1.0e-4, 0.0055, 0.0045)]
     conn, transf = [(1, 2), (2, 3), (3, 4)], [1, 2, 1]
     for e, ((i, j), (A, J, Iy, Iz, Avy, Avz), tr) in enumerate(zip(conn, sec, transf), 1):
+        if shear == "y":
+            Avz = 0.
+        elif shear == "z":
+            Avy = 0.
         props = [A, E, G, J, Iy, Iz] + ([Avy, Avz] if shear else [])
         opts = ["-releasez", releasez, "-releasey", releasey] if e == 2 else []
         ops.element("elasticBeamColumn", e, i, j, *props, tr, *opts)
@@ -206,7 +212,7 @@ def _frame3d(releasez=0, releasey=0, shear=False):
     ops.eleLoad("-ele", 1, "-type", "-beamPoint", 3., -2., 0.4, 1.)            # Py, Pz, xL, Px
     ops.eleLoad("-ele", 2, "-type", "-beamUniform", -6., 2., 1.)               # Wy, Wz, Wx
     ops.eleLoad("-ele", 3, "-type", "-beamUniform", 2., -1., 0.5, 0.2, 0.7)    # partial: Wy, Wz, Wx, aL, bL
-    names = ["E", "A", "Iz", "Iy", "G", "J"] + (["Avy", "Avz"] if shear else [])
+    names = ["E", "A", "Iz", "Iy", "G", "J"] + {False: [], True: ["Avy", "Avz"], "y": ["Avy"], "z": ["Avz"]}[shear]
     return [(e, p) for e in (1, 2, 3) for p in names]
 
 
@@ -215,6 +221,50 @@ def _frame3d(releasez=0, releasey=0, shear=False):
 def test_static_3d(releasez, releasey, shear):
     spec = _frame3d(releasez, releasey, shear)
     _check_static([2, 3, 4], 6, spec)
+
+
+@pytest.mark.parametrize("shear", ["y", "z"])
+@pytest.mark.parametrize("releasez,releasey", [(0, 0), (1, 1), (2, 2)])
+def test_static_3d_one_shear_area(releasez, releasey, shear):
+    """Shear deformation in one bending plane only (Avy > 0 and Avz = 0, or the reverse)."""
+    spec = _frame3d(releasez, releasey, shear)
+    _check_static([2, 3, 4], 6, spec)
+
+
+@pytest.mark.parametrize("section", [False, True])
+@pytest.mark.parametrize("Avy,Avz", [(0.0, 0.0), (0.006, 0.0), (0.0, 0.005), (0.006, 0.005)])
+def test_cantilever_3d_shear_areas(Avy, Avz, section):
+    """Tip deflections of a cantilever, P L^3/(3 E I) + P L/(G Av) in each bending plane, with Newton iterations,
+    so that getResistingForce() and getTangentStiff() must agree; Av = 0 means no shear deformation in that plane.
+    section=True builds the element from an Elastic section (with shear: alphaY = Avy/A, alphaZ = Avz/A), whose
+    shear areas the element reads from the section response codes."""
+    L, A, E, G, J, Iy, Iz, Py, Pz = 3., 0.01, 2.0e8, 8.0e7, 1.0e-4, 1.0e-4, 2.0e-4, 1., 1.
+    ops.model("basic", "-ndm", 3, "-ndf", 6)
+    ops.node(1, 0., 0., 0.)
+    ops.node(2, L, 0., 0.)
+    ops.fix(1, 1, 1, 1, 1, 1, 1)
+    ops.geomTransf("Linear", 1, 0., 0., 1.)
+    if not section:
+        ops.element("elasticBeamColumn", 1, 1, 2, A, E, G, J, Iy, Iz, Avy, Avz, 1)
+    else:
+        shear = [Avy / A, Avz / A] if Avy > 0 or Avz > 0 else []
+        ops.section("Elastic", 1, E, A, Iz, Iy, G, J, *shear)
+        ops.element("elasticBeamColumn", 1, 1, 2, 1, 1)
+    ops.timeSeries("Linear", 1)
+    ops.pattern("Plain", 1, 1)
+    ops.load(2, 0., Py, Pz, 0., 0., 0.)
+    ops.system("FullGeneral")
+    ops.numberer("Plain")
+    ops.constraints("Plain")
+    ops.integrator("LoadControl", 1.0)
+    ops.test("NormUnbalance", 1e-10, 5)
+    ops.algorithm("Newton")
+    ops.analysis("Static")
+    assert ops.analyze(1) == 0
+    uy = Py*L**3/(3*E*Iz) + (Py*L/(G*Avy) if Avy > 0 else 0.)
+    uz = Pz*L**3/(3*E*Iy) + (Pz*L/(G*Avz) if Avz > 0 else 0.)
+    assert ops.nodeDisp(2, 2) == pytest.approx(uy, rel=1e-10)
+    assert ops.nodeDisp(2, 3) == pytest.approx(uz, rel=1e-10)
 
 
 def _beam3d_dynamic():

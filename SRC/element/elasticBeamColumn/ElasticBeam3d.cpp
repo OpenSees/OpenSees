@@ -418,7 +418,7 @@ ElasticBeam3d::ElasticBeam3d(int tag, int Nd1, int Nd2, SectionForceDeformation 
 			     CrdTransf &coordTransf, double r, int cm, int relz, int rely,
 			     Damping *damping)
   :Element(tag,ELE_TAG_ElasticBeam3d), 
-      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0),
+      A(0.0), E(1.0), G(1.0), Jx(0.0), Iy(0.0), Iz(0.0), Avy(0.0), Avz(0.0),
    rho(r), cMass(cm), releasez(relz), releasey(rely),
    Q(12), q(6), wx(0.0), wy(0.0), wz(0.0),
    connectedExternalNodes(2), theCoordTransf(0), theDamping(0)
@@ -1237,7 +1237,7 @@ ElasticBeam3d::getResistingForce()
   if (releasey == 0) {
     double EIyoverL2 = 2.0*Iy*EoverL;		// 2EIy/L
     double EIyoverL4 = 2.0*EIyoverL2;		// 4EIy/L
-    if (G > 0 && Avy > 0.0) {
+    if (G > 0 && Avz > 0.0) {
       double a = 1 + 3*E*Iy/(G*Avz*L*L);
       double b = 1 - 6*E*Iy/(G*Avz*L*L);
       double B = 3*a/(4*a*a-b*b);
@@ -2091,10 +2091,10 @@ ElasticBeam3d::updateParameter (int parameterID, Information &info)
 // Avz (10) and rho (11).  The element is linear elastic, so the conditional
 // derivative of the basic forces is dq = dkb*v + dq0 and there is no history
 // to commit.  The derivatives follow getResistingForce(), getTangentStiff()
-// and getInitialStiff() exactly as they are written, including the cases in
-// which they treat shear deformation differently.  Not included: sensitivity
-// of inertia loads from rho (addInertiaLoadToUnbalance) and of node
-// coordinates (shape sensitivity).
+// and getInitialStiff() exactly as they are written, including the moment
+// releases about z, for which getInitialStiff() has no shear factor.  Not
+// included: sensitivity of inertia loads from rho (addInertiaLoadToUnbalance)
+// and of node coordinates (shape sensitivity).
 
 int
 ElasticBeam3d::activateParameter(int passedParameterID)
@@ -2182,25 +2182,10 @@ ElasticBeam3d::getBasicStiffSensitivity(Matrix &dkb, int mode)
   elasticBeam3dBendingSensitivity(E, Iz, G, Avy, dE, dIz, dG, dAvy, L, releasez,
                                   shearZ, (mode == 2) ? false : shearZ, dkb, 1, 2);
 
-  // bending about y: the shear factor always uses Avz, but the condition for
-  // applying it differs between the three methods
-  bool condAvy = (G > 0 && Avy > 0.0);
-  bool condAvz = (G > 0 && Avz > 0.0);
-  bool shearY0, shearYRel;
-  if (mode == 0) {         // getResistingForce()
-    shearY0 = condAvy;
-    shearYRel = condAvy;
-  }
-  else if (mode == 1) {    // getTangentStiff()
-    shearY0 = condAvz;
-    shearYRel = condAvz;
-  }
-  else {                   // getInitialStiff()
-    shearY0 = condAvz;
-    shearYRel = (releasey == 1) ? condAvz : condAvy;
-  }
+  // bending about y: shear factor with Avz
+  bool shearY = (G > 0 && Avz > 0.0);
   elasticBeam3dBendingSensitivity(E, Iy, G, Avz, dE, dIy, dG, dAvz, L, releasey,
-                                  shearY0, shearYRel, dkb, 3, 4);
+                                  shearY, shearY, dkb, 3, 4);
 
   return true;
 }
