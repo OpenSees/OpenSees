@@ -177,6 +177,7 @@ extern void *OPS_ShellNLDKGQThermal(void);//Added by L.Jiang [SIF]
 extern void* OPS_ShellNLDKGTThermal(void);// Giovanni Rinaldin
 extern void *OPS_CatenaryCableElement(void);
 extern void *OPS_ASDEmbeddedNodeElement(void); // Massimo Petracca (ASDEA)
+extern void *OPS_EmbeddedNodeContact(void); // Amin Pakzad
 extern void *OPS_FourNodeTetrahedron(void);
 extern void *OPS_TenNodeTetrahedron(void);
 extern void *OPS_TenNodeTetrahedronStd(void);
@@ -1420,6 +1421,17 @@ TclModelBuilderElementCommand(ClientData clientData, Tcl_Interp *interp,
 
   else if (strcmp(argv[1], "ASDEmbeddedNodeElement") == 0) {
       void *theEle = OPS_ASDEmbeddedNodeElement();
+      if (theEle != 0) {
+    theElement = (Element*)theEle;
+      } else {
+    opserr<<"tclelementcommand -- unable to create element of type : "
+    <<argv[1]<<endln;
+    return TCL_ERROR;
+      }
+  }
+
+  else if (strcmp(argv[1], "EmbeddedNodeContact") == 0) {
+      void *theEle = OPS_EmbeddedNodeContact();
       if (theEle != 0) {
     theElement = (Element*)theEle;
       } else {
