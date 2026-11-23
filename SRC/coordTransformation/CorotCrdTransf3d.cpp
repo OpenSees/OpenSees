@@ -1133,10 +1133,17 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
     pg.Zero();
     
     // if there are no element loads present
-    if (p0 == 0.0) {
+    if (p0.Norm() == 0.0) {
         // transform resisting forces from the basic system to local coordinates
         static Vector pl(7);
-        pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+        //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+		pl(0) = -pb(5);
+		pl(1) = pb(1);
+		pl(2) = -pb(3);
+		pl(3) = pb(5);
+		pl(4) = pb(2);
+		pl(5) = -pb(4);
+		pl(6) = pb(0);
 
         // transform resisting forces from local to global coordinates
         pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
@@ -1166,8 +1173,15 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
         // =============================================
         // transform resisting forces from the basic system to local coordinates
         static Vector pl(7);
-        pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
-
+        //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+		pl(0) = -pb(5);
+		pl(1) = pb(1);
+		pl(2) = -pb(3);
+		pl(3) = pb(5);
+		pl(4) = pb(2);
+		pl(5) = -pb(4);
+		pl(6) = pb(0);
+		
         // transform resisting forces from local to global coordinates
         pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
 
@@ -1204,8 +1218,15 @@ CorotCrdTransf3d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
     
     // transform resisting forces from the basic system to local coordinates
     static Vector pl(7);
-    pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
-    
+    //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+    pl(0) = -pb(5);
+	pl(1) = pb(1);
+	pl(2) = -pb(3);
+	pl(3) = pb(5);
+	pl(4) = pb(2);
+	pl(5) = -pb(4);
+	pl(6) = pb(0);
+
     // transform tangent  stiffness matrix from local to global coordinates
     //static Matrix kg(12,12);
     
