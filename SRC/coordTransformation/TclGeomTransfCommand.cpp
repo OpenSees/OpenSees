@@ -234,7 +234,7 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
     else if (strcmp(argv[1],"Corotational") == 0)
       crdTransf3d = new CorotCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
 
-    else if (strcmp(argv[1],"CorotationalBattini") == 0 || strcmp(argv[1],"Corotational03") == 0)
+    else if (strcmp(argv[1],"CorotationalBattini") == 0)
       crdTransf3d = new Corot3DBattini(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ, symmetric);
     
     else {

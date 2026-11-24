@@ -87,7 +87,7 @@ int OPS_CrdTransf()
     	transf = (CrdTransf*)OPS_PDeltaCrdTransf();
     } else if(strcmp(type, "Corotational") == 0) {
     	transf = (CrdTransf*)OPS_CorotCrdTransf();
-    } else if(strcmp(type, "CorotationalBattini") == 0 || strcmp(type, "Corotational03") == 0) {
+    } else if(strcmp(type, "CorotationalBattini") == 0) {
 	if (OPS_GetNDM() == 3 && OPS_GetNDF() == 6)
 	    transf = (CrdTransf*)OPS_Corot3DBattini();
 	else
