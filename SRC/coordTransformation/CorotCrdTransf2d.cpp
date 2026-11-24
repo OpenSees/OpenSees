@@ -137,9 +137,10 @@ CrdTransf(0, CRDTR_TAG_CorotCrdTransf2d),
 nodeIOffset(2), nodeJOffset(2), cosTheta(0), sinTheta(0),
 cosAlpha(0), sinAlpha(0),
 nodeIPtr(0), nodeJPtr(0), L(0), Ln(0), ub(3), ubcommit(3), ubpr(3),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+nodeOffsets(false)
 {
-    
+
 }
 
 
@@ -157,6 +158,7 @@ int
 CorotCrdTransf2d::commitState(void)
 {
     ubcommit = ub;
+    alphaChordCommit = alphaChord;
     return 0;
 }
 
@@ -165,6 +167,7 @@ int
 CorotCrdTransf2d::revertToLastCommit(void)
 {
     ub = ubcommit;
+    alphaChord = alphaChordCommit;
     
     this->update();
     return 0;
@@ -175,6 +178,10 @@ int
 CorotCrdTransf2d::revertToStart(void)
 {
     ub.Zero();
+    ubcommit.Zero();
+    ubpr.Zero();
+    alphaChord = 0.0;
+    alphaChordCommit = 0.0;
     this->update();
     return 0;
 }
@@ -398,10 +405,15 @@ CorotCrdTransf2d::compTransfMatrixBasicLocal(Matrix &Tbl)
 
 void CorotCrdTransf2d::transfLocalDisplsToBasic(const Vector &ul)
 {
-    // Eliminate rigid body modes, determining displacements wrt the basic system
-    double alpha;
-    
-    alpha = atan2 (sinAlpha, cosAlpha);
+    // Eliminate rigid body modes, determining displacements wrt the basic system.
+    // The chord rotation alpha is tracked continuously: atan2 returns a value
+    // in (-pi, pi], so it is unwrapped against the previous trial value
+    // (alphaChord). Without this the basic rotations jump by 2*pi when an
+    // element chord rotates past 180 degrees and the analysis diverges.
+    const double twoPi = 2.0*3.14159265358979323846;
+    double alpha = atan2(sinAlpha, cosAlpha);
+    alpha += twoPi*floor((alphaChord - alpha)/twoPi + 0.5);
+    alphaChord = alpha;
     
     ub(0) = Ln - L;
     ub(1) = ul(2) - alpha;
@@ -698,7 +710,7 @@ CorotCrdTransf2d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
       double k25 = kg(1,4);
       double k35 = kg(2,4);
       double k45 = kg(3,4);
-      double k55 = kg(3,4);
+      double k55 = kg(4,4);
 
       double k16 = kg(0,5);
       double k26 = kg(1,5);
@@ -723,7 +735,7 @@ CorotCrdTransf2d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
       kg(5,0) = K16;
       kg(1,5) = K26;
       kg(5,1) = K26;
-      kg(2,5) = -Y2*K16 + X2*K26 -k16*Y1 + k26*X1 + k36;      
+      kg(2,5) = -Y1*K16 + X1*K26 - k34*Y2 + k35*X2 + k36;      
       kg(5,2) = kg(2,5);
 
       double K46 = -k44*Y2 + k45*X2 + k46;
@@ -882,7 +894,7 @@ CorotCrdTransf2d::getInitialGlobalStiffMatrix(const Matrix &kb)
       double k25 = kg(1,4);
       double k35 = kg(2,4);
       double k45 = kg(3,4);
-      double k55 = kg(3,4);
+      double k55 = kg(4,4);
 
       double k16 = kg(0,5);
       double k26 = kg(1,5);
@@ -907,7 +919,7 @@ CorotCrdTransf2d::getInitialGlobalStiffMatrix(const Matrix &kb)
       kg(5,0) = K16;
       kg(1,5) = K26;
       kg(5,1) = K26;
-      kg(2,5) = -Y2*K16 + X2*K26 -k16*Y1 + k26*X1 + k36;      
+      kg(2,5) = -Y1*K16 + X1*K26 - k34*Y2 + k35*X2 + k36;      
       kg(5,2) = kg(2,5);
 
       double K46 = -k44*Y2 + k45*X2 + k46;
@@ -1016,6 +1028,8 @@ CorotCrdTransf2d::getCopy2d(void)
     theCopy->Ln = Ln;
     theCopy->ub = ub;
     theCopy->ubcommit = ubcommit;
+    theCopy->alphaChord = alphaChord;
+    theCopy->alphaChordCommit = alphaChordCommit;
     
     return theCopy;
 }
@@ -1024,8 +1038,9 @@ CorotCrdTransf2d::getCopy2d(void)
 int 
 CorotCrdTransf2d::sendSelf(int cTag, Channel &theChannel)
 {
-    static Vector data(14);
+    static Vector data(15);
     data(13) = this->getTag();
+    data(14) = alphaChordCommit;
     data(0) = ubcommit(0);
     data(1) = ubcommit(1);
     data(2) = ubcommit(2);
@@ -1065,13 +1080,15 @@ CorotCrdTransf2d::sendSelf(int cTag, Channel &theChannel)
 int 
 CorotCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    static Vector data(14);
+    static Vector data(15);
     if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
         opserr << " CorotCrdTransf2d::recvSelf() - data could not be received\n" ;
         return -1;
     }
     
     this->setTag((int)data(13));
+    alphaChordCommit = data(14);
+    alphaChord = alphaChordCommit;
     ubcommit(0) = data(0);
     ubcommit(1) = data(1);
     ubcommit(2) = data(2);
@@ -1079,7 +1096,8 @@ CorotCrdTransf2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theB
     nodeIOffset(1) =data(4);
     nodeJOffset(0) =data(5);
     nodeJOffset(1) =data(6);
-    
+    nodeOffsets = (nodeIOffset.Norm() != 0.0 || nodeJOffset.Norm() != 0.0);
+
     int flag, i, j;
     flag = 0;
     for (i=7; i<=9; i++)
