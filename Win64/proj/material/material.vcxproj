@@ -460,6 +460,7 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\TclModelBuilderUnloadingRuleCommand.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.cpp" />
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\CFSTsteel.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscoelasticGap.cpp" />
     <ClCompile Include="..\..\..\SRC\material\uniaxial\ViscousDamper.cpp" />
@@ -909,6 +910,7 @@
     <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\KarsanUnloadingRule.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\TakedaUnloadingRule.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\unloading\UnloadingRule.h" />
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\CFSTsteel.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\UVCuniaxial.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousDamper.h" />
     <ClInclude Include="..\..\..\SRC\material\uniaxial\ViscousMaterial.h" />
