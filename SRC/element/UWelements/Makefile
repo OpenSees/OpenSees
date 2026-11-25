@@ -12,6 +12,7 @@ OBJS       = SimpleContact2D.o \
              SSPquadUP.o \
              SSPbrick.o \
              SSPbrickUP.o \
+             SSPTethraUP.o \
 	     Quad4FiberOverlay.o \
 	     Brick8FiberOverlay.o \
              QuadBeamEmbedContact.o \

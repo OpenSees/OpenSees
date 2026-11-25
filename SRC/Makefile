@@ -659,6 +659,7 @@ ELE_LIBS   =  $(FE)/element/Element.o \
 	$(FE)/element/UWelements/SSPquadUP.o \
 	$(FE)/element/UWelements/SSPbrick.o \
 	$(FE)/element/UWelements/SSPbrickUP.o \
+	$(FE)/element/UWelements/SSPTethraUP.o \
 	$(FE)/element/mvlem/MVLEM.o \
 	$(FE)/element/mvlem/SFI_MVLEM.o \
 	$(FE)/element/mvlem/MVLEM_3D.o \
