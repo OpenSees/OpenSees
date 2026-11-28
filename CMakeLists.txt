@@ -900,23 +900,21 @@ target_link_libraries(OpenSeesPy
 #
 
 install (TARGETS OpenSees DESTINATION bin)
-
-#if (TCL_INIT_FILE)
-#   install(FILES "${TCL_INIT_FILE}"
-#       DESTINATION lib/tcl8.6 
-#   )
-#endif()
-
-install (TARGETS OpenSees DESTINATION bin)
 if (TCL_INIT_FILE)
    install(FILES "${TCL_INIT_FILE}"
-       DESTINATION library 
+       DESTINATION library
    )
 endif()
 
+# python module must be named opensees.pyd on Windows, opensees.so elsewhere
+if (WIN32)
+  set(OPS_PYTHON_MODULE_NAME opensees.pyd)
+else()
+  set(OPS_PYTHON_MODULE_NAME opensees.so)
+endif()
 install(PROGRAMS $<TARGET_FILE:OpenSeesPy>
         DESTINATION bin
-        RENAME opensees.so)
+        RENAME ${OPS_PYTHON_MODULE_NAME})
 
 if (OPS_BUILD_PARALLEL)
     install(TARGETS OpenSeesSP DESTINATION bin OPTIONAL)
