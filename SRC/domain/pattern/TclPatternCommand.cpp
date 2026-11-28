@@ -525,7 +525,10 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
         }
       }
 
-      int do_coordinate_transformation=true;
+      // fmk - default changed from true to 0 (no transformation). With the old default
+      //   a command that stopped before the 12 transformation values applied a
+      //   transformation built from the uninitialised stuff[] array below.
+      int do_coordinate_transformation=0;
       if(argc > 7)
       {
         if (Tcl_GetInt(interp, argv[7], &do_coordinate_transformation) != TCL_OK) 
@@ -535,7 +538,13 @@ TclPatternCommand(ClientData clientData, Tcl_Interp *interp,
               return TCL_ERROR;
         }
       }
-      double stuff[12];
+      // fmk - stuff[] was previously left uninitialised, so if the 12 values were not
+      //   given T and x0 were garbage. Now defaults to the identity matrix
+      //   (T00 T01 T02 T10 T11 T12 T20 T21 T22) and a zero offset (x00 x01 x02).
+      double stuff[12] = {1.0, 0.0, 0.0,
+                          0.0, 1.0, 0.0,
+                          0.0, 0.0, 1.0,
+                          0.0, 0.0, 0.0};
       if(argc > 7+12)
       {
         for (int i = 0; i < 12; ++i)
