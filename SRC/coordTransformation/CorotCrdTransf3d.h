@@ -101,7 +101,7 @@ private:
     const Matrix &getRotMatrixFromTangScaledPseudoVector(const Vector &w) const;
     const Matrix &getSkewSymMatrix(const Vector &theta) const;
     const Matrix &getLMatrix(const Vector &ri) const;
-    const Matrix &getKs2Matrix(const Vector &ri, const Vector &z) const;
+    void addKs2Matrix(const Vector &ri, const Vector &z, double factor, double K[12][12]) const;
     
     // internal data
     Node *nodeIPtr, *nodeJPtr;  // pointers to the element two endnodes
@@ -127,17 +127,21 @@ private:
     Vector ulcommit;            // committed local displacements
     Vector ulpr;                // previous local displacements
     
-    static Matrix RI;           // nodal triad for node 1
-    static Matrix RJ;           // nodal triad for node 2
-    static Matrix Rbar;         // mean nodal triad 
-    static Matrix e;            // base vectors
-    static Matrix Tp;           // transformation matrix to renumber dofs
-    static Matrix T;            // transformation matrix from basic to global system
-    static Matrix Tlg;          // transformation matrix from global to local system
-    static Matrix TlgInv;       // inverse of transformation matrix from global to local system
-    static Matrix Tbl;          // transformation matrix from local to basic system
-    static Matrix kg;           // global stiffness matrix
-    static Matrix Lr2, Lr3, A;  // auxiliary matrices
+    // current configuration, computed in update() (per object, so that
+    // getGlobalResistingForce/getGlobalStiffMatrix need not call update())
+    Matrix RI;                  // nodal triad for node 1
+    Matrix RJ;                  // nodal triad for node 2
+    Matrix Rbar;                // mean nodal triad 
+    Matrix e;                   // base vectors
+    Matrix T;                   // transformation matrix from basic to global system
+    Matrix T0;                  // T in the undeformed configuration (initial stiffness)
+    Matrix Lr2, Lr3, A;         // auxiliary matrices
+
+    static Matrix Tp;           // transformation matrix to renumber dofs (constant)
+    static Matrix Tlg;          // work: transformation matrix from global to local system
+    static Matrix TlgInv;       // work: inverse of Tlg
+    static Matrix Tbl;          // work: transformation matrix from local to basic system
+    static Matrix kg;           // work: global stiffness matrix
     
     double *nodeIInitialDisp, *nodeJInitialDisp;
     bool initialDispChecked;

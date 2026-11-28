@@ -67,15 +67,25 @@ void* OPS_PDeltaCrdTransf3d()
     // get option
     Vector jntOffsetI(3), jntOffsetJ(3);
     double *iptr=&jntOffsetI(0), *jptr=&jntOffsetJ(0);
-    while(OPS_GetNumRemainingInputArgs() > 6) {
+    bool consistent = false;
+    while(OPS_GetNumRemainingInputArgs() > 0) {
 	std::string type = OPS_GetString();
 	if(type == "-jntOffset") {
+	    if (OPS_GetNumRemainingInputArgs() < 6) {
+		opserr << "WARNING PDeltaCrdTransf3d - -jntOffset needs 6 values\n";
+		return 0;
+	    }
 	    if(OPS_GetDoubleInput(&numData,iptr) < 0) return 0;
 	    if(OPS_GetDoubleInput(&numData,jptr) < 0) return 0;
+	} else if (type == "-consistent") {
+	    consistent = true;
+	} else {
+	    opserr << "WARNING PDeltaCrdTransf3d - unknown option " << type.c_str() << "\n";
+	    return 0;
 	}
     }
 
-    return new PDeltaCrdTransf3d(tag,vec,jntOffsetI,jntOffsetJ);
+    return new PDeltaCrdTransf3d(tag,vec,jntOffsetI,jntOffsetJ,consistent);
 }
 
 
@@ -85,7 +95,8 @@ CrdTransf(tag, CRDTR_TAG_PDeltaCrdTransf3d),
 nodeIPtr(0), nodeJPtr(0),
 nodeIOffset(0), nodeJOffset(0),
 L(0), ul17(0), ul28(0),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+consistentTangent(false)
 {
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < 3; j++)
@@ -102,12 +113,14 @@ nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
 // constructor:
 PDeltaCrdTransf3d::PDeltaCrdTransf3d(int tag, const Vector &vecInLocXZPlane,
                                      const Vector &rigJntOffset1,
-                                     const Vector &rigJntOffset2):
+                                     const Vector &rigJntOffset2,
+                                     bool consistent):
 CrdTransf(tag, CRDTR_TAG_PDeltaCrdTransf3d),
 nodeIPtr(0), nodeJPtr(0),
 nodeIOffset(0), nodeJOffset(0),
 L(0), ul17(0), ul28(0),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+consistentTangent(consistent)
 {
     for (int i = 0; i < 2; i++)
         for (int j = 0; j < 3; j++)
@@ -150,7 +163,8 @@ CrdTransf(0, CRDTR_TAG_PDeltaCrdTransf3d),
 nodeIPtr(0), nodeJPtr(0),
 nodeIOffset(0), nodeJOffset(0),
 L(0), ul17(0), ul28(0),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+consistentTangent(false)
 {
     for (int i = 0; i < 3; i++)
         for (int j = 0; j < 3; j++)
@@ -953,6 +967,27 @@ PDeltaCrdTransf3d::getGlobalStiffMatrix(const Matrix &KB, const Vector &pb)
         kl[7][1] -= NoverL;
         kl[2][8] -= NoverL;
         kl[8][2] -= NoverL;
+
+        // -consistent: tangent of the P-Delta shears (q0*Delta/L) also includes
+        //   their variation through the axial force, (Delta/L)*dq0/du, with
+        //   dq0/du = -kl[0][*] (local axial row of the material stiffness).
+        //   This makes the tangent consistent with the resisting force (but
+        //   nonsymmetric); by default the term is omitted, as before.
+        if (consistentTangent) {
+            const double cy = ul17*oneOverL;
+            const double cz = ul28*oneOverL;
+            double ry[12], rz[12];
+            for (int j = 0; j < 12; j++) {
+                ry[j] = -kl[0][j]*cy;
+                rz[j] = -kl[0][j]*cz;
+            }
+            for (int j = 0; j < 12; j++) {
+                kl[1][j] += ry[j];
+                kl[7][j] -= ry[j];
+                kl[2][j] += rz[j];
+                kl[8][j] -= rz[j];
+            }
+        }
         
         static double RWI[3][3];
         
@@ -1246,7 +1281,7 @@ PDeltaCrdTransf3d::getCopy3d(void)
         offsetJ(2) = nodeJOffset[2];
     }
     
-    theCopy = new PDeltaCrdTransf3d(this->getTag(), xz, offsetI, offsetJ);
+    theCopy = new PDeltaCrdTransf3d(this->getTag(), xz, offsetI, offsetJ, consistentTangent);
     
     theCopy->nodeIPtr = nodeIPtr;
     theCopy->nodeJPtr = nodeJPtr;
@@ -1267,7 +1302,7 @@ PDeltaCrdTransf3d::sendSelf(int cTag, Channel &theChannel)
 {
     int res = 0;
     
-    static Vector data(23);
+    static Vector data(24);
     data(0) = this->getTag();
     data(1) = L;
     
@@ -1326,6 +1361,7 @@ PDeltaCrdTransf3d::sendSelf(int cTag, Channel &theChannel)
     data(20) = R[2][0];
     data(21) = R[2][1];
     data(22) = R[2][2];
+    data(23) = consistentTangent ? 1.0 : 0.0;
     
     res += theChannel.sendVector(this->getDbTag(), cTag, data);  
     if (res < 0) {
@@ -1342,7 +1378,7 @@ PDeltaCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &the
 {
     int res = 0;
     
-    static Vector data(23);
+    static Vector data(24);
     
     res += theChannel.recvVector(this->getDbTag(), cTag, data);
     if (res < 0) {
@@ -1352,6 +1388,7 @@ PDeltaCrdTransf3d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &the
     
     this->setTag((int)data(0));
     L = data(1);
+    consistentTangent = (data(23) != 0.0);
 
     if (data(2) != 0.0 || data(3) != 0.0 || data(4) != 0.0) {
       if (nodeIOffset == 0)
@@ -1588,6 +1625,8 @@ PDeltaCrdTransf3d::Print(OPS_Stream &s, int flag)
 			s << "\tNode I offset: " << nodeIOffset[0] << " " << nodeIOffset[1] << " " << nodeIOffset[2] << endln;
 		if (nodeJOffset)
 			s << "\tNode J offset: " << nodeJOffset[0] << " " << nodeJOffset[1] << " " << nodeJOffset[2] << endln;
+		if (consistentTangent)
+			s << "\t-consistent" << endln;
 	}
 
 	if (flag == OPS_PRINT_PRINTMODEL_JSON) {

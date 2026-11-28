@@ -49,7 +49,8 @@ public:
     PDeltaCrdTransf2d(int tag);
     PDeltaCrdTransf2d(int tag,
 		      const Vector &rigJntOffsetI,
-		      const Vector &rigJntOffsetJ);
+		      const Vector &rigJntOffsetJ,
+		      bool consistentTangent = false);
     
     PDeltaCrdTransf2d();
     ~PDeltaCrdTransf2d();
@@ -111,6 +112,8 @@ private:
     
     double *nodeIInitialDisp, *nodeJInitialDisp;
     bool initialDispChecked;
+
+    bool consistentTangent;  // -consistent: include (Delta/L) dN/du in the tangent
 };
 
 #endif

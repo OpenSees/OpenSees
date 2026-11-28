@@ -31,6 +31,7 @@
 #include <PDeltaCrdTransf3d.h>
 #include <CorotCrdTransf2d.h>
 #include <CorotCrdTransf3d.h>
+#include <Corot3DBattini.h>
 #include <CorotCrdTransfWarping2d.h>
 
 static Domain *theTclModelBuilderDomain = 0;
@@ -80,9 +81,14 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
 
     // allow additional options at end of command
     int i;
+    bool consistent = false;  // -consistent (PDelta only)
     
     while (argi != argc) {
-      if (strcmp(argv[argi],"-jntOffset") == 0) {
+      if (strcmp(argv[argi],"-consistent") == 0) {
+	consistent = true;
+	argi++;
+      }
+      else if (strcmp(argv[argi],"-jntOffset") == 0) {
 	argi++;
 	for (i = 0; i < 2; i++) {
 	  if (argi == argc || Tcl_GetDouble(interp, argv[argi++], &jntOffsetI(i)) != TCL_OK) {
@@ -118,7 +124,7 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
       crdTransf2d = new LinearCrdTransf2dInt(crdTransfTag, jntOffsetI, jntOffsetJ);
     
     else if (strcmp(argv[1],"PDelta") == 0 || strcmp(argv[1],"LinearWithPDelta") == 0)
-      crdTransf2d = new PDeltaCrdTransf2d(crdTransfTag, jntOffsetI, jntOffsetJ);
+      crdTransf2d = new PDeltaCrdTransf2d(crdTransfTag, jntOffsetI, jntOffsetJ, consistent);
 
     else if (strcmp(argv[1],"Corotational") == 0 && NDF == 3)
       crdTransf2d = new CorotCrdTransf2d(crdTransfTag, jntOffsetI, jntOffsetJ);
@@ -136,6 +142,9 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
       opserr << "WARNING TclElmtBuilder - addGeomTransf - ran out of memory to create geometric transformation object\n";
       return TCL_ERROR;
     }
+
+    if (consistent && strcmp(argv[1],"PDelta") != 0 && strcmp(argv[1],"LinearWithPDelta") != 0)
+      opserr << "WARNING geomTransf " << argv[1] << " - option -consistent is only used by PDelta; ignored\n";
     
     // add the transformation to the modelBuilder
     if (OPS_addCrdTransf(crdTransf2d) != true) {
@@ -177,9 +186,19 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
     
     // allow additional options at end of command
     int i;
+    bool symmetric = false;   // -symmetric (CorotationalBattini only)
+    bool consistent = false;  // -consistent (PDelta only)
     
     while (argi != argc) {
-      if (strcmp(argv[argi],"-jntOffset") == 0) {
+      if (strcmp(argv[argi],"-symmetric") == 0) {
+	symmetric = true;
+	argi++;
+      }
+      else if (strcmp(argv[argi],"-consistent") == 0) {
+	consistent = true;
+	argi++;
+      }
+      else if (strcmp(argv[argi],"-jntOffset") == 0) {
 	argi++;
 	for (i = 0; i < 3; i++) {
 	  if (argi == argc || Tcl_GetDouble(interp, argv[argi++], &jntOffsetI(i)) != TCL_OK) {
@@ -210,10 +229,13 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
       crdTransf3d = new LinearCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
     
     else if (strcmp(argv[1],"PDelta") == 0 || strcmp(argv[1],"LinearWithPDelta") == 0)
-      crdTransf3d = new PDeltaCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
+      crdTransf3d = new PDeltaCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ, consistent);
     
     else if (strcmp(argv[1],"Corotational") == 0)
       crdTransf3d = new CorotCrdTransf3d(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ);
+
+    else if (strcmp(argv[1],"CorotationalBattini") == 0)
+      crdTransf3d = new Corot3DBattini(crdTransfTag, vecxzPlane, jntOffsetI, jntOffsetJ, symmetric);
     
     else {
       opserr << "WARNING TclElmtBuilder - addGeomTransf - invalid Type\n";
@@ -224,6 +246,12 @@ TclCommand_addGeomTransf(ClientData clientData, Tcl_Interp *interp,
       opserr << "WARNING TclElmtBuilder - addGeomTransf - ran out of memory to create geometric transformation object\n";
       return TCL_ERROR;
     }
+
+    if (symmetric && strcmp(argv[1],"CorotationalBattini") != 0 && strcmp(argv[1],"Corotational03") != 0)
+      opserr << "WARNING geomTransf " << argv[1] << " - option -symmetric is only used by CorotationalBattini; ignored\n";
+
+    if (consistent && strcmp(argv[1],"PDelta") != 0 && strcmp(argv[1],"LinearWithPDelta") != 0)
+      opserr << "WARNING geomTransf " << argv[1] << " - option -consistent is only used by PDelta; ignored\n";
     
     // add the transformation to the modelBuilder
     if (OPS_addCrdTransf(crdTransf3d) != true) {

@@ -46,7 +46,8 @@ public:
     PDeltaCrdTransf3d(int tag, const Vector &vecInLocXZPlane);
     PDeltaCrdTransf3d(int tag, const Vector &vecInLocXZPlane,
         const Vector &rigJntOffsetI,
-        const Vector &rigJntOffsetJ);
+        const Vector &rigJntOffsetJ,
+        bool consistentTangent = false);
     
     PDeltaCrdTransf3d();
     ~PDeltaCrdTransf3d();
@@ -109,6 +110,8 @@ private:
 
     double *nodeIInitialDisp, *nodeJInitialDisp;
     bool initialDispChecked;
+
+    bool consistentTangent;  // -consistent: include (Delta/L) dN/du in the tangent
 };
 
 #endif

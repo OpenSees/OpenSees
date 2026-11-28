@@ -247,6 +247,7 @@
 #define MAT_TAG_PlateBearingConnectionThermal 216
 #define MAT_TAG_ASD_SMA_3K                    217
 #define MAT_TAG_SteelFractureDI			218 // galvisf
+#define MAT_TAG_SteelFractureDI_Mod 2180
 #define MAT_TAG_Masonry 219
 #define MAT_TAG_Masonryt 220
 #define MAT_TAG_Trilinwp 221
@@ -960,15 +961,18 @@
 
 #define CRDTR_TAG_LinearCrdTransf2d 1
 #define CRDTR_TAG_PDeltaCrdTransf2d 2
-#define CRDTR_TAG_ModerateDispCrdTransf2d 8
 #define CRDTR_TAG_CorotCrdTransf2d  3
-#define CRDTR_TAG_CorotCrdTransfWarping2d 31
 #define CRDTR_TAG_LinearCrdTransf3d 4
 #define CRDTR_TAG_PDeltaCrdTransf3d 5
-#define CRDTR_TAG_ModerateDispCrdTransf3d 9
 #define CRDTR_TAG_CorotCrdTransf3d  6
-#define CRDTR_TAG_CorotCrdTransfWarping3d  61
 #define CRDTR_TAG_LinearCrdTransf2dInt 7
+#define CRDTR_TAG_ModerateDispCrdTransf2d 8
+#define CRDTR_TAG_ModerateDispCrdTransf3d 9
+#define CRDTR_TAG_Corot3DBattini 10
+#define CRDTR_TAG_CorotCrdTransfWarping2d 31
+#define CRDTR_TAG_CorotCrdTransfWarping3d  61
+
+
 
 #define DMP_TAG_UniformDamping 1
 #define DMP_TAG_SecStifDamping 2

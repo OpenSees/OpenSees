@@ -64,6 +64,28 @@ Vector CorotCrdTransfWarping2d::dub(5);
 Vector CorotCrdTransfWarping2d::Dub(5); 
 Matrix CorotCrdTransfWarping2d::kg(8,8);
 
+// Transform a global stiffness matrix from the element ends to the nodes
+// for rigid joint offsets: K <- A^T K A, where at each node
+// u_end = u_node + theta x offset, i.e. A(ux,theta) = -Y, A(uy,theta) = X.
+static void
+applyRigidOffsets(Matrix &K, const Vector &offI, const Vector &offJ)
+{
+    static Matrix A(8,8);
+    static Matrix Kend(8,8);
+
+    A.Zero();
+    for (int i = 0; i < 8; i++)
+        A(i,i) = 1.0;
+
+    A(0,2) = -offI(1);
+    A(1,2) =  offI(0);
+    A(4,6) = -offJ(1);
+    A(5,6) =  offJ(0);
+
+    Kend = K;
+    K.addMatrixTripleProduct(0.0, A, Kend, 1.0);   // K = A^T Kend A
+}
+
 void* OPS_CorotCrdTransfWarping2d()
 {
     if(OPS_GetNumRemainingInputArgs() < 1) {
@@ -136,9 +158,10 @@ CrdTransf(0, CRDTR_TAG_CorotCrdTransfWarping2d),
 nodeIOffset(2), nodeJOffset(2), cosTheta(0), sinTheta(0),
 cosAlpha(0), sinAlpha(0),
 nodeIPtr(0), nodeJPtr(0), L(0), Ln(0), ub(5), ubcommit(5), ubpr(5),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+nodeOffsets(false)
 {
-    
+
 }
 
 
@@ -156,6 +179,7 @@ int
 CorotCrdTransfWarping2d::commitState(void)
 {
     ubcommit = ub;
+    alphaChordCommit = alphaChord;
     return 0;
 }
 
@@ -164,6 +188,7 @@ int
 CorotCrdTransfWarping2d::revertToLastCommit(void)
 {
     ub = ubcommit;
+    alphaChord = alphaChordCommit;
     
     this->update();
     return 0;
@@ -174,6 +199,10 @@ int
 CorotCrdTransfWarping2d::revertToStart(void)
 {
     ub.Zero();
+    ubcommit.Zero();
+    ubpr.Zero();
+    alphaChord = 0.0;
+    alphaChordCommit = 0.0;
     this->update();
     return 0;
 }
@@ -354,10 +383,15 @@ CorotCrdTransfWarping2d::compElemtLengthAndOrientWRTLocalSystem(const Vector &ul
 
 void CorotCrdTransfWarping2d::transfLocalDisplsToBasic(const Vector &ul)
 {
-    // Eliminate rigid body modes, determining displacements wrt the basic system
-    double alpha;
-    
-    alpha = atan2 (sinAlpha, cosAlpha);
+    // Eliminate rigid body modes, determining displacements wrt the basic system.
+    // The chord rotation alpha is tracked continuously: atan2 returns a value
+    // in (-pi, pi], so it is unwrapped against the previous trial value
+    // (alphaChord). Without this the basic rotations jump by 2*pi when an
+    // element chord rotates past 180 degrees and the analysis diverges.
+    const double twoPi = 2.0*3.14159265358979323846;
+    double alpha = atan2(sinAlpha, cosAlpha);
+    alpha += twoPi*floor((alphaChord - alpha)/twoPi + 0.5);
+    alphaChord = alpha;
     
     ub(0) = Ln - L;
     ub(1) = ul(2) - alpha;
@@ -642,7 +676,12 @@ CorotCrdTransfWarping2d::getGlobalStiffMatrix (const Matrix &kb, const Vector &p
     
     // transform tangent  stiffness matrix from local to global coordinates
    this->getTransfMatrixLocalGlobal(Tlg);
-   kg.addMatrixTripleProduct(0.0, Tlg, kl, 1.0); 
+   kg.addMatrixTripleProduct(0.0, Tlg, kl, 1.0);
+
+    // account for rigid offsets
+    if (nodeOffsets == true)
+      applyRigidOffsets(kg, nodeIOffset, nodeJOffset);
+
     return kg;
 }
 
@@ -711,7 +750,12 @@ CorotCrdTransfWarping2d::getInitialGlobalStiffMatrix (const Matrix &kb)
     
     // transform tangent  stiffness matrix from local to global coordinates
     this->getTransfMatrixLocalGlobal(Tlg);
-    kg.addMatrixTripleProduct(0.0, Tlg, kl, 1.0); 
+    kg.addMatrixTripleProduct(0.0, Tlg, kl, 1.0);
+
+    // account for rigid offsets
+    if (nodeOffsets == true)
+      applyRigidOffsets(kg, nodeIOffset, nodeJOffset);
+
     return kg;
     }
 
@@ -804,6 +848,8 @@ CorotCrdTransfWarping2d::getCopy2d(void)
     theCopy->Ln = Ln;
     theCopy->ub = ub;
     theCopy->ubcommit = ubcommit;
+    theCopy->alphaChord = alphaChord;
+    theCopy->alphaChordCommit = alphaChordCommit;
     
     return theCopy;
 }
@@ -812,7 +858,9 @@ CorotCrdTransfWarping2d::getCopy2d(void)
 int 
 CorotCrdTransfWarping2d::sendSelf(int cTag, Channel &theChannel)
 {
-    Vector data(15);
+    // data(0-4) ubcommit, (5-8) offsets, (9-12) node I initial disp,
+    // (13-16) node J initial disp, (17) tag, (18) committed chord rotation
+    Vector data(19);
     data(0) = ubcommit(0);
     data(1) = ubcommit(1);
     data(2) = ubcommit(2);
@@ -822,28 +870,15 @@ CorotCrdTransfWarping2d::sendSelf(int cTag, Channel &theChannel)
     data(6) = nodeIOffset(1);
     data(7) = nodeJOffset(0);
     data(8) = nodeJOffset(1);
-    
-    if (nodeIInitialDisp != 0) {
-        data(9) = nodeIInitialDisp[0];
-        data(10) = nodeIInitialDisp[1];
-        data(11) = nodeIInitialDisp[2];
-    } else {
-        data(9) = 0.0;
-        data(10) = 0.0;
-        data(11) = 0.0;
+
+    for (int i = 0; i < 4; i++) {
+        data(9+i)  = (nodeIInitialDisp != 0) ? nodeIInitialDisp[i] : 0.0;
+        data(13+i) = (nodeJInitialDisp != 0) ? nodeJInitialDisp[i] : 0.0;
     }
-    
-    if (nodeJInitialDisp != 0) {
-        data(12) = nodeJInitialDisp[0];
-        data(13) = nodeJInitialDisp[1];
-        data(14) = nodeJInitialDisp[2];
-    } else {
-        data(12) = 0.0;
-        data(13) = 0.0;
-        data(14) = 0.0;
-    }
-    
-    if (theChannel.sendVector(this->getTag(), cTag, data) < 0) {
+    data(17) = this->getTag();
+    data(18) = alphaChordCommit;
+
+    if (theChannel.sendVector(this->getDbTag(), cTag, data) < 0) {
         opserr << " CorotCrdTransfWarping2d::sendSelf() - data could not be sent\n" ;
         return -1;
     }
@@ -854,12 +889,16 @@ CorotCrdTransfWarping2d::sendSelf(int cTag, Channel &theChannel)
 int 
 CorotCrdTransfWarping2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroker &theBroker)
 {
-    Vector data(15);
-    if (theChannel.recvVector(this->getTag(), cTag, data) < 0) {
+    Vector data(19);
+    if (theChannel.recvVector(this->getDbTag(), cTag, data) < 0) {
         opserr << " CorotCrdTransfWarping2d::recvSelf() - data could not be received\n" ;
         return -1;
     }
-    
+
+    this->setTag((int)data(17));
+    alphaChordCommit = data(18);
+    alphaChord = alphaChordCommit;
+
     ubcommit(0) = data(0);
     ubcommit(1) = data(1);
     ubcommit(2) = data(2);
@@ -870,39 +909,39 @@ CorotCrdTransfWarping2d::recvSelf(int cTag, Channel &theChannel, FEM_ObjectBroke
     nodeIOffset(1) =data(6);
     nodeJOffset(0) =data(7);
     nodeJOffset(1) =data(8);
-    
-    int flag, i, j;
-    flag = 0;
-    for (i=9; i<=11; i++)
-        if (data(i) != 0.0)
-            flag = 1;
-        if (flag == 1) {
-            if (nodeIInitialDisp == 0)
-                nodeIInitialDisp = new double[3];
-            for (i=9, j=0; i<=11; i++, j++)
-                nodeIInitialDisp[j] = data(i);
-        }
-        
-        flag = 0;
-        for (i=12; i<=14; i++)
-            if (data(i) != 0.0)
-                flag = 1;
-            if (flag == 1) {
-                if (nodeJInitialDisp == 0)
-                    nodeJInitialDisp = new double [3];
-                for (i=10, j=0; i<=13; i++, j++)
-                    nodeJInitialDisp[j] = data(i);
-            }
-            
-            ub = ubcommit;
-            initialDispChecked = true;
-            return 0;
+    nodeOffsets = (nodeIOffset.Norm() != 0.0 || nodeJOffset.Norm() != 0.0);
+
+    bool flagI = false, flagJ = false;
+    for (int i = 0; i < 4; i++) {
+        if (data(9+i)  != 0.0) flagI = true;
+        if (data(13+i) != 0.0) flagJ = true;
+    }
+
+    if (flagI) {
+        if (nodeIInitialDisp == 0)
+            nodeIInitialDisp = new double[4];
+        for (int i = 0; i < 4; i++)
+            nodeIInitialDisp[i] = data(9+i);
+    }
+
+    if (flagJ) {
+        if (nodeJInitialDisp == 0)
+            nodeJInitialDisp = new double[4];
+        for (int i = 0; i < 4; i++)
+            nodeJInitialDisp[i] = data(13+i);
+    }
+
+    ub = ubcommit;
+    initialDispChecked = true;
+    return 0;
 }
 
 const Matrix &
 CorotCrdTransfWarping2d::getGlobalMatrixFromLocal(const Matrix &ml)
 {
-  return ml; // FIX LATER
+    this->getTransfMatrixLocalGlobal(Tlg);
+    kg.addMatrixTripleProduct(0.0, Tlg, ml, 1.0);   // kg = Tlg^T ml Tlg
+    return kg;
 }
 
 
@@ -1011,7 +1050,7 @@ CorotCrdTransfWarping2d::getGlobalResistingForceShapeSensitivity(const Vector &q
   const Vector &disp1 = nodeIPtr->getTrialDisp();
   const Vector &disp2 = nodeJPtr->getTrialDisp();
 
-  static Vector U(6);
+  static Vector U(8);
   for (int i = 0; i < 4; i++) {
     U(i)   = disp1(i);
     U(i+4) = disp2(i);
@@ -1032,19 +1071,18 @@ CorotCrdTransfWarping2d::getGlobalResistingForceShapeSensitivity(const Vector &q
 
   double q0 = q(0);
   double q1 = q(1);
-  double q2 = q(2);
   double q3 = q(3);
-  double q4 = q(4);
 
   static Vector dpldh(8);
   dpldh.Zero();
 
-  dpldh(0) = (-dcosAlphadh*q0 - dsinAlphaOverLndh*(q1+q2+q3+q4) )*dLdh;
-  dpldh(1) = (-dsinAlphadh*q0 + dcosAlphaOverLndh*(q1+q2+q3+q4) )*dLdh;
+  // only the end moments (q1, q3) couple to the chord; bimoments (q2, q4) do not
+  dpldh(0) = (-dcosAlphadh*q0 - dsinAlphaOverLndh*(q1+q3) )*dLdh;
+  dpldh(1) = (-dsinAlphadh*q0 + dcosAlphaOverLndh*(q1+q3) )*dLdh;
   dpldh(2) = 0.0;
   dpldh(3) = 0.0;
-  dpldh(4) = ( dcosAlphadh*q0 + dsinAlphaOverLndh*(q1+q2+q3+q4) )*dLdh;
-  dpldh(5) = ( dsinAlphadh*q0 - dcosAlphaOverLndh*(q1+q2+q3+q4) )*dLdh;
+  dpldh(4) = ( dcosAlphadh*q0 + dsinAlphaOverLndh*(q1+q3) )*dLdh;
+  dpldh(5) = ( dsinAlphadh*q0 - dcosAlphaOverLndh*(q1+q3) )*dLdh;
   dpldh(6) = 0.0;
   dpldh(7) = 0.0;
 
@@ -1142,8 +1180,8 @@ CorotCrdTransfWarping2d::getBasicDisplSensitivity(int gradNumber)
   if (nodeIid != 0 || nodeJid != 0) {
     dudh(0) +=  dcosThetadh*U(0) + dsinThetadh*U(1);
     dudh(1) += -dsinThetadh*U(0) + dcosThetadh*U(1);
-    dudh(3) +=  dcosThetadh*U(4) + dsinThetadh*U(5);
-    dudh(4) += -dsinThetadh*U(4) + dcosThetadh*U(5);
+    dudh(4) +=  dcosThetadh*U(4) + dsinThetadh*U(5);
+    dudh(5) += -dsinThetadh*U(4) + dcosThetadh*U(5);
   }
 
   double duxdh = dudh(4)-dudh(0);
@@ -1157,7 +1195,9 @@ CorotCrdTransfWarping2d::getBasicDisplSensitivity(int gradNumber)
   // direct differentiation of v(u) wrt theta
   dvdh(0) = dLndh-dLdh;
   dvdh(1) = dudh(2)-dalphadh;
-  dvdh(2) = dudh(5)-dalphadh;
+  dvdh(2) = dudh(3);
+  dvdh(3) = dudh(6)-dalphadh;
+  dvdh(4) = dudh(7);
 
   return dvdh;
 }
@@ -1224,7 +1264,7 @@ CorotCrdTransfWarping2d::getBasicTrialDispShapeSensitivity(void)
 
   dvdh(0) = (cosAlpha-1.0)*dLdh;
   dvdh(1) =  (sinAlpha/Ln)*dLdh;
-  dvdh(2) =  (sinAlpha/Ln)*dLdh;
+  dvdh(3) =  (sinAlpha/Ln)*dLdh;
 
   static Vector dAdh_U(8);
   // dAdh * U

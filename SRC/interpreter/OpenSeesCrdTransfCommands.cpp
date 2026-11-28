@@ -20,6 +20,7 @@ void* OPS_CorotCrdTransf2d();
 void* OPS_CorotCrdTransf3d();
 void* OPS_CorotCrdTransfWarping2d();
 void* OPS_CorotCrdTransfWarping3d();  
+void* OPS_Corot3DBattini();
 
 namespace {
     static void* OPS_LinearCrdTransf()
@@ -86,6 +87,11 @@ int OPS_CrdTransf()
     	transf = (CrdTransf*)OPS_PDeltaCrdTransf();
     } else if(strcmp(type, "Corotational") == 0) {
     	transf = (CrdTransf*)OPS_CorotCrdTransf();
+    } else if(strcmp(type, "CorotationalBattini") == 0) {
+	if (OPS_GetNDM() == 3 && OPS_GetNDF() == 6)
+	    transf = (CrdTransf*)OPS_Corot3DBattini();
+	else
+	    opserr << "WARNING geomTransf " << type << " requires ndm 3, ndf 6\n";
     } else {
     	opserr << "WARNING geomTransf type "<< type <<" is unknown\n";
     	return -1;

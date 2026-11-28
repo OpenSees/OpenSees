@@ -114,6 +114,8 @@ private:
     Vector ub;                 // basic displacements
     Vector ubcommit;           // committed basic displacements
     Vector ubpr;               // previous basic displacements
+    double alphaChord = 0.0;       // trial chord rotation (continuous, not wrapped to +-pi)
+    double alphaChordCommit = 0.0; // committed chord rotation
     
     static Matrix Tlg;         // matrix that transforms from global to local coordinates
     static Matrix Tbl;         // matrix that transforms from local  to basic coordinates

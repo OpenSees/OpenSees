@@ -43,19 +43,11 @@
 #include <CorotCrdTransf3d.h>
 
 // initialize static variables
-Matrix CorotCrdTransf3d::RI(3,3); 
-Matrix CorotCrdTransf3d::RJ(3,3); 
-Matrix CorotCrdTransf3d::Rbar(3,3); 
-Matrix CorotCrdTransf3d::e(3,3); 
 Matrix CorotCrdTransf3d::Tp(6,7); 
-Matrix CorotCrdTransf3d::T(7,12);
 Matrix CorotCrdTransf3d::Tlg(12,12);
 Matrix CorotCrdTransf3d::TlgInv(12, 12);
 Matrix CorotCrdTransf3d::Tbl(6,12);
 Matrix CorotCrdTransf3d::kg(12,12);
-Matrix CorotCrdTransf3d::Lr2(12,3);
-Matrix CorotCrdTransf3d::Lr3(12,3);
-Matrix CorotCrdTransf3d::A(3,3);
 
 void* OPS_CorotCrdTransf3d()
 {
@@ -100,7 +92,8 @@ nodeIPtr(0), nodeJPtr(0), R0(3,3), L(0), Ln(0),
 alphaIq(4), alphaJq(4), 
 alphaIqcommit(4), alphaJqcommit(4), alphaI(3), alphaJ(3),
 ulcommit(7), ul(7),  ulpr(7),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+RI(3,3), RJ(3,3), Rbar(3,3), e(3,3), T(7,12), T0(7,12), Lr2(12,3), Lr3(12,3), A(3,3)
 {
     // check vector that defines local xz plane
     if (vecInLocXZPlane.Size() != 3 )
@@ -182,7 +175,8 @@ nodeIPtr(0), nodeJPtr(0), R0(3,3), L(0), Ln(0),
 alphaIq(4), alphaJq(4), 
 alphaIqcommit(4), alphaJqcommit(4), alphaI(3), alphaJ(3),
 ulcommit(7), ul(7),  ulpr(7),
-nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false)
+nodeIInitialDisp(0), nodeJInitialDisp(0), initialDispChecked(false),
+RI(3,3), RJ(3,3), Rbar(3,3), e(3,3), T(7,12), T0(7,12), Lr2(12,3), Lr3(12,3), A(3,3)
 {
     // Permutation matrix (to renumber basic dof's)
     
@@ -274,7 +268,14 @@ CorotCrdTransf3d::revertToStart(void)
     
     alphaI.Zero();
     alphaJ.Zero();
-    
+
+    // also reset the committed state, otherwise getBasicIncrDisp() and a
+    // later revertToLastCommit() would use the old committed values
+    alphaIqcommit = alphaIq;
+    alphaJqcommit = alphaJq;
+    ulcommit.Zero();
+    ulpr.Zero();
+
     this->update();
     return 0;
 }
@@ -325,6 +326,19 @@ CorotCrdTransf3d::initialize(Node *nodeIPointer, Node *nodeJPointer)
     if ((error = this->getLocalAxes(XAxis, YAxis, ZAxis)))
       return error;
     
+    // transformation matrix in the undeformed configuration (used by the
+    // initial stiffness): all triads equal R0, Ln = L, ul = 0
+    {
+      static Vector ulSave(7);
+      ulSave = ul;
+      ul.Zero();
+      RI = R0;  RJ = R0;  Rbar = R0;  e = R0;
+      Ln = L;
+      this->compTransfMatrixBasicGlobal();
+      T0 = T;
+      ul = ulSave;
+    }
+    
     // compute initial pseudo-vectors for nodal triads
     //opserr << setiosflags(ios::scientific);
     //opserr << setiosflags(ios::showpos);
@@ -333,21 +347,32 @@ CorotCrdTransf3d::initialize(Node *nodeIPointer, Node *nodeJPointer)
     //opserr << "L: " << L;
     //opserr << "R0: " << R0;
     
+    // If the committed nodal quaternions are already set (state restored by
+    // recvSelf(), or initialize() called again), keep that state instead of
+    // resetting the nodal triads to R0. A valid quaternion is never zero, so a
+    // zero alphaIqcommit means this object has not been initialized yet.
+    if (alphaIqcommit.Norm() != 0.0 && alphaJqcommit.Norm() != 0.0) {
+        alphaIq = alphaIqcommit;
+        alphaJq = alphaJqcommit;
+        ul      = ulcommit;
+        return 0;
+    }
+
     alphaIq = this->getQuaternionFromRotMatrix(R0);    // pseudo-vector for node I
     alphaJq = this->getQuaternionFromRotMatrix(R0);    // pseudo-vector for node J
-    
+
     //opserr << "alphaIq: " << alphaIq;
     //opserr << "alphaJq: " << alphaJq;
-    
+
     this->commitState();
 
     return 0;
 }
 
 
-int  
+int
 CorotCrdTransf3d::update(void)
-{       
+{
     int i, j, k;
     
     /********* OLD REMO - REPLACED BELOW TO FIX BUG ***************
@@ -555,203 +580,141 @@ CorotCrdTransf3d::update(void)
 void
 CorotCrdTransf3d::compTransfMatrixBasicGlobal(void)
 {
-    // extract columns of rotation matrices
+    // Computes A, Lr2, Lr3 and the transformation matrix T (basic <- global)
+    // from RI, RJ, Rbar, e, Ln and ul (fixed-size arrays; same expressions
+    // as the original Matrix/Vector implementation).
     int i, j, k;
-    
-    //opserr << "comprTransfMatrixBasicGlobal: *****************************\n";
-    static Vector r1(3), r2(3), r3(3);
-    static Vector e1(3), e2(3), e3(3);
-    static Vector rI1(3), rI2(3), rI3(3);
-    static Vector rJ1(3), rJ2(3), rJ3(3);
-    
-    for (k = 0; k < 3; k ++)
-    {
-        r1(k) = Rbar(k,0);
-        r2(k) = Rbar(k,1);
-        r3(k) = Rbar(k,2);
-        
-        e1(k) = e(k,0);
-        e2(k) = e(k,1);
-        e3(k) = e(k,2);
-        
-        rI1(k) = RI(k,0);
-        rI2(k) = RI(k,1);
-        rI3(k) = RI(k,2);
-        
-        rJ1(k) = RJ(k,0);
-        rJ2(k) = RJ(k,1);
-        rJ3(k) = RJ(k,2);
+
+    double r1[3], r2[3], r3[3], e1[3], e2[3], e3[3];
+    double rI1[3], rI2[3], rI3[3], rJ1[3], rJ2[3], rJ3[3];
+    for (k = 0; k < 3; k++) {
+        r1[k] = Rbar(k,0);  r2[k] = Rbar(k,1);  r3[k] = Rbar(k,2);
+        e1[k] = e(k,0);     e2[k] = e(k,1);     e3[k] = e(k,2);
+        rI1[k] = RI(k,0);   rI2[k] = RI(k,1);   rI3[k] = RI(k,2);
+        rJ1[k] = RJ(k,0);   rJ2[k] = RJ(k,1);   rJ3[k] = RJ(k,2);
     }
-    
-    // compute the transformation matrix from the basic to the
-    // global system
-    static Matrix I(3,3);
-    
+
     //   A = (1/Ln)*(I - e1*e1');
+    double a[3][3];
     for (i = 0; i < 3; i++)
-        I(i,i) = 1;
-    
-    for (i = 0; i < 3; i++)
-        for (j = 0; j < 3; j++)
-            A(i,j) = (I(i,j) - e1(i)*e1(j))/Ln;
-        
-        Lr2 = this->getLMatrix (r2);
-        Lr3 = this->getLMatrix (r3);
-        
-        static Matrix Sr1(3,3), Sr2(3,3), Sr3(3,3);
-        static Vector Se(3), At(3);
-        
-        //   T1 = [      O', (-S(rI3)*e2 + S(rI2)*e3)',        O', O']';
-        //   T2 = [(A*rI2)', (-S(rI2)*e1 + S(rI1)*e2)', -(A*rI2)', O']';
-        //   T3 = [(A*rI3)', (-S(rI3)*e1 + S(rI1)*e3)', -(A*rI3)', O']';
-        //  
-        //   T4 = [      O', O',        O', (-S(rJ3)*e2 + S(rJ2)*e3)']';
-        //   T5 = [(A*rJ2)', O', -(A*rJ2)', (-S(rJ2)*e1 + S(rJ1)*e2)']';
-        //   T6 = [(A*rJ3)', O', -(A*rJ3)', (-S(rJ3)*e1 + S(rJ1)*e3)']';
-        
-        T.Zero();
-        
-        Sr1 = this->getSkewSymMatrix(rI1);
-        Sr2 = this->getSkewSymMatrix(rI2);
-        Sr3 = this->getSkewSymMatrix(rI3);
-        
-        //   T1 = [      O', (-S(rI3)*e2 + S(rI2)*e3)',        O', O']';
-        
-        Se.addMatrixVector(0.0, Sr3, e2, -1.0);     // (-S(rI3)*e2 + S(rI2)*e3)
-        Se.addMatrixVector(1.0, Sr2, e3,  1.0);    
-        
-        for (i = 0; i < 3; i++)
-            T(0,i+3) =  Se(i);
-        
-        //   T2 = [(A*rI2)', (-S(rI2)*e1 + S(rI1)*e2)', -(A*rI2)', O']';
-        
-        At.addMatrixVector(0.0, A, rI2, 1.0);   
-        
-        Se.addMatrixVector(0.0, Sr2, e1, -1.0);     // (-S(rI2)*e1 + S(rI1)*e2)'
-        Se.addMatrixVector(1.0, Sr1, e2,  1.0);
-        
-        for (i = 0; i < 3; i++)
-        {
-            T(1,i  ) =  At(i);  
-            T(1,i+3) =  Se(i);
-            T(1,i+6) = -At(i);
+        for (j = 0; j < 3; j++) {
+            a[i][j] = ((i == j ? 1.0 : 0.0) - e1[i]*e1[j])/Ln;
+            A(i,j) = a[i][j];
         }
-        
-        //   T3 = [(A*rI3)', (-S(rI3)*e1 + S(rI1)*e3)', -(A*rI3)', O']';
-        
-        At.addMatrixVector(0.0, A, rI3, 1.0);   
-        
-        Se.addMatrixVector(0.0, Sr3, e1, -1.0);     // (-S(rI3)*e1 + S(rI1)*e3)
-        Se.addMatrixVector(1.0, Sr1, e3,  1.0);
-        
-        for (i = 0; i < 3; i++)
-        {
-            T(2,i  ) =  At(i);  
-            T(2,i+3) =  Se(i);
-            T(2,i+6) = -At(i);
+
+    // L(ri) = [L1; L2; -L1; L2] with
+    //   L1 = ri'*e1 * A/2 + A*ri*(e1 + r1)'/2
+    //   L2 = Sri/2 - ri'*e1*S(r1)/4 - Sri*e1*(e1 + r1)'/4
+    double lr2[12][3], lr3[12][3];
+    {
+        const double *ris[2] = {r2, r3};
+        double (*Ls[2])[3] = {lr2, lr3};
+        double e1r1[3];
+        for (k = 0; k < 3; k++) e1r1[k] = e1[k] + r1[k];
+        for (int q = 0; q < 2; q++) {
+            const double *ri = ris[q];
+            double (*L)[3] = Ls[q];
+            const double rie1 = ri[0]*e1[0] + ri[1]*e1[1] + ri[2]*e1[2];
+            double Ari[3], rixe1[3];
+            for (i = 0; i < 3; i++)
+                Ari[i] = a[i][0]*ri[0] + a[i][1]*ri[1] + a[i][2]*ri[2];
+            rixe1[0] = ri[1]*e1[2] - ri[2]*e1[1];
+            rixe1[1] = ri[2]*e1[0] - ri[0]*e1[2];
+            rixe1[2] = ri[0]*e1[1] - ri[1]*e1[0];
+            // skew matrices S(ri), S(r1)
+            const double Sri[3][3] = {{0.0, -ri[2], ri[1]}, {ri[2], 0.0, -ri[0]}, {-ri[1], ri[0], 0.0}};
+            const double Sr1[3][3] = {{0.0, -r1[2], r1[1]}, {r1[2], 0.0, -r1[0]}, {-r1[1], r1[0], 0.0}};
+            for (i = 0; i < 3; i++)
+                for (j = 0; j < 3; j++) {
+                    const double L1 = a[i][j]*rie1*0.5 + Ari[i]*e1r1[j]*0.5;
+                    const double L2 = Sri[i][j]*0.5 - Sr1[i][j]*rie1/4.0 - rixe1[i]*e1r1[j]*0.25;
+                    L[i][j]   =  L1;
+                    L[3+i][j] =  L2;
+                    L[6+i][j] = -L1;
+                    L[9+i][j] =  L2;
+                }
         }
-        
-        Sr1 = this->getSkewSymMatrix(rJ1);
-        Sr2 = this->getSkewSymMatrix(rJ2);
-        Sr3 = this->getSkewSymMatrix(rJ3);
-        
-        //   T4 = [      O', O',        O', (-S(rJ3)*e2 + S(rJ2)*e3)']';
-        
-        Se.addMatrixVector(0.0, Sr3, e2, -1.0);    // -S(rJ3)*e2 + S(rJ2)*e3
-        Se.addMatrixVector(1.0, Sr2, e3,  1.0);    
-        
-        for (i = 0; i < 3; i++)
-            T(3,i+9) =  Se(i);
-        
-        //   T5 = [(A*rJ2)', O', -(A*rJ2)', (-S(rJ2)*e1 + S(rJ1)*e2)']';
-        
-        At.addMatrixVector(0.0, A, rJ2, 1.0);   
-        
-        Se.addMatrixVector(0.0, Sr2, e1, -1.0);     // (-S(rJ2)*e1 + S(rJ1)*e2)
-        Se.addMatrixVector(1.0, Sr1, e2,  1.0);
-        
-        for (i = 0; i < 3; i++)
-        {
-            T(4,i  ) =  At(i);  
-            T(4,i+6) = -At(i);
-            T(4,i+9) =  Se(i);
+    }
+    for (i = 0; i < 12; i++)
+        for (j = 0; j < 3; j++) {
+            Lr2(i,j) = lr2[i][j];
+            Lr3(i,j) = lr3[i][j];
         }
-        
-        //   T6 = [(A*rJ3)', O', -(A*rJ3)', (-S(rJ3)*e1 + S(rJ1)*e3)']';
-        
-        At.addMatrixVector(0.0, A, rJ3, 1.0);   
-        
-        Se.addMatrixVector(0.0, Sr3, e1, -1.0);     // (-S(rJ3)*e1 + S(rJ1)*e3)
-        Se.addMatrixVector(1.0, Sr1, e3,  1.0);
-        
-        for (i = 0; i < 3; i++)
-        {
-            T(5,i  ) =  At(i);  
-            T(5,i+6) = -At(i);
-            T(5,i+9) =  Se(i);
-        }
-        
-        // setup transformation matrix
-        static Vector Lr(12);
-        
-        // T(:,1) += Lr3*rI2 - Lr2*rI3;
-        // T(:,2) +=           Lr2*rI1;
-        // T(:,3) += Lr3*rI1          ;
-        
-        // T(:,4) += Lr3*rJ2 - Lr2*rJ3;
-        // T(:,5) += Lr2*rJ1          ;      // ?????? check sign
-        // T(:,6) += Lr3*rJ1          ;      // ?????? check sign
-        
-        Lr.addMatrixVector(0.0, Lr3, rI2,  1.0);  //  T(:,1) += Lr3*rI2 - Lr2*rI3 
-        Lr.addMatrixVector(1.0, Lr2, rI3, -1.0);
-        
+
+    double t[7][12];
+    for (i = 0; i < 7; i++)
+        for (j = 0; j < 12; j++)
+            t[i][j] = 0.0;
+
+    auto cross = [](const double *x, const double *y, double *z) {
+        z[0] = x[1]*y[2] - x[2]*y[1];
+        z[1] = x[2]*y[0] - x[0]*y[2];
+        z[2] = x[0]*y[1] - x[1]*y[0];
+    };
+    double c1[3], c2[3], At[3];
+
+    //   T1 = [      O', (-S(rI3)*e2 + S(rI2)*e3)',        O', O']';
+    cross(rI3, e2, c1);  cross(rI2, e3, c2);
+    for (i = 0; i < 3; i++) t[0][i+3] = -c1[i] + c2[i];
+
+    //   T2 = [(A*rI2)', (-S(rI2)*e1 + S(rI1)*e2)', -(A*rI2)', O']';
+    cross(rI2, e1, c1);  cross(rI1, e2, c2);
+    for (i = 0; i < 3; i++) At[i] = a[i][0]*rI2[0] + a[i][1]*rI2[1] + a[i][2]*rI2[2];
+    for (i = 0; i < 3; i++) { t[1][i] = At[i]; t[1][i+3] = -c1[i] + c2[i]; t[1][i+6] = -At[i]; }
+
+    //   T3 = [(A*rI3)', (-S(rI3)*e1 + S(rI1)*e3)', -(A*rI3)', O']';
+    cross(rI3, e1, c1);  cross(rI1, e3, c2);
+    for (i = 0; i < 3; i++) At[i] = a[i][0]*rI3[0] + a[i][1]*rI3[1] + a[i][2]*rI3[2];
+    for (i = 0; i < 3; i++) { t[2][i] = At[i]; t[2][i+3] = -c1[i] + c2[i]; t[2][i+6] = -At[i]; }
+
+    //   T4 = [      O', O',        O', (-S(rJ3)*e2 + S(rJ2)*e3)']';
+    cross(rJ3, e2, c1);  cross(rJ2, e3, c2);
+    for (i = 0; i < 3; i++) t[3][i+9] = -c1[i] + c2[i];
+
+    //   T5 = [(A*rJ2)', O', -(A*rJ2)', (-S(rJ2)*e1 + S(rJ1)*e2)']';
+    cross(rJ2, e1, c1);  cross(rJ1, e2, c2);
+    for (i = 0; i < 3; i++) At[i] = a[i][0]*rJ2[0] + a[i][1]*rJ2[1] + a[i][2]*rJ2[2];
+    for (i = 0; i < 3; i++) { t[4][i] = At[i]; t[4][i+6] = -At[i]; t[4][i+9] = -c1[i] + c2[i]; }
+
+    //   T6 = [(A*rJ3)', O', -(A*rJ3)', (-S(rJ3)*e1 + S(rJ1)*e3)']';
+    cross(rJ3, e1, c1);  cross(rJ1, e3, c2);
+    for (i = 0; i < 3; i++) At[i] = a[i][0]*rJ3[0] + a[i][1]*rJ3[1] + a[i][2]*rJ3[2];
+    for (i = 0; i < 3; i++) { t[5][i] = At[i]; t[5][i+6] = -At[i]; t[5][i+9] = -c1[i] + c2[i]; }
+
+    // T(:,1) += Lr3*rI2 - Lr2*rI3;  T(:,2) += Lr2*rI1;  T(:,3) += Lr3*rI1;
+    // T(:,4) += Lr3*rJ2 - Lr2*rJ3;  T(:,5) += Lr2*rJ1;  T(:,6) += Lr3*rJ1;
+    for (i = 0; i < 12; i++) {
+        const double *l2 = lr2[i], *l3 = lr3[i];
+        t[0][i] += (l3[0]*rI2[0] + l3[1]*rI2[1] + l3[2]*rI2[2]) - (l2[0]*rI3[0] + l2[1]*rI3[1] + l2[2]*rI3[2]);
+        t[1][i] +=  l2[0]*rI1[0] + l2[1]*rI1[1] + l2[2]*rI1[2];
+        t[2][i] +=  l3[0]*rI1[0] + l3[1]*rI1[1] + l3[2]*rI1[2];
+        t[3][i] += (l3[0]*rJ2[0] + l3[1]*rJ2[1] + l3[2]*rJ2[2]) - (l2[0]*rJ3[0] + l2[1]*rJ3[1] + l2[2]*rJ3[2]);
+        t[4][i] +=  l2[0]*rJ1[0] + l2[1]*rJ1[1] + l2[2]*rJ1[2];
+        t[5][i] +=  l3[0]*rJ1[0] + l3[1]*rJ1[1] + l3[2]*rJ1[2];
+    }
+
+    for (j = 0; j < 6; j++) {
+        const double c = 2 * cos(ul(j));
         for (i = 0; i < 12; i++)
-            T(0,i) += Lr(i);
-        
-        Lr.addMatrixVector(0.0, Lr2, rI1,  1.0);  //  T(:,2) +=           Lr2*rI1
-        
-        for (i = 0; i < 12; i++)
-            T(1,i) += Lr(i);
-        
-        Lr.addMatrixVector(0.0, Lr3, rI1,  1.0);  //  T(:,3) += Lr3*rI1 
-        
-        for (i = 0; i < 12; i++)
-            T(2,i) += Lr(i);
-        
-        Lr.addMatrixVector(0.0, Lr3, rJ2,  1.0);  //  T(:,4) += Lr3*rJ2 - Lr2*rJ3;
-        Lr.addMatrixVector(1.0, Lr2, rJ3, -1.0);
-        
-        for (i = 0; i < 12; i++)
-            T(3,i) += Lr(i);
-        
-        Lr.addMatrixVector(0.0, Lr2, rJ1,  1.0);  //  T(:,5) += Lr2*rJ1   
-        
-        for (i = 0; i < 12; i++)
-            T(4,i) += Lr(i);
-        
-        Lr.addMatrixVector(0.0, Lr3, rJ1,  1.0);  //   T(:,6) += Lr3*rJ1
-        
-        for (i = 0; i < 12; i++)
-            T(5,i) += Lr(i);
-        
-        double c;
-        for (j = 0; j < 6; j++)
-        {
-            c = 2 * cos(ul(j));
-            
-            for (i = 0; i < 12; i++) 
-                T(j,i) /= c;
-        }
-        
-        // T(:,7) = [-e1' O' e1' O']';
-        for (i = 0; i < 3; i++)
-        {
-            T(6,i  ) = -e1(i);
-            T(6,i+6) =  e1(i);
-        }      
+            t[j][i] /= c;
+    }
+
+    // T(:,7) = [-e1' O' e1' O']';
+    for (i = 0; i < 3; i++) {
+        t[6][i  ] = -e1[i];
+        t[6][i+6] =  e1[i];
+    }
+
+    for (i = 0; i < 7; i++)
+        for (j = 0; j < 12; j++)
+            T(i,j) = t[i][j];
+
+    (void)r2; (void)r3;
 }
 
 
+// NOTE: not called anywhere; experimental/incomplete alternative to
+// compTransfMatrixBasicGlobal(). Do not use without verification.
 void
 CorotCrdTransf3d::compTransfMatrixBasicGlobalNew(void)
 {
@@ -949,8 +912,6 @@ CorotCrdTransf3d::compTransfMatrixBasicGlobalNew(void)
         thetaJ(2) = ul(4);
         
         
-        opserr << "thetaI: " << thetaI;
-        opserr << "thetaJ: " << thetaJ;
         
         double c;
         
@@ -994,7 +955,7 @@ CorotCrdTransf3d::compTransfMatrixBasicGlobalNew(void)
         Lr.addMatrixVector(0.0, Lr3, rJ2,  1.0);
         Lr.addMatrixVector(1.0, Lr2, rJ3, -1.0);
         Lr += hJ1;
-        c = 1.0/(2.0*cos(thetaI(0)));   
+        c = 1.0/(2.0*cos(thetaJ(0)));
         for (i=0; i<12; i++)
             T(6,i) -= Lr(i)*c;
 }
@@ -1127,8 +1088,8 @@ CorotCrdTransf3d::getBasicTrialAccel(void)
 const Vector &
 CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
 {
-    this->update();
-    
+    // T, RI, RJ, Rbar, e are per-object and current (set by update())
+
     static Vector pg(12);
     pg.Zero();
     
@@ -1206,284 +1167,224 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
 const Matrix &
 CorotCrdTransf3d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
 {
-    this->update();
-    
-    int i, j, k;   
-    // transform tangent stiffness matrix from the basic system to local coordinates
-    static Matrix kl(7,7);
-    kl.addMatrixTripleProduct(0.0, Tp, kb, 1.0);      // kl = Tp ^ kb * Tp;
-
-    //    opserr << "kb: " << kb;
-    //    opserr << "Tp: " << Tp;
-    
-    // transform resisting forces from the basic system to local coordinates
-    static Vector pl(7);
-    //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
-    pl(0) = -pb(5);
-	pl(1) = pb(1);
-	pl(2) = -pb(3);
-	pl(3) = pb(5);
-	pl(4) = pb(2);
-	pl(5) = -pb(4);
-	pl(6) = pb(0);
-
-    // transform tangent  stiffness matrix from local to global coordinates
-    //static Matrix kg(12,12);
-    
-    // compute the tangent stiffness matrix in global coordinates
-    kg.addMatrixTripleProduct(0.0, T, kl, 1.0);
-    
-    static Vector m(6);
-    for (i = 0; i < 6; i++)
-        m(i) = pl(i)/(2*cos(ul(i)));
-    
-    // compute the basic rotations
-    
-    static Vector e1(3), e2(3), e3(3);
-    static Vector r1(3), r2(3), r3(3);
-    static Vector rI1(3), rI2(3), rI3(3);
-    static Vector rJ1(3), rJ2(3), rJ3(3);
-    
-    for (k = 0; k < 3; k ++)
-    {
-        e1(k) = e(k,0);
-        e2(k) = e(k,1);
-        e3(k) = e(k,2);
-        
-        r1(k) = Rbar(k,0);
-        r2(k) = Rbar(k,1);
-        r3(k) = Rbar(k,2);
-        
-        rI1(k) = RI(k,0);
-        rI2(k) = RI(k,1);
-        rI3(k) = RI(k,2);
-        
-        rJ1(k) = RJ(k,0);
-        rJ2(k) = RJ(k,1);
-        rJ3(k) = RJ(k,2);
-    }
-    
-    //   ks = t'*kl*t + ks1 + t * diag (m .* tan(thetal))*t' + ...
+    // T, RI, RJ, Rbar, e, A, Lr2, Lr3 are per-object and current (set by update())
+    //
+    //   ks = T'*kl*T + ks1 + T * diag (m .* tan(thetal))*T' + ...
     //        m(4)*(ks2r2t3_u3 + ks2r3u2_t2) + ...
     //        m(2)*ks2r2t1 + m(3)*ks2r3t1 + ...
     //        m(5)*ks2r2u1 + m(6)*ks2r3u1 + ...
     //        ks3 + ks3' + ks4 + ks5;
-    
-    static Matrix Se1(3,3), Se2(3,3), Se3(3,3);
-    static Matrix SrI1(3,3), SrI2(3,3), SrI3(3,3);
-    static Matrix SrJ1(3,3), SrJ2(3,3), SrJ3(3,3);
-    
-    Se1 = this->getSkewSymMatrix(e1);
-    Se2 = this->getSkewSymMatrix(e2);
-    Se3 = this->getSkewSymMatrix(e3);
-    
-    SrJ1 = this->getSkewSymMatrix(rJ1);
-    SrJ2 = this->getSkewSymMatrix(rJ2);
-    SrJ3 = this->getSkewSymMatrix(rJ3);
-    
-    SrI1 = this->getSkewSymMatrix(rI1);
-    SrI2 = this->getSkewSymMatrix(rI2);
-    SrI3 = this->getSkewSymMatrix(rI3);
-    
-    
-    // ksigma1 -------------------------------
-    //   ks1_11 =  a*pl(6);
-    //   ks1 = [ ks1_11  o  -ks1_11  o;
-    //             o     o      o    o;
-    //          -ks1_11  o   ks1_11  o;
-    //             o     o      o    o];
-    
-    double factor;
-    
-    kg.Assemble(A, 0, 0,  pl(6));
-    kg.Assemble(A, 0, 6, -pl(6));
-    kg.Assemble(A, 6, 0, -pl(6));
-    kg.Assemble(A, 6, 6,  pl(6));
-    
-    //opserr << "kg += ksigma1: " << kg;
-    
-    // ksigma3 -------------------------------
-    //  kbar2 = -Lr2*(m(3)*S(rI3) + m(1)*S(rI1)) + ...
-    //           Lr3*(m(3)*S(rI2) - m(2)*S(rI1)) ;
-    
-    //  kbar4 =  Lr2*(m(3)*S(rJ3) - m(4)*S(rJ1)) - ...
-    //           Lr3*(m(3)*S(rJ2) + m(5)*S(rJ1));
-    
-    //     ks3 = [o kbar2 o kbar4];
-    
-    static Matrix Sm(3,3);
-    static Matrix kbar(12,3);
-    
-    Sm.addMatrix(0.0, SrI3,  m(3));
-    Sm.addMatrix(1.0, SrI1,  m(1));
-    
-    kbar.addMatrixProduct(0.0, Lr2, Sm, -1.0);
-    
-    Sm.addMatrix(0.0, SrI2,  m(3));
-    Sm.addMatrix(1.0, SrI1, -m(2));
-    
-    kbar.addMatrixProduct(1.0, Lr3, Sm,  1.0);
-    
-    kg.Assemble(kbar, 0, 3, 1.0);
-    kg.AssembleTranspose(kbar, 3, 0, 1.0);
-    
-    Sm.addMatrix(0.0, SrJ3,  m(3));
-    Sm.addMatrix(1.0, SrJ1, -m(4));
-    
-    kbar.addMatrixProduct(0.0, Lr2, Sm, 1.0);
-    
-    Sm.addMatrix(0.0, SrJ2, m(3));
-    Sm.addMatrix(1.0, SrJ1, m(5));
-    
-    kbar.addMatrixProduct(1.0, Lr3, Sm,  -1.0);
-    
-    kg.Assemble(kbar, 0, 9, 1.0);
-    kg.AssembleTranspose(kbar, 9, 0, 1.0);
-    
-    //opserr << "kg += ksigma3: " << kg;
-    
-    // Ksigma4 -------------------------------
-    // Ks4_22 =  m(3)*( S(e2)*S(rI3) - S(e3)*S(rI2)) + ...
-    //           m(1)*(-S(e1)*S(rI2) + S(e2)*S(rI1)) + ...
-    //           m(2)*(-S(e1)*S(rI3) + S(e3)*S(rI1));
-    
-    // Ks4_44 = -m(3)*( S(e2)*S(rJ3) - S(e3)*S(rJ2)) + ...
-    //           m(4)*(-S(e1)*S(rJ2) + S(e2)*S(rJ1)) + ...
-    //           m(5)*(-S(e1)*S(rJ3) + S(e3)*S(rJ1));
-    
-    // Ks4 = [   O    O     O    O;
-    //           O  Ks4_22  O    O;
-    //           O    O     O    O;
-    //           O    O     O  Ks4_44];
-    
-    static Matrix ks33(3,3);
-    
-    ks33.addMatrixProduct(0.0, Se2, SrI3,  m(3));
-    ks33.addMatrixProduct(1.0, Se3, SrI2, -m(3));
-    
-    ks33.addMatrixProduct(1.0, Se2, SrI1,  m(1));
-    ks33.addMatrixProduct(1.0, Se1, SrI2, -m(1));
-    
-    ks33.addMatrixProduct(1.0, Se3, SrI1,  m(2));
-    ks33.addMatrixProduct(1.0, Se1, SrI3, -m(2));
-    
-    kg.Assemble(ks33, 3, 3, 1.0);
-    
-    ks33.addMatrixProduct(0.0, Se2, SrJ3, -m(3));
-    ks33.addMatrixProduct(1.0, Se3, SrJ2,  m(3));
-    
-    ks33.addMatrixProduct(1.0, Se2, SrJ1,  m(4));
-    ks33.addMatrixProduct(1.0, Se1, SrJ2, -m(4));
-    
-    ks33.addMatrixProduct(1.0, Se3, SrJ1,  m(5));
-    ks33.addMatrixProduct(1.0, Se1, SrJ3, -m(5));
-    
-    kg.Assemble(ks33, 9, 9, 1.0);
-    
-    //opserr << "kg += ksigma4: " << kg;
-    
-    // Ksigma5 -------------------------------
     //
-    //  Ks5 = [ Ks5_11   Ks5_12 -Ks5_11   Ks5_14;
-    //          Ks5_12t    O    -Ks5_12t   O;
-    //         -Ks5_11  -Ks5_12  Ks5_11  -Ks5_14;
-    //          Ks5_14t     O   -Ks5_14t   O];
-    
-    // v = (1/Ln)*(m(2)*rI2 + m(3)*rI3 + m(5)*rJ2 + m(6)*rJ3);
-    static Vector v(3);
-    v.addVector (0.0, rI2, m(1));
-    v.addVector (1.0, rI3, m(2));
-    v.addVector (1.0, rJ2, m(4));
-    v.addVector (1.0, rJ3, m(5));
-    
-    v /= Ln;
-    
-    //Ks5_11 = A*v*e1' + e1*v'*A + (e1'*v)*A;
-    static Matrix m33(3,3);
-    double  e1tv = 0;   // dot product e1. v
-    
-    for (i = 0; i < 3; i++)
-        e1tv += e1(i) * v(i);
-    
-    ks33.addMatrix (0.0, A, e1tv);
-    
-    for (i = 0; i < 3; i++)
-        for (j = 0; j < 3; j++)
-            m33(i,j) = v(i)*e1(j);
-        
-        ks33.addMatrixProduct (1.0, A, m33, 1.0);
-        
-        for (i = 0; i < 3; i++)
-            for (j = 0; j < 3; j++)
-                m33(i,j) = e1(i)*v(j);
-            
-            ks33.addMatrixProduct (1.0, m33, A, 1.0);
-            
-            kg.Assemble(ks33, 0, 0,  1.0);
-            kg.Assemble(ks33, 0, 6, -1.0);
-            kg.Assemble(ks33, 6, 0, -1.0);
-            kg.Assemble(ks33, 6, 6,  1.0);
-            
-            //Ks5_12 = -(m(2)*A*S(rI2) + m(3)*A*S(rI3));
-            
-            ks33.addMatrixProduct(0.0, A, SrI2, -m(1));
-            ks33.addMatrixProduct(1.0, A, SrI3, -m(2));
-            
-            kg.Assemble(ks33, 0, 3,  1.0);
-            kg.Assemble(ks33, 6, 3, -1.0);
-            
-            kg.AssembleTranspose(ks33, 3, 0,  1.0);
-            kg.AssembleTranspose(ks33, 3, 6, -1.0);
-            
-            //  Ks5_14 = -(m(5)*A*S(rJ2) + m(6)*A*S(rJ3));
-            
-            ks33.addMatrixProduct(0.0, A, SrJ2, -m(4));
-            ks33.addMatrixProduct(1.0, A, SrJ3, -m(5));
-            
-            kg.Assemble(ks33, 0, 9,  1.0);
-            kg.Assemble(ks33, 6, 9, -1.0);
-            
-            kg.AssembleTranspose(ks33, 9, 0,  1.0);
-            kg.AssembleTranspose(ks33, 9, 6, -1.0);
-            
-            //opserr << "kg += ksigma5: " << kg;
-            
-            // Ksigma -------------------------------
-            static Vector rm(3);
-            
-            rm = rI3;
-            rm.addVector (1.0, rJ3, -1.0); 
-            //opserr << "ks2(r2,rI3-rJ3):\n "; 
-            kg.addMatrix (1.0, this->getKs2Matrix(r2, rm), m(3));
-            
-            rm = rJ2;
-            rm.addVector (1.0, rI2, -1.0); 
-            //opserr << "ks2(r3,rJ2-rI2):\n "; 
-            kg.addMatrix (1.0, this->getKs2Matrix(r3, rm), m(3));
-            //opserr << "ks2(r2,rI1):\n "; 
-            kg.addMatrix (1.0, this->getKs2Matrix(r2, rI1), m(1));
-            //opserr << "ks2(r3,rI1):\n "; 
-            kg.addMatrix (1.0, this->getKs2Matrix(r3, rI1), m(2));
-            //opserr << "ks2(r2,rJ1):\n "; 
-            kg.addMatrix (1.0, this->getKs2Matrix(r2, rJ1), m(4));
-            //opserr << "ks2(r3,rJ1):\n "; 
-            kg.addMatrix (1.0, this->getKs2Matrix(r3, rJ1), m(5));
-            
-            //opserr << "kg += ksigma2: " << kg;
-            
-            //  T * diag (M .* tan(thetal))*T' 
-            
-            for (k = 0; k < 6; k++)
-            {
-                factor = pl(k) * tan(ul(k));
-                for (i = 0; i < 12; i++)
-                    for (j = 0; j < 12; j++)
-                        kg(i,j) += T(k,i) * factor * T(k,j);
+    // (same terms as the original implementation, evaluated with fixed-size
+    // arrays; skew-matrix products use x'*S(r) = (x cross r)' and
+    // S(a)*S(b) = b*a' - (a.b)*I)
+
+    int i, j, k;
+
+    // basic -> local: Tp has one nonzero (+-1) per column
+    //   local dof a = (basic dof tpRow[a]) * tpSgn[a]
+    static const int    tpRow[7] = { 5,   1,  3,   5,   2,  4,   0 };
+    static const double tpSgn[7] = {-1.0, 1.0, -1.0, 1.0, 1.0, -1.0, 1.0};
+
+    double kl[7][7], pl[7];
+    for (i = 0; i < 7; i++) {
+        pl[i] = tpSgn[i]*pb(tpRow[i]);
+        for (j = 0; j < 7; j++)
+            kl[i][j] = tpSgn[i]*tpSgn[j]*kb(tpRow[i], tpRow[j]);
+    }
+
+    double t[7][12];
+    for (i = 0; i < 7; i++)
+        for (j = 0; j < 12; j++)
+            t[i][j] = T(i,j);
+
+    // K = T' * kl * T
+    double K[12][12];
+    {
+        double W[7][12];
+        for (i = 0; i < 7; i++)
+            for (j = 0; j < 12; j++) {
+                double s = 0.0;
+                for (k = 0; k < 7; k++)
+                    s += kl[i][k]*t[k][j];
+                W[i][j] = s;
             }
-            
-	    //            opserr << "COROATIONAL 3d: kg final: " << kg;
-            
-            return kg;
+        for (i = 0; i < 12; i++)
+            for (j = 0; j < 12; j++) {
+                double s = 0.0;
+                for (k = 0; k < 7; k++)
+                    s += t[k][i]*W[k][j];
+                K[i][j] = s;
+            }
+    }
+
+    double m[6];
+    for (i = 0; i < 6; i++)
+        m[i] = pl[i]/(2*cos(ul(i)));
+
+    double e1[3], e2[3], e3[3], rI1[3], rI2[3], rI3[3], rJ1[3], rJ2[3], rJ3[3];
+    double a[3][3], lr2[12][3], lr3[12][3];
+    for (k = 0; k < 3; k++) {
+        e1[k] = e(k,0);   e2[k] = e(k,1);   e3[k] = e(k,2);
+        rI1[k] = RI(k,0); rI2[k] = RI(k,1); rI3[k] = RI(k,2);
+        rJ1[k] = RJ(k,0); rJ2[k] = RJ(k,1); rJ3[k] = RJ(k,2);
+        for (j = 0; j < 3; j++)
+            a[k][j] = A(k,j);
+    }
+    for (i = 0; i < 12; i++)
+        for (j = 0; j < 3; j++) {
+            lr2[i][j] = Lr2(i,j);
+            lr3[i][j] = Lr3(i,j);
+        }
+
+    // ksigma1:  ks1_11 = A*pl(6);  ks1 = [ks1_11 o -ks1_11 o; ...]
+    for (i = 0; i < 3; i++)
+        for (j = 0; j < 3; j++) {
+            const double v = a[i][j]*pl[6];
+            K[i][j]     += v;   K[i][j+6]   -= v;
+            K[i+6][j]   -= v;   K[i+6][j+6] += v;
+        }
+
+    // ksigma3:
+    //  kbar2 = -Lr2*(m(3)*S(rI3) + m(1)*S(rI1)) + Lr3*(m(3)*S(rI2) - m(2)*S(rI1))
+    //  kbar4 =  Lr2*(m(3)*S(rJ3) - m(4)*S(rJ1)) - Lr3*(m(3)*S(rJ2) + m(5)*S(rJ1))
+    //  ks3 = [o kbar2 o kbar4] (+ transpose);  (Lr*S(w)) row i = Lr_i x w
+    {
+        double wa[3], wb[3], wc[3], wd[3];
+        for (k = 0; k < 3; k++) {
+            wa[k] = m[3]*rI3[k] + m[1]*rI1[k];
+            wb[k] = m[3]*rI2[k] - m[2]*rI1[k];
+            wc[k] = m[3]*rJ3[k] - m[4]*rJ1[k];
+            wd[k] = m[3]*rJ2[k] + m[5]*rJ1[k];
+        }
+        for (i = 0; i < 12; i++) {
+            const double *l2 = lr2[i], *l3 = lr3[i];
+            double kb2[3], kb4[3];
+            kb2[0] = -(l2[1]*wa[2] - l2[2]*wa[1]) + (l3[1]*wb[2] - l3[2]*wb[1]);
+            kb2[1] = -(l2[2]*wa[0] - l2[0]*wa[2]) + (l3[2]*wb[0] - l3[0]*wb[2]);
+            kb2[2] = -(l2[0]*wa[1] - l2[1]*wa[0]) + (l3[0]*wb[1] - l3[1]*wb[0]);
+            kb4[0] =  (l2[1]*wc[2] - l2[2]*wc[1]) - (l3[1]*wd[2] - l3[2]*wd[1]);
+            kb4[1] =  (l2[2]*wc[0] - l2[0]*wc[2]) - (l3[2]*wd[0] - l3[0]*wd[2]);
+            kb4[2] =  (l2[0]*wc[1] - l2[1]*wc[0]) - (l3[0]*wd[1] - l3[1]*wd[0]);
+            for (j = 0; j < 3; j++) {
+                K[i][3+j] += kb2[j];   K[3+j][i] += kb2[j];
+                K[i][9+j] += kb4[j];   K[9+j][i] += kb4[j];
+            }
+        }
+    }
+
+    // ksigma4:
+    //  Ks4_22 =  m(3)*( S(e2)*S(rI3) - S(e3)*S(rI2)) + m(1)*(-S(e1)*S(rI2) + S(e2)*S(rI1))
+    //          + m(2)*(-S(e1)*S(rI3) + S(e3)*S(rI1));
+    //  Ks4_44 = -m(3)*( S(e2)*S(rJ3) - S(e3)*S(rJ2)) + m(4)*(-S(e1)*S(rJ2) + S(e2)*S(rJ1))
+    //          + m(5)*(-S(e1)*S(rJ3) + S(e3)*S(rJ1));
+    //  with S(x)*S(y) = y x' - (x.y) I
+    {
+        const double e2rI3 = e2[0]*rI3[0]+e2[1]*rI3[1]+e2[2]*rI3[2];
+        const double e3rI2 = e3[0]*rI2[0]+e3[1]*rI2[1]+e3[2]*rI2[2];
+        const double e2rI1 = e2[0]*rI1[0]+e2[1]*rI1[1]+e2[2]*rI1[2];
+        const double e1rI2 = e1[0]*rI2[0]+e1[1]*rI2[1]+e1[2]*rI2[2];
+        const double e3rI1 = e3[0]*rI1[0]+e3[1]*rI1[1]+e3[2]*rI1[2];
+        const double e1rI3 = e1[0]*rI3[0]+e1[1]*rI3[1]+e1[2]*rI3[2];
+        const double e2rJ3 = e2[0]*rJ3[0]+e2[1]*rJ3[1]+e2[2]*rJ3[2];
+        const double e3rJ2 = e3[0]*rJ2[0]+e3[1]*rJ2[1]+e3[2]*rJ2[2];
+        const double e2rJ1 = e2[0]*rJ1[0]+e2[1]*rJ1[1]+e2[2]*rJ1[2];
+        const double e1rJ2 = e1[0]*rJ2[0]+e1[1]*rJ2[1]+e1[2]*rJ2[2];
+        const double e3rJ1 = e3[0]*rJ1[0]+e3[1]*rJ1[1]+e3[2]*rJ1[2];
+        const double e1rJ3 = e1[0]*rJ3[0]+e1[1]*rJ3[1]+e1[2]*rJ3[2];
+        for (i = 0; i < 3; i++)
+            for (j = 0; j < 3; j++) {
+                const double d = (i == j) ? 1.0 : 0.0;
+                const double kI =
+                     m[3]*((rI3[i]*e2[j] - e2rI3*d) - (rI2[i]*e3[j] - e3rI2*d))
+                   + m[1]*((rI1[i]*e2[j] - e2rI1*d) - (rI2[i]*e1[j] - e1rI2*d))
+                   + m[2]*((rI1[i]*e3[j] - e3rI1*d) - (rI3[i]*e1[j] - e1rI3*d));
+                const double kJ =
+                    -m[3]*((rJ3[i]*e2[j] - e2rJ3*d) - (rJ2[i]*e3[j] - e3rJ2*d))
+                   + m[4]*((rJ1[i]*e2[j] - e2rJ1*d) - (rJ2[i]*e1[j] - e1rJ2*d))
+                   + m[5]*((rJ1[i]*e3[j] - e3rJ1*d) - (rJ3[i]*e1[j] - e1rJ3*d));
+                K[3+i][3+j] += kI;
+                K[9+i][9+j] += kJ;
+            }
+    }
+
+    // ksigma5:
+    //  v = (1/Ln)*(m(2)*rI2 + m(3)*rI3 + m(5)*rJ2 + m(6)*rJ3)
+    //  Ks5_11 = A*v*e1' + e1*v'*A + (e1'*v)*A
+    //  Ks5_12 = -(m(2)*A*S(rI2) + m(3)*A*S(rI3)),  Ks5_14 = -(m(5)*A*S(rJ2) + m(6)*A*S(rJ3))
+    {
+        double v[3], Av[3];
+        for (k = 0; k < 3; k++)
+            v[k] = (m[1]*rI2[k] + m[2]*rI3[k] + m[4]*rJ2[k] + m[5]*rJ3[k])/Ln;
+        const double e1tv = e1[0]*v[0] + e1[1]*v[1] + e1[2]*v[2];
+        for (i = 0; i < 3; i++)
+            Av[i] = a[i][0]*v[0] + a[i][1]*v[1] + a[i][2]*v[2];
+        for (i = 0; i < 3; i++)
+            for (j = 0; j < 3; j++) {
+                // A is symmetric: e1*v'*A = e1*(A*v)'
+                const double ks = e1tv*a[i][j] + Av[i]*e1[j] + e1[i]*Av[j];
+                K[i][j]     += ks;   K[i][j+6]   -= ks;
+                K[i+6][j]   -= ks;   K[i+6][j+6] += ks;
+            }
+        double wI[3], wJ[3];
+        for (k = 0; k < 3; k++) {
+            wI[k] = m[1]*rI2[k] + m[2]*rI3[k];
+            wJ[k] = m[4]*rJ2[k] + m[5]*rJ3[k];
+        }
+        for (i = 0; i < 3; i++) {
+            // (A*S(w)) row i = a_i x w
+            double k12[3], k14[3];
+            k12[0] = -(a[i][1]*wI[2] - a[i][2]*wI[1]);
+            k12[1] = -(a[i][2]*wI[0] - a[i][0]*wI[2]);
+            k12[2] = -(a[i][0]*wI[1] - a[i][1]*wI[0]);
+            k14[0] = -(a[i][1]*wJ[2] - a[i][2]*wJ[1]);
+            k14[1] = -(a[i][2]*wJ[0] - a[i][0]*wJ[2]);
+            k14[2] = -(a[i][0]*wJ[1] - a[i][1]*wJ[0]);
+            for (j = 0; j < 3; j++) {
+                K[i][3+j]   += k12[j];  K[i+6][3+j] -= k12[j];
+                K[3+j][i]   += k12[j];  K[3+j][i+6] -= k12[j];
+                K[i][9+j]   += k14[j];  K[i+6][9+j] -= k14[j];
+                K[9+j][i]   += k14[j];  K[9+j][i+6] -= k14[j];
+            }
+        }
+    }
+
+    // ksigma2
+    {
+        static Vector r2(3), r3(3), rIv1(3), rJv1(3), rm(3);
+        for (k = 0; k < 3; k++) {
+            r2(k)   = Rbar(k,1);
+            r3(k)   = Rbar(k,2);
+            rIv1(k) = rI1[k];
+            rJv1(k) = rJ1[k];
+        }
+        for (k = 0; k < 3; k++) rm(k) = rI3[k] - rJ3[k];
+        this->addKs2Matrix(r2, rm, m[3], K);
+        for (k = 0; k < 3; k++) rm(k) = rJ2[k] - rI2[k];
+        this->addKs2Matrix(r3, rm, m[3], K);
+        this->addKs2Matrix(r2, rIv1, m[1], K);
+        this->addKs2Matrix(r3, rIv1, m[2], K);
+        this->addKs2Matrix(r2, rJv1, m[4], K);
+        this->addKs2Matrix(r3, rJv1, m[5], K);
+    }
+
+    //  T * diag (M .* tan(thetal))*T'
+    for (k = 0; k < 6; k++) {
+        const double factor = pl[k] * tan(ul(k));
+        if (factor == 0.0) continue;
+        for (i = 0; i < 12; i++) {
+            const double fi = t[k][i]*factor;
+            if (fi == 0.0) continue;
+            for (j = 0; j < 12; j++)
+                K[i][j] += fi*t[k][j];
+        }
+    }
+
+    for (i = 0; i < 12; i++)
+        for (j = 0; j < 12; j++)
+            kg(i,j) = K[i][j];
+
+    return kg;
 }
 
 
@@ -1497,8 +1398,9 @@ CorotCrdTransf3d::getInitialGlobalStiffMatrix(const Matrix &kb)
     // transform tangent  stiffness matrix from local to global coordinates
     //static Matrix kg(12,12);
     
-    // compute the tangent stiffness matrix in global coordinates
-    kg.addMatrixTripleProduct(0.0, T, kl, 1.0);
+    // compute the tangent stiffness matrix in global coordinates, using the
+    // transformation of the undeformed configuration
+    kg.addMatrixTripleProduct(0.0, T0, kl, 1.0);
     
     return kg;
 }
@@ -1877,154 +1779,118 @@ CorotCrdTransf3d::getLMatrix(const Vector &ri) const
 }
 
 
-const Matrix &
-CorotCrdTransf3d::getKs2Matrix(const Vector &ri, const Vector &z) const
+// Adds factor * Ksigma2(ri, z) directly into kg (Crisfield's Ks2 term).
+//
+//  Ksigma2 = [ K11   K12 -K11   K12;
+//              K12t  K22 -K12t  K22;
+//             -K11  -K12  K11  -K12;
+//              K12t  K22 -K12t  K22];
+//
+//  U   = (-1/2)*A*z*ri'*A + ri'*e1*A*z*e1'/(2*Ln) + z'*(e1+r1)*A*ri*e1'/(2*Ln)
+//  K11 = U + U' + ri'*e1*(2*(e1'*z)+z'*r1)*A/(2*Ln)
+//  K12 = (1/4)*(-A*z*e1'*Sri - A*ri*z'*Sr1 - z'*(e1+r1)*A*Sri)
+//  K22 = (1/8)*((-ri'*e1)*Sz*Sr1 + Sr1*z*e1'*Sri + Sri*e1*z'*Sr1
+//               - (e1+r1)'*z*S(e1)*Sri + 2*Sz*Sri)
+//
+// evaluated with 3-vectors using  a'*S(b) = (a x b)',  S(a)*b = a x b  and
+// S(a)*S(b) = b*a' - (a.b)*I  (same expressions as the original
+// getKs2Matrix, without 12x12 temporaries).
+void
+CorotCrdTransf3d::addKs2Matrix(const Vector &riV, const Vector &zV, double factor,
+                               double K[12][12]) const
 {
-    static Matrix ks2(12,12);
-    static Vector e1(3), r1(3);
-    
-    //opserr << "\ngetKs2Matrix:\n";
-    //opserr << "ri: " << ri;
-    
-    //opserr << "z: " << z;
-    
-    //  Ksigma2 = [ K11   K12 -K11   K12;
-    //              K12t  K22 -K12t  K22;
-    //             -K11  -K12  K11  -K12;
-    //              K12t  K22 -K12t  K22];
-    
-    // U = (-1/2)*A*z*ri'*A + ri'*e1*A*z*e1'/(2*Ln)+...
-    //      z'*(e1+r1)*A*ri*e1'/(2*Ln);
-    
-    int i, j;
-    double rite1 = 0;   // dot product ri . e1
-    double zte1  = 0;   // dot product z  . e1
-    double ztr1  = 0;   // dot product z  . r1
-    
-    for (i = 0; i < 3; i++)
-    {
-        e1(i) = e(i,0);
-        r1(i) = Rbar(i,0);
-        rite1 += ri(i)*e1(i);
-        zte1  += z(i)*e1(i);
-        ztr1  += z(i)*r1(i);
+    if (factor == 0.0)
+        return;
+
+    double ri[3], z[3], e1[3], r1[3];
+    for (int i = 0; i < 3; i++) {
+        ri[i] = riV(i);
+        z[i]  = zV(i);
+        e1[i] = e(i,0);
+        r1[i] = Rbar(i,0);
     }
-    
-    static Matrix zrit(3,3), ze1t(3,3);
-    static Matrix rizt(3,3), r1e1t(3,3), rie1t(3,3);
-    static Matrix e1zt(3,3);
-    
-    for (i = 0; i < 3; i++)
-        for (j = 0; j < 3; j++)
-        {
-            zrit(i,j) = z(i)*ri(j);
-            rizt(i,j) = ri(i)*z(j);
-            ze1t(i,j) = z(i)*e1(j);
-            e1zt(i,j) = e1(i)*z(j);
-            r1e1t(i,j) = r1(i)*e1(j);
-            rie1t(i,j) = ri(i)*e1(j);
+    double a[3][3];
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            a[i][j] = A(i,j);
+
+    const double rite1 = ri[0]*e1[0] + ri[1]*e1[1] + ri[2]*e1[2];
+    const double zte1  = z[0]*e1[0]  + z[1]*e1[1]  + z[2]*e1[2];
+    const double ztr1  = z[0]*r1[0]  + z[1]*r1[1]  + z[2]*r1[2];
+    const double s     = zte1 + ztr1;
+    const double rz    = ri[0]*z[0]  + ri[1]*z[1]  + ri[2]*z[2];
+    const double r1ri  = r1[0]*ri[0] + r1[1]*ri[1] + r1[2]*ri[2];
+    const double e1ri  = rite1;
+    const double zr1   = ztr1;
+
+    // A*z, A*ri
+    double Az[3], Ari[3];
+    for (int i = 0; i < 3; i++) {
+        Az[i]  = a[i][0]*z[0]  + a[i][1]*z[1]  + a[i][2]*z[2];
+        Ari[i] = a[i][0]*ri[0] + a[i][1]*ri[1] + a[i][2]*ri[2];
+    }
+    // cross products
+    double e1xri[3], zxr1[3], r1xz[3], rixe1[3];
+    e1xri[0] = e1[1]*ri[2] - e1[2]*ri[1];  e1xri[1] = e1[2]*ri[0] - e1[0]*ri[2];  e1xri[2] = e1[0]*ri[1] - e1[1]*ri[0];
+    zxr1[0]  = z[1]*r1[2]  - z[2]*r1[1];   zxr1[1]  = z[2]*r1[0]  - z[0]*r1[2];   zxr1[2]  = z[0]*r1[1]  - z[1]*r1[0];
+    for (int i = 0; i < 3; i++) {
+        r1xz[i]  = -zxr1[i];
+        rixe1[i] = -e1xri[i];
+    }
+
+    // K11
+    double U[3][3], K11[3][3];
+    const double c1 = rite1/(2.0*Ln), c2 = s/(2.0*Ln);
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            U[i][j] = -0.5*Az[i]*Ari[j] + c1*Az[i]*e1[j] + c2*Ari[i]*e1[j];
+    const double c3 = rite1*(2.0*zte1 + ztr1)/(2.0*Ln);
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++)
+            K11[i][j] = U[i][j] + U[j][i] + c3*a[i][j];
+
+    // K12 = 1/4 (-(Az)(e1 x ri)' - (A ri)(z x r1)' - s A S(ri))
+    double K12[3][3];
+    for (int i = 0; i < 3; i++) {
+        // row i of A*S(ri) = (A row i) x ... : (A S(ri))_ij = sum_k a_ik S(ri)_kj
+        double ASri[3];
+        ASri[0] =  a[i][1]*ri[2] - a[i][2]*ri[1];
+        ASri[1] = -a[i][0]*ri[2] + a[i][2]*ri[0];
+        ASri[2] =  a[i][0]*ri[1] - a[i][1]*ri[0];
+        for (int j = 0; j < 3; j++)
+            K12[i][j] = 0.25*(-Az[i]*e1xri[j] - Ari[i]*zxr1[j] - s*ASri[j]);
+    }
+
+    // K22 = 1/8 ( -rite1 S(z)S(r1) + (r1 x z)(e1 x ri)' + (ri x e1)(z x r1)'
+    //             - s S(e1)S(ri) + 2 S(z)S(ri) ),  S(a)S(b) = b a' - (a.b) I
+    double K22[3][3];
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++) {
+            const double d = (i == j) ? 1.0 : 0.0;
+            const double SzSr1 = r1[i]*z[j]  - zr1*d;
+            const double Se1Sri = ri[i]*e1[j] - e1ri*d;
+            const double SzSri = ri[i]*z[j]  - rz*d;
+            K22[i][j] = 0.125*(-rite1*SzSr1 + r1xz[i]*e1xri[j] + rixe1[i]*zxr1[j]
+                               - s*Se1Sri + 2.0*SzSri);
         }
-        
-        static Matrix U(3,3);
-        //opserr << " rite1: "<< rite1;
-        //opserr << " zte1: "<< zte1;
-        //opserr << " ztr1: "<< ztr1;
-        
-        //opserr << " A: "<< A;
-        //opserr << " zrit: "<< zrit;
-        //opserr << " ze1t: "<< ze1t;
-        //opserr << " rie1t: "<< rie1t;
-        
-        //opserr << " Ln: "<< Ln;
-        
-        U.addMatrixTripleProduct(0.0, A, zrit, -0.5);
-        
-        //opserr << "U: A*zrit*zrit " << U;
-        U.addMatrixProduct (1.0, A, ze1t,   rite1/(2*Ln));
-        //opserr << "U: A*ze1t*rite1/(2*Ln) " << U;
-        U.addMatrixProduct (1.0, A, rie1t, (zte1 + ztr1)/(2*Ln));
-        
-        //opserr << "U: " << U;
-        static Matrix ks(3,3);
-        
-        //K11 = U + U' + ri'*e1*(2*(e1'*z)+z'*r1)*A/(2*Ln);
-        
-        ks.addMatrix (0.0, U, 1.0);
-        
-        // add matrix U transpose
-        for (i = 0; i < 3; i++)
-            for (j = 0; j < 3; j++)
-                ks(i,j) += U(j,i);
-            
-            ks.addMatrix(1.0, A, rite1*(2*zte1 + ztr1)/(2*Ln));
-            
-            //opserr << "Ks211: " << ks;
-            
-            ks2.Zero();
-            
-            ks2.Assemble(ks, 0, 0,  1.0);
-            ks2.Assemble(ks, 0, 6, -1.0);
-            ks2.Assemble(ks, 6, 0, -1.0);
-            ks2.Assemble(ks, 6, 6,  1.0);
-            
-            static Matrix Sri(3,3), Sr1(3,3), Sz(3,3), Se1(3,3);
-            
-            Sri = this->getSkewSymMatrix(ri);  
-            Sr1 = this->getSkewSymMatrix(r1);
-            Sz  = this->getSkewSymMatrix(z); 
-            Se1 = this->getSkewSymMatrix(e1); 
-            
-            //K12 = (1/4)*(-A*z*e1'*Sri - A*ri*z'*Sr1 - z'*(e1+r1)*A*Sri);
-            
-            static Matrix m1(3,3);
-            
-            m1.addMatrixProduct(0.0, A, ze1t, -1.0);
-            ks.addMatrixProduct(0.0, m1, Sri, 0.25);
-            
-            m1.addMatrixProduct(0.0, A, rizt, -1.0);
-            ks.addMatrixProduct(1.0, m1, Sr1, 0.25);
-            
-            ks.addMatrixProduct(1.0, A, Sri, -0.25*(zte1+ztr1));
-            
-            //opserr << "Ks2_12: " << ks;
-            
-            ks2.Assemble(ks, 0, 3,  1.0);
-            ks2.Assemble(ks, 0, 9,  1.0);
-            ks2.Assemble(ks, 6, 3, -1.0);
-            ks2.Assemble(ks, 6, 9, -1.0);
-            
-            ks2.AssembleTranspose(ks, 3, 0,  1.0);
-            ks2.AssembleTranspose(ks, 3, 6, -1.0);
-            ks2.AssembleTranspose(ks, 9, 0,  1.0);
-            ks2.AssembleTranspose(ks, 9, 6, -1.0);
-            
-            //K22 = (1/8)*((-ri'*e1)*Sz*Sr1 + Sr1*z*e1'*Sri + ...
-            //      Sri*e1*z'*Sr1 - (e1+r1)'*z*S(e1)*Sri + 2*Sz*Sri);
-            
-            ks.addMatrixProduct (0.0, Sz, Sr1, -0.125*(rite1));
-            
-            m1.addMatrixProduct (0.0, Sr1, ze1t, 1.0);
-            ks.addMatrixProduct (1.0, m1, Sri, 0.125);
-            
-            m1.addMatrixProduct (0.0, Sri, e1zt, 1.0);
-            ks.addMatrixProduct (1.0, m1, Sr1, 0.125);
-            
-            ks.addMatrixProduct (1.0, Se1, Sri, -0.125*(zte1 + ztr1));
-            ks.addMatrixProduct (1.0, Sz, Sri, 0.25);
-            
-            //opserr << "Ks2_22: " << ks;
-            
-            //  Ksigma2 = [ K11   K12 -K11   K12;
-            //              K12t  K22 -K12t  K22;
-            //             -K11  -K12  K11  -K12;
-            //              K12t  K22 -K12t  K22];
-            
-            ks2.Assemble(ks, 3, 3, 1.0);
-            ks2.Assemble(ks, 3, 9, 1.0);
-            ks2.Assemble(ks, 9, 3, 1.0);
-            ks2.Assemble(ks, 9, 9, 1.0);
-            
-            return ks2;
+    (void)r1ri;
+
+    // assemble factor * Ksigma2 into K
+    for (int i = 0; i < 3; i++)
+        for (int j = 0; j < 3; j++) {
+            const double k11 = factor*K11[i][j];
+            const double k12 = factor*K12[i][j];
+            const double k21 = factor*K12[j][i];
+            const double k22 = factor*K22[i][j];
+            K[i][j] += k11;  K[i][j+6] -= k11;
+            K[i+6][j] -= k11;  K[i+6][j+6] += k11;
+            K[i][j+3] += k12;  K[i][j+9] += k12;
+            K[i+6][j+3] -= k12;  K[i+6][j+9] -= k12;
+            K[i+3][j] += k21;  K[i+9][j] += k21;
+            K[i+3][j+6] -= k21;  K[i+9][j+6] -= k21;
+            K[i+3][j+3] += k22;  K[i+3][j+9] += k22;
+            K[i+9][j+3] += k22;  K[i+9][j+9] += k22;
+        }
 }
 
 
@@ -2053,8 +1919,26 @@ CorotCrdTransf3d::getCopy3d(void)
     theCopy->alphaJqcommit = alphaJqcommit;
     theCopy->ul = ul;
     theCopy->ulcommit = ulcommit;
-    
-    
+    theCopy->ulpr = ulpr;
+
+    // last trial rotations: without these the copy would treat the full
+    // current nodal rotation as a new increment on its next update()
+    theCopy->alphaI = alphaI;
+    theCopy->alphaJ = alphaJ;
+
+    // initial displacements
+    if (nodeIInitialDisp != 0) {
+        theCopy->nodeIInitialDisp = new double [6];
+        for (int i=0; i<6; i++)
+            theCopy->nodeIInitialDisp[i] = nodeIInitialDisp[i];
+    }
+    if (nodeJInitialDisp != 0) {
+        theCopy->nodeJInitialDisp = new double [6];
+        for (int i=0; i<6; i++)
+            theCopy->nodeJInitialDisp[i] = nodeJInitialDisp[i];
+    }
+    theCopy->initialDispChecked = initialDispChecked;
+
     return theCopy;
 }
 
