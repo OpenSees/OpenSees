@@ -305,6 +305,8 @@ namespace {
 	functionMap.insert(std::make_pair("Bidirectional", &OPS_Bidirectional));
 	functionMap.insert(std::make_pair("Elliptical", &OPS_Elliptical2));	
 	functionMap.insert(std::make_pair("Isolator2spring", &OPS_Isolator2spring));
+	// fmk - also accept Iso2spring, the Tcl name
+	functionMap.insert(std::make_pair("Iso2spring", &OPS_Isolator2spring));
 	functionMap.insert(std::make_pair("RCCircularSection", &OPS_RCCircularSection));
 	functionMap.insert(std::make_pair("MVLEM", &OPS_MVLEMSection2d));
 	functionMap.insert(std::make_pair("SFIMVLEM", &OPS_SFIMVLEMSection2d));

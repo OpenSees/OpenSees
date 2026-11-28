@@ -1445,6 +1445,10 @@ extern void* OPS_HingeRadauTwoBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_HingeEndpointBeamIntegration(int& integrationTag, ID& secTags);
 extern void* OPS_ConcentratedPlasticityBeamIntegration(int&, ID&);
 extern void* OPS_ConcentratedCurvatureBeamIntegration(int&, ID&);
+// fmk - added for Chebyshev, Simpson and RegularizedHinge, as in the Python interpreter
+extern void* OPS_ChebyshevBeamIntegration(int&, ID&);
+extern void* OPS_SimpsonBeamIntegration(int&, ID&);
+extern void* OPS_RegularizedHingeBeamIntegration(int&, ID&);
 
 int
 TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
@@ -1463,7 +1467,8 @@ TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int arg
 	bi = (BeamIntegration*)OPS_LobattoBeamIntegration(iTag,secTags);
     } else if (strcmp(argv[1],"Legendre") == 0) {
 	bi = (BeamIntegration*)OPS_LegendreBeamIntegration(iTag,secTags);
-    } else if (strcmp(argv[1],"NewtoCotes") == 0) {
+    // fmk - was only the misspelled "NewtoCotes", so NewtonCotes could not be used in Tcl (kept for old scripts)
+    } else if (strcmp(argv[1],"NewtonCotes") == 0 || strcmp(argv[1],"NewtoCotes") == 0) {
 	bi = (BeamIntegration*)OPS_NewtonCotesBeamIntegration(iTag,secTags);
     } else if (strcmp(argv[1],"Radau") == 0) {
 	bi = (BeamIntegration*)OPS_RadauBeamIntegration(iTag,secTags);
@@ -1493,6 +1498,13 @@ TclCommand_addBeamIntegration(ClientData clientData, Tcl_Interp *interp, int arg
 	bi = (BeamIntegration*)OPS_ConcentratedPlasticityBeamIntegration(iTag,secTags);
     } else if (strcmp(argv[1],"ConcentratedCurvature") == 0) {
 	bi = (BeamIntegration*)OPS_ConcentratedCurvatureBeamIntegration(iTag,secTags);		
+    // fmk - added Chebyshev, Simpson and RegularizedHinge, available in the Python interpreter
+    } else if (strcmp(argv[1],"Chebyshev") == 0) {
+	bi = (BeamIntegration*)OPS_ChebyshevBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"Simpson") == 0) {
+	bi = (BeamIntegration*)OPS_SimpsonBeamIntegration(iTag,secTags);
+    } else if (strcmp(argv[1],"RegularizedHinge") == 0) {
+	bi = (BeamIntegration*)OPS_RegularizedHingeBeamIntegration(iTag,secTags);
     } else {
 	opserr<<"WARNING: integration type "<<argv[1]<<" is unknown\n";
 	return TCL_ERROR;
@@ -4468,7 +4480,13 @@ TclCommand_doBlock3D(ClientData clientData, Tcl_Interp *interp, int argc,
   int ndm = theTclBuilder->getNDM();
   if (ndm < 3) {
     opserr << "WARNING block3D numX? numY? startNode? startEle? eleType? eleArgs?";
-    opserr << " : model dimension (ndm) must be at least 2 " << endln;
+    opserr << " : model dimension (ndm) must be at least 3 " << endln; // fmk - was "at least 2"
+    return TCL_ERROR;
+  }
+
+  // fmk - added argc check; argv[8] (the block points) was read without one
+  if (argc < 9) {
+    opserr << "WARNING incorrect number of args :block3D numX? numY? numZ? startNode? startEle? eleType? eleArgs? {points}\n";
     return TCL_ERROR;
   }
 
@@ -4508,7 +4526,9 @@ TclCommand_doBlock3D(ClientData clientData, Tcl_Interp *interp, int argc,
   TCL_Char **argvNodes;
   int  argcNodes;
   
-  Tcl_SplitList(interp, nodalInfo, &argcNodes, &argvNodes);
+  //fmk - Return Tcl's list error before reading or freeing the split outputs.
+  if (Tcl_SplitList(interp, nodalInfo, &argcNodes, &argvNodes) != TCL_OK)
+    return TCL_ERROR;
 
   int ndf = theTclBuilder->getNDF();
   

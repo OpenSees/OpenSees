@@ -96,6 +96,8 @@ extern void *OPS_SteelMP(void);
 extern void *OPS_Steel02(void);
 extern void *OPS_Steel03(void);
 extern void *OPS_SteelFractureDI(void); // galvisf
+extern void *OPS_SteelFractureDI_Mod(void);
+
 extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
 extern void *OPS_ReinforcingSteel(void);
@@ -205,6 +207,12 @@ extern void *OPS_KikuchiAikenHDR(void);
 extern void *OPS_KikuchiAikenLRB(void);
 extern void *OPS_GMG_CyclicReinforcedConcrete(void); // Rasool Ghorbani
 extern void* OPS_Ratchet(void); // Yi Xiao
+// fmk - added for Tcl, these were only available in the Python interpreter
+extern void* OPS_GPCConcrete01(void);
+extern void* OPS_PenaltyMaterial(void);
+extern void* OPS_TensionOnlyMaterial(void);
+extern void* OPS_FrictionSpringDamper(void);
+extern void* OPS_CreepShrinkageACI209(void);
 extern void* OPS_APDFMD(void);
 extern void* OPS_APDMD(void);
 extern void* OPS_APDVFD(void);
@@ -368,6 +376,14 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             return TCL_ERROR;
 
     }
+    if (strcmp(argv[1], "SteelFractureDI_Mod") == 0) {
+        void* theMat = OPS_SteelFractureDI_Mod();
+        if (theMat != 0)
+            theMaterial = (UniaxialMaterial*)theMat;
+        else
+            return TCL_ERROR;
+
+    }    
     if (strcmp(argv[1],"Steel02Fatigue") == 0) {
       void *theMat = OPS_Steel02Fatigue();
       if (theMat != 0) 
@@ -2156,6 +2172,28 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             theMaterial = (UniaxialMaterial*)theMat;
         else
             return TCL_ERROR;
+    }
+
+    // fmk - added for Tcl, these were only available in the Python interpreter
+    if (theMaterial == 0) {
+      void* (*opsFunc)(void) = 0;
+      if (strcmp(argv[1], "GPCConcrete01") == 0)
+        opsFunc = OPS_GPCConcrete01;
+      else if (strcmp(argv[1], "Penalty") == 0)
+        opsFunc = OPS_PenaltyMaterial;
+      else if (strcmp(argv[1], "TensionOnly") == 0)
+        opsFunc = OPS_TensionOnlyMaterial;
+      else if (strcmp(argv[1], "FrictionSpringDamper") == 0)
+        opsFunc = OPS_FrictionSpringDamper;
+      else if (strcmp(argv[1], "CreepShrinkageACI209") == 0)
+        opsFunc = OPS_CreepShrinkageACI209;
+      if (opsFunc != 0) {
+        void* theMat = (*opsFunc)();
+        if (theMat != 0)
+          theMaterial = (UniaxialMaterial*)theMat;
+        else
+          return TCL_ERROR;
+      }
     }
     if ((strcmp(argv[1], "APDFMD") == 0)) {
         void* theMat = OPS_APDFMD();

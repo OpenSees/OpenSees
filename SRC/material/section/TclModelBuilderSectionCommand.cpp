@@ -483,7 +483,8 @@ TclModelBuilderSectionCommand (ClientData clientData, Tcl_Interp *interp, int ar
 	return TCL_ERROR;      
     }
 
-        else if (strcmp(argv[1],"Iso2spring") == 0) {
+        // fmk - also accept Isolator2spring, the Python name
+        else if (strcmp(argv[1],"Iso2spring") == 0 || strcmp(argv[1],"Isolator2spring") == 0) {
 	  void *theMat = OPS_Isolator2spring();
 	  if (theMat != 0) 
 	    theSection = (SectionForceDeformation *)theMat;
@@ -518,10 +519,11 @@ static int currentSectionTag = 0;
 static bool currentSectionIsND = false;
 static bool currentSectionIsWarping = false;
 static bool currentSectionComputeCentroid = true;
+static double currentSectionAlpha = 1.0; // fmk - shear shape factor of NDFiber sections (-alpha), as in Python
 
 int
 buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
-	     int secTag, UniaxialMaterial &theTorsion);
+	     int secTag, UniaxialMaterial *theTorsion);
 
 int
 buildSectionAsym(Tcl_Interp* interp, TclModelBuilder* theTclModelBuilder,
@@ -560,32 +562,27 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
       currentSectionIsWarping = true;
     }
 
-    // create the fiber section representation (with the geometric information) 
-      
-    SectionRepres *fiberSectionRepr =
-	new FiberSectionRepr(secTag, maxNumPatches, maxNumReinfLayers);  
-
-    if (fiberSectionRepr == 0) {
-      opserr <<  "WARNING - ran out of memory to create section representation\n";
-	return TCL_ERROR;
-    }
-
-    if (theTclModelBuilder->addSectionRepres(*fiberSectionRepr) < 0) {
-	opserr <<  "WARNING - cannot add section representation\n";
-	return TCL_ERROR;
-    }	
-
     int brace = 3; // Start of recursive parse
 
     double GJ;
     UniaxialMaterial *torsion = 0;
     bool deleteTorsion = false;
     currentSectionComputeCentroid = true;
+    currentSectionAlpha = 1.0;
     int iarg = brace;
     while (iarg < argc) {
       if (strcmp(argv[iarg],"-noCentroid") == 0) {
 	currentSectionComputeCentroid = false;
 	brace += 1;
+      }
+
+      // fmk - shear shape factor for NDFiber sections, as in Python
+      if ((strcmp(argv[iarg],"-alpha") == 0 || strcmp(argv[iarg],"-shape") == 0) && iarg+1 < argc) {
+	if (Tcl_GetDouble(interp, argv[brace+1], &currentSectionAlpha) != TCL_OK) {
+	  opserr << "WARNING invalid alpha";
+	  return TCL_ERROR;
+	}
+	brace += 2;
       }
       
       if (strcmp(argv[iarg],"-GJ") == 0 && iarg+1 < argc) {
@@ -620,11 +617,37 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
       iarg += 1;
     }
 	
-    if (torsion == 0 && NDM == 3) {
+    // fmk - not for NDFiber sections, whose torsion comes from the nD materials (NDFiberSection3d
+    //   takes no torsion); a 3D NDFiber section could not be created without -GJ or -torsion
+    if (torsion == 0 && NDM == 3 && currentSectionIsND == false) {
       opserr << "WARNING - no torsion specified for 3D fiber section, use -GJ or -torsion\n";
       opserr << "\nFiberSection3d: " << secTag << endln;
       return TCL_ERROR;
     }
+
+    //fmk - Reject a missing fiber body before evaluating it or registering the section.
+    if (brace >= argc) {
+      opserr << "WARNING - missing fiber section body\n";
+      if (deleteTorsion)
+        delete torsion;
+      return TCL_ERROR;
+    }
+
+    // create the fiber section representation (with the geometric information) 
+      
+    SectionRepres *fiberSectionRepr =
+	new FiberSectionRepr(secTag, maxNumPatches, maxNumReinfLayers);  
+
+    if (fiberSectionRepr == 0) {
+      opserr <<  "WARNING - ran out of memory to create section representation\n";
+	return TCL_ERROR;
+    }
+
+    if (theTclModelBuilder->addSectionRepres(*fiberSectionRepr) < 0) {
+	opserr <<  "WARNING - cannot add section representation\n";
+	delete fiberSectionRepr;
+	return TCL_ERROR;
+    }	
 
     // parse the information inside the braces (patches and reinforcing layers)
     if (Tcl_Eval(interp, argv[brace]) != TCL_OK) {
@@ -632,8 +655,8 @@ TclCommand_addFiberSection (ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }
 
-    // build the fiber section (for analysis)
-    if (buildSection(interp, theTclModelBuilder, secTag, *torsion) != TCL_OK) {
+    //fmk - Pass torsion as a pointer because NDFiber and 2D Fiber can omit it.
+    if (buildSection(interp, theTclModelBuilder, secTag, torsion) != TCL_OK) {
 	opserr << "WARNING - error constructing the section\n";
 	return TCL_ERROR;
     }
@@ -997,9 +1020,10 @@ TclCommand_addPatch(ClientData clientData, Tcl_Interp *interp, int argc,
 	int argi;
 
       argi = 2;
-      if (argc < 11)
+      // fmk - startAng and endAng optional (default 0 and 360, a full circle), as in Python; were required
+      if (argc < 9)
       {
-         opserr <<  "WARNING invalid number of parameters: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
+         opserr <<  "WARNING invalid number of parameters: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad <startAng endAng>\n";
          return TCL_ERROR;
       }
   
@@ -1052,6 +1076,9 @@ TclCommand_addPatch(ClientData clientData, Tcl_Interp *interp, int argc,
       }
       //opserr << "\n\textRad: " << extRad;
 
+      startAng = 0.0;
+      endAng = 360.0;
+      if (argc > 10) {
       if (Tcl_GetDouble(interp, argv[argi++], &startAng) != TCL_OK)
       {
          opserr <<  "WARNING invalid startAng: patch circ matTag numSubdivCirc numSubdivRad yCenter zCenter intRad extRad startAng endAng\n";
@@ -1065,6 +1092,7 @@ TclCommand_addPatch(ClientData clientData, Tcl_Interp *interp, int argc,
          return TCL_ERROR;
       }
       //opserr << "\n\tendAng: " << endAng;
+      }
 
 
       // get section 
@@ -1639,7 +1667,7 @@ TclCommand_addReinfLayer(ClientData clientData, Tcl_Interp *interp, int argc,
 // build the section
 int 
 buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
-	     int secTag, UniaxialMaterial &theTorsion)
+	     int secTag, UniaxialMaterial *theTorsion)
 {
    SectionRepres *sectionRepres = theTclModelBuilder->getSectionRepres(secTag);
    if (sectionRepres == 0) 
@@ -1804,7 +1832,7 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
            if (currentSectionIsWarping)
   	     section = new NDFiberSectionWarping2d(secTag, numFibers, fiber);
            else 
-	     section = new NDFiberSection2d(secTag, numFibers, fiber, currentSectionComputeCentroid);
+	     section = new NDFiberSection2d(secTag, numFibers, fiber, currentSectionAlpha, currentSectionComputeCentroid); // fmk - centroid flag was passed as the shear factor a
          }
 	 else
 	   section = new FiberSection2d(secTag, numFibers, fiber, currentSectionComputeCentroid);
@@ -1866,9 +1894,9 @@ buildSection(Tcl_Interp *interp, TclModelBuilder *theTclModelBuilder,
 	 //SectionForceDeformation *section = new FiberSection(secTag, numFibers, fiber);
 	 SectionForceDeformation *section = 0;
 	 if (currentSectionIsND)
-	   section = new NDFiberSection3d(secTag, numFibers, fiber, currentSectionComputeCentroid);
+	   section = new NDFiberSection3d(secTag, numFibers, fiber, currentSectionAlpha, currentSectionComputeCentroid); // fmk - centroid flag was passed as the shear factor a
 	 else
-	   section = new FiberSection3d(secTag, numFibers, fiber, theTorsion, currentSectionComputeCentroid);
+	   section = new FiberSection3d(secTag, numFibers, fiber, *theTorsion, currentSectionComputeCentroid);
    
    // Delete temporary fibers created from patches/layers. Fibers added
    // explicitly via the `fiber` command are owned by FiberSectionRepr.
