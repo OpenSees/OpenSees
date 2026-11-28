@@ -1,0 +1,9 @@
+# Include the source files needed for building the native extension
+recursive-include CMakeLists.txt
+recursive-include Conf.cmake
+recursive-include SRC *.cpp *.h *.f *.cmake
+recursive-include OTHER *.cpp *.h *.f *.c *.cmake *.txt
+recursive-include cmake *.cmake
+recursive-include DEVELOPER *.cpp *.h *.cmake
+include README.md
+include COPYRIGHT
