@@ -1756,7 +1756,17 @@ Node::Print(OPS_Stream &s, int flag)
     }
     
     else if (flag == 1) { // print out: nodeId displacements
-        s << this->getTag() << "  " << *commitDisp;
+        // fmk - commitDisp is 0 until the node's displacements are first set, e.g. for a node
+        //   not connected to any element; "print -node -flag 1" crashed on such a node.
+        //   Now prints zero displacements.
+        if (commitDisp != 0)
+            s << this->getTag() << "  " << *commitDisp;
+        else {
+            s << this->getTag() << " ";
+            for (int i = 0; i < numberDOF; i++)
+                s << " 0";
+            s << endln;
+        }
     }
     
     if (flag == OPS_PRINT_PRINTMODEL_JSON) {
@@ -2178,9 +2188,12 @@ Node::resetReactionForce(int flag){
   reaction->Zero();
 
   // add unbalance, the negative of applied forces hence the -=
+  // fmk - changed "} if (flag == 1)" to "} else if (flag == 1)". Without the else, flag 0
+  //   (the default reactions command) also ran the final else branch below and
+  //   added the mass-proportional Rayleigh damping force alphaM*M*v to the reaction.
   if (flag == 0) {
     *reaction -= this->getUnbalancedLoad();
-  } if (flag == 1) {
+  } else if (flag == 1) {
     *reaction -= this->getUnbalancedLoadIncInertia();
   } else {
     if (mass != 0 && alphaM != 0) {
