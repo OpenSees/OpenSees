@@ -183,8 +183,10 @@ QzLiq1::setTrialStrain (double newz, double zRate)
 			meanStress = getEffectiveStress(theSeries);
 		else
 			meanStress = getEffectiveStress();
-		if(meanStress>meanConsolStress)
-			meanStress=meanConsolStress;
+		// Clamp removed: stresses are compression-negative, so meanStress > meanConsolStress whenever
+		// the soil softens, and the clamp reset ru to 0. Tru < 0 is still clamped below.
+		// if(meanStress>meanConsolStress)
+		//	meanStress=meanConsolStress;
 		Tru = 1.0 - meanStress/meanConsolStress;
 		if(Tru > 0.999) Tru = 0.999;
 		if(Tru < 0) Tru = 0;
@@ -338,6 +340,8 @@ QzLiq1::revertToStart(void)
 	Tz = 0.0;
 	Tt = 0.0;
 	maxTangent = (QzSimple1::Qult/QzSimple1::z50);
+	// initialize Tangent; the constructor copies it into initialTangent
+	Tangent = QzSimple1::getInitialTangent();
 
 	// Excess pore pressure ratio and pointers
 	//

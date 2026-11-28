@@ -446,7 +446,12 @@ const Matrix &
 SSPquad::getInitialStiff(void)
 // this function computes the initial tangent stiffness matrix for the element
 {
-	return getTangentStiff();
+	// return getTangentStiff();  // not the true initial stiffness
+	// compute the initial stiffness like the tangent stiffness, with the initial material tangent
+	const Matrix &CmatI = theMaterial->getInitialTangent();
+	mTangentStiffness = Kstab;
+	mTangentStiffness.addMatrixTripleProduct(1.0, Mmem, CmatI, 4.0*J0*mThickness);
+	return mTangentStiffness;
 }
 
 const Matrix &

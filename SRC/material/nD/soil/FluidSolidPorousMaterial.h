@@ -25,7 +25,8 @@ class FluidSolidPorousMaterial : public NDMaterial
   public:
      // Initialization constructor
      FluidSolidPorousMaterial (int tag, int nd, NDMaterial &soilMat,
-			       double combinedBulkModul, double atm=101.);
+			       double combinedBulkModul, double atm=101.,
+			       int fluidInitialTangent=0);
 
      // Default constructor
      FluidSolidPorousMaterial ();
@@ -112,6 +113,7 @@ class FluidSolidPorousMaterial : public NDMaterial
      double currentVolumeStrain;
      double initMaxPress;
      int e2p;
+     int fluidInitialTangent;  // 1: getInitialTangent includes the fluid bulk modulus
 
      Vector theSoilCommittedStress;
      Vector theSoilCommittedStrain;
