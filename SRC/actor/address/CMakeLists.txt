@@ -11,7 +11,7 @@ target_sources(OPS_Actor
       ChannelAddress.h
 )
 
-if(MPI_FOUND)
+if(OPS_BUILD_PARALLEL)
 
 target_sources(OpenSeesMP
   PRIVATE

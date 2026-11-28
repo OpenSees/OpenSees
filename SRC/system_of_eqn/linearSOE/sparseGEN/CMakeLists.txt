@@ -51,7 +51,7 @@ target_sources(OPS_PFEM
         PFEMSolver_Mumps.h	
 )
 
-if(MPI_FOUND)
+if(OPS_BUILD_PARALLEL)
 
 target_sources(OpenSeesMP
     PRIVATE 

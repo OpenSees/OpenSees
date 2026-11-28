@@ -97,8 +97,22 @@ if errorlevel 1 ( echo FAIL: CMake build failed. & exit /b 1 )
 cmake --build %BUILD_DIR%\Release --target OpenSeesPy --parallel %JOBS%
 if errorlevel 1 ( echo FAIL: OpenSeesPy build failed. & exit /b 1 )
 
+REM OpenSeesSP & OpenSeesMP are only defined when MPI and MUMPS are available
+if defined MUMPS_DIR (
+    cmake --build %BUILD_DIR%\Release --target OpenSeesSP OpenSeesMP --parallel %JOBS%
+    if errorlevel 1 ( echo FAIL: OpenSeesSP/OpenSeesMP build failed. & exit /b 1 )
+)
+
 cmake --install %BUILD_DIR%\Release --prefix "%OUTPUT_DIR%"
 if errorlevel 1 ( echo FAIL: CMake install failed. & exit /b 1 )
+
+REM copy the Intel OpenMP runtime (needed by MKL) so OpenSees runs outside a oneAPI prompt
+set "IOMP_DLL="
+for /f "delims=" %%f in ('where libiomp5md.dll 2^>nul') do if not defined IOMP_DLL set "IOMP_DLL=%%f"
+if not defined IOMP_DLL ( echo FAIL: libiomp5md.dll not found on PATH & exit /b 1 )
+copy /y "%IOMP_DLL%" "%OUTPUT_DIR%\bin\" >nul
+if errorlevel 1 ( echo FAIL: could not copy libiomp5md.dll to %OUTPUT_DIR%\bin & exit /b 1 )
+echo Copied %IOMP_DLL% to %OUTPUT_DIR%\bin
 
 echo Done. Installed to %OUTPUT_DIR%\bin
 exit /b 0

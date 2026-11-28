@@ -45,12 +45,11 @@
 
 extern ModelBuilder *theBuilder;
 
-#ifdef _PARALLEL_PROCESSING
-#include <PartitionedDomain.h>
-extern PartitionedDomain theDomain;
-#else
-extern Domain theDomain;
-#endif
+// theDomain is a Domain in OpenSees but a PartitionedDomain in OpenSeesSP. This file
+// is compiled once (OPS_InterpTcl) for both, and MSVC encodes a variable's type in
+// its symbol, so use ops_TheActiveDomain (set to &theDomain in OpenSeesAppInit).
+#include <OPS_Globals.h>
+#define theDomain (*ops_TheActiveDomain)
 
 int
 specifyModelBuilder(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv);

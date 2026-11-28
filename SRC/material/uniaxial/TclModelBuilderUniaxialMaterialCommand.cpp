@@ -96,7 +96,6 @@ extern void *OPS_SteelMP(void);
 extern void *OPS_Steel02(void);
 extern void *OPS_Steel03(void);
 extern void *OPS_SteelFractureDI(void); // galvisf
-extern void *OPS_SteelFractureDI_Mod(void);
 
 extern void *OPS_Steel02Fatigue(void);
 extern void *OPS_RambergOsgoodSteel(void);
@@ -376,14 +375,6 @@ TclModelBuilderUniaxialMaterialCommand (ClientData clientData, Tcl_Interp *inter
             return TCL_ERROR;
 
     }
-    if (strcmp(argv[1], "SteelFractureDI_Mod") == 0) {
-        void* theMat = OPS_SteelFractureDI_Mod();
-        if (theMat != 0)
-            theMaterial = (UniaxialMaterial*)theMat;
-        else
-            return TCL_ERROR;
-
-    }    
     if (strcmp(argv[1],"Steel02Fatigue") == 0) {
       void *theMat = OPS_Steel02Fatigue();
       if (theMat != 0) 
