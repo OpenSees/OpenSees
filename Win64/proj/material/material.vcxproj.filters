@@ -235,6 +235,9 @@
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\..\SRC\material\uniaxial\FatigueMemberMaterial.cpp">
+      <Filter>uniaxial</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.cpp">
       <Filter>uniaxial</Filter>
     </ClCompile>
@@ -1691,6 +1694,9 @@
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FatigueMaterial.h">
+      <Filter>uniaxial</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\SRC\material\uniaxial\FatigueMemberMaterial.h">
       <Filter>uniaxial</Filter>
     </ClInclude>
     <ClInclude Include="..\..\..\SRC\material\uniaxial\FedeasMaterial.h">
