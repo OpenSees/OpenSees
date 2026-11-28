@@ -101,9 +101,11 @@ Vertex::getTmp(void) const
 int 
 Vertex::addEdge(int otherTag)
 {
-    // don't allow itself to be added
+    // don't allow itself to be added. Return 1 ("already present") so
+    // Graph::addEdge does not treat this as a newly inserted edge and
+    // incorrectly increment numEdge.
     if (otherTag == this->getTag())
-      return 0;
+      return 1;
 
     // check the otherVertex has not already been added
     return myAdjacency.insert(otherTag);
