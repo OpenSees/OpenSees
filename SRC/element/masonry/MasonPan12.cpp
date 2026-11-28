@@ -71,7 +71,8 @@ void* OPS_MasonPan12()
   }
 
   if (numRemainingArgs != 18) {
-    opserr << "ERROR - Masonry Panel not enough args provided, want: element MasonryPanel tag? Node1? Node2? Node3? Node4?  Node5?  Node6?  Node7?  Node8?  Node9?   Node10?   Node11?   Node12?   matTag? matTag2? thick? wfactor? w1?\n";
+    // fmk - usage message said element MasonryPanel; the command is MasonPan12
+    opserr << "ERROR - Masonry Panel not enough args provided, want: element MasonPan12 tag? Node1? Node2? Node3? Node4?  Node5?  Node6?  Node7?  Node8?  Node9?   Node10?   Node11?   Node12?   matTag? matTag2? thick? wfactor? w1?\n";
 //    numMyPanel++;
   }
 

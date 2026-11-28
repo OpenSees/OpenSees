@@ -69,7 +69,10 @@ void* OPS_NewtonRaphsonAlgorithm()
 	iFactor = 1.;
 	cFactor = 0;
 	factorOnce = 1; // -initial implies factor-once
-      } else if(strcmp(type,"-intialThenCurrent")==0 || strcmp(type,"-intialCurrent")==0) {
+      // fmk - added the correct spellings -initialThenCurrent and -initialCurrent; only the
+      //   misspelled -intialThenCurrent and -intialCurrent were accepted (kept for old scripts)
+      } else if(strcmp(type,"-initialThenCurrent")==0 || strcmp(type,"-initialCurrent")==0 ||
+		strcmp(type,"-intialThenCurrent")==0 || strcmp(type,"-intialCurrent")==0) {
 	formTangent = INITIAL_THEN_CURRENT_TANGENT;
 	iFactor = 0;
 	cFactor = 1.0;

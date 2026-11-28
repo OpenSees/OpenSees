@@ -267,21 +267,27 @@ MeshRegion::setElementsOnly(const ID &theEles)
     return 0;
 }
 
+// fmk - getNodes() and getElements() printed a FATAL message and then dereferenced a null
+//   pointer when the region had no nodes (e.g. created with -eleOnly) or no elements
+//   (e.g. created with -nodeOnly), crashing e.g. "region $tag getNodeTags". They now
+//   return an empty ID.
 const ID &
 MeshRegion::getNodes(void)
 {
+  static ID noNodes(0);
   if (theNodes == 0)
-    opserr << "FATAL::MeshRegion::getNodes(void) - no nodes yet set\n";
-  
+    return noNodes;
+
   return *theNodes;
 }
 
 const ID &
 MeshRegion::getElements(void)
 {
+  static ID noElements(0);
   if (theElements == 0)
-    opserr << "FATAL::MeshRegion::getElements(void) - no elements yet set\n";
-  
+    return noElements;
+
   return *theElements;
 }
 

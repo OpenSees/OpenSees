@@ -1079,6 +1079,11 @@ int OPS_doBlock2D()
 	    opserr<<"WARNING failed to get node tag\n";
 	    return -1;
 	}
+	// fmk - check the block point tag, as in block3D; haveNode(tag-1) was written out of bounds
+	if (tag < 1 || tag > 9) {
+	    opserr << "WARNING block2D - invalid block point tag " << tag << ", must be 1 through 9\n";
+	    return -1;
+	}
 	haveNode(tag-1) = tag;
 
 	Vector crds(ndm);
@@ -1129,7 +1134,9 @@ int OPS_doBlock2D()
     // create the elements: numX*numY elements to be created if 4 node elements
     //                      numX/2 * numY /2 nodes to be created if 9 node elements
     int eleID = idata[3];
-    if (numnodes == 9) {
+    // fmk - was (numnodes == 9), the number of block coordinate points given, which halved
+    //   numX and numY whenever all 9 block points were given for a curved block
+    if (numEleNodes == 9) {
 	idata[0] /= 2;
 	idata[1] /= 2;
     }

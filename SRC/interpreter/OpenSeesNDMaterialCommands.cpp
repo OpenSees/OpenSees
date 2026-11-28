@@ -150,6 +150,9 @@ namespace {
 	nDMaterialsMap.insert(std::make_pair("ContactMaterial3D", &OPS_ContactMaterial3DMaterial));
 	nDMaterialsMap.insert(std::make_pair("InitialStateAnalysisWrapper", &OPS_InitialStateAnalysisWrapperMaterial));
 	nDMaterialsMap.insert(std::make_pair("StressDensityModel", &OPS_StressDensityMaterial));
+	// fmk - also accept stressDensity and StressDensity, the Tcl names
+	nDMaterialsMap.insert(std::make_pair("stressDensity", &OPS_StressDensityMaterial));
+	nDMaterialsMap.insert(std::make_pair("StressDensity", &OPS_StressDensityMaterial));
 	nDMaterialsMap.insert(std::make_pair("ElasticIsotropic", &OPS_ElasticIsotropicMaterial));
 	nDMaterialsMap.insert(std::make_pair("ElasticIsotropic3D", &OPS_ElasticIsotropic3D));
 	nDMaterialsMap.insert(std::make_pair("ElasticIsotropicThermal", &OPS_ElasticIsotropicMaterialThermal));

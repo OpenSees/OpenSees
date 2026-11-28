@@ -62,7 +62,8 @@ void *OPS_SFI_MVLEM(void)
   
   // Parse the script for material parameters
   if (numArgs < 7) { 
-    opserr << "Want: SFI_MVLEM eleTag Dens iNode jNode m c -thick {fiberThick} -width {fiberWidth} -rho {Rho} -matConcrete {matTagsConcrete} -matSteel {matTagsSteel} -matShear {matTagShear}\n";
+    // fmk - usage message was copied from MVLEM
+    opserr << "Want: SFI_MVLEM eleTag iNode jNode m c -thick {fiberThick} -width {fiberWidth} -mat {matTags} <-Coupling coupling>\n";
     return 0;
   }
 

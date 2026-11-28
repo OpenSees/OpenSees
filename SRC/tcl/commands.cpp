@@ -368,6 +368,9 @@ extern void OPS_SetReliabilityDomain(ReliabilityDomain *);
 #include <SymBandEigenSolver.h>
 #include <FullGenEigenSOE.h>
 #include <FullGenEigenSolver.h>
+// fmk - added for the eigen -symmGenLapack option, as in the Python interpreter
+#include <SymmGeneralizedEigenSOE.h>
+#include <SymmGeneralizedEigenSolver.h>
 
 #ifdef _CUDA
 #include <BandGenLinSOE_Single.h>
@@ -2061,9 +2064,25 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   if (argc == currentArg) {
     opserr << theDomain;
     return TCL_OK;
-  }    
+  }
 
-  while(done == false) {
+  // fmk - look for -JSON first, so the file is opened in the right mode (OVERWRITE)
+  //   whatever the order of -JSON and -file. Previously "print -file f -JSON" opened
+  //   the file in APPEND mode and then crashed (see the loop condition below).
+  for (int i = currentArg; i < argc; i++) {
+    if ((strcmp(argv[i],"-ele") == 0) || (strcmp(argv[i],"ele") == 0) ||
+        (strcmp(argv[i],"-node") == 0) || (strcmp(argv[i],"node") == 0) ||
+        (strcmp(argv[i],"-integrator") == 0) || (strcmp(argv[i],"integrator") == 0) ||
+        (strcmp(argv[i],"-algorithm") == 0) || (strcmp(argv[i],"algorithm") == 0))
+      break;
+    if ((strcmp(argv[i],"-JSON") == 0) || (strcmp(argv[i],"JSON") == 0))
+      flag = OPS_PRINT_PRINTMODEL_JSON;
+  }
+
+  // fmk - added "currentArg < argc" to the loop condition. Previously the loop only
+  //   stopped at -ele, -node, -integrator or -algorithm, so "print -JSON" or
+  //   "print -file f -JSON" read past the end of argv and crashed.
+  while(done == false && currentArg < argc) {
     // if 'print ele i j k..' print out some elements
     if ((strcmp(argv[currentArg],"-ele") == 0) || (strcmp(argv[currentArg],"ele") == 0)) {
       currentArg++;
@@ -2093,17 +2112,23 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       done = true;
     }
 
-    else if ((strcmp(argv[currentArg],"-JSON") == 0)) {
+    else if ((strcmp(argv[currentArg],"-JSON") == 0) || (strcmp(argv[currentArg],"JSON") == 0)) {
       currentArg++;
       flag = OPS_PRINT_PRINTMODEL_JSON;
     }
 
     else {
 
-      if ((strcmp(argv[currentArg],"file") == 0) || 
-	  (strcmp(argv[currentArg],"-file") == 0)) 
+      if ((strcmp(argv[currentArg],"file") == 0) ||
+	  (strcmp(argv[currentArg],"-file") == 0))
 	currentArg++;
-	
+
+      // fmk - check a file name follows -file
+      if (currentArg >= argc) {
+	opserr << "WARNING print -file - no file name given\n";
+	return TCL_ERROR;
+      }
+
       openMode mode = APPEND;
       if (flag == OPS_PRINT_PRINTMODEL_JSON)
           mode = OVERWRITE;
@@ -2125,6 +2150,14 @@ printModel(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       output = &outputFile;
 
     }
+  }
+
+  // fmk - if no -ele, -node, -integrator or -algorithm was given, e.g. "print -JSON" or
+  //   "print -file f -JSON", print the entire domain to the screen or file
+  if (done == false) {
+    if (flag == OPS_PRINT_PRINTMODEL_JSON)
+      simulationInfo.Print(*output, flag);
+    theDomain.Print(*output, flag);
   }
 
   // close the output file
@@ -2564,6 +2597,13 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	return TCL_ERROR;
     }    
 
+    // fmk - added -noWarnings, as in the Python interpreter, to suppress the warnings printed
+    //   when a component of the analysis has not been specified and a default is used
+    bool suppressWarnings = false;
+    for (int i = 2; i < argc; i++)
+      if (strcmp(argv[i],"-noWarnings") == 0)
+        suppressWarnings = true;
+
     //
     // do nothing if request is for the same analysis type!
     //
@@ -2611,30 +2651,40 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	    theAlgorithm->setConvergenceTest(theTest);
 	
 	if (theAlgorithm == 0) {
-	    opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
-	    opserr << " NewtonRaphson default will be used\n";	    
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Static - no Algorithm yet specified, \n";
+	      opserr << " NewtonRaphson default will be used\n";	    
+	    }
 
 	    theAlgorithm = new NewtonRaphson(*theTest); 
 	}
 	if (theHandler == 0) {
-	    opserr << "WARNING analysis Static - no ConstraintHandler yet specified, \n";
-	    opserr << " PlainHandler default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Static - no ConstraintHandler yet specified, \n";
+	      opserr << " PlainHandler default will be used\n";
+	    }
 	    theHandler = new PlainHandler();       
 	}
 	if (theNumberer == 0) {
-	    opserr << "WARNING analysis Static - no Numberer specified, \n";
-	    opserr << " RCM default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Static - no Numberer specified, \n";
+	      opserr << " RCM default will be used\n";
+	    }
 	    RCM *theRCM = new RCM(false);	
 	    theNumberer = new DOF_Numberer(*theRCM);    	
 	}
 	if (theStaticIntegrator == 0) {
-	    opserr << "WARNING analysis Static - no Integrator specified, \n";
-	    opserr << " StaticIntegrator default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Static - no Integrator specified, \n";
+	      opserr << " StaticIntegrator default will be used\n";
+	    }
 	    theStaticIntegrator = new LoadControl(1, 1, 1, 1);       
 	}
 	if (theSOE == 0) {
-	    opserr << "WARNING analysis Static - no LinearSOE specified, \n";
-	    opserr << " ProfileSPDLinSOE default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Static - no LinearSOE specified, \n";
+	      opserr << " ProfileSPDLinSOE default will be used\n";
+	    }
 	    ProfileSPDLinSolver *theSolver;
 	    theSolver = new ProfileSPDLinDirectSolver(); 	
 #ifdef _PARALLEL_PROCESSING
@@ -2742,30 +2792,40 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	    theAlgorithm->setConvergenceTest(theTest);
 	
 	if (theAlgorithm == 0) {
-	    opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
-	    opserr << " NewtonRaphson default will be used\n";	    
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
+	      opserr << " NewtonRaphson default will be used\n";	    
+	    }
 
 	    theAlgorithm = new NewtonRaphson(*theTest); 
 	}
 	if (theHandler == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no ConstraintHandler\n";
-	    opserr << " yet specified, PlainHandler default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no ConstraintHandler\n";
+	      opserr << " yet specified, PlainHandler default will be used\n";
+	    }
 	    theHandler = new PlainHandler();       
 	}
 	if (theNumberer == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no Numberer specified, \n";
-	    opserr << " RCM default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no Numberer specified, \n";
+	      opserr << " RCM default will be used\n";
+	    }
 	    RCM *theRCM = new RCM(false);	
 	    theNumberer = new DOF_Numberer(*theRCM);    	
 	}
 	if (theTransientIntegrator == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
-	    opserr << " Newmark(.5,.25) default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
+	      opserr << " Newmark(.5,.25) default will be used\n";
+	    }
 	    theTransientIntegrator = new Newmark(0.5,0.25);       
 	}
 	if (theSOE == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no LinearSOE specified, \n";
-	    opserr << " ProfileSPDLinSOE default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no LinearSOE specified, \n";
+	      opserr << " ProfileSPDLinSOE default will be used\n";
+	    }
 	    ProfileSPDLinSolver *theSolver;
 	    theSolver = new ProfileSPDLinDirectSolver(); 	
 #ifdef _PARALLEL_PROCESSING
@@ -2843,33 +2903,43 @@ specifyAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	    theAlgorithm->setConvergenceTest(theTest);
 	
 	if (theAlgorithm == 0) {
-	    opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
-	    opserr << " NewtonRaphson default will be used\n";	    
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient - no Algorithm yet specified, \n";
+	      opserr << " NewtonRaphson default will be used\n";	    
+	    }
 	    theAlgorithm = new NewtonRaphson(*theTest); 
 	}
 
 	if (theHandler == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no ConstraintHandler\n";
-	    opserr << " yet specified, PlainHandler default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no ConstraintHandler\n";
+	      opserr << " yet specified, PlainHandler default will be used\n";
+	    }
 	    theHandler = new PlainHandler();       
 	}
 
 	if (theNumberer == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no Numberer specified, \n";
-	    opserr << " RCM default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no Numberer specified, \n";
+	      opserr << " RCM default will be used\n";
+	    }
 	    RCM *theRCM = new RCM(false);	
 	    theNumberer = new DOF_Numberer(*theRCM);    	
 	}
 
 	if (theTransientIntegrator == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
-	    opserr << " Newmark(.5,.25) default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no Integrator specified, \n";
+	      opserr << " Newmark(.5,.25) default will be used\n";
+	    }
 	    theTransientIntegrator = new Newmark(0.5,0.25);       
 	}
 
 	if (theSOE == 0) {
-	    opserr << "WARNING analysis Transient dt tFinal - no LinearSOE specified, \n";
-	    opserr << " ProfileSPDLinSOE default will be used\n";
+	    if (!suppressWarnings) {
+	      opserr << "WARNING analysis Transient dt tFinal - no LinearSOE specified, \n";
+	      opserr << " ProfileSPDLinSOE default will be used\n";
+	    }
 	    ProfileSPDLinSolver *theSolver;
 	    theSolver = new ProfileSPDLinDirectSolver(); 	
 #ifdef _PARALLEL_PROCESSING
@@ -3132,11 +3202,16 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   // Diagonal SOE & SOLVER
   else if (strcmp(argv[1],"Diagonal") == 0) {
 #ifdef _PARALLEL_PROCESSING
-      DistributedDiagonalSolver    *theSolver = new DistributedDiagonalSolver();   
+      DistributedDiagonalSolver    *theSolver = new DistributedDiagonalSolver();
       theSOE = new DistributedDiagonalSOE(*theSolver);
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+      // fmk - added -lumped option, as in the Python interpreter (previously ignored in Tcl)
+      bool lumped = false;
+      for (int i = 2; i < argc; i++)
+	if ((strcmp(argv[i],"-lumped") == 0) || (strcmp(argv[i],"lumped") == 0))
+	  lumped = true;
+      DiagonalSolver    *theSolver = new DiagonalDirectSolver();
+      theSOE = new DiagonalSOE(*theSolver, lumped);
 #endif
 
 
@@ -3148,8 +3223,13 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       theSOE = new MPIDiagonalSOE(*theSolver);
       setMPIDSOEFlag = true;
 #else
-      DiagonalSolver    *theSolver = new DiagonalDirectSolver();   
-      theSOE = new DiagonalSOE(*theSolver);
+      // fmk - added -lumped option, as for Diagonal above
+      bool lumped = false;
+      for (int i = 2; i < argc; i++)
+	if ((strcmp(argv[i],"-lumped") == 0) || (strcmp(argv[i],"lumped") == 0))
+	  lumped = true;
+      DiagonalSolver    *theSolver = new DiagonalDirectSolver();
+      theSOE = new DiagonalSOE(*theSolver, lumped);
 #endif
   } 
 
@@ -3430,12 +3510,19 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
   else if ((strcmp(argv[1],"SparseGeneral") == 0) || (strcmp(argv[1],"SuperLU") == 0) ||
 	   (strcmp(argv[1],"SparseGEN") == 0)) {
     
-    SparseGenColLinSolver *theSolver =0;    
+    SparseGenColLinSolver *theSolver =0;
     int count = 2;
     double thresh = 0.0;
     int npRow = 1;
     int npCol = 1;
     int np = 1;
+
+    // fmk - permSpec now defaults to 1 (was 0, i.e. no reordering) and can be set with
+    //   -permSpec, and -symm/-unsymm are now read in this loop, all as in the Python
+    //   interpreter. Previously -symm was read in a second loop that never ran (count
+    //   was already argc) and whose strcmp tests were missing "== 0".
+    int permSpec = 1;
+    char symmetric = 'N';
 
     // defaults for threaded SuperLU
 
@@ -3444,6 +3531,20 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       if ((strcmp(argv[count],"p") == 0) || (strcmp(argv[count],"piv") == 0)||
 	  (strcmp(argv[count],"-piv") == 0)) {
 	thresh = 1.0;
+      }
+      else if ((strcmp(argv[count],"s") == 0) || (strcmp(argv[count],"symmetric") == 0) ||
+	       (strcmp(argv[count],"-symm") == 0)) {
+	symmetric = 'Y';
+      }
+      else if ((strcmp(argv[count],"u") == 0) || (strcmp(argv[count],"unsymmetric") == 0) ||
+	       (strcmp(argv[count],"-unsymm") == 0)) {
+	symmetric = 'N';
+      }
+      else if ((strcmp(argv[count],"-permSpec") == 0) || (strcmp(argv[count],"permSpec") == 0)) {
+	count++;
+	if (count < argc)
+	  if (Tcl_GetInt(interp, argv[count], &permSpec) != TCL_OK)
+	    return TCL_ERROR;
       }
       else if ((strcmp(argv[count],"-np") == 0) || (strcmp(argv[count],"np") == 0)) {
 	count++;
@@ -3465,7 +3566,6 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
       count++;
     }
 
-    int permSpec = 0;
     int panelSize = 6;
     int relax = 6;
 
@@ -3486,18 +3586,9 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     }
 #else
 
-    char symmetric = 'N';
     double drop_tol = 0.0;
 
-    while (count < argc) {
-      if (strcmp(argv[count],"s") == 0 || strcmp(argv[count],"symmetric") ||
-	  strcmp(argv[count],"-symm")) {
-	symmetric = 'Y';
-      }
-      count++;
-    }
-    
-    theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric); 	
+    theSolver = new SuperLU(permSpec, drop_tol, panelSize, relax, symmetric);
 
 #endif
 
@@ -3534,21 +3625,26 @@ specifySOE(ClientData clientData, Tcl_Interp *interp, int argc, TCL_Char **argv)
     int factorOnce=0;
     int printTime = 0;
     int count = 2;
+    // fmk - added -useLongIndices option, as in the Python interpreter. The -lvalueFact,
+    //   -factorOnce and -printTime options are still read but are not used.
+    bool useLongIndices = false;
 
     while (count < argc) {
       if ((strcmp(argv[count],"-lValueFact") == 0) || (strcmp(argv[count],"-lvalueFact") == 0) || (strcmp(argv[count],"-LVALUE") == 0)) {
-	if (Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
+	if (count+1 < argc && Tcl_GetInt(interp, argv[count+1], &factLVALUE) != TCL_OK)
 	  return TCL_ERROR;
 	count++;
       } else if ((strcmp(argv[count],"-factorOnce") == 0) || (strcmp(argv[count],"-FactorOnce") ==0 )) {
 	factorOnce = 1;
       } else if ((strcmp(argv[count],"-printTime") == 0) || (strcmp(argv[count],"-time") ==0 )) {
 	printTime = 1;
+      } else if ((strcmp(argv[count],"-useLongIndices") == 0) || (strcmp(argv[count],"useLongIndices") ==0 )) {
+	useLongIndices = true;
       }
       count++;
     }
-    
-    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver();
+
+    UmfpackGenLinSolver *theSolver = new UmfpackGenLinSolver(useLongIndices);
     // theSOE = new UmfpackGenLinSOE(*theSolver, factLVALUE, factorOnce, printTime);      
     theSOE = new UmfpackGenLinSOE(*theSolver);      
   }
@@ -4413,14 +4509,14 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if (strcmp(argv[1],"ArcLength") == 0) {
       double arcLength;
-      double alpha;
-      if (argc != 4) {
-	opserr << "WARNING integrator ArcLength arcLength alpha \n";
+      double alpha = 1.0; // fmk - $alpha now optional (default 1.0), as in Python; was argc != 4
+      if (argc != 3 && argc != 4) {
+	opserr << "WARNING integrator ArcLength arcLength <alpha> \n";
 	return TCL_ERROR;
       }    
       if (Tcl_GetDouble(interp, argv[2], &arcLength) != TCL_OK)	
 	return TCL_ERROR;	
-      if (Tcl_GetDouble(interp, argv[3], &alpha) != TCL_OK)	
+      if (argc == 4 && Tcl_GetDouble(interp, argv[3], &alpha) != TCL_OK)	
 	return TCL_ERROR;	
       theStaticIntegrator = new ArcLength(arcLength,alpha);       
 
@@ -4504,11 +4600,12 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 	minlambda = lambda11;
 	maxlambda = lambda11;
 	numIter = 1;
-	argc += 3;
+	// fmk - removed argc += 3; with it, "MinUnbalDispNorm $dlam -det" read argv[6], past the end of argv
       }
 
+      // fmk - -det/-determinant is checked as the last argument, with or without the optional args
       int signFirstStepMethod = SIGN_LAST_STEP;
-      if (argc == 7)
+      if (argc == 4 || argc == 7)
 	if ((strcmp(argv[argc-1],"-determinant") == 0) ||
 	    (strcmp(argv[argc-1],"-det") == 0))
 	    signFirstStepMethod = CHANGE_DETERMINANT;	    
@@ -4676,6 +4773,9 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
 
   else if ((strcmp(argv[1],"TRBDF2") == 0) || (strcmp(argv[1],"Bathe") == 0)) {
     theTransientIntegrator = new TRBDF2();           
+    // fmk - set it on an existing transient analysis, as the other integrators do
+    if (theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
   }
 
   else if ((strcmp(argv[1],"TRBDF3") == 0) || (strcmp(argv[1],"Bathe3") == 0)) {
@@ -4712,6 +4812,9 @@ specifyIntegrator(ClientData clientData, Tcl_Interp *interp, int argc,
   
   else if (strcmp(argv[1],"GimmeMCK") == 0 || strcmp(argv[1],"ZZTop") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_GimmeMCK();
+    // fmk - set it on an existing transient analysis, as the other integrators do
+    if (theTransientIntegrator != 0 && theTransientAnalysis != 0)
+      theTransientAnalysis->setIntegrator(*theTransientIntegrator);
    }
   else if (strcmp(argv[1],"StagedNewmark") == 0) {
     theTransientIntegrator = (TransientIntegrator*)OPS_StagedNewmark();
@@ -5542,7 +5645,14 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
          (strcmp(argv[loc],"fullGenLapackEigen") == 0) || 
          (strcmp(argv[loc],"-fullGenLapackEigen") == 0))
       typeSolver = EigenSOE_TAGS_FullGenEigenSOE;
-    
+
+    // fmk - added -symmGenLapack option, as in the Python interpreter
+    else if ((strcmp(argv[loc],"symmGenLapack") == 0) ||
+         (strcmp(argv[loc],"-symmGenLapack") == 0) ||
+         (strcmp(argv[loc],"symmGenLapackEigen") == 0) ||
+         (strcmp(argv[loc],"-symmGenLapackEigen") == 0))
+      typeSolver = EigenSOE_TAGS_SymmGeneralizedEigenSOE;
+
     else {
       opserr << "eigen - unknown option specified " << argv[loc] << endln;
     }
@@ -5627,9 +5737,21 @@ eigenAnalysis(ClientData clientData, Tcl_Interp *interp, int argc,
 	FullGenEigenSolver *theEigenSolver = new FullGenEigenSolver();
 	theEigenSOE = new FullGenEigenSOE(*theEigenSolver, *theAnalysisModel);
 
+      } else if (typeSolver == EigenSOE_TAGS_SymmGeneralizedEigenSOE) {
+
+	// fmk - -symmGenLapack, as in the Python interpreter; not compiled for Windows,
+	//   where the default Arpack solver is used instead
+#ifdef _WIN32
+	opserr << "WARNING eigen - SymmGeneralizedEigenSolver not currently compiled for Windows, using genBandArpack\n";
+	theEigenSOE = new ArpackSOE(shift);
+#else
+	SymmGeneralizedEigenSolver *theEigenSolver = new SymmGeneralizedEigenSolver();
+	theEigenSOE = new SymmGeneralizedEigenSOE(*theEigenSolver, *theAnalysisModel);
+#endif
+
       } else {
 
-	theEigenSOE = new ArpackSOE(shift);    
+	theEigenSOE = new ArpackSOE(shift);
 
       }
       

@@ -70,7 +70,7 @@ OPS_Truss2(void)
 	int numRemainingArgs = OPS_GetNumRemainingInputArgs();
 
 	if (numRemainingArgs < 7) {
-		opserr << "Invalid Args want: element Truss2 $tag $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-rayleigh $flag>\n";
+		opserr << "Invalid Args want: element Truss2 $tag $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-doRayleigh $flag>\n"; // fmk - option is -doRayleigh
 		return 0;	
 	}
 
@@ -90,14 +90,14 @@ OPS_Truss2(void)
 	numData = 1;
 	if (OPS_GetDouble(&numData, &A) != 0) {
 		opserr << "WARNING: Invalid A: element Truss2 " << iData[0] << 
-			" $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-rayleig $flagh>\n";
+			" $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-doRayleigh $flag>\n";
 		return 0;	
 	}
 
 	numData = 1;
 	if (OPS_GetInt(&numData, &matTag) != 0) {
 		opserr << "WARNING: Invalid matTag: element Truss2 " << iData[0] << 
-			" $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-rayleig $flagh>\n";
+			" $iNode $jNode $auxN1 $auxN2 $A $matTag <-rho $rho> <-doRayleigh $flag>\n";
 		return 0;
 	}
 
@@ -105,7 +105,7 @@ OPS_Truss2(void)
 
 	if (theUniaxialMaterial == 0) {
 		opserr << "WARNING: Invalid material not found element Truss2 " << iData[0] << " $iNode $jNode $auxN1 $auxN2 $A " << 
-			matTag << " <-rho $rho> <-rayleig $flagh>\n";
+			matTag << " <-rho $rho> <-doRayleigh $flag>\n";
 		return 0;
 	}
 
@@ -117,19 +117,19 @@ OPS_Truss2(void)
 			numData = 1;
 			if (OPS_GetDouble(&numData, &rho) != 0) {
 				opserr << "WARNING Invalid rho in element Truss " << iData[0] << 
-					" $iNode $jNode $A $matTag <-rho $rho> <-doRayleigh $flagh>\n";
+					" $iNode $jNode $A $matTag <-rho $rho> <-doRayleigh $flag>\n";
 				return 0;
 			}
 		} else if (strcmp(argvS,"-doRayleigh") == 0) {
 			numData = 1;
 			if (OPS_GetInt(&numData, &doRayleigh) != 0) {
 				opserr << "WARNING: Invalid doRayleigh in element Truss " << iData[0] << 
-					" $iNode $jNode $A $matTag <-rho $rho> <-doRayleigh $flagh>\n";
+					" $iNode $jNode $A $matTag <-rho $rho> <-doRayleigh $flag>\n";
 				return 0;
 			}
 		} else {
 			opserr << "WARNING: Invalid option " << argvS << "  in: element Truss " << iData[0] << 
-				" $iNode $jNode $A $matTag <-rho $rho> <-doRayleigh $flagh>\n";
+				" $iNode $jNode $A $matTag <-rho $rho> <-doRayleigh $flag>\n";
 			return 0;
 		}      
 		numRemainingArgs -= 2;

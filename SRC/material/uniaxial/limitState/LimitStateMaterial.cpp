@@ -184,6 +184,11 @@ mom1p(m1p), rot1p(r1p), mom2p(m2p), rot2p(r2p), mom3p(m3p), rot3p(r3p),
 mom1n(m1n), rot1n(r1n), mom2n(m2n), rot2n(r2n), mom3n(m3n), rot3n(r3n)
 {
 	constructorType = 1;
+	// fmk - no limit curve: theCurve, curveType and degrade were left uninitialized, so
+	//   revertToStart() and getCopy() used garbage values and OpenSees crashed
+	theCurve = 0;
+	curveType = 0;
+	degrade = 0;
 
 	bool error = false;
 	
@@ -260,6 +265,11 @@ mom1p(m1p), rot1p(r1p), mom3p(m2p), rot3p(r2p),
 mom1n(m1n), rot1n(r1n), mom3n(m2n), rot3n(r2n)
 {
 	constructorType = 2;
+	// fmk - no limit curve: theCurve, curveType and degrade were left uninitialized, so
+	//   revertToStart() and getCopy() used garbage values and OpenSees crashed
+	theCurve = 0;
+	curveType = 0;
+	degrade = 0;
 	bool error = false;
 	
 	// Positive backbone parameters
@@ -424,6 +434,10 @@ mom1p(0.0), rot1p(0.0), mom2p(0.0), rot2p(0.0), mom3p(0.0), rot3p(0.0),
 mom1n(0.0), rot1n(0.0), mom2n(0.0), rot2n(0.0), mom3n(0.0), rot3n(0.0)
 {
 	constructorType = 4;
+	// fmk - initialize, as for the no-curve constructors
+	theCurve = 0;
+	curveType = 0;
+	degrade = 0;
 
 	// Store original input parameters
 	pinchX_orig = 0.0;
@@ -889,7 +903,9 @@ LimitStateMaterial::revertToStart(void)
 	/////////////////
 
 	// Do the same thing in the limit curve (done by Terje)
-	theCurve->revertToStart();
+	// fmk - there is no limit curve when the material is created without one
+	if (theCurve != 0)
+	  theCurve->revertToStart();
 
 
 	// Store original input parameters
@@ -1388,6 +1404,9 @@ LimitStateMaterial::mirrorBackbone(void)
 int
 LimitStateMaterial::setParameter(const char **argv, int argc, Parameter &param)
 {
+  // fmk - there is no limit curve when the material is created without one
+  if (theCurve == 0)
+    return -1;
   return theCurve->setParameter(argv, argc, param);
 }
 

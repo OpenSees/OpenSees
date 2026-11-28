@@ -2651,29 +2651,53 @@ int OPS_printModel()
         return 0;
     }
 
+    // fmk - the file name is now stored and the file only opened when something is about
+    //   to be printed, so -JSON and -file can come in any order. Previously the file was
+    //   opened as soon as -file was read, so printModel('-file', f, '-JSON') opened it in
+    //   APPEND mode and then printed nothing. Also, a file name given without -file is now
+    //   used, as in Tcl; previously the argument after it was taken as the file name.
+    std::string fileName;
+    auto openOutputFile = [&]() -> int {
+        if (fileName.empty() || output == &outputFile)
+            return 0;
+        openMode mode = APPEND;
+        if (flag == OPS_PRINT_PRINTMODEL_JSON)
+            mode = OVERWRITE;
+        if (outputFile.setFile(fileName.c_str(), mode) != 0) {
+            opserr << "print <filename> .. - failed to open file: " << fileName.c_str() << endln;
+            return -1;
+        }
+        output = &outputFile;
+        return 0;
+    };
+
     while (done == false && OPS_GetNumRemainingInputArgs() > 0) {
 
         const char* arg = OPS_GetString();
 
         // if 'print ele i j k..' print out some elements
         if ((strcmp(arg, "-ele") == 0) || (strcmp(arg, "ele") == 0)) {
+            if (openOutputFile() < 0) return -1;
             res = printElement(*output);
             done = true;
         }
         // if 'print node i j k ..' print out some nodes
         else if ((strcmp(arg, "-node") == 0) || (strcmp(arg, "node") == 0)) {
+            if (openOutputFile() < 0) return -1;
             res = printNode(*output);
             done = true;
         }
 
         // if 'print integrator flag' print out the integrator
         else if ((strcmp(arg, "integrator") == 0) || (strcmp(arg, "-integrator") == 0)) {
+            if (openOutputFile() < 0) return -1;
             res = printIntegrator(*output);
             done = true;
         }
 
         // if 'print algorithm flag' print out the algorithm
         else if ((strcmp(arg, "algorithm") == 0) || (strcmp(arg, "-algorithm") == 0)) {
+            if (openOutputFile() < 0) return -1;
             res = printAlgorithm(*output);
             done = true;
         }
@@ -2683,35 +2707,29 @@ int OPS_printModel()
             flag = OPS_PRINT_PRINTMODEL_JSON;
         }
 
-        else {
-
-            if ((strcmp(arg, "file") == 0) || (strcmp(arg, "-file") == 0)) {}
-
-            if (OPS_GetNumRemainingInputArgs() < 1) break;
-            const char* filename = OPS_GetString();
-
-            openMode mode = APPEND;
-            if (flag == OPS_PRINT_PRINTMODEL_JSON)
-                mode = OVERWRITE;
-            if (outputFile.setFile(filename, mode) != 0) {
-                opserr << "print <filename> .. - failed to open file: " << filename << endln;
+        // if 'print -file fileName' or 'print fileName' store the file name
+        else if ((strcmp(arg, "file") == 0) || (strcmp(arg, "-file") == 0)) {
+            if (OPS_GetNumRemainingInputArgs() < 1) {
+                opserr << "WARNING print -file - no file name given\n";
                 return -1;
             }
-
-            SimulationInformation* simulationInfo = cmds->getSimulationInformation();
-            if (simulationInfo == 0) return -1;
-
-            // if just 'print <filename>' then print out the entire domain to eof
-            if (OPS_GetNumRemainingInputArgs() < 1) {
-                if (flag == OPS_PRINT_PRINTMODEL_JSON)
-                    simulationInfo->Print(outputFile, flag);
-                theDomain->Print(outputFile, flag);
-                return 0;
-            }
-
-            output = &outputFile;
-
+            fileName = OPS_GetString();
         }
+        else {
+            fileName = arg;
+        }
+    }
+
+    // fmk - if no -ele, -node, -integrator or -algorithm was given, print the entire
+    //   domain to the screen or file
+    if (done == false) {
+        if (openOutputFile() < 0) return -1;
+        if (flag == OPS_PRINT_PRINTMODEL_JSON) {
+            SimulationInformation* simulationInfo = cmds->getSimulationInformation();
+            if (simulationInfo != 0)
+                simulationInfo->Print(*output, flag);
+        }
+        theDomain->Print(*output, flag);
     }
 
     // close the output file
