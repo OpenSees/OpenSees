@@ -1044,8 +1044,14 @@ CorotCrdTransf3d::getBasicTrialDisp(void)
     static Vector ub(6);
     
     // use transformation matrix to renumber the degrees of freedom
-    ub.addMatrixVector(0.0, Tp, ul, 1.0);
-    
+    //ub.addMatrixVector(0.0, Tp, ul, 1.0);
+    ub(0) = ul(6);
+	ub(1) = ul(1);
+	ub(2) = ul(4);
+	ub(3) = -ul(2);
+	ub(4) = -ul(5);
+	ub(5) = ul(3)-ul(0);
+	
     return ub;    
 }
 
@@ -1061,8 +1067,14 @@ CorotCrdTransf3d::getBasicIncrDeltaDisp(void)
     dul.addVector (1.0, ulpr, -1.0);
     
     // use transformation matrix to renumber the degrees of freedom
-    dub.addMatrixVector(0.0, Tp, dul, 1.0);
-    
+    //dub.addMatrixVector(0.0, Tp, dul, 1.0);
+    dub(0) = dul(6);
+	dub(1) = dul(1);
+	dub(2) = dul(4);
+	dub(3) = -dul(2);
+	dub(4) = -dul(5);
+	dub(5) = dul(3)-dul(0);
+	
     return dub;        
 }
 
@@ -1078,8 +1090,14 @@ CorotCrdTransf3d::getBasicIncrDisp(void)
     Dul.addVector (1.0, ulcommit, -1.0);
     
     // use transformation matrix to renumber the degrees of freedom
-    Dub.addMatrixVector(0.0, Tp, Dul, 1.0);
-    
+    //Dub.addMatrixVector(0.0, Tp, Dul, 1.0);
+    Dub(0) = Dul(6);
+	Dub(1) = Dul(1);
+	Dub(2) = Dul(4);
+	Dub(3) = -Dul(2);
+	Dub(4) = -Dul(5);
+	Dub(5) = Dul(3)-Dul(0);
+	
     return Dub;        
 }
 
@@ -1115,10 +1133,17 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
     pg.Zero();
     
     // if there are no element loads present
-    if (p0 == 0.0) {
+    if (p0.Norm() == 0.0) {
         // transform resisting forces from the basic system to local coordinates
         static Vector pl(7);
-        pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+        //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+		pl(0) = -pb(5);
+		pl(1) = pb(1);
+		pl(2) = -pb(3);
+		pl(3) = pb(5);
+		pl(4) = pb(2);
+		pl(5) = -pb(4);
+		pl(6) = pb(0);
 
         // transform resisting forces from local to global coordinates
         pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
@@ -1148,8 +1173,15 @@ CorotCrdTransf3d::getGlobalResistingForce(const Vector &pb, const Vector &p0)
         // =============================================
         // transform resisting forces from the basic system to local coordinates
         static Vector pl(7);
-        pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
-
+        //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+		pl(0) = -pb(5);
+		pl(1) = pb(1);
+		pl(2) = -pb(3);
+		pl(3) = pb(5);
+		pl(4) = pb(2);
+		pl(5) = -pb(4);
+		pl(6) = pb(0);
+		
         // transform resisting forces from local to global coordinates
         pg.addMatrixTransposeVector(0.0, T, pl, 1.0);   // pg = T ^ pl; residual
 
@@ -1186,8 +1218,15 @@ CorotCrdTransf3d::getGlobalStiffMatrix(const Matrix &kb, const Vector &pb)
     
     // transform resisting forces from the basic system to local coordinates
     static Vector pl(7);
-    pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
-    
+    //pl.addMatrixTransposeVector(0.0, Tp, pb, 1.0);    // pl = Tp ^ pb;
+    pl(0) = -pb(5);
+	pl(1) = pb(1);
+	pl(2) = -pb(3);
+	pl(3) = pb(5);
+	pl(4) = pb(2);
+	pl(5) = -pb(4);
+	pl(6) = pb(0);
+
     // transform tangent  stiffness matrix from local to global coordinates
     //static Matrix kg(12,12);
     
