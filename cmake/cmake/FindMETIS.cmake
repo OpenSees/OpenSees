@@ -40,7 +40,7 @@ macro(_metis_check_version)
   else()
     set(METIS_VERSION ${METIS_MAJOR_VERSION}.${METIS_MINOR_VERSION}.${METIS_SUBMINOR_VERSION})
   endif()
-  if(${METIS_VERSION} VERSION_LESS ${Metis_FIND_VERSION})
+  if("${METIS_VERSION}" VERSION_LESS "${METIS_FIND_VERSION}")
     set(METIS_VERSION_OK FALSE)
   else()
     set(METIS_VERSION_OK TRUE)
@@ -48,15 +48,15 @@ macro(_metis_check_version)
 
   if(NOT METIS_VERSION_OK)
     message(STATUS "Metis version ${METIS_VERSION} found in ${METIS_INCLUDES}, "
-                   "but at least version ${Metis_FIND_VERSION} is required")
+                   "but at least version ${METIS_FIND_VERSION} is required")
   endif(NOT METIS_VERSION_OK)
 endmacro(_metis_check_version)
 
-  if(METIS_INCLUDES AND Metis_FIND_VERSION)
-    _metis_check_version()
-  else()
-    set(METIS_VERSION_OK TRUE)
-  endif()
+if(METIS_INCLUDES AND METIS_FIND_VERSION)
+  _metis_check_version()
+else()
+  set(METIS_VERSION_OK TRUE)
+endif()
 
 
 find_library(METIS_LIBRARIES metis PATHS $ENV{METISDIR} ${LIB_INSTALL_DIR} PATH_SUFFIXES lib)
@@ -66,4 +66,3 @@ find_package_handle_standard_args(METIS DEFAULT_MSG
                                   METIS_INCLUDES METIS_LIBRARIES METIS_VERSION_OK)
 
 mark_as_advanced(METIS_INCLUDES METIS_LIBRARIES)
-
